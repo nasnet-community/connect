@@ -1,0 +1,30 @@
+/**
+ * Tailwind CSS imports
+ * View the full documentation at https://tailwindcss.com
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --header-height: 5rem;
+  }
+
+  body {
+    @apply bg-background text-text 
+           antialiased dark:bg-background-dark dark:text-text-dark-default;
+  }
+}
+
+@layer components {
+  .container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply rounded-xl border
+           border-border/10 bg-surface shadow-lg
+           dark:border-border-dark/10 dark:bg-surface-dark;
+  }
+}
