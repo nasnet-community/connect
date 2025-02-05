@@ -1,14 +1,11 @@
-import { component$, useContext, useStore, $ } from "@builder.io/qwik";
+import { component$, useStore, $ } from "@builder.io/qwik";
 import { VPNClient } from "./VPNClient/VPNClient";
-import { DNSClient } from "../../../trash/DNSClient";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
-import { StarContext } from "../StarContext";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import { WANInterface } from "./WANInterface/WANInterface";
 
 export const WAN = component$((props: StepProps) => {
-  const starContext = useContext(StarContext);
 
   const ForeignStep = component$((props: StepProps) => (
     <WANInterface
@@ -30,11 +27,9 @@ export const WAN = component$((props: StepProps) => {
     <VPNClient isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const DNSClientStep = component$((props: StepProps) => (
-    <DNSClient isComplete={props.isComplete} onComplete$={props.onComplete$} />
-  ));
 
-  const baseSteps: StepItem[] = [
+
+  const steps: StepItem[] = [
     {
       id: 1,
       title: $localize`Foreign`,
@@ -55,18 +50,7 @@ export const WAN = component$((props: StepProps) => {
     },
   ];
 
-  const steps =
-    starContext.state.Mode === "advance"
-      ? [
-          ...baseSteps,
-          {
-            id: 4,
-            title: $localize`DNS Client`,
-            component: DNSClientStep,
-            isComplete: false,
-          },
-        ]
-      : baseSteps;
+
 
   const stepsStore = useStore({
     activeStep: 0,
