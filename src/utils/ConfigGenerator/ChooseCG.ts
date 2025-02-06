@@ -88,11 +88,11 @@ export const BaseConfig = (state: StarState): RouterConfig => {
       `add action=mark-routing chain=prerouting comment=DOM new-routing-mark=to-DOM \\
              passthrough=no src-address-list=DOM-Local`,
       // FRN Traffic
-      `add action=mark-connection chain=forward comment=FRN dst-address-list=!IranAddList \\
+      `add action=mark-connection chain=forward comment=FRN dst-address-list=!DOMAddList \\
              new-connection-mark=conn-FRN passthrough=yes src-address-list=FRN-Local`,
       `add action=mark-routing chain=prerouting comment=FRN connection-mark=conn-FRN \\
-             dst-address-list=!IranAddList new-routing-mark=to-FRN passthrough=no src-address-list=FRN-Local`,
-      `add action=mark-routing chain=prerouting comment=FRN dst-address-list=!IranAddList \\
+             dst-address-list=!DOMAddList new-routing-mark=to-FRN passthrough=no src-address-list=FRN-Local`,
+      `add action=mark-routing chain=prerouting comment=FRN dst-address-list=!DOMAddList \\
              new-routing-mark=to-FRN passthrough=no src-address-list=FRN-Local`,
       // VPN Traffic
       `add action=mark-connection chain=forward comment=VPN new-connection-mark=conn-VPN \\
