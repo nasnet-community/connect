@@ -1,10 +1,7 @@
 import { $, component$, useContext, useStore } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
-import {
-  HiCheckCircleOutline,
-  HiXCircleOutline,
-} from "@qwikest/icons/heroicons";
 import { StarContext } from "../../StarContext";
+import { RadioButton } from "~/components/Core/button/RadioButton";
 
 interface ServiceState {
   [key: string]: boolean;
@@ -194,44 +191,15 @@ export const UsefulServices = component$<StepProps>(({ onComplete$ }) => {
                       </div>
                     </div>
 
-                    <div class="flex gap-2 rounded-lg border border-border bg-surface p-1 dark:border-border-dark dark:bg-surface-dark">
-                      <label
-                        class={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 transition-colors
-                                          ${
-                                            !serviceStates[service.id]
-                                              ? "bg-white text-text shadow-sm dark:bg-gray-700 dark:text-text-dark-default"
-                                              : "text-text-secondary dark:text-text-dark-secondary"
-                                          }`}
-                      >
-                        <input
-                          type="radio"
-                          name={service.id}
-                          checked={!serviceStates[service.id]}
-                          onChange$={() => (serviceStates[service.id] = false)}
-                          class="hidden"
-                        />
-                        <HiXCircleOutline class="h-5 w-5" />
-                        <span>{$localize`Disable`}</span>
-                      </label>
-                      <label
-                        class={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 transition-colors
-                                          ${
-                                            serviceStates[service.id]
-                                              ? "bg-white text-text shadow-sm dark:bg-gray-700 dark:text-text-dark-default"
-                                              : "text-text-secondary dark:text-text-dark-secondary"
-                                          }`}
-                      >
-                        <input
-                          type="radio"
-                          name={service.id}
-                          checked={serviceStates[service.id]}
-                          onChange$={() => (serviceStates[service.id] = true)}
-                          class="hidden"
-                        />
-                        <HiCheckCircleOutline class="h-5 w-5" />
-                        <span>{$localize`Enable`}</span>
-                      </label>
-                    </div>
+                    <RadioButton
+                      checked={serviceStates[service.id]}
+                      onChange$={() => (serviceStates[service.id] = true)}
+                      label={
+                        serviceStates[service.id]
+                          ? $localize`Enabled`
+                          : $localize`Disabled`
+                      }
+                    />
                   </div>
                 </div>
               </div>

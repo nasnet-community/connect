@@ -4,7 +4,7 @@ import { StarContext } from "../StarContext";
 import { Header } from "./Header";
 import { Code } from "./Code";
 // import { PythonGuide } from './PythonGuide';
-// import { ScriptGuide } from './ScriptGuide';
+import { ScriptGuide } from "./ScriptGuide";
 // import { TutorialCard } from './TutorialCard';
 import { useConfigGenerator } from "./useShow";
 
@@ -42,6 +42,8 @@ export const ShowConfig = component$<StepProps>(() => {
           }}
         />
       </div>
+
+      <ScriptGuide />
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">
         <TutorialCard

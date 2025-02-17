@@ -15,7 +15,7 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     return (
       <div class="space-y-6">
         <p class="text-text-secondary dark:text-text-dark-secondary">
-          {$localize`Configure a single wireless network for all your devices`}
+          {$localize`This option allows Mikrotik to automatically choose the best connection for each request, sending local traffic through domestic networks and international traffic through foreign networks.`}
         </p>
         <div class="grid gap-6">
           <div>

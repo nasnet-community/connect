@@ -143,14 +143,19 @@ export const BaseConfig = (state: StarState): RouterConfig => {
       `add action=dst-nat chain=dstnat comment="DNS FRN" dst-port=53 protocol=tcp \\
              src-address-list=FRN-Local to-addresses=1.1.1.1`,
     ],
-    "/ip nat-pmp": ["set enabled=yes"],
-    "/ip upnp": ["set enabled=yes"],
+    //     "/ip nat-pmp": ["set enabled=yes"],
+    //     "/ip upnp": ["set enabled=yes"],
     "/system package update": ["set channel=stable"],
     "/system routerboard settings": ["set auto-upgrade=yes"],
     "/ip route": [
-      "add comment=Route-to-FRN disabled=no distance=1 dst-address=0.0.0.0/0 gateway=192.168.10.1 routing-table=to-FRN suppress-hw-offload=no",
-      "add comment=Route-to-DOM disabled=no distance=1 dst-address=0.0.0.0/0 gateway=100.64.0.1 routing-table=to-DOM scope=30 suppress-hw-offload=no target-scope=10",
+      "add comment=Route-to-FRN disabled=no distance=1 dst-address=0.0.0.0/0 gateway=192.168.10.1 routing-table=to-FRN",
+      "add comment=Route-to-DOM disabled=no distance=1 dst-address=0.0.0.0/0 gateway=100.64.0.1 routing-table=to-DOM",
+      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-VPN`,
+      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
+      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-FRN`,
+      "add comment=Route-to-SL disabled=no distance=1 dst-address=192.168.100.0/24 gateway=192.168.1.1 routing-table=to-VPN",
     ],
+    "/system clock": [`set date=Feb/10/2025`],
     "/system ntp client": ["set enabled=yes"],
     "/system ntp server": [
       "set broadcast=yes enabled=yes manycast=yes multicast=yes",

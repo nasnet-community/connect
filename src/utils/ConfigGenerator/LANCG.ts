@@ -255,11 +255,11 @@ export const OVPNServer = (state: StarState): RouterConfig => {
     disabled name=ovpn-server-udp port=4443 protocol=udp redirect-gateway=def1 require-client-certificate=yes user-auth-method=mschap2 \\r\\
     \\n\\r\\
     \\n/ppp secret\\r\\
-${VPNServer.Users.map((user) => `    \\nadd name=${user.Username} password=${user.Password} profile=VPN-PROFILE service=ovpn\\r\\`).join("")}
+${VPNServer.Users.map((user) => `    \\nadd name=\\"${user.Username}\\" password=\\"${user.Password}\\" profile=VPN-PROFILE service=ovpn\\r\\`).join("")}
     \\n\\r\\
     \\n/certificate\\r\\
     \\nexport-certificate CA type=pem export-passphrase=\\r\\
-    \\nexport-certificate Client type=pem export-passphrase=${VPNServer.OpenVPNConfig.Passphrase}\\r\\
+    \\nexport-certificate Client type=pem export-passphrase=\\"${VPNServer.OpenVPNConfig.Passphrase}\\"\\r\\
     \\n\\r\\
     \\n/ip firewall address-list\\r\\
     \\nadd address=192.168.60.0/24 list=VPN-LAN \\r\\

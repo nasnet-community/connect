@@ -7,7 +7,6 @@ import {
 import { RouterHead } from "./components/router-head/router-head";
 import { isDev } from "@builder.io/qwik";
 
-
 import "./global.css";
 
 export default component$(() => {
@@ -30,7 +29,6 @@ export default component$(() => {
   // });
 
   const nonce = useServerData<string | undefined>("nonce");
-
 
   return (
     <QwikCityProvider>

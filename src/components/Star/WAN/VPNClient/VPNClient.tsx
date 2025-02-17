@@ -116,7 +116,7 @@ export const VPNClient = component$<StepProps>(
                   {$localize`VPN Client Configuration`}
                 </h2>
                 <p class="text-text-muted dark:text-text-dark-muted">
-                  {$localize`Enter your Wireguard VPN configuration or upload a .conf file`}
+                  {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please upload your WireGuard configuration to conceal your Starlink IP.`}
                 </p>
               </div>
             </div>

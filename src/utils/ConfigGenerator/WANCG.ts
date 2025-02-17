@@ -17,7 +17,7 @@ export const ForeignWAN = (state: StarState): RouterConfig => {
     const { SSID, Password } = state.WAN.Easy.Foreign.WirelessCredentials;
     config["/interface wifi"].push(
       `set ${interface_name} comment=ForeignWAN configuration.mode=station \\
-             .ssid="${SSID}" disabled=no security.passphrase=${Password}`,
+             .ssid="${SSID}" disabled=no security.passphrase="${Password}"`,
     );
   } else {
     // Add ethernet interface comment
@@ -59,7 +59,7 @@ export const DomesticWAN = (state: StarState): RouterConfig => {
     const { SSID, Password } = state.WAN.Easy.Domestic.WirelessCredentials;
     config["/interface wifi"].push(
       `set ${interface_name} comment=DomesticWAN configuration.mode=station \\
-             .ssid="${SSID}" disabled=no security.passphrase=${Password}`,
+             .ssid="${SSID}" disabled=no security.passphrase="${Password}"`,
     );
   } else {
     // Add ethernet interface comment

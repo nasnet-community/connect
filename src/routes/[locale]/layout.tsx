@@ -12,10 +12,10 @@ export const head: DocumentHead = {
   title: "NASNET Connect",
   meta: [
     {
-      name: 'description',
-      content: 'Help you connect with the world'
-    }
-  ]
+      name: "description",
+      content: "Help you connect with the world",
+    },
+  ],
 };
 
 export default component$(() => {
