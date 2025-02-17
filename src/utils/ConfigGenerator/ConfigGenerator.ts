@@ -64,8 +64,8 @@ const formatConfig = (config: RouterConfig): string => {
     .filter(Boolean)
     .join("\n")
     .trim()
-    .replace(/\n+$/, "")
-    .replace(/#/g, "");
+    .replace(/\n+$/, "");
+  // .replace(/#/g, "");
 };
 
 export const ConfigGenerator = (state: StarState): string => {

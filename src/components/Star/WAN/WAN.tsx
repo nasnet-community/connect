@@ -6,7 +6,6 @@ import type { StepProps } from "~/types/step";
 import { WANInterface } from "./WANInterface/WANInterface";
 
 export const WAN = component$((props: StepProps) => {
-
   const ForeignStep = component$((props: StepProps) => (
     <WANInterface
       mode={"Foreign"}
@@ -26,8 +25,6 @@ export const WAN = component$((props: StepProps) => {
   const VPNClientStep = component$((props: StepProps) => (
     <VPNClient isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
-
-
 
   const steps: StepItem[] = [
     {
@@ -49,8 +46,6 @@ export const WAN = component$((props: StepProps) => {
       isComplete: false,
     },
   ];
-
-
 
   const stepsStore = useStore({
     activeStep: 0,

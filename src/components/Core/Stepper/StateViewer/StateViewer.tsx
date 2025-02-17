@@ -24,7 +24,7 @@ export const StateViewer = component$(() => {
 
   return (
     <>
-<button
+      <button
         onClick$={() => (isOpen.value = true)}
         class="fixed bottom-4 right-4 z-50 rounded-full bg-primary-500 p-3 text-white shadow-lg hover:bg-primary-600"
         aria-label={$localize`Open Developer Tools`}

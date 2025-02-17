@@ -10,7 +10,7 @@ interface LanguageSelectProps {
   currentLocale: string;
   locales: string[];
   onLocaleChange$: QRL<(locale: string) => void>;
-  location?: 'header' | 'mobile'; 
+  location?: "header" | "mobile";
 }
 
 const LANGUAGES: Record<string, Language> = {
@@ -24,14 +24,11 @@ const LANGUAGES: Record<string, Language> = {
 };
 
 export const LanguageSelect = component$((props: LanguageSelectProps) => {
-  const selectId = `language-select-${props.location || 'default'}`;
+  const selectId = `language-select-${props.location || "default"}`;
 
   return (
     <div class="relative">
-      <label 
-        for={selectId}
-        class="sr-only"
-      >
+      <label for={selectId} class="sr-only">
         {$localize`Select language`}
       </label>
       <select

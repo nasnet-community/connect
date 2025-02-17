@@ -8,6 +8,12 @@ export const FooterBottom = component$(() => (
       </p>
       <div class="flex items-center gap-6">
         <a
+          href="https://www.starlink4iran.com/faqs/mcg/"
+          class="text-sm text-text-secondary transition-colors hover:text-primary-500 dark:text-text-dark-secondary dark:hover:text-primary-400"
+        >
+          {$localize`FAQs`}
+        </a>
+        <a
           href="https://www.starlink4iran.com/privacy-policy/"
           class="text-sm text-text-secondary transition-colors hover:text-primary-500 dark:text-text-dark-secondary dark:hover:text-primary-400"
         >
