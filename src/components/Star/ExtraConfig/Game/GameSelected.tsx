@@ -15,15 +15,15 @@ export const GameSelected = component$<{ context: StarContextType }>(
         parts.push(`UDP: ${ports.udp.join(", ")}`);
       }
       return parts.join(" | ");
-    };
-
-    return context.state.ExtraConfig.Games.length > 0 ? (
+    };    return context.state.ExtraConfig.Games.length > 0 ? (
       <div class="space-y-3">
-        <h3 class="font-medium text-text dark:text-text-dark-default">{$localize`Selected Games`}</h3>
+        <h3 class="font-medium text-text dark:text-text-dark-default">
+          {$localize`Selected Games`}
+        </h3>
         <div class="space-y-2">
           {context.state.ExtraConfig.Games.map((game, index) => (
             <div
-              key={index}
+              key={`${game.name}-${game.link}-${index}`}
               class="flex items-center justify-between rounded-lg bg-surface-secondary p-3 dark:bg-surface-dark-secondary"
             >
               <div class="flex items-center space-x-3">

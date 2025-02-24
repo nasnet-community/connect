@@ -17,43 +17,45 @@ export const useGameLogic = () => {
       },
       value: string,
     ) => {
-      // Validate link type
       if (!["foreign", "domestic", "vpn", "none"].includes(value)) {
         console.error("Invalid link type");
         return;
       }
-
-      if (value === "none") return;
-
-      // Check for duplicate
-      const exists = context.state.ExtraConfig.Games.some(
-        (g) => g.name === game.name,
-      );
-      if (exists) {
-        console.warn("Game already exists in configuration");
-        return;
-      }
-
-      // Convert ports to strings
+  
       const serializedPorts = {
         tcp: game.tcp?.map(String),
         udp: game.udp?.map(String),
       };
-
-      // Create new game config
+  
+      if (value === "none") {
+        const updatedGames = context.state.ExtraConfig.Games.filter(
+          (g) => g.name !== game.name
+        );
+        return context.updateExtraConfig$({ Games: updatedGames });
+      }
+  
       const newGame: GameConfig = {
         name: game.name,
-        link: value as "foreign" | "domestic" | "vpn" | "none",
+        link: value as "foreign" | "domestic" | "vpn",
         ports: serializedPorts,
       };
-
-      // Update context
-      context.updateExtraConfig$({
+  
+      const existingIndex = context.state.ExtraConfig.Games.findIndex(
+        (g) => g.name === game.name
+      );
+  
+      if (existingIndex !== -1) {
+        const updatedGames = [...context.state.ExtraConfig.Games];
+        updatedGames[existingIndex] = newGame;
+        return context.updateExtraConfig$({ Games: updatedGames });
+      }
+  
+      return context.updateExtraConfig$({
         Games: [...context.state.ExtraConfig.Games, newGame],
       });
     },
   );
-
+  
   return {
     searchQuery,
     currentPage,

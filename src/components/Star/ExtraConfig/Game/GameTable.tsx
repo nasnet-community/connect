@@ -4,7 +4,7 @@ import { useGameLogic } from "./useGame";
 import type { GameTableProps } from "./type";
 
 export const GameTable = component$<GameTableProps>(
-  ({ searchQuery, currentPage, itemsPerPage }) => {
+  ({ searchQuery, currentPage, itemsPerPage, context }) => {
     const { handleGameSelection } = useGameLogic();
 
     return (
@@ -29,34 +29,41 @@ export const GameTable = component$<GameTableProps>(
                 (currentPage.value - 1) * itemsPerPage,
                 currentPage.value * itemsPerPage,
               )
-              .map((game) => (
-                <tr key={game.name}>
-                  <td class="px-6 py-4 font-medium">{game.name}</td>
-                  <td class="px-6 py-4">{game.tcp?.join(", ") || "-"}</td>
-                  <td class="px-6 py-4">{game.udp?.join(", ") || "-"}</td>
-                  <td class="px-6 py-4">
-                    <select
-                      onChange$={$((e) => {
-                        const serializedGame = {
-                          name: String(game.name),
-                          tcp: game.tcp?.map((port) => String(port).valueOf()),
-                          udp: game.udp?.map((port) => String(port).valueOf()),
-                        };
-                        handleGameSelection(
-                          serializedGame,
-                          (e.target as HTMLSelectElement).value,
-                        );
-                      })}
-                      class="w-full rounded-lg border border-border bg-surface px-3 py-2 dark:border-border-dark dark:bg-surface-dark"
-                    >
-                      <option value="none">{$localize`Select Route`}</option>
-                      <option value="foreign">{$localize`Foreign`}</option>
-                      <option value="domestic">{$localize`Domestic`}</option>
-                      <option value="vpn">{$localize`VPN`}</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
+              .map((game) => {
+                const selectedGame = context.state.ExtraConfig.Games.find(
+                  (g) => g.name === game.name
+                );
+                
+                return (
+                  <tr key={game.name}>
+                    <td class="px-6 py-4 font-medium">{game.name}</td>
+                    <td class="px-6 py-4">{game.tcp?.join(", ") || "-"}</td>
+                    <td class="px-6 py-4">{game.udp?.join(", ") || "-"}</td>
+                    <td class="px-6 py-4">
+                      <select
+                        value={selectedGame?.link || "none"}
+                        onChange$={$((e) => {
+                          const serializedGame = {
+                            name: String(game.name),
+                            tcp: game.tcp?.map((port) => String(port).valueOf()),
+                            udp: game.udp?.map((port) => String(port).valueOf()),
+                          };
+                          handleGameSelection(
+                            serializedGame,
+                            (e.target as HTMLSelectElement).value,
+                          );
+                        })}
+                        class="w-full rounded-lg border border-border bg-surface px-3 py-2 dark:border-border-dark dark:bg-surface-dark"
+                      >
+                        <option value="none">{$localize`Select Route`}</option>
+                        <option value="foreign">{$localize`Foreign`}</option>
+                        <option value="domestic">{$localize`Domestic`}</option>
+                        <option value="vpn">{$localize`VPN`}</option>
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

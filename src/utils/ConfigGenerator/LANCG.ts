@@ -43,47 +43,51 @@ const MultiSSID = (state: StarState): RouterConfig => {
     );
   }
 
-  // Configure interfaces
   WIFI_INTERFACES.forEach(({ band, name, bandConfig }) => {
     const isWanInterface = [
       state.WAN.Easy.Domestic.interface,
       state.WAN.Easy.Foreign.interface,
     ].includes(name);
 
-    const isWifiBandUsed =
-      band === "2.4" ? state.WAN.Easy.isWifi2_4 : state.WAN.Easy.isWifi5;
+    const isWifiBandUsed = band === "2.4" ? state.WAN.Easy.isWifi2_4 : state.WAN.Easy.isWifi5;
 
     if (!isWifiBandUsed && !isWanInterface) {
       // Master interface for SplitLAN
       config["/interface wifi"].push(
-        `set [ find default-name=${name} ] comment=SplitLAN channel.band=${bandConfig} \\
+        `set [ find name=${name} ] comment="SplitLAN" channel.band=${bandConfig} \\
                 configuration.country=Japan .mode=ap .ssid="${Split.SSID} ${band}" \\
-                disabled=no name=${name} security=sec1`,
+                disabled=no name=${name}-SplitLAN security=sec1`,
       );
 
-      // Add virtual interfaces for other networks
+      // Add virtual interfaces for other networks with correct naming
       networks.forEach((network) => {
         if (network.name !== "SplitLAN") {
           const securityConfig = isSamePassword
             ? "security=sec1"
             : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${network.password}"`;
 
+          // Use correct naming format
+          const interfaceName = `${name}-${network.name}`;
+
           config["/interface wifi"].push(
-            `add comment=${network.name} configuration.mode=ap .ssid="${network.ssid} ${band}" \\
-                        disabled=no master-interface=${name} name=${name}-${network.name} ${securityConfig}`,
+            `add comment="${network.name}" configuration.mode=ap .ssid="${network.ssid} ${band}" \\
+                        disabled=no master-interface="${name}-SplitLAN" name="${interfaceName}" ${securityConfig}`,
           );
         }
       });
     } else {
-      // All networks as slave interfaces
+      // All networks as slave interfaces with correct naming
       networks.forEach((network) => {
         const securityConfig = isSamePassword
           ? "security=sec1"
           : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${network.password}"`;
 
+        // Use correct naming format
+        const interfaceName = `${name}-${network.name}`;
+
         config["/interface wifi"].push(
-          `add comment=${network.name} configuration.mode=ap .ssid="${network.ssid} ${band}" \\
-                    disabled=no master-interface=${name} name=${name}-${network.name} ${securityConfig}`,
+          `add comment="${network.name}" configuration.mode=ap .ssid="${network.ssid} ${band}" \\
+                    disabled=no master-interface=${name} name="${interfaceName}" ${securityConfig}`,
         );
       });
     }
