@@ -79,6 +79,10 @@ export const BaseConfig = (state: StarState): RouterConfig => {
     ],
     "/ip dns": ["set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1"],
     "/ip cloud": ["set ddns-enabled=yes ddns-update-interval=1m"],
+    "/ip firewall filter" : [
+       `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=udp`,
+       `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=tcp`,
+    ],
     "/ip firewall mangle": [
       // DOM Traffic
       `add action=mark-connection chain=forward comment=DOM new-connection-mark=conn-DOM \\
@@ -153,7 +157,7 @@ export const BaseConfig = (state: StarState): RouterConfig => {
       `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-VPN`,
       `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
       `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-FRN`,
-      "add comment=Route-to-SL disabled=no distance=1 dst-address=192.168.100.0/24 gateway=192.168.1.1 routing-table=to-VPN",
+      "add comment=Route-to-FRN disabled=no distance=1 dst-address=192.168.100.0/24 gateway=192.168.1.1 routing-table=to-VPN",
     ],
     "/system clock": [`set date=Feb/10/2025`],
     "/system ntp client": ["set enabled=yes"],

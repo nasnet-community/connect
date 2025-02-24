@@ -1,4 +1,4 @@
-import { component$, useContext, useSignal, $ } from "@builder.io/qwik";
+import { component$, useContext, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { Choose } from "../Choose/Choose";
 import { ExtraConfig } from "../ExtraConfig/ExtraConfig";
 import { LAN } from "../LAN/LAN";
@@ -23,82 +23,84 @@ export const StarContainer = component$(() => {
     steps: [] as any[],
   });
 
-  stepsStore.steps = [
-    {
-      id: 1,
-      title: $localize`Choose`,
-      icon: $(LuSettings2),
-      component: component$(() => (
-        <Choose
-          isComplete={stepsStore.steps[0].isComplete}
-          onComplete$={() => {
-            stepsStore.steps[0].isComplete = true;
-            activeStep.value = 1;
-          }}
-        />
-      )),
-      isComplete: false,
-    },
-    {
-      id: 2,
-      title: $localize`WAN`,
-      icon: $(LuGlobe),
-      component: component$(() => (
-        <WAN
-          isComplete={stepsStore.steps[1].isComplete}
-          onComplete$={() => {
-            stepsStore.steps[1].isComplete = true;
-            activeStep.value = 2;
-          }}
-        />
-      )),
-      isComplete: false,
-    },
-    {
-      id: 3,
-      title: $localize`LAN`,
-      icon: $(LuNetwork),
-      component: component$(() => (
-        <LAN
-          isComplete={stepsStore.steps[2].isComplete}
-          onComplete$={() => {
-            stepsStore.steps[2].isComplete = true;
-            activeStep.value = 3;
-          }}
-        />
-      )),
-      isComplete: false,
-    },
-    {
-      id: 4,
-      title: $localize`Extra Config`,
-      icon: $(LuWrench),
-      component: component$(() => (
-        <ExtraConfig
-          isComplete={stepsStore.steps[3].isComplete}
-          onComplete$={() => {
-            stepsStore.steps[3].isComplete = true;
-            activeStep.value = 4;
-          }}
-        />
-      )),
-      isComplete: false,
-    },
-    {
-      id: 5,
-      title: $localize`Show Config`,
-      icon: $(LuClipboardList),
-      component: component$(() => (
-        <ShowConfig
-          isComplete={stepsStore.steps[4].isComplete}
-          onComplete$={() => {
-            stepsStore.steps[4].isComplete = true;
-          }}
-        />
-      )),
-      isComplete: false,
-    },
-  ];
+  useTask$(() => {
+    stepsStore.steps = [
+      {
+        id: 1,
+        title: $localize`Choose`,
+        icon: $(LuSettings2),
+        component: component$(() => (
+          <Choose
+            isComplete={stepsStore.steps[0].isComplete}
+            onComplete$={() => {
+              stepsStore.steps[0].isComplete = true;
+              activeStep.value = 1;
+            }}
+          />
+        )),
+        isComplete: false,
+      },
+      {
+        id: 2,
+        title: $localize`WAN`,
+        icon: $(LuGlobe),
+        component: component$(() => (
+          <WAN
+            isComplete={stepsStore.steps[1].isComplete}
+            onComplete$={() => {
+              stepsStore.steps[1].isComplete = true;
+              activeStep.value = 2;
+            }}
+          />
+        )),
+        isComplete: false,
+      },
+      {
+        id: 3,
+        title: $localize`LAN`,
+        icon: $(LuNetwork),
+        component: component$(() => (
+          <LAN
+            isComplete={stepsStore.steps[2].isComplete}
+            onComplete$={() => {
+              stepsStore.steps[2].isComplete = true;
+              activeStep.value = 3;
+            }}
+          />
+        )),
+        isComplete: false,
+      },
+      {
+        id: 4,
+        title: $localize`Extra Config`,
+        icon: $(LuWrench),
+        component: component$(() => (
+          <ExtraConfig
+            isComplete={stepsStore.steps[3].isComplete}
+            onComplete$={() => {
+              stepsStore.steps[3].isComplete = true;
+              activeStep.value = 4;
+            }}
+          />
+        )),
+        isComplete: false,
+      },
+      {
+        id: 5,
+        title: $localize`Show Config`,
+        icon: $(LuClipboardList),
+        component: component$(() => (
+          <ShowConfig
+            isComplete={stepsStore.steps[4].isComplete}
+            onComplete$={() => {
+              stepsStore.steps[4].isComplete = true;
+            }}
+          />
+        )),
+        isComplete: false,
+      },
+    ];
+  })
 
   return (
     <div class="container mx-auto w-full px-4 pt-24">
