@@ -159,7 +159,11 @@ export const BaseConfig = (state: StarState): RouterConfig => {
       `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-FRN`,
       "add comment=Route-to-FRN disabled=no distance=1 dst-address=192.168.100.0/24 gateway=192.168.1.1 routing-table=to-VPN",
     ],
-    "/system clock": [`set date=Feb/10/2025`],
+    "/system clock": [`set date=${new Date().toLocaleString('en', {
+           month: 'short',
+           day: '2-digit',
+           year: 'numeric'
+    }).replace(/,\s|\s/g, '/').replace(/\/\//g, '/')}`],
     "/system ntp client": ["set enabled=yes"],
     "/system ntp server": [
       "set broadcast=yes enabled=yes manycast=yes multicast=yes",
