@@ -23,4 +23,5 @@ export interface GameTableProps {
 export interface GamePaginationProps {
   currentPage: Signal<number>;
   itemsPerPage: number;
+  searchQuery: Signal<string>;
 }

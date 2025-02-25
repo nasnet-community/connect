@@ -3,8 +3,12 @@ import { games } from "./GameData";
 import type { GamePaginationProps } from "./type";
 
 export const GamePagination = component$<GamePaginationProps>(
-  ({ currentPage, itemsPerPage }) => {
-    const totalPages = Math.ceil(games.length / itemsPerPage);
+  ({ currentPage, itemsPerPage, searchQuery }) => {
+    const filteredGames = games.filter((game) =>
+      game.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+    
+    const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
 
     return (
       <div class="flex items-center justify-between pt-4">
