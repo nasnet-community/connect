@@ -1,8 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { ContextPasterProps } from "./type";
 
-
-
 export const ContextPaster = component$((props: ContextPasterProps) => {
   return (
     <div class="space-y-4">
@@ -50,8 +48,6 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
             </svg>
             {$localize`Paste`}
           </button>
-
-
         </div>
       </div>
       <div class="space-y-2">

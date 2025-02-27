@@ -12,7 +12,7 @@ export const HStepper = component$((props: HStepperProps) => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (stepperRef.value) {
-      stepperRef.value.scrollIntoView({ behavior: 'smooth' });
+      stepperRef.value.scrollIntoView({ behavior: "smooth" });
     }
   });
 
@@ -21,7 +21,10 @@ export const HStepper = component$((props: HStepperProps) => {
   const CurrentStepComponent = steps.value[activeStep.value].component;
 
   return (
-    <div ref={stepperRef} class="min-h-screen w-full bg-background dark:bg-background-dark">
+    <div
+      ref={stepperRef}
+      class="min-h-screen w-full bg-background dark:bg-background-dark"
+    >
       <div class="fixed inset-x-0 top-20 z-40 bg-surface/80 backdrop-blur-md dark:bg-surface-dark/80">
         <div class="container mx-auto py-2"></div>
         <StepperProgress steps={steps.value} activeStep={activeStep.value} />
@@ -46,6 +49,3 @@ export const HStepper = component$((props: HStepperProps) => {
     </div>
   );
 });
-
-
-

@@ -15,7 +15,8 @@ export const GameSelected = component$<{ context: StarContextType }>(
         parts.push(`UDP: ${ports.udp.join(", ")}`);
       }
       return parts.join(" | ");
-    };    return context.state.ExtraConfig.Games.length > 0 ? (
+    };
+    return context.state.ExtraConfig.Games.length > 0 ? (
       <div class="space-y-3">
         <h3 class="font-medium text-text dark:text-text-dark-default">
           {$localize`Selected Games`}

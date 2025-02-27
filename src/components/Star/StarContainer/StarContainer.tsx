@@ -1,4 +1,10 @@
-import { component$, useContext, useSignal, $, useTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  useContext,
+  useSignal,
+  $,
+  useTask$,
+} from "@builder.io/qwik";
 import { Choose } from "../Choose/Choose";
 import { ExtraConfig } from "../ExtraConfig/ExtraConfig";
 import { LAN } from "../LAN/LAN";
@@ -100,7 +106,7 @@ export const StarContainer = component$(() => {
         isComplete: false,
       },
     ];
-  })
+  });
 
   return (
     <div class="container mx-auto w-full px-4 pt-24">

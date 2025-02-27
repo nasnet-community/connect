@@ -1,7 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { ConfigViewerProps } from "./type";
 
-
 export const ConfigViewer = component$((props: ConfigViewerProps) => {
   return (
     <div class="max-h-[calc(100vh-200px)] space-y-4 overflow-auto">

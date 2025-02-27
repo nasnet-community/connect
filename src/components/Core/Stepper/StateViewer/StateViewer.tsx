@@ -24,7 +24,7 @@ export const StateViewer = component$(() => {
 
   return (
     <>
-<button
+      <button
         onClick$={() => (isOpen.value = true)}
         class="fixed bottom-4 right-4 z-50 rounded-full bg-primary-500 p-3 text-white shadow-lg hover:bg-primary-600"
         aria-label={$localize`Open Developer Tools`}
@@ -49,10 +49,7 @@ export const StateViewer = component$(() => {
       {isOpen.value && (
         <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
           <div class="fixed inset-4 overflow-hidden rounded-xl bg-surface shadow-2xl dark:bg-surface-dark lg:inset-10">
-            <StateHeader
-              onClose$={() => (isOpen.value = false)}
-
-            />
+            <StateHeader onClose$={() => (isOpen.value = false)} />
 
             <div class="grid h-[calc(100%-89px)] grid-cols-2 gap-4 overflow-auto p-6">
               <div class="space-y-6">

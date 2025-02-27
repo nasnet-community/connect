@@ -27,7 +27,6 @@ export interface VStepperProps {
   position?: "left" | "right";
   isComplete?: boolean;
   preloadNext?: boolean; // Add this
-
 }
 
 export interface StepProps {
@@ -37,7 +36,6 @@ export interface StepProps {
   onComplete$: QRL<(index: number) => void>;
   isComplete?: boolean;
   preloadNext?: boolean;
-
 }
 
 export interface DesktopProps {
@@ -54,7 +52,6 @@ export interface MobileProps {
   toggleStepsVisibility: QRL<() => void>;
   isComplete?: boolean;
 }
-
 
 export interface PreloadState {
   preloaded: boolean;

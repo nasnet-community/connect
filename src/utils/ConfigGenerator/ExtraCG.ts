@@ -141,14 +141,14 @@ export const Game = (state: StarState): RouterConfig => {
 
   Games.forEach((game: GameConfig) => {
     if (game.link === "none") return;
-    
-    if (game.ports.tcp?.length && game.ports.tcp.some(port => port !== "")) {
+
+    if (game.ports.tcp?.length && game.ports.tcp.some((port) => port !== "")) {
       config["/ip firewall raw"].push(
         `add action=add-dst-to-address-list address-list="${displayMapping[game.link]}-IP-Games" address-list-timeout=1d chain=prerouting comment="${game.name}" dst-address-list=!LOCAL-IP dst-port=${game.ports.tcp.join(",")} protocol=tcp`,
       );
     }
 
-    if (game.ports.udp?.length && game.ports.udp.some(port => port !== "")) {
+    if (game.ports.udp?.length && game.ports.udp.some((port) => port !== "")) {
       config["/ip firewall raw"].push(
         `add action=add-dst-to-address-list address-list="${displayMapping[game.link]}-IP-Games" address-list-timeout=1d chain=prerouting comment="${game.name}" dst-address-list=!LOCAL-IP dst-port=${game.ports.udp.join(",")} protocol=udp`,
       );

@@ -11,39 +11,38 @@ export const useVStepper = (props: VStepperProps) => {
     (location.url.pathname.startsWith("/ar") ? "right" : "left");
   const isComplete = props.isComplete || false;
 
-  
   const scrollToStep = $((index: number) => {
     const currentStepElement = document.getElementById(`step-${index}`);
     const previousStepElement = document.getElementById(`step-${index - 1}`);
-    const headerOffset = 220; 
-    
+    const headerOffset = 220;
+
     if (currentStepElement) {
       const viewportHeight = window.innerHeight;
       const viewportTop = window.pageYOffset;
 
       const currentRect = currentStepElement.getBoundingClientRect();
       const currentAbsoluteTop = viewportTop + currentRect.top;
-      
+
       const padding = 80;
       let targetScroll = currentAbsoluteTop - headerOffset - padding;
-      
+
       if (previousStepElement) {
         const previousRect = previousStepElement.getBoundingClientRect();
         const previousAbsoluteBottom = viewportTop + previousRect.bottom;
-        const minVisiblePrevious = 200; 
-        
+        const minVisiblePrevious = 200;
+
         targetScroll = Math.max(
           targetScroll,
-          previousAbsoluteBottom - minVisiblePrevious
+          previousAbsoluteBottom - minVisiblePrevious,
         );
       }
-      
+
       const maxScroll = document.documentElement.scrollHeight - viewportHeight;
       const finalScroll = Math.max(0, Math.min(targetScroll, maxScroll));
-  
+
       window.scrollTo({
         top: finalScroll,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   });
@@ -51,17 +50,16 @@ export const useVStepper = (props: VStepperProps) => {
   const scrollToBottom = $(() => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   });
-  
 
   useTask$(({ track }) => {
     track(() => props.steps[activeStep.value]?.isComplete);
 
     if (props.steps[activeStep.value]?.isComplete) {
       props.onStepComplete$?.(props.steps[activeStep.value].id);
-      
+
       if (activeStep.value < props.steps.length - 1) {
         activeStep.value++;
         props.onStepChange$?.(props.steps[activeStep.value].id);
@@ -72,8 +70,6 @@ export const useVStepper = (props: VStepperProps) => {
     }
   });
 
-
-  
   const completeStep = $((index: number) => {
     props.steps[index].isComplete = true;
     props.onStepComplete$?.(props.steps[index].id);

@@ -28,7 +28,7 @@ const MultiSSID = (state: StarState): RouterConfig => {
   const { SamePassword, Starlink, Domestic, Split, VPN } =
     state.LAN.Wireless.MultiMode;
 
-  let isSamePassword = false;  
+  let isSamePassword = false;
   if (
     Starlink.Password === Domestic.Password &&
     Starlink.Password === Split.Password &&
@@ -36,7 +36,6 @@ const MultiSSID = (state: StarState): RouterConfig => {
   ) {
     isSamePassword = true;
   }
-  
 
   // Define networks
   const networks: NetworkConfig[] = [
@@ -55,13 +54,13 @@ const MultiSSID = (state: StarState): RouterConfig => {
 
   // WIFI_INTERFACES.forEach(({ band, name, bandConfig }) => {
   WIFI_INTERFACES.forEach(({ band, name }) => {
-
     const isWanInterface = [
       state.WAN.Easy.Domestic.interface,
       state.WAN.Easy.Foreign.interface,
     ].includes(name);
 
-    const isWifiBandUsed = band === "2.4" ? state.WAN.Easy.isWifi2_4 : state.WAN.Easy.isWifi5;
+    const isWifiBandUsed =
+      band === "2.4" ? state.WAN.Easy.isWifi2_4 : state.WAN.Easy.isWifi5;
 
     if (!isWifiBandUsed && !isWanInterface) {
       // Master interface for SplitLAN
@@ -73,7 +72,7 @@ const MultiSSID = (state: StarState): RouterConfig => {
       config["/interface wifi"].push(
         `set [ find name=${name} ] comment="SplitLAN" \\
                 configuration.country=Japan .mode=ap .ssid="${Split.SSID} ${band}" \\
-                disabled=no name=${name}-SplitLAN ${isSamePassword ? 'security=sec1' : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${Split.Password}"`}`,
+                disabled=no name=${name}-SplitLAN ${isSamePassword ? "security=sec1" : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${Split.Password}"`}`,
       );
 
       // Add virtual interfaces for other networks with correct naming

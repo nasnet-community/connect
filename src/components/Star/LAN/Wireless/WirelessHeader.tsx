@@ -4,7 +4,7 @@ import { HiExclamationTriangleOutline } from "@qwikest/icons/heroicons";
 
 export const WirelessHeader = component$(() => {
   return (
-    <div class="space-y-4 mb-6">
+    <div class="mb-6 space-y-4">
       <div class="flex items-center">
         <HiWifiOutline class="h-8 w-8 text-primary-500 dark:text-primary-400" />
         <div class="ml-4">
@@ -16,7 +16,7 @@ export const WirelessHeader = component$(() => {
           </p>
         </div>
       </div>
-      
+
       <div class="flex items-center space-x-2 rounded-lg bg-yellow-50 px-4 py-3 dark:bg-yellow-900/30">
         <HiExclamationTriangleOutline class="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
         <p class="text-sm text-yellow-700 dark:text-yellow-300">

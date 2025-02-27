@@ -31,9 +31,9 @@ export const GameTable = component$<GameTableProps>(
               )
               .map((game) => {
                 const selectedGame = context.state.ExtraConfig.Games.find(
-                  (g) => g.name === game.name
+                  (g) => g.name === game.name,
                 );
-                
+
                 return (
                   <tr key={game.name}>
                     <td class="px-6 py-4 font-medium">{game.name}</td>
@@ -45,8 +45,12 @@ export const GameTable = component$<GameTableProps>(
                         onChange$={$((e) => {
                           const serializedGame = {
                             name: String(game.name),
-                            tcp: game.tcp?.map((port) => String(port).valueOf()),
-                            udp: game.udp?.map((port) => String(port).valueOf()),
+                            tcp: game.tcp?.map((port) =>
+                              String(port).valueOf(),
+                            ),
+                            udp: game.udp?.map((port) =>
+                              String(port).valueOf(),
+                            ),
                           };
                           handleGameSelection(
                             serializedGame,

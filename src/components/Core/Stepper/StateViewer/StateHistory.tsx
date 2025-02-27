@@ -2,7 +2,6 @@ import { component$ } from "@builder.io/qwik";
 import { StateEntry } from "./StateEntry";
 import type { StateHistoryProps } from "./type";
 
-
 export const StateHistory = component$((props: StateHistoryProps) => {
   return (
     <div class="space-y-4">
@@ -18,11 +17,11 @@ export const StateHistory = component$((props: StateHistoryProps) => {
         <div class="space-y-4">
           {props.entries.map((entry) => (
             <StateEntry
-            key={entry.timestamp}
-            entry={entry}
-            onCopy$={() => props.onCopy$?.(entry.state)}
-            onRefresh$={props.onRefresh$}
-            onGenerateConfig$={props.onGenerateConfig$}
+              key={entry.timestamp}
+              entry={entry}
+              onCopy$={() => props.onCopy$?.(entry.state)}
+              onRefresh$={props.onRefresh$}
+              onGenerateConfig$={props.onGenerateConfig$}
             />
           ))}
         </div>
