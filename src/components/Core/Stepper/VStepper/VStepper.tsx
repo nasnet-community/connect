@@ -26,6 +26,8 @@ export const VStepper = component$((props: VStepperProps) => {
             activeStep={activeStep.value}
             onComplete$={completeStep}
             isComplete={isComplete}
+            preloadNext={props.preloadNext}
+
           />
         ))}
       </div>
