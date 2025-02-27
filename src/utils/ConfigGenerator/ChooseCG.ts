@@ -77,7 +77,7 @@ export const BaseConfig = (state: StarState): RouterConfig => {
       // ...DomesticIP.map(ip => `add address=${ip} list=DOMAddList`)
       ...DomesticIP,
     ],
-    "/ip dns": ["set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1"],
+    "/ip dns": ["set allow-remote-requests=yes servers=8.8.8.8"],
     "/ip cloud": ["set ddns-enabled=yes ddns-update-interval=1m"],
     "/ip firewall filter" : [
        `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=udp`,

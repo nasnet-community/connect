@@ -25,8 +25,18 @@ const MultiSSID = (state: StarState): RouterConfig => {
 
   if (!state.LAN.Wireless.isMultiSSID) return config;
 
-  const { isSamePassword, SamePassword, Starlink, Domestic, Split, VPN } =
+  const { SamePassword, Starlink, Domestic, Split, VPN } =
     state.LAN.Wireless.MultiMode;
+
+  let isSamePassword = false;  
+  if (
+    Starlink.Password === Domestic.Password &&
+    Starlink.Password === Split.Password &&
+    Starlink.Password === VPN.Password
+  ) {
+    isSamePassword = true;
+  }
+  
 
   // Define networks
   const networks: NetworkConfig[] = [
@@ -43,7 +53,9 @@ const MultiSSID = (state: StarState): RouterConfig => {
     );
   }
 
-  WIFI_INTERFACES.forEach(({ band, name, bandConfig }) => {
+  // WIFI_INTERFACES.forEach(({ band, name, bandConfig }) => {
+  WIFI_INTERFACES.forEach(({ band, name }) => {
+
     const isWanInterface = [
       state.WAN.Easy.Domestic.interface,
       state.WAN.Easy.Foreign.interface,
@@ -53,10 +65,15 @@ const MultiSSID = (state: StarState): RouterConfig => {
 
     if (!isWifiBandUsed && !isWanInterface) {
       // Master interface for SplitLAN
+      // config["/interface wifi"].push(
+      //   `set [ find name=${name} ] comment="SplitLAN" channel.band=${bandConfig} \\
+      //           configuration.country=Japan .mode=ap .ssid="${Split.SSID} ${band}" \\
+      //           disabled=no name=${name}-SplitLAN security=sec1`,
+      // );
       config["/interface wifi"].push(
-        `set [ find name=${name} ] comment="SplitLAN" channel.band=${bandConfig} \\
+        `set [ find name=${name} ] comment="SplitLAN" \\
                 configuration.country=Japan .mode=ap .ssid="${Split.SSID} ${band}" \\
-                disabled=no name=${name}-SplitLAN security=sec1`,
+                disabled=no name=${name}-SplitLAN ${isSamePassword ? 'security=sec1' : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${Split.Password}"`}`,
       );
 
       // Add virtual interfaces for other networks with correct naming
@@ -66,7 +83,6 @@ const MultiSSID = (state: StarState): RouterConfig => {
             ? "security=sec1"
             : `security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${network.password}"`;
 
-          // Use correct naming format
           const interfaceName = `${name}-${network.name}`;
 
           config["/interface wifi"].push(
@@ -128,9 +144,14 @@ const SingleSSID = (state: StarState): RouterConfig => {
 
     if (!isWifiBandUsed) {
       // Master interface configuration
+      // config["/interface wifi"].push(
+      //   `set ${interfaceName} comment=SplitLAN \\
+      //           channel.band=${band === "2.4" ? "2ghz-ax" : "5ghz-ax"} \\
+      //           configuration.country=Japan .mode=ap .ssid="${ssid} ${band}" \\
+      //           disabled=no name="${interfaceName}-SplitLAN" security=sec1`,
+      // );
       config["/interface wifi"].push(
         `set ${interfaceName} comment=SplitLAN \\
-                channel.band=${band === "2.4" ? "2ghz-ax" : "5ghz-ax"} \\
                 configuration.country=Japan .mode=ap .ssid="${ssid} ${band}" \\
                 disabled=no name="${interfaceName}-SplitLAN" security=sec1`,
       );
@@ -206,7 +227,7 @@ export const WireguardServer = (state: StarState): RouterConfig => {
 
   // Add address list
   config["/ip firewall address-list"].push(
-    'add address="192.168.170.1/24" list="VPN-LAN"',
+    'add address="192.168.170.1/24" list="VPN-Local"',
   );
 
   // Add firewall filter rule
@@ -266,7 +287,10 @@ ${VPNServer.Users.map((user) => `    \\nadd name=\\"${user.Username}\\" password
     \\nexport-certificate Client type=pem export-passphrase=\\"${VPNServer.OpenVPNConfig.Passphrase}\\"\\r\\
     \\n\\r\\
     \\n/ip firewall address-list\\r\\
-    \\nadd address=192.168.60.0/24 list=VPN-LAN \\r\\
+    \\nadd address=192.168.60.0/24 list=VPN-Local \\r\\
+    \\n/ip firewall filter\\r\\
+    \\nadd action=accept chain=input comment="OpenVPN Server udp" dst-port=4443 in-interface-list=DOM-WAN protocol=udp \\r\\
+    \\nadd action=accept chain=input comment="OpenVPN Server tcp" dst-port=4443 in-interface-list=DOM-WAN protocol=tcp \\r\\
     \\n\\r\\
     \\n /system schedule remove [find name=OVPN-Script ] \\r\\n"`;
 
