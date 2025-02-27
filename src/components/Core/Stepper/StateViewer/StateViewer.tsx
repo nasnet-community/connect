@@ -24,7 +24,7 @@ export const StateViewer = component$(() => {
 
   return (
     <>
-      <button
+<button
         onClick$={() => (isOpen.value = true)}
         class="fixed bottom-4 right-4 z-50 rounded-full bg-primary-500 p-3 text-white shadow-lg hover:bg-primary-600"
         aria-label={$localize`Open Developer Tools`}
@@ -51,14 +51,7 @@ export const StateViewer = component$(() => {
           <div class="fixed inset-4 overflow-hidden rounded-xl bg-surface shadow-2xl dark:bg-surface-dark lg:inset-10">
             <StateHeader
               onClose$={() => (isOpen.value = false)}
-              onClearHistory$={() => (stateHistory.value = [])}
-              onCopyAll$={() =>
-                navigator.clipboard.writeText(
-                  JSON.stringify(stateHistory.value, null, 2),
-                )
-              }
-              onRefresh$={refreshState$}
-              onGenerateConfig$={generateConfig$}
+
             />
 
             <div class="grid h-[calc(100%-89px)] grid-cols-2 gap-4 overflow-auto p-6">
@@ -70,6 +63,14 @@ export const StateViewer = component$(() => {
                       JSON.stringify(state, null, 2),
                     )
                   }
+                  onClearHistory$={() => (stateHistory.value = [])}
+                  onCopyAll$={() =>
+                    navigator.clipboard.writeText(
+                      JSON.stringify(stateHistory.value, null, 2),
+                    )
+                  }
+                  onRefresh$={refreshState$}
+                  onGenerateConfig$={generateConfig$}
                 />
                 <ContextPaster
                   value={pastedContext.value}

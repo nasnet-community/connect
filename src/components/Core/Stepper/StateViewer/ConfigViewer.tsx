@@ -1,9 +1,6 @@
 import { component$ } from "@builder.io/qwik";
+import type { ConfigViewerProps } from "./type";
 
-interface ConfigViewerProps {
-  currentConfig: string;
-  pastedConfig: string;
-}
 
 export const ConfigViewer = component$((props: ConfigViewerProps) => {
   return (
