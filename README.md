@@ -1,1 +1,1 @@
-# NASNET Stellar
+# NASNET Connect

@@ -1,6 +1,6 @@
 {
-  "name": "my-qwik-empty-starter",
-  "description": "Blank project with routing included",
+  "name": "nasnet-connect",
+  "description": "nasnet-connect",
   "engines": {
     "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
   },
