@@ -1,6 +1,10 @@
 import { $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { HStepperProps, StepperMode } from "./HSteppertypes";
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 export function useStepper(props: HStepperProps) {
   const activeStep = useSignal(props.activeStep || 0);
   const selectedMode = useSignal<StepperMode>(props.mode || "easy");
@@ -11,6 +15,16 @@ export function useStepper(props: HStepperProps) {
     props.onModeChange$?.(mode);
   });
 
+  // const handleNext$ = $(() => {
+  //   if (
+  //     activeStep.value < steps.value.length - 1 &&
+  //     steps.value[activeStep.value].isComplete
+  //   ) {
+  //     activeStep.value++;
+  //     props.onStepChange$?.(steps.value[activeStep.value].id);
+  //   }
+  // });
+
   const handleNext$ = $(() => {
     if (
       activeStep.value < steps.value.length - 1 &&
@@ -18,6 +32,7 @@ export function useStepper(props: HStepperProps) {
     ) {
       activeStep.value++;
       props.onStepChange$?.(steps.value[activeStep.value].id);
+      scrollToTop();
     }
   });
 
