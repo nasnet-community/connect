@@ -2,7 +2,6 @@
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/flowbite/**/*.js",
   ],
   darkMode: "class",
   theme: {
@@ -135,7 +134,6 @@ export default {
     },
   },
   plugins: [
-    require("flowbite/plugin"),
     require("@tailwindcss/typography"),
     require("tailwind-scrollbar"),
   ],
