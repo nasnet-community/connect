@@ -1,4 +1,4 @@
-import { component$, useServerData } from "@builder.io/qwik";
+import { component$, useServerData, useVisibleTask$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -31,8 +31,13 @@ export default component$(() => {
   // });
 
   const nonce = useServerData<string | undefined>("nonce");
-  inject();
 
+  useVisibleTask$(() => {
+    inject({
+      mode: isDev ? 'development' : 'production',
+      debug: true,
+    });
+  });
 
   return (
     <QwikCityProvider>
