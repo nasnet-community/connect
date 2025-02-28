@@ -4,7 +4,7 @@ export const FooterBottom = component$(() => (
   <div class="mt-12 border-t border-border pt-8 dark:border-border-dark">
     <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
       <p class="text-sm text-text-secondary dark:text-text-dark-secondary">
-        {$localize`© 2024 NASNET Connect. All rights reserved.`}
+        {$localize`© 2025 NASNET Connect. All rights reserved.`}
       </p>
       <div class="flex items-center gap-6">
         <a
