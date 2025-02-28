@@ -35,7 +35,7 @@ A powerful and modern mikrotik router configuration management system built with
 
 ```bash
 # Clone the repository
-git clone https://github.com/nasnet-community/nasnet-connect.git
+git clone https://github.com/nasnet-community/connect.git
 
 # Navigate to project directory
 cd nasnet-connect
