@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import logo from "~/../public/images/logo.jpg";
+import logo from "../../../../public/images/logo.jpg";
 
 export const Logo = component$(() => (
   <div class="flex items-center gap-3">
