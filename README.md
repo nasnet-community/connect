@@ -35,7 +35,7 @@ A powerful and modern mikrotik router configuration management system built with
 
 ```bash
 # Clone the repository
-git clone https://github.com/nasnet-community/nasnet-connect.git
+git clone https://github.com/nasnet-community/connect.git
 
 # Navigate to project directory
 cd nasnet-connect
@@ -328,7 +328,7 @@ We welcome bug reports, feature requests, and questions! You can submit issues i
 
 ### GitHub Issues
 
-1. Visit our [GitHub Issues page](https://github.com/nasnet-community/nasnet-connect/issues)
+1. Visit our [GitHub Issues page](https://github.com/nasnet-community/connect/issues)
 2. Click on "New Issue"
 3. Choose the appropriate issue template
 4. Fill in the required information
