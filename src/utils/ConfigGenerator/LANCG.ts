@@ -288,8 +288,8 @@ ${VPNServer.Users.map((user) => `    \\nadd name=\\"${user.Username}\\" password
     \\n/ip firewall address-list\\r\\
     \\nadd address=192.168.60.0/24 list=VPN-Local \\r\\
     \\n/ip firewall filter\\r\\
-    \\nadd action=accept chain=input comment="OpenVPN Server udp" dst-port=4443 in-interface-list=DOM-WAN protocol=udp \\r\\
-    \\nadd action=accept chain=input comment="OpenVPN Server tcp" dst-port=4443 in-interface-list=DOM-WAN protocol=tcp \\r\\
+    \\nadd action=accept chain=input comment=\\"OpenVPN Server udp\\" dst-port=4443 in-interface-list=DOM-WAN protocol=udp \\r\\
+    \\nadd action=accept chain=input comment=\\"OpenVPN Server tcp\\" dst-port=4443 in-interface-list=DOM-WAN protocol=tcp \\r\\
     \\n\\r\\
     \\n /system schedule remove [find name=OVPN-Script ] \\r\\n"`;
 
