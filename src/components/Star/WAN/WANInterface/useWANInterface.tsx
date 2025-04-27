@@ -1,5 +1,5 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);

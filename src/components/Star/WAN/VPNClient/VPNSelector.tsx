@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { VPNType } from "~/components/Star/StarContext";
+import type { VPNType } from "~/components/Star/StarContext/StarContext";
 
 interface VPNSelectorProps {
   selectedType: string;

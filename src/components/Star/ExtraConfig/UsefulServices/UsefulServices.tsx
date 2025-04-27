@@ -1,6 +1,6 @@
 import { $, component$, useContext, useStore } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import { RadioButton } from "~/components/Core/button/RadioButton";
 
 interface ServiceState {

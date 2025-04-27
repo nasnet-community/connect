@@ -1,12 +1,12 @@
 import { $, component$, useContext } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import type { StepProps } from "~/types/step";
 import { useVPNConfig } from "./useVPNConfig";
 import { VPNSelector } from "./VPNSelector";
 import { ConfigInput } from "./ConfigInput";
 import { ErrorMessage } from "./ErrorMessage";
 import { ActionFooter } from "./ActionFooter";
-import type { VPNType } from "~/components/Star/StarContext";
+import type { VPNType } from "~/components/Star/StarContext/StarContext";
 
 export const VPNClient = component$<StepProps>(
   ({ isComplete, onComplete$ }) => {

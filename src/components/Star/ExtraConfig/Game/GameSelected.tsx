@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import type { StarContextType } from "~/components/Star/StarContext";
+import type { StarContextType } from "~/components/Star/StarContext/StarContext";
 
 export const GameSelected = component$<{ context: StarContextType }>(
   ({ context }) => {

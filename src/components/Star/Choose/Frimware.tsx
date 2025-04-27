@@ -5,7 +5,7 @@ import {
   type PropFunction,
   type QwikJSX,
 } from "@builder.io/qwik";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 
 export type FrimwareType = "MikroTik" | "OpenWRT";
 

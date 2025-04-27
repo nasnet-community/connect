@@ -1,6 +1,6 @@
 import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import type { QwikJSX } from "@builder.io/qwik";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 import { LuRouter, LuWifi } from "@qwikest/icons/lucide";
 
 interface RouterModelProps {

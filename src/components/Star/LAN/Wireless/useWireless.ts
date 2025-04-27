@@ -1,7 +1,7 @@
 import { $, useContext, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import type { NetworkKey, Networks } from "./type";
 import { generatePasswordFromAPI, generateSSIDFromAPI } from "~/utils/api";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export const useWirelessForm = () => {
   const starContext = useContext(StarContext);

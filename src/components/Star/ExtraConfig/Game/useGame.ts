@@ -1,6 +1,6 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
-import { StarContext } from "~/components/Star/StarContext";
-import type { GameConfig } from "~/components/Star/StarContext";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
+import type { GameConfig } from "~/components/Star/StarContext/StarContext";
 
 export const useGameLogic = () => {
   const searchQuery = useSignal("");

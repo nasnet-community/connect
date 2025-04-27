@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
-import { StarContext } from "~/components/Star/StarContext";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { StateHeader } from "./StateHeader";
 import { StateHistory } from "./StateHistory";
 import { ContextPaster } from "./ContextPaster";

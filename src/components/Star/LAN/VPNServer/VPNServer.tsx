@@ -16,7 +16,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 interface VPNUser {
   Username: string;

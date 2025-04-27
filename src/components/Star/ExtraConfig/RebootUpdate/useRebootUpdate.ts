@@ -1,5 +1,5 @@
 import { useContext, useSignal, useStore } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import type { TimeConfig } from "./type";
 
 export const useRebootUpdate = () => {

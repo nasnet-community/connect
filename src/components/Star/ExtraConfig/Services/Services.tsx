@@ -1,6 +1,6 @@
 import { $, component$, useContext } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 type ServiceName =
   | "api"

@@ -1,4 +1,4 @@
-import type { StarState, GameConfig } from "~/components/Star/StarContext";
+import type { StarState, GameConfig } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "./ConfigGenerator";
 
 type ServiceState = "Enable" | "Disable" | "Local";

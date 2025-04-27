@@ -1,4 +1,4 @@
-import type { StarState } from "~/components/Star/StarContext";
+import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "./ConfigGenerator";
 
 export const ForeignWAN = (state: StarState): RouterConfig => {

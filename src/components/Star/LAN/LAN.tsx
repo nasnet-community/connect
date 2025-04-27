@@ -2,7 +2,7 @@ import { component$, useContext, useStore, $ } from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 

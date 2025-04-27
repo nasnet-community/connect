@@ -1,4 +1,4 @@
-import type { StarState } from "~/components/Star/StarContext";
+import type { StarState } from "~/components/Star/StarContext/StarContext";
 import { BaseConfig } from "./ChooseCG";
 import { ForeignWAN, DomesticWAN, WireguardClient } from "./WANCG";
 import { OVPNServer, WireguardServer, Wireless } from "./LANCG";

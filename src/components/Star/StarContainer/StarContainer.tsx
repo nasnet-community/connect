@@ -12,7 +12,7 @@ import { WAN } from "../WAN/WAN";
 import { ShowConfig } from "../ShowConfig/ShowConfig";
 import { HStepper } from "~/components/Core/Stepper/HStepper/HStepper";
 import { useStore } from "@builder.io/qwik";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 import {
   LuSettings2,
   LuGlobe,

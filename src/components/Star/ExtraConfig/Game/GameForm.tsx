@@ -1,5 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import type { StarContextType } from "~/components/Star/StarContext";
+import type { StarContextType } from "~/components/Star/StarContext/StarContext";
 
 export const GameForm = component$<{ context: StarContextType }>(
   ({ context }) => {

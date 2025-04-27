@@ -1,5 +1,5 @@
 import { $, useSignal, useTask$ } from "@builder.io/qwik";
-import { ConfigGenerator } from "~/utils/ConfigGenerator/ConfigGenerator";
+import { ConfigGenerator } from "~/components/Star/ConfigGenerator/ConfigGenerator";
 
 export interface StateEntry {
   timestamp: string;

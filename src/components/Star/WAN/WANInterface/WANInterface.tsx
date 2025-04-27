@@ -1,5 +1,5 @@
 import { $, component$, useContext } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import { useWANInterface } from "./useWANInterface";
 import { Header } from "./Header";
 import { InterfaceSelector } from "./InterfaceSelector";

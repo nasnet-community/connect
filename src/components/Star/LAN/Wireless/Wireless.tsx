@@ -5,7 +5,7 @@ import { SSIDModeSelector } from "./SSIDModeSelector";
 import { SingleSSIDForm } from "./SingleSSIDForm";
 import { MultiSSIDForm } from "./MultiSSIDForm";
 import { ActionButtons } from "./ActionButtons";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import type { StepProps } from "~/types/step";
 
 export const Wireless = component$<StepProps>(({ onComplete$ }) => {

@@ -1,6 +1,6 @@
 import { component$, useSignal, useContext, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 import { Header } from "./Header";
 import { Code } from "./Code";
 // import { PythonGuide } from './PythonGuide';

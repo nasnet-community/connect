@@ -1,4 +1,4 @@
-import type { StarState } from "~/components/Star/StarContext";
+import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "./ConfigGenerator";
 interface NetworkConfig {
   name: string;

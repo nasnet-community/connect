@@ -1,5 +1,5 @@
 import { $, useSignal } from "@builder.io/qwik";
-import type { VPNType, WireguardConfig } from "~/components/Star/StarContext";
+import type { VPNType, WireguardConfig } from "~/components/Star/StarContext/StarContext";
 
 export const useVPNConfig = () => {
   const config = useSignal("");

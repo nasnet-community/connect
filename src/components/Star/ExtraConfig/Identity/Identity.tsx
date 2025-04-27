@@ -4,7 +4,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
