@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { StarContainer } from "../StarContainer/StarContainer";
-import { StarContextProvider } from "../StarProvider";
+import { StarContextProvider } from "../StarContext/StarProvider";
 
 export const Star = component$(() => {
   return (

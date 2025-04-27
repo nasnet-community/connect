@@ -9,13 +9,13 @@ import {
   StarContext,
   type StarState,
   type StarContextType,
-  type GameConfig,
 } from "./StarContext";
+import type { GameConfig } from "./ExtraType";
 
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
-    Mode: "easy",
     Choose: {
+      Mode: "easy",
       Firmware: {
         Name: "",
       },
@@ -179,9 +179,6 @@ export const StarContextProvider = component$(() => {
 
   const contextValue: StarContextType = {
     state,
-    updateMode$: $((mode) => {
-      state.Mode = mode;
-    }),
     updateChoose$: $((data) => {
       Object.assign(state.Choose, data);
     }),
