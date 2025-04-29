@@ -19,6 +19,9 @@ export type OvpnCipher =
 
 export type TunnelType = "ipip" | "eoip" | "gre" | "vxlan";
 export type ClientAuthMethod = "eap" | "pre-shared-key" | "digital-signature";
+export type IPsecPfsGroup = "none" | "modp1024" | "modp1536" | "modp2048" | "modp3072" | "modp4096" | "ecp256" | "ecp384" | "ecp521";
+export type IPsecEncAlgorithm = "3des" | "aes-128" | "aes-192" | "aes-256" | "blowfish" | "camellia-128" | "camellia-192" | "camellia-256";
+export type IPsecHashAlgorithm = "md5" | "sha1" | "sha256" | "sha512";
 
 export interface Credentials {
   Username: string;
@@ -66,17 +69,38 @@ export interface SstpServerConfig {
 }
 
 export interface OpenVpnServerConfig {
-  Profile: string;
-  Certificate: string;
-  Port?: number;
-  Protocol?: NetworkProtocol;
-  Mode?: LayerMode;
-  Netmask?: number;
-  MacAddress?: string;
-  RequireClientCertificate?: boolean;
-  Auth?: string; 
-  Cipher?: string | string[]; 
-  CertificateKeyPassphrase?: string;
+  Profile: string;               
+  Certificate: string;           
+  Enabled?: boolean;              
+  Port?: number;                 
+  Protocol?: NetworkProtocol;     
+  Mode?: LayerMode;               
+  Netmask?: number;               
+  MacAddress?: string;            
+  AddressPool?: string;           
+  RequireClientCertificate?: boolean; 
+  Auth?: OvpnAuthMethod;         
+  Cipher?: OvpnCipher | OvpnCipher[]; 
+  CertificateKeyPassphrase?: string; 
+  MaxSessions?: number;          
+  DefaultProfile?: string;       
+  DhParams?: string;              
+  TlsVersion?: TLSVersion;        
+}
+
+export interface IPsecProposal {
+  Name: string;                  
+  AuthAlgorithm?: IPsecHashAlgorithm; 
+  EncAlgorithm?: IPsecEncAlgorithm; 
+  PfsGroup?: IPsecPfsGroup;       
+}
+
+export interface IPsecProfile {
+  Name: string;                   
+  HashAlgorithm?: IPsecHashAlgorithm[]; 
+  EncAlgorithm?: IPsecEncAlgorithm[]; 
+  DhGroup?: string[];            
+  Lifetime?: string;             
 }
 
 export interface Ikev2ServerConfig {
@@ -104,12 +128,13 @@ export interface WireguardInterfaceConfig {
 
 
 export interface WireguardPeerConfig {
-  PublicKey: string;
-  AllowedAddress: string; 
-  PresharedKey?: string;
-  EndpointAddress?: string;
-  EndpointPort?: number;
-  Comment?: string;
+  PublicKey: string;              
+  AllowedAddress: string;         
+  PresharedKey?: string;          
+  EndpointAddress?: string;       
+  EndpointPort?: number;          
+  PersistentKeepalive?: number;   
+  Comment?: string;               
 }
 
 export interface WireguardServerInstanceConfig {

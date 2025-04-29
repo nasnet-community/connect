@@ -94,6 +94,7 @@ export interface Ike2ClientConfig {
   PresharedKey?: string;
   Credentials?: Credentials; 
   ClientCertificateName?: string;
+  CaCertificateName?: string;
   PolicySrcAddress?: string;
   PolicyDstAddress?: string;
 }
