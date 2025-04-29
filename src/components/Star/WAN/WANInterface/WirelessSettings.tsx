@@ -5,12 +5,16 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
   ({ ssid, password, onSSIDChange, onPasswordChange }) => {
     return (
       <div class="mt-4 space-y-4">
+        <h3 class="text-md font-medium text-text-primary dark:text-text-dark-primary mb-2">
+          {$localize`Wireless Settings`}
+        </h3>
+        
         <div>
           <label
             for="ssid"
             class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary"
           >
-            {$localize`SSID`}
+            {$localize`SSID (Network Name)`}
           </label>
           <input
             id="ssid"
@@ -22,7 +26,7 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
             px-4 py-2
             focus:ring-2 dark:border-border-dark
             dark:bg-surface-dark dark:text-text-dark-default"
-            placeholder={$localize`Enter SSID`}
+            placeholder={$localize`Enter wireless network name`}
             required
             minLength={1}
             maxLength={32}
@@ -38,7 +42,7 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
           </label>
           <input
             id="password"
-            type="text"
+            type="password"
             value={password}
             onChange$={(_, el) => onPasswordChange(el.value)}
             class="text-text-default focus:ring-primary-500 mt-1 w-full rounded-lg border 
@@ -51,6 +55,9 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
             minLength={8}
             maxLength={63}
           />
+          <p class="mt-1 text-xs text-text-secondary dark:text-text-dark-secondary">
+            {$localize`Password must be at least 8 characters long`}
+          </p>
         </div>
       </div>
     );
