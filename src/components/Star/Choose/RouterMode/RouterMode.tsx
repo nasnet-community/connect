@@ -1,7 +1,7 @@
 import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import type { QwikJSX } from "@builder.io/qwik";
 import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
-import { StarContext } from "../StarContext/StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 
@@ -21,12 +21,12 @@ interface ModeOption {
 
 export const RouterMode = component$((props: RouterModeProps) => {
   const starContext = useContext(StarContext);
-  const selectedMode = starContext.state.Choose.RouterMode.Mode;
+  const selectedMode = starContext.state.Choose.RouterMode;
 
   const handleModeSelect = $((mode: RouterModeType, disabled?: boolean) => {
     if (disabled) return;
     starContext.updateChoose$({
-      RouterMode: { Mode: mode },
+      RouterMode: mode,
     });
     props.onComplete$?.();
   });

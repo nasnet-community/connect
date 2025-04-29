@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { JSX } from "@builder.io/qwik";
-import type { AppOption } from "./types";
+import type { AppOption } from "../types";
 
 export const App = component$<JSX.Element>(() => {
   const options: AppOption[] = [

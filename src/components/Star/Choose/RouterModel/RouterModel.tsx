@@ -1,136 +1,123 @@
 import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
-import type { QwikJSX } from "@builder.io/qwik";
-import { StarContext } from "../StarContext/StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import { LuRouter, LuWifi } from "@qwikest/icons/lucide";
+import { routers, type RouterData } from "./Constants";
+import { type RouterInterfaces } from "../../StarContext/ChooseType";
 
 interface RouterModelProps {
   isComplete?: boolean;
   onComplete$?: PropFunction<() => void>;
 }
 
-interface RouterData {
-  model: "hAP AX2" | "hAP AX3" | "RB5009";
-  icon: QwikJSX.Element;
-  title: string;
-  description: string;
-  specs: {
-    [key: string]: string;
-  };
-  features: string[];
-  isWireless: boolean;
-}
-
 export const RouterModel = component$((props: RouterModelProps) => {
   const starContext = useContext(StarContext);
-  const selectedMode = starContext.state.Choose.RouterMode.Mode;
-  const selectedModels = starContext.state.Choose.RouterModel.Model;
+  const selectedMode = starContext.state.Choose.RouterMode;
+  const selectedModels = starContext.state.Choose.RouterModels.map(rm => rm.Model);
 
-  const routers: RouterData[] = [
-    {
-      model: "hAP AX2",
-      icon: <LuWifi class="h-8 w-8" />,
-      title: $localize`hAP AX2`,
-      description: $localize`Dual-band Wi-Fi 6 home access point`,
-      specs: {
-        CPU: $localize`Quad-Core 1.8 GHz`,
-        RAM: $localize`1 GB`,
-        Ports: $localize`5x Gigabit`,
-        "Wi-Fi": $localize`Wi-Fi 6 (802.11ax)`,
-        Speed: $localize`2.4 GHz: 574 Mbps, 5 GHz: 1201 Mbps`,
-      },
-      features: [
-        $localize`Dual-band Wi-Fi 6`,
-        $localize`IPsec hardware acceleration`,
-        $localize`MU-MIMO support`,
-        $localize`Compact design`,
-      ],
-      isWireless: true,
-    },
-    {
-      model: "hAP AX3",
-      icon: <LuWifi class="h-8 w-8" />,
-      title: $localize`hAP AX3`,
-      description: $localize`High-performance Wi-Fi 6 router`,
-      specs: {
-        CPU: $localize`Quad-Core 2.0 GHz`,
-        RAM: $localize`1 GB`,
-        Ports: $localize`5x Gigabit`,
-        "Wi-Fi": $localize`Wi-Fi 6 (802.11ax)`,
-        Speed: $localize`2.4 GHz: 600 Mbps, 5 GHz: 1800 Mbps`,
-      },
-      features: [
-        $localize`Advanced Wi-Fi 6`,
-        $localize`Enhanced coverage`,
-        $localize`Higher throughput`,
-        $localize`Better multi-device handling`,
-      ],
-      isWireless: true,
-    },
-    {
-      model: "RB5009",
-      icon: <LuRouter class="h-8 w-8" />,
-      title: $localize`RB5009`,
-      description: $localize`Enterprise-grade router`,
-      specs: {
-        CPU: $localize`Quad-Core 2.2 GHz`,
-        RAM: $localize`1 GB`,
-        Ports: $localize`8x Gigabit + SFP+`,
-        "Wi-Fi": $localize`None`,
-        Speed: $localize`Up to 10 Gbps (SFP+)`,
-      },
-      features: [
-        $localize`Enterprise performance`,
-        $localize`SFP+ port`,
-        $localize`Advanced routing`,
-        $localize`High reliability`,
-      ],
-      isWireless: false,
-    },
-  ];
+  // Get the appropriate icon component based on the icon string from Constants
+  const getIcon = (iconType: string) => {
+    switch (iconType) {
+      case "wifi":
+        return <LuWifi class="h-8 w-8" />;
+      case "router":
+        return <LuRouter class="h-8 w-8" />;
+      default:
+        return <LuRouter class="h-8 w-8" />;
+    }
+  };
 
   const handleSelect = $((model: RouterData["model"]) => {
-    const newModels =
-      selectedMode === "AP Mode"
-        ? [model]
-        : selectedModels.includes(model)
-          ? selectedModels.filter((m) => m !== model)
-          : [...selectedModels, model].slice(0, 2);
-
     const selectedRouter = routers.find((r) => r.model === model);
+    if (!selectedRouter) return;
 
-    starContext.updateChoose$({
-      RouterModel: {
-        Model: newModels,
-        Interfaces: starContext.state.Choose.RouterModel.Interfaces,
-      },
-    });
+    // Create interfaces object with only the interface types that exist in the router
+    const interfaces: RouterInterfaces = {};
+    
+    if (selectedRouter.interfaces.ethernet?.length) {
+      interfaces.ethernet = selectedRouter.interfaces.ethernet;
+    }
+    
+    if (selectedRouter.interfaces.wireless?.length) {
+      interfaces.wireless = selectedRouter.interfaces.wireless;
+    }
+    
+    if (selectedRouter.interfaces.sfp?.length) {
+      interfaces.sfp = selectedRouter.interfaces.sfp;
+    }
+    
+    if (selectedRouter.interfaces.lte?.length) {
+      interfaces.lte = selectedRouter.interfaces.lte;
+    }
 
-    starContext.updateLAN$({
-      Wireless: {
-        ...starContext.state.LAN.Wireless,
-        isWireless: selectedRouter?.isWireless ?? false,
-      },
-    });
+    if (selectedMode === "AP Mode") {
+      // For AP Mode, just set a single router
+      starContext.updateChoose$({
+        RouterModels: [{
+          isMaster: true,
+          Model: model,
+          Interfaces: interfaces
+        }]
+      });
+    } else if (selectedMode === "Trunk Mode") {
+      const existingModels = starContext.state.Choose.RouterModels;
+      
+      if (existingModels.some(rm => rm.Model === model)) {
+        // Remove this model if already selected
+        starContext.updateChoose$({
+          RouterModels: existingModels.filter(rm => rm.Model !== model)
+        });
+      } else if (existingModels.length < 2) {
+        // Add new model (up to 2)
+        const newModelConfig = {
+          isMaster: existingModels.length === 0, // First router is master
+          Model: model,
+          Interfaces: interfaces
+        };
+        
+        starContext.updateChoose$({
+          RouterModels: [...existingModels, newModelConfig]
+        });
+      }
+    }
 
+    // Update wireless status based on selected router
+    if (selectedRouter) {
+      starContext.updateLAN$({
+        Wireless: {
+          ...starContext.state.LAN.Wireless,
+          isMultiSSID: selectedRouter.isWireless
+        }
+      });
+    }
+
+    // Check if selection is complete based on mode
     if (
-      (selectedMode === "AP Mode" && newModels.length === 1) ||
-      (selectedMode === "Trunk Mode" && newModels.length === 2)
+      (selectedMode === "AP Mode" && starContext.state.Choose.RouterModels.length === 1) ||
+      (selectedMode === "Trunk Mode" && starContext.state.Choose.RouterModels.length === 2)
     ) {
       props.onComplete$?.();
     }
   });
+
+  const getSelectionIndex = (model: string) => {
+    return starContext.state.Choose.RouterModels.findIndex(rm => rm.Model === model);
+  };
+
+  const pluralize = (num: number, singular: string, plural: string) => {
+    return num === 1 ? singular : plural;
+  };
 
   return (
     <div class="space-y-8">
       {/* Header */}
       <div class="mb-8 text-center">
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Select Router Model`}
+          Select Router Model
         </h2>
         <p class="mt-3 text-text-secondary/90 dark:text-text-dark-secondary">
           {selectedMode === "AP Mode"
-            ? $localize`Choose a router for your network`
-            : $localize`Select ${2 - selectedModels.length} more router${2 - selectedModels.length !== 1 ? "s" : ""} for trunk configuration`}
+            ? "Choose a router for your network"
+            : `Select ${2 - selectedModels.length} more ${pluralize(2 - selectedModels.length, "router", "routers")} for trunk configuration`}
         </p>
       </div>
 
@@ -160,8 +147,8 @@ export const RouterModel = component$((props: RouterModelProps) => {
               <div class="absolute right-4 top-4 rounded-full bg-success/10 px-3 py-1 dark:bg-success/20">
                 <span class="text-xs font-medium text-success dark:text-success-light">
                   {selectedMode === "Trunk Mode"
-                    ? $localize`Router ${selectedModels.indexOf(router.model) + 1}`
-                    : $localize`Selected`}
+                    ? `Router ${getSelectionIndex(router.model) + 1}`
+                    : "Selected"}
                 </span>
               </div>
             )}
@@ -177,7 +164,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
                     : "bg-primary-500/10 text-primary-500 dark:bg-primary-500/5"
                 }`}
               >
-                {router.icon}
+                {getIcon(router.icon)}
               </div>
 
               {/* Content */}
@@ -242,8 +229,8 @@ export const RouterModel = component$((props: RouterModelProps) => {
         <div class="mt-8 rounded-xl bg-surface-secondary/50 p-4 dark:bg-surface-dark-secondary/50">
           <p class="text-sm text-text-secondary/90 dark:text-text-dark-secondary">
             {selectedMode === "AP Mode"
-              ? $localize`Selected Router: `
-              : $localize`Selected Routers: `}
+              ? "Selected Router: "
+              : "Selected Routers: "}
             <span class="font-medium text-text dark:text-text-dark-default">
               {selectedModels.join(" + ")}
             </span>

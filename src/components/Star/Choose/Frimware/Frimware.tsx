@@ -5,7 +5,7 @@ import {
   type PropFunction,
   type QwikJSX,
 } from "@builder.io/qwik";
-import { StarContext } from "../StarContext/StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export type FrimwareType = "MikroTik" | "OpenWRT";
 
@@ -25,14 +25,12 @@ interface FrimwareProps {
 
 export const Frimware = component$((props: FrimwareProps) => {
   const starContext = useContext(StarContext);
-  const selectedFirmware = starContext.state.Choose.Firmware.Name;
+  const selectedFirmware = starContext.state.Choose.Firmware;
 
   const handleSelect = $((firmware: FrimwareType, disabled?: boolean) => {
     if (disabled) return;
     starContext.updateChoose$({
-      Firmware: {
-        Name: firmware,
-      },
+      Firmware: firmware,
     });
     props.onComplete$?.();
   });

@@ -1,7 +1,7 @@
 import { component$, useStore, $ } from "@builder.io/qwik";
-import { Frimware } from "./Frimware";
-import { RouterMode } from "./RouterMode";
-import { RouterModel } from "./RouterModel";
+import { Frimware } from "./Frimware/Frimware";
+import { RouterMode } from "./RouterMode/RouterMode";
+import { RouterModel } from "./RouterModel/RouterModel";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
