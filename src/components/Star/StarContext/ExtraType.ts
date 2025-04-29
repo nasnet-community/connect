@@ -13,7 +13,6 @@ export interface services {
     winbox: ServiceType;
     web: ServiceType;
     webssl: ServiceType;
-    [key: string]: ServiceType;
   }
   
   export interface GameConfig {
@@ -29,23 +28,23 @@ export interface services {
 
 
 export interface ExtraConfigState {
-    RouterIdentity: string;
-    isRomon: boolean;
-    services: services;
-    Timezone: string;
-    AutoReboot: {
+    RouterIdentity?: string;
+    isRomon?: boolean;
+    services?: services;
+    Timezone?: string;
+    AutoReboot?: {
       isAutoReboot: boolean;
       RebootTime: string;
     };
-    Update: {
+    Update?: {
       isAutoReboot: boolean;
       UpdateTime: string;
       UpdateInterval: UpdateInterval;
     };
-    isCertificate: boolean;
-    isNTP: boolean;
-    isGraphing: boolean;
-    isDDNS: boolean;
-    isLetsEncrypt: boolean;
-    Games: GameConfig[];
+    isCertificate?: boolean;
+    isNTP?: boolean;
+    isGraphing?: boolean;
+    isDDNS?: boolean;
+    isLetsEncrypt?: boolean;
+    Games?: GameConfig[];
   }

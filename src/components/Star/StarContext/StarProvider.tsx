@@ -10,47 +10,15 @@ import {
   type StarState,
   type StarContextType,
 } from "./StarContext";
-import type { GameConfig } from "./ExtraType";
+import type { Mode, FrimwareType, RouterModeType } from "./ChooseType";
 
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
-      Mode: "easy",
-      Firmware:"MikroTik" ,
-      RouterMode: "" ,
-      RouterModel: {
-        Model: [],
-        Interfaces: {
-          "hAP AX2": [
-            "ether1",
-            "ether2",
-            "ether3",
-            "ether4",
-            "ether5",
-            "wifi5",
-            "wifi2.4",
-          ],
-          "hAP AX3": [
-            "ether1",
-            "ether2",
-            "ether3",
-            "ether4",
-            "ether5",
-            "wifi5",
-            "wifi2.4",
-          ],
-          RB5009: [
-            "ether1",
-            "ether2",
-            "ether3",
-            "ether4",
-            "ether5",
-            "ether6",
-            "ether7",
-            "ether8",
-          ],
-        },
-      },
+      Mode: "" as Mode,
+      Firmware:"" as FrimwareType,
+      RouterMode: "" as RouterModeType,
+      RouterModels: [],
     },
     WAN: {
       WANLink: {
@@ -62,36 +30,7 @@ export const StarContextProvider = component$(() => {
       },
     },
     LAN: {},
-    ExtraConfig: {
-      RouterIdentity: "",
-      isRomon: false,
-      services: {
-        api: "Disable",
-        apissl: "Disable",
-        ftp: "Disable",
-        ssh: "Disable",
-        telnet: "Disable",
-        winbox: "Enable",
-        web: "Disable",
-        webssl: "Disable",
-      },
-      Timezone: "Asia/Tehran",
-      AutoReboot: {
-        isAutoReboot: false,
-        RebootTime: "",
-      },
-      Update: {
-        isAutoReboot: false,
-        UpdateTime: "",
-        UpdateInterval: "",
-      },
-      isCertificate: false,
-      isNTP: false,
-      isGraphing: false,
-      isDDNS: false,
-      isLetsEncrypt: false,
-      Games: [] as GameConfig[],
-    },
+    ExtraConfig: {},
     ShowConfig: {},
   });
 
