@@ -30,12 +30,8 @@ export type Mode = "easy" | "advance";
 
 export interface ChooseState {
     Mode: Mode;
-    Firmware: {
-      Name: FrimwareType;
-    };
-    RouterMode: {
-      Mode: RouterModeType;
-    };
+    Firmware: FrimwareType;
+    RouterMode: RouterModeType;
     RouterModel: {
       Model: RouterModel[];
       Interfaces: { [key: string]: string[] };

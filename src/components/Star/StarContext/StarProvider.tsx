@@ -16,12 +16,8 @@ export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
       Mode: "easy",
-      Firmware: {
-        Name: "",
-      },
-      RouterMode: {
-        Mode: "",
-      },
+      Firmware:"MikroTik" ,
+      RouterMode: "" ,
       RouterModel: {
         Model: [],
         Interfaces: {
@@ -57,93 +53,15 @@ export const StarContextProvider = component$(() => {
       },
     },
     WAN: {
-      Easy: {
+      WANLink: {
         isWifi2_4: false,
         isWifi5: false,
         Foreign: {
-          interface: "",
-          WirelessCredentials: {
-            SSID: "",
-            Password: "",
-          },
-        },
-        Domestic: {
-          interface: "",
-          WirelessCredentials: {
-            SSID: "",
-            Password: "",
-          },
-        },
-        VPNClient: {
-          VPNType: "",
-          Wireguard: [],
-          OpenVPN: "",
-          PPTP: "",
-          L2TP: "",
-          SSTP: "",
-          IKeV2: "",
+          InterfaceName: "",
         },
       },
     },
-    LAN: {
-      Wireless: {
-        isWireless: false,
-        isMultiSSID: "",
-        SingleMode: {
-          WirelessCredentials: {
-            SSID: "",
-            Password: "",
-          },
-        },
-        MultiMode: {
-          SamePassword: "",
-          isSamePassword: false,
-          Starlink: {
-            SSID: "",
-            Password: "",
-          },
-          Domestic: {
-            SSID: "",
-            Password: "",
-          },
-          Split: {
-            SSID: "",
-            Password: "",
-          },
-          VPN: {
-            SSID: "",
-            Password: "",
-          },
-        },
-      },
-      VPNServer: {
-        Wireguard: false,
-        OpenVPN: false,
-        PPTP: false,
-        L2TP: false,
-        SSTP: false,
-        IKeV2: false,
-        Users: [],
-        OpenVPNConfig: {
-          Passphrase: "",
-        },
-      },
-      Subnet: {
-        LANSubnet: "",
-        VLANSubnets: [],
-        DHCPServer: {
-          enabled: false,
-          poolStart: "",
-          poolEnd: "",
-          leaseTime: "",
-        },
-      },
-      Interfaces: {
-        LAN: [],
-        VLAN: [],
-        Bridge: [],
-      },
-    },
+    LAN: {},
     ExtraConfig: {
       RouterIdentity: "",
       isRomon: false,
