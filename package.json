@@ -13,6 +13,7 @@
   "type": "module",
   "scripts": {
     "build": "qwik build",
+    "build-storybook": "storybook build",
     "build.client": "vite build && npm run i18n-translate",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
     "build.server": "vite build -c adapters/vercel-edge/vite.config.ts",
@@ -30,6 +31,7 @@
     "serve": "node server/entry.node-server",
     "start": "vite --open --mode ssr",
     "start:prod": "node server/entry.express",
+    "storybook": "storybook dev -p 6006",
     "qwik": "qwik"
   },
   "devDependencies": {
@@ -41,6 +43,12 @@
     "@heroicons/react": "^2.2.0",
     "@qwikest/icons": "^0.0.13",
     "@rollup/rollup-linux-x64-gnu": "^4.32.0",
+    "@storybook/addon-essentials": "^8.2.8",
+    "@storybook/addon-links": "^8.2.8",
+    "@storybook/blocks": "^8.2.8",
+    "@storybook/builder-vite": "^8.2.8",
+    "@storybook/html": "^8.2.8",
+    "@storybook/html-vite": "^8.2.8",
     "@tailwindcss/typography": "^0.5.16",
     "@types/compression": "^1.7.2",
     "@types/eslint": "8.56.10",
@@ -60,6 +68,8 @@
     "prettier-plugin-tailwindcss": "^0.5.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "storybook": "^8.2.8",
+    "storybook-framework-qwik": "^0.4.0",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.6",
     "typescript": "5.1.6",
