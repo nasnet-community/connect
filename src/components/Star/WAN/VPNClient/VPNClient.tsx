@@ -1,92 +1,75 @@
-import { $, component$, useContext } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext/StarContext";
+import { $, component$, useSignal } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { useVPNConfig } from "./useVPNConfig";
 import { VPNSelector } from "./VPNSelector";
-import { ConfigInput } from "./ConfigInput";
 import { ErrorMessage } from "./ErrorMessage";
 import { ActionFooter } from "./ActionFooter";
-import type { VPNType } from "~/components/Star/StarContext/StarContext";
+import type { VPNType } from "~/components/Star/StarContext/CommonType";
+import { useContext } from "@builder.io/qwik";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
+
+// Import protocol-specific components
+import { WireguardConfig } from "./Protocols/Wireguard/WireguardConfig";
+import { OpenVPNConfig } from "./Protocols/OpenVPN/OpenVPNConfig";
+import { L2TPConfig } from "./Protocols/L2TP/L2TPConfig";
+import { IKEv2Config } from "./Protocols/IKeV2/IKEv2Config";
+import { PPTPConfig } from "./Protocols/PPTP/PPTPConfig";
+import { SSTPConfig } from "./Protocols/SSTP/SSTPConfig";
 
 export const VPNClient = component$<StepProps>(
   ({ isComplete, onComplete$ }) => {
     const starContext = useContext(StarContext);
     const {
-      config,
       isValid,
       vpnType,
       errorMessage,
-      validateRequiredFields,
-      parseWireguardConfig,
+      saveVPNSelection$
     } = useVPNConfig();
+    
+    // Signal to trigger protocol-specific save actions
+    const isSaving = useSignal(false);
 
     const handleVPNTypeChange = $((value: VPNType) => {
       vpnType.value = value;
-      config.value = "";
       isValid.value = false;
     });
 
-    const handleConfigChange = $(async (value: string) => {
-      config.value = value;
-      errorMessage.value = "";
-
-      if (vpnType.value === "Wireguard") {
-        const parsedConfig = await parseWireguardConfig(value);
-        if (!parsedConfig) {
-          isValid.value = false;
-          errorMessage.value = $localize`Invalid Wireguard configuration format`;
-          return;
-        }
-
-        const { isValid: valid, emptyFields } =
-          await validateRequiredFields(parsedConfig);
-
-        if (!valid) {
-          isValid.value = false;
-          errorMessage.value = $localize`Missing required fields: ${emptyFields.join(", ")}`;
-          return;
-        }
-
-        isValid.value = true;
-        starContext.updateWAN$({
-          Easy: {
-            ...starContext.state.WAN.Easy,
-            VPNClient: {
-              VPNType: "Wireguard",
-              Wireguard: [parsedConfig],
-              OpenVPN: "",
-              PPTP: "",
-              L2TP: "",
-              SSTP: "",
-              IKeV2: "",
-            },
-          },
-        });
-      }
+    const handleIsValidChange = $((valid: boolean) => {
+      isValid.value = valid;
     });
 
-    const handleFileUpload = $(async (event: Event) => {
-      const input = event.target as HTMLInputElement;
-      if (input.files && input.files[0]) {
-        const file = input.files[0];
-        if (file.name.endsWith(".conf")) {
-          const text = await file.text();
-          config.value = text;
-          handleConfigChange(text);
-        }
-      }
-    });
-
-    const handleComplete = $(() => {
+    const handleComplete = $(async () => {
       if (!vpnType.value) {
         isValid.value = false;
+        errorMessage.value = "Please select a VPN type";
         return;
       }
 
-      if (vpnType.value === "Wireguard" && isValid.value) {
-        if (onComplete$) {
-          onComplete$();
+      if (isValid.value) {
+        // Trigger protocol-specific save action via signal
+        isSaving.value = true;
+        
+        // This ensures all protocol components have a chance to finalize their state
+        await new Promise(resolve => setTimeout(resolve, 0));
+        
+        // Reset the save trigger
+        isSaving.value = false;
+        
+        // Now save the VPN selection to the global context
+        const saved = await saveVPNSelection$();
+        
+        if (saved && onComplete$) {
+          console.log("VPN configuration saved successfully, proceeding to next step");
+          
+          // Log the current state to see what was actually saved
+          console.log("Current VPN Client state:", starContext.state.WAN.VPNClient);
+          
+          await onComplete$();
+        } else if (!saved) {
+          errorMessage.value = "Failed to save VPN configuration. Please check your inputs and try again.";
         }
+      } else {
+        errorMessage.value = "Please complete the VPN configuration correctly before proceeding.";
       }
     });
 
@@ -116,7 +99,7 @@ export const VPNClient = component$<StepProps>(
                   {$localize`VPN Client Configuration`}
                 </h2>
                 <p class="text-text-muted dark:text-text-dark-muted">
-                  {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please upload your WireGuard configuration to conceal your Starlink IP.`}
+                  {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please configure a VPN to conceal your Starlink IP.`}
                 </p>
               </div>
             </div>
@@ -126,16 +109,50 @@ export const VPNClient = component$<StepProps>(
               onTypeChange$={handleVPNTypeChange}
             />
 
+            {/* Render protocol-specific component based on selected type */}
             {vpnType.value === "Wireguard" && (
-              <>
-                <ConfigInput
-                  config={config.value}
-                  onConfigChange$={handleConfigChange}
-                  onFileUpload$={handleFileUpload}
-                />
-                <ErrorMessage message={errorMessage.value} />
-              </>
+              <WireguardConfig 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
             )}
+            
+            {vpnType.value === "OpenVPN" && (
+              <OpenVPNConfig 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
+            )}
+            
+            {vpnType.value === "L2TP" && (
+              <L2TPConfig 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
+            )}
+            
+            {vpnType.value === "IKeV2" && (
+              <IKEv2Config 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
+            )}
+            
+            {vpnType.value === "PPTP" && (
+              <PPTPConfig 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
+            )}
+            
+            {vpnType.value === "SSTP" && (
+              <SSTPConfig 
+                onIsValidChange$={handleIsValidChange}
+                isSaving={isSaving.value}
+              />
+            )}
+
+            <ErrorMessage message={errorMessage.value} />
 
             <ActionFooter
               isComplete={isComplete}
