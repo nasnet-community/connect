@@ -9,6 +9,11 @@ import type { StepProps } from "~/types/step";
 export const LAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
 
+  // Check if any selected router model has wireless interface capability
+  const hasWirelessInterface = starContext.state.Choose.RouterModels.some(
+    (routerModel) => !!routerModel.Interfaces.wireless?.length
+  );
+
   const WirelessStep = component$((props: StepProps) => (
     <Wireless isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
@@ -18,7 +23,8 @@ export const LAN = component$((props: StepProps) => {
   ));
 
   const baseSteps: StepItem[] = [
-    ...(starContext.state.LAN.Wireless.isWireless
+    // Only include Wireless step if the router models support wireless and wireless is enabled in LAN state
+    ...(hasWirelessInterface
       ? [
           {
             id: 1,
@@ -29,7 +35,7 @@ export const LAN = component$((props: StepProps) => {
         ]
       : []),
     {
-      id: starContext.state.LAN.Wireless.isWireless ? 2 : 1,
+      id: hasWirelessInterface ? 2 : 1,
       title: $localize`VPN Server`,
       component: VPNServerStep,
       isComplete: false,
@@ -37,7 +43,7 @@ export const LAN = component$((props: StepProps) => {
   ];
 
   const steps =
-    starContext.state.Mode === "advance" ? [...baseSteps] : baseSteps;
+    starContext.state.Choose.Mode === "advance" ? [...baseSteps] : baseSteps;
 
   const stepsStore = useStore({
     activeStep: 0,
