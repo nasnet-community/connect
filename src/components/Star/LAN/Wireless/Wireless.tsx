@@ -63,7 +63,6 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
         <ActionButtons
           onSubmit={$(async () => {
             if (!isMultiSSID.value) {
-              // Single SSID mode - Only include the SingleMode configuration
               starContext.updateLAN$({
                 Wireless: {
                   SingleMode: {
@@ -72,20 +71,17 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
                     isHide: isHide.value,
                     isDisabled: isDisabled.value,
                   }
-                  // Don't include MultiMode
                 }
               });
             } else {
-              // Multi SSID mode - Only include the MultiMode configuration
-              // Get only enabled networks
               const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
               
-              if (!networks.starlink.isDisabled) {
-                enabledNetworks.Starlink = {
-                  SSID: networks.starlink.ssid,
-                  Password: networks.starlink.password,
-                  isHide: networks.starlink.isHide,
-                  isDisabled: networks.starlink.isDisabled,
+              if (!networks.foreign.isDisabled) {
+                enabledNetworks.foreign = {
+                  SSID: networks.foreign.ssid,
+                  Password: networks.foreign.password,
+                  isHide: networks.foreign.isHide,
+                  isDisabled: networks.foreign.isDisabled,
                 };
               }
               

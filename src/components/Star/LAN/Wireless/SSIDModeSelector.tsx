@@ -11,12 +11,10 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
   ({ isMultiSSID }) => {
     const starContext = useContext(StarContext);
     
-    // Handler for switching to Single SSID mode
     const switchToSingleMode = $(() => {
       isMultiSSID.value = false;
       
-      // If we have an existing SingleMode configuration, keep it
-      // If not, create a default one
+
       const singleMode = starContext.state.LAN.Wireless?.SingleMode || {
         SSID: "",
         Password: "",
@@ -24,24 +22,19 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
         isDisabled: false
       };
       
-      // Update the context to only include SingleMode
       starContext.updateLAN$({
         Wireless: {
           SingleMode: singleMode
-          // Don't include MultiMode, which effectively removes it
         }
       });
     });
     
-    // Handler for switching to Multi SSID mode
     const switchToMultiMode = $(() => {
       isMultiSSID.value = true;
       
-      // If we have existing MultiMode configurations, keep them
-      // Otherwise create a minimal structure with empty enabled networks
+
       const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
       
-      // If there are no networks in the MultiMode, create at least one default network
       if (Object.keys(multiMode).length === 0) {
         const defaultNetwork = {
           SSID: "",
@@ -50,14 +43,12 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
           isDisabled: false
         };
         
-        multiMode.Starlink = defaultNetwork;
+        multiMode.Foreign = defaultNetwork;
       }
       
-      // Update the context to only include MultiMode
       starContext.updateLAN$({
         Wireless: {
           MultiMode: multiMode
-          // Don't include SingleMode, which effectively removes it
         }
       });
     });

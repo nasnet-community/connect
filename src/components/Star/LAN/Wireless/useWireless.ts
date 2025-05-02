@@ -14,7 +14,7 @@ export const useWirelessForm = () => {
   const isFormValid = useSignal(false);
 
   const networks = useStore<Networks>({
-    starlink: { ssid: "", password: "", isHide: false, isDisabled: false },
+    foreign: { ssid: "", password: "", isHide: false, isDisabled: false },
     domestic: { ssid: "", password: "", isHide: false, isDisabled: false },
     split: { ssid: "", password: "", isHide: false, isDisabled: false },
     vpn: { ssid: "", password: "", isHide: false, isDisabled: false },
@@ -23,15 +23,14 @@ export const useWirelessForm = () => {
   const checkSamePassword = $(() => {
     if (!isMultiSSID.value) return;
 
-    // Get only enabled networks
     const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
     
-    if (!networks.starlink.isDisabled) {
-      enabledNetworks.Starlink = {
-        SSID: networks.starlink.ssid,
-        Password: networks.starlink.password,
-        isHide: networks.starlink.isHide,
-        isDisabled: networks.starlink.isDisabled,
+    if (!networks.foreign.isDisabled) {
+      enabledNetworks.Foreign = {
+        SSID: networks.foreign.ssid,
+        Password: networks.foreign.password,
+        isHide: networks.foreign.isHide,
+        isDisabled: networks.foreign.isDisabled,
       };
     }
     
@@ -62,7 +61,6 @@ export const useWirelessForm = () => {
       };
     }
 
-    // Only update MultiMode since we're in multi-SSID mode
     starContext.updateLAN$({
       Wireless: {
         MultiMode: enabledNetworks
@@ -79,15 +77,14 @@ export const useWirelessForm = () => {
         networks[network as NetworkKey].password = commonPassword;
       });
 
-      // Get only enabled networks
       const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
       
-      if (!networks.starlink.isDisabled) {
-        enabledNetworks.Starlink = {
-          SSID: networks.starlink.ssid,
-          Password: networks.starlink.password,
-          isHide: networks.starlink.isHide,
-          isDisabled: networks.starlink.isDisabled,
+      if (!networks.foreign.isDisabled) {
+        enabledNetworks.Foreign = {
+          SSID: networks.foreign.ssid,
+          Password: networks.foreign.password,
+          isHide: networks.foreign.isHide,
+          isDisabled: networks.foreign.isDisabled,
         };
       }
       
@@ -118,7 +115,6 @@ export const useWirelessForm = () => {
         };
       }
 
-      // Only update MultiMode since we're generating passwords for all networks in multi-SSID mode
       starContext.updateLAN$({
         Wireless: {
           MultiMode: enabledNetworks
@@ -148,17 +144,13 @@ export const useWirelessForm = () => {
   });
 
   const toggleNetworkDisabled = $((network: NetworkKey) => {
-    // If the network is currently enabled and we want to disable it
     if (!networks[network].isDisabled) {
-      // Count how many networks are currently enabled
       const enabledCount = Object.values(networks).filter(n => !n.isDisabled).length;
       
-      // Only allow disabling if there will still be at least one enabled network left
       if (enabledCount > 1) {
         networks[network].isDisabled = true;
       }
     } else {
-      // If the network is currently disabled, we can enable it without restrictions
       networks[network].isDisabled = false;
     }
   });
@@ -171,24 +163,21 @@ export const useWirelessForm = () => {
     isDisabled.value = !isDisabled.value;
   });
 
-  // Initialize state from context when component loads
   useTask$(() => {
     const wirelessConfig = starContext.state.LAN.Wireless;
     
     if (wirelessConfig) {
-      // Determine if we're in multi-SSID mode by checking if MultiMode exists
       isMultiSSID.value = !!wirelessConfig.MultiMode;
       
       if (isMultiSSID.value && wirelessConfig.MultiMode) {
-        // Initialize MultiMode
         const multiMode = wirelessConfig.MultiMode;
         
-        if (multiMode.Starlink) {
-          networks.starlink = {
-            ssid: multiMode.Starlink.SSID,
-            password: multiMode.Starlink.Password,
-            isHide: multiMode.Starlink.isHide,
-            isDisabled: multiMode.Starlink.isDisabled,
+        if (multiMode.Foreign) {
+          networks.foreign = {
+            ssid: multiMode.Foreign.SSID,
+            password: multiMode.Foreign.Password,
+            isHide: multiMode.Foreign.isHide,
+            isDisabled: multiMode.Foreign.isDisabled,
           };
         }
         
@@ -219,7 +208,6 @@ export const useWirelessForm = () => {
           };
         }
       } else if (!isMultiSSID.value && wirelessConfig.SingleMode) {
-        // Initialize SingleMode
         const singleMode = wirelessConfig.SingleMode;
         ssid.value = singleMode.SSID;
         password.value = singleMode.Password;
@@ -229,7 +217,6 @@ export const useWirelessForm = () => {
     }
   });
 
-  // Update context when form values change
   useTask$(({ track }) => {
     track(() => ({
       isMulti: isMultiSSID.value,
@@ -239,18 +226,15 @@ export const useWirelessForm = () => {
       single: ssid.value + password.value + isHide.value + isDisabled.value,
     }));
 
-    // Only update the context with the currently selected mode
     if (isMultiSSID.value) {
-      // Multi-SSID Mode
-      // Get only enabled networks
       const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
       
-      if (!networks.starlink.isDisabled) {
-        enabledNetworks.Starlink = {
-          SSID: networks.starlink.ssid,
-          Password: networks.starlink.password,
-          isHide: networks.starlink.isHide,
-          isDisabled: networks.starlink.isDisabled,
+      if (!networks.foreign.isDisabled) {
+        enabledNetworks.Foreign = {
+          SSID: networks.foreign.ssid,
+          Password: networks.foreign.password,
+          isHide: networks.foreign.isHide,
+          isDisabled: networks.foreign.isDisabled,
         };
       }
       
@@ -287,7 +271,6 @@ export const useWirelessForm = () => {
         },
       });
     } else {
-      // Single-SSID Mode
       starContext.updateLAN$({
         Wireless: {
           SingleMode: {
@@ -336,23 +319,18 @@ export const useWirelessForm = () => {
 
   const validateForm = $(() => {
     if (isMultiSSID.value) {
-      // For multi-SSID mode:
-      // 1. Check if at least one network is enabled
       const enabledNetworks = Object.values(networks).filter(
         (network) => !network.isDisabled
       );
       
       const atLeastOneEnabled = enabledNetworks.length > 0;
       
-      // 2. Check if all enabled networks have filled fields
       const allEnabledNetworksFieldsFilled = enabledNetworks.every(
         (network) => network.ssid.trim() !== "" && network.password.trim() !== ""
       );
       
       isFormValid.value = atLeastOneEnabled && allEnabledNetworksFieldsFilled;
     } else {
-      // For single-SSID mode:
-      // Check if SSID and password are filled
       isFormValid.value =
         ssid.value.trim() !== "" && password.value.trim() !== "";
     }
