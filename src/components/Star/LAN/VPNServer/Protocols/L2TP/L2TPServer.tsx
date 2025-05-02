@@ -6,7 +6,6 @@ import type { AuthMethod } from "../../../../StarContext/CommonType";
 export const L2TPServer = component$(() => {
   const { l2tpState, updateL2TPServer$, secretError } = useL2TPServer();
   
-  // Create a local store for managing form state
   const formState = useStore({
     profile: l2tpState.Profile || "default",
     useIpsec: l2tpState.UseIpsec || "required",
@@ -28,7 +27,6 @@ export const L2TPServer = component$(() => {
     { value: "required", label: "Required" }
   ];
 
-  // Handle authentication method toggle
   const toggleAuthMethod = $((method: AuthMethod) => {
     const index = formState.authentication.indexOf(method);
     if (index === -1) {
@@ -38,7 +36,6 @@ export const L2TPServer = component$(() => {
     }
   });
 
-  // Apply changes to the context
   const applyChanges = $(() => {
     if (isEnabled.value) {
       updateL2TPServer$({

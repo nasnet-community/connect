@@ -6,7 +6,6 @@ import type { AuthMethod } from "../../../../StarContext/CommonType";
 export const PPTPServer = component$(() => {
   const { pptpState, updatePPTPServer$ } = usePPTPServer();
   
-  // Create a local store for managing form state
   const formState = useStore({
     profile: pptpState.Profile || "default",
     authentication: pptpState.Authentication || ["mschap2", "mschap1"],
@@ -19,7 +18,6 @@ export const PPTPServer = component$(() => {
 
   const authMethods: AuthMethod[] = ["pap", "chap", "mschap1", "mschap2"];
 
-  // Handle authentication method toggle
   const toggleAuthMethod = $((method: AuthMethod) => {
     const index = formState.authentication.indexOf(method);
     if (index === -1) {
@@ -29,7 +27,6 @@ export const PPTPServer = component$(() => {
     }
   });
 
-  // Apply changes to the context
   const applyChanges = $(() => {
     if (isEnabled.value) {
       updatePPTPServer$({

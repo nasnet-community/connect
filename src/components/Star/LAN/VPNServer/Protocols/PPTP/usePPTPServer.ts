@@ -7,7 +7,6 @@ export const usePPTPServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
-  // Get the current PPTP config or initialize with defaults
   const pptpState = vpnServerState.PptpServer || {
     Profile: "default",
     Authentication: ["mschap2", "mschap1"],
@@ -16,16 +15,13 @@ export const usePPTPServer = () => {
     KeepaliveTimeout: 30
   };
 
-  /**
-   * Updates the PPTP server configuration
-   */
+
   const updatePPTPServer$ = $((config: Partial<PptpServerConfig>) => {
     const newConfig = {
       ...pptpState,
       ...config
     };
     
-    // Update the VPN server state directly
     starContext.updateLAN$({ 
       VPNServer: {
         ...vpnServerState,

@@ -6,7 +6,6 @@ import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType"
 export const SSTPServer = component$(() => {
   const { sstpState, updateSSTPServer$, certificateError } = useSSTPServer();
   
-  // Create a local store for managing form state
   const formState = useStore({
     profile: sstpState.Profile || "default",
     certificate: sstpState.Certificate || "",
@@ -27,7 +26,6 @@ export const SSTPServer = component$(() => {
     { value: "only-1.3", label: "TLS 1.3 Only" }
   ];
 
-  // Handle authentication method toggle
   const toggleAuthMethod = $((method: AuthMethod) => {
     const index = formState.authentication.indexOf(method);
     if (index === -1) {
@@ -37,7 +35,6 @@ export const SSTPServer = component$(() => {
     }
   });
 
-  // Apply changes to the context
   const applyChanges = $(() => {
     if (isEnabled.value) {
       updateSSTPServer$({

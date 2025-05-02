@@ -1,7 +1,6 @@
 import { component$, $ } from "@builder.io/qwik";
 import {
   HiUserGroupOutline,
-  // HiShieldCheckOutline,
   HiPlusCircleOutline,
   HiChevronDownOutline,
   HiChevronUpOutline,
@@ -23,16 +22,11 @@ import type { PropFunction } from "@builder.io/qwik";
 
 export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
   const {
-    // State
     users,
     vpnServerEnabled,
-    // passphraseValue,
-    // passphraseError,
     enabledProtocols,
     expandedSections,
     isValid,
-    
-    // Actions
     toggleSection,
     addUser,
     removeUser,
@@ -40,11 +34,9 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
     handlePasswordChange,
     handleProtocolToggle,
     toggleProtocol,
-    // handlePassphraseChange,
     saveSettings,
   } = useVPNServer();
 
-  // Create QRL functions for child components
   const toggleSection$ = $((section: string) => toggleSection(section));
   const toggleProtocol$ = $((protocol: VPNType) => toggleProtocol(protocol));
   const saveSettings$ = $((onComplete?: PropFunction<() => void>) => saveSettings(onComplete));

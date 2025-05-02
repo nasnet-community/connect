@@ -7,7 +7,6 @@ import type { OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/LANType
 export const OpenVPNServer = component$(() => {
   const { openVpnState, updateOpenVPNServer$, certificateError, passphraseError } = useOpenVPNServer();
   
-  // Create a local store for managing form state
   const formState = useStore({
     profile: openVpnState.Profile || "default",
     certificate: openVpnState.Certificate || "",
@@ -69,7 +68,6 @@ export const OpenVPNServer = component$(() => {
     { value: "only-1.3", label: "TLS 1.3 Only" }
   ];
 
-  // Apply changes to the context
   const applyChanges = $(() => {
     if (isEnabled.value) {
       updateOpenVPNServer$({

@@ -12,7 +12,6 @@ export const IKEv2Server = component$(() => {
     addressPoolError 
   } = useIKEv2Server();
   
-  // Create a local store for managing form state
   const formState = useStore({
     addressPool: ikev2State.AddressPool || "192.168.77.0/24",
     clientAuthMethod: ikev2State.ClientAuthMethod || "digital-signature",
@@ -36,7 +35,6 @@ export const IKEv2Server = component$(() => {
     { value: "eap", label: "EAP" }
   ];
 
-  // Apply changes to the context
   const applyChanges = $(() => {
     if (isEnabled.value) {
       updateIKEv2Server$({

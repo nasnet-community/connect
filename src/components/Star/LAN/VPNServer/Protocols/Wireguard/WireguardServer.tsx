@@ -20,10 +20,8 @@ export const WireguardServer = component$(() => {
     selectServer$
   } = useWireguardServer();
   
-  // Tabs for interface settings vs peers
   const activeTab = useSignal<'interface' | 'peers'>('interface');
   
-  // Copy text to clipboard
   const copyToClipboard = $((text: string) => {
     navigator.clipboard.writeText(text);
   });

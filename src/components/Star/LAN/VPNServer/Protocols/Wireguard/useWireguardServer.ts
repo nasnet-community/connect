@@ -6,27 +6,21 @@ import type { WireguardInterfaceConfig, WireguardPeerConfig, WireguardServerInst
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
   
-  // Get the current VPN server state
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
-  // Get the current Wireguard servers or initialize with an empty array
   const wireguardServers = useStore<WireguardServerInstanceConfig[]>(
     vpnServerState.WireguardServers || []
   );
 
-  // Signal for generating a new server
   const isGeneratingKeys = useSignal(false);
   
-  // Currently selected server index
   const currentServerIndex = useSignal(0);
   
-  // Error signals
   const privateKeyError = useSignal("");
   const interfaceAddressError = useSignal("");
   const peerPublicKeyError = useSignal("");
   const peerAddressError = useSignal("");
   
-  // Validation functions
   const validatePrivateKey = $((value: string) => {
     if (!value.trim()) {
       privateKeyError.value = $localize`Private key is required`;
@@ -76,12 +70,10 @@ export const useWireguardServer = () => {
     }
   });
 
-  // Generate a new Wireguard server with random keys (in a real app, these would be cryptographically secure)
   const generateWireguardServer$ = $(() => {
     isGeneratingKeys.value = true;
     
-    // In a real implementation, this would call an API to generate proper Wireguard keys
-    // For now, simulate with placeholder values
+
     setTimeout(() => {
       const newServer: WireguardServerInstanceConfig = {
         Interface: {
@@ -98,12 +90,10 @@ export const useWireguardServer = () => {
       currentServerIndex.value = wireguardServers.length - 1;
       isGeneratingKeys.value = false;
       
-      // Persist to StarContext
       updateWireguardServers$();
     }, 500);
   });
   
-  // Add a new peer to the current server
   const addPeer$ = $(() => {
     if (wireguardServers.length === 0) return;
     
@@ -117,45 +107,36 @@ export const useWireguardServer = () => {
     
     wireguardServers[currentServerIndex.value].Peers.push(newPeer);
     
-    // Persist to StarContext
     updateWireguardServers$();
   });
   
-  // Remove a peer from the current server
   const removePeer$ = $((peerIndex: number) => {
     if (wireguardServers.length === 0) return;
     
     wireguardServers[currentServerIndex.value].Peers.splice(peerIndex, 1);
     
-    // Persist to StarContext
     updateWireguardServers$();
   });
   
-  // Update server interface properties
   const updateInterface$ = $(<K extends keyof WireguardInterfaceConfig>(property: K, value: WireguardInterfaceConfig[K]) => {
     if (wireguardServers.length === 0) return;
     
-    // Validate key properties
     if (property === 'PrivateKey' && typeof value === 'string') {
       if (!validatePrivateKey(value)) return;
     } else if (property === 'InterfaceAddress' && typeof value === 'string') {
       if (!validateInterfaceAddress(value)) return;
     }
     
-    // Skip updating PublicKey as it's read-only
     if (property === 'PublicKey') return;
     
     wireguardServers[currentServerIndex.value].Interface[property] = value;
     
-    // Persist to StarContext
     updateWireguardServers$();
   });
   
-  // Update peer properties
   const updatePeer$ = $(<K extends keyof WireguardPeerConfig>(peerIndex: number, property: K, value: WireguardPeerConfig[K]) => {
     if (wireguardServers.length === 0) return;
     
-    // Validate key properties
     if (property === 'PublicKey' && typeof value === 'string') {
       if (!validatePeerPublicKey(value)) return;
     } else if (property === 'AllowedAddress' && typeof value === 'string') {
@@ -164,11 +145,9 @@ export const useWireguardServer = () => {
     
     wireguardServers[currentServerIndex.value].Peers[peerIndex][property] = value;
     
-    // Persist to StarContext
     updateWireguardServers$();
   });
   
-  // Delete the current server
   const deleteServer$ = $(() => {
     if (wireguardServers.length === 0) return;
     
@@ -178,24 +157,19 @@ export const useWireguardServer = () => {
       currentServerIndex.value = Math.max(0, wireguardServers.length - 1);
     }
     
-    // Persist to StarContext
     updateWireguardServers$();
   });
   
-  // Select a different server
   const selectServer$ = $((index: number) => {
     if (index >= 0 && index < wireguardServers.length) {
       currentServerIndex.value = index;
     }
   });
   
-  // Update the StarContext with the current servers
   const updateWireguardServers$ = $(() => {
     starContext.updateLAN$({ 
       VPNServer: {
-        // Preserve existing users and other protocols
         ...vpnServerState,
-        // Update Wireguard config
         WireguardServers: wireguardServers.length > 0 ? [...wireguardServers] : undefined
       }
     });

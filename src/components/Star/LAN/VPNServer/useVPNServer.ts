@@ -8,19 +8,16 @@ export const useVPNServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
-  // User credentials state
   const users = useStore<Credentials[]>(
     vpnServerState.Users?.length 
       ? [...vpnServerState.Users] 
       : [{ Username: "", Password: "", VPNType: [] }]
   );
   
-  // Server and UI state
   const vpnServerEnabled = useSignal(true);
   const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.CertificateKeyPassphrase || "");
   const passphraseError = useSignal("");
   
-  // Track enabled protocols
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
     OpenVPN: !!vpnServerState.OpenVpnServer?.Profile || false,
@@ -30,7 +27,6 @@ export const useVPNServer = () => {
     IKeV2: !!vpnServerState.Ikev2Server?.AddressPool || false
   });
 
-  // Keep track of which protocol configurations are expanded
   const expandedSections = useStore<Record<string, boolean>>({
     users: true,
     protocols: true,
@@ -42,12 +38,10 @@ export const useVPNServer = () => {
     wireguard: false
   });
 
-  // Toggle UI section visibility
   const toggleSection = $((section: string) => {
     expandedSections[section] = !expandedSections[section];
   });
 
-  // User management functions
   const addUser = $(() => {
     users.push({ Username: "", Password: "", VPNType: [] });
   });
@@ -77,11 +71,9 @@ export const useVPNServer = () => {
     }
   });
 
-  // Protocol management functions
   const toggleProtocol = $((protocol: VPNType) => {
     enabledProtocols[protocol] = !enabledProtocols[protocol];
     
-    // Auto expand the protocol section when enabled
     if (!enabledProtocols[protocol]) {
       expandedSections[protocol.toLowerCase()] = false;
     } else {
@@ -89,7 +81,6 @@ export const useVPNServer = () => {
     }
   });
   
-  // Handle passphrase changes
   const handlePassphraseChange = $((value: string) => {
     passphraseValue.value = value;
     if (passphraseValue.value.length < 10) {
@@ -99,21 +90,17 @@ export const useVPNServer = () => {
     }
   });
 
-  // Form validation
   const isValid = useComputed$(() => {
     if (!vpnServerEnabled.value) return true;
 
-    // Check if at least one protocol is enabled
     const hasEnabledProtocol = Object.values(enabledProtocols).some(value => value);
     
-    // Check if all users have valid credentials and at least one protocol selected
     const hasValidUsers = users.every(user => {
       const hasCredentials = user.Username.trim() !== "" && user.Password.trim() !== "";
       const hasProtocols = (user.VPNType?.length || 0) > 0;
       return hasCredentials && hasProtocols;
     });
 
-    // For OpenVPN, check passphrase if enabled
     if (enabledProtocols.OpenVPN) {
       if (passphraseValue.value.length < 10) {
         passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
@@ -126,10 +113,8 @@ export const useVPNServer = () => {
     return hasEnabledProtocol && hasValidUsers;
   });
 
-  // Submit changes
   const saveSettings = $((onComplete$?: QRL<() => void>) => {
     if (vpnServerEnabled.value) {
-      // Filter out invalid users
       const validUsers = users.filter(user => 
         user.Username.trim() !== "" && 
         user.Password.trim() !== "" && 
@@ -138,10 +123,8 @@ export const useVPNServer = () => {
       
       starContext.updateLAN$({
         VPNServer: {
-          // Pass user credentials with protocol access
           Users: validUsers,
           
-          // Update protocol states
           PptpServer: enabledProtocols.PPTP 
             ? vpnServerState.PptpServer || { Profile: "default" } 
             : undefined,
@@ -171,7 +154,6 @@ export const useVPNServer = () => {
         }
       });
     } else {
-      // If VPN server is disabled, reset all settings
       starContext.updateLAN$({
         VPNServer: {
           Users: [],
@@ -190,13 +172,11 @@ export const useVPNServer = () => {
     }
   });
 
-  // Toggle server enabled/disabled
   const toggleVpnServerEnabled = $(() => {
     vpnServerEnabled.value = !vpnServerEnabled.value;
   });
 
   return {
-    // State
     users,
     vpnServerEnabled,
     passphraseValue,
@@ -205,7 +185,6 @@ export const useVPNServer = () => {
     expandedSections,
     isValid,
     
-    // Actions
     toggleSection,
     addUser,
     removeUser,
