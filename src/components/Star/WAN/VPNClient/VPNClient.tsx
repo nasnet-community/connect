@@ -7,6 +7,7 @@ import { ActionFooter } from "./ActionFooter";
 import type { VPNType } from "~/components/Star/StarContext/CommonType";
 import { useContext } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { PromoL2TPBanner } from "./PromoL2TPBanner";
 
 // Import protocol-specific components
 import { WireguardConfig } from "./Protocols/Wireguard/WireguardConfig";
@@ -103,6 +104,9 @@ export const VPNClient = component$<StepProps>(
                 </p>
               </div>
             </div>
+
+            {/* Promotional L2TP Banner */}
+            <PromoL2TPBanner onVPNTypeChange$={handleVPNTypeChange} />
 
             <VPNSelector
               selectedType={vpnType.value}

@@ -1,7 +1,9 @@
-import { component$, useTask$ } from "@builder.io/qwik";
+import { component$, useTask$, $ } from "@builder.io/qwik";
 import { ErrorMessage } from "../../ErrorMessage";
 import type { QRL } from "@builder.io/qwik";
 import { useL2TPConfig } from "./useL2TPConfig";
+import { L2TPPromoBanner } from "./L2TPPromoBanner";
+import type { L2TPCredentials } from "~/utils/supabaseClient";
 
 interface L2TPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -29,8 +31,26 @@ export const L2TPConfig = component$<L2TPConfigProps>(({ onIsValidChange$, isSav
     }
   });
 
+  // Handle credentials received from the promo banner
+  const handleCredentialsReceived$ = $((credentials: L2TPCredentials) => {
+    // Fill the form fields with the received credentials
+    serverAddress.value = credentials.server;
+    username.value = credentials.username;
+    password.value = credentials.password;
+    
+    // Enable IPsec and set the secret
+    useIPsec.value = true;
+    ipsecSecret.value = credentials.ipsec_secret;
+    
+    // Validate the form with the new values
+    handleManualFormSubmit$();
+  });
+
   return (
     <div class="space-y-6">
+      {/* L2TP Promotional Banner */}
+      <L2TPPromoBanner onCredentialsReceived$={handleCredentialsReceived$} />
+      
       <div class="space-y-4 rounded-lg border border-border p-4 dark:border-border-dark">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
