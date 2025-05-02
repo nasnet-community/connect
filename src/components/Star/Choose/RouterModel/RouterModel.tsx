@@ -14,7 +14,6 @@ export const RouterModel = component$((props: RouterModelProps) => {
   const selectedMode = starContext.state.Choose.RouterMode;
   const selectedModels = starContext.state.Choose.RouterModels.map(rm => rm.Model);
 
-  // Get the appropriate icon component based on the icon string from Constants
   const getIcon = (iconType: string) => {
     switch (iconType) {
       case "wifi":
@@ -30,7 +29,6 @@ export const RouterModel = component$((props: RouterModelProps) => {
     const selectedRouter = routers.find((r) => r.model === model);
     if (!selectedRouter) return;
 
-    // Create interfaces object with only the interface types that exist in the router
     const interfaces: RouterInterfaces = {};
     
     if (selectedRouter.interfaces.ethernet?.length) {
@@ -50,7 +48,6 @@ export const RouterModel = component$((props: RouterModelProps) => {
     }
 
     if (selectedMode === "AP Mode") {
-      // For AP Mode, just set a single router
       starContext.updateChoose$({
         RouterModels: [{
           isMaster: true,
@@ -62,14 +59,12 @@ export const RouterModel = component$((props: RouterModelProps) => {
       const existingModels = starContext.state.Choose.RouterModels;
       
       if (existingModels.some(rm => rm.Model === model)) {
-        // Remove this model if already selected
         starContext.updateChoose$({
           RouterModels: existingModels.filter(rm => rm.Model !== model)
         });
       } else if (existingModels.length < 2) {
-        // Add new model (up to 2)
         const newModelConfig = {
-          isMaster: existingModels.length === 0, // First router is master
+          isMaster: existingModels.length === 0, 
           Model: model,
           Interfaces: interfaces
         };
@@ -80,17 +75,14 @@ export const RouterModel = component$((props: RouterModelProps) => {
       }
     }
 
-    // Update wireless status based on selected router
     if (selectedRouter) {
       starContext.updateLAN$({
         Wireless: {
           ...starContext.state.LAN.Wireless,
-          isMultiSSID: selectedRouter.isWireless
         }
       });
     }
 
-    // Check if selection is complete based on mode
     if (
       (selectedMode === "AP Mode" && starContext.state.Choose.RouterModels.length === 1) ||
       (selectedMode === "Trunk Mode" && starContext.state.Choose.RouterModels.length === 2)

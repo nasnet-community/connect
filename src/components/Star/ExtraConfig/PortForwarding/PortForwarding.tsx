@@ -156,7 +156,6 @@ export const PortForwarding = component$<StepProps>(() => {
                         description: state.description,
                       },
                     ];
-                    // Reset form
                     state.protocol = "";
                     state.remoteIP = "";
                     state.remotePort = "";

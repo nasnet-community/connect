@@ -64,7 +64,6 @@ export const GameForm = component$<{ context: StarContextType }>(
                 Games: [...context.state.ExtraConfig.Games, newGame],
               });
 
-              // Reset form
               gameName.value = "";
               tcpPorts.value = "";
               udpPorts.value = "";
