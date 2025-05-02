@@ -1,18 +1,23 @@
 import { component$, useContext, useStore, $ } from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
+import { Tunnel } from "./Tunnel/Tunnel";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import { StarContext } from "../StarContext/StarContext";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
+import EInterface from "./EInterface/EInterface";
 
 export const LAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
 
-  // Check if any selected router model has wireless interface capability
-  const hasWirelessInterface = starContext.state.Choose.RouterModels.some(
+  const hasWirelessEInterface = starContext.state.Choose.RouterModels.some(
     (routerModel) => !!routerModel.Interfaces.wireless?.length
   );
+
+  const EInterfaceStep = component$((props: StepProps) => (
+    <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  ));
 
   const WirelessStep = component$((props: StepProps) => (
     <Wireless isComplete={props.isComplete} onComplete$={props.onComplete$} />
@@ -22,28 +27,55 @@ export const LAN = component$((props: StepProps) => {
     <VPNServer isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const baseSteps: StepItem[] = [
-    // Only include Wireless step if the router models support wireless and wireless is enabled in LAN state
-    ...(hasWirelessInterface
-      ? [
-          {
-            id: 1,
-            title: $localize`Wireless`,
-            component: WirelessStep,
-            isComplete: false,
-          },
-        ]
-      : []),
-    {
-      id: hasWirelessInterface ? 2 : 1,
-      title: $localize`VPN Server`,
-      component: VPNServerStep,
+  const TunnelStep = component$((props: StepProps) => (
+    <Tunnel isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  ));
+
+  const isAdvancedMode = starContext.state.Choose.Mode === "advance";
+  let nextId = 1;
+
+  const baseSteps: StepItem[] = [];
+  
+  if (hasWirelessEInterface) {
+    baseSteps.push({
+      id: nextId,
+      title: $localize`Wireless`,
+      component: WirelessStep,
       isComplete: false,
-    },
+    });
+    nextId++;
+  }
+  
+  baseSteps.push({
+    id: nextId,
+    title: $localize`LAN EInterfaces`,
+    component: EInterfaceStep,
+    isComplete: false,
+  });
+  
+  nextId++;
+  
+  baseSteps.push({
+    id: nextId,
+    title: $localize`VPN Server`,
+    component: VPNServerStep,
+    isComplete: false,
+  });
+  
+  nextId++;
+  
+  baseSteps.push({
+    id: nextId,
+    title: $localize`Network Tunnels`,
+    component: TunnelStep,
+    isComplete: false,
+  });
+  
+  const advancedSteps: StepItem[] = [
+    ...baseSteps,
   ];
 
-  const steps =
-    starContext.state.Choose.Mode === "advance" ? [...baseSteps] : baseSteps;
+  const steps = isAdvancedMode ? advancedSteps : baseSteps;
 
   const stepsStore = useStore({
     activeStep: 0,

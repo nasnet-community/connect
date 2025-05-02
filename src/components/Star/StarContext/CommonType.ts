@@ -21,3 +21,9 @@ export type WirelessCredentials = {
   Password: string;
 }
 
+
+export type Networks = "VPN" | "Domestic" | "Foreign" | "Split";
+
+
+
+

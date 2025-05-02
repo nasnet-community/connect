@@ -1,4 +1,5 @@
-import type { AuthMethod, ARPState, TLSVersion, NetworkProtocol, LayerMode, VPNType } from "./CommonType";
+import type { Ethernet } from "./ChooseType";
+import type { AuthMethod, ARPState, TLSVersion, NetworkProtocol, LayerMode, VPNType, Networks } from "./CommonType";
 
 
 export type OvpnAuthMethod = "md5" | "sha1" | "null" | "sha256" | "sha512";
@@ -182,12 +183,17 @@ export  interface VxlanInterfaceConfig extends BaseTunnelConfig {
     port?: number; 
     interface?: string; 
   }
+
+export interface EthernetInterfaceConfig {
+  name: Ethernet;
+  bridge: Networks;
+}
   
 export interface LANState {
   Wireless?: {
     SingleMode?: WirelessConfig;
     MultiMode?: {
-      Starlink?: WirelessConfig;
+      Foreign?: WirelessConfig;
       Domestic?: WirelessConfig;
       Split?: WirelessConfig;
       VPN?: WirelessConfig;
@@ -208,4 +214,5 @@ export interface LANState {
     Gre?: GreTunnelConfig[];
     Vxlan?: VxlanInterfaceConfig[];
   };
+  Interface?: EthernetInterfaceConfig[];
 }
