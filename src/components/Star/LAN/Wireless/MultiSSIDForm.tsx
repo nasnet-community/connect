@@ -10,6 +10,8 @@ interface MultiSSIDFormProps {
   generateNetworkSSID: QRL<(network: NetworkKey) => Promise<void>>;
   generateNetworkPassword: QRL<(network: NetworkKey) => Promise<void>>;
   generateAllPasswords: QRL<() => Promise<void>>;
+  toggleNetworkHide: QRL<(network: NetworkKey) => void>;
+  toggleNetworkDisabled: QRL<(network: NetworkKey) => void>;
 }
 
 export const MultiSSIDForm = component$<MultiSSIDFormProps>(
@@ -19,6 +21,8 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     generateNetworkSSID,
     generateNetworkPassword,
     generateAllPasswords,
+    toggleNetworkHide,
+    toggleNetworkDisabled,
   }) => {
     return (
       <div class="space-y-8">
@@ -66,12 +70,16 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               networkKey={networkKey}
               ssid={networks[networkKey].ssid}
               password={networks[networkKey].password}
+              isHide={networks[networkKey].isHide}
+              isDisabled={networks[networkKey].isDisabled}
               onSSIDChange={$((value: string) => {
                 networks[networkKey].ssid = value;
               })}
               onPasswordChange={$((value: string) => {
                 networks[networkKey].password = value;
               })}
+              onHideToggle={$(() => toggleNetworkHide(networkKey))}
+              onDisabledToggle={$(() => toggleNetworkDisabled(networkKey))}
               generateNetworkSSID={$(() => generateNetworkSSID(networkKey))}
               generateNetworkPassword={$(() =>
                 generateNetworkPassword(networkKey),
@@ -79,6 +87,13 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               isLoading={isLoading}
             />
           ))}
+        </div>
+        
+        {/* Info Note */}
+        <div class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>
+            {$localize`Note: At least one network must remain enabled. To save, fill out all required fields for enabled networks.`}
+          </p>
         </div>
       </div>
     );

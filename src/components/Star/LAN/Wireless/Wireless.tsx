@@ -14,6 +14,8 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
     isMultiSSID,
     ssid,
     password,
+    isHide,
+    isDisabled,
     networks,
     isLoading,
     generateSSID,
@@ -22,6 +24,10 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
     generateNetworkPassword,
     generateAllPasswords,
     isFormValid,
+    toggleNetworkHide,
+    toggleNetworkDisabled,
+    toggleSingleHide,
+    toggleSingleDisabled,
   } = useWirelessForm();
 
   return (
@@ -34,8 +40,12 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
           <SingleSSIDForm
             ssid={ssid}
             password={password}
+            isHide={isHide}
+            isDisabled={isDisabled}
             generateSSID={generateSSID}
             generatePassword={generatePassword}
+            toggleHide={toggleSingleHide}
+            toggleDisabled={toggleSingleDisabled}
             isLoading={isLoading}
           />
         ) : (
@@ -45,18 +55,72 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
             generateNetworkSSID={generateNetworkSSID}
             generateNetworkPassword={generateNetworkPassword}
             generateAllPasswords={generateAllPasswords}
+            toggleNetworkHide={toggleNetworkHide}
+            toggleNetworkDisabled={toggleNetworkDisabled}
           />
         )}
 
         <ActionButtons
           onSubmit={$(async () => {
-            starContext.state.LAN.Wireless.isMultiSSID = isMultiSSID.value;
-
             if (!isMultiSSID.value) {
-              starContext.state.LAN.Wireless.SingleMode.WirelessCredentials = {
-                SSID: ssid.value,
-                Password: password.value,
-              };
+              // Single SSID mode - Only include the SingleMode configuration
+              starContext.updateLAN$({
+                Wireless: {
+                  SingleMode: {
+                    SSID: ssid.value,
+                    Password: password.value,
+                    isHide: isHide.value,
+                    isDisabled: isDisabled.value,
+                  }
+                  // Don't include MultiMode
+                }
+              });
+            } else {
+              // Multi SSID mode - Only include the MultiMode configuration
+              // Get only enabled networks
+              const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
+              
+              if (!networks.starlink.isDisabled) {
+                enabledNetworks.Starlink = {
+                  SSID: networks.starlink.ssid,
+                  Password: networks.starlink.password,
+                  isHide: networks.starlink.isHide,
+                  isDisabled: networks.starlink.isDisabled,
+                };
+              }
+              
+              if (!networks.domestic.isDisabled) {
+                enabledNetworks.Domestic = {
+                  SSID: networks.domestic.ssid,
+                  Password: networks.domestic.password,
+                  isHide: networks.domestic.isHide,
+                  isDisabled: networks.domestic.isDisabled,
+                };
+              }
+              
+              if (!networks.split.isDisabled) {
+                enabledNetworks.Split = {
+                  SSID: networks.split.ssid,
+                  Password: networks.split.password,
+                  isHide: networks.split.isHide,
+                  isDisabled: networks.split.isDisabled,
+                };
+              }
+              
+              if (!networks.vpn.isDisabled) {
+                enabledNetworks.VPN = {
+                  SSID: networks.vpn.ssid,
+                  Password: networks.vpn.password,
+                  isHide: networks.vpn.isHide,
+                  isDisabled: networks.vpn.isDisabled,
+                };
+              }
+
+              starContext.updateLAN$({
+                Wireless: {
+                  MultiMode: enabledNetworks
+                }
+              });
             }
 
             await onComplete$();

@@ -185,8 +185,7 @@ export  interface VxlanInterfaceConfig extends BaseTunnelConfig {
   
 export interface LANState {
   Wireless?: {
-    isMultiSSID: boolean ;
-    SingleMode?:  WirelessConfig;
+    SingleMode?: WirelessConfig;
     MultiMode?: {
       Starlink?: WirelessConfig;
       Domestic?: WirelessConfig;
