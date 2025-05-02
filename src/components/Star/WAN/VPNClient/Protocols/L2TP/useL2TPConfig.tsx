@@ -36,7 +36,6 @@ export const useL2TPConfig = (
   const starContext = useContext(StarContext);
   const errorMessage = useSignal("");
   
-  // Manual form fields
   const serverAddress = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
@@ -45,7 +44,6 @@ export const useL2TPConfig = (
   const addDefaultRoute = useSignal(true);
   const usePeerDNS = useSignal(true);
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.L2TP?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
     serverAddress.value = existingConfig.ConnectTo || "";
@@ -71,7 +69,6 @@ export const useL2TPConfig = (
       usePeerDNS.value = existingConfig.UsePeerDNS;
     }
     
-    // If we have existing config, mark as valid
     const isConfigValid = serverAddress.value && username.value && password.value && 
                           (!useIPsec.value || (useIPsec.value && ipsecSecret.value));
     
@@ -94,7 +91,6 @@ export const useL2TPConfig = (
       return !value || (typeof value === 'string' && value.trim() === "");
     });
 
-    // Check if IPsec is enabled but no secret is provided
     if (config.UseIPsec && (!config.IPsecSecret || config.IPsecSecret.trim() === "")) {
       emptyFields.push("IPsecSecret");
     }
@@ -106,7 +102,6 @@ export const useL2TPConfig = (
   });
 
   const updateContextWithConfig$ = $(async (parsedConfig: L2TPConfig) => {
-    // Convert the parsed config to the format expected by the context
     const l2tpClientConfig = {
       ConnectTo: parsedConfig.ConnectTo,
       Credentials: {
@@ -120,20 +115,16 @@ export const useL2TPConfig = (
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of L2TP configs if it doesn't exist
     const l2tpConfigs = currentVPNClient.L2TP || [];
     
-    // Update the existing config or add a new one
     if (l2tpConfigs.length > 0) {
       l2tpConfigs[0] = l2tpClientConfig;
     } else {
       l2tpConfigs.push(l2tpClientConfig);
     }
     
-    // Update the context with the new L2TP config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,

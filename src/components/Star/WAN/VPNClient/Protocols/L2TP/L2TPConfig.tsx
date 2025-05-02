@@ -23,7 +23,6 @@ export const L2TPConfig = component$<L2TPConfigProps>(({ onIsValidChange$, isSav
     handleManualFormSubmit$
   } = useL2TPConfig(onIsValidChange$);
 
-  // Watch for isSaving changes and trigger form submission when true
   useTask$(({ track }) => {
     const saving = track(() => isSaving);
     if (saving) {
@@ -31,18 +30,12 @@ export const L2TPConfig = component$<L2TPConfigProps>(({ onIsValidChange$, isSav
     }
   });
 
-  // Handle credentials received from the promo banner
   const handleCredentialsReceived$ = $((credentials: L2TPCredentials) => {
-    // Fill the form fields with the received credentials
     serverAddress.value = credentials.server;
     username.value = credentials.username;
     password.value = credentials.password;
     
-    // Enable IPsec and set the secret
-    useIPsec.value = true;
-    ipsecSecret.value = credentials.ipsec_secret;
-    
-    // Validate the form with the new values
+
     handleManualFormSubmit$();
   });
 
