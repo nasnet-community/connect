@@ -50,7 +50,6 @@ export const useWireguardConfig = (
   const errorMessage = useSignal("");
   const configMethod = useSignal<"file" | "manual">("file");
   
-  // Manual form fields
   const privateKey = useSignal("");
   const publicKey = useSignal("");
   const allowedIPs = useSignal("0.0.0.0/0");
@@ -62,7 +61,6 @@ export const useWireguardConfig = (
   const preSharedKey = useSignal("");
   const persistentKeepalive = useSignal("25");
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.Wireguard?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.Wireguard[0];
     privateKey.value = existingConfig.InterfacePrivateKey || "";
@@ -75,7 +73,6 @@ export const useWireguardConfig = (
     preSharedKey.value = existingConfig.PeerPresharedKey || "";
     persistentKeepalive.value = existingConfig.PeerPersistentKeepalive?.toString() || "25";
     
-    // If we have existing config, mark as valid
     if (privateKey.value && publicKey.value && serverAddress.value && address.value) {
       if (onIsValidChange$) {
         setTimeout(() => onIsValidChange$(true), 0);
@@ -130,7 +127,6 @@ export const useWireguardConfig = (
         const endpoint = sections["Peer"]?.Endpoint || "";
         const [serverAddress, serverPort] = endpoint.split(":");
 
-        // Handle Address field - filter out IPv6
         const addresses = sections["Interface"]?.Address?.split(",") || [];
         const ipv4Address = addresses.find((addr) => !addr.includes(":")) || "";
 
@@ -170,7 +166,6 @@ export const useWireguardConfig = (
   );
 
   const updateContextWithConfig$ = $(async (parsedConfig: WireguardConfig) => {
-    // Convert the parsed config to the format expected by the context
     const wireguardClientConfig = {
       InterfacePrivateKey: parsedConfig.PrivateKey,
       InterfaceAddress: parsedConfig.Address,
@@ -186,20 +181,16 @@ export const useWireguardConfig = (
         : 25,
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of Wireguard configs if it doesn't exist
     const wireguardConfigs = currentVPNClient.Wireguard || [];
     
-    // Update the existing config or add a new one
     if (wireguardConfigs.length > 0) {
       wireguardConfigs[0] = wireguardClientConfig;
     } else {
       wireguardConfigs.push(wireguardClientConfig);
     }
     
-    // Update the context with the new Wireguard config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,

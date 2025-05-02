@@ -24,7 +24,6 @@ export const PPTPConfig = component$<PPTPConfigProps>(({ onIsValidChange$, isSav
     handleManualFormSubmit$
   } = usePPTPConfig(onIsValidChange$);
 
-  // Watch for isSaving changes and trigger form submission when true
   useTask$(({ track }) => {
     const saving = track(() => isSaving);
     if (saving) {

@@ -27,7 +27,6 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(({ onIsValidChange$, isS
     handleManualFormSubmit$
   } = useIKEv2Config(onIsValidChange$);
 
-  // Watch for isSaving changes and trigger form submission when true
   useTask$(({ track }) => {
     const saving = track(() => isSaving);
     if (saving) {

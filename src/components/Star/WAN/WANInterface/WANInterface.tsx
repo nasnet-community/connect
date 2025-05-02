@@ -20,12 +20,10 @@ export const WANInterface = component$<WANInterfaceProps>(
       handlePasswordChange,
     } = useWANInterface(mode);
 
-    // Get the master router model from RouterModels
     const masterRouter = starContext.state.Choose.RouterModels.find(
       (rm) => rm.isMaster
     );
 
-    // Use interfaces from the master router if available, otherwise use an empty array
     const availableInterfaces = masterRouter
       ? [
           ...(masterRouter.Interfaces.ethernet || []),

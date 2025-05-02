@@ -22,7 +22,6 @@ export const SSTPConfig = component$<SSTPConfigProps>(({ onIsValidChange$, isSav
     handleManualFormSubmit$
   } = useSSTPConfig(onIsValidChange$);
 
-  // Watch for isSaving changes and trigger form submission when true
   useTask$(({ track }) => {
     const saving = track(() => isSaving);
     if (saving) {

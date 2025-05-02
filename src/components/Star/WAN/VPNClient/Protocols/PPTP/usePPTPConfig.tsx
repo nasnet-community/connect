@@ -45,7 +45,6 @@ export const usePPTPConfig = (
   const starContext = useContext(StarContext);
   const errorMessage = useSignal("");
   
-  // Manual form fields
   const serverAddress = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
@@ -57,7 +56,6 @@ export const usePPTPConfig = (
   const mppe128 = useSignal(true);
   const stateful = useSignal(true);
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.PPTP?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
     serverAddress.value = existingConfig.ConnectTo || "";
@@ -79,7 +77,6 @@ export const usePPTPConfig = (
       usePeerDNS.value = existingConfig.UsePeerDNS;
     }
     
-    // If we have existing config, mark as valid
     if (serverAddress.value && username.value && password.value) {
       if (onIsValidChange$) {
         setTimeout(() => onIsValidChange$(true), 0);
@@ -106,7 +103,6 @@ export const usePPTPConfig = (
   });
 
   const updateContextWithConfig$ = $(async (parsedConfig: PPTPConfig) => {
-    // Convert the parsed config to the format expected by the context
     const pptpClientConfig = {
       ConnectTo: parsedConfig.ConnectTo,
       Credentials: {
@@ -119,20 +115,16 @@ export const usePPTPConfig = (
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of PPTP configs if it doesn't exist
     const pptpConfigs = currentVPNClient.PPTP || [];
     
-    // Update the existing config or add a new one
     if (pptpConfigs.length > 0) {
       pptpConfigs[0] = pptpClientConfig;
     } else {
       pptpConfigs.push(pptpClientConfig);
     }
     
-    // Update the context with the new PPTP config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
@@ -194,7 +186,6 @@ export const usePPTPConfig = (
         const lines = configText.split('\n').map(line => line.trim());
         
         for (const line of lines) {
-          // Skip comments and empty lines
           if (!line || line.startsWith('#') || line.startsWith(';')) {
             continue;
           }

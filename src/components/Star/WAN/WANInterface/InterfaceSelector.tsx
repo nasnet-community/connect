@@ -1,9 +1,7 @@
 import type { InterfaceSelectorProps } from "./types";
 import { component$, useResource$, Resource } from "@builder.io/qwik";
 
-// Map to provide more user-friendly interface names
 const interfaceDisplayNames: Record<string, string> = {
-  // Ethernet
   "ether1": "Ethernet 1",
   "ether2": "Ethernet 2",
   "ether3": "Ethernet 3",
@@ -13,11 +11,9 @@ const interfaceDisplayNames: Record<string, string> = {
   "ether7": "Ethernet 7",
   "ether8": "Ethernet 8",
   
-  // Wireless
   "wlan1": "Wi-Fi 2.4GHz",
   "wlan2": "Wi-Fi 5GHz",
   
-  // SFP
   "sfp-sfpplus1": "SFP+ Port",
 };
 

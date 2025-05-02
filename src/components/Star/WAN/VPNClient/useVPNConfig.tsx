@@ -9,9 +9,7 @@ export const useVPNConfig = () => {
   const vpnType = useSignal<VPNType | "">("");
   const errorMessage = useSignal("");
   
-  // Initialize vpnType from context if it exists
   if (starContext.state.WAN.VPNClient) {
-    // Check which VPN type has configurations
     if (starContext.state.WAN.VPNClient.Wireguard?.length) {
       vpnType.value = "Wireguard";
       isValid.value = true;
@@ -33,23 +31,18 @@ export const useVPNConfig = () => {
     }
   }
   
-  // Save VPN selection to context
   const saveVPNSelection$ = $(async () => {
-    // Make sure there's a VPN type selected
     if (!vpnType.value) {
       errorMessage.value = "Please select a VPN type";
       return false;
     }
     
-    // Make sure the configuration is valid
     if (!isValid.value) {
       errorMessage.value = "Please complete the VPN configuration";
       return false;
     }
     
-    // Get current VPNClient configuration from context
-    // No action needed here as all the protocol-specific hooks have already updated the context
-    // with their respective configurations
+
 
     console.log("Final VPN configuration saved to context:", starContext.state.WAN.VPNClient);
     return true;

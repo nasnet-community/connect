@@ -42,7 +42,6 @@ export const useSSTPConfig = (
   const starContext = useContext(StarContext);
   const errorMessage = useSignal("");
   
-  // Manual form fields
   const serverAddress = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
@@ -52,7 +51,6 @@ export const useSSTPConfig = (
   const verifyServerCertificate = useSignal(true);
   const tlsVersion = useSignal<TLSVersion>("any");
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.SSTP?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.SSTP[0];
     serverAddress.value = existingConfig.ConnectTo || "";
@@ -82,7 +80,6 @@ export const useSSTPConfig = (
       tlsVersion.value = existingConfig.TlsVersion;
     }
     
-    // If we have existing config, mark as valid
     if (serverAddress.value && username.value && password.value) {
       if (onIsValidChange$) {
         setTimeout(() => onIsValidChange$(true), 0);
@@ -109,7 +106,6 @@ export const useSSTPConfig = (
   });
 
   const updateContextWithConfig$ = $(async (parsedConfig: SSTPConfig) => {
-    // Convert the parsed config to the format expected by the context
     const sstpClientConfig = {
       ConnectTo: parsedConfig.ConnectTo,
       Credentials: {
@@ -124,20 +120,16 @@ export const useSSTPConfig = (
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of SSTP configs if it doesn't exist
     const sstpConfigs = currentVPNClient.SSTP || [];
     
-    // Update the existing config or add a new one
     if (sstpConfigs.length > 0) {
       sstpConfigs[0] = sstpClientConfig;
     } else {
       sstpConfigs.push(sstpClientConfig);
     }
     
-    // Update the context with the new SSTP config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
@@ -195,7 +187,6 @@ export const useSSTPConfig = (
         const lines = configText.split('\n').map(line => line.trim());
         
         for (const line of lines) {
-          // Skip comments and empty lines
           if (!line || line.startsWith('#') || line.startsWith(';')) {
             continue;
           }
@@ -204,7 +195,6 @@ export const useSSTPConfig = (
             const parts = line.split(' ');
             config.ConnectTo = parts[1];
             
-            // Check if port is specified
             if (parts.length > 2 && !isNaN(parseInt(parts[2]))) {
               config.Port = parseInt(parts[2]);
             }

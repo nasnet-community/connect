@@ -78,7 +78,6 @@ export const useOpenVPNConfig = (
   const errorMessage = useSignal("");
   const configMethod = useSignal<"file" | "manual">("file");
   
-  // Manual form fields
   const serverAddress = useSignal("");
   const serverPort = useSignal("1194");
   const protocol = useSignal<"tcp" | "udp">("udp");
@@ -91,7 +90,6 @@ export const useOpenVPNConfig = (
   const remoteRandomize = useSignal(false);
   const floatType = useSignal(false);
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.OpenVPN?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.OpenVPN[0];
     serverAddress.value = existingConfig.ConnectTo || "";
@@ -120,7 +118,6 @@ export const useOpenVPNConfig = (
       cipher.value = existingConfig.Cipher;
     }
     
-    // If we have existing config, mark as valid
     let isConfigValid = serverAddress.value !== "";
     
     if (authType.value === "credentials") {
@@ -147,7 +144,6 @@ export const useOpenVPNConfig = (
       return !value || (typeof value === 'string' && value.trim() === "");
     });
     
-    // Check auth-specific required fields
     if (config.AuthType === "credentials" || config.AuthType === "both") {
       if (!config.Credentials?.Username || !config.Credentials?.Password) {
         emptyFields.push("Credentials");
@@ -167,7 +163,6 @@ export const useOpenVPNConfig = (
   });
 
   const updateContextWithConfig$ = $(async (parsedConfig: OpenVPNConfig) => {
-    // Convert the parsed config to the format expected by the context
     const openVPNClientConfig = {
       ConnectTo: parsedConfig.ServerAddress,
       Port: parseInt(parsedConfig.Port),
@@ -183,20 +178,16 @@ export const useOpenVPNConfig = (
       VerifyServerCertificate: true,
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of OpenVPN configs if it doesn't exist
     const openVPNConfigs = currentVPNClient.OpenVPN || [];
     
-    // Update the existing config or add a new one
     if (openVPNConfigs.length > 0) {
       openVPNConfigs[0] = openVPNClientConfig;
     } else {
       openVPNConfigs.push(openVPNClientConfig);
     }
     
-    // Update the context with the new OpenVPN config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
@@ -298,7 +289,6 @@ export const useOpenVPNConfig = (
         
         const lines = configText.split('\n').map(line => line.trim());
         
-        // Helper function to extract content between tags
         const extractBlockContent = (startTag: string, endTag: string): string | undefined => {
           const startIndex = lines.findIndex(line => line.includes(startTag));
           if (startIndex === -1) return undefined;
@@ -309,30 +299,24 @@ export const useOpenVPNConfig = (
           return lines.slice(startIndex + 1, endIndex).join('\n');
         };
         
-        // Process each line
         for (const line of lines) {
-          // Skip comments and empty lines
           if (!line || line.startsWith('#') || line.startsWith(';')) {
             continue;
           }
           
-          // Remote server
           if (line.startsWith('remote ')) {
             const parts = line.split(' ');
             if (parts.length >= 2) {
               config.ServerAddress = parts[1];
               
-              // Check if port is specified
               if (parts.length >= 3 && !isNaN(parseInt(parts[2]))) {
                 config.Port = parts[2];
               }
             }
           }
-          // Port
           else if (line.startsWith('port ')) {
             config.Port = line.split(' ')[1];
           }
-          // Protocol
           else if (line.startsWith('proto ')) {
             const protoValue = line.split(' ')[1].toLowerCase();
             if (protoValue === 'tcp' || protoValue === 'tcp-client' || protoValue === 'tcp-server') {
@@ -341,13 +325,11 @@ export const useOpenVPNConfig = (
               config.Protocol = 'udp';
             }
           }
-          // Auth-User-Pass (credentials required)
           else if (line === 'auth-user-pass') {
             if (config.AuthType !== 'both') {
               config.AuthType = 'credentials';
             }
           }
-          // Certificates
           else if (line.includes('<ca>')) {
             if (!config.Certificates) config.Certificates = {};
             config.Certificates.Ca = extractBlockContent('<ca>', '</ca>');
@@ -369,31 +351,24 @@ export const useOpenVPNConfig = (
               config.AuthType = 'certificates';
             }
           }
-          // Cipher
           else if (line.startsWith('cipher ')) {
             config.Cipher = line.split(' ')[1];
           }
-          // Auth algorithm
           else if (line.startsWith('auth ')) {
             config.Auth = line.split(' ')[1];
           }
-          // comp-lzo
           else if (line === 'comp-lzo' || line === 'comp-lzo yes' || line === 'comp-lzo adaptive') {
             config.CompLZO = true;
           }
-          // remote-random
           else if (line === 'remote-random') {
             config.RemoteRandomize = true;
           }
-          // float
           else if (line === 'float') {
             config.FloatType = true;
           }
-          // redirect-gateway
           else if (line.startsWith('redirect-gateway')) {
             config.Redirect = line;
           }
-          // TLS auth
           else if (line.startsWith('tls-auth')) {
             if (!config.TLSAuth) config.TLSAuth = {};
             const parts = line.split(' ');
@@ -404,11 +379,9 @@ export const useOpenVPNConfig = (
               }
             }
           }
-          // Key direction
           else if (line.startsWith('key-direction')) {
             config.KeyDirection = parseInt(line.split(' ')[1]);
           }
-          // Device type
           else if (line.startsWith('dev ')) {
             const dev = line.split(' ')[1].toLowerCase();
             if (dev.startsWith('tun')) {
@@ -417,7 +390,6 @@ export const useOpenVPNConfig = (
               config.DeviceType = 'tap';
             }
           }
-          // KeepAlive
           else if (line.startsWith('keepalive ')) {
             const parts = line.split(' ');
             if (parts.length >= 3) {
@@ -427,52 +399,42 @@ export const useOpenVPNConfig = (
               };
             }
           }
-          // MTU
           else if (line.startsWith('tun-mtu ')) {
             config.Mtu = parseInt(line.split(' ')[1]);
           }
-          // Fragment
           else if (line.startsWith('fragment ')) {
             config.Fragment = parseInt(line.split(' ')[1]);
           }
-          // MSS Fix
           else if (line.startsWith('mssfix ')) {
             config.Mssfix = parseInt(line.split(' ')[1]);
           }
-          // Verify server certificate
           else if (line === 'verify-server-cert' || line === 'verify-server-certificate') {
             config.VerifyServerCert = true;
           }
-          // NS cert type
           else if (line.startsWith('ns-cert-type ')) {
             config.NsCertType = line.split(' ')[1];
           }
-          // Remote control endpoint
           else if (line.startsWith('management ')) {
             const parts = line.split(' ');
             if (parts.length >= 3) {
               config.RemoteControlEndpoint = `${parts[1]}:${parts[2]}`;
             }
           }
-          // Remote cert TLS
           else if (line.startsWith('remote-cert-tls ')) {
             const value = line.split(' ')[1].toLowerCase();
             if (value === 'server' || value === 'client') {
               config.RemoteCertTls = value as 'server' | 'client';
             }
           }
-          // Resolv retry
           else if (line.includes('resolv-retry')) {
             config.Resolv = true;
           }
-          // Pull filter
           else if (line.startsWith('pull-filter ')) {
             if (!config.PullFilter) config.PullFilter = [];
             config.PullFilter.push(line.substring('pull-filter '.length));
           }
         }
         
-        // If we detect both auth-user-pass and certificates are being used, set AuthType to both
         if (config.Certificates?.Cert && config.AuthType === "credentials") {
           config.AuthType = "both";
         }

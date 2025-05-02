@@ -9,7 +9,6 @@ import { useContext } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { PromoL2TPBanner } from "./PromoL2TPBanner";
 
-// Import protocol-specific components
 import { WireguardConfig } from "./Protocols/Wireguard/WireguardConfig";
 import { OpenVPNConfig } from "./Protocols/OpenVPN/OpenVPNConfig";
 import { L2TPConfig } from "./Protocols/L2TP/L2TPConfig";
@@ -27,7 +26,6 @@ export const VPNClient = component$<StepProps>(
       saveVPNSelection$
     } = useVPNConfig();
     
-    // Signal to trigger protocol-specific save actions
     const isSaving = useSignal(false);
 
     const handleVPNTypeChange = $((value: VPNType) => {
@@ -47,22 +45,17 @@ export const VPNClient = component$<StepProps>(
       }
 
       if (isValid.value) {
-        // Trigger protocol-specific save action via signal
         isSaving.value = true;
         
-        // This ensures all protocol components have a chance to finalize their state
         await new Promise(resolve => setTimeout(resolve, 0));
         
-        // Reset the save trigger
         isSaving.value = false;
         
-        // Now save the VPN selection to the global context
         const saved = await saveVPNSelection$();
         
         if (saved && onComplete$) {
           console.log("VPN configuration saved successfully, proceeding to next step");
           
-          // Log the current state to see what was actually saved
           console.log("Current VPN Client state:", starContext.state.WAN.VPNClient);
           
           await onComplete$();

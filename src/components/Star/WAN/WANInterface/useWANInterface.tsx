@@ -9,7 +9,6 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const password = useSignal("");
   const isValid = useSignal(false);
 
-  // Initialize from context if values exist
   if (starContext.state.WAN.WANLink[mode]) {
     const interfaceData = starContext.state.WAN.WANLink[mode];
     if (interfaceData.InterfaceName && selectedInterface.value === "") {
@@ -53,7 +52,6 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     const isOtherWifi2_4 = otherInterface.includes("2.4") || otherInterface.includes("2ghz");
     const isOtherWifi5 = otherInterface.includes("5") || otherInterface.includes("5ghz");
 
-    // Create update object
     const updateData = {
       WANLink: {
         ...starContext.state.WAN.WANLink,
@@ -62,12 +60,10 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       }
     };
 
-    // Create the mode-specific config
     const modeConfig: WANConfig = {
       InterfaceName: selectedInterface.value
     };
 
-    // Only add wireless credentials if it's a wireless interface
     if (selectedInterface.value.startsWith("wlan")) {
       modeConfig.WirelessCredentials = {
         SSID: ssid.value,
@@ -75,13 +71,11 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       };
     }
 
-    // Add the mode config to the update
     updateData.WANLink[mode] = {
       ...starContext.state.WAN.WANLink[mode],
       ...modeConfig
     };
 
-    // Update the context
     starContext.updateWAN$(updateData);
   });
 
@@ -109,7 +103,6 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     validateForm();
   });
 
-  // Initial validation
   validateForm();
 
   return {

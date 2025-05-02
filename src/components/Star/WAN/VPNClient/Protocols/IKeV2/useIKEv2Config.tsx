@@ -50,7 +50,6 @@ export const useIKEv2Config = (
   const starContext = useContext(StarContext);
   const errorMessage = useSignal("");
   
-  // Manual form fields
   const serverAddress = useSignal("");
   const authMethod = useSignal<"psk" | "eap" | "certificate">("psk");
   const presharedKey = useSignal("");
@@ -65,7 +64,6 @@ export const useIKEv2Config = (
   const phase2EncryptionAlgorithm = useSignal("AES-256-CBC");
   const phase2PFSGroup = useSignal("none");
   
-  // Initialize fields if we have existing configuration
   if (starContext.state.WAN.VPNClient?.IKeV2?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.IKeV2[0];
     serverAddress.value = existingConfig.ServerAddress || "";
@@ -91,7 +89,6 @@ export const useIKEv2Config = (
       policyDstAddress.value = existingConfig.PolicyDstAddress;
     }
     
-    // If we have existing config, mark as valid
     let isConfigValid = serverAddress.value !== "";
     
     if (authMethod.value === "psk") {
@@ -118,7 +115,6 @@ export const useIKEv2Config = (
       return !value || (typeof value === 'string' && value.trim() === "");
     });
     
-    // Check auth-specific required fields
     if (config.AuthMethod === "psk" && (!config.PresharedKey || config.PresharedKey.trim() === "")) {
       emptyFields.push("PresharedKey");
     }
@@ -155,23 +151,19 @@ export const useIKEv2Config = (
         const lines = configText.split('\n').map(line => line.trim());
         
         for (const line of lines) {
-          // Skip comments and empty lines
           if (!line || line.startsWith('#') || line.startsWith(';')) {
             continue;
           }
           
           if (line.startsWith('conn ')) {
-            // Parsing connection name, typically not needed
             continue;
           }
           else if (line.startsWith('right=')) {
             config.ServerAddress = line.substring(6).trim();
           }
           else if (line.startsWith('rightid=')) {
-            // Extracting server ID, can be stored for reference
             const rightId = line.substring(8).trim();
             if (rightId.startsWith('"CN=')) {
-              // Extract domain/IP from CN format
               const cnValue = rightId.substring(4, rightId.length - 1);
               if (!config.ServerAddress) {
                 config.ServerAddress = cnValue;
@@ -179,29 +171,23 @@ export const useIKEv2Config = (
             }
           }
           else if (line.includes('keyexchange=ikev2')) {
-            // IKEv2 confirmation, we already know it's IKEv2
             continue;
           }
           else if (line.startsWith('ike=')) {
-            // Extract Phase 1 parameters
             const ike = line.substring(4).trim();
             const parts = ike.split('-');
             if (parts.length >= 3) {
-              // Format is typically: aes128-sha1-modp2048
-              config.Phase1EncryptionAlgorithm = parts[0]; // aes128
-              config.Phase1HashAlgorithm = parts[1]; // sha1
-              config.Phase1DHGroup = parts[2]; // modp2048
+              config.Phase1EncryptionAlgorithm = parts[0]; 
+              config.Phase1HashAlgorithm = parts[1]; 
+              config.Phase1DHGroup = parts[2]; 
             }
           }
           else if (line.startsWith('esp=')) {
-            // Extract Phase 2 parameters
             const esp = line.substring(4).trim();
             const parts = esp.split('-');
             if (parts.length >= 2) {
-              // Format is typically: aes128-sha1
-              config.Phase2EncryptionAlgorithm = parts[0]; // aes128
-              config.Phase2HashAlgorithm = parts[1]; // sha1
-              // PFS might be in a separate line
+              config.Phase2EncryptionAlgorithm = parts[0]; 
+              config.Phase2HashAlgorithm = parts[1];
             }
           }
           else if (line.startsWith('leftcert=')) {
@@ -231,7 +217,6 @@ export const useIKEv2Config = (
   );
 
   const updateContextWithConfig$ = $(async (parsedConfig: IKEv2Config) => {
-    // Convert the parsed config to the format expected by the context
     const ikev2ClientConfig = {
       ServerAddress: parsedConfig.ServerAddress,
       AuthMethod: parsedConfig.AuthMethod,
@@ -246,20 +231,16 @@ export const useIKEv2Config = (
       PolicyDstAddress: parsedConfig.PolicyDstAddress,
     };
 
-    // Make sure we have the VPNClient object
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
     
-    // Create an array of IKEv2 configs if it doesn't exist
     const ikev2Configs = currentVPNClient.IKeV2 || [];
     
-    // Update the existing config or add a new one
     if (ikev2Configs.length > 0) {
       ikev2Configs[0] = ikev2ClientConfig;
     } else {
       ikev2Configs.push(ikev2ClientConfig);
     }
     
-    // Update the context with the new IKEv2 config
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
