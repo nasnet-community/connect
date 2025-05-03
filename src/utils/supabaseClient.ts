@@ -1,5 +1,3 @@
-
-
 export interface L2TPCredentials {
   id: string;
   username: string;

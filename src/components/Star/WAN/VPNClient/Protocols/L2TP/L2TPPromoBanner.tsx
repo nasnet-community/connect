@@ -1,82 +1,30 @@
-import { component$, $, type QRL, useSignal } from "@builder.io/qwik";
-import {
-  getL2TPCredentials,
-  getReferrerFromURL,
-  getOrCreateSessionId,
-  type L2TPCredentials
-} from "~/utils/supabaseClient";
+import { component$, type QRL } from "@builder.io/qwik";
+import type { L2TPCredentials } from "~/utils/supabaseClient";
+import { useL2TPPromoBanner } from "./useL2TPPromoBanner";
 
 interface L2TPPromoBannerProps {
   onCredentialsReceived$: QRL<(credentials: L2TPCredentials) => void>;
 }
 
+declare global {
+  interface Window {
+    onCaptchaLoaded: () => void;
+    onCaptchaSuccess: (token: string) => void;
+    onCaptchaExpired: () => void;
+    onCaptchaError: () => void;
+    grecaptcha: any;
+  }
+}
+
 export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
   ({ onCredentialsReceived$ }) => {
-    const isLoading = useSignal(false);
-    const hasError = useSignal(false);
-    const errorMessage = useSignal("");
-    
-    const requestCredentials = $(async () => {
-      isLoading.value = true;
-      hasError.value = false;
-      errorMessage.value = "";
-      
-      try {
-        console.log("Requesting L2TP credentials...");
-        
-        const referrer = getReferrerFromURL();
-        console.log("Referrer:", referrer);
-        
-        const platform = "NNC";
-        console.log("Platform:", platform);
-
-        const sessionId = getOrCreateSessionId();
-        console.log("Session ID:", sessionId);
-        
-        const response = await getL2TPCredentials(platform, referrer, sessionId);
-        console.log("Response from server:", response);
-        
-        if (!response.success || !response.credentials) {
-          throw new Error(response.error || response.error_detail || "Failed to get credentials");
-        }
-        
-        const completeCredentials: L2TPCredentials = {
-          id: response.request_id || crypto.randomUUID(),
-          username: response.credentials.username,
-          password: response.credentials.password,
-          server: response.credentials.server,
-          created_at: new Date().toISOString(),
-          expiry_date: response.credentials.expiry_date,
-          platform,
-          referrer,
-          session_id: sessionId
-        };
-        
-        console.log("Credentials processed successfully");
-        
-        await onCredentialsReceived$(completeCredentials);
-        
-      } catch (err) {
-        console.error("L2TP credentials error:", err);
-        hasError.value = true;
-        
-        if (err instanceof Error) {
-          if (err.message.includes('Failed to fetch')) {
-            errorMessage.value = "Network error: Unable to connect to the VPN service. Please check your internet connection.";
-          } else if (err.message.includes('Bad Request') || err.message.includes('400')) {
-            errorMessage.value = "Invalid request: The server couldn't process your request. This might be a temporary issue. Please try again later.";
-          } else if (err.message.includes('no_credentials_available')) {
-            errorMessage.value = "No VPN credentials are currently available. Please try again later.";
-          } else {
-            errorMessage.value = err.message;
-          }
-        } else {
-          errorMessage.value = "An unexpected error occurred";
-        }
-      } finally {
-        isLoading.value = false;
-      }
-    });
+    const {
+      isLoading,
+      hasError,
+      errorMessage,
+      captchaToken,
+      requestCredentials$
+    } = useL2TPPromoBanner(onCredentialsReceived$);
     
     return (
       <div class="mb-6 bg-gradient-to-r from-primary-600/5 to-primary-400/10 dark:from-primary-800/20 dark:to-primary-600/30 rounded-xl overflow-hidden shadow-lg border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
@@ -127,10 +75,13 @@ export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
               </div>
             </div>
             
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 flex flex-col items-center gap-3 w-full sm:w-auto">
+              {/* reCAPTCHA container */}
+              <div id="recaptcha-container" class="mx-auto"></div>
+              
               <button 
-                onClick$={requestCredentials}
-                disabled={isLoading.value}
+                onClick$={requestCredentials$}
+                disabled={isLoading.value || !captchaToken.value}
                 class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-lg
                        bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium
                        shadow-lg hover:shadow-xl hover:from-primary-700 hover:to-primary-600 
