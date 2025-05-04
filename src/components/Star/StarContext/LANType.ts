@@ -35,6 +35,7 @@ export interface WirelessConfig {
   Password: string;
   isHide: boolean;
   isDisabled: boolean;
+  SplitBand: boolean;
 }
 
 

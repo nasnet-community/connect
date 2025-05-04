@@ -16,7 +16,7 @@ export type VPNType =
   | "IKeV2"
 
 
-export type WirelessCredentials = {
+export interface WirelessCredentials  {
   SSID: string;
   Password: string;
 }

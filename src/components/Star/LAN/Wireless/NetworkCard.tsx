@@ -9,10 +9,12 @@ interface NetworkCardProps {
   password: string;
   isHide: boolean;
   isDisabled: boolean;
+  splitBand: boolean;
   onSSIDChange: QRL<(value: string) => void>;
   onPasswordChange: QRL<(value: string) => void>;
   onHideToggle: QRL<() => void>;
   onDisabledToggle: QRL<() => void>;
+  onSplitBandToggle: QRL<() => void>;
   generateNetworkSSID: QRL<() => Promise<void>>;
   generateNetworkPassword: QRL<() => Promise<void>>;
   isLoading: Record<string, boolean>;
@@ -25,10 +27,12 @@ export const NetworkCard = component$<NetworkCardProps>(
     password,
     isHide,
     isDisabled,
+    splitBand,
     onSSIDChange,
     onPasswordChange,
     onHideToggle,
     onDisabledToggle,
+    onSplitBandToggle,
     generateNetworkSSID,
     generateNetworkPassword,
     isLoading,
@@ -69,6 +73,22 @@ export const NetworkCard = component$<NetworkCardProps>(
                     checked={isHide}
                     class="peer sr-only"
                     onChange$={onHideToggle}
+                    disabled={isDisabled}
+                  />
+                  <div class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? 'cursor-not-allowed' : ''}`}></div>
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {$localize`Split Band`}
+                </span>
+                <label class="relative inline-flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={splitBand}
+                    class="peer sr-only"
+                    onChange$={onSplitBandToggle}
                     disabled={isDisabled}
                   />
                   <div class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? 'cursor-not-allowed' : ''}`}></div>

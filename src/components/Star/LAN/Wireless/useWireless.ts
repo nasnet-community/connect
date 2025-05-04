@@ -10,20 +10,21 @@ export const useWirelessForm = () => {
   const password = useSignal("");
   const isHide = useSignal(false);
   const isDisabled = useSignal(false);
+  const splitBand = useSignal(false);
   const isLoading = useSignal<Record<string, boolean>>({});
   const isFormValid = useSignal(false);
 
   const networks = useStore<Networks>({
-    foreign: { ssid: "", password: "", isHide: false, isDisabled: false },
-    domestic: { ssid: "", password: "", isHide: false, isDisabled: false },
-    split: { ssid: "", password: "", isHide: false, isDisabled: false },
-    vpn: { ssid: "", password: "", isHide: false, isDisabled: false },
+    foreign: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    domestic: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    split: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    vpn: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
   });
 
   const checkSamePassword = $(() => {
     if (!isMultiSSID.value) return;
 
-    const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
+    const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
     
     if (!networks.foreign.isDisabled) {
       enabledNetworks.Foreign = {
@@ -31,6 +32,7 @@ export const useWirelessForm = () => {
         Password: networks.foreign.password,
         isHide: networks.foreign.isHide,
         isDisabled: networks.foreign.isDisabled,
+        SplitBand: networks.foreign.splitBand,
       };
     }
     
@@ -40,6 +42,7 @@ export const useWirelessForm = () => {
         Password: networks.domestic.password,
         isHide: networks.domestic.isHide,
         isDisabled: networks.domestic.isDisabled,
+        SplitBand: networks.domestic.splitBand,
       };
     }
     
@@ -49,6 +52,7 @@ export const useWirelessForm = () => {
         Password: networks.split.password,
         isHide: networks.split.isHide,
         isDisabled: networks.split.isDisabled,
+        SplitBand: networks.split.splitBand,
       };
     }
     
@@ -58,6 +62,7 @@ export const useWirelessForm = () => {
         Password: networks.vpn.password,
         isHide: networks.vpn.isHide,
         isDisabled: networks.vpn.isDisabled,
+        SplitBand: networks.vpn.splitBand,
       };
     }
 
@@ -77,7 +82,7 @@ export const useWirelessForm = () => {
         networks[network as NetworkKey].password = commonPassword;
       });
 
-      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
+      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
       
       if (!networks.foreign.isDisabled) {
         enabledNetworks.Foreign = {
@@ -85,6 +90,7 @@ export const useWirelessForm = () => {
           Password: networks.foreign.password,
           isHide: networks.foreign.isHide,
           isDisabled: networks.foreign.isDisabled,
+          SplitBand: networks.foreign.splitBand,
         };
       }
       
@@ -94,6 +100,7 @@ export const useWirelessForm = () => {
           Password: networks.domestic.password,
           isHide: networks.domestic.isHide,
           isDisabled: networks.domestic.isDisabled,
+          SplitBand: networks.domestic.splitBand,
         };
       }
       
@@ -103,6 +110,7 @@ export const useWirelessForm = () => {
           Password: networks.split.password,
           isHide: networks.split.isHide,
           isDisabled: networks.split.isDisabled,
+          SplitBand: networks.split.splitBand,
         };
       }
       
@@ -112,6 +120,7 @@ export const useWirelessForm = () => {
           Password: networks.vpn.password,
           isHide: networks.vpn.isHide,
           isDisabled: networks.vpn.isDisabled,
+          SplitBand: networks.vpn.splitBand,
         };
       }
 
@@ -155,12 +164,20 @@ export const useWirelessForm = () => {
     }
   });
 
+  const toggleNetworkSplitBand = $((network: NetworkKey) => {
+    networks[network].splitBand = !networks[network].splitBand;
+  });
+
   const toggleSingleHide = $(() => {
     isHide.value = !isHide.value;
   });
 
   const toggleSingleDisabled = $(() => {
     isDisabled.value = !isDisabled.value;
+  });
+
+  const toggleSingleSplitBand = $(() => {
+    splitBand.value = !splitBand.value;
   });
 
   useTask$(() => {
@@ -178,6 +195,7 @@ export const useWirelessForm = () => {
             password: multiMode.Foreign.Password,
             isHide: multiMode.Foreign.isHide,
             isDisabled: multiMode.Foreign.isDisabled,
+            splitBand: multiMode.Foreign.SplitBand || false,
           };
         }
         
@@ -187,6 +205,7 @@ export const useWirelessForm = () => {
             password: multiMode.Domestic.Password,
             isHide: multiMode.Domestic.isHide,
             isDisabled: multiMode.Domestic.isDisabled,
+            splitBand: multiMode.Domestic.SplitBand || false,
           };
         }
         
@@ -196,6 +215,7 @@ export const useWirelessForm = () => {
             password: multiMode.Split.Password,
             isHide: multiMode.Split.isHide,
             isDisabled: multiMode.Split.isDisabled,
+            splitBand: multiMode.Split.SplitBand || false,
           };
         }
         
@@ -205,6 +225,7 @@ export const useWirelessForm = () => {
             password: multiMode.VPN.Password,
             isHide: multiMode.VPN.isHide,
             isDisabled: multiMode.VPN.isDisabled,
+            splitBand: multiMode.VPN.SplitBand || false,
           };
         }
       } else if (!isMultiSSID.value && wirelessConfig.SingleMode) {
@@ -213,6 +234,7 @@ export const useWirelessForm = () => {
         password.value = singleMode.Password;
         isHide.value = singleMode.isHide;
         isDisabled.value = singleMode.isDisabled;
+        splitBand.value = singleMode.SplitBand || false;
       }
     }
   });
@@ -221,13 +243,13 @@ export const useWirelessForm = () => {
     track(() => ({
       isMulti: isMultiSSID.value,
       networks: Object.values(networks)
-        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled)
+        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled + n.splitBand)
         .join(""),
-      single: ssid.value + password.value + isHide.value + isDisabled.value,
+      single: ssid.value + password.value + isHide.value + isDisabled.value + splitBand.value,
     }));
 
     if (isMultiSSID.value) {
-      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
+      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
       
       if (!networks.foreign.isDisabled) {
         enabledNetworks.Foreign = {
@@ -235,6 +257,7 @@ export const useWirelessForm = () => {
           Password: networks.foreign.password,
           isHide: networks.foreign.isHide,
           isDisabled: networks.foreign.isDisabled,
+          SplitBand: networks.foreign.splitBand,
         };
       }
       
@@ -244,6 +267,7 @@ export const useWirelessForm = () => {
           Password: networks.domestic.password,
           isHide: networks.domestic.isHide,
           isDisabled: networks.domestic.isDisabled,
+          SplitBand: networks.domestic.splitBand,
         };
       }
       
@@ -253,6 +277,7 @@ export const useWirelessForm = () => {
           Password: networks.split.password,
           isHide: networks.split.isHide,
           isDisabled: networks.split.isDisabled,
+          SplitBand: networks.split.splitBand,
         };
       }
       
@@ -262,6 +287,7 @@ export const useWirelessForm = () => {
           Password: networks.vpn.password,
           isHide: networks.vpn.isHide,
           isDisabled: networks.vpn.isDisabled,
+          SplitBand: networks.vpn.splitBand,
         };
       }
 
@@ -278,7 +304,8 @@ export const useWirelessForm = () => {
             Password: password.value,
             isHide: isHide.value,
             isDisabled: isDisabled.value,
-          }
+            SplitBand: splitBand.value,
+          },
         },
       });
     }
@@ -341,9 +368,10 @@ export const useWirelessForm = () => {
     track(() => password.value);
     track(() => isHide.value);
     track(() => isDisabled.value);
+    track(() => splitBand.value);
     track(() =>
       Object.values(networks)
-        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled)
+        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled + n.splitBand)
         .join(""),
     );
     track(() => isMultiSSID.value);
@@ -356,6 +384,7 @@ export const useWirelessForm = () => {
     password,
     isHide,
     isDisabled,
+    splitBand,
     networks,
     isLoading,
     generateSSID,
@@ -366,7 +395,9 @@ export const useWirelessForm = () => {
     isFormValid,
     toggleNetworkHide,
     toggleNetworkDisabled,
+    toggleNetworkSplitBand,
     toggleSingleHide,
     toggleSingleDisabled,
+    toggleSingleSplitBand,
   };
 };

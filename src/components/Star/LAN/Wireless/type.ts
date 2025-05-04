@@ -3,6 +3,7 @@ export interface NetworkConfig {
   password: string;
   isHide: boolean;
   isDisabled: boolean;
+  splitBand: boolean;
 }
 
 export type NetworkKey = "foreign" | "domestic" | "split" | "vpn";
@@ -22,6 +23,7 @@ export interface WirelessNetworkConfig {
   Password: string;
   isHide: boolean;
   isDisabled: boolean;
+  SplitBand: boolean;
 }
 
 export type MultiModeConfig = Partial<Record<'Foreign' | 'Domestic' | 'Split' | 'VPN', WirelessNetworkConfig>>;

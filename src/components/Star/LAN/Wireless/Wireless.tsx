@@ -16,6 +16,7 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
     password,
     isHide,
     isDisabled,
+    splitBand,
     networks,
     isLoading,
     generateSSID,
@@ -26,8 +27,10 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
     isFormValid,
     toggleNetworkHide,
     toggleNetworkDisabled,
+    toggleNetworkSplitBand,
     toggleSingleHide,
     toggleSingleDisabled,
+    toggleSingleSplitBand,
   } = useWirelessForm();
 
   return (
@@ -42,10 +45,12 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
             password={password}
             isHide={isHide}
             isDisabled={isDisabled}
+            splitBand={splitBand}
             generateSSID={generateSSID}
             generatePassword={generatePassword}
             toggleHide={toggleSingleHide}
             toggleDisabled={toggleSingleDisabled}
+            toggleSplitBand={toggleSingleSplitBand}
             isLoading={isLoading}
           />
         ) : (
@@ -57,6 +62,7 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
             generateAllPasswords={generateAllPasswords}
             toggleNetworkHide={toggleNetworkHide}
             toggleNetworkDisabled={toggleNetworkDisabled}
+            toggleNetworkSplitBand={toggleNetworkSplitBand}
           />
         )}
 
@@ -70,18 +76,20 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
                     Password: password.value,
                     isHide: isHide.value,
                     isDisabled: isDisabled.value,
+                    SplitBand: splitBand.value,
                   }
                 }
               });
             } else {
-              const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean }> = {};
+              const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
               
               if (!networks.foreign.isDisabled) {
-                enabledNetworks.foreign = {
+                enabledNetworks.Foreign = {
                   SSID: networks.foreign.ssid,
                   Password: networks.foreign.password,
                   isHide: networks.foreign.isHide,
                   isDisabled: networks.foreign.isDisabled,
+                  SplitBand: networks.foreign.splitBand,
                 };
               }
               
@@ -91,6 +99,7 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
                   Password: networks.domestic.password,
                   isHide: networks.domestic.isHide,
                   isDisabled: networks.domestic.isDisabled,
+                  SplitBand: networks.domestic.splitBand,
                 };
               }
               
@@ -100,6 +109,7 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
                   Password: networks.split.password,
                   isHide: networks.split.isHide,
                   isDisabled: networks.split.isDisabled,
+                  SplitBand: networks.split.splitBand,
                 };
               }
               
@@ -109,6 +119,7 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
                   Password: networks.vpn.password,
                   isHide: networks.vpn.isHide,
                   isDisabled: networks.vpn.isDisabled,
+                  SplitBand: networks.vpn.splitBand,
                 };
               }
 

@@ -7,15 +7,17 @@ interface SingleSSIDFormProps {
   password: Signal<string>;
   isHide: Signal<boolean>;
   isDisabled: Signal<boolean>;
+  splitBand: Signal<boolean>;
   generateSSID: QRL<() => Promise<void>>;
   generatePassword: QRL<() => Promise<void>>;
   toggleHide: QRL<() => void>;
   toggleDisabled: QRL<() => void>;
+  toggleSplitBand: QRL<() => void>;
   isLoading: Signal<Record<string, boolean>>;
 }
 
 export const SingleSSIDForm = component$<SingleSSIDFormProps>(
-  ({ ssid, password, isHide, generateSSID, generatePassword, toggleHide, isLoading }) => {
+  ({ ssid, password, isHide, splitBand, generateSSID, generatePassword, toggleHide, toggleSplitBand, isLoading }) => {
     return (
       <div class="space-y-6">
         <p class="text-text-secondary dark:text-text-secondary-dark">
@@ -33,6 +35,21 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
                 checked={isHide.value}
                 class="peer sr-only"
                 onChange$={toggleHide}
+              />
+              <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
+            </label>
+          </div>
+          
+          <div class="flex items-center">
+            <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              {$localize`Split Band`}
+            </span>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={splitBand.value}
+                class="peer sr-only"
+                onChange$={toggleSplitBand}
               />
               <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
             </label>

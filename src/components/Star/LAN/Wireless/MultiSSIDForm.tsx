@@ -12,6 +12,7 @@ interface MultiSSIDFormProps {
   generateAllPasswords: QRL<() => Promise<void>>;
   toggleNetworkHide: QRL<(network: NetworkKey) => void>;
   toggleNetworkDisabled: QRL<(network: NetworkKey) => void>;
+  toggleNetworkSplitBand: QRL<(network: NetworkKey) => void>;
 }
 
 export const MultiSSIDForm = component$<MultiSSIDFormProps>(
@@ -23,6 +24,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     generateAllPasswords,
     toggleNetworkHide,
     toggleNetworkDisabled,
+    toggleNetworkSplitBand,
   }) => {
     return (
       <div class="space-y-8">
@@ -72,6 +74,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               password={networks[networkKey].password}
               isHide={networks[networkKey].isHide}
               isDisabled={networks[networkKey].isDisabled}
+              splitBand={networks[networkKey].splitBand}
               onSSIDChange={$((value: string) => {
                 networks[networkKey].ssid = value;
               })}
@@ -80,6 +83,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               })}
               onHideToggle={$(() => toggleNetworkHide(networkKey))}
               onDisabledToggle={$(() => toggleNetworkDisabled(networkKey))}
+              onSplitBandToggle={$(() => toggleNetworkSplitBand(networkKey))}
               generateNetworkSSID={$(() => generateNetworkSSID(networkKey))}
               generateNetworkPassword={$(() =>
                 generateNetworkPassword(networkKey),
