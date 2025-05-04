@@ -1,4 +1,4 @@
-import { $, component$, useContext, useStore } from "@builder.io/qwik";
+import { $, component$, useContext, useStore, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import { RadioButton } from "~/components/Core/button/RadioButton";
@@ -118,17 +118,37 @@ const SERVICES = [
 export const UsefulServices = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
 
+  // Initialize default values if they don't exist
+  useTask$(() => {
+    // Ensure ExtraConfig is initialized with defaults for the undefined boolean values
+    const defaults = {
+      isCertificate: ctx.state.ExtraConfig.isCertificate ?? false,
+      isNTP: ctx.state.ExtraConfig.isNTP ?? false,
+      isGraphing: ctx.state.ExtraConfig.isGraphing ?? false,
+      isDDNS: ctx.state.ExtraConfig.isDDNS ?? false,
+      isLetsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? false,
+    };
+    
+    // Only update if any values were undefined
+    if (ctx.state.ExtraConfig.isCertificate === undefined ||
+        ctx.state.ExtraConfig.isNTP === undefined ||
+        ctx.state.ExtraConfig.isGraphing === undefined ||
+        ctx.state.ExtraConfig.isDDNS === undefined ||
+        ctx.state.ExtraConfig.isLetsEncrypt === undefined) {
+      ctx.updateExtraConfig$(defaults);
+    }
+  });
+
   const serviceStates = useStore<ServiceState>({
-    certificate: ctx.state.ExtraConfig.isCertificate,
-    ntp: ctx.state.ExtraConfig.isNTP,
-    graphing: ctx.state.ExtraConfig.isGraphing,
-    DDNS: ctx.state.ExtraConfig.isDDNS,
-    letsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt,
+    certificate: ctx.state.ExtraConfig.isCertificate ?? false,
+    ntp: ctx.state.ExtraConfig.isNTP ?? false,
+    graphing: ctx.state.ExtraConfig.isGraphing ?? false,
+    DDNS: ctx.state.ExtraConfig.isDDNS ?? false,
+    letsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? false,
   });
 
   const handleSubmit = $(() => {
     ctx.updateExtraConfig$({
-      ...ctx.state.ExtraConfig,
       isCertificate: serviceStates.certificate,
       isNTP: serviceStates.ntp,
       isGraphing: serviceStates.graphing,
@@ -193,7 +213,7 @@ export const UsefulServices = component$<StepProps>(({ onComplete$ }) => {
 
                     <RadioButton
                       checked={serviceStates[service.id]}
-                      onChange$={() => (serviceStates[service.id] = true)}
+                      onChange$={() => (serviceStates[service.id] = !serviceStates[service.id])}
                       label={
                         serviceStates[service.id]
                           ? $localize`Enabled`

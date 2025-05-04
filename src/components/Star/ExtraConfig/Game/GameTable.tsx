@@ -2,6 +2,7 @@ import { $, component$ } from "@builder.io/qwik";
 import { games } from "./GameData";
 import { useGameLogic } from "./useGame";
 import type { GameTableProps } from "./type";
+import { $localize } from "@angular/localize/init";
 
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
@@ -30,7 +31,7 @@ export const GameTable = component$<GameTableProps>(
                 currentPage.value * itemsPerPage,
               )
               .map((game) => {
-                const selectedGame = context.state.ExtraConfig.Games.find(
+                const selectedGame = context.state.ExtraConfig.Games?.find(
                   (g) => g.name === game.name,
                 );
 

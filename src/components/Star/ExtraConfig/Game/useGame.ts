@@ -1,6 +1,6 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
-import type { GameConfig } from "~/components/Star/StarContext/StarContext";
+import type { GameConfig } from "~/components/Star/StarContext/ExtraType";
 
 export const useGameLogic = () => {
   const searchQuery = useSignal("");
@@ -27,8 +27,13 @@ export const useGameLogic = () => {
         udp: game.udp?.map(String),
       };
 
+      // Initialize the Games array if it doesn't exist
+      if (!context.state.ExtraConfig.Games) {
+        context.updateExtraConfig$({ Games: [] });
+      }
+
       if (value === "none") {
-        const updatedGames = context.state.ExtraConfig.Games.filter(
+        const updatedGames = (context.state.ExtraConfig.Games || []).filter(
           (g) => g.name !== game.name,
         );
         return context.updateExtraConfig$({ Games: updatedGames });
@@ -40,18 +45,18 @@ export const useGameLogic = () => {
         ports: serializedPorts,
       };
 
-      const existingIndex = context.state.ExtraConfig.Games.findIndex(
+      const existingIndex = (context.state.ExtraConfig.Games || []).findIndex(
         (g) => g.name === game.name,
       );
 
       if (existingIndex !== -1) {
-        const updatedGames = [...context.state.ExtraConfig.Games];
+        const updatedGames = [...(context.state.ExtraConfig.Games || [])];
         updatedGames[existingIndex] = newGame;
         return context.updateExtraConfig$({ Games: updatedGames });
       }
 
       return context.updateExtraConfig$({
-        Games: [...context.state.ExtraConfig.Games, newGame],
+        Games: [...(context.state.ExtraConfig.Games || []), newGame],
       });
     },
   );

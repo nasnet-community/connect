@@ -1,6 +1,7 @@
-import { $, component$, useContext } from "@builder.io/qwik";
+import { $, component$, useContext, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
+import type { ServiceType } from "../../StarContext/ExtraType";
 
 type ServiceName =
   | "api"
@@ -11,7 +12,6 @@ type ServiceName =
   | "winbox"
   | "web"
   | "webssl";
-type ServiceState = "Enable" | "Disable" | "Local";
 
 interface ServiceItem {
   name: ServiceName;
@@ -21,6 +21,23 @@ interface ServiceItem {
 
 export const Services = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
+
+  // Initialize services if they don't exist
+  useTask$(() => {
+    if (!ctx.state.ExtraConfig.services) {
+      const defaultServices = {
+        api: "Disable" as ServiceType,
+        apissl: "Disable" as ServiceType,
+        ftp: "Disable" as ServiceType,
+        ssh: "Enable" as ServiceType,
+        telnet: "Disable" as ServiceType,
+        winbox: "Enable" as ServiceType,
+        web: "Disable" as ServiceType,
+        webssl: "Disable" as ServiceType,
+      };
+      ctx.updateExtraConfig$({ services: defaultServices });
+    }
+  });
 
   const services: ServiceItem[] = [
     {
@@ -62,16 +79,27 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   ];
 
   const handleSubmit = $(() => {
+    if (!ctx.state.ExtraConfig.services) return;
+    
+    const api = ctx.state.ExtraConfig.services?.api || "Disable";
+    const apissl = ctx.state.ExtraConfig.services?.apissl || "Disable";
+    const ftp = ctx.state.ExtraConfig.services?.ftp || "Disable";
+    const ssh = ctx.state.ExtraConfig.services?.ssh || "Enable";
+    const telnet = ctx.state.ExtraConfig.services?.telnet || "Disable";
+    const winbox = ctx.state.ExtraConfig.services?.winbox || "Enable";
+    const web = ctx.state.ExtraConfig.services?.web || "Disable";
+    const webssl = ctx.state.ExtraConfig.services?.webssl || "Disable";
+    
     ctx.updateExtraConfig$({
       services: {
-        api: ctx.state.ExtraConfig.services.api,
-        apissl: ctx.state.ExtraConfig.services.apissl,
-        ftp: ctx.state.ExtraConfig.services.ftp,
-        ssh: ctx.state.ExtraConfig.services.ssh,
-        telnet: ctx.state.ExtraConfig.services.telnet,
-        winbox: ctx.state.ExtraConfig.services.winbox,
-        web: ctx.state.ExtraConfig.services.web,
-        webssl: ctx.state.ExtraConfig.services.webssl,
+        api,
+        apissl,
+        ftp,
+        ssh,
+        telnet,
+        winbox,
+        web,
+        webssl,
       },
     });
     onComplete$();
@@ -142,47 +170,66 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
               </thead>
 
               <tbody class="divide-y divide-border dark:divide-border-dark">
-                {services.map((service) => (
-                  <tr
-                    key={service.name}
-                    class="bg-surface transition-colors hover:bg-surface-secondary dark:bg-surface-dark dark:hover:bg-surface-dark-secondary"
-                  >
-                    <td class="px-6 py-4">
-                      <div class="flex items-center space-x-3">
-                        <div
-                          class={`h-2.5 w-2.5 rounded-full ${
-                            ctx.state.ExtraConfig.services[service.name] ===
-                            "Enable"
-                              ? "bg-primary-500"
-                              : "bg-text-secondary/50"
-                          }`}
-                        ></div>
-                        <span class="font-medium text-text dark:text-text-dark-default">
-                          {service.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 text-text-secondary dark:text-text-dark-secondary">
-                      {service.description}
-                    </td>
-                    <td class="px-6 py-4">
-                      <select
-                        value={ctx.state.ExtraConfig.services[service.name]}
-                        onChange$={(e, currentTarget) => {
-                          ctx.state.ExtraConfig.services[service.name] =
-                            currentTarget.value as ServiceState;
-                        }}
-                        class="focus:ring-primary-500/50 w-full cursor-pointer appearance-none rounded-lg border border-border 
-                     bg-surface px-4 py-2 text-text focus:border-primary-500 focus:ring-2
-                     dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                      >
-                        <option value="Enable">{$localize`Enable`}</option>
-                        <option value="Disable">{$localize`Disable`}</option>
-                        <option value="Local">{$localize`Local`}</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
+              {services.map((service) => {
+                  const currentValue = ctx.state.ExtraConfig.services?.[service.name] || "Disable";
+                  return (
+                    <tr
+                      key={service.name}
+                      class="bg-surface transition-colors hover:bg-surface-secondary dark:bg-surface-dark dark:hover:bg-surface-dark-secondary"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center space-x-3">
+                          <div
+                            class={`h-2.5 w-2.5 rounded-full ${
+                              currentValue === "Enable"
+                                ? "bg-primary-500"
+                                : "bg-text-secondary/50"
+                            }`}
+                          ></div>
+                          <span class="font-medium text-text dark:text-text-dark-default">
+                            {service.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 text-text-secondary dark:text-text-dark-secondary">
+                        {service.description}
+                      </td>
+                      <td class="px-6 py-4">
+                        <select
+                          value={currentValue}
+                          onChange$={(e, currentTarget) => {
+                            if (!ctx.state.ExtraConfig.services) {
+                              ctx.updateExtraConfig$({
+                                services: {
+                                  api: "Disable" as ServiceType,
+                                  apissl: "Disable" as ServiceType,
+                                  ftp: "Disable" as ServiceType,
+                                  ssh: "Enable" as ServiceType,
+                                  telnet: "Disable" as ServiceType,
+                                  winbox: "Enable" as ServiceType,
+                                  web: "Disable" as ServiceType,
+                                  webssl: "Disable" as ServiceType,
+                                }
+                              });
+                            }
+                            
+                            if (ctx.state.ExtraConfig.services) {
+                              ctx.state.ExtraConfig.services[service.name] =
+                                currentTarget.value as ServiceType;
+                            }
+                          }}
+                          class="focus:ring-primary-500/50 w-full cursor-pointer appearance-none rounded-lg border border-border 
+                       bg-surface px-4 py-2 text-text focus:border-primary-500 focus:ring-2
+                       dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                        >
+                          <option value="Enable">{$localize`Enable`}</option>
+                          <option value="Disable">{$localize`Disable`}</option>
+                          <option value="Local">{$localize`Local`}</option>
+                        </select>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

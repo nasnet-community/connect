@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { $localize } from "@angular/localize/init";
 
 export const GameHeader = component$(() => {
   return (

@@ -1,6 +1,6 @@
 import { useContext, $, useSignal } from '@builder.io/qwik';
 import { StarContext, type StarContextType } from '../../StarContext/StarContext';
-import type { Ethernet } from '../../StarContext/ChooseType';
+import type { Ethernet } from '../../StarContext/CommonType';
 import type { EthernetInterfaceConfig } from '../../StarContext/LANType';
 import type { Networks } from '../../StarContext/CommonType';
 

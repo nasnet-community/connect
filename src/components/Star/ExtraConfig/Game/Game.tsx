@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { GameHeader } from "./GameHeader";
 import { GameSearch } from "./GameSearch";
@@ -7,9 +7,17 @@ import { GameSelected } from "./GameSelected";
 import { GamePagination } from "./GamePagination";
 import { useGameLogic } from "./useGame";
 // import { GameForm } from "./GameForm";
+import { $localize } from "@angular/localize/init";
 
 export const Game = component$<StepProps>(({ onComplete$ }) => {
   const { searchQuery, currentPage, itemsPerPage, context } = useGameLogic();
+
+  // Initialize the Games array if it doesn't exist
+  useTask$(() => {
+    if (!context.state.ExtraConfig.Games) {
+      context.updateExtraConfig$({ Games: [] });
+    }
+  });
 
   return (
     <div class="mx-auto w-full max-w-5xl p-4">
@@ -24,7 +32,9 @@ export const Game = component$<StepProps>(({ onComplete$ }) => {
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
           />
-          <GameSelected context={context} />
+          <GameSelected 
+            context={context} 
+          />
           <GamePagination
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
