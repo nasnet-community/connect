@@ -1,0 +1,451 @@
+import { component$ } from "@builder.io/qwik";
+import { LuGlobe, LuGlobe2, LuLaptop, LuWifi, LuServer } from "@qwikest/icons/lucide";
+
+export interface NetworkTopologyNode {
+  type: 'laptop' | 'wifi' | 'globe' | 'globe2' | 'server';
+  x: number;
+  y: number;
+  label: string;
+}
+
+export interface NetworkTopologyConnection {
+  from: number;
+  to: number;
+  color: string;
+  isDomestic?: boolean;
+}
+
+export interface NetworkTopologyGraphProps {
+  nodes: NetworkTopologyNode[];
+  connections: NetworkTopologyConnection[];
+  title?: string;
+  showDomesticLegend?: boolean;
+}
+
+export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps) => {
+  const { 
+    nodes, 
+    connections, 
+    title = $localize`Network Topology`,
+    showDomesticLegend = true
+  } = props;
+
+  const renderNodeIcon = (type: string) => {
+    switch (type) {
+      case 'laptop':
+        return <LuLaptop class="h-8 w-8 text-amber-600" />;
+      case 'wifi':
+        return <LuWifi class="h-8 w-8 text-amber-600" />;
+      case 'globe':
+        return <LuGlobe class="h-8 w-8 text-amber-600" />;
+      case 'globe2':
+        return <LuGlobe2 class="h-8 w-8 text-amber-600" />;
+      case 'server':
+        return <LuServer class="h-8 w-8 text-amber-600" />;
+      default:
+        return null;
+    }
+  };
+
+  // Find User to Router connection and determine what destinations it leads to
+  const findDestinationTypes = (connection: NetworkTopologyConnection) => {
+    const destinationTypes = { hasDomestic: false, hasForeign: false };
+    
+    // Check User to Router connection
+    if (connection.from === 0 && connection.to === 1) {
+      // Check all connections from the router (node 1) to determine destinations
+      connections.forEach(conn => {
+        if (conn.from === 1) {
+          // Check where this connection leads to
+          const nextNodeIndex = conn.to;
+          
+          // Look ahead to see what's connected from this node
+          connections.forEach(subConn => {
+            if (subConn.from === nextNodeIndex) {
+              if (subConn.isDomestic === true) {
+                destinationTypes.hasDomestic = true;
+              } else if (subConn.isDomestic === false) {
+                destinationTypes.hasForeign = true;
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    // Also check Router to WAN connection (to handle the foreign network case)
+    if (connection.from === 1 && connection.to === 2) {
+      // Check all connections from the WAN (node 2) to determine destinations
+      connections.forEach(conn => {
+        if (conn.from === 2) {
+          if (conn.isDomestic === true) {
+            destinationTypes.hasDomestic = true;
+          } else if (conn.isDomestic === false) {
+            destinationTypes.hasForeign = true;
+          }
+        }
+      });
+    }
+    
+    return destinationTypes;
+  };
+
+  return (
+    <div class="topology-container relative h-44">
+      <div class="network-graph h-full w-full rounded-xl bg-amber-50/50 p-5 dark:bg-amber-950/20 shadow-sm transition-all duration-500 ease-in-out cursor-zoom-in relative">
+        {/* Graph header with title and legend - hidden in normal state, visible when hovered */}
+        <div class="graph-header hidden items-center justify-between mb-4">
+          <span class="text-sm font-medium text-amber-800 dark:text-amber-300">
+            {title}
+          </span>
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center">
+              <div class="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5"></div>
+              <span class="text-xs text-amber-800 dark:text-amber-300">
+                {$localize`Traffic Path`}
+              </span>
+            </div>
+            {/* Add legend for domestic and foreign connections */}
+            {showDomesticLegend && (
+              <div class="flex items-center">
+                <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 mr-1.5"></div>
+                <span class="text-xs text-amber-800 dark:text-amber-300">
+                  {$localize`Domestic`}
+                </span>
+              </div>
+            )}
+            <div class="flex items-center">
+              <div class="h-2.5 w-2.5 rounded-full bg-purple-500 mr-1.5"></div>
+              <span class="text-xs text-amber-800 dark:text-amber-300">
+                {$localize`Foreign`}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Network topology visualization with expandable height on hover */}
+        <div class="topology-content relative h-24 flex items-center justify-center transition-all duration-500 ease-in-out">
+          {/* SVG-based network topology graph */}
+          <svg class="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
+            {/* Render connections between nodes with animated lines */}
+            {connections.map((conn, index) => {
+              const fromNode = nodes[conn.from];
+              const toNode = nodes[conn.to];
+              const x1 = fromNode.x + 16;
+              const y1 = fromNode.y;
+              const x2 = toNode.x - 16;
+              const y2 = toNode.y;
+              
+              // Calculate arrow points for the triangle
+              let arrowPoints = "";
+              if (y1 === y2) {
+                // Horizontal connection
+                arrowPoints = `${x2},${y2} ${x2-10},${y2-5} ${x2-10},${y2+5}`;
+              } else if (x1 < x2 && y1 < y2) {
+                // Diagonal down-right
+                arrowPoints = `${x2},${y2} ${x2-10},${y2-5} ${x2-3},${y2-12}`;
+              } else if (x1 < x2 && y1 > y2) {
+                // Diagonal up-right
+                arrowPoints = `${x2},${y2} ${x2-10},${y2+5} ${x2-3},${y2+12}`;
+              }
+              
+              // Define colors for domestic and foreign packets
+              const lineColor = conn.color;
+              const domesticPacketColor = "rgb(16, 185, 129)"; // emerald-500
+              const foreignPacketColor = "rgb(168, 85, 247)";  // purple-500
+              
+              // Determine packet color based on connection type
+              const packetColor = conn.isDomestic ? domesticPacketColor : foreignPacketColor;
+              
+              // Check if this is User to Router connection and what destinations it leads to
+              const destinations = findDestinationTypes(conn);
+              
+              return (
+                <g key={`conn-${index}`}>
+                  {/* Path for dashed line */}
+                  <line 
+                    x1={x1} 
+                    y1={y1} 
+                    x2={x2} 
+                    y2={y2} 
+                    stroke={lineColor}
+                    stroke-width="2" 
+                    stroke-dasharray="5,3"
+                  >
+                    <animate 
+                      attributeName="stroke-dashoffset" 
+                      from="8" 
+                      to="0" 
+                      dur="1s" 
+                      repeatCount="indefinite" 
+                    />
+                  </line>
+                  
+                  {/* Arrow pointing to destination node */}
+                  <polygon points={arrowPoints} fill={lineColor} />
+                  
+                  {/* For the User to Router connection, render domestic packets */}
+                  {destinations.hasDomestic && (
+                    <>
+                      {/* Domestic packet 1 */}
+                      <circle 
+                        r="3" 
+                        fill={domesticPacketColor}
+                        opacity="0.9"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      
+                      {/* Domestic packet 2 (offset start) */}
+                      <circle 
+                        r="2" 
+                        fill={domesticPacketColor}
+                        opacity="0.7"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${0.7 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
+                  
+                  {/* For the User to Router connection, render foreign packets */}
+                  {destinations.hasForeign && (
+                    <>
+                      {/* Foreign packet 1 */}
+                      <circle 
+                        r="3" 
+                        fill={foreignPacketColor}
+                        opacity="0.9"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin="0.3s"
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      
+                      {/* Foreign packet 2 (offset start) */}
+                      <circle 
+                        r="2" 
+                        fill={foreignPacketColor}
+                        opacity="0.7"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${1.0 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
+                  
+                  {/* For all other connections, render standard packets with appropriate color */}
+                  {!(conn.from === 0 && conn.to === 1) && (
+                    <>
+                      {/* Animated packet 1 */}
+                      <circle 
+                        r="3" 
+                        fill={packetColor}
+                        opacity="0.9"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      
+                      {/* Animated packet 2 (offset start) */}
+                      <circle 
+                        r="2" 
+                        fill={packetColor}
+                        opacity="0.7"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${0.7 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      
+                      {/* Animated packet 3 (faster and smaller) */}
+                      <circle 
+                        r="1.5" 
+                        fill="#ffffff"
+                        stroke={packetColor}
+                        stroke-width="1"
+                        opacity="0.8"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${1.5 + index * 0.3}s`}
+                          begin={`${1.3 + index * 0.1}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
+                </g>
+              );
+            })}
+            
+            {/* Render nodes (devices, routers, servers) */}
+            {nodes.map((node, index) => (
+              <g key={index} transform={`translate(${node.x}, ${node.y})`}>
+                {/* Node highlight effect */}
+                <circle
+                  r="22"
+                  fill="rgba(251, 191, 36, 0.2)"
+                  class="node-highlight"
+                />
+                
+                <foreignObject x="-16" y="-16" width="32" height="32">
+                  <div class="flex items-center justify-center h-8 w-8">
+                    {renderNodeIcon(node.type)}
+                  </div>
+                </foreignObject>
+                <text 
+                  x="0" 
+                  y={node.y < 100 ? "-20" : "25"} 
+                  text-anchor="middle" 
+                  fill={node.y < 100 ? "#eab308" : "#f59e0b"} 
+                  font-size="11" 
+                  font-weight="bold"
+                >
+                  {node.label}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
+        
+        {/* Hover indicator with instruction text - now visible in normal state */}
+        <div class="expand-indicator absolute inset-0 flex items-end justify-center pb-2">
+          <span class="text-xs font-medium text-amber-800/90 dark:text-amber-300/90 bg-amber-50/70 dark:bg-amber-950/70 px-2 py-1 rounded">
+            {$localize`Hover to expand`}
+          </span>
+        </div>
+      </div>
+      
+      {/* Close button - hidden in normal state, visible when expanded */}
+      <div class="close-button hidden absolute bottom-4 w-full left-0 right-0 justify-center">
+        <button class="flex items-center bg-amber-100 hover:bg-amber-200 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200 px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
+          <span class="text-sm font-medium">{$localize`Close`}</span>
+        </button>
+      </div>
+      
+      {/* Add CSS directly inside component */}
+      <style dangerouslySetInnerHTML={`
+        .topology-container {
+          z-index: 1;
+          overflow: visible;
+        }
+        
+        .expand-indicator {
+          background: linear-gradient(to bottom, transparent 60%, rgba(254, 243, 199, 0.5) 100%);
+        }
+        
+        .dark .expand-indicator {
+          background: linear-gradient(to bottom, transparent 60%, rgba(20, 10, 0, 0.5) 100%);
+        }
+        
+        .topology-container:hover .network-graph {
+          position: fixed;
+          transform: translate(-50%, -50%);
+          left: 50%;
+          top: 50%;
+          width: 90vw;
+          max-width: 800px;
+          height: 80vh;
+          max-height: 600px;
+          z-index: 9000 !important; /* Use !important to override any parent z-index settings */
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          background-color: rgb(255 251 235 / 0.98);
+        }
+        
+        /* Show the graph header when the graph is expanded */
+        .topology-container:hover .graph-header {
+          display: flex;
+        }
+        
+        /* Apply a higher z-index to the backdrop overlay */
+        .topology-container:hover::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.4);
+          z-index: 8900 !important;
+        }
+        
+        /* Make sure the domestic option has a higher z-index than the foreign option */
+        .domestic-option .topology-container:hover .network-graph {
+          z-index: 9100 !important;
+        }
+        
+        .domestic-option .topology-container:hover::before {
+          z-index: 9000 !important;
+        }
+        
+        .dark .topology-container:hover .network-graph {
+          background-color: rgb(10 5 0 / 0.97);
+        }
+        
+        .topology-container:hover .topology-content {
+          height: calc(80vh - 150px);
+          max-height: 450px;
+        }
+        
+        .topology-container:hover .expand-indicator {
+          opacity: 0;
+          transition: opacity 0.2s ease-out;
+        }
+        
+        /* Node highlight pulse animation */
+        .node-highlight {
+          animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+          0% { opacity: 0.3; r: 20; }
+          50% { opacity: 0.6; r: 22; }
+          100% { opacity: 0.3; r: 20; }
+        }
+        
+        /* Adjust animation speed when hovered */
+        .topology-container:hover .node-highlight {
+          animation-duration: 3s;
+        }
+        
+        .topology-container:hover circle {
+          animation-duration: 3s;
+        }
+        
+        /* Show the close button when the graph is expanded */
+        .topology-container:hover .close-button {
+          display: flex;
+        }
+      `} />
+    </div>
+  );
+}); 

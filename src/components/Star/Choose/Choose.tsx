@@ -2,6 +2,8 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
+import { Domestic } from "./Domestic/Domestic";
+import { SetupMode } from "./SetupMode/SetupMode";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
@@ -12,6 +14,10 @@ interface StepsStore {
 }
 
 export const Choose = component$((props: StepProps) => {
+  const SetupModeStep = component$((props: StepProps) => (
+    <SetupMode isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  ));
+
   const FirmwareStep = component$((props: StepProps) => (
     <Frimware isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
@@ -27,6 +33,13 @@ export const Choose = component$((props: StepProps) => {
     />
   ));
 
+  const DomesticStep = component$((props: StepProps) => (
+    <Domestic
+      isComplete={props.isComplete}
+      onComplete$={props.onComplete$}
+    />
+  ));
+
   const stepsStore = useStore<StepsStore>({
     activeStep: 0,
     steps: [
@@ -37,13 +50,25 @@ export const Choose = component$((props: StepProps) => {
         isComplete: false,
       },
       {
-        id: 1,
+        id: 2,
+        title: $localize`Setup Mode`,
+        component: SetupModeStep,
+        isComplete: false,
+      },
+      {
+        id: 3,
         title: $localize`Router Mode`,
         component: RouterModeStep,
         isComplete: false,
       },
       {
-        id: 2,
+        id: 4,
+        title: $localize`Domestic Link`,
+        component: DomesticStep,
+        isComplete: false,
+      },
+      {
+        id: 5,
         title: $localize`Router Model`,
         component: RouterModelStep,
         isComplete: false,
