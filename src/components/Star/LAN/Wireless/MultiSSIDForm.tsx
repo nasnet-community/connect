@@ -1,8 +1,9 @@
-import { $, component$, type QRL } from "@builder.io/qwik";
+import { $, component$, type QRL, useContext } from "@builder.io/qwik";
 import { HiExclamationTriangleOutline } from "@qwikest/icons/heroicons";
 import { NetworkCard } from "./NetworkCard";
 import type { NetworkKey, Networks } from "./type";
 import { NETWORK_KEYS } from "./constants";
+import { StarContext } from "../../StarContext/StarContext";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -26,6 +27,14 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     toggleNetworkDisabled,
     toggleNetworkSplitBand,
   }) => {
+    const starContext = useContext(StarContext);
+    const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+
+    // Filter network keys based on DomesticLink value
+    const filteredNetworkKeys = NETWORK_KEYS.filter(key => 
+      isDomesticLinkEnabled || (key !== "domestic" && key !== "split")
+    );
+
     return (
       <div class="space-y-8">
         {/* Warning and Actions Header */}
@@ -66,7 +75,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
 
         {/* Networks Grid */}
         <div class="grid gap-8">
-          {NETWORK_KEYS.map((networkKey) => (
+          {filteredNetworkKeys.map((networkKey) => (
             <NetworkCard
               key={networkKey}
               networkKey={networkKey}

@@ -1,6 +1,6 @@
 import { component$, useVisibleTask$, $, useSignal } from '@builder.io/qwik';
 import { useEInterface } from './useEInterface';
-import type { Ethernet } from '../../StarContext/ChooseType';
+import type { Ethernet } from '../../StarContext/CommonType';
 import type { Networks } from '../../StarContext/CommonType';
 import type { StepProps } from '~/types/step';
 
@@ -13,6 +13,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     addEInterface,
     updateEInterface,
     initializeFromContext,
+    getDefaultNetwork
   } = useEInterface();
 
   const availableEInterfaces = useSignal<Ethernet[]>([]);
@@ -39,7 +40,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
         inUse: false,
         usedBy: '',
         selected,
-        network: selected ? currentlySelected.get(name)! : 'Split' as Networks
+        network: selected ? currentlySelected.get(name)! : 'VPN' as Networks
       };
     });
 
@@ -54,7 +55,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
           inUse: true,
           usedBy: 'WAN',
           selected: false,
-          network: 'Split'
+          network: 'Foreign' as Networks
         });
       }
     });
@@ -72,6 +73,16 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     
     const ethInterfaces = await getAvailableEInterfaces();
     availableEInterfaces.value = ethInterfaces;
+    
+    const defaultNetwork = await getDefaultNetwork();
+    
+    // Update all non-selected interfaces to use the default network
+    allInterfaces.value = allInterfaces.value.map(intf => {
+      if (!intf.selected && !intf.inUse) {
+        return { ...intf, network: defaultNetwork };
+      }
+      return intf;
+    });
     
     updateInterfacesList();
   });
@@ -106,8 +117,19 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
   });
 
   const handleSave = $(() => {
-    unsavedChanges.value = false;
+    // If no changes were made but interfaces are available,
+    // consider the default configuration as valid and proceed
+    if (!unsavedChanges.value && allInterfaces.value.length > 0) {
+      // Assign default configuration for all available interfaces
+      allInterfaces.value.forEach(async (intf) => {
+        if (!intf.inUse && !intf.selected) {
+          const defaultNetwork = await getDefaultNetwork();
+          addEInterface(intf.name as Ethernet, defaultNetwork);
+        }
+      });
+    }
     
+    unsavedChanges.value = false;
     onComplete$();
   });
 
@@ -259,7 +281,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                     font-medium text-white shadow-md shadow-primary-500/25 transition-all 
                     duration-200 hover:bg-primary-600 focus:ring-2 focus:ring-offset-2 
                     active:scale-[0.98] dark:focus:ring-offset-surface-dark"
-              disabled={!unsavedChanges.value || isComplete}
+              disabled={isComplete || (allInterfaces.value.length === 0)}
             >
               <span class="flex items-center space-x-2">
                 <span>{$localize`Save Settings`}</span>

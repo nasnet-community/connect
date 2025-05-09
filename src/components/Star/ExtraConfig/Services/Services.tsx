@@ -2,6 +2,7 @@ import { $, component$, useContext, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import type { ServiceType } from "../../StarContext/ExtraType";
+import { Select } from "~/components/Core/Select/Select";
 
 type ServiceName =
   | "api"
@@ -195,9 +196,14 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                         {service.description}
                       </td>
                       <td class="px-6 py-4">
-                        <select
+                        <Select
+                          options={[
+                            { value: "Enable", label: $localize`Enable` },
+                            { value: "Disable", label: $localize`Disable` },
+                            { value: "Local", label: $localize`Local` }
+                          ]}
                           value={currentValue}
-                          onChange$={(e, currentTarget) => {
+                          onChange$={(value) => {
                             if (!ctx.state.ExtraConfig.services) {
                               ctx.updateExtraConfig$({
                                 services: {
@@ -214,18 +220,14 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                             }
                             
                             if (ctx.state.ExtraConfig.services) {
-                              ctx.state.ExtraConfig.services[service.name] =
-                                currentTarget.value as ServiceType;
+                              ctx.state.ExtraConfig.services[service.name] = 
+                                value as ServiceType;
                             }
                           }}
-                          class="focus:ring-primary-500/50 w-full cursor-pointer appearance-none rounded-lg border border-border 
-                       bg-surface px-4 py-2 text-text focus:border-primary-500 focus:ring-2
-                       dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                        >
-                          <option value="Enable">{$localize`Enable`}</option>
-                          <option value="Disable">{$localize`Disable`}</option>
-                          <option value="Local">{$localize`Local`}</option>
-                        </select>
+                          clearable={false}
+                          class="w-full"
+                          size="sm"
+                        />
                       </td>
                     </tr>
                   );

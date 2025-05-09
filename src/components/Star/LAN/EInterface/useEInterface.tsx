@@ -7,8 +7,19 @@ import type { Networks } from '../../StarContext/CommonType';
 export const useEInterface = () => {
   const ctx = useContext<StarContextType>(StarContext);
   const selectedEInterfaces = useSignal<EthernetInterfaceConfig[]>([]);
-  const availableNetworks = useSignal<Networks[]>(['Domestic', 'Foreign', 'Split', 'VPN']);
+  
+  // Filter available networks based on DomesticLink
+  const isDomesticLinkEnabled = ctx.state.Choose.DometicLink === true;
+  const networkOptions: Networks[] = isDomesticLinkEnabled 
+    ? ['Domestic', 'Foreign', 'Split', 'VPN']
+    : ['Foreign', 'VPN'];
+  
+  const availableNetworks = useSignal<Networks[]>(networkOptions);
 
+  // Set default network to VPN when DomesticLink is disabled
+  const getDefaultNetwork = $(() => {
+    return isDomesticLinkEnabled ? 'Split' : 'VPN';
+  });
 
   const getUsedWANInterfaces = $(() => {
     const usedInterfaces: string[] = [];
@@ -42,10 +53,12 @@ export const useEInterface = () => {
     ) as Ethernet[];
   });
 
-  const addEInterface = $((EInterfaceName: Ethernet, bridgeNetwork: Networks) => {
+  const addEInterface = $(async (EInterfaceName: Ethernet, bridgeNetwork?: Networks) => {
+    const network = bridgeNetwork || await getDefaultNetwork();
+    
     const newEInterface: EthernetInterfaceConfig = {
       name: EInterfaceName,
-      bridge: bridgeNetwork,
+      bridge: network,
     };
     
     selectedEInterfaces.value = [...selectedEInterfaces.value, newEInterface];
@@ -93,5 +106,6 @@ export const useEInterface = () => {
     removeEInterface,
     updateEInterface,
     initializeFromContext,
+    getDefaultNetwork,
   };
 };

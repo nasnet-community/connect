@@ -7,6 +7,9 @@ import { $localize } from "@angular/localize/init";
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
     const { handleGameSelection } = useGameLogic();
+    
+    // Check if DomesticLink is enabled
+    const isDomesticLinkEnabled = context.state.Choose.DometicLink === true;
 
     return (
       <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">
@@ -62,7 +65,9 @@ export const GameTable = component$<GameTableProps>(
                       >
                         <option value="none">{$localize`Select Route`}</option>
                         <option value="foreign">{$localize`Foreign`}</option>
-                        <option value="domestic">{$localize`Domestic`}</option>
+                        {isDomesticLinkEnabled && (
+                          <option value="domestic">{$localize`Domestic`}</option>
+                        )}
                         <option value="vpn">{$localize`VPN`}</option>
                       </select>
                     </td>

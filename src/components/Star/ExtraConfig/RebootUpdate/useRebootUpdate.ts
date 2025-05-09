@@ -14,7 +14,7 @@ export const useRebootUpdate = () => {
     
     if (needsUpdate) {
       ctx.updateExtraConfig$({
-        Timezone: ctx.state.ExtraConfig.Timezone || "GMT",
+        Timezone: ctx.state.ExtraConfig.Timezone,
         AutoReboot: ctx.state.ExtraConfig.AutoReboot || {
           isAutoReboot: false,
           RebootTime: "00:00",
@@ -22,7 +22,7 @@ export const useRebootUpdate = () => {
         Update: ctx.state.ExtraConfig.Update || {
           isAutoReboot: false,
           UpdateTime: "00:00",
-          UpdateInterval: "" as UpdateInterval,
+          UpdateInterval: "Daily" as UpdateInterval,
         },
       });
     }
@@ -36,10 +36,24 @@ export const useRebootUpdate = () => {
     ctx.state.ExtraConfig.Update?.isAutoReboot ?? false,
   );
   
-  const selectedTimezone = useSignal(ctx.state.ExtraConfig.Timezone || "GMT");
+  const selectedTimezone = useSignal(ctx.state.ExtraConfig.Timezone);
+  
+  // Track changes to selectedTimezone
+  useTask$(({ track }) => {
+    const timezone = track(() => selectedTimezone.value);
+    console.log("Timezone changed:", timezone);
+    
+    // Update the context when timezone changes
+    if (timezone && timezone !== ctx.state.ExtraConfig.Timezone) {
+      ctx.updateExtraConfig$({
+        ...ctx.state.ExtraConfig,
+        Timezone: timezone,
+      });
+    }
+  });
   
   const updateInterval = useSignal<UpdateInterval>(
-    ctx.state.ExtraConfig.Update?.UpdateInterval || "" as UpdateInterval
+    ctx.state.ExtraConfig.Update?.UpdateInterval || "Daily" as UpdateInterval
   );
 
   const rebootTime = useStore<TimeConfig>({

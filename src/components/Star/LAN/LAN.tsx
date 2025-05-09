@@ -15,6 +15,8 @@ export const LAN = component$((props: StepProps) => {
     (routerModel) => !!routerModel.Interfaces.wireless?.length
   );
 
+  const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+
   const EInterfaceStep = component$((props: StepProps) => (
     <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
@@ -55,21 +57,24 @@ export const LAN = component$((props: StepProps) => {
   
   nextId++;
   
-  baseSteps.push({
-    id: nextId,
-    title: $localize`VPN Server`,
-    component: VPNServerStep,
-    isComplete: false,
-  });
-  
-  nextId++;
-  
-  baseSteps.push({
-    id: nextId,
-    title: $localize`Network Tunnels`,
-    component: TunnelStep,
-    isComplete: false,
-  });
+  // Only add VPNServer and Tunnel steps if DomesticLink is enabled
+  if (isDomesticLinkEnabled) {
+    baseSteps.push({
+      id: nextId,
+      title: $localize`VPN Server`,
+      component: VPNServerStep,
+      isComplete: false,
+    });
+    
+    nextId++;
+    
+    baseSteps.push({
+      id: nextId,
+      title: $localize`Network Tunnels`,
+      component: TunnelStep,
+      isComplete: false,
+    });
+  }
   
   const advancedSteps: StepItem[] = [
     ...baseSteps,
