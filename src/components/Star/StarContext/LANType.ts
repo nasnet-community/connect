@@ -1,4 +1,4 @@
-import type { Ethernet } from "./ChooseType";
+import type { Ethernet } from "./CommonType";
 import type { AuthMethod, ARPState, TLSVersion, NetworkProtocol, LayerMode, VPNType, Networks } from "./CommonType";
 
 
@@ -23,6 +23,8 @@ export type ClientAuthMethod = "eap" | "pre-shared-key" | "digital-signature";
 export type IPsecPfsGroup = "none" | "modp1024" | "modp1536" | "modp2048" | "modp3072" | "modp4096" | "ecp256" | "ecp384" | "ecp521";
 export type IPsecEncAlgorithm = "3des" | "aes-128" | "aes-192" | "aes-256" | "blowfish" | "camellia-128" | "camellia-192" | "camellia-256";
 export type IPsecHashAlgorithm = "md5" | "sha1" | "sha256" | "sha512";
+
+export type WirelessInterfaceType = "Master" | "Slave";
 
 export interface Credentials {
   Username: string;
@@ -189,31 +191,41 @@ export interface EthernetInterfaceConfig {
   name: Ethernet;
   bridge: Networks;
 }
+
+export interface MultiMode {
+  Foreign?: WirelessConfig;
+  Domestic?: WirelessConfig;
+  Split?: WirelessConfig;
+  VPN?: WirelessConfig;
+}
+
+export interface Wireless {
+  SingleMode?: WirelessConfig;
+  MultiMode?: MultiMode;
+}
+
+export interface VPNServer {
+  Users: Credentials[]; 
+  PptpServer?: PptpServerConfig;
+  L2tpServer?: L2tpServerConfig;
+  SstpServer?: SstpServerConfig;
+  OpenVpnServer?: OpenVpnServerConfig;
+  Ikev2Server?: Ikev2ServerConfig;
+  WireguardServers?: WireguardServerInstanceConfig[];
+}
+
+export interface Tunnel {
+  IPIP?: IpipTunnelConfig[];
+  Eoip?: EoipTunnelConfig[];
+  Gre?: GreTunnelConfig[];
+  Vxlan?: VxlanInterfaceConfig[];
+}
   
+
+
 export interface LANState {
-  Wireless?: {
-    SingleMode?: WirelessConfig;
-    MultiMode?: {
-      Foreign?: WirelessConfig;
-      Domestic?: WirelessConfig;
-      Split?: WirelessConfig;
-      VPN?: WirelessConfig;
-    };
-  };
-  VPNServer?: {
-    Users: Credentials[]; 
-    PptpServer?: PptpServerConfig;
-    L2tpServer?: L2tpServerConfig;
-    SstpServer?: SstpServerConfig;
-    OpenVpnServer?: OpenVpnServerConfig;
-    Ikev2Server?: Ikev2ServerConfig;
-    WireguardServers?: WireguardServerInstanceConfig[];
-  };
-  Tunnel?: {
-    IPIP?: IpipTunnelConfig[];
-    Eoip?: EoipTunnelConfig[];
-    Gre?: GreTunnelConfig[];
-    Vxlan?: VxlanInterfaceConfig[];
-  };
+  Wireless?: Wireless;
+  VPNServer?: VPNServer;
+  Tunnel?: Tunnel;
   Interface?: EthernetInterfaceConfig[];
 }

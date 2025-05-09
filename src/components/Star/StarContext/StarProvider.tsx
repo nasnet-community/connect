@@ -11,6 +11,7 @@ import {
   type StarContextType,
 } from "./StarContext";
 import type { Mode, FrimwareType, RouterModeType } from "./ChooseType";
+import type { Ethernet } from "./CommonType";
 
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
@@ -18,14 +19,13 @@ export const StarContextProvider = component$(() => {
       Mode: "" as Mode,
       Firmware:"" as FrimwareType,
       RouterMode: "" as RouterModeType,
+      DometicLink: null as unknown as boolean,
       RouterModels: [],
     },
     WAN: {
       WANLink: {
-        isWifi2_4: false,
-        isWifi5: false,
         Foreign: {
-          InterfaceName: "",
+          InterfaceName: "" as Ethernet,
         },
       },
     },

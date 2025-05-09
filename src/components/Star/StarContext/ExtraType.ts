@@ -17,7 +17,7 @@ export interface services {
   
   export interface GameConfig {
     name: string;
-    link: "foreign" | "domestic" | "vpn" | "none";
+    link: "foreign" | "domestic" | "vpn";
     ports: {
       tcp?: string[];
       udp?: string[];

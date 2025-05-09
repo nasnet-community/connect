@@ -5,6 +5,7 @@ import type {
    NetworkProtocol,
    LayerMode,
    WirelessCredentials } from "./CommonType";
+import type { Ethernet, Wireless, Sfp, LTE } from "./CommonType";
 
 
 // export type MultiLinkMode = 'LoadBalance' | 'FailOver' | 'LoadBalanceFailOver' | '';
@@ -146,33 +147,26 @@ export interface VPNConfig {
 
 
 export interface WANConfig {
-  // WANType: WANType;
-  // ConnectionType: InterfaceType;
-  InterfaceName: string;
+  InterfaceName: Ethernet | Wireless | Sfp | LTE;
   WirelessCredentials?: WirelessCredentials;
 }
 
+export interface WANLink {
+  Foreign: WANConfig;
+  Domestic?: WANConfig;
+}
 
-
-
-
-
+export interface VPNClient {
+  Wireguard?: WireguardClientConfig[];
+  OpenVPN?: OpenVpnClientConfig[];
+  PPTP?: PptpClientConfig[];
+  L2TP?: L2tpClientConfig[];
+  SSTP?: SstpClientConfig[];
+  IKeV2?: Ike2ClientConfig[]; 
+}
 
 
 export interface WANState {
-  WANLink:{
-    isWifi2_4: boolean;
-    isWifi5: boolean;
-    Foreign: WANConfig;
-    Domestic?: WANConfig;
-  }
-  VPNClient?: {
-    // VPNType: VPNType; 
-    Wireguard?: WireguardClientConfig[];
-    OpenVPN?: OpenVpnClientConfig[];
-    PPTP?: PptpClientConfig[];
-    L2TP?: L2tpClientConfig[];
-    SSTP?: SstpClientConfig[];
-    IKeV2?: Ike2ClientConfig[]; 
-  };
+  WANLink: WANLink;
+  VPNClient?: VPNClient;
 }
