@@ -47,19 +47,14 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
     }
   };
 
-  // Find User to Router connection and determine what destinations it leads to
   const findDestinationTypes = (connection: NetworkTopologyConnection) => {
     const destinationTypes = { hasDomestic: false, hasForeign: false };
     
-    // Check User to Router connection
     if (connection.from === 0 && connection.to === 1) {
-      // Check all connections from the router (node 1) to determine destinations
       connections.forEach(conn => {
         if (conn.from === 1) {
-          // Check where this connection leads to
           const nextNodeIndex = conn.to;
           
-          // Look ahead to see what's connected from this node
           connections.forEach(subConn => {
             if (subConn.from === nextNodeIndex) {
               if (subConn.isDomestic === true) {
@@ -73,9 +68,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
       });
     }
     
-    // Also check Router to WAN connection (to handle the foreign network case)
     if (connection.from === 1 && connection.to === 2) {
-      // Check all connections from the WAN (node 2) to determine destinations
       connections.forEach(conn => {
         if (conn.from === 2) {
           if (conn.isDomestic === true) {
@@ -136,28 +129,21 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
               const x2 = toNode.x - 16;
               const y2 = toNode.y;
               
-              // Calculate arrow points for the triangle
               let arrowPoints = "";
               if (y1 === y2) {
-                // Horizontal connection
                 arrowPoints = `${x2},${y2} ${x2-10},${y2-5} ${x2-10},${y2+5}`;
               } else if (x1 < x2 && y1 < y2) {
-                // Diagonal down-right
                 arrowPoints = `${x2},${y2} ${x2-10},${y2-5} ${x2-3},${y2-12}`;
               } else if (x1 < x2 && y1 > y2) {
-                // Diagonal up-right
                 arrowPoints = `${x2},${y2} ${x2-10},${y2+5} ${x2-3},${y2+12}`;
               }
               
-              // Define colors for domestic and foreign packets
               const lineColor = conn.color;
-              const domesticPacketColor = "rgb(16, 185, 129)"; // emerald-500
-              const foreignPacketColor = "rgb(168, 85, 247)";  // purple-500
+              const domesticPacketColor = "rgb(16, 185, 129)"; 
+              const foreignPacketColor = "rgb(168, 85, 247)"; 
               
-              // Determine packet color based on connection type
               const packetColor = conn.isDomestic ? domesticPacketColor : foreignPacketColor;
               
-              // Check if this is User to Router connection and what destinations it leads to
               const destinations = findDestinationTypes(conn);
               
               return (

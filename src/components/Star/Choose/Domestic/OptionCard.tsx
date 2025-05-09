@@ -18,7 +18,6 @@ export const OptionCard = component$((props: OptionCardProps) => {
     <div
       onClick$={(e) => {
         const target = e.target as HTMLElement;
-        // Skip click handler if clicking on the network graph
         if (target.closest('.network-graph') || target.closest('.topology-container')) return;
         onSelect$(value);
       }}

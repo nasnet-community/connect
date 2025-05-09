@@ -26,15 +26,8 @@ export const foreignNetworkNodes: NetworkTopologyNode[] = [
 ];
 
 export const foreignNetworkConnections: NetworkTopologyConnection[] = [
-  // User to Router connection - only foreign traffic
   { from: 0, to: 1, color: '#f59e0b', isDomestic: false },
-  
-  // Router to Foreign WAN - only foreign traffic
   { from: 1, to: 2, color: '#eab308', isDomestic: false },
-  
-  // Foreign WAN to Domestic Site - traffic arrives but gets dropped at the site
   { from: 2, to: 3, color: '#eab308', isDomestic: false },
-  
-  // Foreign WAN to Foreign Site - foreign traffic
   { from: 2, to: 4, color: '#eab308', isDomestic: false }
 ]; 
