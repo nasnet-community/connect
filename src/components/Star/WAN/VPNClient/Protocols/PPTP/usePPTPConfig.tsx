@@ -8,14 +8,8 @@ export interface PPTPConfig {
   Username: string;
   Password: string;
   Profile?: string;
-  AddDefaultRoute?: boolean;
-  UsePeerDNS?: boolean;
   AllowedAuthMethods?: AuthMethod[];
   KeepaliveTimeout?: number;
-  AllowMPPE?: boolean;
-  MPPERequired?: boolean;
-  MPPE128?: boolean;
-  MPPEStateful?: boolean;
 }
 
 export interface UsePPTPConfigResult {
@@ -23,12 +17,6 @@ export interface UsePPTPConfigResult {
   username: {value: string};
   password: {value: string};
   keepaliveTimeout: {value: string};
-  addDefaultRoute: {value: boolean};
-  usePeerDNS: {value: boolean};
-  allowMppe: {value: boolean};
-  mppeRequired: {value: boolean};
-  mppe128: {value: boolean};
-  stateful: {value: boolean};
   errorMessage: {value: string};
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   validatePPTPConfig: QRL<(config: PPTPConfig) => Promise<{
@@ -49,12 +37,6 @@ export const usePPTPConfig = (
   const username = useSignal("");
   const password = useSignal("");
   const keepaliveTimeout = useSignal("30");
-  const addDefaultRoute = useSignal(true);
-  const usePeerDNS = useSignal(true);
-  const allowMppe = useSignal(true);
-  const mppeRequired = useSignal(true);
-  const mppe128 = useSignal(true);
-  const stateful = useSignal(true);
   
   if (starContext.state.WAN.VPNClient?.PPTP?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
@@ -67,14 +49,6 @@ export const usePPTPConfig = (
     
     if (existingConfig.KeepaliveTimeout !== undefined) {
       keepaliveTimeout.value = existingConfig.KeepaliveTimeout.toString();
-    }
-    
-    if (existingConfig.AddDefaultRoute !== undefined) {
-      addDefaultRoute.value = existingConfig.AddDefaultRoute;
-    }
-    
-    if (existingConfig.UsePeerDNS !== undefined) {
-      usePeerDNS.value = existingConfig.UsePeerDNS;
     }
     
     if (serverAddress.value && username.value && password.value) {
@@ -110,9 +84,13 @@ export const usePPTPConfig = (
         Password: parsedConfig.Password
       },
       KeepaliveTimeout: parsedConfig.KeepaliveTimeout,
-      AddDefaultRoute: parsedConfig.AddDefaultRoute,
-      UsePeerDNS: parsedConfig.UsePeerDNS,
+      AddDefaultRoute: true,
+      UsePeerDNS: true,
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
+      AllowMPPE: true,
+      MPPERequired: true,
+      MPPE128: true,
+      MPPEStateful: true
     };
 
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
@@ -142,13 +120,7 @@ export const usePPTPConfig = (
       ConnectTo: serverAddress.value,
       Username: username.value,
       Password: password.value,
-      AddDefaultRoute: addDefaultRoute.value,
-      UsePeerDNS: usePeerDNS.value,
       KeepaliveTimeout: parseInt(keepaliveTimeout.value) || 30,
-      AllowMPPE: allowMppe.value,
-      MPPERequired: mppeRequired.value,
-      MPPE128: mppe128.value,
-      MPPEStateful: stateful.value,
     };
 
     const { isValid, emptyFields } = await validatePPTPConfig(manualConfig);
@@ -174,13 +146,7 @@ export const usePPTPConfig = (
           ConnectTo: "",
           Username: "",
           Password: "",
-          AddDefaultRoute: true,
-          UsePeerDNS: true,
           KeepaliveTimeout: 30,
-          AllowMPPE: true,
-          MPPERequired: true,
-          MPPE128: true,
-          MPPEStateful: true
         };
         
         const lines = configText.split('\n').map(line => line.trim());
@@ -199,12 +165,6 @@ export const usePPTPConfig = (
           else if (line.startsWith('password ')) {
             config.Password = line.split(' ')[1];
           }
-          else if (line.includes('defaultroute no') || line.includes('default-route no')) {
-            config.AddDefaultRoute = false;
-          }
-          else if (line.includes('usepeerdns no') || line.includes('use-peerdns no')) {
-            config.UsePeerDNS = false;
-          }
           else if (line.startsWith('profile ')) {
             config.Profile = line.split(' ')[1];
           }
@@ -217,21 +177,6 @@ export const usePPTPConfig = (
             if (parts.length >= 2) {
               config.KeepaliveTimeout = parseInt(parts[1]) || 30;
             }
-          }
-          else if (line.includes('refuse-mppe')) {
-            config.AllowMPPE = false;
-          }
-          else if (line.includes('require-mppe')) {
-            config.MPPERequired = true;
-          }
-          else if (line.includes('require-mppe-128')) {
-            config.MPPE128 = true;
-          }
-          else if (line.includes('mppe-stateful')) {
-            config.MPPEStateful = true;
-          }
-          else if (line.includes('mppe-stateless')) {
-            config.MPPEStateful = false;
           }
         }
         
@@ -248,12 +193,6 @@ export const usePPTPConfig = (
     username,
     password,
     keepaliveTimeout,
-    addDefaultRoute,
-    usePeerDNS,
-    allowMppe,
-    mppeRequired,
-    mppe128,
-    stateful,
     errorMessage,
     handleManualFormSubmit$,
     validatePPTPConfig,

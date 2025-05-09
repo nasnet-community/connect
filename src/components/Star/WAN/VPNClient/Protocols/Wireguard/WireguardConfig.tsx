@@ -1,8 +1,13 @@
 import { component$, useTask$ } from "@builder.io/qwik";
-import { ConfigInput } from "../../ConfigInput";
-import { ErrorMessage } from "../../ErrorMessage";
-import { useWireguardConfig } from "./useWireguardConfig";
 import type { QRL } from "@builder.io/qwik";
+import { useWireguardConfig } from "./useWireguardConfig";
+import { 
+  FormField, 
+  FormContainer, 
+  ErrorMessage,
+  ConfigMethodToggle,
+  VPNConfigFileSection
+} from "~/components/Core";
 
 interface WireguardConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -39,207 +44,167 @@ export const WireguardConfig = component$<WireguardConfigProps>(({ onIsValidChan
 
   return (
     <div class="space-y-6">
-      <div class="flex items-center space-x-4">
-        <button
-          onClick$={() => setConfigMethod$("file")}
-          class={{
-            "px-4 py-2 rounded-lg font-medium": true,
-            "bg-primary-600 text-white": configMethod.value === "file",
-            "bg-surface-dark border border-border text-text-secondary": configMethod.value !== "file"
-          }}
-        >
-          {$localize`Upload/Paste Config`}
-        </button>
-        <button
-          onClick$={() => setConfigMethod$("manual")}
-          class={{
-            "px-4 py-2 rounded-lg font-medium": true,
-            "bg-primary-600 text-white": configMethod.value === "manual",
-            "bg-surface-dark border border-border text-text-secondary": configMethod.value !== "manual"
-          }}
-        >
-          {$localize`Manual Configuration`}
-        </button>
+      {/* Configuration Method Toggle */}
+      <div class="flex justify-center mb-2">
+        <ConfigMethodToggle 
+          method={configMethod.value}
+          onMethodChange$={setConfigMethod$}
+          class="max-w-md"
+        />
       </div>
 
+      {/* File Configuration Option */}
       {configMethod.value === "file" && (
-        <div class="space-y-4">
-          <ConfigInput
-            config={config.value}
-            onConfigChange$={handleConfigChange$}
-            onFileUpload$={handleFileUpload$}
-            vpnType="Wireguard"
-            placeholder={$localize`Paste your Wireguard configuration here. It should include [Interface] and [Peer] sections.`}
-          />
-        </div>
+        <VPNConfigFileSection
+          protocolName="WireGuard"
+          acceptedExtensions=".conf"
+          configValue={config.value}
+          onConfigChange$={handleConfigChange$}
+          onFileUpload$={handleFileUpload$}
+          placeholder={$localize`Paste your WireGuard configuration here. It should include sections like [Interface] and [Peer].`}
+        />
       )}
 
+      {/* Manual Configuration Option */}
       {configMethod.value === "manual" && (
-        <div class="space-y-4 rounded-lg border border-border p-4 dark:border-border-dark">
+        <FormContainer class="space-y-4 rounded-lg border border-border p-4 dark:border-border-dark">
+          <h3 class="text-md font-medium mb-4 text-text-secondary dark:text-text-dark-secondary">
+            {$localize`Connection Settings`}
+          </h3>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Private Key`} *
-              </label>
-              <input
-                type="password"
-                value={privateKey.value}
-                onInput$={(_, el) => { 
-                  privateKey.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="Interface private key"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Public Key`} *
-              </label>
-              <input
-                type="text"
-                value={publicKey.value}
-                onInput$={(_, el) => { 
-                  publicKey.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="Peer public key"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Server Address`} *
-              </label>
-              <input
-                type="text"
-                value={serverAddress.value}
-                onInput$={(_, el) => { 
-                  serverAddress.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="vpn.example.com or IP address"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Server Port`} *
-              </label>
-              <input
-                type="text"
-                value={serverPort.value}
-                onInput$={(_, el) => { 
-                  serverPort.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="51820"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Allowed IPs`} *
-              </label>
-              <input
-                type="text"
-                value={allowedIPs.value}
-                onInput$={(_, el) => { 
-                  allowedIPs.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="0.0.0.0/0"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Interface Address`} *
-              </label>
-              <input
-                type="text"
-                value={address.value}
-                onInput$={(_, el) => { 
-                  address.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="10.0.0.2/24"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
+            {/* Private Key Field */}
+            <FormField
+              type="password"
+              label={$localize`Private Key`}
+              required
+              value={privateKey.value}
+              onInput$={(_, el) => { 
+                privateKey.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="Interface private key"
+            />
+            
+            {/* Public Key Field */}
+            <FormField
+              label={$localize`Public Key`}
+              required
+              value={publicKey.value}
+              onInput$={(_, el) => { 
+                publicKey.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="Peer public key"
+            />
+            
+            {/* Server Address Field */}
+            <FormField
+              label={$localize`Server Address`}
+              required
+              value={serverAddress.value}
+              onInput$={(_, el) => { 
+                serverAddress.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="vpn.example.com or IP address"
+            />
+            
+            {/* Server Port Field */}
+            <FormField
+              label={$localize`Server Port`}
+              required
+              value={serverPort.value}
+              onInput$={(_, el) => { 
+                serverPort.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="51820"
+            />
+            
+            {/* Allowed IPs Field */}
+            <FormField
+              label={$localize`Allowed IPs`}
+              required
+              value={allowedIPs.value}
+              onInput$={(_, el) => { 
+                allowedIPs.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="0.0.0.0/0"
+            />
+            
+            {/* Interface Address Field */}
+            <FormField
+              label={$localize`Interface Address`}
+              required
+              value={address.value}
+              onInput$={(_, el) => { 
+                address.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="10.0.0.2/24"
+            />
           </div>
 
+          <h3 class="text-md font-medium mt-5 mb-4 text-text-secondary dark:text-text-dark-secondary">
+            {$localize`Advanced Settings`}
+          </h3>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`DNS`}
-              </label>
-              <input
-                type="text"
-                value={dns.value}
-                onInput$={(_, el) => { 
-                  dns.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="8.8.8.8, 1.1.1.1"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`MTU`}
-              </label>
-              <input
-                type="text"
-                value={mtu.value}
-                onInput$={(_, el) => { 
-                  mtu.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="1420"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Pre-shared Key`}
-              </label>
-              <input
-                type="password"
-                value={preSharedKey.value}
-                onInput$={(_, el) => { 
-                  preSharedKey.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Persistent Keepalive`}
-              </label>
-              <input
-                type="text"
-                value={persistentKeepalive.value}
-                onInput$={(_, el) => { 
-                  persistentKeepalive.value = el.value;
-                  handleManualFormSubmit$();
-                }}
-                placeholder="25"
-                class="mt-1 block w-full rounded-md border border-border bg-white px-3 py-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              />
-              <p class="mt-1 text-xs text-text-muted dark:text-text-dark-muted">
-                {$localize`Seconds between keepalive packets. Usually set to 25 seconds.`}
-              </p>
-            </div>
+            {/* DNS Field */}
+            <FormField
+              label={$localize`DNS`}
+              value={dns.value}
+              onInput$={(_, el) => { 
+                dns.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="8.8.8.8, 1.1.1.1"
+            />
+            
+            {/* MTU Field */}
+            <FormField
+              label={$localize`MTU`}
+              value={mtu.value}
+              onInput$={(_, el) => { 
+                mtu.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="1420"
+            />
+            
+            {/* Pre-shared Key Field */}
+            <FormField
+              type="password"
+              label={$localize`Pre-shared Key`}
+              value={preSharedKey.value}
+              onInput$={(_, el) => { 
+                preSharedKey.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              helperText={$localize`Optional: Enhances security`}
+            />
+            
+            {/* Persistent Keepalive Field */}
+            <FormField
+              label={$localize`Persistent Keepalive`}
+              value={persistentKeepalive.value}
+              onInput$={(_, el) => { 
+                persistentKeepalive.value = el.value;
+                handleManualFormSubmit$();
+              }}
+              placeholder="25"
+              helperText={$localize`Seconds between keepalive packets`}
+            />
           </div>
           
-          <p class="text-xs text-text-muted dark:text-text-dark-muted">
+          {/* Required Fields Note */}
+          <p class="text-xs text-text-muted dark:text-text-dark-muted mt-4">
             {$localize`Fields marked with * are required`}
           </p>
-        </div>
+        </FormContainer>
       )}
 
+      {/* Error Message Display */}
       <ErrorMessage message={errorMessage.value} />
     </div>
   );

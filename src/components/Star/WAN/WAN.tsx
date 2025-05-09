@@ -1,11 +1,15 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
+import { component$, useStore, $, useContext } from "@builder.io/qwik";
 import { VPNClient } from "./VPNClient/VPNClient";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import { WANInterface } from "./WANInterface/WANInterface";
+import { StarContext } from "../StarContext/StarContext";
 
 export const WAN = component$((props: StepProps) => {
+  const starContext = useContext(StarContext);
+  const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+
   const ForeignStep = component$((props: StepProps) => (
     <WANInterface
       mode={"Foreign"}
@@ -33,19 +37,25 @@ export const WAN = component$((props: StepProps) => {
       component: ForeignStep,
       isComplete: false,
     },
-    {
+  ];
+  
+  // Only add Domestic step if DomesticLink is enabled
+  if (isDomesticLinkEnabled) {
+    steps.push({
       id: 2,
       title: $localize`Domestic`,
       component: DomesticStep,
       isComplete: false,
-    },
-    {
-      id: 3,
-      title: $localize`VPN Client`,
-      component: VPNClientStep,
-      isComplete: false,
-    },
-  ];
+    });
+  }
+  
+  // Always add VPN Client step
+  steps.push({
+    id: steps.length + 1,
+    title: $localize`VPN Client`,
+    component: VPNClientStep,
+    isComplete: false,
+  });
 
   const stepsStore = useStore({
     activeStep: 0,

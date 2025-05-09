@@ -10,7 +10,6 @@ export interface IKEv2Config {
   Password?: string;
   ClientCertificateName?: string;
   CaCertificateName?: string;
-  PolicySrcAddress?: string;
   PolicyDstAddress?: string;
   Phase1HashAlgorithm?: string;
   Phase1EncryptionAlgorithm?: string;
@@ -26,7 +25,6 @@ export interface UseIKEv2ConfigResult {
   password: {value: string};
   authMethod: {value: 'psk' | 'eap' | 'certificate'};
   presharedKey: {value: string};
-  policySrcAddress: {value: string};
   policyDstAddress: {value: string};
   phase1HashAlgorithm: {value: string};
   phase1EncryptionAlgorithm: {value: string};
@@ -55,7 +53,6 @@ export const useIKEv2Config = (
   const presharedKey = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
-  const policySrcAddress = useSignal("");
   const policyDstAddress = useSignal("0.0.0.0/0");
   const phase1HashAlgorithm = useSignal("SHA256");
   const phase1EncryptionAlgorithm = useSignal("AES-256-CBC");
@@ -79,10 +76,6 @@ export const useIKEv2Config = (
     if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
-    }
-    
-    if (existingConfig.PolicySrcAddress) {
-      policySrcAddress.value = existingConfig.PolicySrcAddress;
     }
     
     if (existingConfig.PolicyDstAddress) {
@@ -200,9 +193,6 @@ export const useIKEv2Config = (
           else if (line.includes('authby=secret') || line.includes('authby=psk')) {
             config.AuthMethod = "psk";
           }
-          else if (line.startsWith('leftsubnet=')) {
-            config.PolicySrcAddress = line.substring(11).trim();
-          }
           else if (line.startsWith('rightsubnet=')) {
             config.PolicyDstAddress = line.substring(12).trim();
           }
@@ -227,7 +217,7 @@ export const useIKEv2Config = (
       } : undefined,
       ClientCertificateName: parsedConfig.ClientCertificateName,
       CaCertificateName: parsedConfig.CaCertificateName,
-      PolicySrcAddress: parsedConfig.PolicySrcAddress,
+      PolicySrcAddress: "0.0.0.0/0",
       PolicyDstAddress: parsedConfig.PolicyDstAddress,
     };
 
@@ -260,7 +250,6 @@ export const useIKEv2Config = (
       PresharedKey: authMethod.value === "psk" ? presharedKey.value : undefined,
       Username: authMethod.value === "eap" ? username.value : undefined,
       Password: authMethod.value === "eap" ? password.value : undefined,
-      PolicySrcAddress: policySrcAddress.value || undefined,
       PolicyDstAddress: policyDstAddress.value,
       Phase1HashAlgorithm: phase1HashAlgorithm.value,
       Phase1EncryptionAlgorithm: phase1EncryptionAlgorithm.value,
@@ -292,7 +281,6 @@ export const useIKEv2Config = (
     password,
     authMethod,
     presharedKey,
-    policySrcAddress,
     policyDstAddress,
     phase1HashAlgorithm,
     phase1EncryptionAlgorithm,

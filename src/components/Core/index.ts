@@ -1,4 +1,3 @@
-
 import * as CoreUtils from './common';
 export { CoreUtils };
 
@@ -9,26 +8,24 @@ export * from './Card';
 import { Input } from './Input/Input';
 export { Input };
 
-export * from './Form';
-
-export * from './Feedback';
-
-export * from './Modal';
-
-export * from './Select';
-
-export * from './Switch';
-
-export * from './FileInput';
 
 import { Field } from './Form/Field';
 import { Container } from './Form/Container';
 import { RadioGroup } from './Form/RadioGroup';
-import { VPNSelect } from './Select/VPNSelect';
-import { ConfigFileInput } from './FileInput/ConfigFileInput';
-import { ConfigMethodToggle } from './Switch/ConfigMethodToggle';
+
+
 import { ErrorMessage } from './Feedback/ErrorMessage';
 import { PromoBanner } from './Feedback/PromoBanner';
+
+export * from './Modal';
+
+import { VPNSelect } from './Select/VPNSelect';
+
+export * from './Switch';
+
+import { ConfigFileInput } from './FileInput/ConfigFileInput';
+import { VPNConfigFileSection } from './FileInput/VPNConfigFileSection';
+import { ConfigMethodToggle } from './Switch/ConfigMethodToggle';
 
 export {
   Field as FormField,
@@ -36,6 +33,7 @@ export {
   RadioGroup,
   VPNSelect as Select,
   ConfigFileInput,
+  VPNConfigFileSection,
   ConfigMethodToggle,
   ErrorMessage,
   PromoBanner

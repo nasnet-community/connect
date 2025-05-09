@@ -19,9 +19,6 @@ export interface OpenVPNConfig {
   AuthType: "credentials" | "certificates" | "both";
   Cipher?: string;
   Auth?: string;
-  CompLZO?: boolean;
-  RemoteRandomize?: boolean;
-  FloatType?: boolean;
   Redirect?: string;
   TLSAuth?: {
     Key?: string;
@@ -56,9 +53,6 @@ export interface UseOpenVPNConfigResult {
   password: {value: string};
   cipher: {value: string};
   auth: {value: string};
-  compLZO: {value: boolean};
-  remoteRandomize: {value: boolean};
-  floatType: {value: boolean};
   handleConfigChange$: QRL<(value: string) => Promise<void>>;
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
@@ -86,9 +80,6 @@ export const useOpenVPNConfig = (
   const password = useSignal("");
   const cipher = useSignal("");
   const auth = useSignal("");
-  const compLZO = useSignal(false);
-  const remoteRandomize = useSignal(false);
-  const floatType = useSignal(false);
   
   if (starContext.state.WAN.VPNClient?.OpenVPN?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.OpenVPN[0];
@@ -240,9 +231,6 @@ export const useOpenVPNConfig = (
         : undefined,
       Cipher: cipher.value || undefined,
       Auth: auth.value || undefined,
-      CompLZO: compLZO.value,
-      RemoteRandomize: remoteRandomize.value,
-      FloatType: floatType.value
     };
 
     const { isValid, emptyFields } = await validateOpenVPNConfig(manualConfig);
@@ -281,9 +269,6 @@ export const useOpenVPNConfig = (
           Port: "1194",
           Protocol: "udp",
           AuthType: "credentials",
-          CompLZO: false,
-          RemoteRandomize: false,
-          FloatType: false,
           VerifyServerCert: true,
         };
         
@@ -356,15 +341,6 @@ export const useOpenVPNConfig = (
           }
           else if (line.startsWith('auth ')) {
             config.Auth = line.split(' ')[1];
-          }
-          else if (line === 'comp-lzo' || line === 'comp-lzo yes' || line === 'comp-lzo adaptive') {
-            config.CompLZO = true;
-          }
-          else if (line === 'remote-random') {
-            config.RemoteRandomize = true;
-          }
-          else if (line === 'float') {
-            config.FloatType = true;
           }
           else if (line.startsWith('redirect-gateway')) {
             config.Redirect = line;
@@ -459,9 +435,6 @@ export const useOpenVPNConfig = (
     password,
     cipher,
     auth,
-    compLZO,
-    remoteRandomize,
-    floatType,
     handleConfigChange$,
     handleManualFormSubmit$,
     handleFileUpload$,

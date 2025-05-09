@@ -9,8 +9,6 @@ export interface L2TPConfig {
   Password: string;
   UseIPsec?: boolean;
   IPsecSecret?: string;
-  AddDefaultRoute?: boolean;
-  UsePeerDNS?: boolean;
 }
 
 export interface UseL2TPConfigResult {
@@ -19,8 +17,6 @@ export interface UseL2TPConfigResult {
   password: {value: string};
   useIPsec: {value: boolean};
   ipsecSecret: {value: string};
-  addDefaultRoute: {value: boolean};
-  usePeerDNS: {value: boolean};
   errorMessage: {value: string};
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   validateL2TPConfig: QRL<(config: L2TPConfig) => Promise<{
@@ -39,10 +35,8 @@ export const useL2TPConfig = (
   const serverAddress = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
-  const useIPsec = useSignal(true);
+  const useIPsec = useSignal(false);
   const ipsecSecret = useSignal("");
-  const addDefaultRoute = useSignal(true);
-  const usePeerDNS = useSignal(true);
   
   if (starContext.state.WAN.VPNClient?.L2TP?.[0]) {
     const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
@@ -59,14 +53,6 @@ export const useL2TPConfig = (
     
     if (existingConfig.IPsecSecret) {
       ipsecSecret.value = existingConfig.IPsecSecret;
-    }
-    
-    if (existingConfig.AddDefaultRoute !== undefined) {
-      addDefaultRoute.value = existingConfig.AddDefaultRoute;
-    }
-    
-    if (existingConfig.UsePeerDNS !== undefined) {
-      usePeerDNS.value = existingConfig.UsePeerDNS;
     }
     
     const isConfigValid = serverAddress.value && username.value && password.value && 
@@ -110,8 +96,8 @@ export const useL2TPConfig = (
       },
       UseIPsec: parsedConfig.UseIPsec,
       IPsecSecret: parsedConfig.IPsecSecret,
-      AddDefaultRoute: parsedConfig.AddDefaultRoute,
-      UsePeerDNS: parsedConfig.UsePeerDNS,
+      AddDefaultRoute: true,
+      UsePeerDNS: true,
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
     };
 
@@ -144,8 +130,6 @@ export const useL2TPConfig = (
       Password: password.value,
       UseIPsec: useIPsec.value,
       IPsecSecret: useIPsec.value ? ipsecSecret.value : undefined,
-      AddDefaultRoute: addDefaultRoute.value,
-      UsePeerDNS: usePeerDNS.value,
     };
 
     const { isValid, emptyFields } = await validateL2TPConfig(manualConfig);
@@ -170,8 +154,6 @@ export const useL2TPConfig = (
     password,
     useIPsec,
     ipsecSecret,
-    addDefaultRoute,
-    usePeerDNS,
     errorMessage,
     handleManualFormSubmit$,
     validateL2TPConfig,

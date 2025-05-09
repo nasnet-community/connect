@@ -12,8 +12,6 @@ export interface SSTPConfig {
   VerifyServerCertificate?: boolean;
   TlsVersion?: TLSVersion;
   Profile?: string;
-  AddDefaultRoute?: boolean;
-  UsePeerDNS?: boolean;
   AllowedAuthMethods?: AuthMethod[];
 }
 
@@ -22,8 +20,6 @@ export interface UseSSTPConfigResult {
   username: {value: string};
   password: {value: string};
   port: {value: string};
-  addDefaultRoute: {value: boolean};
-  usePeerDNS: {value: boolean};
   verifyServerCertificate: {value: boolean};
   tlsVersion: {value: TLSVersion};
   errorMessage: {value: string};
@@ -46,9 +42,7 @@ export const useSSTPConfig = (
   const username = useSignal("");
   const password = useSignal("");
   const port = useSignal("443");
-  const addDefaultRoute = useSignal(true);
-  const usePeerDNS = useSignal(true);
-  const verifyServerCertificate = useSignal(true);
+  const verifyServerCertificate = useSignal(false);
   const tlsVersion = useSignal<TLSVersion>("any");
   
   if (starContext.state.WAN.VPNClient?.SSTP?.[0]) {
@@ -62,14 +56,6 @@ export const useSSTPConfig = (
     
     if (existingConfig.Port !== undefined) {
       port.value = existingConfig.Port.toString();
-    }
-    
-    if (existingConfig.AddDefaultRoute !== undefined) {
-      addDefaultRoute.value = existingConfig.AddDefaultRoute;
-    }
-    
-    if (existingConfig.UsePeerDNS !== undefined) {
-      usePeerDNS.value = existingConfig.UsePeerDNS;
     }
     
     if (existingConfig.VerifyServerCertificate !== undefined) {
@@ -113,8 +99,8 @@ export const useSSTPConfig = (
         Password: parsedConfig.Password
       },
       Port: parsedConfig.Port,
-      AddDefaultRoute: parsedConfig.AddDefaultRoute,
-      UsePeerDNS: parsedConfig.UsePeerDNS,
+      AddDefaultRoute: true,
+      UsePeerDNS: true,
       VerifyServerCertificate: parsedConfig.VerifyServerCertificate,
       TlsVersion: parsedConfig.TlsVersion,
       AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
@@ -148,8 +134,6 @@ export const useSSTPConfig = (
       Username: username.value,
       Password: password.value,
       Port: parseInt(port.value) || 443,
-      AddDefaultRoute: addDefaultRoute.value,
-      UsePeerDNS: usePeerDNS.value,
       VerifyServerCertificate: verifyServerCertificate.value,
       TlsVersion: tlsVersion.value,
     };
@@ -178,10 +162,8 @@ export const useSSTPConfig = (
           Username: "",
           Password: "",
           Port: 443,
-          VerifyServerCertificate: true,
+          VerifyServerCertificate: false,
           TlsVersion: "any",
-          AddDefaultRoute: true,
-          UsePeerDNS: true,
         };
         
         const lines = configText.split('\n').map(line => line.trim());
@@ -224,12 +206,6 @@ export const useSSTPConfig = (
               config.TlsVersion = "any";
             }
           }
-          else if (line.includes('defaultroute no') || line.includes('default-route no')) {
-            config.AddDefaultRoute = false;
-          }
-          else if (line.includes('usepeerdns no') || line.includes('use-peerdns no')) {
-            config.UsePeerDNS = false;
-          }
           else if (line.startsWith('profile ')) {
             config.Profile = line.split(' ')[1];
           }
@@ -252,8 +228,6 @@ export const useSSTPConfig = (
     username,
     password,
     port,
-    addDefaultRoute,
-    usePeerDNS,
     verifyServerCertificate,
     tlsVersion,
     errorMessage,
