@@ -34,7 +34,6 @@ export const Modal = component$<ModalProps>(
     const dialogRef = useSignal<HTMLDialogElement>();
     const wasOpened = useSignal(false);
 
-    // Control body scroll when modal is open
     useVisibleTask$(({ track }) => {
       track(() => isOpen);
       
@@ -49,7 +48,6 @@ export const Modal = component$<ModalProps>(
       };
     });
 
-    // Control dialog open/close
     useVisibleTask$(({ track }) => {
       const dialog = dialogRef.value;
       track(() => isOpen);

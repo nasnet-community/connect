@@ -2,10 +2,8 @@ import { $, component$, useSignal } from '@builder.io/qwik';
 import { Modal, type ModalProps } from './Modal';
 import { Button } from '../button/Button';
 
-// Define a type for the stories args
 type StoryArgs = Omit<ModalProps, 'isOpen' | 'onClose'>;
 
-// Create a wrapper to handle state
 const ModalDemo = component$<Omit<ModalProps, 'isOpen' | 'onClose'> & { initialOpen?: boolean }>(
   (props) => {
     const isOpen = useSignal(props.initialOpen || false);

@@ -1,4 +1,5 @@
-import { component$, useSignal, useStore, $, type QRL, useId } from "@builder.io/qwik";
+import { component$, useSignal, useStore, $, type QRL, useId, useVisibleTask$ } from "@builder.io/qwik";
+import { HiChevronDownOutline, HiXMarkOutline, HiMagnifyingGlassOutline } from "@qwikest/icons/heroicons";
 
 export interface SelectOption {
   value: string;
@@ -26,12 +27,14 @@ export interface SelectProps {
   class?: string;
   multiple?: boolean;
   searchable?: boolean;
+  clearable?: boolean;
+  maxHeight?: string;
   onChange$?: QRL<(value: string | string[]) => void>;
 }
 
 export const Select = component$<SelectProps>(
   ({
-    options,
+    options = [],
     id,
     name,
     value = "",
@@ -45,6 +48,7 @@ export const Select = component$<SelectProps>(
     errorMessage,
     multiple = false,
     searchable = false,
+    clearable = true,
     onChange$,
     ...props
   }) => {
@@ -54,11 +58,18 @@ export const Select = component$<SelectProps>(
     const isOpen = useSignal(false);
     const searchQuery = useSignal("");
     
-    const selectedValues = useStore<{ values: string[] }>({
+    const selection = useStore<{ values: string[] }>({
       values: Array.isArray(value) ? value : value ? [value] : [],
     });
-
-    const baseClasses = "block w-full border rounded-lg focus:outline-none focus:ring-2 appearance-none transition-colors";
+    
+    useVisibleTask$(({ track }) => {
+      const trackedValue = track(() => value);
+      selection.values = Array.isArray(trackedValue) 
+        ? trackedValue 
+        : trackedValue 
+          ? [trackedValue] 
+          : [];
+    });
 
     const sizeClasses = {
       sm: "text-xs px-2.5 py-1.5",
@@ -75,37 +86,52 @@ export const Select = component$<SelectProps>(
         "border-red-500 bg-white text-gray-900 focus:border-red-500 focus:ring-red-500 dark:border-red-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-red-500 dark:focus:ring-red-500",
     };
 
-    const disabledClasses = disabled
-      ? "cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800"
-      : "";
-
-    const toggleSelect$ = $(() => {
+    const toggleDropdown$ = $(() => {
       if (!disabled) {
         isOpen.value = !isOpen.value;
+        
+        if (!isOpen.value) {
+          searchQuery.value = "";
+        }
       }
+    });
+    
+    const clearSelection$ = $((e: MouseEvent) => {
+      e.stopPropagation();
+      
+      selection.values = [];
+      
+      onChange$?.(multiple ? [] : "");
     });
 
     const handleClickOutside$ = $((event: Event) => {
       const target = event.target as HTMLElement;
+      
+      if (target.closest("[data-select-toggle]") || 
+          target.closest("[data-clear-button]")) {
+        return;
+      }
+      
       if (!target.closest(`#select-container-${uniqueId}`)) {
         isOpen.value = false;
+        searchQuery.value = "";
       }
     });
 
     const selectOption$ = $((optionValue: string) => {
       if (multiple) {
-        const index = selectedValues.values.indexOf(optionValue);
+        const index = selection.values.indexOf(optionValue);
         if (index > -1) {
-          selectedValues.values.splice(index, 1);
+          selection.values.splice(index, 1);
         } else {
-          selectedValues.values.push(optionValue);
+          selection.values.push(optionValue);
         }
       } else {
-        selectedValues.values = [optionValue];
+        selection.values = [optionValue];
         isOpen.value = false;
       }
       
-      onChange$?.(multiple ? selectedValues.values : selectedValues.values[0] || "");
+      onChange$?.(multiple ? selection.values : selection.values[0] || "");
     });
 
     const handleSearch$ = $((event: Event) => {
@@ -113,21 +139,50 @@ export const Select = component$<SelectProps>(
       searchQuery.value = target.value;
     });
 
-    const filteredOptions = options.filter((option) => 
-      !searchQuery.value || option.label.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-
-    // Group options by group property if defined
-    const groupedOptions: Record<string, SelectOption[]> = {};
-    filteredOptions.forEach(option => {
-      const group = option.group || '';
-      if (!groupedOptions[group]) {
-        groupedOptions[group] = [];
+    const getFilteredOptions = () => {
+      if (!searchQuery.value) {
+        return options;
       }
-      groupedOptions[group].push(option);
-    });
+      
+      const query = searchQuery.value.toLowerCase();
+      return options.filter((option) => 
+        !option.disabled && option.label.toLowerCase().includes(query)
+      );
+    };
 
-    const isOptionSelected = (optionValue: string) => selectedValues.values.includes(optionValue);
+    const getGroupedOptions = () => {
+      const filteredOptions = getFilteredOptions();
+      const groupedOptions: Record<string, SelectOption[]> = {};
+      
+      filteredOptions.forEach(option => {
+        const group = option.group || '';
+        if (!groupedOptions[group]) {
+          groupedOptions[group] = [];
+        }
+        groupedOptions[group].push(option);
+      });
+      
+      return groupedOptions;
+    };
+
+    const isOptionSelected = (optionValue: string) => {
+      return selection.values.includes(optionValue);
+    };
+
+    const getDisplayText = () => {
+      if (selection.values.length === 0) {
+        return placeholder;
+      }
+      
+      if (multiple) {
+        return `${selection.values.length} selected`;
+      }
+      
+      const selectedOption = options.find(opt => opt.value === selection.values[0]);
+      return selectedOption?.label || selection.values[0];
+    };
+
+    const baseClasses = "w-full border rounded-lg focus:outline-none focus:ring-2 appearance-none transition-colors";
 
     return (
       <div class="w-full" id={`select-container-${uniqueId}`}>
@@ -142,105 +197,91 @@ export const Select = component$<SelectProps>(
         )}
         
         <div class="relative">
+          {/* Main select button */}
           <button
             id={selectId}
             type="button"
+            data-select-toggle
             class={[
               baseClasses,
               sizeClasses[size],
               validationClasses[validation],
-              disabledClasses,
+              disabled ? "cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800" : "",
               props.class,
-              "flex items-center justify-between"
+              "flex items-center justify-between",
             ].filter(Boolean).join(" ")}
             aria-haspopup="listbox"
             aria-expanded={isOpen.value}
             disabled={disabled}
-            onClick$={toggleSelect$}
+            onClick$={toggleDropdown$}
           >
-            <div class="flex-1 flex-wrap text-left flex gap-1">
-              {selectedValues.values.length === 0 ? (
-                <span class="text-gray-500 dark:text-gray-400">{placeholder}</span>
-              ) : (
-                <>
-                  {multiple ? (
-                    selectedValues.values.map(val => {
-                      const selectedOption = options.find(opt => opt.value === val);
-                      return (
-                        <span 
-                          key={val}
-                          class="px-2 py-0.5 text-xs inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-700"
-                        >
-                          {selectedOption?.label || val}
-                          <button 
-                            type="button" 
-                            class="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                            onClick$={(e) => {
-                              e.stopPropagation();
-                              selectOption$(val);
-                            }}
-                          >
-                            <span class="sr-only">Remove</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M18 6 6 18"></path>
-                              <path d="m6 6 12 12"></path>
-                            </svg>
-                          </button>
-                        </span>
-                      );
-                    })
-                  ) : (
-                    <span>{options.find(opt => opt.value === selectedValues.values[0])?.label || selectedValues.values[0]}</span>
-                  )}
-                </>
-              )}
+            <div class="flex-1 text-left truncate">
+              <span class={selection.values.length === 0 ? "text-gray-500 dark:text-gray-400" : ""}>
+                {getDisplayText()}
+              </span>
             </div>
-            <svg
-              class="h-5 w-5 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                clip-rule="evenodd"
+            
+            <div class="flex items-center">
+              {/* Clear button */}
+              {clearable && selection.values.length > 0 && (
+                <button
+                  type="button"
+                  class="mr-1 p-1 text-gray-400 hover:text-gray-600 focus:outline-none dark:hover:text-gray-300"
+                  aria-label="Clear selection"
+                  onClick$={clearSelection$}
+                  data-clear-button
+                >
+                  <HiXMarkOutline class="h-4 w-4" />
+                </button>
+              )}
+              
+              {/* Dropdown icon */}
+              <HiChevronDownOutline 
+                class={`h-5 w-5 text-gray-400 transition-transform duration-200 ${isOpen.value ? 'rotate-180' : ''}`} 
               />
-            </svg>
+            </div>
           </button>
           
+          {/* Dropdown */}
           {isOpen.value && (
             <div 
-              class="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-auto focus:outline-none"
+              class="absolute z-50 mt-1 w-full rounded-md bg-white dark:bg-gray-800 shadow-lg focus:outline-none"
               role="listbox"
               aria-labelledby={selectId}
               aria-multiselectable={multiple}
             >
+              {/* Search input */}
               {searchable && (
-                <div class="p-2 sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <input
-                    type="text"
-                    class="block w-full border border-gray-300 dark:border-gray-600 rounded-md text-sm px-3 py-1.5 
-                           focus:outline-none focus:ring-2 focus:ring-primary-500 
-                           bg-white dark:bg-gray-700 dark:text-white"
-                    placeholder="Search..."
-                    value={searchQuery.value}
-                    onInput$={handleSearch$}
-                  />
+                <div class="p-2 sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10">
+                  <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <HiMagnifyingGlassOutline class="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      class="block w-full border border-gray-300 dark:border-gray-600 rounded-md text-sm pl-10 pr-3 py-1.5 
+                            focus:outline-none focus:ring-2 focus:ring-primary-500 
+                            bg-white dark:bg-gray-700 dark:text-white"
+                      placeholder="Search..."
+                      value={searchQuery.value}
+                      onInput$={handleSearch$}
+                    />
+                  </div>
                 </div>
               )}
               
-              <ul class="py-1">
-                {Object.keys(groupedOptions).map(group => (
-                  <>
+              {/* Options list */}
+              <div class="overflow-auto max-h-[300px]">
+                {Object.entries(getGroupedOptions()).map(([group, groupOptions]) => (
+                  <div key={group || "default"}>
                     {group && (
-                      <li class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900">
+                      <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
                         {group}
-                      </li>
+                      </div>
                     )}
-                    {groupedOptions[group].map((option) => (
-                      <li 
+                    
+                    {groupOptions.map((option) => (
+                      <div 
                         key={option.value}
                         class={[
                           "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center",
@@ -261,27 +302,29 @@ export const Select = component$<SelectProps>(
                           </span>
                         )}
                         {option.label}
-                      </li>
+                      </div>
                     ))}
-                  </>
+                  </div>
                 ))}
                 
-                {filteredOptions.length === 0 && (
-                  <li class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                {getFilteredOptions().length === 0 && (
+                  <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                     No options found
-                  </li>
+                  </div>
                 )}
-              </ul>
+              </div>
             </div>
           )}
         </div>
         
+        {/* Error message */}
         {validation === "invalid" && errorMessage && (
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">
             {errorMessage}
           </p>
         )}
         
+        {/* Helper text */}
         {helperText && validation !== "invalid" && (
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {helperText}
@@ -312,7 +355,7 @@ export const Select = component$<SelectProps>(
         
         {/* Click outside handler */}
         <div 
-          window:click$={handleClickOutside$} 
+          window:onClick$={handleClickOutside$} 
           class="hidden"
         />
       </div>

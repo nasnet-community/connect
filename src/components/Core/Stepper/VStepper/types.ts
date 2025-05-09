@@ -26,7 +26,7 @@ export interface VStepperProps {
   onStepChange$?: QRL<(id: number) => void>;
   position?: "left" | "right";
   isComplete?: boolean;
-  preloadNext?: boolean; // Add this
+  preloadNext?: boolean;
 }
 
 export interface StepProps {
