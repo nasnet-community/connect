@@ -1,6 +1,23 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
-import { HiServerOutline, HiPlusCircleOutline, HiUserGroupOutline, HiTrashOutline, HiDocumentDuplicateOutline } from "@qwikest/icons/heroicons";
+import { 
+  HiServerOutline, 
+  HiPlusCircleOutline, 
+  HiUserGroupOutline, 
+  HiTrashOutline, 
+  HiDocumentDuplicateOutline 
+} from "@qwikest/icons/heroicons";
+import { ServerCard } from "~/components/Core/Card";
+import { 
+  ServerFormField, 
+  ServerButton,
+  TabNavigation,
+  SectionTitle
+} from "~/components/Core/Form/ServerField";
+import { Input } from "~/components/Core/Input";
 import { useWireguardServer } from "./useWireguardServer";
+
+// Create a serialized version of the server icon
+const ServerIcon = $(HiServerOutline);
 
 export const WireguardServer = component$(() => {
   const {
@@ -19,34 +36,81 @@ export const WireguardServer = component$(() => {
     deleteServer$,
     selectServer$
   } = useWireguardServer();
-  
-  const activeTab = useSignal<'interface' | 'peers'>('interface');
-  
+
+  const isEnabled = useSignal(wireguardServers.length > 0);
+
+  const handleToggle = $((enabled: boolean) => {
+    try {
+      isEnabled.value = enabled;
+      
+      if (isEnabled.value && wireguardServers.length === 0) {
+        // Create a default server if enabling and no servers exist
+        generateWireguardServer$();
+      }
+    } catch (error) {
+      console.error("Error toggling Wireguard server:", error);
+      isEnabled.value = !enabled; // Revert the change if there's an error
+    }
+  });
+
+  const handleAddServer = $(() => {
+    try {
+      generateWireguardServer$();
+    } catch (error) {
+      console.error("Error adding Wireguard server:", error);
+    }
+  });
+
+  const handleDeleteServer = $(() => {
+    try {
+      if (wireguardServers.length > 0) {
+        deleteServer$();
+      }
+    } catch (error) {
+      console.error("Error deleting Wireguard server:", error);
+    }
+  });
+
+  const handleServerTabClick = $((index: number) => {
+    try {
+      selectServer$(index);
+    } catch (error) {
+      console.error("Error selecting Wireguard server tab:", error);
+    }
+  });
+
   const copyToClipboard = $((text: string) => {
     navigator.clipboard.writeText(text);
   });
 
-  return (
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div class="mb-6 flex items-center gap-3">
-        <HiServerOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{$localize`WireGuard Server`}</h3>
-      </div>
+  const activeTab = useSignal<'interface' | 'peers'>('interface');
+  
+  // Generate tabs for TabNavigation component
+  const tabOptions = [
+    { id: 'interface', label: $localize`Interface Settings` },
+    { id: 'peers', label: $localize`Peers` }
+  ];
 
+  return (
+    <ServerCard
+      title={$localize`WireGuard Server`}
+      icon={ServerIcon}
+      enabled={isEnabled.value}
+      onToggle$={handleToggle}
+    >
       {/* Server instances */}
       <div class="mb-6">
         <div class="flex justify-between">
-          <h4 class="mb-3 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
-            {$localize`Server Instances`}
-          </h4>
-          <button
-            onClick$={generateWireguardServer$}
+          <SectionTitle title={$localize`Server Instances`} />
+          
+          <ServerButton
+            onClick$={handleAddServer}
             disabled={isGeneratingKeys.value}
-            class="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-3 py-1 text-sm text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-500/25 disabled:opacity-50 dark:bg-primary-600 dark:hover:bg-primary-700"
+            class="inline-flex items-center gap-2 px-3 py-1 text-sm"
           >
             <HiPlusCircleOutline class="h-4 w-4" />
             <span>{isGeneratingKeys.value ? $localize`Generating...` : $localize`New Server`}</span>
-          </button>
+          </ServerButton>
         </div>
         
         {/* Tab selector for server instances */}
@@ -55,7 +119,7 @@ export const WireguardServer = component$(() => {
             {wireguardServers.map((server, index) => (
               <button
                 key={index}
-                onClick$={() => selectServer$(index)}
+                onClick$={() => handleServerTabClick(index)}
                 class={`rounded-lg border px-3 py-1 text-sm transition-colors ${
                   currentServerIndex.value === index
                     ? "border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-400 dark:bg-primary-900/30 dark:text-primary-400"
@@ -76,181 +140,122 @@ export const WireguardServer = component$(() => {
       {wireguardServers.length > 0 && (
         <>
           {/* Tab navigation */}
-          <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
-            <ul class="-mb-px flex flex-wrap">
-              <li class="mr-2">
-                <button
-                  onClick$={() => (activeTab.value = 'interface')}
-                  class={`inline-block rounded-t-lg border-b-2 p-4 ${
-                    activeTab.value === 'interface'
-                      ? "border-primary-500 text-primary-600 dark:border-primary-500 dark:text-primary-500"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {$localize`Interface Settings`}
-                </button>
-              </li>
-              <li class="mr-2">
-                <button
-                  onClick$={() => (activeTab.value = 'peers')}
-                  class={`inline-block rounded-t-lg border-b-2 p-4 ${
-                    activeTab.value === 'peers'
-                      ? "border-primary-500 text-primary-600 dark:border-primary-500 dark:text-primary-500"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {$localize`Peers`}
-                </button>
-              </li>
-            </ul>
-          </div>
+          <TabNavigation
+            tabs={tabOptions}
+            activeTab={activeTab.value}
+            onSelect$={(tabId) => (activeTab.value = tabId as 'interface' | 'peers')}
+          />
 
           {/* Interface Settings Tab */}
           {activeTab.value === 'interface' && (
             <div class="space-y-6">
               <div>
-                <h4 class="mb-3 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
-                  {$localize`Interface Configuration`}
-                </h4>
+                <SectionTitle title={$localize`Interface Configuration`} />
                 <div class="grid gap-4 md:grid-cols-2">
                   {/* Interface Name */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Interface Name`}
-                    </label>
-                    <input
+                  <ServerFormField label={$localize`Interface Name`}>
+                    <Input
                       type="text"
                       value={wireguardServers[currentServerIndex.value].Interface.Name}
-                      onChange$={(e) => updateInterface$('Name', (e.target as HTMLInputElement).value)}
-                      class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      onChange$={(_, value) => updateInterface$('Name', value)}
                       placeholder={$localize`e.g. wg0`}
                     />
-                  </div>
+                  </ServerFormField>
 
                   {/* Listen Port */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Listen Port`}
-                    </label>
-                    <input
+                  <ServerFormField label={$localize`Listen Port`}>
+                    <Input
                       type="number"
-                      value={wireguardServers[currentServerIndex.value].Interface.ListenPort || 51820}
-                      onChange$={(e) => updateInterface$('ListenPort', parseInt((e.target as HTMLInputElement).value, 10))}
-                      class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      value={(wireguardServers[currentServerIndex.value].Interface.ListenPort || 51820).toString()}
+                      onChange$={(_, value) => updateInterface$('ListenPort', parseInt(value, 10))}
                       placeholder={$localize`e.g. 51820`}
-                      min="1024"
-                      max="65535"
                     />
-                  </div>
+                  </ServerFormField>
 
                   {/* Interface Address */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Interface Address`}
-                    </label>
-                    <input
+                  <ServerFormField 
+                    label={$localize`Interface Address`}
+                    errorMessage={interfaceAddressError.value}
+                  >
+                    <Input
                       type="text"
                       value={wireguardServers[currentServerIndex.value].Interface.InterfaceAddress}
-                      onChange$={(e) => updateInterface$('InterfaceAddress', (e.target as HTMLInputElement).value)}
-                      class={`w-full rounded-lg border ${
-                        interfaceAddressError.value
-                          ? "border-red-500 focus:ring-red-500"
-                          : "border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
-                      } px-4 py-2 dark:bg-gray-700 dark:text-white`}
+                      onChange$={(_, value) => updateInterface$('InterfaceAddress', value)}
                       placeholder={$localize`e.g. 10.0.0.1/24`}
+                      validation={interfaceAddressError.value ? "invalid" : "default"}
                     />
-                    {interfaceAddressError.value && (
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-500">
-                        {interfaceAddressError.value}
-                      </p>
-                    )}
-                  </div>
+                  </ServerFormField>
 
                   {/* MTU */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`MTU`}
-                    </label>
-                    <input
+                  <ServerFormField label={$localize`MTU`}>
+                    <Input
                       type="number"
-                      value={wireguardServers[currentServerIndex.value].Interface.Mtu || 1420}
-                      onChange$={(e) => updateInterface$('Mtu', parseInt((e.target as HTMLInputElement).value, 10))}
-                      class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      value={(wireguardServers[currentServerIndex.value].Interface.Mtu || 1420).toString()}
+                      onChange$={(_, value) => updateInterface$('Mtu', parseInt(value, 10))}
                       placeholder={$localize`e.g. 1420`}
-                      min="576"
-                      max="9000"
                     />
-                  </div>
+                  </ServerFormField>
 
                   {/* Private Key */}
-                  <div class="md:col-span-2">
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Private Key`}
-                    </label>
+                  <ServerFormField 
+                    label={$localize`Private Key`}
+                    errorMessage={privateKeyError.value}
+                    class="md:col-span-2"
+                  >
                     <div class="flex items-center gap-2">
-                      <input
+                      <Input
                         type="text"
                         value={wireguardServers[currentServerIndex.value].Interface.PrivateKey}
-                        onChange$={(e) => updateInterface$('PrivateKey', (e.target as HTMLInputElement).value)}
-                        class={`w-full rounded-lg border ${
-                          privateKeyError.value
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
-                        } px-4 py-2 dark:bg-gray-700 dark:text-white`}
+                        onChange$={(_, value) => updateInterface$('PrivateKey', value)}
                         placeholder={$localize`Enter private key`}
+                        validation={privateKeyError.value ? "invalid" : "default"}
                       />
-                      <button
-                        type="button"
+                      <ServerButton
                         onClick$={() => copyToClipboard(wireguardServers[currentServerIndex.value].Interface.PrivateKey)}
-                        class="flex items-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        primary={false}
+                        class="flex items-center gap-1 px-3 py-2 text-sm"
                       >
                         <HiDocumentDuplicateOutline class="h-5 w-5" />
                         {$localize`Copy`}
-                      </button>
+                      </ServerButton>
                     </div>
-                    {privateKeyError.value && (
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-500">
-                        {privateKeyError.value}
-                      </p>
-                    )}
-                  </div>
+                  </ServerFormField>
 
                   {/* Public Key (display only) */}
                   {wireguardServers[currentServerIndex.value].Interface.PublicKey && (
-                    <div class="md:col-span-2">
-                      <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {$localize`Public Key`}
-                      </label>
+                    <ServerFormField label={$localize`Public Key`} class="md:col-span-2">
                       <div class="flex items-center gap-2">
-                        <input
+                        <Input
                           type="text"
-                          value={wireguardServers[currentServerIndex.value].Interface.PublicKey}
-                          class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
-                          disabled
+                          value={wireguardServers[currentServerIndex.value].Interface.PublicKey || ""}
+                          readonly
+                          class="bg-gray-50 dark:bg-gray-600"
                         />
-                        <button
-                          type="button"
+                        <ServerButton
                           onClick$={() => copyToClipboard(wireguardServers[currentServerIndex.value].Interface.PublicKey || "")}
-                          class="flex items-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                          primary={false}
+                          class="flex items-center gap-1 px-3 py-2 text-sm"
                         >
                           <HiDocumentDuplicateOutline class="h-5 w-5" />
                           {$localize`Copy`}
-                        </button>
+                        </ServerButton>
                       </div>
-                    </div>
+                    </ServerFormField>
                   )}
                 </div>
               </div>
 
               {/* Delete Server Button */}
               <div class="flex justify-end">
-                <button
-                  onClick$={deleteServer$}
-                  class="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-500/25 dark:border-red-800 dark:bg-red-900/30 dark:text-red-500 dark:hover:bg-red-900/50"
+                <ServerButton
+                  onClick$={handleDeleteServer}
+                  danger={true}
+                  primary={false}
+                  class="inline-flex items-center gap-2"
                 >
                   <HiTrashOutline class="h-5 w-5" />
                   <span>{$localize`Delete Server`}</span>
-                </button>
+                </ServerButton>
               </div>
             </div>
           )}
@@ -259,164 +264,96 @@ export const WireguardServer = component$(() => {
           {activeTab.value === 'peers' && (
             <div class="space-y-6">
               <div class="flex items-center justify-between">
-                <h4 class="mb-3 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
-                  {$localize`WireGuard Peers`}
-                </h4>
-                <button
-                  onClick$={addPeer$}
-                  class="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-3 py-1 text-sm text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-700"
+                <SectionTitle title={$localize`WireGuard Peers`} />
+                <ServerButton
+                  onClick$={() => addPeer$()}
+                  class="inline-flex items-center gap-2 px-3 py-1 text-sm"
                 >
                   <HiPlusCircleOutline class="h-4 w-4" />
                   <span>{$localize`Add Peer`}</span>
-                </button>
+                </ServerButton>
               </div>
 
               {wireguardServers[currentServerIndex.value].Peers.length === 0 ? (
                 <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800">
-                  <HiUserGroupOutline class="mx-auto mb-2 h-10 w-10 text-gray-400 dark:text-gray-500" />
-                  <p class="text-gray-600 dark:text-gray-400">
-                    {$localize`No peers configured. Click "Add Peer" to create one.`}
+                  <HiUserGroupOutline class="mx-auto h-8 w-8 text-gray-400" />
+                  <p class="mt-2 text-gray-600 dark:text-gray-400">
+                    {$localize`No peers configured yet`}
+                  </p>
+                  <p class="text-sm text-gray-500 dark:text-gray-500">
+                    {$localize`Click "Add Peer" to create a new connection`}
                   </p>
                 </div>
               ) : (
-                <div class="space-y-6">
+                <div class="space-y-4">
                   {wireguardServers[currentServerIndex.value].Peers.map((peer, peerIndex) => (
-                    <div key={peerIndex} class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                      <div class="mb-4 flex items-center justify-between">
-                        <h5 class="font-medium text-gray-900 dark:text-white">
-                          {$localize`Peer`} {peerIndex + 1} {peer.Comment && `- ${peer.Comment}`}
-                        </h5>
-                        <button
+                    <div 
+                      key={peerIndex}
+                      class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+                    >
+                      <div class="mb-3 flex items-center justify-between">
+                        <h4 class="font-medium">
+                          {$localize`Peer ${peerIndex + 1}`}
+                          {peer.Comment && ` - ${peer.Comment}`}
+                        </h4>
+                        <ServerButton
                           onClick$={() => removePeer$(peerIndex)}
-                          class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          danger={true}
+                          primary={false}
+                          class="p-1"
                         >
-                          <HiTrashOutline class="h-5 w-5" />
-                        </button>
+                          <HiTrashOutline class="h-4 w-4" />
+                        </ServerButton>
                       </div>
-
+                      
                       <div class="grid gap-4 md:grid-cols-2">
-                        {/* Public Key */}
-                        <div class="md:col-span-2">
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Public Key`}
-                          </label>
-                          <input
-                            type="text"
-                            value={peer.PublicKey}
-                            onChange$={(e) => updatePeer$(peerIndex, 'PublicKey', (e.target as HTMLInputElement).value)}
-                            class={`w-full rounded-lg border ${
-                              peerPublicKeyError.value
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
-                            } px-4 py-2 dark:bg-gray-700 dark:text-white`}
-                            placeholder={$localize`Enter peer's public key`}
-                          />
-                          {peerPublicKeyError.value && (
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-500">
-                              {peerPublicKeyError.value}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Allowed Address */}
-                        <div class="md:col-span-2">
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Allowed Address`}
-                          </label>
-                          <input
-                            type="text"
-                            value={peer.AllowedAddress}
-                            onChange$={(e) => updatePeer$(peerIndex, 'AllowedAddress', (e.target as HTMLInputElement).value)}
-                            class={`w-full rounded-lg border ${
-                              peerAddressError.value
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
-                            } px-4 py-2 dark:bg-gray-700 dark:text-white`}
-                            placeholder={$localize`e.g. 10.0.0.2/32, 192.168.1.0/24`}
-                          />
-                          {peerAddressError.value && (
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-500">
-                              {peerAddressError.value}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Pre-shared Key (Optional) */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Pre-shared Key`} <span class="text-gray-500">({$localize`Optional`})</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={peer.PresharedKey || ""}
-                            onChange$={(e) => updatePeer$(peerIndex, 'PresharedKey', (e.target as HTMLInputElement).value)}
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder={$localize`Enter pre-shared key`}
-                          />
-                        </div>
-
-                        {/* Persistent Keepalive */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Persistent Keepalive`} <span class="text-gray-500">({$localize`seconds`})</span>
-                          </label>
-                          <input
-                            type="number"
-                            value={peer.PersistentKeepalive || 25}
-                            onChange$={(e) => updatePeer$(peerIndex, 'PersistentKeepalive', parseInt((e.target as HTMLInputElement).value, 10))}
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder={$localize`e.g. 25`}
-                            min="0"
-                            max="3600"
-                          />
-                        </div>
-
-                        {/* Endpoint Address (Optional for clients) */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Endpoint Address`} <span class="text-gray-500">({$localize`Optional`})</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={peer.EndpointAddress || ""}
-                            onChange$={(e) => updatePeer$(peerIndex, 'EndpointAddress', (e.target as HTMLInputElement).value)}
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder={$localize`e.g. example.com or IP address`}
-                          />
-                        </div>
-
-                        {/* Endpoint Port */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Endpoint Port`} <span class="text-gray-500">({$localize`Optional`})</span>
-                          </label>
-                          <input
-                            type="number"
-                            value={peer.EndpointPort || ""}
-                            onChange$={(e) => {
-                              const value = (e.target as HTMLInputElement).value;
-                              updatePeer$(peerIndex, 'EndpointPort', value ? parseInt(value, 10) : undefined);
-                            }}
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder={$localize`e.g. 51820`}
-                            min="1"
-                            max="65535"
-                          />
-                        </div>
-
-                        {/* Comment */}
-                        <div class="md:col-span-2">
-                          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Comment`} <span class="text-gray-500">({$localize`Optional`})</span>
-                          </label>
-                          <input
+                        {/* Comment (Optional) */}
+                        <ServerFormField label={$localize`Name (Optional)`}>
+                          <Input
                             type="text"
                             value={peer.Comment || ""}
-                            onChange$={(e) => updatePeer$(peerIndex, 'Comment', (e.target as HTMLInputElement).value)}
-                            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder={$localize`e.g. Bob's phone`}
+                            onChange$={(_, value) => updatePeer$(peerIndex, 'Comment', value)}
+                            placeholder={$localize`e.g. Phone`}
                           />
-                        </div>
+                        </ServerFormField>
+                        
+                        {/* Peer Public Key */}
+                        <ServerFormField 
+                          label={$localize`Public Key`}
+                          errorMessage={peerPublicKeyError.value}
+                        >
+                          <Input
+                            type="text"
+                            value={peer.PublicKey || ""}
+                            onChange$={(_, value) => updatePeer$(peerIndex, 'PublicKey', value)}
+                            placeholder={$localize`Peer's public key`}
+                            validation={peerPublicKeyError.value ? "invalid" : "default"}
+                          />
+                        </ServerFormField>
+                        
+                        {/* Peer Allowed IPs */}
+                        <ServerFormField 
+                          label={$localize`Allowed IPs`}
+                          errorMessage={peerAddressError.value}
+                        >
+                          <Input
+                            type="text"
+                            value={peer.AllowedAddress || ""}
+                            onChange$={(_, value) => updatePeer$(peerIndex, 'AllowedAddress', value)}
+                            placeholder={$localize`e.g. 10.0.0.2/32`}
+                            validation={peerAddressError.value ? "invalid" : "default"}
+                          />
+                        </ServerFormField>
+                        
+                        {/* Keep Alive */}
+                        <ServerFormField label={$localize`Keep Alive (seconds)`}>
+                          <Input
+                            type="number"
+                            value={(peer.PersistentKeepalive || 25).toString()}
+                            onChange$={(_, value) => updatePeer$(peerIndex, 'PersistentKeepalive', parseInt(value, 10))}
+                            placeholder={$localize`e.g. 25`}
+                          />
+                        </ServerFormField>
                       </div>
                     </div>
                   ))}
@@ -426,6 +363,6 @@ export const WireguardServer = component$(() => {
           )}
         </>
       )}
-    </div>
+    </ServerCard>
   );
 }); 

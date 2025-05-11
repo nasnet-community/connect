@@ -1,7 +1,9 @@
-import { component$, type QRL } from "@builder.io/qwik";
-import { HiShieldCheckOutline, HiChevronUpOutline, HiChevronDownOutline } from "@qwikest/icons/heroicons";
+import { component$, type QRL, $ } from "@builder.io/qwik";
 import { VPN_PROTOCOLS } from "./constants";
 import type { VPNType } from "../../../StarContext/CommonType";
+import { HiCheckCircleOutline } from "@qwikest/icons/heroicons";
+import { useStepperContext } from "~/components/Core/Stepper/CStepper";
+import { VPNServerContextId } from "../VPNServer";
 
 interface ProtocolListProps {
   expandedSections: Record<string, boolean>;
@@ -11,86 +13,89 @@ interface ProtocolListProps {
 }
 
 export const ProtocolList = component$<ProtocolListProps>(({
-  expandedSections,
   enabledProtocols,
-  toggleSection$,
   toggleProtocol$
 }) => {
+  // Access the stepper context directly
+  const stepper = useStepperContext(VPNServerContextId);
+  
+  // Create safe wrapper functions that don't leak promises
+  const safeCompleteStep = $(async (stepId: number) => {
+    if (stepper?.completeStep$) {
+      await stepper.completeStep$(stepId);
+    }
+    return null;
+  });
+  
+  const safeUpdateStepCompletion = $(async (stepId: number, isComplete: boolean) => {
+    if (stepper?.updateStepCompletion$) {
+      await stepper.updateStepCompletion$(stepId, isComplete);
+    }
+    return null;
+  });
+
   return (
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div class="flex cursor-pointer items-center justify-between p-6" onClick$={() => toggleSection$('protocols')}>
-        <div class="flex items-center gap-3">
-          <HiShieldCheckOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {$localize`VPN Protocols`}
-          </h3>
-        </div>
-        {expandedSections.protocols ? (
-          <HiChevronUpOutline class="h-5 w-5 text-gray-500" />
-        ) : (
-          <HiChevronDownOutline class="h-5 w-5 text-gray-500" />
-        )}
-      </div>
-      
-      {expandedSections.protocols && (
-        <div class="border-t border-gray-200 p-6 dark:border-gray-700">
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {VPN_PROTOCOLS.map(protocol => (
-              <div 
-                key={protocol.id}
-                class={`
-                  flex flex-col justify-between rounded-lg border p-4 transition-all
-                  ${enabledProtocols[protocol.id] 
-                    ? 'border-primary-300 shadow-sm dark:border-primary-700' 
-                    : 'border-gray-200 dark:border-gray-700'}
-                `}
-              >
-                <div class="mb-4 flex items-start gap-3">
-                  <div class="flex-shrink-0">
-                    <img 
-                      src={protocol.logo} 
-                      alt={protocol.name} 
-                      class="h-8 w-8" 
-                      onError$={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">{protocol.name}</h4>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                      {protocol.description}
-                    </p>
-                  </div>
-                </div>
-                
-                <label class="relative mt-auto inline-flex cursor-pointer items-center self-end">
-                  <input
-                    type="checkbox"
-                    checked={enabledProtocols[protocol.id]}
-                    onChange$={() => toggleProtocol$(protocol.id)}
-                    class="peer sr-only"
-                  />
-                  <div
-                    class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute 
-                            after:left-[2px] after:top-[2px] after:h-5 
-                            after:w-5 after:rounded-full after:border 
-                            after:border-gray-300 after:bg-white after:transition-all after:content-[''] 
-                            peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 
-                            peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"
-                  ></div>
-                  <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                    {enabledProtocols[protocol.id]
-                      ? $localize`Enabled`
-                      : $localize`Disabled`}
-                  </span>
-                </label>
-              </div>
-            ))}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {VPN_PROTOCOLS.map(protocol => (
+        <div 
+          key={protocol.id}
+          class={`
+            relative flex flex-col justify-between rounded-lg border-2 p-4 transition-all
+            ${enabledProtocols[protocol.id] 
+              ? 'border-primary-400 bg-primary-50 shadow-md dark:border-primary-500 dark:bg-primary-900/20' 
+              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}
+          `}
+        >
+          {/* Active Protocol indicator */}
+          {enabledProtocols[protocol.id] && (
+            <div class="absolute -right-2 -top-2 rounded-full bg-primary-500 p-1 shadow-sm dark:bg-primary-600">
+              <HiCheckCircleOutline class="h-4 w-4 text-white" />
+            </div>
+          )}
+          
+          <div class="mb-4 flex items-start gap-3">
+            <div class="flex-shrink-0">
+              <img 
+                src={protocol.logo} 
+                alt={protocol.name} 
+                class="h-8 w-8" 
+                onError$={(e) => {
+                  const target = e.target as HTMLInputElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">{protocol.name}</h4>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {protocol.description}
+              </p>
+            </div>
+          </div>
+            {/* Toggle Button */}
+          <div 
+            onClick$={async () => {
+              await toggleProtocol$(protocol.id);
+              if (!enabledProtocols[protocol.id]) {
+                await safeCompleteStep(0);
+              } else if (!Object.values({...enabledProtocols, [protocol.id]: false}).some(v => v)) {
+                await safeUpdateStepCompletion(0, false);
+              }
+            }}
+            class={`
+              mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-center text-sm font-medium
+              ${enabledProtocols[protocol.id]
+                ? 'bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'}
+              transition-colors
+            `}
+          >
+            {enabledProtocols[protocol.id]
+              ? $localize`Enabled`
+              : $localize`Enable ${protocol.name}`}
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }); 

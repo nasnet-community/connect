@@ -61,21 +61,38 @@ export const useVPNServer = () => {
   });
   
   const handleProtocolToggle = $((protocol: VPNType, index: number) => {
-    const userVpnTypes = users[index].VPNType || [];
+    // Ensure VPNType is initialized as an array
+    if (!Array.isArray(users[index].VPNType)) {
+      users[index].VPNType = [];
+    }
+    
+    const userVpnTypes = users[index].VPNType;
     const typeIndex = userVpnTypes.indexOf(protocol);
     
     if (typeIndex === -1) {
-      users[index].VPNType = [...userVpnTypes, protocol];
+      // Only add protocol if it's enabled in settings
+      if (enabledProtocols[protocol]) {
+        users[index].VPNType = [...userVpnTypes, protocol];
+      }
     } else {
       users[index].VPNType = userVpnTypes.filter(t => t !== protocol);
     }
   });
 
   const toggleProtocol = $((protocol: VPNType) => {
+    // Toggle the protocol state
     enabledProtocols[protocol] = !enabledProtocols[protocol];
     
+    // Update expand sections based on new state
     if (!enabledProtocols[protocol]) {
       expandedSections[protocol.toLowerCase()] = false;
+      
+      // Remove this protocol from all user permissions when disabled
+      users.forEach((user, index) => {
+        if (Array.isArray(user.VPNType) && user.VPNType.includes(protocol)) {
+          users[index].VPNType = user.VPNType.filter(t => t !== protocol);
+        }
+      });
     } else {
       expandedSections[protocol.toLowerCase()] = true;
     }
@@ -97,8 +114,13 @@ export const useVPNServer = () => {
     
     const hasValidUsers = users.every(user => {
       const hasCredentials = user.Username.trim() !== "" && user.Password.trim() !== "";
-      const hasProtocols = (user.VPNType?.length || 0) > 0;
-      return hasCredentials && hasProtocols;
+      const hasProtocols = Array.isArray(user.VPNType) && user.VPNType.length > 0;
+      
+      // Make sure user has only enabled protocols that are actually enabled in settings
+      const hasValidProtocols = Array.isArray(user.VPNType) && 
+        user.VPNType.every(protocol => enabledProtocols[protocol] === true);
+      
+      return hasCredentials && hasProtocols && hasValidProtocols;
     });
 
     if (enabledProtocols.OpenVPN) {
@@ -118,7 +140,7 @@ export const useVPNServer = () => {
       const validUsers = users.filter(user => 
         user.Username.trim() !== "" && 
         user.Password.trim() !== "" && 
-        (user.VPNType?.length || 0) > 0
+        Array.isArray(user.VPNType) && user.VPNType.length > 0
       );
       
       starContext.updateLAN$({
@@ -196,4 +218,4 @@ export const useVPNServer = () => {
     saveSettings,
     toggleVpnServerEnabled
   };
-}; 
+};

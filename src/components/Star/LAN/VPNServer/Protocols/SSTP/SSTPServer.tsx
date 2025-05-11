@@ -1,7 +1,18 @@
 import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
-import { HiServerOutline, HiDocumentOutline } from "@qwikest/icons/heroicons";
+import { HiDocumentOutline } from "@qwikest/icons/heroicons";
 import { useSSTPServer } from "./useSSTPServer";
 import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType";
+import { ServerCard } from "~/components/Core/Card";
+import { 
+  ServerFormField, 
+  ServerButton,
+  Select,
+  CheckboxGroup
+} from "~/components/Core/Form/ServerField";
+import { Input } from "~/components/Core/Input";
+import { ServerIcon } from "../icons";
+
+// Using shared serialized icon from icons.ts
 
 export const SSTPServer = component$(() => {
   const { sstpState, updateSSTPServer$, certificateError } = useSSTPServer();
@@ -26,17 +37,21 @@ export const SSTPServer = component$(() => {
     { value: "only-1.3", label: "TLS 1.3 Only" }
   ];
 
-  const toggleAuthMethod = $((method: AuthMethod) => {
-    const index = formState.authentication.indexOf(method);
-    if (index === -1) {
-      formState.authentication = [...formState.authentication, method];
-    } else {
-      formState.authentication = formState.authentication.filter(m => m !== method);
-    }
-  });
+  const authOptions = authMethods.map(method => ({
+    value: method,
+    label: method.toUpperCase()
+  }));
 
-  const applyChanges = $(() => {
-    if (isEnabled.value) {
+  const toggleAuthMethod = $((method: string) => {
+    try {
+      const authMethod = method as AuthMethod;
+      const index = formState.authentication.indexOf(authMethod);
+      if (index === -1) {
+        formState.authentication = [...formState.authentication, authMethod];
+      } else {
+        formState.authentication = formState.authentication.filter(m => m !== authMethod);
+      }
+      // Call updateSSTPServer with the properly mapped object
       updateSSTPServer$({
         Profile: formState.profile,
         Certificate: formState.certificate,
@@ -47,204 +62,222 @@ export const SSTPServer = component$(() => {
         VerifyClientCertificate: formState.verifyClientCertificate,
         TlsVersion: formState.tlsVersion as TLSVersion
       });
-    } else {
-      updateSSTPServer$({
-        Profile: ""
-      });
+    } catch (error) {
+      console.error("Error toggling auth method:", error);
+    }
+  });
+
+  const handleToggle = $((enabled: boolean) => {
+    try {
+      isEnabled.value = enabled;
+      
+      if (enabled) {
+        // Only update server if enabled
+        updateSSTPServer$({
+          Profile: formState.profile,
+          Certificate: formState.certificate,
+          Port: formState.port,
+          Authentication: formState.authentication,
+          ForceAes: formState.forceAes,
+          Pfs: formState.pfs,
+          VerifyClientCertificate: formState.verifyClientCertificate,
+          TlsVersion: formState.tlsVersion as TLSVersion
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling SSTP server:", error);
     }
   });
 
   return (
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div class="mb-6 flex items-center gap-3">
-        <HiServerOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{$localize`SSTP Server`}</h3>
-      </div>
+    <ServerCard
+      title={$localize`SSTP Server`}
+      icon={ServerIcon}
+      enabled={isEnabled.value}
+      onToggle$={handleToggle}
+    >
+      <div class="space-y-4">
+        {/* Profile Name */}
+        <ServerFormField label={$localize`Profile Name`}>
+          <Input
+            type="text"
+            value={formState.profile}
+            onChange$={(_, value) => {
+              formState.profile = value;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
+            }}
+            placeholder={$localize`Enter profile name`}
+          />
+        </ServerFormField>
 
-      <div class="mb-4 flex items-center justify-between">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {$localize`Enable SSTP Server`}
-        </label>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <input
-            type="checkbox"
-            checked={isEnabled.value}
-            class="peer sr-only"
-            onChange$={() => {
-              isEnabled.value = !isEnabled.value;
-              if (isEnabled.value && !formState.profile) {
-                formState.profile = "default";
-              }
-              applyChanges();
+        {/* Certificate */}
+        <ServerFormField 
+          label={$localize`SSL Certificate`}
+          errorMessage={certificateError.value}
+        >
+          <div class="flex items-center gap-2">
+            <Input
+              type="text"
+              value={formState.certificate}
+              onChange$={(_, value) => {
+                formState.certificate = value;
+                updateSSTPServer$({
+                  Profile: formState.profile,
+                  Certificate: formState.certificate,
+                  Port: formState.port,
+                  Authentication: formState.authentication,
+                  ForceAes: formState.forceAes,
+                  Pfs: formState.pfs,
+                  VerifyClientCertificate: formState.verifyClientCertificate,
+                  TlsVersion: formState.tlsVersion as TLSVersion
+                });
+              }}
+              placeholder={$localize`Enter certificate name`}
+              validation={certificateError.value ? "invalid" : "default"}
+            />
+            <ServerButton
+              onClick$={() => {}}
+              primary={false}
+              class="flex items-center gap-1"
+            >
+              <HiDocumentOutline class="h-5 w-5" />
+              {$localize`Select`}
+            </ServerButton>
+          </div>
+          {certificateError.value && (
+            <p class="mt-1 text-sm text-red-600 dark:text-red-500">
+              {certificateError.value}
+            </p>
+          )}
+        </ServerFormField>
+
+        {/* Port */}
+        <ServerFormField label={$localize`Port`}>
+          <Input
+            type="number"
+            value={formState.port.toString()}
+            onChange$={(_, value) => {
+              formState.port = parseInt(value) || 443;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
+            }}
+            placeholder="443"
+          />
+        </ServerFormField>
+
+        {/* Authentication Methods */}
+        <ServerFormField label={$localize`Authentication Methods`}>
+          <CheckboxGroup
+            options={authOptions}
+            selected={formState.authentication}
+            onToggle$={toggleAuthMethod}
+          />
+        </ServerFormField>
+
+        {/* TLS Version */}
+        <ServerFormField label={$localize`TLS Version`}>
+          <Select
+            options={tlsVersions}
+            value={formState.tlsVersion}
+            onChange$={(value) => {
+              formState.tlsVersion = value as TLSVersion;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
             }}
           />
-          <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
-        </label>
+        </ServerFormField>
+
+        {/* Force AES */}
+        <ServerFormField label={$localize`Force AES encryption`} inline={true}>
+          <input
+            type="checkbox"
+            checked={formState.forceAes}
+            onChange$={() => {
+              formState.forceAes = !formState.forceAes;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
+            }}
+            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+          />
+        </ServerFormField>
+
+        {/* PFS */}
+        <ServerFormField label={$localize`Enable Perfect Forward Secrecy (PFS)`} inline={true}>
+          <input
+            type="checkbox"
+            checked={formState.pfs}
+            onChange$={() => {
+              formState.pfs = !formState.pfs;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
+            }}
+            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+          />
+        </ServerFormField>
+
+        {/* Verify Client Certificate */}
+        <ServerFormField label={$localize`Verify Client Certificate`} inline={true}>
+          <input
+            type="checkbox"
+            checked={formState.verifyClientCertificate}
+            onChange$={() => {
+              formState.verifyClientCertificate = !formState.verifyClientCertificate;
+              updateSSTPServer$({
+                Profile: formState.profile,
+                Certificate: formState.certificate,
+                Port: formState.port,
+                Authentication: formState.authentication,
+                ForceAes: formState.forceAes,
+                Pfs: formState.pfs,
+                VerifyClientCertificate: formState.verifyClientCertificate,
+                TlsVersion: formState.tlsVersion as TLSVersion
+              });
+            }}
+            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+          />
+        </ServerFormField>
       </div>
-
-      {isEnabled.value && (
-        <div class="space-y-4">
-          {/* Profile Name */}
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Profile Name`}
-            </label>
-            <input
-              type="text"
-              value={formState.profile}
-              onChange$={(e) => (formState.profile = (e.target as HTMLInputElement).value)}
-              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              placeholder={$localize`Enter profile name`}
-            />
-          </div>
-
-          {/* Certificate */}
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`SSL Certificate`}
-            </label>
-            <div class="flex items-center gap-2">
-              <input
-                type="text"
-                value={formState.certificate}
-                onChange$={(e) => (formState.certificate = (e.target as HTMLInputElement).value)}
-                class={`w-full rounded-lg border ${
-                  certificateError.value
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
-                } px-4 py-2 dark:bg-gray-700 dark:text-white`}
-                placeholder={$localize`Enter certificate name`}
-              />
-              <button
-                type="button"
-                class="flex items-center gap-1 rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
-                <HiDocumentOutline class="h-5 w-5" />
-                {$localize`Select`}
-              </button>
-            </div>
-            {certificateError.value && (
-              <p class="mt-1 text-sm text-red-600 dark:text-red-500">
-                {certificateError.value}
-              </p>
-            )}
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {$localize`Select a valid SSL certificate from the router's certificate store.`}
-            </p>
-          </div>
-
-          {/* Port */}
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Port`}
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="65535"
-              value={formState.port}
-              onChange$={(e) => (formState.port = parseInt((e.target as HTMLInputElement).value, 10))}
-              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          {/* Authentication Methods */}
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Authentication Methods`}
-            </label>
-            <div class="flex flex-wrap gap-3">
-              {authMethods.map((method) => (
-                <label key={method} class="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formState.authentication.includes(method)}
-                    onChange$={() => toggleAuthMethod(method)}
-                    class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">{method.toUpperCase()}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* TLS Version */}
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`TLS Version`}
-            </label>
-            <select
-              value={formState.tlsVersion}
-              onChange$={(e) => (formState.tlsVersion = (e.target as HTMLSelectElement).value as TLSVersion)}
-              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            >
-              {tlsVersions.map((version) => (
-                <option key={version.value} value={version.value}>
-                  {version.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Force AES */}
-          <div class="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="forceAes"
-              checked={formState.forceAes}
-              onChange$={() => (formState.forceAes = !formState.forceAes)}
-              class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-            />
-            <label
-              for="forceAes"
-              class="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              {$localize`Force AES encryption`}
-            </label>
-          </div>
-
-          {/* PFS */}
-          <div class="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="pfs"
-              checked={formState.pfs}
-              onChange$={() => (formState.pfs = !formState.pfs)}
-              class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-            />
-            <label
-              for="pfs"
-              class="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              {$localize`Enable Perfect Forward Secrecy (PFS)`}
-            </label>
-          </div>
-
-          {/* Verify Client Certificate */}
-          <div class="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="verifyClientCert"
-              checked={formState.verifyClientCertificate}
-              onChange$={() => (formState.verifyClientCertificate = !formState.verifyClientCertificate)}
-              class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-            />
-            <label
-              for="verifyClientCert"
-              class="text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              {$localize`Verify Client Certificate`}
-            </label>
-          </div>
-
-          <button
-            onClick$={applyChanges}
-            class="mt-4 rounded-lg bg-primary-500 px-4 py-2 text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-700"
-          >
-            {$localize`Apply Settings`}
-          </button>
-        </div>
-      )}
-    </div>
+    </ServerCard>
   );
 }); 
