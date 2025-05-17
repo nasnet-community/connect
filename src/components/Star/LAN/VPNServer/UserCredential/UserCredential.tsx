@@ -27,15 +27,26 @@ export const UserCredential = component$<UserCredentialProps>(({
 }) => {
   const stepper = useStepperContext(VPNServerContextId);
   
-  const safeCompleteStep = $(async (stepId: number) => {
-    if (stepper?.completeStep$) {
+  // Find the Users step ID by matching the title - this ensures it works with dynamic steps
+  const getUsersStepId = $(() => {
+    return stepper.steps.value.findIndex(step => 
+      step.title.includes("Users")
+    );
+  });
+  
+  // Safely complete the step by finding it first
+  const safeCompleteStep = $(async () => {
+    const stepId = await getUsersStepId();
+    if (stepId >= 0 && stepper?.completeStep$) {
       await stepper.completeStep$(stepId);
     }
     return null;
   });
   
-  const safeUpdateStepCompletion = $(async (stepId: number, isComplete: boolean) => {
-    if (stepper?.updateStepCompletion$) {
+  // Safely update step completion status by finding it first
+  const safeUpdateStepCompletion = $(async (isComplete: boolean) => {
+    const stepId = await getUsersStepId();
+    if (stepId >= 0 && stepper?.updateStepCompletion$) {
       await stepper.updateStepCompletion$(stepId, isComplete);
     }
     return null;
@@ -46,6 +57,7 @@ export const UserCredential = component$<UserCredentialProps>(({
     Array.isArray(user.VPNType) && 
     user.VPNType.length > 0;
   
+  // Validate all users and update the step completion status 
   const validateAndUpdateStep$ = $(async () => {
     const isFormValid = stepper.data.users.every(u => {
       const hasCredentials = u.Username.trim() !== "" && u.Password.trim() !== "";
@@ -56,9 +68,9 @@ export const UserCredential = component$<UserCredentialProps>(({
     });
     
     if (isFormValid) {
-      await safeCompleteStep(2);
+      await safeCompleteStep();
     } else {
-      await safeUpdateStepCompletion(2, false);
+      await safeUpdateStepCompletion(false);
     }
     return null;
   });

@@ -1,13 +1,12 @@
-import { component$, useTask$, $ } from "@builder.io/qwik";
+import { component$, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
+import type { StepProps } from "~/types/step";
 import { UserCredential } from "../UserCredential/UserCredential";
 import type { Credentials } from "../../../StarContext/LANType";
 import type { VPNType } from "../../../StarContext/CommonType";
-import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "../VPNServer";
 
-interface UsersStepProps {
+interface UsersStepProps extends StepProps {
   users: Credentials[];
   addUser: QRL<() => void>;
   removeUser: QRL<(index: number) => void>;
@@ -25,29 +24,15 @@ export const UsersStep = component$<UsersStepProps>(({
   handlePasswordChange,
   handleProtocolToggle,
   isValid,
-}) => {  
-  const stepper = useStepperContext(VPNServerContextId);
-  
-  const safeCompleteStep = $(async (stepId: number) => {
-    if (stepper?.completeStep$) {
-      await stepper.completeStep$(stepId);
-    }
-    return null;
-  });
-  
-  const safeUpdateStepCompletion = $(async (stepId: number, isComplete: boolean) => {
-    if (stepper?.updateStepCompletion$) {
-      await stepper.updateStepCompletion$(stepId, isComplete);
-    }
-    return null;
-  });
-  
-  useTask$(async ({ track }) => {
+  onComplete$,
+  isComplete
+}) => {
+  // Auto-update completion state based on validation
+  useTask$(({ track }) => {
     const valid = track(() => isValid.value);
-    if (valid) {
-      await safeCompleteStep(2);
-    } else {
-      await safeUpdateStepCompletion(2, false);
+    
+    if (valid && !isComplete) {
+      onComplete$();
     }
   });
 
@@ -59,6 +44,7 @@ export const UsersStep = component$<UsersStepProps>(({
           {$localize`Manage VPN Users`}
         </h2>
       </div>
+      
       <div class="space-y-6">
         {users.map((user, index) => (
           <UserCredential
@@ -73,6 +59,7 @@ export const UsersStep = component$<UsersStepProps>(({
           />
         ))}
       </div>
+
       <button
         onClick$={addUser}
         class="mt-6 inline-flex items-center gap-2 rounded-lg border border-gray-300 

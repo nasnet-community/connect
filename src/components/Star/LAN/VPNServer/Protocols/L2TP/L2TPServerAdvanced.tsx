@@ -18,7 +18,7 @@ const ServerIcon = $(HiServerOutline);
  * - Set IPsec secret
  * - Configure MTU/MRU and other connection parameters
  */
-export const L2TPServer = component$(() => {
+export const L2TPServerAdvanced = component$(() => {
   const { l2tpState, updateL2TPServer$ } = useL2TPServer();
   
   const formState = useStore({

@@ -3,12 +3,7 @@ import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { ServerCard } from "~/components/Core/Card";
-import { 
-  ServerFormField,
-  CheckboxGroup,
-  ServerButton,
-  SectionTitle
-} from "~/components/Core/Form/ServerField";
+import {   ServerFormField,  CheckboxGroup,  SectionTitle} from "~/components/Core/Form/ServerField";
 import { Input } from "~/components/Core/Input";
 
 // Create a serialized version of the server icon
@@ -18,12 +13,11 @@ const ServerIcon = $(HiServerOutline);
  * PPTP Server Configuration Component
  * 
  * Allows users to configure PPTP VPN server settings including:
- * - Enable/disable PPTP server
  * - Configure profile name
  * - Configure authentication methods
  * - Set MTU, MRU, and other connection parameters
  */
-export const PPTPServer = component$(() => {
+export const PPTPServerAdvanced = component$(() => {
   const { pptpState, updatePPTPServer$ } = usePPTPServer();
   
   // Local form state to track user input before submitting
@@ -35,9 +29,19 @@ export const PPTPServer = component$(() => {
     keepaliveTimeout: pptpState.KeepaliveTimeout || 30
   });
 
-  // Track enabled state separately for reliable toggle behavior
-  const isEnabled = useStore({
-    value: !!pptpState.Profile
+  // Helper function to update the server configuration
+  const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
+    // Update local state first
+    Object.assign(formState, updatedValues);
+    
+    // Then update server config
+    updatePPTPServer$({
+      Profile: formState.profile,
+      Authentication: [...formState.authentication],
+      MaxMtu: formState.maxMtu,
+      MaxMru: formState.maxMru,
+      KeepaliveTimeout: formState.keepaliveTimeout
+    });
   });
 
   // Available authentication methods
@@ -61,48 +65,10 @@ export const PPTPServer = component$(() => {
       } else {
         formState.authentication = formState.authentication.filter(m => m !== authMethod);
       }
+      // Apply changes immediately
+      updateServerConfig({});
     } catch (error) {
       console.error("Error toggling auth method:", error);
-    }
-  });
-
-  /**
-   * Apply changes to the server configuration
-   */
-  const applyChanges = $(() => {
-    try {
-      if (isEnabled.value) {
-        updatePPTPServer$({
-          Profile: formState.profile,
-          Authentication: [...formState.authentication],
-          MaxMtu: formState.maxMtu,
-          MaxMru: formState.maxMru,
-          KeepaliveTimeout: formState.keepaliveTimeout
-        });
-      } else {
-        // If disabled, clear the profile to indicate server is off
-        updatePPTPServer$({
-          Profile: ""
-        });
-      }
-    } catch (error) {
-      console.error("Error applying PPTP settings:", error);
-    }
-  });
-
-  /**
-   * Handle enable/disable toggle
-   */
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      if (isEnabled.value && !formState.profile) {
-        formState.profile = "default";
-      }
-      applyChanges();
-    } catch (error) {
-      console.error("Error toggling PPTP server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
     }
   });
 
@@ -110,8 +76,6 @@ export const PPTPServer = component$(() => {
     <ServerCard
       title={$localize`PPTP Server`}
       icon={ServerIcon}
-      enabled={isEnabled.value}
-      onToggle$={handleToggle}
     >
       <div class="space-y-6">
         {/* Authentication Methods */}
@@ -133,7 +97,7 @@ export const PPTPServer = component$(() => {
               <Input
                 type="text"
                 value={formState.profile}
-                onChange$={(_, value) => (formState.profile = value)}
+                onChange$={(_, value) => updateServerConfig({ profile: value })}
               />
             </ServerFormField>
 
@@ -142,7 +106,7 @@ export const PPTPServer = component$(() => {
               <Input
                 type="number"
                 value={formState.maxMtu.toString()}
-                onChange$={(_, value) => (formState.maxMtu = parseInt(value, 10) || 1450)}
+                onChange$={(_, value) => updateServerConfig({ maxMtu: parseInt(value, 10) || 1450 })}
               />
             </ServerFormField>
 
@@ -151,7 +115,7 @@ export const PPTPServer = component$(() => {
               <Input
                 type="number"
                 value={formState.maxMru.toString()}
-                onChange$={(_, value) => (formState.maxMru = parseInt(value, 10) || 1450)}
+                onChange$={(_, value) => updateServerConfig({ maxMru: parseInt(value, 10) || 1450 })}
               />
             </ServerFormField>
 
@@ -160,17 +124,11 @@ export const PPTPServer = component$(() => {
               <Input
                 type="number"
                 value={formState.keepaliveTimeout.toString()}
-                onChange$={(_, value) => (formState.keepaliveTimeout = parseInt(value, 10) || 30)}
+                onChange$={(_, value) => updateServerConfig({ keepaliveTimeout: parseInt(value, 10) || 30 })}
               />
             </ServerFormField>
           </div>
         </div>
-
-        <ServerButton
-          onClick$={applyChanges}
-        >
-          {$localize`Apply Settings`}
-        </ServerButton>
       </div>
     </ServerCard>
   );

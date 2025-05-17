@@ -1,11 +1,10 @@
-import { component$, useTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
-import type { VPNType } from "../../../StarContext/CommonType";
+import type { StepProps } from "~/types/step";
 import { ProtocolList } from "../Protocols/ProtocolList";
-import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "../VPNServer";
+import type { VPNType } from "../../../StarContext/CommonType";
 
-interface ProtocolsStepProps {
+interface ProtocolsStepProps extends StepProps {
   enabledProtocols: Record<VPNType, boolean>;
   expandedSections: Record<string, boolean>;
   toggleSection$: QRL<(section: string) => void>;
@@ -17,34 +16,26 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(({
   expandedSections,
   toggleSection$,
   toggleProtocol$,
+  onComplete$,
+  isComplete
 }) => {
-  // Access the stepper context
-  const stepper = useStepperContext(VPNServerContextId);
-  
-  // Create safe wrappers that don't propagate Promises
-  const safeCompleteStep = $(async (stepId: number) => {
-    if (stepper?.completeStep$) {
-      await stepper.completeStep$(stepId);
-    }
-    return null;
-  });
-  
-  const safeUpdateStepCompletion = $(async (stepId: number, isComplete: boolean) => {
-    if (stepper?.updateStepCompletion$) {
-      await stepper.updateStepCompletion$(stepId, isComplete);
-    }
-    return null;
-  });
-  
-  // When protocols change, update step completion status
-  useTask$(async ({ track }) => {
-    const protocols = track(() => Object.values(enabledProtocols));
-    const anyEnabled = protocols.some(enabled => enabled);
+  const showProtocolWarning = useSignal(false);
+  const anyProtocolEnabled = useSignal(false);
+
+  // Check if any protocol is enabled
+  useTask$(({ track }) => {
+    // Track the entire enabledProtocols object
+    track(() => enabledProtocols);
     
-    if (anyEnabled) {
-      await safeCompleteStep(0);
-    } else {
-      await safeUpdateStepCompletion(0, false);
+    anyProtocolEnabled.value = Object.values(enabledProtocols).some(enabled => enabled);
+    
+    if (anyProtocolEnabled.value) {
+      showProtocolWarning.value = false;
+      if (!isComplete) {
+        onComplete$();
+      }
+    } else if (isComplete) {
+      // Will attempt to complete itself again when a protocol is enabled
     }
   });
 
@@ -56,7 +47,8 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(({
         toggleSection$={toggleSection$}
         toggleProtocol$={toggleProtocol$}
       />
-      {!Object.values(enabledProtocols).some(v => v) && (
+      
+      {!anyProtocolEnabled.value && showProtocolWarning.value && (
         <p class="mt-4 text-sm text-red-600 dark:text-red-500">
           {$localize`Please enable at least one VPN protocol to continue.`}
         </p>

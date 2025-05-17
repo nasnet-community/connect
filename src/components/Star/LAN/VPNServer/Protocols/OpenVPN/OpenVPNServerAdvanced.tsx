@@ -14,7 +14,7 @@ import { useOpenVPNServer } from "./useOpenVPNServer";
 import { ServerIcon } from "../icons";
 import { HiDocumentOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
 
-export const OpenVPNServer = component$(() => {
+export const OpenVPNServerAdvanced = component$(() => {
   const { openVpnState, updateOpenVPNServer$, certificateError, passphraseError } = useOpenVPNServer();
   
   const formState = useStore({

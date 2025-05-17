@@ -1,9 +1,7 @@
-import { component$, type QRL, $ } from "@builder.io/qwik";
+import { component$, type QRL } from "@builder.io/qwik";
 import { VPN_PROTOCOLS } from "./constants";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { HiCheckCircleOutline } from "@qwikest/icons/heroicons";
-import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "../VPNServer";
 
 interface ProtocolListProps {
   expandedSections: Record<string, boolean>;
@@ -16,24 +14,6 @@ export const ProtocolList = component$<ProtocolListProps>(({
   enabledProtocols,
   toggleProtocol$
 }) => {
-  // Access the stepper context directly
-  const stepper = useStepperContext(VPNServerContextId);
-  
-  // Create safe wrapper functions that don't leak promises
-  const safeCompleteStep = $(async (stepId: number) => {
-    if (stepper?.completeStep$) {
-      await stepper.completeStep$(stepId);
-    }
-    return null;
-  });
-  
-  const safeUpdateStepCompletion = $(async (stepId: number, isComplete: boolean) => {
-    if (stepper?.updateStepCompletion$) {
-      await stepper.updateStepCompletion$(stepId, isComplete);
-    }
-    return null;
-  });
-
   return (
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {VPN_PROTOCOLS.map(protocol => (
@@ -72,16 +52,10 @@ export const ProtocolList = component$<ProtocolListProps>(({
               </p>
             </div>
           </div>
-            {/* Toggle Button */}
+          
+          {/* Toggle Button */}
           <div 
-            onClick$={async () => {
-              await toggleProtocol$(protocol.id);
-              if (!enabledProtocols[protocol.id]) {
-                await safeCompleteStep(0);
-              } else if (!Object.values({...enabledProtocols, [protocol.id]: false}).some(v => v)) {
-                await safeUpdateStepCompletion(0, false);
-              }
-            }}
+            onClick$={() => toggleProtocol$(protocol.id)}
             class={`
               mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-center text-sm font-medium
               ${enabledProtocols[protocol.id]

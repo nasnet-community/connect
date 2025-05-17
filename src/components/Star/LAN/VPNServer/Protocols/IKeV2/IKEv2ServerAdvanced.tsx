@@ -14,7 +14,7 @@ import { Input } from "~/components/Core/Input";
 // Create a serialized version of the server icon
 const ServerIcon = $(HiServerOutline);
 
-export const IKEv2Server = component$(() => {
+export const IKEv2ServerAdvanced = component$(() => {
   const { 
     ikev2State, 
     updateIKEv2Server$, 
@@ -37,7 +37,6 @@ export const IKEv2Server = component$(() => {
     policyTemplateGroup: ikev2State.PolicyTemplateGroup || "default"
   });
 
-  const isEnabled = useSignal(!!ikev2State.AddressPool);
   const showPassword = useSignal(false);
 
   const authMethods: {value: ClientAuthMethod, label: string}[] = [
@@ -46,51 +45,31 @@ export const IKEv2Server = component$(() => {
     { value: "eap", label: "EAP" }
   ];
 
-  const applyChanges = $(() => {
-    try {
-      if (isEnabled.value) {
-        updateIKEv2Server$({
-          AddressPool: formState.addressPool,
-          ClientAuthMethod: formState.clientAuthMethod as ClientAuthMethod,
-          PresharedKey: formState.presharedKey,
-          EapMethods: formState.eapMethods,
-          ServerCertificate: formState.serverCertificate,
-          ClientCaCertificate: formState.clientCaCertificate,
-          DnsServers: formState.dnsServers,
-          PeerName: formState.peerName,
-          IpsecProfile: formState.ipsecProfile,
-          IpsecProposal: formState.ipsecProposal,
-          PolicyTemplateGroup: formState.policyTemplateGroup
-        });
-      } else {
-        updateIKEv2Server$({
-          AddressPool: ""
-        });
-      }
-    } catch (error) {
-      console.error("Error applying IKEv2 settings:", error);
-    }
-  });
-
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      if (isEnabled.value && !formState.addressPool) {
-        formState.addressPool = "192.168.77.0/24";
-      }
-      applyChanges();
-    } catch (error) {
-      console.error("Error toggling IKEv2 server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
-    }
+  // Helper function to update the server configuration
+  const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
+    // Update local state first
+    Object.assign(formState, updatedValues);
+    
+    // Then update server config
+    updateIKEv2Server$({
+      AddressPool: formState.addressPool,
+      ClientAuthMethod: formState.clientAuthMethod as ClientAuthMethod,
+      PresharedKey: formState.presharedKey,
+      EapMethods: formState.eapMethods,
+      ServerCertificate: formState.serverCertificate,
+      ClientCaCertificate: formState.clientCaCertificate,
+      DnsServers: formState.dnsServers,
+      PeerName: formState.peerName,
+      IpsecProfile: formState.ipsecProfile,
+      IpsecProposal: formState.ipsecProposal,
+      PolicyTemplateGroup: formState.policyTemplateGroup
+    });
   });
 
   return (
     <ServerCard
       title={$localize`IKEv2 Server`}
       icon={ServerIcon}
-      enabled={isEnabled.value}
-      onToggle$={handleToggle}
     >
       <div class="space-y-6 md:space-y-8">
         {/* Basic Settings */}
@@ -105,7 +84,7 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.addressPool}
-                onChange$={(_, value) => (formState.addressPool = value)}
+                onChange$={(_, value) => updateServerConfig({ addressPool: value })}
                 placeholder={$localize`e.g. 192.168.77.0/24`}
                 validation={addressPoolError.value ? "invalid" : "default"}
               />
@@ -119,7 +98,7 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.dnsServers}
-                onChange$={(_, value) => (formState.dnsServers = value)}
+                onChange$={(_, value) => updateServerConfig({ dnsServers: value })}
                 placeholder={$localize`e.g. 8.8.8.8,1.1.1.1`}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -132,7 +111,7 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.peerName}
-                onChange$={(_, value) => (formState.peerName = value)}
+                onChange$={(_, value) => updateServerConfig({ peerName: value })}
                 placeholder={$localize`Enter peer name`}
               />
             </ServerFormField>
@@ -148,7 +127,7 @@ export const IKEv2Server = component$(() => {
               <Select
                 options={authMethods}
                 value={formState.clientAuthMethod}
-                onChange$={(value) => (formState.clientAuthMethod = value as ClientAuthMethod)}
+                onChange$={(value) => updateServerConfig({ clientAuthMethod: value as ClientAuthMethod })}
               />
             </ServerFormField>
 
@@ -162,7 +141,7 @@ export const IKEv2Server = component$(() => {
                   <Input
                     type={showPassword.value ? "text" : "password"}
                     value={formState.presharedKey}
-                    onChange$={(_, value) => (formState.presharedKey = value)}
+                    onChange$={(_, value) => updateServerConfig({ presharedKey: value })}
                     placeholder={$localize`Enter pre-shared key`}
                     validation={presharedKeyError.value ? "invalid" : "default"}
                     hasSuffixSlot={true}
@@ -186,7 +165,7 @@ export const IKEv2Server = component$(() => {
                 <Input
                   type="text"
                   value={formState.eapMethods}
-                  onChange$={(_, value) => (formState.eapMethods = value)}
+                  onChange$={(_, value) => updateServerConfig({ eapMethods: value })}
                   placeholder={$localize`e.g. eap-mschapv2,eap-tls`}
                 />
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -205,7 +184,7 @@ export const IKEv2Server = component$(() => {
                   <Input
                     type="text"
                     value={formState.serverCertificate}
-                    onChange$={(_, value) => (formState.serverCertificate = value)}
+                    onChange$={(_, value) => updateServerConfig({ serverCertificate: value })}
                     placeholder={$localize`Enter certificate name`}
                     validation={certificateError.value ? "invalid" : "default"}
                   />
@@ -228,7 +207,7 @@ export const IKEv2Server = component$(() => {
                   <Input
                     type="text"
                     value={formState.clientCaCertificate}
-                    onChange$={(_, value) => (formState.clientCaCertificate = value)}
+                    onChange$={(_, value) => updateServerConfig({ clientCaCertificate: value })}
                     placeholder={$localize`Enter CA certificate name`}
                   />
                   <ServerButton
@@ -254,7 +233,7 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.ipsecProfile}
-                onChange$={(_, value) => (formState.ipsecProfile = value)}
+                onChange$={(_, value) => updateServerConfig({ ipsecProfile: value })}
                 placeholder={$localize`Enter IPsec profile name`}
               />
             </ServerFormField>
@@ -264,7 +243,7 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.ipsecProposal}
-                onChange$={(_, value) => (formState.ipsecProposal = value)}
+                onChange$={(_, value) => updateServerConfig({ ipsecProposal: value })}
                 placeholder={$localize`Enter IPsec proposal name`}
               />
             </ServerFormField>
@@ -274,19 +253,12 @@ export const IKEv2Server = component$(() => {
               <Input
                 type="text"
                 value={formState.policyTemplateGroup}
-                onChange$={(_, value) => (formState.policyTemplateGroup = value)}
+                onChange$={(_, value) => updateServerConfig({ policyTemplateGroup: value })}
                 placeholder={$localize`Enter policy template group name`}
               />
             </ServerFormField>
           </div>
         </div>
-
-        <ServerButton
-          onClick$={applyChanges}
-          class="mt-4"
-        >
-          {$localize`Apply Settings`}
-        </ServerButton>
       </div>
     </ServerCard>
   );

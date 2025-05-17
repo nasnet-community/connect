@@ -1,4 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { 
   HiServerOutline, 
   HiPlusCircleOutline, 
@@ -19,7 +19,7 @@ import { useWireguardServer } from "./useWireguardServer";
 // Create a serialized version of the server icon
 const ServerIcon = $(HiServerOutline);
 
-export const WireguardServer = component$(() => {
+export const WireguardServerAdvanced = component$(() => {
   const {
     wireguardServers,
     currentServerIndex,
@@ -37,19 +37,12 @@ export const WireguardServer = component$(() => {
     selectServer$
   } = useWireguardServer();
 
-  const isEnabled = useSignal(wireguardServers.length > 0);
-
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      
-      if (isEnabled.value && wireguardServers.length === 0) {
-        // Create a default server if enabling and no servers exist
-        generateWireguardServer$();
-      }
-    } catch (error) {
-      console.error("Error toggling Wireguard server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
+  // Create a default server if none exists
+  useVisibleTask$(({ track }) => {
+    track(() => wireguardServers.length);
+    
+    if (wireguardServers.length === 0) {
+      generateWireguardServer$();
     }
   });
 
@@ -95,8 +88,6 @@ export const WireguardServer = component$(() => {
     <ServerCard
       title={$localize`WireGuard Server`}
       icon={ServerIcon}
-      enabled={isEnabled.value}
-      onToggle$={handleToggle}
     >
       {/* Server instances */}
       <div class="mb-6">
