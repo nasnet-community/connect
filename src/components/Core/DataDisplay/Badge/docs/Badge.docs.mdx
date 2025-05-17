@@ -1,0 +1,269 @@
+import { Meta, Primary, Controls, Story } from '@storybook/blocks';
+import * as BadgeStories from './Badge.stories';
+
+<Meta of={BadgeStories} />
+
+# Badge
+
+The Badge component is a versatile element for displaying short status descriptors, tags, labels, or indicators with various visual styles.
+
+## Features
+
+- **Multiple variants**: solid, soft, and outline styles
+- **Customizable colors**: default, primary, secondary, success, warning, error, and info
+- **Different sizes**: small, medium, and large
+- **Various shapes**: square, rounded, and pill
+- **Interactive options**: dismissible, hoverable, and clickable (links)
+- **Visual enhancements**: icons, dots, borders, and truncation
+- **Accessibility**: proper ARIA roles and states
+- **Badge Groups**: for organizing multiple badges
+
+## Usage
+
+### Basic Badge
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return <Badge>Default Badge</Badge>;
+});
+```
+
+### Variants
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge variant="solid" color="primary">Solid</Badge>
+      <Badge variant="soft" color="primary">Soft</Badge>
+      <Badge variant="outline" color="primary">Outline</Badge>
+    </>
+  );
+});
+```
+
+### Colors
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge color="default">Default</Badge>
+      <Badge color="primary">Primary</Badge>
+      <Badge color="secondary">Secondary</Badge>
+      <Badge color="success">Success</Badge>
+      <Badge color="warning">Warning</Badge>
+      <Badge color="error">Error</Badge>
+      <Badge color="info">Info</Badge>
+    </>
+  );
+});
+```
+
+### Sizes
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge size="sm">Small</Badge>
+      <Badge size="md">Medium</Badge>
+      <Badge size="lg">Large</Badge>
+    </>
+  );
+});
+```
+
+### Shapes
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge shape="square">Square</Badge>
+      <Badge shape="rounded">Rounded</Badge>
+      <Badge shape="pill">Pill</Badge>
+    </>
+  );
+});
+```
+
+### Dismissible Badges
+
+```tsx
+import { component$, useSignal, $ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  const visible = useSignal(true);
+  
+  const handleDismiss = $(() => {
+    visible.value = false;
+  });
+  
+  return (
+    <>
+      {visible.value && (
+        <Badge dismissible onDismiss$={handleDismiss}>
+          Click X to dismiss
+        </Badge>
+      )}
+    </>
+  );
+});
+```
+
+### With Icons
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+import { CheckIcon, InfoIcon } from '~/components/Core/Iconography';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge startIcon={<CheckIcon class="h-3 w-3" />}>
+        Start Icon
+      </Badge>
+      
+      <Badge endIcon={<InfoIcon class="h-3 w-3" />}>
+        End Icon
+      </Badge>
+    </>
+  );
+});
+```
+
+### With Dot Indicators
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <>
+      <Badge dot dotPosition="start" color="success">Online</Badge>
+      <Badge dot dotPosition="end" color="error">Offline</Badge>
+    </>
+  );
+});
+```
+
+### Links
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <Badge href="https://qwik.builder.io/" target="_blank" hover>
+      Visit Qwik
+    </Badge>
+  );
+});
+```
+
+### Badge Groups
+
+```tsx
+import { component$ } from '@builder.io/qwik';
+import { Badge, BadgeGroup } from '~/components/Core/DataDisplay/Badge';
+
+export default component$(() => {
+  return (
+    <BadgeGroup spacing="md">
+      <Badge color="primary">React</Badge>
+      <Badge color="secondary">Vue</Badge>
+      <Badge color="success">Qwik</Badge>
+      <Badge color="info">Angular</Badge>
+      <Badge color="warning">Svelte</Badge>
+    </BadgeGroup>
+  );
+});
+```
+
+## Examples
+
+<Primary />
+
+## Props
+
+### Badge Props
+
+<Controls />
+
+### BadgeGroup Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `spacing` | `'sm' \| 'md' \| 'lg'` | `'md'` | The spacing between badges |
+| `maxVisible` | `number` | - | The maximum number of visible badges |
+| `wrap` | `boolean` | `true` | Whether to wrap badges to multiple lines |
+| `align` | `'start' \| 'center' \| 'end'` | `'start'` | Alignment of badges within the group |
+| `class` | `string` | - | Custom CSS class for the badge group |
+| `children` | `JSXChildren` | - | Badge elements to be rendered |
+
+## Accessibility
+
+The Badge component follows accessibility best practices:
+
+- Uses semantic HTML elements 
+- Includes appropriate ARIA attributes
+- Ensures proper color contrast in both light and dark modes
+- Provides accessible click targets for interactive badges
+- Supports keyboard navigation for interactive elements
+
+## Design Guidelines
+
+- **Use sparingly**: Too many badges can create visual noise
+- **Keep text short**: Badges work best with 1-3 words
+- **Choose appropriate colors**: Use semantic colors for status indicators (success, error, etc.)
+- **Consider visibility**: Ensure sufficient contrast between badge and background
+- **Be consistent**: Use similar badge styles for similar types of information
+
+### When to use each variant:
+
+- **Solid**: For high emphasis, drawing immediate attention
+- **Soft**: For medium emphasis, secondary information
+- **Outline**: For low emphasis, tertiary information
+
+### When to use each shape:
+
+- **Square**: For a more formal, structured look
+- **Rounded**: For a balanced, modern look (default)
+- **Pill**: For tags, labels, and more informal indicators
+
+## CSS Customization
+
+The Badge component is built with Tailwind CSS classes that you can easily customize:
+
+- Variants use different background, text, and border classes
+- Colors map to Tailwind's color palette
+- Sizes adjust padding, font size, and spacing
+- Shapes use different border-radius values
+
+For custom styling, use the `class` prop to add your own classes or override defaults.
+
+## Related Components
+
+- [Buttons](/docs/core-inputs-button--docs) - For primary actions
+- [Avatar](/docs/core-data-display-avatar--docs) - For user representation 
+- [List](/docs/core-data-display-list--docs) - For displaying collections of items
