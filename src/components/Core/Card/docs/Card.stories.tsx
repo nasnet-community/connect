@@ -1,5 +1,5 @@
-import { Card, type CardProps } from './Card';
-import { Button } from '../button/Button';
+import { Card, type CardProps } from '../../Card';
+import { Button } from '../../button/Button';
 
 export default {
   title: 'Core/Card',

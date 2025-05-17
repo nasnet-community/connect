@@ -7,8 +7,8 @@ const DefaultServerIcon = $(HiServerOutline);
 
 export interface ServerCardProps {
   title: string;
-  enabled: boolean;
-  onToggle$: QRL<(enabled: boolean) => void>;
+  enabled?: boolean;
+  onToggle$?: QRL<(enabled: boolean) => void>;
   icon?: any; // Accept any serialized icon
   class?: string;
   titleClass?: string;
@@ -19,8 +19,8 @@ export interface ServerCardProps {
  * 
  * Provides a standardized card layout with:
  * - Header with icon and title
- * - Enable/disable toggle switch
- * - Content area (only displayed when enabled)
+ * - Enable/disable toggle switch (optional)
+ * - Content area
  */
 export const ServerCard = component$<ServerCardProps>(({
   title,
@@ -45,34 +45,34 @@ export const ServerCard = component$<ServerCardProps>(({
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
       </div>
 
-      {/* Enable/Disable Toggle Switch */}
-      <div class="mb-4 flex items-center justify-between">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {$localize`Enable ${title}`}
-        </label>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <input
-            type="checkbox"
-            checked={enabled}
-            class="peer sr-only"
-            onChange$={() => {
-              try {
-                onToggle$(!enabled);
-              } catch (error) {
-                console.error(`Error toggling ${title}:`, error);
-              }
-            }}
-          />
-          <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
-        </label>
-      </div>
-      
-      {/* Content area - only shown when enabled */}
-      {enabled && (
-        <div class="space-y-4">
-          <Slot />
+      {/* Enable/Disable Toggle Switch - only shown if enabled prop and onToggle$ prop are provided */}
+      {enabled !== undefined && onToggle$ !== undefined && (
+        <div class="mb-4 flex items-center justify-between">
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {$localize`Enable ${title}`}
+          </label>
+          <label class="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={enabled}
+              class="peer sr-only"
+              onChange$={() => {
+                try {
+                  onToggle$(!enabled);
+                } catch (error) {
+                  console.error(`Error toggling ${title}:`, error);
+                }
+              }}
+            />
+            <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
+          </label>
         </div>
       )}
+      
+      {/* Content area - always shown */}
+      <div class="space-y-4">
+        <Slot />
+      </div>
     </div>
   );
 }); 
