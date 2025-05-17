@@ -1,10 +1,10 @@
-import { component$, type PropFunction, Slot, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, type QRL, Slot, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
 
 export interface ModalProps {
   isOpen: boolean;
-  onClose: PropFunction<() => void>;
+  onClose: QRL<() => void>;
   size?: ModalSize;
   title?: string;
   closeOnBackdropClick?: boolean;
@@ -17,6 +17,10 @@ export interface ModalProps {
   preventScroll?: boolean;
 }
 
+/**
+ * @deprecated Please use Dialog component from Feedback/Dialog instead.
+ * Dialog provides better accessibility features, standardized API, and improved UX.
+ */
 export const Modal = component$<ModalProps>(
   ({
     isOpen,

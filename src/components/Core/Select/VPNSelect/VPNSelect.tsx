@@ -1,4 +1,4 @@
-import { component$, $, type QRL } from "@builder.io/qwik";
+import { type QRL } from "@builder.io/qwik";
 
 export interface VPNSelectOption {
 
@@ -38,7 +38,14 @@ export interface VPNSelectProps {
 }
 
 
-export const VPNSelect = component$<VPNSelectProps>(({
+// Re-export the compatibility wrapper component that uses UnifiedSelect under the hood
+import { VPNSelectCompat } from './CompatWrapper';
+export const VPNSelect = VPNSelectCompat;
+
+// Original implementation is preserved below for reference
+// but is no longer used
+/* 
+export const VPNSelect_Original = component$<VPNSelectProps>(({
   options,
   value,
   label,
@@ -117,3 +124,4 @@ export const VPNSelect = component$<VPNSelectProps>(({
     </div>
   );
 }); 
+*/
