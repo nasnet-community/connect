@@ -1,0 +1,215 @@
+# Code Display Components
+
+The Code Display components provide a consistent way to display code snippets in the application, with support for syntax highlighting, line numbers, and copy functionality.
+
+## Components
+
+This module includes two components:
+
+1. **InlineCode**: For displaying short code snippets inline with text
+2. **CodeBlock**: For displaying multi-line code snippets with rich features
+
+## InlineCode Component
+
+The `InlineCode` component is designed for displaying short code snippets inline with other text content.
+
+### Features
+
+- Monospace font styling
+- Appropriate background color and border
+- Automatic dark mode support
+- Optional word wrap control
+
+### Usage Examples
+
+#### Basic Usage
+
+```tsx
+import { InlineCode } from "~/components/Core/Typography";
+
+export default component$(() => (
+  <p>
+    Use the <InlineCode>useSignal()</InlineCode> hook to create reactive state.
+  </p>
+));
+```
+
+#### Within Text Component
+
+```tsx
+import { Text, InlineCode } from "~/components/Core/Typography";
+
+export default component$(() => (
+  <Text>
+    To update the value, use <InlineCode>count.value++</InlineCode> syntax.
+  </Text>
+));
+```
+
+#### With No Wrap Option
+
+```tsx
+<InlineCode noWrap>
+  const reallyLongVariableName = useStore({ items: [], settings: {} });
+</InlineCode>
+```
+
+### Props Reference
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `string \| JSXNode` | - | The code content to display |
+| `noWrap` | `boolean` | `false` | Whether to prevent text wrapping |
+| `class` | `string` | - | Additional CSS classes |
+| `id` | `string` | - | ID attribute |
+
+## CodeBlock Component
+
+The `CodeBlock` component is designed for displaying multi-line code snippets with syntax highlighting, line numbers, and more advanced features.
+
+### Features
+
+- Syntax highlighting for numerous programming languages
+- Optional line numbers
+- Light/dark/system theme support
+- Copy to clipboard button
+- Line highlighting for important sections
+- Configurable max height with scrolling
+- Optional title and caption
+
+### Usage Examples
+
+#### Basic Usage
+
+```tsx
+import { CodeBlock } from "~/components/Core/Typography";
+
+export default component$(() => (
+  <CodeBlock 
+    code={`function greeting(name) {
+  return 'Hello, ' + name + '!';
+}
+
+console.log(greeting('World'));`} 
+    language="javascript"
+  />
+));
+```
+
+#### With Line Numbers and Title
+
+```tsx
+<CodeBlock 
+  code={`import { component$, useSignal } from '@builder.io/qwik';
+
+export const Counter = component$(() => {
+  const count = useSignal(0);
+  
+  return (
+    <div>
+      <p>Count: {count.value}</p>
+      <button onClick$={() => count.value++}>
+        Increment
+      </button>
+    </div>
+  );
+});`} 
+  language="typescript"
+  showLineNumbers={true}
+  title="counter.tsx"
+/>
+```
+
+#### Highlighting Specific Lines
+
+```tsx
+<CodeBlock 
+  code={`import { component$, useSignal } from '@builder.io/qwik';
+
+export const Counter = component$(() => {
+  // Create reactive state
+  const count = useSignal(0);
+  
+  return (
+    <div>
+      <p>Count: {count.value}</p>
+      <button onClick$={() => count.value++}>
+        Increment
+      </button>
+    </div>
+  );
+});`} 
+  language="typescript"
+  showLineNumbers={true}
+  highlightLines="4,8"
+  title="Counter with highlighted lines"
+/>
+```
+
+#### With Custom Theme and Caption
+
+```tsx
+<CodeBlock 
+  code={cssCode} 
+  language="css"
+  theme="dark"
+  title="styles.css"
+  caption="CSS styles for the button component"
+/>
+```
+
+#### With Max Height
+
+```tsx
+<CodeBlock 
+  code={longCode} 
+  language="javascript"
+  maxHeight="300px"
+  showLineNumbers={true}
+/>
+```
+
+### Props Reference
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `code` | `string` | (required) | The code to display |
+| `language` | `CodeLanguage` | `"javascript"` | Programming language for syntax highlighting |
+| `showLineNumbers` | `boolean` | `false` | Whether to show line numbers |
+| `wrap` | `boolean` | `true` | Whether to enable word wrapping |
+| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Visual theme for the code block |
+| `title` | `string` | - | Custom title or filename to display above the code block |
+| `copyButton` | `boolean` | `true` | Whether to add a copy button |
+| `highlight` | `boolean` | `true` | Whether to add syntax highlighting |
+| `highlightLines` | `string` | - | Line numbers or ranges to highlight (e.g., "1,3-5,8") |
+| `maxHeight` | `string` | - | Maximum height before scrolling (e.g., "300px") |
+| `caption` | `string` | - | Custom caption or description beneath the code block |
+| `class` | `string` | - | Additional CSS classes |
+| `id` | `string` | - | ID attribute |
+
+## Supported Languages
+
+The `CodeBlock` component supports syntax highlighting for the following languages:
+
+- JavaScript/TypeScript: `javascript`, `js`, `typescript`, `ts`, `jsx`, `tsx`
+- Web: `html`, `css`, `scss`, `less`
+- Backend: `python`, `py`, `ruby`, `php`, `java`, `csharp`, `go`, `rust`
+- Data: `json`, `yaml`, `yml`, `graphql`, `sql`, `mysql`
+- Shell: `bash`, `shell`
+- Others: `c`, `cpp`, `kotlin`, `swift`, `perl`, `markdown`, `md`, `diff`
+
+## Accessibility Considerations
+
+- The `CodeBlock` component uses proper semantic HTML elements
+- Copy buttons include appropriate ARIA labels
+- Sufficient color contrast is maintained in both light and dark themes
+- Line numbers are properly separated from code content for screen readers
+
+## Design Tokens
+
+These components use the following design tokens:
+
+- Font family: monospace fonts
+- Background colors: `bg-gray-100`, `bg-gray-800`
+- Text colors: `text-pink-600`, `text-pink-400` (for InlineCode)
+- Border colors: `border-gray-200`, `border-gray-700`

@@ -1,0 +1,150 @@
+# Heading Component
+
+The Heading component provides a consistent way to display headings across the application with proper typography, semantic HTML, and responsive sizing.
+
+## Features
+
+- **Semantic HTML**: Renders as appropriate heading level (h1-h6) or can be customized with the `as` prop
+- **Responsive Sizing**: Adjust size at different breakpoints
+- **Visual Customization**: Control weight, alignment, color, and truncation
+- **Accessibility**: Supports proper semantic structure and ARIA attributes
+- **Dark Mode Support**: Automatically adapts to light/dark themes
+
+## Usage Examples
+
+### Basic Usage
+
+```tsx
+import { Heading } from "~/components/Core/Typography";
+
+export default component$(() => (
+  <Heading level={1}>Page Title</Heading>
+));
+```
+
+### Different Heading Levels
+
+```tsx
+<Heading level={1}>Heading 1</Heading>
+<Heading level={2}>Heading 2</Heading>
+<Heading level={3}>Heading 3</Heading>
+<Heading level={4}>Heading 4</Heading>
+<Heading level={5}>Heading 5</Heading>
+<Heading level={6}>Heading 6</Heading>
+```
+
+### Semantic vs. Visual Heading
+
+Use the `as` prop to control the semantic HTML element while maintaining visual styling:
+
+```tsx
+// Visually looks like h2 but is semantically an h1
+<Heading level={2} as="h1">
+  Visually h2, Semantically h1
+</Heading>
+
+// Visually looks like h4 but is semantically an h2
+<Heading level={4} as="h2">
+  Visually h4, Semantically h2
+</Heading>
+```
+
+This is particularly useful for maintaining proper document outline while preserving visual design.
+
+### Font Weight Variants
+
+```tsx
+<Heading level={3} weight="light">Light Weight</Heading>
+<Heading level={3} weight="normal">Normal Weight</Heading>
+<Heading level={3} weight="medium">Medium Weight</Heading>
+<Heading level={3} weight="semibold">Semibold Weight (Default)</Heading>
+<Heading level={3} weight="bold">Bold Weight</Heading>
+<Heading level={3} weight="extrabold">Extrabold Weight</Heading>
+```
+
+### Text Alignment
+
+```tsx
+<Heading level={3} align="left">Left Aligned (Default)</Heading>
+<Heading level={3} align="center">Center Aligned</Heading>
+<Heading level={3} align="right">Right Aligned</Heading>
+```
+
+### Color Variants
+
+```tsx
+<Heading level={3} color="primary">Primary Color (Default)</Heading>
+<Heading level={3} color="secondary">Secondary Color</Heading>
+<Heading level={3} color="tertiary">Tertiary Color</Heading>
+<Heading level={3} color="accent">Accent Color</Heading>
+<Heading level={3} color="success">Success Color</Heading>
+<Heading level={3} color="warning">Warning Color</Heading>
+<Heading level={3} color="error">Error Color</Heading>
+<Heading level={3} color="info">Info Color</Heading>
+
+{/* For dark backgrounds */}
+<div class="bg-surface-dark-primary p-4">
+  <Heading level={3} color="inverse">Inverse Color</Heading>
+</div>
+```
+
+### Text Truncation
+
+```tsx
+{/* Single line truncation */}
+<Heading level={3} truncate={true}>
+  This is a very long heading that will be truncated with an ellipsis
+</Heading>
+
+{/* Multi-line truncation */}
+<Heading level={3} truncate={true} maxLines={2}>
+  This is a very long heading that will be truncated after two lines
+  because it doesn't fit within the container
+</Heading>
+```
+
+### Responsive Sizing
+
+```tsx
+<Heading
+  responsiveSize={{
+    base: 3, // h3 on mobile
+    md: 2,   // h2 on medium screens (768px+)
+    lg: 1    // h1 on large screens (1024px+)
+  }}
+>
+  Responsive Heading Example
+</Heading>
+```
+
+## Props Reference
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `level` | `1 \| 2 \| 3 \| 4 \| 5 \| 6` | `2` | Heading level (h1-h6) |
+| `as` | `"h1" \| "h2" \| "h3" \| "h4" \| "h5" \| "h6" \| "div" \| "span"` | Based on `level` | Element to render the heading as (for semantic HTML) |
+| `weight` | `"light" \| "normal" \| "medium" \| "semibold" \| "bold" \| "extrabold"` | `"semibold"` | Font weight |
+| `align` | `"left" \| "center" \| "right"` | `"left"` | Text alignment |
+| `truncate` | `boolean` | `false` | Whether to truncate text with ellipsis if it overflows |
+| `maxLines` | `number` | `1` | Maximum number of lines before truncating |
+| `color` | `"primary" \| "secondary" \| "tertiary" \| "inverse" \| "accent" \| "success" \| "warning" \| "error" \| "info"` | `"primary"` | Color variant |
+| `responsiveSize` | `ResponsiveSize` | - | Responsive size configuration |
+| `id` | `string` | - | ID attribute |
+| `class` | `string` | - | Additional CSS classes |
+| `children` | `string \| JSXNode` | - | Content of the heading |
+
+## Accessibility Considerations
+
+- Use heading levels appropriately to maintain a logical document outline
+- Don't skip heading levels (e.g., don't go from h1 to h3 without h2)
+- When using the `as` prop for visual styling, maintain proper semantic structure
+- Ensure sufficient color contrast ratios for all color variants
+
+## Design Tokens
+
+This component uses the following design tokens:
+
+- `text-primary`, `text-secondary`, etc. for text colors
+- `text-dark-primary`, `text-dark-secondary`, etc. for dark mode text colors
+- Tailwind's font weight scale for weight variants
+- Standard Tailwind spacing and sizing tokens
