@@ -1,33 +1,21 @@
-import { component$, type QRL, $ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
+import type { PromoBannerProps } from './PromoBanner.types';
+import { usePromoBanner } from './usePromoBanner';
 
-export interface VPNCredentials {
-  server: string;
-  username: string;
-  password: string;
-  [key: string]: string;
-}
-
-export interface PromoBannerProps {
-
-  title: string;
-  
-
-  description: string;
-
-  provider: string;
-  
-
-  imageUrl?: string;
-
-  bgColorClass?: string;
-
-  onCredentialsReceived$?: QRL<(credentials: VPNCredentials) => void>;
-  
-
-  class?: string;
-}
-
-
+/**
+ * PromoBanner component for displaying promotional content with optional action.
+ * 
+ * @example
+ * ```tsx
+ * <PromoBanner
+ *   title="Get 30 days free VPN!"
+ *   description="Sign up today to receive a month of premium VPN service at no cost."
+ *   provider="ExpressVPN"
+ *   imageUrl="/images/vpn-promo.jpg"
+ *   onCredentialsReceived$={handleCredentials}
+ * />
+ * ```
+ */
 export const PromoBanner = component$<PromoBannerProps>(({
   title,
   description,
@@ -37,16 +25,9 @@ export const PromoBanner = component$<PromoBannerProps>(({
   onCredentialsReceived$,
   class: className,
 }) => {
-  const getCredentials$ = $(async () => {
-    const mockCredentials = {
-      server: "vpn.example.com",
-      username: "demo_user",
-      password: "demo_password"
-    };
-    
-    if (onCredentialsReceived$) {
-      await onCredentialsReceived$(mockCredentials);
-    }
+  // Use the hook to manage state and credentials
+  const { loading, success, getCredentials$ } = usePromoBanner({
+    onCredentialsReceived$
   });
 
   return (
@@ -71,14 +52,21 @@ export const PromoBanner = component$<PromoBannerProps>(({
             {description}
           </p>
           
-          {onCredentialsReceived$ && (
+          {onCredentialsReceived$ && !success.value && (
             <button
               onClick$={getCredentials$}
               class="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg 
                 hover:bg-primary-600 transition-colors"
+              disabled={loading.value}
             >
-              {$localize`Get Free Access`}
+              {loading.value ? $localize`Loading...` : $localize`Get Free Access`}
             </button>
+          )}
+          
+          {success.value && (
+            <div class="mt-4 px-4 py-2 bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300 rounded-lg">
+              {$localize`Credentials sent! Check your account.`}
+            </div>
           )}
         </div>
       </div>
