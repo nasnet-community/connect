@@ -1,40 +1,18 @@
-import { component$, Slot, $, type QRL } from "@builder.io/qwik";
+import { component$, Slot } from "@builder.io/qwik";
+import type { FieldProps } from "./Field.types";
+import { useField } from "./hooks/useField";
+import { FieldLabel } from "./FieldLabel";
+import { FieldInput } from "./FieldInput";
+import { FieldToggle } from "./FieldToggle";
+import { FieldMessage } from "./FieldMessage";
 
-export interface FieldProps {
-
-  type?: "text" | "password" | "checkbox" | "radio";
-  
-  label?: string;
-  
-
-  value?: string | boolean;
-
-  placeholder?: string;
-  
-
-  required?: boolean;
-  
-
-  disabled?: boolean;
-  
-
-  id?: string;
-  
-
-  class?: string;
-  
-
-  error?: string;
-
-  helperText?: string;
-  
-
-  onInput$?: QRL<(event: Event, element: HTMLInputElement) => void>;
-  
-
-  onChange$?: QRL<(event: Event, element: HTMLInputElement) => void>;
-}
-
+/**
+ * Field component for form inputs with various layout options and styling.
+ * 
+ * This component provides a flexible form field with support for various input types,
+ * validation states, and layout configurations. It can be used either with a standard
+ * value/onChange pattern or with a child Slot for more custom content.
+ */
 export const Field = component$<FieldProps>(({
   type = "text",
   label,
@@ -46,97 +24,103 @@ export const Field = component$<FieldProps>(({
   class: className,
   error,
   helperText,
+  inline = false,
   onInput$,
   onChange$,
+  onValueChange$,
+  size = "md",
 }) => {
-  const inputId = id || `field-${Math.random().toString(36).substring(2, 9)}`;
-  
-  const handleInput$ = $((event: Event) => {
-    const element = event.target as HTMLInputElement;
-    if (onInput$) {
-      onInput$(event, element);
-    }
+  const {
+    inputId,
+    sizeClasses,
+    handleInput$,
+    handleChange$,
+    isToggleInput,
+    containerClass,
+  } = useField({
+    type,
+    id,
+    value,
+    error,
+    helperText,
+    inline,
+    onInput$,
+    onChange$,
+    onValueChange$,
+    size
   });
-  
-  const handleChange$ = $((event: Event) => {
-    const element = event.target as HTMLInputElement;
-    if (onChange$) {
-      onChange$(event, element);
-    }
-  });
-  
-  if (type === "checkbox" || type === "radio") {
+
+  // Handle checkbox and radio inputs, which have a different layout
+  if (isToggleInput) {
     return (
-      <div class="flex items-center">
-        <input
-          type={type}
+      <div class={`${containerClass} ${className || ""}`}>
+        <FieldToggle
           id={inputId}
+          type={type as "checkbox" | "radio"}
           checked={value === true}
           disabled={disabled}
           onChange$={handleChange$}
-          class={`h-4 w-4 rounded border-border text-primary-600 focus:ring-primary-500 dark:border-border-dark ${className || ""}`}
         />
+        
         {label && (
-          <label 
-            for={inputId} 
-            class="ml-2 block text-sm text-text-secondary dark:text-text-dark-secondary"
-          >
-            {label}
-            {required && <span class="ml-1 text-error">*</span>}
-          </label>
+          <div class="ml-2">
+            <FieldLabel 
+              id={inputId} 
+              label={label} 
+              required={required} 
+            />
+          </div>
         )}
       </div>
     );
   }
   
+  // For standard inputs with potential inline layout
   return (
-    <div class="w-full">
-      {label && (
-        <label 
-          for={inputId} 
-          class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary"
-        >
-          {label}
-          {required && <span class="ml-1 text-error">*</span>}
-        </label>
+    <div class={`${containerClass} ${className || ""}`}>
+      {/* Left-positioned label for inline mode */}
+      {inline && label && (
+        <div class="whitespace-nowrap">
+          <FieldLabel id={inputId} label={label} required={required} inline={inline} />
+        </div>
       )}
       
-      <div class="relative mt-1">
-        <Slot name="prefix" />
+      {/* Field container with relative positioning for prefix/suffix */}
+      <div class={`${inline ? "flex-1" : "w-full"}`}>
+        {/* Top-positioned label for standard mode */}
+        {!inline && label && (
+          <div class="mb-1">
+            <FieldLabel id={inputId} label={label} required={required} />
+          </div>
+        )}
         
-        <input
-          type={type}
-          id={inputId}
-          value={value as string}
-          placeholder={placeholder}
-          disabled={disabled}
-          required={required}
-          onInput$={handleInput$}
-          onChange$={handleChange$}
-          class={`
-            mt-1 block w-full rounded-md border 
-            border-border bg-white px-3 py-2 
-            focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
-            dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default
-            ${error ? 'border-error dark:border-error' : ''}
-            ${className || ""}
-          `}
-        />
+        {/* Input area - check for slot content first */}
+        <div class="relative">
+          <Slot name="prefix" />
+          
+          <Slot>
+            {/* Default input if no slot content is provided */}
+            <FieldInput
+              id={inputId}
+              type={type}
+              value={value as string | number}
+              placeholder={placeholder}
+              disabled={disabled}
+              required={required}
+              sizeClasses={sizeClasses}
+              error={error}
+              onInput$={handleInput$}
+              onChange$={handleChange$}
+            />
+          </Slot>
+          
+          <Slot name="suffix" />
+        </div>
         
-        <Slot name="suffix" />
+        {/* Messages */}
+        <FieldMessage text={error || ""} isError={true} />
+        {!error && <FieldMessage text={helperText || ""} />}
       </div>
-      
-      {error && (
-        <p class="mt-1 text-sm text-error">
-          {error}
-        </p>
-      )}
-      
-      {helperText && !error && (
-        <p class="mt-1 text-sm text-text-muted dark:text-text-dark-muted">
-          {helperText}
-        </p>
-      )}
     </div>
   );
-}); 
+});

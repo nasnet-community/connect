@@ -1,0 +1,34 @@
+.connect-form-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.connect-form-field-control {
+  position: relative;
+  width: 100%;
+}
+
+.connect-form-field-control[data-invalid="true"] > * {
+  border-color: var(--connect-color-error-500);
+}
+
+.connect-form-field-control[data-valid="true"] > * {
+  border-color: var(--connect-color-success-500);
+}
+
+.connect-form-field-control[data-warning="true"] > * {
+  border-color: var(--connect-color-warning-500);
+}
+
+.connect-form-field-control[data-disabled="true"] > * {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.connect-form-field-control[data-readonly="true"] > * {
+  background-color: var(--connect-color-gray-100);
+  cursor: default;
+}
