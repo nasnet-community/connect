@@ -1,7 +1,12 @@
-import { component$, type QRL, $ } from "@builder.io/qwik";
+import { $, component$, type QRL } from "@builder.io/qwik";
 
-export type SwitchSize = "sm" | "md" | "lg";
+// Re-export types from the new Toggle component
+import { type ToggleSize as SwitchSize } from "../Toggle/Toggle.types";
+export { SwitchSize };
 
+/**
+ * @deprecated Use Toggle component instead
+ */
 export interface SwitchProps {
   checked: boolean;
   onChange$: QRL<(checked: boolean) => void>;
@@ -111,3 +116,15 @@ export const Switch = component$<SwitchProps>(
     );
   }
 ); 
+
+
+// Import the compatibility wrapper
+// import { SwitchCompatWrapper } from "./SwitchCompatWrapper";
+
+/**
+ * Switch component for toggling binary states.
+ * 
+ * @deprecated This component is being replaced by the Toggle component.
+ * It currently uses the new Toggle internally and provides the same API for backward compatibility.
+ */
+// export const Switch = SwitchCompatWrapper;

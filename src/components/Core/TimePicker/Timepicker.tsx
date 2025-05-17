@@ -1,6 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 
-interface TimePickerProps {
+export interface TimePickerProps {
   time: { hour: string; minute: string };
   onChange$: QRL<(type: "hour" | "minute", value: string) => void>;
 }
