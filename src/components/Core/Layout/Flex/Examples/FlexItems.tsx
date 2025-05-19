@@ -1,5 +1,4 @@
 import { component$ } from '@builder.io/qwik';
-import { Flex } from '../index';
 
 export default component$(() => {
   return (

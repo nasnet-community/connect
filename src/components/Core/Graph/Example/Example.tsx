@@ -6,59 +6,40 @@ import type { GraphConnection, GraphNode } from "../types";
 /**
  * Example showcasing the basic features of the Graph component
  */
-export const NetworkGraphExample = component$(() => {
+export interface NetworkGraphExampleProps {
+  customNodes?: GraphNode[];
+  customConnections?: GraphConnection[];
+}
+
+export const NetworkGraphExample = component$<NetworkGraphExampleProps>(({ 
+  customNodes, 
+  customConnections
+}) => {
   // Track the selected node for highlighting
   const selectedNodeId = useSignal<string | null>(null);
   const selectedInfo = useSignal<string>("");
   
-  // Create nodes using the predefined node types
-  const nodes = [
+  // Default nodes if no custom nodes are provided
+  const nodes = customNodes || [
     createNode("User", "user1", 50, 100, { label: "Client" }),
     createNode("WirelessRouter", "router", 180, 100, { label: "Router" }),
-    createNode("DomesticWAN", "domestic", 310, 60, { label: "Domestic" }),
-    createNode("ForeignWAN", "foreign", 310, 140, { label: "Foreign" }),
-    createNode("DomesticWebsite", "website1", 440, 60, { label: "Local Site" }),
-    createNode("ForeignWebsite", "website2", 440, 140, { label: "Global Site" })
+    createNode("DomesticWAN", "wan", 310, 100, { label: "Internet" })
   ];
 
-  // Create connections between nodes
-  const connections: GraphConnection[] = [
+  // Default connections if no custom connections are provided
+  const connections: GraphConnection[] = customConnections || [
     { 
       from: "user1", 
       to: "router",
       color: "#f59e0b",
-      animated: true,
-      packetColors: ["#f59e0b"]
+      animated: true
     },
     { 
       from: "router", 
-      to: "domestic",
-      color: "#84cc16",
-      animated: true, 
-      packetColors: ["#84cc16"],
-      label: "Local Traffic"
-    },
-    { 
-      from: "router", 
-      to: "foreign",
-      color: "#9333ea",
-      animated: true,
-      packetColors: ["#9333ea"],
-      label: "Foreign Traffic"
-    },
-    { 
-      from: "domestic", 
-      to: "website1",
+      to: "wan",
       color: "#84cc16",
       animated: true,
-      packetColors: ["#84cc16"]
-    },
-    { 
-      from: "foreign", 
-      to: "website2",
-      color: "#9333ea",
-      animated: true,
-      packetColors: ["#9333ea"]
+      label: "Internet Connection"
     }
   ];
 

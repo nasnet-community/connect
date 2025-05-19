@@ -1,0 +1,207 @@
+import { component$, useSignal } from '@builder.io/qwik';
+import { PlaygroundTemplate } from '~/components/Docs/templates/PlaygroundTemplate';
+import { Badge } from '~/components/Core/DataDisplay/Badge';
+import { Card } from '~/components/Core/Card/Card';
+import { HiCheckCircleSolid } from '@qwikest/icons/heroicons';
+
+export default component$(() => {
+  // State for playground controls
+  const variant = useSignal<'solid' | 'soft' | 'outline'>('solid');
+  const size = useSignal<'sm' | 'md' | 'lg'>('md');
+  const color = useSignal<'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'>('primary');
+  const shape = useSignal<'square' | 'rounded' | 'pill'>('rounded');
+  const badgeText = useSignal('Badge');
+  const dismissible = useSignal(false);
+  const dot = useSignal(false);
+  const dotPosition = useSignal<'start' | 'end'>('start');
+  const bordered = useSignal(false);
+  const showStartIcon = useSignal(false);
+  const maxWidth = useSignal('');
+  const truncate = useSignal(false);
+
+  // Control definitions for the playground
+  const controls = [
+    {
+      type: 'select',
+      label: 'Variant',
+      value: variant,
+      options: [
+        { label: 'Solid', value: 'solid' },
+        { label: 'Soft', value: 'soft' },
+        { label: 'Outline', value: 'outline' }
+      ]
+    },
+    {
+      type: 'select',
+      label: 'Size',
+      value: size,
+      options: [
+        { label: 'Small', value: 'sm' },
+        { label: 'Medium', value: 'md' },
+        { label: 'Large', value: 'lg' }
+      ]
+    },
+    {
+      type: 'select',
+      label: 'Color',
+      value: color,
+      options: [
+        { label: 'Default', value: 'default' },
+        { label: 'Primary', value: 'primary' },
+        { label: 'Secondary', value: 'secondary' },
+        { label: 'Success', value: 'success' },
+        { label: 'Warning', value: 'warning' },
+        { label: 'Error', value: 'error' },
+        { label: 'Info', value: 'info' }
+      ]
+    },
+    {
+      type: 'select',
+      label: 'Shape',
+      value: shape,
+      options: [
+        { label: 'Square', value: 'square' },
+        { label: 'Rounded', value: 'rounded' },
+        { label: 'Pill', value: 'pill' }
+      ]
+    },
+    {
+      type: 'text',
+      label: 'Text',
+      value: badgeText
+    },
+    {
+      type: 'boolean',
+      label: 'Dismissible',
+      value: dismissible
+    },
+    {
+      type: 'boolean',
+      label: 'Dot',
+      value: dot
+    },
+    {
+      type: 'select',
+      label: 'Dot Position',
+      value: dotPosition,
+      options: [
+        { label: 'Start', value: 'start' },
+        { label: 'End', value: 'end' }
+      ],
+      disabled: () => !dot.value
+    },
+    {
+      type: 'boolean',
+      label: 'Bordered',
+      value: bordered
+    },
+    {
+      type: 'boolean',
+      label: 'Start Icon',
+      value: showStartIcon
+    },
+    {
+      type: 'text',
+      label: 'Max Width',
+      value: maxWidth,
+      placeholder: 'e.g., 150px'
+    },
+    {
+      type: 'boolean',
+      label: 'Truncate',
+      value: truncate,
+      disabled: () => !maxWidth.value
+    }
+  ];
+
+  // Generate code snippet based on current prop values
+  const getCodeSnippet = () => {
+    let code = '<Badge\n';
+    
+    if (variant.value !== 'solid') {
+      code += `  variant="${variant.value}"\n`;
+    }
+    
+    if (size.value !== 'md') {
+      code += `  size="${size.value}"\n`;
+    }
+    
+    if (color.value !== 'default') {
+      code += `  color="${color.value}"\n`;
+    }
+    
+    if (shape.value !== 'rounded') {
+      code += `  shape="${shape.value}"\n`;
+    }
+    
+    if (dismissible.value) {
+      code += '  dismissible\n';
+      code += '  onDismiss$={() => console.log("Badge dismissed")}\n';
+    }
+    
+    if (dot.value) {
+      code += '  dot\n';
+      
+      if (dotPosition.value !== 'start') {
+        code += `  dotPosition="${dotPosition.value}"\n`;
+      }
+    }
+    
+    if (bordered.value) {
+      code += '  bordered\n';
+    }
+    
+    if (maxWidth.value) {
+      code += `  maxWidth="${maxWidth.value}"\n`;
+    }
+    
+    if (truncate.value && maxWidth.value) {
+      code += '  truncate\n';
+    }
+    
+    if (showStartIcon.value) {
+      code += '  startIcon={<HiCheckCircleSolid class="h-3.5 w-3.5" />}\n';
+    }
+    
+    // Close opening tag
+    code += '>';
+    
+    // Add content
+    code += badgeText.value;
+    
+    // Close component
+    code += '</Badge>';
+    
+    return code;
+  };
+
+  return (
+    <PlaygroundTemplate
+      controls={controls}
+      getCodeSnippet={getCodeSnippet}
+      dependencies={[
+        "import { Badge } from '~/components/Core/DataDisplay/Badge';",
+        "import { HiCheckCircleSolid } from '@qwikest/icons/heroicons';"
+      ]}
+    >
+      <Card class="flex flex-col items-center justify-center p-10 w-full">
+        <Badge
+          variant={variant.value}
+          size={size.value}
+          color={color.value}
+          shape={shape.value}
+          dismissible={dismissible.value}
+          onDismiss$={() => console.log('Badge dismissed')}
+          dot={dot.value}
+          dotPosition={dotPosition.value}
+          bordered={bordered.value}
+          maxWidth={maxWidth.value}
+          truncate={truncate.value}
+          startIcon={showStartIcon.value ? <HiCheckCircleSolid class="h-3.5 w-3.5" /> : undefined}
+        >
+          {badgeText.value}
+        </Badge>
+      </Card>
+    </PlaygroundTemplate>
+  );
+});

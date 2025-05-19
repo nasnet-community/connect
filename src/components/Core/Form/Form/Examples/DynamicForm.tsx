@@ -47,7 +47,7 @@ export default component$(() => {
         <div class="border dark:border-gray-700 rounded-md p-4 mb-4">
           <h4 class="text-sm font-medium mb-3">Order Items</h4>
           
-          {formData.items.map((item, index) => (
+          {formData.items.map((item) => (
             <div key={item.id} class="flex gap-2 mb-3">
               <Field
                 id={`item_${item.id}_name`}

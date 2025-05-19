@@ -5,13 +5,4 @@
  * in form fields.
  */
 
-import { FormErrorMessage } from './FormErrorMessage';
-import type { FormErrorMessageProps, FormErrorMessageSize } from './FormErrorMessage';
-
-export {
-  FormErrorMessage,
-  
-  // Types
-  type FormErrorMessageProps,
-  type FormErrorMessageSize
-}; 
+export { FormErrorMessage, type FormErrorMessageProps, type FormErrorMessageSize } from './FormErrorMessage'; 

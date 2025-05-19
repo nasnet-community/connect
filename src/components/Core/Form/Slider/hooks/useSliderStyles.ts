@@ -1,4 +1,4 @@
-import { SliderProps } from "../Slider.types";
+import type { SliderProps } from "../Slider.types";
 import { isRangeSlider } from "../Slider.types";
 
 export interface UseSliderStylesProps {

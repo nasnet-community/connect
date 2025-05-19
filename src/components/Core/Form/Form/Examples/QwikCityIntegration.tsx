@@ -7,7 +7,7 @@ import { routeAction$, zod$, z } from '@builder.io/qwik-city';
 // This is a mock routeAction that would typically be defined in a page file
 // In a real application, this would be defined and exported from a route file
 export const useLoginAction = routeAction$(
-  async (data, { cookie, redirect }) => {
+  async (data, { cookie }) => {
     // Simulated authentication logic
     console.log('Processing login for:', data.email);
     

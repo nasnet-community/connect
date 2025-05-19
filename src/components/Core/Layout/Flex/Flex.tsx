@@ -1,4 +1,4 @@
-import { component$, Slot, useSignal, useVisibleTask$ } from '@builder.io/qwik';
+import { component$, Slot, useSignal, useTask$ } from '@builder.io/qwik';
 import type { FlexProps, FlexItemProps, ResponsiveValue } from './Flex.types';
 
 /**
@@ -27,9 +27,12 @@ const Flex = component$<FlexProps>((props) => {
   const isRtl = useSignal(false);
 
   // Check for RTL mode on component mount
-  useVisibleTask$(() => {
-    const dir = document.documentElement.dir || document.dir;
-    isRtl.value = dir === 'rtl';
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useTask$(() => {
+    if (typeof document !== 'undefined') {
+      const dir = document.documentElement.dir || document.dir;
+      isRtl.value = dir === 'rtl';
+    }
   });
 
   // Helper function to generate responsive classes

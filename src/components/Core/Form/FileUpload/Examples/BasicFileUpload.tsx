@@ -1,10 +1,7 @@
-import { component$, useSignal } from '@builder.io/qwik';
+import { component$ } from '@builder.io/qwik';
 import { FileUpload } from '../index';
-import type { FileInfo } from '../FileUpload.types';
 
 export default component$(() => {
-  const files = useSignal<FileInfo[]>([]);
-  
   return (
     <div class="space-y-4">
       <FileUpload
