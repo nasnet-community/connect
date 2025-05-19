@@ -23,7 +23,7 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen flex-col">
       <Header />
-      <main class="flex-grow">
+      <main class="flex-grow pt-20">
         <Slot />
       </main>
       <Footer />
