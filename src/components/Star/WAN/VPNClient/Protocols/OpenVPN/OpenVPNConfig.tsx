@@ -8,7 +8,7 @@ import {
   RadioGroup,
   ConfigMethodToggle,
   VPNConfigFileSection
-} from "~/components/Core";
+} from "../../components";
 
 interface OpenVPNConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;

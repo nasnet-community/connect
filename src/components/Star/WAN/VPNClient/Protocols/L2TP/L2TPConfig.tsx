@@ -8,7 +8,7 @@ import {
   FormContainer, 
   Switch, 
   ErrorMessage 
-} from "~/components/Core";
+} from "../../components";
 
 interface L2TPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;

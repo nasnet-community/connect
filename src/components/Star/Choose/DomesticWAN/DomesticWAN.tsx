@@ -15,7 +15,7 @@ interface DomesticProps {
   onComplete$?: PropFunction<() => void>;
 }
 
-export const Domestic = component$((props: DomesticProps) => {
+export const DomesticWAN = component$((props: DomesticProps) => {
   const starContext = useContext(StarContext);
   const hasDomesticLink = starContext.state.Choose.DometicLink;
 

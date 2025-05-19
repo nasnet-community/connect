@@ -7,7 +7,7 @@ import {
   ErrorMessage,
   ConfigMethodToggle,
   VPNConfigFileSection
-} from "~/components/Core";
+} from "../../components";
 
 interface WireguardConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;

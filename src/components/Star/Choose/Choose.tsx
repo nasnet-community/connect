@@ -2,7 +2,7 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
-import { Domestic } from "./Domestic/Domestic";
+import { DomesticWAN } from "./DomesticWAN/DomesticWAN";
 import { SetupMode } from "./SetupMode/SetupMode";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
@@ -34,7 +34,7 @@ export const Choose = component$((props: StepProps) => {
   ));
 
   const DomesticStep = component$((props: StepProps) => (
-    <Domestic
+    <DomesticWAN
       isComplete={props.isComplete}
       onComplete$={props.onComplete$}
     />

@@ -5,7 +5,7 @@ import {
   FormField, 
   FormContainer, 
   ErrorMessage 
-} from "~/components/Core";
+} from "../../components";
 
 interface PPTPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;

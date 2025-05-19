@@ -2,7 +2,7 @@ import { $, component$, useSignal } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { useVPNConfig } from "./useVPNConfig";
 import { VPNSelector } from "./VPNSelector";
-import { ErrorMessage } from "./ErrorMessage";
+import { ErrorMessage } from "./components/ErrorMessage";
 import { ActionFooter } from "./ActionFooter";
 import type { VPNType } from "~/components/Star/StarContext/CommonType";
 import { useContext } from "@builder.io/qwik";

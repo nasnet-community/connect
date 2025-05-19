@@ -6,7 +6,7 @@ import {
   FormContainer, 
   Switch, 
   ErrorMessage 
-} from "~/components/Core";
+} from "../../components";
 
 interface SSTPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
