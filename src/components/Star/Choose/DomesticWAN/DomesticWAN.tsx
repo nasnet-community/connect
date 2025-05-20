@@ -39,7 +39,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
         $localize`Better overall connection stability`,
       ],
       trafficGraph: (
-        <div class="domestic-option">
+        <div class="domestic-option mt-6">
           <NetworkTopologyGraph 
             nodes={domesticNetworkNodes}
             connections={domesticNetworkConnections}

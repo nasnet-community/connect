@@ -89,7 +89,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
           </div>
           
           {/* Network topology visualization - graph container with its own hover effect */}
-          <div class="pt-2 graph-container overflow-visible">
+          <div class={`${value === true ? "pt-6" : "pt-2"} graph-container overflow-visible`}>
             {graph}
           </div>
         </div>
