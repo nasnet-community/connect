@@ -1,4 +1,4 @@
-import { component$, useStore, $, useSignal, type PropFunction } from "@builder.io/qwik";
+import { component$, useStore, $, useSignal, type QRL } from "@builder.io/qwik";
 import { CStepper } from "../CStepper";
 import type { CStepMeta } from "../types";
 import { useStepperContext, createStepperContext } from "../hooks/useStepperContext";
@@ -120,7 +120,7 @@ const PersonalInfoStep = component$(() => {
  * Contact Information Step
  * Demonstrates completing a step using the onComplete$ handler
  */
-const ContactInfoStep = component$(({ onComplete$ }: { onComplete$?: PropFunction<(id: number) => void> }) => {
+const ContactInfoStep = component$(({ onComplete$ }: { onComplete$?: QRL<(id: number) => void> }) => {
   // Get the stepper context
   const stepper = useStepperContext<UserFormData>(EnhancedStepperContext);
   

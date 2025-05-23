@@ -79,7 +79,7 @@ export const PPTPConfig = component$<PPTPConfigProps>(({ onIsValidChange$, isSav
           />
           
           <FormField
-            type="password"
+            type="text"
             label={$localize`Password`}
             required
             value={password.value}

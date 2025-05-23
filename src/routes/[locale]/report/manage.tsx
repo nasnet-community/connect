@@ -23,7 +23,7 @@ export const useCredentialsList = routeLoader$(async () => {
 });
 
 // Action to assign a credential
-export const useAssignCredentialAction = routeAction$(async (data, requestEvent) => {
+export const useAssignCredentialAction = routeAction$(async (data) => {
   const { id, platform, referrer } = data as { id: string; platform: string; referrer: string };
   
   // Create Supabase client
@@ -78,7 +78,7 @@ export const useAssignCredentialAction = routeAction$(async (data, requestEvent)
 });
 
 // Action to create a new credential
-export const useCreateCredentialAction = routeAction$(async (data, requestEvent) => {
+export const useCreateCredentialAction = routeAction$(async (data) => {
   const { username, password, server } = data as { 
     username: string; 
     password: string; 
@@ -203,9 +203,10 @@ export const useBulkImportAction = routeAction$(async (data, { fail }) => {
       success: true,
       message: `Successfully imported ${insertedCount} credentials`
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return fail(500, {
-      message: `An error occurred: ${error.message}`
+      message: `An error occurred: ${errorMessage}`
     });
   }
 });
@@ -214,11 +215,9 @@ export default component$(() => {
   const credentialsList = useCredentialsList();
   const assignAction = useAssignCredentialAction();
   const createAction = useCreateCredentialAction();
-  const bulkImportAction = useBulkImportAction();
   
   const selectedCredential = useSignal<any>(null);
   const showCreateForm = useSignal(false);
-  const showImportForm = useSignal(false);
   
   const newCredential = useStore({
     username: '',
@@ -232,14 +231,6 @@ export default component$(() => {
   
   const toggleCreateForm = $(() => {
     showCreateForm.value = !showCreateForm.value;
-  });
-  
-  const toggleImportForm = $(() => {
-    showImportForm.value = !showImportForm.value;
-    // Close create form if open
-    if (showImportForm.value && showCreateForm.value) {
-      showCreateForm.value = false;
-    }
   });
   
   return (
@@ -345,7 +336,7 @@ export default component$(() => {
                     ))}
                     {credentialsList.value.availableCredentials.length === 0 && (
                       <tr>
-                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center">No available credentials</td>
+                        <td colSpan={4} class="px-6 py-4 whitespace-nowrap text-center">No available credentials</td>
                       </tr>
                     )}
                   </tbody>

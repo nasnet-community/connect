@@ -74,7 +74,7 @@ export const WireguardConfig = component$<WireguardConfigProps>(({ onIsValidChan
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Private Key Field */}
             <FormField
-              type="password"
+              type="text"
               label={$localize`Private Key`}
               required
               value={privateKey.value}
@@ -174,7 +174,7 @@ export const WireguardConfig = component$<WireguardConfigProps>(({ onIsValidChan
             
             {/* Pre-shared Key Field */}
             <FormField
-              type="password"
+              type="text"
               label={$localize`Pre-shared Key`}
               value={preSharedKey.value}
               onInput$={(_, el) => { 

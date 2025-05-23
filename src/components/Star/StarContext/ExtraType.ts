@@ -3,7 +3,6 @@ export type UpdateInterval = "Daily" | "Weekly" | "Monthly" | "";
 
 
 
-
 export interface services {
     api: ServiceType;
     apissl: ServiceType;
@@ -24,23 +23,28 @@ export interface services {
     };
   }
 
+export interface RouterIdentityRomon {
+  RouterIdentity: string;
+  isRomon?: boolean;
+}
 
+export interface AutoReboot {
+  isAutoReboot: boolean;
+  RebootTime: string;
+}
 
+export interface Update {
+  isAutoReboot: boolean;
+  UpdateTime: string;
+  UpdateInterval: UpdateInterval;
+}
 
 export interface ExtraConfigState {
-    RouterIdentity?: string;
-    isRomon?: boolean;
+    RouterIdentityRomon?: RouterIdentityRomon;
     services?: services;
     Timezone?: string;
-    AutoReboot?: {
-      isAutoReboot: boolean;
-      RebootTime: string;
-    };
-    Update?: {
-      isAutoReboot: boolean;
-      UpdateTime: string;
-      UpdateInterval: UpdateInterval;
-    };
+    AutoReboot?: AutoReboot;
+    Update?: Update;
     isCertificate?: boolean;
     isNTP?: boolean;
     isGraphing?: boolean;

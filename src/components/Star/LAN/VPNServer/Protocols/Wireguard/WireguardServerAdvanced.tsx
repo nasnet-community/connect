@@ -6,18 +6,15 @@ import {
   HiTrashOutline, 
   HiDocumentDuplicateOutline 
 } from "@qwikest/icons/heroicons";
-import { ServerCard } from "~/components/Core/Card";
 import { 
+  ServerCard, 
   ServerFormField, 
   ServerButton,
   TabNavigation,
-  SectionTitle
-} from "~/components/Core/Form/ServerField";
-import { Input } from "~/components/Core/Input";
+  SectionTitle,
+  Input
+} from "../../../VPNServer/UI";
 import { useWireguardServer } from "./useWireguardServer";
-
-// Create a serialized version of the server icon
-const ServerIcon = $(HiServerOutline);
 
 export const WireguardServerAdvanced = component$(() => {
   const {
@@ -87,7 +84,7 @@ export const WireguardServerAdvanced = component$(() => {
   return (
     <ServerCard
       title={$localize`WireGuard Server`}
-      icon={ServerIcon}
+      icon={<HiServerOutline class="h-5 w-5" />}
     >
       {/* Server instances */}
       <div class="mb-6">

@@ -34,8 +34,12 @@ export async function getL2TPCredentials(
 ): Promise<L2TPCredentialsResponse> {
   try {
     console.log("Fetching L2TP credentials from Supabase...");
+
+    const supabaseBaseUrl = import.meta.env.VITE_SUPABASE_BASE_URL
+    const supabaseFunctionURL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
+    const supabaseURL = `${supabaseBaseUrl}${supabaseFunctionURL}`
     
-    const url = `https://btfgejyaduzmmpahypgn.supabase.co/functions/v1/l2tp-credentials`;
+    const url = supabaseURL;
     console.log("Function URL:", url);
 
 

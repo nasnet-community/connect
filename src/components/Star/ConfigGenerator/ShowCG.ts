@@ -1,66 +1,73 @@
-import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "./ConfigGenerator";
 
-export const BridgePorts = (state: StarState): RouterConfig => {
-  const config: RouterConfig = {
-    "/interface bridge port": [],
-  };
 
-  // Get model and interfaces
-  const model = state.Choose.RouterModel.Model[0];
-  const allInterfaces = state.Choose.RouterModel.Interfaces[model];
 
-  // Get WAN interfaces to exclude
-  const domesticInterface = state.WAN.Easy.Domestic.interface;
-  const foreignInterface = state.WAN.Easy.Foreign.interface;
+// export const BridgePorts = (RouterInterfaces: RouterInterfaces, EInterface: EthernetInterfaceConfig[]): RouterConfig => {
+//   const config: RouterConfig = {
+//     "/interface bridge port": [],
+//   };
 
-  console.log(allInterfaces);
+//   // Get model and interfaces
+//   const model = state.Choose.RouterModel.Model[0];
+//   const allInterfaces = state.Choose.RouterModel.Interfaces[model];
 
-  // Filter out WAN interfaces
-  const lanInterfaces = allInterfaces.filter(
-    (iface) =>
-      iface !== domesticInterface &&
-      iface !== foreignInterface &&
-      !iface.startsWith("wifi"),
-  );
-  console.log(lanInterfaces);
+//   // Get WAN interfaces to exclude
+//   const domesticInterface = state.WAN.Easy.Domestic.interface;
+//   const foreignInterface = state.WAN.Easy.Foreign.interface;
 
-  // Add LAN interfaces to LANBridgeSplit
-  lanInterfaces.forEach((iface) => {
-    config["/interface bridge port"].push(
-      `add bridge=LANBridgeSplit interface=${iface}`,
-    );
-  });
+//   console.log(allInterfaces);
 
-  // Handle wireless interfaces if enabled
-  if (state.LAN.Wireless.isWireless) {
-    if (state.LAN.Wireless.isMultiSSID) {
-      // Handle MultiSSID - add to respective bridges based on comment
-      const bridgeMap = {
-        ForeignLAN: "LANBridgeFRN",
-        DomesticLAN: "LANBridgeDOM",
-        SplitLAN: "LANBridgeSplit",
-        VPNLAN: "LANBridgeVPN",
-      };
+//   // Filter out WAN interfaces
+//   const lanInterfaces = allInterfaces.filter(
+//     (iface) =>
+//       iface !== domesticInterface &&
+//       iface !== foreignInterface &&
+//       !iface.startsWith("wifi"),
+//   );
+//   console.log(lanInterfaces);
 
-      // Add both 2.4 and 5GHz interfaces
-      Object.entries(bridgeMap).forEach(([comment, bridge]) => {
-        config["/interface bridge port"].push(
-          `add bridge=${bridge} interface=wifi2.4-${comment}`,
-          `add bridge=${bridge} interface=wifi5-${comment}`,
-        );
-      });
-    } else {
-      // Single SSID - add both interfaces to LANBridgeSplit
-      config["/interface bridge port"].push(
-        "add bridge=LANBridgeSplit interface=wifi2.4-SplitLAN",
-        "add bridge=LANBridgeSplit interface=wifi5-SplitLAN",
-      );
-    }
-  }
+//   // Add LAN interfaces to LANBridgeSplit
+//   lanInterfaces.forEach((iface) => {
+//     config["/interface bridge port"].push(
+//       `add bridge=LANBridgeSplit interface=${iface}`,
+//     );
+//   });
 
-  return config;
-};
+//   // Handle wireless interfaces if enabled
+//   if (state.LAN.Wireless.isWireless) {
+//     if (state.LAN.Wireless.isMultiSSID) {
+//       // Handle MultiSSID - add to respective bridges based on comment
+//       const bridgeMap = {
+//         ForeignLAN: "LANBridgeFRN",
+//         DomesticLAN: "LANBridgeDOM",
+//         SplitLAN: "LANBridgeSplit",
+//         VPNLAN: "LANBridgeVPN",
+//       };
+
+//       // Add both 2.4 and 5GHz interfaces
+//       Object.entries(bridgeMap).forEach(([comment, bridge]) => {
+//         config["/interface bridge port"].push(
+//           `add bridge=${bridge} interface=wifi2.4-${comment}`,
+//           `add bridge=${bridge} interface=wifi5-${comment}`,
+//         );
+//       });
+//     } else {
+//       // Single SSID - add both interfaces to LANBridgeSplit
+//       config["/interface bridge port"].push(
+//         "add bridge=LANBridgeSplit interface=wifi2.4-SplitLAN",
+//         "add bridge=LANBridgeSplit interface=wifi5-SplitLAN",
+//       );
+//     }
+//   }
+
+//   return config;
+// };
+
+
+
+
+
+
 
 // export const Security = (state: StarState): RouterConfig => {
 export const Security = (): RouterConfig => {
@@ -129,3 +136,13 @@ export const Security = (): RouterConfig => {
 
   return config;
 };
+
+
+// export const ShowCG = (Ethernet: EthernetInterfaceConfig[]): RouterConfig => {
+
+//   const config: RouterConfig = {
+//     ...EthernetBridgePorts(Ethernet),
+//     // ...Security(),
+//   }
+//   return config
+// }

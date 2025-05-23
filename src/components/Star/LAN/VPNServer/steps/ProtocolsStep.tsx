@@ -1,8 +1,10 @@
-import { component$, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, useVisibleTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { ProtocolList } from "../Protocols/ProtocolList";
 import type { VPNType } from "../../../StarContext/CommonType";
+import { useStepperContext } from "~/components/Core/Stepper/CStepper";
+import { VPNServerContextId } from "../VPNServer";
 
 interface ProtocolsStepProps extends StepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -15,27 +17,43 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(({
   enabledProtocols,
   expandedSections,
   toggleSection$,
-  toggleProtocol$,
-  onComplete$,
-  isComplete
+  toggleProtocol$
 }) => {
+  const context = useStepperContext(VPNServerContextId);
   const showProtocolWarning = useSignal(false);
   const anyProtocolEnabled = useSignal(false);
 
-  // Check if any protocol is enabled
+  // Check if any protocol is enabled without trying to use context methods
   useTask$(({ track }) => {
     // Track the entire enabledProtocols object
     track(() => enabledProtocols);
     
+    // Just update the local signal for protocol status
     anyProtocolEnabled.value = Object.values(enabledProtocols).some(enabled => enabled);
     
-    if (anyProtocolEnabled.value) {
+    if (!anyProtocolEnabled.value) {
+      showProtocolWarning.value = true;
+    } else {
       showProtocolWarning.value = false;
-      if (!isComplete) {
-        onComplete$();
+    }
+  });
+  
+  // Use a useVisibleTask$ to update context when the component is visible
+  // This will only run on the client, so serialization is not an issue
+  useVisibleTask$(() => {
+    const isEnabled = anyProtocolEnabled.value;
+    
+    // Directly update the context data's stepState
+    if (context.data.stepState) {
+      context.data.stepState.protocols = isEnabled;
+    }
+    
+    // Complete the step if protocols are enabled
+    if (isEnabled) {
+      const currentStepId = context.steps.value.find(s => s.title.includes("Protocols"))?.id;
+      if (currentStepId !== undefined) {
+        context.completeStep$(currentStepId);
       }
-    } else if (isComplete) {
-      // Will attempt to complete itself again when a protocol is enabled
     }
   });
 

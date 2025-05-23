@@ -155,7 +155,7 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
                 />
                 
                 <FormField
-                  type="password"
+                  type="text"
                   label={$localize`Password`}
                   required
                   value={password.value}

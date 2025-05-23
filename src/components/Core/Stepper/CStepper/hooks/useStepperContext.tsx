@@ -84,7 +84,69 @@ export function useProvideStepperContext<T = any>(
     prevStep$,
     updateStepCompletion$,
     completeStep$,
-    data
+    data,
+    addStep$: $((newStep: CStepMeta, position?: number) => {
+      const newSteps = [...stepsSignal.value];
+      
+      if (position !== undefined && position >= 0 && position <= newSteps.length) {
+        // Insert at specific position
+        newSteps.splice(position, 0, newStep);
+      } else {
+        // Append to end
+        newSteps.push(newStep);
+      }
+      
+      stepsSignal.value = newSteps;
+      return newStep.id;
+    }),
+    removeStep$: $((stepId: number) => {
+      const stepIndex = stepsSignal.value.findIndex(step => step.id === stepId);
+      
+      if (stepIndex >= 0) {
+        const newSteps = [...stepsSignal.value];
+        newSteps.splice(stepIndex, 1);
+        
+        // Adjust active step if necessary
+        if (activeStepSignal.value >= newSteps.length) {
+          activeStepSignal.value = Math.max(0, newSteps.length - 1);
+        } else if (activeStepSignal.value >= stepIndex) {
+          // If we removed a step before the active one, adjust active step
+          activeStepSignal.value = Math.max(0, activeStepSignal.value - 1);
+        }
+        
+        stepsSignal.value = newSteps;
+        return true;
+      }
+      
+      return false;
+    }),
+    swapSteps$: $((sourceIndex: number, targetIndex: number) => {
+      if (
+        sourceIndex >= 0 && 
+        sourceIndex < stepsSignal.value.length && 
+        targetIndex >= 0 && 
+        targetIndex < stepsSignal.value.length &&
+        sourceIndex !== targetIndex
+      ) {
+        const newSteps = [...stepsSignal.value];
+        
+        // Swap the steps
+        [newSteps[sourceIndex], newSteps[targetIndex]] = 
+        [newSteps[targetIndex], newSteps[sourceIndex]];
+        
+        // Update active step if it was one of the swapped steps
+        if (activeStepSignal.value === sourceIndex) {
+          activeStepSignal.value = targetIndex;
+        } else if (activeStepSignal.value === targetIndex) {
+          activeStepSignal.value = sourceIndex;
+        }
+        
+        stepsSignal.value = newSteps;
+        return true;
+      }
+      
+      return false;
+    })
   };
   
   // Provide the context

@@ -1,27 +1,19 @@
-import type { StarState, GameConfig } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "./ConfigGenerator";
+import type { services, RouterIdentityRomon, AutoReboot, Update, GameConfig, ExtraConfigState } from "~/components/Star/StarContext/ExtraType";
+// import { mergeMultipleConfigs } from "./ConfigGenerator";
 
-type ServiceState = "Enable" | "Disable" | "Local";
 
-interface services {
-  api: ServiceState;
-  apissl: ServiceState;
-  ftp: ServiceState;
-  ssh: ServiceState;
-  telnet: ServiceState;
-  winbox: ServiceState;
-  web: ServiceState;
-  webssl: ServiceState;
-  [key: string]: ServiceState;
-}
 
-export const RouterIdentityRomon = (state: StarState): RouterConfig => {
+
+
+
+export const IdentityRomon = (RouterIdentityRomon: RouterIdentityRomon): RouterConfig => {
   const config: RouterConfig = {
     "/system identity": [],
     "/tool romon": [],
   };
 
-  const { RouterIdentity, isRomon } = state.ExtraConfig;
+  const { RouterIdentity, isRomon } = RouterIdentityRomon;
 
   if (RouterIdentity) {
     config["/system identity"].push(`set name="${RouterIdentity}"`);
@@ -34,12 +26,11 @@ export const RouterIdentityRomon = (state: StarState): RouterConfig => {
   return config;
 };
 
-export const Services = (state: StarState): RouterConfig => {
+export const AccessServices = (Services: services): RouterConfig => {
   const config: RouterConfig = {
     "/ip service": [],
   };
 
-  const { services } = state.ExtraConfig;
   const serviceNames = [
     "api",
     "api-ssl",
@@ -56,7 +47,8 @@ export const Services = (state: StarState): RouterConfig => {
       .replace("-ssl", "ssl")
       .replace("www", "web") as keyof services;
 
-    const setting = services[serviceKey];
+
+    const setting = Services[serviceKey];
 
     if (setting === "Disable") {
       config["/ip service"].push(`set ${service} disabled=yes`);
@@ -70,31 +62,44 @@ export const Services = (state: StarState): RouterConfig => {
   return config;
 };
 
-export const RebootUpdate = (state: StarState): RouterConfig => {
+export const Timezone = (Timezone: string): RouterConfig => {
   const config: RouterConfig = {
     "/system clock": [],
+  };
+
+  config["/system clock"].push(
+    `set time-zone-autodetect=no time-zone-name=${Timezone}`,
+  );
+
+  return config;
+}
+
+export const AReboot = (AReboot: AutoReboot): RouterConfig => {
+  const config: RouterConfig = {
     "/system scheduler": [],
   };
 
-  const { Timezone, AutoReboot, Update } = state.ExtraConfig;
+  const { RebootTime } = AReboot;
 
-  if (Timezone) {
-    config["/system clock"].push(
-      `set time-zone-autodetect=no time-zone-name=${Timezone}`,
-    );
-  }
+  config["/system scheduler"].push(
+    `add disabled=no interval=1d name=reboot-${RebootTime} on-event="/system reboot" \\
+  policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
+  start-date=2024-08-28 start-time=${RebootTime}:00`,
+  );
 
-  if (AutoReboot.isAutoReboot && AutoReboot.RebootTime) {
-    config["/system scheduler"].push(
-      `add disabled=no interval=1d name=reboot-${AutoReboot.RebootTime} on-event="/system reboot" \\
-    policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
-    start-date=2024-08-28 start-time=${AutoReboot.RebootTime}:00`,
-    );
-  }
+  return config;
+}
 
-  if (Update.isAutoReboot && Update.UpdateTime) {
+export const AUpdate = (Update: Update): RouterConfig => {
+  const config: RouterConfig = {
+    "/system scheduler": [],
+  };
+
+  const { UpdateTime, UpdateInterval } = Update;
+
+  if (UpdateTime) {
     let interval = "";
-    switch (Update.UpdateInterval) {
+    switch (UpdateInterval) {
       case "Daily":
         interval = "1d";
         break;
@@ -114,20 +119,36 @@ export const RebootUpdate = (state: StarState): RouterConfig => {
     \\n:delay 9s;\\r\\
     \\n:if ( [get status] = \\"New version is available\\") do={ install }" \\
     policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
-    start-date=2024-08-28 start-time=${Update.UpdateTime}:00`,
+    start-date=2024-08-28 start-time=${UpdateTime}:00`,
     );
   }
 
   return config;
-};
+}
 
-export const Game = (state: StarState): RouterConfig => {
+export const Game = (Game: GameConfig[]): RouterConfig => {
   const config: RouterConfig = {
     "/ip firewall raw": [],
-    "/ip firewall mangle": [],
+    "/ip firewall mangle": [
+      // Split Game FRN Traffic
+      `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
+             new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-Local`,
+      `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
+             new-routing-mark=to-FRN passthrough=no src-address-list=Split-Local`,
+      // Split Game DOM Traffic
+      `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
+             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-Local`,
+      `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
+             new-routing-mark=to-DOM passthrough=no src-address-list=Split-Local`,
+      // Split Game VPN Traffic
+      `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
+             new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-Local`,
+      `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
+             new-routing-mark=to-VPN passthrough=no src-address-list=Split-Local`,
+    ],
   };
 
-  const { Games } = state.ExtraConfig;
+  const Games = Game;
 
   type BaseLinkType = "foreign" | "domestic" | "vpn" | "none";
   type MappedLinkType = "FRN" | "DOM" | "VPN" | "NONE";
@@ -140,7 +161,7 @@ export const Game = (state: StarState): RouterConfig => {
   };
 
   Games.forEach((game: GameConfig) => {
-    if (game.link === "none") return;
+    // if (game.link === "none") return;
 
     if (game.ports.tcp?.length && game.ports.tcp.some((port) => port !== "")) {
       config["/ip firewall raw"].push(
@@ -158,13 +179,12 @@ export const Game = (state: StarState): RouterConfig => {
   return config;
 };
 
-export const Certificate = (state: StarState): RouterConfig => {
+export const Certificate = (isCertificate: boolean): RouterConfig => {
   const config: RouterConfig = {
     "/system script": [],
     "/system scheduler": [],
   };
 
-  const { isCertificate } = state.ExtraConfig;
 
   if (!isCertificate) {
     return config;
@@ -199,3 +219,128 @@ export const Certificate = (state: StarState): RouterConfig => {
 
   return config;
 };
+
+export const Clock = (): RouterConfig => {
+
+  const config: RouterConfig = {
+    "/system clock": [
+      `set date=${new Date()
+        .toLocaleString("en", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .replace(/,\s|\s/g, "/")
+        .replace(/\/\//g, "/")}`,
+    ],
+  }
+
+  return config
+}
+
+export const NTP = (): RouterConfig => {
+  const config: RouterConfig= {
+    "/system ntp client": ["set enabled=yes"],
+    "/system ntp server": [
+      "set broadcast=yes enabled=yes manycast=yes multicast=yes",
+    ],
+    "/system ntp client servers": [
+      "add address=ir.pool.ntp.org",
+      "add address=time1.google.com",
+      "add address=pool.ntp.org",
+    ],
+  }
+
+
+  return config 
+}
+
+export const Graph = (): RouterConfig => {
+  const config: RouterConfig = {
+    "/tool graphing interface": ["add"],
+    "/tool graphing queue": ["add"],
+    "/tool graphing resource": ["add"],
+  }
+
+  return config
+}
+
+export const update = (): RouterConfig => {
+  const config: RouterConfig = {
+    "/system package update": ["set channel=stable"],
+    "/system routerboard settings": ["set auto-upgrade=yes"],
+  }
+
+
+  return config
+}
+
+export const UPNP = (): RouterConfig => {
+  const config: RouterConfig = {
+    "/ip upnp": ["set enabled=yes"],
+  }
+
+  return config
+}
+
+export const NATPMP = (): RouterConfig => {
+  const config: RouterConfig = {
+    "/ip nat-pmp": ["set enabled=yes"],
+  }
+
+  return config
+}
+
+export const Firewall = (): RouterConfig => {
+
+  const config: RouterConfig = {
+    "/ip firewall filter": [
+      `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=udp`,
+      `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=tcp`,
+    ],
+  }
+
+  return config
+}
+
+export const DDNS = (): RouterConfig => {
+  const config: RouterConfig = {
+    "/ip cloud": ["set ddns-enabled=yes ddns-update-interval=1m"],
+  }
+
+  return config
+}
+
+
+
+export const ExtraCG = (ExtraConfigState: ExtraConfigState): RouterConfig => {
+  const config: RouterConfig = {
+    ...(ExtraConfigState.RouterIdentityRomon ? IdentityRomon(ExtraConfigState.RouterIdentityRomon) : {}),
+    ...(ExtraConfigState.services ? AccessServices(ExtraConfigState.services) : {}),
+    ...(ExtraConfigState.Timezone ? Timezone(ExtraConfigState.Timezone) : {}),
+    ...(ExtraConfigState.AutoReboot ? AReboot(ExtraConfigState.AutoReboot) : {}),
+    ...(ExtraConfigState.Update ? AUpdate(ExtraConfigState.Update) : {}),
+    ...(ExtraConfigState.Games ? Game(ExtraConfigState.Games) : {}),
+    ...(ExtraConfigState.isCertificate !== undefined ? Certificate(ExtraConfigState.isCertificate) : {}),
+    ...Clock(),
+    ...NTP(),
+    ...Graph(),
+    ...update(),
+    ...DDNS(),
+  }
+
+  return config
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

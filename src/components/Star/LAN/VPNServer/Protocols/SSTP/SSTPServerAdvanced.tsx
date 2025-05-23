@@ -2,14 +2,14 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { HiDocumentOutline } from "@qwikest/icons/heroicons";
 import { useSSTPServer } from "./useSSTPServer";
 import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType";
-import { ServerCard } from "~/components/Core/Card";
 import { 
+  ServerCard, 
   ServerFormField, 
   ServerButton,
   Select,
-  CheckboxGroup
-} from "~/components/Core/Form/ServerField";
-import { Input } from "~/components/Core/Input";
+  CheckboxGroup,
+  Input
+} from "../../../VPNServer/UI";
 import { ServerIcon } from "../icons";
 
 // Using shared serialized icon from icons.ts

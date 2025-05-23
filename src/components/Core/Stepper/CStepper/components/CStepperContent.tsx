@@ -27,7 +27,13 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
   // Helper function to safely render step component with error boundary
   const renderStepComponent = $(() => {
     try {
-      return currentStep.component;
+      if (typeof currentStep.component === 'function') {
+        // For functional components that have been wrapped with $()
+        return currentStep.component({});
+      } else {
+        // For JSX elements or other component types
+        return currentStep.component;
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       handleStepError(error);

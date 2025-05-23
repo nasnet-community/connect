@@ -2,7 +2,7 @@ import { component$, useContext, $ } from "@builder.io/qwik";
 import { HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { Signal } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-
+import type { WirelessConfig } from "../../StarContext/LANType";
 interface SSIDModeSelectorProps {
   isMultiSSID: Signal<boolean>;
 }
@@ -21,10 +21,13 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
         isHide: false,
         isDisabled: false
       };
+
+      const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
       
       starContext.updateLAN$({
         Wireless: {
-          SingleMode: singleMode
+          SingleMode: singleMode as WirelessConfig,
+          MultiMode: multiMode
         }
       });
     });
@@ -43,7 +46,7 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
           isDisabled: false
         };
         
-        multiMode.Foreign = defaultNetwork;
+        multiMode.Foreign = defaultNetwork as WirelessConfig;
       }
       
       starContext.updateLAN$({

@@ -28,7 +28,7 @@ export type Sfp = 'sfp1' | 'sfp2' | 'sfp3' | 'sfp4' | 'sfp5' | 'sfp6' | 'sfp7' |
                   'sfp8' | 'sfp9' | 'sfp10' | 'sfp11' | 'sfp12' | 'sfp13' | 'sfp14' | 
                   'sfp15' | 'sfp16' | 'sfp17' | 'sfp18' | 'sfp19' | 'sfp20' | 'sfp21' | 
                   'sfp22' | 'sfp23' | 'sfp24' | 'sfp25' | 'sfp26' | 'sfp27' | 'sfp28' | 
-                  'sfp29' | 'sfp30' | 'sfp31' | 'sfp32' ;
+                  'sfp29' | 'sfp30' | 'sfp31' | 'sfp32'  | 'sfp-sfpplus1' ;
 export type LTE = 'lte1' | 'lte2' | 'lte3' | 'lte4' | 'lte5';
 
 export interface WirelessCredentials  {

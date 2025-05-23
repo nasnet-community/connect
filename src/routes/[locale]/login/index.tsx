@@ -94,7 +94,7 @@ export default component$(() => {
               <input
                 id="password"
                 name="password"
-                type="password"
+                type="text"
                 required
                 autocomplete="current-password"
                 value={formData.password}

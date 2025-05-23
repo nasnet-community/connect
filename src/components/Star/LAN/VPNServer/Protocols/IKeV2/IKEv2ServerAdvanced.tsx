@@ -2,17 +2,14 @@ import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline, HiDocumentOutline } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
 import type { ClientAuthMethod } from "../../../../StarContext/LANType";
-import { ServerCard } from "~/components/Core/Card";
 import { 
+  ServerCard, 
   ServerFormField, 
   ServerButton,
   Select,
-  SectionTitle
-} from "~/components/Core/Form/ServerField";
-import { Input } from "~/components/Core/Input";
-
-// Create a serialized version of the server icon
-const ServerIcon = $(HiServerOutline);
+  SectionTitle,
+  Input
+} from "../../../VPNServer/UI";
 
 export const IKEv2ServerAdvanced = component$(() => {
   const { 
@@ -69,7 +66,7 @@ export const IKEv2ServerAdvanced = component$(() => {
   return (
     <ServerCard
       title={$localize`IKEv2 Server`}
-      icon={ServerIcon}
+      icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6 md:space-y-8">
         {/* Basic Settings */}

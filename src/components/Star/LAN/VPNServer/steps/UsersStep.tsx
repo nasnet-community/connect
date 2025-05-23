@@ -5,6 +5,8 @@ import type { StepProps } from "~/types/step";
 import { UserCredential } from "../UserCredential/UserCredential";
 import type { Credentials } from "../../../StarContext/LANType";
 import type { VPNType } from "../../../StarContext/CommonType";
+import { useStepperContext } from "~/components/Core/Stepper/CStepper";
+import { VPNServerContextId } from "../VPNServer";
 
 interface UsersStepProps extends StepProps {
   users: Credentials[];
@@ -23,17 +25,16 @@ export const UsersStep = component$<UsersStepProps>(({
   handleUsernameChange,
   handlePasswordChange,
   handleProtocolToggle,
-  isValid,
-  onComplete$,
-  isComplete
+  isValid
 }) => {
-  // Auto-update completion state based on validation
+  // The context is used by child components
+  useStepperContext(VPNServerContextId);
+  
+  // Track validation state
   useTask$(({ track }) => {
-    const valid = track(() => isValid.value);
-    
-    if (valid && !isComplete) {
-      onComplete$();
-    }
+    // Just track for reactivity
+    track(() => isValid.value);
+    // Step completion is handled in UserCredential component
   });
 
   return (

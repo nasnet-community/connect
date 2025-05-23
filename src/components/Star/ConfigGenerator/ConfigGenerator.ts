@@ -1,15 +1,8 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
-import { BaseConfig } from "./ChooseCG";
-import { ForeignWAN, DomesticWAN, WireguardClient } from "./WANCG";
-import { OVPNServer, WireguardServer, Wireless } from "./LANCG";
-import {
-  Certificate,
-  Game,
-  RebootUpdate,
-  RouterIdentityRomon,
-  Services,
-} from "./ExtraCG";
-import { BridgePorts } from "./ShowCG";
+import { ChooseCG } from "./ChooseCG";
+import { WANCG } from "./WANCG";
+import { LANCG } from "./LANCG";
+import { ExtraCG } from "./ExtraCG";
 
 export interface RouterConfig {
   [key: string]: string[];
@@ -130,35 +123,19 @@ export const ConfigGenerator = (state: StarState): string => {
   };
 
   try {
-    const baseConfig = BaseConfig(state);
-    const wirelessConfig = Wireless(state);
-    const foreignWANConfig = ForeignWAN(state);
-    const domesticWANConfig = DomesticWAN(state);
-    const wireguardClientConfig = WireguardClient(state);
-    const servicesConfig = Services(state);
-    const routerIdentityRomonConfig = RouterIdentityRomon(state);
-    const rebootUpdateConfig = RebootUpdate(state);
-    const wireguradServerConfig = WireguardServer(state);
-    const OVPNServerConfig = OVPNServer(state);
-    const bridgePortsConfig = BridgePorts(state);
-    const gameConfig = Game(state);
-    const certificateConfig = Certificate(state);
+    // Generate configurations from each module
+    const chooseConfig = ChooseCG(state);
+    const wanConfig = WANCG(state);
+    const lanConfig = LANCG(state);
+    const extraConfig = ExtraCG(state.ExtraConfig);
 
+    // Merge all configurations
     const finalConfig = mergeMultipleConfigs(
       config,
-      baseConfig,
-      foreignWANConfig,
-      domesticWANConfig,
-      wireguardClientConfig,
-      wirelessConfig,
-      servicesConfig,
-      routerIdentityRomonConfig,
-      rebootUpdateConfig,
-      wireguradServerConfig,
-      OVPNServerConfig,
-      bridgePortsConfig,
-      gameConfig,
-      certificateConfig,
+      chooseConfig,
+      wanConfig,
+      lanConfig,
+      extraConfig
     );
 
     const removedEmptyArrays = removeEmptyArrays(finalConfig);

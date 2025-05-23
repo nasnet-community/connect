@@ -3,7 +3,7 @@ import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
 import { DomesticWAN } from "./DomesticWAN/DomesticWAN";
-import { SetupMode } from "./SetupMode/SetupMode";
+// import { SetupMode } from "./SetupMode/SetupMode";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
@@ -14,9 +14,9 @@ interface StepsStore {
 }
 
 export const Choose = component$((props: StepProps) => {
-  const SetupModeStep = component$((props: StepProps) => (
-    <SetupMode isComplete={props.isComplete} onComplete$={props.onComplete$} />
-  ));
+  // const SetupModeStep = component$((props: StepProps) => (
+  //   <SetupMode isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  // ));
 
   const FirmwareStep = component$((props: StepProps) => (
     <Frimware isComplete={props.isComplete} onComplete$={props.onComplete$} />
@@ -49,26 +49,26 @@ export const Choose = component$((props: StepProps) => {
         component: FirmwareStep,
         isComplete: false,
       },
+      // {
+      //   id: 2,
+      //   title: $localize`Setup Mode`,
+      //   component: SetupModeStep,
+      //   isComplete: false,
+      // },
       {
         id: 2,
-        title: $localize`Setup Mode`,
-        component: SetupModeStep,
-        isComplete: false,
-      },
-      {
-        id: 3,
         title: $localize`Router Mode`,
         component: RouterModeStep,
         isComplete: false,
       },
       {
-        id: 4,
+        id: 3,
         title: $localize`Domestic Link`,
         component: DomesticStep,
         isComplete: false,
       },
       {
-        id: 5,
+        id: 4,
         title: $localize`Router Model`,
         component: RouterModelStep,
         isComplete: false,

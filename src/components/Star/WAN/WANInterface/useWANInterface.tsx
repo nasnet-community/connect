@@ -1,6 +1,8 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { WANConfig } from "../../StarContext/WANType";
+import type { LTE, Sfp, Wireless, Ethernet } from "../../StarContext/CommonType";
+
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
@@ -9,8 +11,9 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const password = useSignal("");
   const isValid = useSignal(false);
 
-  if (starContext.state.WAN.WANLink[mode]) {
-    const interfaceData = starContext.state.WAN.WANLink[mode];
+  // Initialize values from context if they exist
+  const interfaceData = starContext.state.WAN.WANLink[mode];
+  if (interfaceData) {
     if (interfaceData.InterfaceName && selectedInterface.value === "") {
       selectedInterface.value = interfaceData.InterfaceName;
     }
@@ -61,7 +64,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     };
 
     const modeConfig: WANConfig = {
-      InterfaceName: selectedInterface.value
+      InterfaceName: selectedInterface.value as Ethernet | Wireless | Sfp | LTE,
     };
 
     if (selectedInterface.value.startsWith("wlan")) {

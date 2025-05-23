@@ -150,7 +150,7 @@ const Step3 = component$(() => {
   );
 });
 
-export default component$(() => {
+export const CStepperExample =  component$(() => {
   // Initialize steps with their components
   const initialSteps: CStepMeta[] = [
     {

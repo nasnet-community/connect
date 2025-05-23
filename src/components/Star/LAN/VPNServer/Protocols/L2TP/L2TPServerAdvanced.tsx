@@ -2,12 +2,7 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
-import { ServerCard } from "~/components/Core/Card";
-import {   ServerFormField,  PasswordField,  CheckboxGroup,  ServerButton,  Select,  SectionTitle} from "~/components/Core/Form/ServerField";
-import { Input } from "~/components/Core/Input";
-
-// Create a serialized version of the server icon
-const ServerIcon = $(HiServerOutline);
+import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, ServerButton, Select, SectionTitle, Input } from "../../../VPNServer/UI";
 
 /**
  * L2TP Server Configuration Component
@@ -92,7 +87,7 @@ export const L2TPServerAdvanced = component$(() => {
   return (
     <ServerCard
       title={$localize`L2TP Server`}
-      icon={ServerIcon}
+      icon={<HiServerOutline class="h-5 w-5" />}
       enabled={isEnabled.value}
       onToggle$={handleToggle}
     >

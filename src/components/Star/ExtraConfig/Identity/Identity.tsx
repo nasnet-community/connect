@@ -8,8 +8,8 @@ import { StarContext } from "../../StarContext/StarContext";
 
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
-  const routerIdentity = useSignal(ctx.state.ExtraConfig.RouterIdentity);
-  const romonEnabled = useSignal(ctx.state.ExtraConfig.isRomon);
+  const routerIdentity = useSignal(ctx.state.ExtraConfig.RouterIdentityRomon?.RouterIdentity);
+  const romonEnabled = useSignal(ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon);
   const isValid = useSignal(false);
 
   const handleIdentityChange = $((value: string) => {
@@ -19,8 +19,10 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
 
   const handleSubmit = $(() => {
     ctx.updateExtraConfig$({
-      RouterIdentity: routerIdentity.value,
-      isRomon: romonEnabled.value,
+      RouterIdentityRomon: {
+        RouterIdentity: routerIdentity.value as string,
+        isRomon: romonEnabled.value,
+      },
     });
 
     onComplete$();

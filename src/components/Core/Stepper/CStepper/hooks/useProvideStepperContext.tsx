@@ -23,6 +23,10 @@ export function useProvideStepperContext<T = any>({
   onStepComplete$,
   persistState = false,
   previousSteps,
+  addStep$,
+  removeStep$,
+  swapSteps$,
+  allowSkipSteps = false,
 }: {
   contextId: ContextId<CStepperContext<T>>;
   steps: Signal<CStepMeta[]>;
@@ -34,6 +38,10 @@ export function useProvideStepperContext<T = any>({
   onStepComplete$?: QRL<(id: number) => void>;
   persistState?: boolean;
   previousSteps?: Signal<number[]>;
+  addStep$: QRL<(newStep: CStepMeta, position?: number) => number>;
+  removeStep$: QRL<(stepId: number) => boolean>;
+  swapSteps$: QRL<(sourceIndex: number, targetIndex: number) => boolean>;
+  allowSkipSteps?: boolean;
 }) {
   // For tracking validation status
   const validationInProgress = useSignal(false);
@@ -283,7 +291,11 @@ export function useProvideStepperContext<T = any>({
     setStepErrors$,
     restoreSavedState$,
     clearSavedState$,
-    data
+    data,
+    addStep$,
+    removeStep$,
+    swapSteps$,
+    allowSkipSteps,
   };
 
   // Provide the context

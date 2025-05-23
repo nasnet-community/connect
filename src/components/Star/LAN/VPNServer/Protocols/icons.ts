@@ -1,4 +1,8 @@
-import { $ } from "@builder.io/qwik";
+/**
+ * This file exports icons for use in VPN server components
+ * We're exporting the icon components directly instead of serialized QRLs
+ * to avoid issues with JSX rendering
+ */
 import { 
   HiServerOutline, 
   HiLockClosedOutline, 
@@ -18,22 +22,24 @@ import {
   HiWifiOutline
 } from "@qwikest/icons/heroicons";
 
-// Create serialized versions of icons for use in VPN server components
-export const ServerIcon = $(HiServerOutline);
-export const LockIcon = $(HiLockClosedOutline);
-export const DocumentIcon = $(HiDocumentOutline);
-export const PlusIcon = $(HiPlusCircleOutline);
-export const UsersIcon = $(HiUserGroupOutline);
-export const TrashIcon = $(HiTrashOutline);
-export const CloneIcon = $(HiDocumentDuplicateOutline);
-export const CheckCircleIcon = $(HiCheckCircleOutline);
-export const XCircleIcon = $(HiXCircleOutline);
-export const InfoIcon = $(HiInformationCircleOutline);
-
-// VPN Protocol specific icons
-export const WireguardIcon = $(HiShieldCheckOutline);
-export const OpenVPNIcon = $(HiGlobeAltOutline);
-export const PPTPIcon = $(HiLockOpenOutline);
-export const L2TPIcon = $(HiKeyOutline);
-export const SSTPIcon = $(HiCubeOutline);
-export const IKEv2Icon = $(HiWifiOutline);
+// Export icons directly - use with <ServerIcon class="h-5 w-5" /> pattern
+export {
+  HiServerOutline as ServerIcon,
+  HiLockClosedOutline as LockIcon,
+  HiDocumentOutline as DocumentIcon,
+  HiPlusCircleOutline as PlusIcon,
+  HiUserGroupOutline as UsersIcon,
+  HiTrashOutline as TrashIcon,
+  HiDocumentDuplicateOutline as CloneIcon,
+  HiCheckCircleOutline as CheckCircleIcon,
+  HiXCircleOutline as XCircleIcon,
+  HiInformationCircleOutline as InfoIcon,
+  
+  // VPN Protocol specific icons
+  HiShieldCheckOutline as WireguardIcon,
+  HiGlobeAltOutline as OpenVPNIcon,
+  HiLockOpenOutline as PPTPIcon,
+  HiKeyOutline as L2TPIcon,
+  HiCubeOutline as SSTPIcon,
+  HiWifiOutline as IKEv2Icon
+};

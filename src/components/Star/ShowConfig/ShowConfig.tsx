@@ -7,7 +7,7 @@ import { Code } from "./Code";
 import { ScriptGuide } from "./ScriptGuide";
 // import { TutorialCard } from './TutorialCard';
 import { useConfigGenerator } from "./useShow";
-// import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
+import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
 
 export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
@@ -44,7 +44,7 @@ export const ShowConfig = component$<StepProps>(() => {
         />
       </div>
 
-      {/* <MikrotikApplyConfig /> */}
+      <MikrotikApplyConfig />
       
       <ScriptGuide />
 

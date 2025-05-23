@@ -83,7 +83,7 @@ export const L2TPConfig = component$<L2TPConfigProps>(({ onIsValidChange$, isSav
           />
           
           <FormField
-            type="password"
+            type="text"
             label={$localize`Password`}
             required
             value={password.value}
@@ -115,7 +115,7 @@ export const L2TPConfig = component$<L2TPConfigProps>(({ onIsValidChange$, isSav
           {useIPsec.value && (
             <div class="mt-3 ml-7">
               <FormField
-                type="password"
+                type="text"
                 label={$localize`IPsec Pre-shared Secret`}
                 required
                 value={ipsecSecret.value}

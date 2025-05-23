@@ -2,12 +2,13 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
-import { ServerCard } from "~/components/Core/Card";
-import {   ServerFormField,  CheckboxGroup,  SectionTitle} from "~/components/Core/Form/ServerField";
-import { Input } from "~/components/Core/Input";
-
-// Create a serialized version of the server icon
-const ServerIcon = $(HiServerOutline);
+import { 
+  ServerCard, 
+  ServerFormField, 
+  CheckboxGroup, 
+  SectionTitle,
+  Input
+} from "../../../VPNServer/UI";
 
 /**
  * PPTP Server Configuration Component
@@ -75,7 +76,7 @@ export const PPTPServerAdvanced = component$(() => {
   return (
     <ServerCard
       title={$localize`PPTP Server`}
-      icon={ServerIcon}
+      icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Authentication Methods */}

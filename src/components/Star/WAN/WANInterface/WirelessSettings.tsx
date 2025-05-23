@@ -42,7 +42,7 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
           </label>
           <input
             id="password"
-            type="password"
+            type="text"
             value={password}
             onChange$={(_, el) => onPasswordChange(el.value)}
             class="text-text-default focus:ring-primary-500 mt-1 w-full rounded-lg border 

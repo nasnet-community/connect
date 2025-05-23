@@ -16,7 +16,7 @@ import type { Ethernet } from "./CommonType";
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
-      Mode: "" as Mode,
+      Mode: "easy" as Mode,
       Firmware:"" as FrimwareType,
       RouterMode: "" as RouterModeType,
       DometicLink: null as unknown as boolean,

@@ -105,7 +105,7 @@ export const GREProtocol = component$(() => {
                       {$localize`IPsec Secret`}
                     </label>
                     <input
-                      type="password"
+                      type="text"
                       value={tunnel.ipsecSecret || ''}
                       onChange$={(e) => updateTunnelField$(index, 'ipsecSecret', (e.target as HTMLInputElement).value)}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"

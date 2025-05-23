@@ -1,15 +1,21 @@
-import { component$, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useVisibleTask$, $, useTask$, useSignal } from "@builder.io/qwik";
 import type { CStepperProps } from "./types";
 import { useCStepper } from "./hooks/useCStepper";
 import { CStepperContextId } from "./hooks/useStepperContext";
 import { useProvideStepperContext } from "./hooks/useProvideStepperContext";
 import { CStepperErrors } from "./components/CStepperErrors";
 import { CStepperContent } from "./components/CStepperContent";
+import { CStepperProgress } from "./components/CStepperProgress";
+import { CStepperNavigation } from "./components/CStepperNavigation";
+import { CStepperManagement } from "./components/CStepperManagement";
 
 /**
  * Content-focused stepper component with top navigation
  */
 export const CStepper = component$((props: CStepperProps) => {
+  // Initialize edit mode signal
+  const isEditMode = useSignal(props.isEditMode || false);
+  
   // Get all stepper functionality from useCStepper hook
   const { 
     activeStep, 
@@ -21,7 +27,9 @@ export const CStepper = component$((props: CStepperProps) => {
     errorMessage,
     isLoading,
     handleStepError,
-    handleNextClick
+    addStep$,
+    removeStep$,
+    swapSteps$
   } = useCStepper(props);
 
   // Use the useProvideStepperContext hook to create and provide the context
@@ -34,7 +42,25 @@ export const CStepper = component$((props: CStepperProps) => {
     handlePrev$,
     data: props.contextValue || {},
     onStepComplete$: props.onStepComplete$,
-    persistState: props.persistState
+    persistState: props.persistState,
+    addStep$,
+    removeStep$,
+    swapSteps$,
+    allowSkipSteps: props.allowSkipSteps
+  });
+
+  // Process extraSteps if provided
+  useTask$(({ track }) => {
+    track(() => props.extraSteps);
+    
+    // Add extra steps if provided
+    if (props.extraSteps && props.extraSteps.length > 0) {
+      // We have to use for loop because we can't await Promise inside map
+      // Process one by one to ensure correct ordering
+      for (const step of props.extraSteps) {
+        addStep$(step);
+      }
+    }
   });
 
   // Setup focus management for accessibility
@@ -80,94 +106,30 @@ export const CStepper = component$((props: CStepperProps) => {
   const currentStep = steps.value[activeStep.value];
   const currentStepHasErrors = Boolean(currentStep.validationErrors && currentStep.validationErrors.length > 0);
   const isOptional = Boolean(currentStep.isOptional);
+  const isStepSkippable = Boolean(currentStep.skippable);
 
   return (
     <div class="w-full" role="application" aria-label="Multi-step form">
+      {/* Step Management UI (only visible in edit mode) */}
+      <CStepperManagement 
+        steps={steps.value}
+        activeStep={activeStep.value}
+        addStep$={addStep$}
+        removeStep$={removeStep$}
+        swapSteps$={swapSteps$}
+        isEditMode={isEditMode.value}
+        dynamicStepComponent={props.dynamicStepComponent}
+      />
+      
       {/* Step Progress Indicator */}
-      <div class="pb-4">
-        <div 
-          class="flex items-center justify-between" 
-          role="tablist" 
-          aria-label="Progress steps"
-        >
-          {steps.value.map((step, index) => (
-            <div 
-              key={step.id}
-              class={`flex-1 cursor-pointer ${
-                step.isDisabled ? 'opacity-50 cursor-not-allowed' :
-                activeStep.value >= index 
-                  ? 'text-primary-600 dark:text-primary-400' 
-                  : 'text-gray-500'
-              }`}
-              onClick$={!step.isDisabled ? $((/* event here to force scope capture */) => setStep$(index)) : undefined}
-              role="tab"
-              id={`step-tab-${index}`}
-              aria-selected={activeStep.value === index}
-              aria-controls={`cstepper-step-${index}`}
-              aria-disabled={step.isDisabled}
-              tabIndex={activeStep.value === index ? 0 : -1}
-              onKeyDown$={$((e) => {
-                if (!step.isDisabled && (e.key === 'Enter' || e.key === ' ')) {
-                  setStep$(index);
-                  e.preventDefault();
-                }
-              })}
-            >
-              <div class="flex items-center">
-                <div 
-                  class={`flex h-8 w-8 items-center justify-center rounded-full ${
-                    step.validationErrors && step.validationErrors.length > 0
-                      ? 'bg-red-100 dark:bg-red-900/30' 
-                      : activeStep.value >= index 
-                        ? 'bg-primary-100 dark:bg-primary-900/30' 
-                        : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                  aria-hidden="true"
-                >
-                  {step.validationErrors && step.validationErrors.length > 0 ? (
-                    <span class="text-sm font-medium text-red-600 dark:text-red-400">!</span>
-                  ) : (
-                    <span class={`text-sm font-medium ${
-                      activeStep.value >= index 
-                        ? 'text-primary-600 dark:text-primary-400' 
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}>{index + 1}</span>
-                  )}
-                </div>
-                <div class="ml-2">
-                  <span class="text-sm font-medium">{step.title}</span>
-                  {step.isOptional && (
-                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">(Optional)</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Progress lines between steps */}
-        <div 
-          class="mt-4 grid" 
-          style={{ 
-            gridTemplateColumns: `repeat(${steps.value.length - 1}, 1fr)`, 
-            gap: '8px' 
-          }}
-          role="presentation"
-        >
-          {Array.from({ length: steps.value.length - 1 }).map((_, idx) => (
-            <div key={idx} class="flex-grow">
-              <div 
-                class={`h-1 w-full rounded ${
-                  activeStep.value > idx 
-                    ? 'bg-primary-500 dark:bg-primary-400' 
-                    : 'bg-gray-200 dark:bg-gray-700'
-                }`}
-                aria-hidden="true"
-              ></div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <CStepperProgress 
+        steps={steps.value}
+        activeStep={activeStep.value}
+        onStepClick$={setStep$}
+        customIcons={props.customIcons}
+        useNumbers={props.useNumbers}
+        allowSkipSteps={props.allowSkipSteps}
+      />
       
       {/* Step Content */}
       <div class="space-y-6">
@@ -182,42 +144,19 @@ export const CStepper = component$((props: CStepperProps) => {
         />
         
         {/* Navigation Buttons */}
-        <div class="flex justify-between">
-          {activeStep.value > 0 ? (
-            <button
-              onClick$={handlePrev$}
-              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 
-                    text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 
-                    focus:ring-gray-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 
-                    dark:text-gray-200 dark:hover:bg-gray-600"
-              aria-label="Go to previous step"
-            >
-              <span>{$localize`Back`}</span>
-            </button>
-          ) : <div></div>}
-          
-          <button
-            onClick$={handleNextClick}
-            disabled={currentStepHasErrors || (!currentStepIsComplete && !isOptional)}
-            class={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-                  ${currentStepHasErrors
-                      ? 'bg-red-300 text-white cursor-not-allowed dark:bg-red-800/50'
-                      : currentStepIsComplete || isOptional
-                        ? 'bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'}`}
-            aria-label={isLastStep ? "Complete all steps" : "Go to next step"}
-            aria-disabled={currentStepHasErrors || (!currentStepIsComplete && !isOptional)}
-          >
-            <span>
-              {isLoading.value 
-                ? $localize`Processing...`
-                : isLastStep 
-                  ? $localize`Save & Complete` 
-                  : $localize`Next`}
-            </span>
-          </button>
-        </div>
+        <CStepperNavigation
+          activeStep={activeStep.value}
+          currentStepIsComplete={currentStepIsComplete}
+          currentStepHasErrors={currentStepHasErrors}
+          isLoading={isLoading.value}
+          isLastStep={isLastStep}
+          isOptional={isOptional}
+          allowSkipSteps={props.allowSkipSteps || false}
+          isStepSkippable={isStepSkippable}
+          onPrevious$={handlePrev$}
+          onNext$={handleNext$}
+          onComplete$={props.onComplete$ || $(() => {})}
+        />
         
         {/* Accessible progress indicator */}
         <div class="sr-only" aria-live="polite">

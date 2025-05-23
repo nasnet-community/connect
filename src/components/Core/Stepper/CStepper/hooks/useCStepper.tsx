@@ -83,7 +83,9 @@ export function useCStepper(props: CStepperProps) {
   const handleNext$ = $(() => {
     if (
       activeStep.value < steps.value.length - 1 &&
-      steps.value[activeStep.value].isComplete
+      (steps.value[activeStep.value].isComplete || 
+       props.allowSkipSteps || 
+       steps.value[activeStep.value].skippable)
     ) {
       // Store previous step for back navigation tracking
       previousSteps.value = [...previousSteps.value, activeStep.value];
@@ -101,7 +103,9 @@ export function useCStepper(props: CStepperProps) {
       props.onStepChange$?.(steps.value[activeStep.value].id);
     } else if (
       activeStep.value === steps.value.length - 1 &&
-      steps.value[activeStep.value].isComplete
+      (steps.value[activeStep.value].isComplete || 
+       props.allowSkipSteps || 
+       steps.value[activeStep.value].skippable)
     ) {
       props.onComplete$?.();
     }
@@ -145,10 +149,15 @@ export function useCStepper(props: CStepperProps) {
     const canNavigateToStep = 
       // Allow navigation to any previous step
       step <= activeStep.value || 
-      // Allow navigation to next step if current is complete
-      (step === activeStep.value + 1 && steps.value[activeStep.value].isComplete) ||
+      // Allow navigation to next step if current is complete or step is skippable
+      (step === activeStep.value + 1 && (
+        steps.value[activeStep.value].isComplete || 
+        props.allowSkipSteps || 
+        steps.value[activeStep.value].skippable)) ||
       // Allow navigation to any step if non-linear navigation is enabled
-      props.allowNonLinearNavigation;
+      props.allowNonLinearNavigation ||
+      // Allow navigation to any step if allowSkipSteps is enabled
+      props.allowSkipSteps;
     
     if (step >= 0 && step < steps.value.length && canNavigateToStep) {
       // Store previous step if advancing forward
@@ -238,6 +247,35 @@ export function useCStepper(props: CStepperProps) {
     return false;
   });
 
+  // Swap steps positions
+  const swapSteps$ = $((sourceIndex: number, targetIndex: number) => {
+    if (
+      sourceIndex >= 0 && 
+      sourceIndex < steps.value.length && 
+      targetIndex >= 0 && 
+      targetIndex < steps.value.length &&
+      sourceIndex !== targetIndex
+    ) {
+      const newSteps = [...steps.value];
+      
+      // Swap the steps
+      [newSteps[sourceIndex], newSteps[targetIndex]] = 
+      [newSteps[targetIndex], newSteps[sourceIndex]];
+      
+      // Update active step if it was one of the swapped steps
+      if (activeStep.value === sourceIndex) {
+        activeStep.value = targetIndex;
+      } else if (activeStep.value === targetIndex) {
+        activeStep.value = sourceIndex;
+      }
+      
+      steps.value = newSteps;
+      return true;
+    }
+    
+    return false;
+  });
+
   // Add function to easily complete a step
   const completeStep$ = $((stepId?: number) => {
     // If no stepId is provided, complete the current active step
@@ -285,5 +323,6 @@ export function useCStepper(props: CStepperProps) {
     addStep$,
     removeStep$,
     handleStepError,
+    swapSteps$,
   };
 } 

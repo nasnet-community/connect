@@ -1,4 +1,4 @@
-import { component$, useStore, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useStore, $, useVisibleTask$, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServer";
 import type { VPNType } from "../../../StarContext/CommonType";
@@ -17,12 +17,12 @@ interface ConfigStepProps {
 export const ConfigStep = component$<ConfigStepProps>(({ enabledProtocols }) => {
   const context = useStepperContext(VPNServerContextId);
   const state = useStore({
-    processingComplete: false,
     initialProcessingDone: false,
-    addedStepIds: [] as number[],
     configStepId: -1,
-    isProcessing: false, // Add a flag to prevent multiple concurrent processing
-    lastEnabledCount: 0, // Track the last enabled count to detect real changes
+    isProcessing: false,
+    stepsByProtocol: new Map<string, number>(),
+    processedProtocols: new Set<string>(),
+    lastProtocolState: JSON.stringify({}),
   });
 
   // Create protocol component map for easier lookup using exact VPNType enum values
@@ -35,146 +35,208 @@ export const ConfigStep = component$<ConfigStepProps>(({ enabledProtocols }) => 
     "IKeV2": <IKEv2ServerWrapper />,
   };
 
-  // Function to add a protocol configuration step
-  const addProtocolStep = $(async (protocol: VPNType, position?: number) => {
+  // Check if a protocol already has an existing step in the stepper
+  const findExistingStepByProtocol = $((protocol: VPNType) => {
+    const protocolInfo = VPN_PROTOCOLS.find(p => p.id === protocol);
+    if (!protocolInfo) return -1;
+    
+    const stepIndex = context.steps.value.findIndex(step => 
+      step.title === `Configure ${protocolInfo.name}`
+    );
+    
+    return stepIndex >= 0 ? context.steps.value[stepIndex].id : -1;
+  });
+
+  // Function to add a single protocol step if it doesn't already exist
+  const addProtocolStep = $(async (protocol: VPNType) => {
+    // Skip if this protocol already has a step in our tracking map
+    if (state.stepsByProtocol.has(protocol)) {
+      return state.stepsByProtocol.get(protocol) || -1;
+    }
+    
+    // Check if a step for this protocol already exists in the stepper
+    const existingStepId = await findExistingStepByProtocol(protocol);
+    if (existingStepId >= 0) {
+      // Found an existing step, track it in our map
+      state.stepsByProtocol.set(protocol, existingStepId);
+      state.processedProtocols.add(protocol);
+      return existingStepId;
+    }
+
     const protocolInfo = VPN_PROTOCOLS.find(p => p.id === protocol);
     if (!protocolInfo) return -1;
     
     const component = protocolComponents[protocol as keyof typeof protocolComponents];
     if (!component) return -1;
+
+    // Find the config step position
+    const configStepIndex = context.steps.value.findIndex(step => 
+      step.title.includes("Configuration")
+    );
+
+    if (configStepIndex < 0) return -1;
+    
+    // Position to insert (after any existing protocol steps but before the next main step)
+    let insertPosition = configStepIndex + 1;
+    
+    // Adjust position to be after any existing protocol steps
+    while (
+      insertPosition < context.steps.value.length && 
+      context.steps.value[insertPosition]?.title.startsWith("Configure ")
+    ) {
+      insertPosition++;
+    }
     
     // Create a step for this protocol
     const stepId = await context.addStep$({
-      id: Math.random(), // Temporary ID that will be replaced by addStep$
+      id: Date.now(), // Unique ID based on timestamp
       title: `Configure ${protocolInfo.name}`,
       description: `Configure settings for the ${protocolInfo.name} VPN protocol`,
       component,
       isComplete: true // Mark as complete by default since configuration is optional
-    }, position);
+    }, insertPosition);
+
+    // Track this step ID by protocol
+    state.stepsByProtocol.set(protocol, stepId);
+    state.processedProtocols.add(protocol);
     
     return stepId;
   });
 
-  // Process enabled protocols
+  // Remove a protocol step
+  const removeProtocolStep = $(async (protocol: VPNType) => {
+    const stepId = state.stepsByProtocol.get(protocol);
+    if (stepId !== undefined) {
+      await context.removeStep$(stepId);
+      state.stepsByProtocol.delete(protocol);
+      return true;
+    }
+    return false;
+  });
+
+  // Process all enabled protocols
   const processEnabledProtocols = $(async () => {
-    // Prevent multiple concurrent processing
-    if (state.isProcessing) return;
+    // Skip if already processing or if prevented by the context flag
+    if (state.isProcessing || context.data.preventStepRecalculation) {
+      return;
+    }
+
     state.isProcessing = true;
     
     try {
-      // First, remove any previously added steps
-      for (const stepId of state.addedStepIds) {
-        await context.removeStep$(stepId);
+      // First, check for any existing protocol steps in the stepper that we don't know about
+      // This happens when navigating back to this step after completing it once
+      for (const protocol of Object.keys(enabledProtocols) as VPNType[]) {
+        if (enabledProtocols[protocol] && !state.stepsByProtocol.has(protocol)) {
+          const existingStepId = await findExistingStepByProtocol(protocol);
+          if (existingStepId >= 0) {
+            state.stepsByProtocol.set(protocol, existingStepId);
+            state.processedProtocols.add(protocol);
+          }
+        }
       }
-      state.addedStepIds = [];
-      
-      // Get the config step position
-      const configStepIndex = context.steps.value.findIndex(step => 
-        step.title.includes("Protocol Configuration")
-      );
-      
-      if (configStepIndex < 0) {
-        state.isProcessing = false;
-        return;
-      }
-      
-      // Store config step id
-      state.configStepId = configStepIndex;
-      
-      // Get enabled protocols
-      const enabledProtocolEntries = Object.entries(enabledProtocols)
+    
+      // Get current enabled protocols
+      const currentEnabledProtocols = Object.entries(enabledProtocols)
         .filter(([, enabled]) => enabled)
         .map(([protocol]) => protocol as VPNType);
       
-      // Update last enabled count
-      state.lastEnabledCount = enabledProtocolEntries.length;
+      // Get current protocols that have steps but should not (no longer enabled)
+      const protocolsToRemove = Array.from(state.stepsByProtocol.keys())
+        .filter(protocol => !currentEnabledProtocols.includes(protocol as VPNType));
       
-      // If no protocols are enabled, just proceed to the next step
-      if (enabledProtocolEntries.length === 0) {
-        state.processingComplete = true;
-        await context.nextStep$();
-        state.isProcessing = false;
-        return;
+      // Remove steps for protocols that are no longer enabled
+      for (const protocol of protocolsToRemove) {
+        await removeProtocolStep(protocol as VPNType);
       }
       
-      // Position to insert the first step (at current position)
-      let position = configStepIndex;
+      // Add steps for newly enabled protocols
+      for (const protocol of currentEnabledProtocols) {
+        await addProtocolStep(protocol);
+      }
       
-      // Add steps for each enabled protocol
-      for (const protocol of enabledProtocolEntries) {
-        const stepId = await addProtocolStep(protocol, position);
-        if (stepId >= 0) {
-          state.addedStepIds.push(stepId);
-          position++; // Increment position for next step
+      // Store current config for comparison next time
+      state.lastProtocolState = JSON.stringify(enabledProtocols);
+      
+      // If we have no enabled protocols, mark config step as complete and move on
+      if (currentEnabledProtocols.length === 0) {
+        // Directly update the step state in the context
+        if (context.data.stepState) {
+          context.data.stepState.config = true;
+        }
+        
+        // Get the current step and mark it as complete
+        const configStep = context.steps.value.find(step => step.title.includes("Configuration"));
+        if (configStep) {
+          await context.updateStepCompletion$(configStep.id, true);
+        }
+        
+        // If we're on the config step, proceed to next step
+        if (context.activeStep.value === state.configStepId) {
+          await context.nextStep$();
         }
       }
-      
-      // Mark the process as complete
-      state.processingComplete = true;
-      
-      // Remove the original config step - we'll remove it after adding the protocol steps
-      // to avoid shifting indexes during the addition process
-      if (state.configStepId >= 0) {
-        await context.removeStep$(state.configStepId);
-      }
     } finally {
-      // Always reset the processing flag when done
       state.isProcessing = false;
     }
   });
   
-  // Process enabled protocols ONCE when the component is first rendered
+  // Update configStepId when steps change
+  useTask$(({ track }) => {
+    const steps = track(() => context.steps.value);
+    const configStepIndex = steps.findIndex(step => step.title.includes("Configuration"));
+    
+    if (configStepIndex >= 0) {
+      state.configStepId = configStepIndex;
+    }
+  });
+  
+  // Watch for active step changes and process when reaching the config step
+  useTask$(({ track }) => {
+    // Track active step changes
+    const activeStepIndex = track(() => context.activeStep.value);
+    
+    // If now on config step, process protocols
+    if (activeStepIndex === state.configStepId) {
+      // Always process when moving to the config step
+      void processEnabledProtocols();
+      state.initialProcessingDone = true;
+    }
+  });
+  
+  // React to protocol changes ONLY when coming from protocols step
+  useTask$(({ track }) => {
+    // Track current protocol state
+    const currentProtocolState = track(() => JSON.stringify(enabledProtocols));
+    
+    // Skip if preventStepRecalculation is set
+    if (context.data.preventStepRecalculation) {
+      return;
+    }
+    
+    // Skip if no actual changes
+    if (currentProtocolState === state.lastProtocolState) {
+      return;
+    }
+    
+    // Process protocol changes if on step 0 (protocols step)
+    if (context.activeStep.value === 0) {
+      void processEnabledProtocols();
+    }
+  });
+
+  // Ensure initial processing happens
   useVisibleTask$(() => {
-    // Execute only once for initial setup
     if (!state.initialProcessingDone) {
       void processEnabledProtocols();
       state.initialProcessingDone = true;
     }
   });
 
-  // Only reprocess when enabledProtocols actually change
-  useVisibleTask$(({ track }) => {
-    // Track the enabledProtocols object
-    const enabledCount = Object.values(track(() => enabledProtocols))
-      .filter(Boolean).length;
-    
-    // Only reprocess if we've already done initial processing AND the count has changed
-    if (state.initialProcessingDone && enabledCount !== state.lastEnabledCount) {
-      void processEnabledProtocols();
-    }
-  });
-
-  // No need to render anything substantial since we're just
-  // manipulating the parent stepper's steps
+  // Minimal render
   return (
     <div class="py-2">
-      {Object.values(enabledProtocols).some(enabled => enabled) ? (
-        <div class="text-gray-600 dark:text-gray-400 text-center">
-          <p>
-            {$localize`Please continue to configure each VPN protocol in the next steps.`}
-          </p>
-          {state.processingComplete && (
-            <button 
-              onClick$={() => context.nextStep$()}
-              class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md"
-            >
-              {$localize`Continue to Protocol Configuration`}
-            </button>
-          )}
-        </div>
-      ) : (
-        <div class="p-4 text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg border border-yellow-300 dark:border-yellow-800">
-          <p>
-            {$localize`No VPN protocols selected. Please enable at least one protocol or continue to the next step.`}
-          </p>
-          <button 
-            onClick$={() => context.nextStep$()}
-            class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md"
-          >
-            {$localize`Skip Protocol Configuration`}
-          </button>
-        </div>
-      )}
+      {/* No visible UI needed as we're just managing steps */}
     </div>
   );
 }); 

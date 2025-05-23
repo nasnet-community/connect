@@ -2,17 +2,9 @@ import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
 import type { NetworkProtocol, LayerMode, TLSVersion } from "../../../../StarContext/CommonType";
 import type { OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/LANType";
 import { protocols, modes, authMethods, ciphers, tlsVersions } from "./constants";
-import { ServerCard } from "~/components/Core/Card";
-import { Input } from "~/components/Core/Input";
-import { 
-  ServerFormField, 
-  ServerButton,
-  TabNavigation,
-  Select as ServerSelect
-} from "~/components/Core/Form/ServerField";
+import { Card, FormField, Input, Button, TabNavigation, Select } from "../../UI";
 import { useOpenVPNServer } from "./useOpenVPNServer";
-import { ServerIcon } from "../icons";
-import { HiDocumentOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
+import { HiDocumentOutline, HiLockClosedOutline, HiServerOutline } from "@qwikest/icons/heroicons";
 
 export const OpenVPNServerAdvanced = component$(() => {
   const { openVpnState, updateOpenVPNServer$, certificateError, passphraseError } = useOpenVPNServer();
@@ -89,9 +81,9 @@ export const OpenVPNServerAdvanced = component$(() => {
   });
 
   return (
-    <ServerCard
+    <Card
       title={$localize`OpenVPN Server`}
-      icon={ServerIcon}
+      icon={<HiServerOutline class="h-5 w-5" />}
       enabled={isEnabled.value}
       onToggle$={handleToggle}
     >
@@ -99,24 +91,24 @@ export const OpenVPNServerAdvanced = component$(() => {
       <TabNavigation
         tabs={tabOptions}
         activeTab={activeTab.value}
-        onSelect$={(tabId) => (activeTab.value = tabId as 'basic' | 'network' | 'security')}
+        onSelect$={(tabId: string) => (activeTab.value = tabId as 'basic' | 'network' | 'security')}
       />
 
       {/* Basic Settings */}
       {activeTab.value === 'basic' && (
         <div class="space-y-4">
           {/* Profile Name */}
-          <ServerFormField label={$localize`Profile Name`}>
+          <FormField label={$localize`Profile Name`}>
             <Input
               type="text"
               value={formState.profile}
-              onChange$={(_, value) => (formState.profile = value)}
+              onChange$={(event: Event, value: string) => (formState.profile = value)}
               placeholder={$localize`Enter profile name`}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Certificate */}
-          <ServerFormField 
+          <FormField 
             label={$localize`Server Certificate`}
             errorMessage={certificateError.value}
           >
@@ -124,23 +116,23 @@ export const OpenVPNServerAdvanced = component$(() => {
               <Input
                 type="text"
                 value={formState.certificate}
-                onChange$={(_, value) => (formState.certificate = value)}
+                onChange$={(event: Event, value: string) => (formState.certificate = value)}
                 placeholder={$localize`Enter certificate name`}
                 validation={certificateError.value ? "invalid" : "default"}
               />
-              <ServerButton
+              <Button
                 onClick$={() => {}}
                 primary={false}
                 class="flex items-center gap-1"
               >
                 <HiDocumentOutline class="h-5 w-5" />
                 {$localize`Select`}
-              </ServerButton>
+              </Button>
             </div>
-          </ServerFormField>
+          </FormField>
 
           {/* Certificate Key Passphrase */}
-          <ServerFormField 
+          <FormField 
             label={$localize`Certificate Key Passphrase`}
             errorMessage={passphraseError.value}
           >
@@ -148,7 +140,7 @@ export const OpenVPNServerAdvanced = component$(() => {
               <Input
                 type={showPassphrase.value ? "text" : "password"}
                 value={formState.certificateKeyPassphrase}
-                onChange$={(_, value) => (formState.certificateKeyPassphrase = value)}
+                onChange$={(event: Event, value: string) => (formState.certificateKeyPassphrase = value)}
                 placeholder={$localize`Enter passphrase (at least 10 characters)`}
                 validation={passphraseError.value ? "invalid" : "default"}
                 hasSuffixSlot={true}
@@ -163,36 +155,36 @@ export const OpenVPNServerAdvanced = component$(() => {
                 </button>
               </Input>
             </div>
-          </ServerFormField>
+          </FormField>
 
           {/* Enabled Checkbox */}
-          <ServerFormField label={$localize`Enable this VPN server instance`}>
+          <FormField label={$localize`Enable this VPN server instance`}>
             <input
               type="checkbox"
               checked={formState.enabled}
               onChange$={() => (formState.enabled = !formState.enabled)}
               class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Protocol */}
-          <ServerFormField label={$localize`Protocol`}>
-            <ServerSelect
+          <FormField label={$localize`Protocol`}>
+            <Select
               options={protocols}
               value={formState.protocol}
-              onChange$={(value) => (formState.protocol = value as NetworkProtocol)}
+              onChange$={(value: string) => (formState.protocol = value as NetworkProtocol)}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Port */}
-          <ServerFormField label={$localize`Port`}>
+          <FormField label={$localize`Port`}>
             <Input
               type="number"
               value={formState.port.toString()}
-              onChange$={(_, value) => (formState.port = parseInt(value, 10))}
+              onChange$={(event: Event, value: string) => (formState.port = parseInt(value, 10))}
               placeholder="1-65535"
             />
-          </ServerFormField>
+          </FormField>
         </div>
       )}
 
@@ -200,43 +192,43 @@ export const OpenVPNServerAdvanced = component$(() => {
       {activeTab.value === 'network' && (
         <div class="space-y-4">
           {/* Mode */}
-          <ServerFormField label={$localize`Mode`}>
-            <ServerSelect
+          <FormField label={$localize`Mode`}>
+            <Select
               options={modes}
               value={formState.mode}
-              onChange$={(value) => (formState.mode = value as LayerMode)}
+              onChange$={(value: string) => (formState.mode = value as LayerMode)}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Address Pool */}
-          <ServerFormField label={$localize`Address Pool`}>
+          <FormField label={$localize`Address Pool`}>
             <Input
               type="text"
               value={formState.addressPool}
-              onChange$={(_, value) => (formState.addressPool = value)}
+              onChange$={(event: Event, value: string) => (formState.addressPool = value)}
               placeholder={$localize`e.g. 192.168.78.0/24`}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Netmask */}
-          <ServerFormField label={$localize`Netmask (subnet bits)`}>
+          <FormField label={$localize`Netmask (subnet bits)`}>
             <Input
               type="number"
               value={formState.netmask.toString()}
-              onChange$={(_, value) => (formState.netmask = parseInt(value, 10))}
+              onChange$={(event: Event, value: string) => (formState.netmask = parseInt(value, 10))}
               placeholder="8-30"
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Max Sessions */}
-          <ServerFormField label={$localize`Maximum Sessions`}>
+          <FormField label={$localize`Maximum Sessions`}>
             <Input
               type="number"
               value={formState.maxSessions.toString()}
-              onChange$={(_, value) => (formState.maxSessions = parseInt(value, 10))}
+              onChange$={(event: Event, value: string) => (formState.maxSessions = parseInt(value, 10))}
               placeholder="1-500"
             />
-          </ServerFormField>
+          </FormField>
         </div>
       )}
 
@@ -244,52 +236,52 @@ export const OpenVPNServerAdvanced = component$(() => {
       {activeTab.value === 'security' && (
         <div class="space-y-4">
           {/* Authentication Method */}
-          <ServerFormField label={$localize`Authentication Method`}>
-            <ServerSelect
+          <FormField label={$localize`Authentication Method`}>
+            <Select
               options={authMethods}
               value={formState.auth}
-              onChange$={(value) => (formState.auth = value as OvpnAuthMethod)}
+              onChange$={(value: string) => (formState.auth = value as OvpnAuthMethod)}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Cipher */}
-          <ServerFormField label={$localize`Cipher`}>
-            <ServerSelect
+          <FormField label={$localize`Cipher`}>
+            <Select
               options={ciphers}
               value={formState.cipher.toString()}
-              onChange$={(value) => (formState.cipher = value as OvpnCipher)}
+              onChange$={(value: string) => (formState.cipher = value as OvpnCipher)}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* TLS Version */}
-          <ServerFormField label={$localize`TLS Version`}>
-            <ServerSelect
+          <FormField label={$localize`TLS Version`}>
+            <Select
               options={tlsVersions}
               value={formState.tlsVersion}
-              onChange$={(value) => (formState.tlsVersion = value as TLSVersion)}
+              onChange$={(value: string) => (formState.tlsVersion = value as TLSVersion)}
             />
-          </ServerFormField>
+          </FormField>
 
           {/* Require Client Certificate */}
-          <ServerFormField label={$localize`Require Client Certificate`}>
+          <FormField label={$localize`Require Client Certificate`}>
             <input
               type="checkbox"
               checked={formState.requireClientCertificate}
               onChange$={() => (formState.requireClientCertificate = !formState.requireClientCertificate)}
               class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
             />
-          </ServerFormField>
+          </FormField>
         </div>
       )}
 
       {/* Save Button */}
-      <ServerButton
+      <Button
         onClick$={applyChanges}
         class="mt-6"
         disabled={!!certificateError.value || !!passphraseError.value}
       >
         {$localize`Apply Settings`}
-      </ServerButton>
-    </ServerCard>
+      </Button>
+    </Card>
   );
 }); 

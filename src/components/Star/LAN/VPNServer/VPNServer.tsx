@@ -3,12 +3,30 @@ import type { StepProps } from "~/types/step";
 import { useVPNServer } from "./useVPNServer";
 import { VPNServerHeader } from "./VPNServerHeader";
 import { ActionFooter } from "./ActionFooter";
-import { CStepper, type CStepItem } from "~/components/Core/Stepper/CStepper";
+import { CStepper, type CStepMeta, createStepperContext } from "~/components/Core/Stepper/CStepper";
 import { ProtocolsStep } from "./steps/ProtocolsStep";
 import { ConfigStep } from "./steps/ConfigStep";
 import { UsersStep } from "./steps/UsersStep";
 import type { PropFunction } from "@builder.io/qwik";
 import type { VPNType } from "../../StarContext/CommonType";
+import type { Credentials } from "../../StarContext/LANType";
+
+// Create and export a context for VPN Server settings
+export interface VPNServerContextData {
+  enabledProtocols: Record<VPNType, boolean>;
+  expandedSections: Record<string, boolean>;
+  users: Credentials[];
+  isValid: { value: boolean };
+  stepState: {
+    protocols: boolean;
+    config: boolean;
+    users: boolean;
+  };
+  preventStepRecalculation?: boolean;
+  savedStepIndex?: number;
+}
+
+export const VPNServerContextId = createStepperContext<VPNServerContextData>("vpn-server");
 
 export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
   const {
@@ -38,19 +56,6 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
     users: false,
   });
   
-  // Define step completion handlers
-  const completeProtocols$ = $(() => {
-    stepState.protocols = true;
-  });
-  
-  const completeConfig$ = $(() => {
-    stepState.config = true;
-  });
-  
-  const completeUsers$ = $(() => {
-    stepState.users = true;
-  });
-  
   // Define serializable component functions with $()
   const ProtocolsStepWrapper$ = $((props: StepProps) => (
     <ProtocolsStep
@@ -59,8 +64,6 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
       expandedSections={expandedSections}
       toggleSection$={toggleSection$}
       toggleProtocol$={toggleProtocol$}
-      onComplete$={completeProtocols$}
-      isComplete={stepState.protocols}
     />
   ));
   
@@ -68,8 +71,6 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
     <ConfigStep
       {...props}
       enabledProtocols={enabledProtocols}
-      onComplete$={completeConfig$}
-      isComplete={stepState.config}
     />
   ));
   
@@ -83,13 +84,11 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
       handlePasswordChange={handlePasswordChange}
       handleProtocolToggle={handleProtocolToggle}
       isValid={isValid}
-      onComplete$={completeUsers$}
-      isComplete={stepState.users}
     />
   ));
   
   // Create steps for stepper
-  const steps = useComputed$<CStepItem[]>(() => [
+  const steps = useComputed$<CStepMeta[]>(() => [
     {
       id: 0,
       title: $localize`Protocols`,
@@ -118,6 +117,17 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
     saveSettings$(onComplete$);
   });
 
+  // Create the context data object with only serializable properties
+  const contextData: VPNServerContextData = {
+    enabledProtocols,
+    expandedSections,
+    users,
+    isValid,
+    stepState,
+    preventStepRecalculation: false,
+    savedStepIndex: 0
+  };
+
   return (
     <div class="mx-auto w-full max-w-5xl p-4">
       <div class="space-y-8">
@@ -128,6 +138,9 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
           <CStepper
             steps={steps.value}
             onComplete$={handleComplete$}
+            allowSkipSteps={true}
+            contextId={VPNServerContextId}
+            contextValue={contextData}
           />
         ) : (
           /* If VPN server is disabled, show simplified view with save button */

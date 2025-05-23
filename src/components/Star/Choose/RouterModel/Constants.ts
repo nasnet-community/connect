@@ -35,7 +35,7 @@ export const routers: RouterData[] = [
     isWireless: true,
     interfaces: {
       ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wlan1", "wlan2"]
+      wireless: ["wifi5", "wifi2.4"]
     }
   },
   {
@@ -59,7 +59,7 @@ export const routers: RouterData[] = [
     isWireless: true,
     interfaces: {
       ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wlan1", "wlan2"]
+      wireless: ["wifi5", "wifi2.4"]
     }
   },
   {

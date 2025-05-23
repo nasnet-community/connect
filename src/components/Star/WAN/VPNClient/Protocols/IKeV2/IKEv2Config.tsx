@@ -83,7 +83,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(({ onIsValidChange$, isS
           {/* Auth-specific fields based on authentication method */}
           {authMethod.value === "psk" && (
             <FormField
-              type="password"
+              type="text"
               label={$localize`Pre-Shared Key`}
               required
               value={presharedKey.value}
@@ -109,7 +109,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(({ onIsValidChange$, isS
             />
             
             <FormField
-              type="password"
+              type="text"
               label={$localize`Password`}
               required
               value={password.value}

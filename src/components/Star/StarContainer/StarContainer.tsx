@@ -23,7 +23,7 @@ import {
 
 export const StarContainer = component$(() => {
   const activeStep = useSignal(0);
-  const { state, updateMode$ } = useContext(StarContext);
+  const { state, updateChoose$ } = useContext(StarContext);
 
   const stepsStore = useStore({
     steps: [] as any[],
@@ -112,8 +112,8 @@ export const StarContainer = component$(() => {
     <div class="container mx-auto w-full px-4 pt-24">
       <HStepper
         steps={stepsStore.steps}
-        mode={state.Mode}
-        onModeChange$={updateMode$}
+        mode={state.Choose.Mode}
+        onModeChange$={(mode) => updateChoose$({ Mode: mode })}
         activeStep={activeStep.value}
         onStepComplete$={(id) => {
           const stepIndex = stepsStore.steps.findIndex(
