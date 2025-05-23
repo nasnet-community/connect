@@ -22,7 +22,7 @@ export interface RouterModels {
 export interface ChooseState {
   Mode: Mode;
   Firmware: FrimwareType;
-  DometicLink: boolean;
+  DomesticLink: boolean;
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
 }

@@ -5,6 +5,9 @@ import { StarContext } from "../../StarContext/StarContext";
 
 export const useWirelessForm = () => {
   const starContext = useContext(StarContext);
+  
+  // Wireless should be enabled by default
+  const wirelessEnabled = useSignal(true);
   const isMultiSSID = useSignal(false);
   const ssid = useSignal("");
   const password = useSignal("");
@@ -240,6 +243,14 @@ export const useWirelessForm = () => {
   });
 
   useTask$(({ track }) => {
+    // Skip updating wireless config if disabled
+    if (!wirelessEnabled.value) {
+      starContext.updateLAN$({
+        Wireless: undefined
+      });
+      return;
+    }
+
     track(() => ({
       isMulti: isMultiSSID.value,
       networks: Object.values(networks)
@@ -345,6 +356,12 @@ export const useWirelessForm = () => {
   });
 
   const validateForm = $(() => {
+    // If wireless is disabled, form is always valid
+    if (!wirelessEnabled.value) {
+      isFormValid.value = true;
+      return;
+    }
+
     if (isMultiSSID.value) {
       const enabledNetworks = Object.values(networks).filter(
         (network) => !network.isDisabled
@@ -364,6 +381,7 @@ export const useWirelessForm = () => {
   });
 
   useTask$(({ track }) => {
+    track(() => wirelessEnabled.value); // Track wireless enabled state
     track(() => ssid.value);
     track(() => password.value);
     track(() => isHide.value);
@@ -379,6 +397,7 @@ export const useWirelessForm = () => {
   });
 
   return {
+    wirelessEnabled,
     isMultiSSID,
     ssid,
     password,

@@ -9,16 +9,23 @@ export const useEInterface = () => {
   const selectedEInterfaces = useSignal<EthernetInterfaceConfig[]>([]);
   
   // Filter available networks based on DomesticLink
-  const isDomesticLinkEnabled = ctx.state.Choose.DometicLink === true;
+  // The DomesticLink property determines whether we need Domestic network options:
+  // - When true: We offer Domestic, Foreign, Split, and VPN options
+  // - When false: We restrict options to Foreign and VPN only
+  const isDomesticLinkEnabled = ctx.state.Choose.DomesticLink === true;
   const networkOptions: Networks[] = isDomesticLinkEnabled 
     ? ['Domestic', 'Foreign', 'Split', 'VPN']
     : ['Foreign', 'VPN'];
   
   const availableNetworks = useSignal<Networks[]>(networkOptions);
 
-  // Set default network to VPN when DomesticLink is disabled
+  // Set default network based on DomesticLink status
+  // This is critical for proper network configuration:
+  // - DomesticLink true: Split network is default (supports both domestic and foreign traffic)
+  // - DomesticLink false: VPN network is default (no domestic network available)
   const getDefaultNetwork = $(() => {
-    return isDomesticLinkEnabled ? 'Split' : 'VPN';
+    // Explicitly check if true or false to avoid undefined/null issues
+    return ctx.state.Choose.DomesticLink === true ? 'Split' : 'VPN';
   });
 
   const getUsedWANInterfaces = $(() => {
@@ -54,6 +61,7 @@ export const useEInterface = () => {
   });
 
   const addEInterface = $(async (EInterfaceName: Ethernet, bridgeNetwork?: Networks) => {
+    // If bridge network not specified, use default based on DomesticLink
     const network = bridgeNetwork || await getDefaultNetwork();
     
     const newEInterface: EthernetInterfaceConfig = {

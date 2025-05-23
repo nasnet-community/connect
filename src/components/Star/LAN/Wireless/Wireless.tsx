@@ -11,6 +11,7 @@ import type { StepProps } from "~/types/step";
 export const Wireless = component$<StepProps>(({ onComplete$ }) => {
   const starContext = useContext(StarContext);
   const {
+    wirelessEnabled,
     isMultiSSID,
     ssid,
     password,
@@ -36,39 +37,59 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="mx-auto w-full max-w-4xl p-4">
       <div class="rounded-lg bg-surface p-6 shadow-lg dark:bg-surface-dark">
-        <WirelessHeader />
-        <SSIDModeSelector isMultiSSID={isMultiSSID} />
+        <WirelessHeader wirelessEnabled={wirelessEnabled} />
 
-        {!isMultiSSID.value ? (
-          <SingleSSIDForm
-            ssid={ssid}
-            password={password}
-            isHide={isHide}
-            isDisabled={isDisabled}
-            splitBand={splitBand}
-            generateSSID={generateSSID}
-            generatePassword={generatePassword}
-            toggleHide={toggleSingleHide}
-            toggleDisabled={toggleSingleDisabled}
-            toggleSplitBand={toggleSingleSplitBand}
-            isLoading={isLoading}
-          />
-        ) : (
-          <MultiSSIDForm
-            networks={networks}
-            isLoading={isLoading.value}
-            generateNetworkSSID={generateNetworkSSID}
-            generateNetworkPassword={generateNetworkPassword}
-            generateAllPasswords={generateAllPasswords}
-            toggleNetworkHide={toggleNetworkHide}
-            toggleNetworkDisabled={toggleNetworkDisabled}
-            toggleNetworkSplitBand={toggleNetworkSplitBand}
-          />
+        {/* Message when wireless is disabled */}
+        {!wirelessEnabled.value && (
+          <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+            <p class="text-gray-700 dark:text-gray-300">
+              {$localize`Wireless networking is currently disabled. Enable it using the toggle above to configure wireless settings.`}
+            </p>
+          </div>
+        )}
+
+        {/* Only show wireless configuration when enabled */}
+        {wirelessEnabled.value && (
+          <>
+            <SSIDModeSelector isMultiSSID={isMultiSSID} />
+
+            {!isMultiSSID.value ? (
+              <SingleSSIDForm
+                ssid={ssid}
+                password={password}
+                isHide={isHide}
+                isDisabled={isDisabled}
+                splitBand={splitBand}
+                generateSSID={generateSSID}
+                generatePassword={generatePassword}
+                toggleHide={toggleSingleHide}
+                toggleDisabled={toggleSingleDisabled}
+                toggleSplitBand={toggleSingleSplitBand}
+                isLoading={isLoading}
+              />
+            ) : (
+              <MultiSSIDForm
+                networks={networks}
+                isLoading={isLoading.value}
+                generateNetworkSSID={generateNetworkSSID}
+                generateNetworkPassword={generateNetworkPassword}
+                generateAllPasswords={generateAllPasswords}
+                toggleNetworkHide={toggleNetworkHide}
+                toggleNetworkDisabled={toggleNetworkDisabled}
+                toggleNetworkSplitBand={toggleNetworkSplitBand}
+              />
+            )}
+          </>
         )}
 
         <ActionButtons
           onSubmit={$(async () => {
-            if (!isMultiSSID.value) {
+            if (!wirelessEnabled.value) {
+              // If wireless is disabled, remove any wireless config
+              starContext.updateLAN$({
+                Wireless: undefined
+              });
+            } else if (!isMultiSSID.value) {
               starContext.updateLAN$({
                 Wireless: {
                   SingleMode: {

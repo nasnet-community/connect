@@ -105,17 +105,28 @@ export const Tunnel = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="mx-auto w-full max-w-5xl p-4">
       <div class="space-y-8">
-        {/* Header */}
-        <TunnelHeader />
+        {/* Header with enable/disable toggle */}
+        <TunnelHeader tunnelsEnabled={tunnelsEnabled} />
 
-        {/* Stepper */}
-        <CStepper
-          steps={steps.value}
-          onComplete$={handleComplete$}
-          contextId={TunnelContextId}
-          contextValue={contextData}
-          allowNonLinearNavigation={true}
-        />
+        {/* Message when tunnels are disabled */}
+        {!tunnelsEnabled.value && (
+          <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+            <p class="text-gray-700 dark:text-gray-300">
+              {$localize`Network tunneling is currently disabled. Enable it using the toggle above to configure tunnel settings.`}
+            </p>
+          </div>
+        )}
+
+        {/* Stepper - only shown when tunnels are enabled */}
+        {tunnelsEnabled.value && (
+          <CStepper
+            steps={steps.value}
+            onComplete$={handleComplete$}
+            contextId={TunnelContextId}
+            contextValue={contextData}
+            allowNonLinearNavigation={true}
+          />
+        )}
       </div>
     </div>
   );

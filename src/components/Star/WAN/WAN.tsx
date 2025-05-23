@@ -8,7 +8,7 @@ import { StarContext } from "../StarContext/StarContext";
 
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
-  const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+  const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
 
   const ForeignStep = component$((props: StepProps) => (
     <WANInterface

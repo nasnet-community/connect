@@ -14,8 +14,14 @@ export const useTunnel = () => {
   const starContext = useContext(StarContext);
   const tunnelState = starContext.state.LAN.Tunnel || {};
 
-  // Tunnel enabled state (defaulting to true since we removed the enable step)
-  const tunnelsEnabled = useSignal(true);
+  // Check if tunnels are already configured and set default enabled state accordingly
+  const hasTunnelsConfigured = !!(tunnelState.IPIP?.length || 
+                                tunnelState.Eoip?.length || 
+                                tunnelState.Gre?.length || 
+                                tunnelState.Vxlan?.length);
+
+  // Tunnel enabled state - default false unless tunnels are already configured
+  const tunnelsEnabled = useSignal(hasTunnelsConfigured);
 
   // IPIP tunnels
   const ipipTunnels = useStore<IpipTunnelConfig[]>(

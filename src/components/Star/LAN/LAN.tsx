@@ -15,7 +15,7 @@ export const LAN = component$((props: StepProps) => {
     (routerModel) => !!routerModel.Interfaces.wireless?.length
   );
 
-  const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+  const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
 
   const EInterfaceStep = component$((props: StepProps) => (
     <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />

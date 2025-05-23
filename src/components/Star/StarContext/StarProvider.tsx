@@ -19,7 +19,7 @@ export const StarContextProvider = component$(() => {
       Mode: "easy" as Mode,
       Firmware:"" as FrimwareType,
       RouterMode: "" as RouterModeType,
-      DometicLink: null as unknown as boolean,
+      DomesticLink: false,
       RouterModels: [],
     },
     WAN: {

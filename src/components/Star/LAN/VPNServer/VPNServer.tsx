@@ -144,10 +144,17 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
           />
         ) : (
           /* If VPN server is disabled, show simplified view with save button */
-          <ActionFooter 
-            saveDisabled={!isValid.value}
-            onSave$={() => saveSettings$(onComplete$)}
-          />
+          <div class="space-y-4">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+              <p class="mb-2 text-gray-700 dark:text-gray-300">
+                {$localize`VPN Server is currently disabled. Enable it using the toggle above to configure VPN server settings.`}
+              </p>
+            </div>
+            <ActionFooter 
+              saveDisabled={!isValid.value}
+              onSave$={() => saveSettings$(onComplete$)}
+            />
+          </div>
         )}
       </div>
     </div>

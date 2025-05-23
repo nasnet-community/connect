@@ -1,4 +1,4 @@
-import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
+import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { LuGlobe, LuGlobe2 } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { OptionCard } from "./OptionCard";
@@ -17,12 +17,14 @@ interface DomesticProps {
 
 export const DomesticWAN = component$((props: DomesticProps) => {
   const starContext = useContext(StarContext);
-  const hasDomesticLink = starContext.state.Choose.DometicLink;
+  const hasDomesticLink = starContext.state.Choose.DomesticLink;
+  const hasUserSelected = useSignal(false);
 
   const handleDomesticSelect = $((hasDomestic: boolean) => {
     starContext.updateChoose$({
-      DometicLink: hasDomestic,
+      DomesticLink: hasDomestic,
     });
+    hasUserSelected.value = true;
     props.onComplete$?.();
   });
 
@@ -90,7 +92,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
           <OptionCard
             key={String(option.value)}
             value={option.value}
-            isSelected={hasDomesticLink === option.value}
+            isSelected={hasUserSelected.value && hasDomesticLink === option.value}
             icon={option.icon}
             title={option.title}
             description={option.description}

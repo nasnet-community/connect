@@ -27,11 +27,14 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     network: Networks;
   }[]>([]);
 
-  const updateInterfacesList = $(() => {
+  const updateInterfacesList = $(async () => {
     const currentlySelected = new Map<string, Networks>();
     selectedEInterfaces.value.forEach(intf => {
       currentlySelected.set(intf.name, intf.bridge);
     });
+
+    // Get default network based on DometicLink setting
+    const defaultNetwork = await getDefaultNetwork();
 
     const allIntfs = [...availableEInterfaces.value].map(name => {
       const selected = currentlySelected.has(name);
@@ -40,7 +43,8 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
         inUse: false,
         usedBy: '',
         selected,
-        network: selected ? currentlySelected.get(name)! : 'VPN' as Networks
+        // Use default network for non-selected interfaces
+        network: selected ? currentlySelected.get(name)! : defaultNetwork
       };
     });
 
@@ -74,17 +78,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     const ethInterfaces = await getAvailableEInterfaces();
     availableEInterfaces.value = ethInterfaces;
     
-    const defaultNetwork = await getDefaultNetwork();
-    
-    // Update all non-selected interfaces to use the default network
-    allInterfaces.value = allInterfaces.value.map(intf => {
-      if (!intf.selected && !intf.inUse) {
-        return { ...intf, network: defaultNetwork };
-      }
-      return intf;
-    });
-    
-    updateInterfacesList();
+    await updateInterfacesList();
   });
 
   const handleNetworkChange = $((interfaceName: string, newNetworkValue: string) => {
@@ -116,14 +110,16 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     }
   });
 
-  const handleSave = $(() => {
+  const handleSave = $(async () => {
     // If no changes were made but interfaces are available,
     // consider the default configuration as valid and proceed
     if (!unsavedChanges.value && allInterfaces.value.length > 0) {
-      // Assign default configuration for all available interfaces
+      // Get default network based on DometicLink setting
+      const defaultNetwork = await getDefaultNetwork();
+      
+      // Assign default configuration for all available interfaces that are not in use
       allInterfaces.value.forEach(async (intf) => {
         if (!intf.inUse && !intf.selected) {
-          const defaultNetwork = await getDefaultNetwork();
           addEInterface(intf.name as Ethernet, defaultNetwork);
         }
       });
@@ -172,18 +168,6 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
 
         {/* Main Content */}
         <div class="p-6">
-          {/* WAN Interfaces Warning */}
-          {/* {usedWANInterfaces.value.length > 0 && (
-            <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/30">
-              <h3 class="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">
-                {$localize`Some interfaces are already in use`}
-              </h3>
-              <p class="text-sm text-amber-700 dark:text-amber-400">
-                {$localize`Interfaces used in the WAN section cannot be assigned to LAN networks. They are shown as disabled in the table below.`}
-              </p>
-            </div>
-          )} */}
-          
           {/* Interfaces Table */}
           <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">
             <table class="w-full text-left text-sm">
@@ -205,13 +189,6 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                   <tr key={intf.name} class="bg-surface transition-colors hover:bg-surface-secondary dark:bg-surface-dark dark:hover:bg-surface-dark-secondary">
                     <td class="px-6 py-4">
                       <div class="flex items-center space-x-3">
-                        {/* <div class={`h-2.5 w-2.5 rounded-full ${
-                          intf.inUse 
-                            ? 'bg-red-500' 
-                            : intf.selected 
-                              ? 'bg-primary-500' 
-                              : 'bg-text-secondary/50'
-                        }`}></div> */}
                         <span class="font-medium text-text dark:text-text-dark-default">
                           {intf.name}
                         </span>
