@@ -1,4 +1,4 @@
-import { component$, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
+import { component$, $, useVisibleTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { Credentials } from "../../../StarContext/LANType";
 import type { VPNType } from "../../../StarContext/CommonType";
@@ -11,10 +11,7 @@ import {
   HiLockClosedOutline, 
   HiTrashOutline, 
   HiExclamationTriangleOutline,
-  // HiChevronDownOutline,
-  // HiChevronUpOutline,
-  HiEyeOutline,
-  HiEyeSlashOutline
+  HiCheckCircleOutline,
 } from "@qwikest/icons/heroicons";
 
 interface UserCredentialProps {
@@ -97,8 +94,6 @@ export const UserCredential = component$<UserCredentialProps>(({
     await onDelete$(index);
   });
 
-  const showPassword = useSignal(false);
-  
   // Use a basic title for the Card component to satisfy TypeScript requirements
   const cardTitle = $localize`User ${index + 1}`;
   
@@ -180,13 +175,13 @@ export const UserCredential = component$<UserCredentialProps>(({
               <div class="relative">
                 <input
                   id={`password-${index}`}
-                  type={showPassword.value ? "text" : "password"}
+                  type="text"
                   value={user.Password}
                   onInput$={async (e) => {
                     const target = e.target as HTMLInputElement;
                     await handlePasswordChange(target.value);
                   }}
-                  class="w-full rounded-lg border border-border pl-8 pr-8 py-1.5 text-sm bg-white
+                  class="w-full rounded-lg border border-border pl-8 py-1.5 text-sm bg-white
                     focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                     dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                   placeholder={$localize`Enter password`}
@@ -194,61 +189,89 @@ export const UserCredential = component$<UserCredentialProps>(({
                 <div class="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted dark:text-text-dark-muted">
                   <HiLockClosedOutline class="h-4 w-4" />
                 </div>
-                <button
-                  type="button"
-                  onClick$={() => (showPassword.value = !showPassword.value)}
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-default dark:text-text-dark-muted dark:hover:text-text-dark-default"
-                >
-                  {showPassword.value ? (
-                    <HiEyeOutline class="h-4 w-4" />
-                  ) : (
-                    <HiEyeSlashOutline class="h-4 w-4" />
-                  )}
-                </button>
               </div>
             </FormField>
           </div>
           
-          {/* Allowed VPN Protocols */}
+          {/* Allowed VPN Protocols - Redesigned */}
           <FormField
             label={$localize`Allowed Protocols`}
             size="sm"
             validation={Array.isArray(user.VPNType) && user.VPNType.length > 0 ? "valid" : "invalid"}
-            errorMessage={Array.isArray(user.VPNType) && user.VPNType.length === 0 ? $localize`Select at least one` : undefined}
+            errorMessage={Array.isArray(user.VPNType) && user.VPNType.length === 0 ? $localize`Select at least one protocol` : undefined}
           >
-            <div class="flex flex-wrap gap-1.5">
-              {VPN_PROTOCOLS.map((protocol) => (
-                <div key={protocol.id} class="flex-none">
-                  {stepper.data.enabledProtocols[protocol.id] && (
-                    <label
-                      class={`
-                        inline-flex cursor-pointer items-center text-xs rounded-full px-2.5 py-1 transition-colors
-                        ${(user.VPNType || []).includes(protocol.id)
-                          ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
-                          : 'bg-surface-tertiary text-text-muted dark:bg-surface-dark-secondary dark:text-text-dark-muted'}
-                      `}
-                    >
-                      <input
-                        type="checkbox"
-                        class="sr-only"
-                        checked={(user.VPNType || []).includes(protocol.id)}
-                        onChange$={async () => {
-                          await handleProtocolToggle(protocol.id);
+            <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-6">
+              {VPN_PROTOCOLS.map((protocol) => {
+                // Only show enabled protocols
+                if (!stepper.data.enabledProtocols[protocol.id]) return null;
+                
+                const isSelected = (user.VPNType || []).includes(protocol.id);
+                
+                return (
+                  <div 
+                    key={protocol.id}
+                    onClick$={async () => await handleProtocolToggle(protocol.id)}
+                    class={`
+                      relative cursor-pointer rounded-lg border transition-all hover:shadow-md
+                      ${isSelected 
+                        ? 'border-primary-400 bg-primary-50 shadow-sm dark:border-primary-500 dark:bg-primary-900/20' 
+                        : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600'}
+                    `}
+                  >
+                    {/* Selected indicator */}
+                    {isSelected && (
+                      <div class="absolute -right-1 -top-1 rounded-full bg-primary-500 p-0.5 shadow-sm dark:bg-primary-600">
+                        <HiCheckCircleOutline class="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                    
+                    <div class="p-2 flex flex-col items-center gap-1">
+                      {/* Protocol logo */}
+                      <img 
+                        src={protocol.logo} 
+                        alt={protocol.name} 
+                        class={`h-6 w-6 ${isSelected 
+                          ? 'dark:filter dark:invert dark:sepia dark:saturate-[5] dark:hue-rotate-[180deg] dark:brightness-[1.1] dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.3)]' 
+                          : 'dark:filter dark:invert dark:sepia dark:saturate-[2] dark:hue-rotate-[180deg] dark:brightness-75 dark:opacity-80'}`}
+                        onError$={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          target.style.display = 'none';
                         }}
                       />
-                      <span class="font-medium">{protocol.name}</span>
-                    </label>
-                  )}
-                </div>
-              ))}
+                      
+                      {/* Protocol name */}
+                      <span class={`text-xs font-medium text-center ${isSelected 
+                        ? 'text-primary-700 dark:text-primary-300' 
+                        : 'text-gray-700 dark:text-gray-300'}`}>
+                        {protocol.name}
+                      </span>
+                    </div>
+                    
+                    {/* Hidden checkbox for accessibility */}
+                    <input
+                      type="checkbox"
+                      class="sr-only"
+                      checked={isSelected}
+                      onChange$={async () => {
+                        await handleProtocolToggle(protocol.id);
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </FormField>
           
           {/* Invalid User Warning - Compact Version */}
           {!isUserValid && (
-            <div class="flex items-center p-2 gap-2 rounded bg-warning-surface text-warning-dark text-xs dark:bg-warning-900/20 dark:text-warning-light">
-              <HiExclamationTriangleOutline class="h-3.5 w-3.5 flex-shrink-0" />
-              <span>{$localize`Complete all required fields`}</span>
+            <div class="flex items-center p-2.5 gap-2 rounded-md border border-warning-400/30 bg-warning-50 text-warning-700 text-xs shadow-sm
+              dark:border-warning-500/70 dark:border-l-warning-400 dark:border-l-2
+              dark:bg-gradient-to-r dark:from-warning-900/40 dark:to-warning-900/20 
+              dark:text-warning-200">
+              <div class="dark:animate-pulse">
+                <HiExclamationTriangleOutline class="h-4 w-4 flex-shrink-0 text-warning-500 dark:text-warning-300" />
+              </div>
+              <span class="font-medium">{$localize`Complete all required fields`}</span>
             </div>
           )}
         </div>

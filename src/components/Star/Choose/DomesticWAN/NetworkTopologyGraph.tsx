@@ -1,5 +1,5 @@
-import { component$ } from "@builder.io/qwik";
-import { LuGlobe, LuGlobe2, LuLaptop, LuWifi, LuServer } from "@qwikest/icons/lucide";
+import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { LuGlobe, LuGlobe2, LuLaptop, LuWifi, LuServer, LuX } from "@qwikest/icons/lucide";
 
 export interface NetworkTopologyNode {
   type: 'laptop' | 'wifi' | 'globe' | 'globe2' | 'server';
@@ -29,6 +29,23 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
     title = $localize`Network Topology`,
     showDomesticLegend = true
   } = props;
+
+  // Add expanded state
+  const isExpanded = useSignal(false);
+  const isTouch = useSignal(false);
+
+  // Detect touch device for better UX
+  useVisibleTask$(() => {
+    isTouch.value = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  });
+
+  // Handlers
+  const handleExpand = $(() => {
+    isExpanded.value = true;
+  });
+  const handleCollapse = $(() => {
+    isExpanded.value = false;
+  });
 
   const renderNodeIcon = (type: string) => {
     switch (type) {
@@ -84,36 +101,71 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
   };
 
   return (
-    <div class="topology-container relative h-44">
+    <div
+      class={`topology-container relative h-44${isExpanded.value ? ' expanded' : ''}`}
+      tabIndex={0}
+      onClick$={() => {
+        if (!isExpanded.value) handleExpand();
+      }}
+      onKeyDown$={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && !isExpanded.value) {
+          handleExpand();
+        }
+        if ((e.key === 'Escape' || e.key === 'Esc') && isExpanded.value) {
+          handleCollapse();
+        }
+      }}
+      aria-expanded={isExpanded.value}
+      role="region"
+      aria-label={title}
+    >
       <div class="network-graph h-full w-full rounded-xl bg-amber-50/50 p-5 dark:bg-amber-950/20 shadow-sm transition-all duration-500 ease-in-out cursor-zoom-in relative">
-        {/* Graph header with title and legend - hidden in normal state, visible when hovered */}
-        <div class="graph-header hidden items-center justify-between mb-4">
-          <span class="text-sm font-medium text-amber-800 dark:text-amber-300">
-            {title}
-          </span>
-          <div class="flex items-center space-x-3">
-            <div class="flex items-center">
-              <div class="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5"></div>
-              <span class="text-xs text-amber-800 dark:text-amber-300">
-                {$localize`Traffic Path`}
-              </span>
-            </div>
-            {/* Add legend for domestic and foreign connections */}
-            {showDomesticLegend && (
+        {/* Graph header with title, legend, and close icon button (when expanded) */}
+        <div class={`graph-header hidden mb-4 ${isExpanded.value ? 'expanded-header' : 'items-center justify-between relative'}`}>
+          {/* Centered legend and title */}
+          <div class={`legend-center flex flex-col items-center w-full ${isExpanded.value ? 'absolute left-1/2 top-6 -translate-x-1/2 z-10' : ''}`} style={isExpanded.value ? 'pointer-events: auto;' : ''}>
+            <span class="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1">
+              {title}
+            </span>
+            <div class="flex items-center space-x-3">
               <div class="flex items-center">
-                <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 mr-1.5"></div>
+                <div class="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5"></div>
                 <span class="text-xs text-amber-800 dark:text-amber-300">
-                  {$localize`Domestic`}
+                  {$localize`Traffic Path`}
                 </span>
               </div>
-            )}
-            <div class="flex items-center">
-              <div class="h-2.5 w-2.5 rounded-full bg-purple-500 mr-1.5"></div>
-              <span class="text-xs text-amber-800 dark:text-amber-300">
-                {$localize`Foreign`}
-              </span>
+              {/* Add legend for domestic and foreign connections */}
+              {showDomesticLegend && (
+                <div class="flex items-center">
+                  <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 mr-1.5"></div>
+                  <span class="text-xs text-amber-800 dark:text-amber-300">
+                    {$localize`Domestic`}
+                  </span>
+                </div>
+              )}
+              <div class="flex items-center">
+                <div class="h-2.5 w-2.5 rounded-full bg-purple-500 mr-1.5"></div>
+                <span class="text-xs text-amber-800 dark:text-amber-300">
+                  {$localize`Foreign`}
+                </span>
+              </div>
             </div>
           </div>
+          {/* Close icon button - visible when expanded, top right of expanded graph */}
+          {isExpanded.value && (
+            <button
+              class="close-graph-btn absolute top-4 right-4 p-2 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200 shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 z-20"
+              onClick$={$((e) => {
+                e.stopPropagation();
+                handleCollapse();
+              })}
+              aria-label={$localize`Close expanded network graph`}
+              tabIndex={0}
+              type="button"
+            >
+              <LuX class="h-6 w-6" />
+            </button>
+          )}
         </div>
         
         {/* Network topology visualization with expandable height on hover */}
@@ -326,16 +378,9 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         {/* Hover indicator with instruction text - now visible in normal state */}
         <div class="expand-indicator absolute inset-0 flex items-end justify-center pb-2">
           <span class="text-xs font-medium text-amber-800/90 dark:text-amber-300/90 bg-amber-50/70 dark:bg-amber-950/70 px-2 py-1 rounded">
-            {$localize`Hover to expand`}
+            {$localize`Click to expand`}
           </span>
         </div>
-      </div>
-      
-      {/* Close button - hidden in normal state, visible when expanded */}
-      <div class="close-button hidden absolute bottom-4 w-full left-0 right-0 justify-center">
-        <button class="flex items-center bg-amber-100 hover:bg-amber-200 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200 px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
-          <span class="text-sm font-medium">{$localize`Close`}</span>
-        </button>
       </div>
       
       {/* Add CSS directly inside component */}
@@ -344,16 +389,44 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           z-index: 1;
           overflow: visible;
         }
-        
+        .graph-header.expanded-header {
+          position: static !important;
+          display: block !important;
+          min-height: 60px;
+        }
+        .graph-header .legend-center {
+          position: static;
+          left: unset;
+          top: unset;
+          transform: none;
+        }
+        .topology-container.expanded .graph-header.expanded-header .legend-center {
+          position: absolute;
+          left: 50%;
+          top: 24px;
+          transform: translateX(-50%);
+          z-index: 10;
+          width: auto;
+          background: rgba(255,251,235,0.95);
+          border-radius: 0.75rem;
+          padding: 0.5rem 1.5rem;
+          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+        }
+        .topology-container.expanded .graph-header.expanded-header .close-graph-btn {
+          z-index: 20;
+        }
+        .graph-header { position: relative; }
+        .graph-header button[type="button"] {
+          z-index: 1;
+        }
         .expand-indicator {
           background: linear-gradient(to bottom, transparent 60%, rgba(254, 243, 199, 0.5) 100%);
         }
-        
         .dark .expand-indicator {
           background: linear-gradient(to bottom, transparent 60%, rgba(20, 10, 0, 0.5) 100%);
         }
-        
-        .topology-container:hover .network-graph {
+        /* Use .expanded instead of :hover for expanded state */
+        .topology-container.expanded .network-graph {
           position: fixed;
           transform: translate(-50%, -50%);
           left: 50%;
@@ -362,18 +435,18 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           max-width: 800px;
           height: 80vh;
           max-height: 600px;
-          z-index: 9000 !important; /* Use !important to override any parent z-index settings */
+          z-index: 9000 !important;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
           background-color: rgb(255 251 235 / 0.98);
         }
         
         /* Show the graph header when the graph is expanded */
-        .topology-container:hover .graph-header {
+        .topology-container.expanded .graph-header {
           display: flex;
         }
         
         /* Apply a higher z-index to the backdrop overlay */
-        .topology-container:hover::before {
+        .topology-container.expanded::before {
           content: '';
           position: fixed;
           top: 0;
@@ -385,24 +458,24 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         }
         
         /* Make sure the domestic option has a higher z-index than the foreign option */
-        .domestic-option .topology-container:hover .network-graph {
+        .domestic-option .topology-container.expanded .network-graph {
           z-index: 9100 !important;
         }
         
-        .domestic-option .topology-container:hover::before {
+        .domestic-option .topology-container.expanded::before {
           z-index: 9000 !important;
         }
         
-        .dark .topology-container:hover .network-graph {
+        .dark .topology-container.expanded .network-graph {
           background-color: rgb(10 5 0 / 0.97);
         }
         
-        .topology-container:hover .topology-content {
+        .topology-container.expanded .topology-content {
           height: calc(80vh - 150px);
           max-height: 450px;
         }
         
-        .topology-container:hover .expand-indicator {
+        .topology-container.expanded .expand-indicator {
           opacity: 0;
           transition: opacity 0.2s ease-out;
         }
@@ -419,17 +492,12 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         }
         
         /* Adjust animation speed when hovered */
-        .topology-container:hover .node-highlight {
+        .topology-container.expanded .node-highlight {
           animation-duration: 3s;
         }
         
-        .topology-container:hover circle {
+        .topology-container.expanded circle {
           animation-duration: 3s;
-        }
-        
-        /* Show the close button when the graph is expanded */
-        .topology-container:hover .close-button {
-          display: flex;
         }
       `} />
     </div>

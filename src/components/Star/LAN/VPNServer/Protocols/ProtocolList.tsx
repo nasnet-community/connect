@@ -38,7 +38,11 @@ export const ProtocolList = component$<ProtocolListProps>(({
               <img 
                 src={protocol.logo} 
                 alt={protocol.name} 
-                class="h-8 w-8" 
+                class={`h-8 w-8 ${
+                  enabledProtocols[protocol.id]
+                    ? 'filter brightness-100 drop-shadow-sm dark:filter dark:brightness-0 dark:invert dark:sepia dark:hue-rotate-[170deg] dark:saturate-[6] dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.5)]' 
+                    : 'filter brightness-90 dark:filter dark:brightness-0 dark:invert dark:opacity-80 dark:sepia dark:hue-rotate-[170deg] dark:saturate-[4]'
+                }`} 
                 onError$={(e) => {
                   const target = e.target as HTMLInputElement;
                   target.style.display = 'none';

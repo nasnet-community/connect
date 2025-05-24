@@ -5,6 +5,7 @@ import { ProtocolList } from "../Protocols/ProtocolList";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServer";
+import { HiServerOutline } from "@qwikest/icons/heroicons";
 
 interface ProtocolsStepProps extends StepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -58,7 +59,14 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(({
   });
 
   return (
-    <div>
+    <div class="space-y-6">
+      <div class="flex items-center gap-3 mb-4">
+        <HiServerOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {$localize`Available VPN Protocols`}
+        </h2>
+      </div>
+      
       <ProtocolList
         expandedSections={expandedSections}
         enabledProtocols={enabledProtocols}

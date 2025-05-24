@@ -9,6 +9,7 @@ import { SSTPServerWrapper } from "../Protocols/SSTP/SSTPServer.wrapper";
 import { IKEv2ServerWrapper } from "../Protocols/IKeV2/IKEv2Server.wrapper";
 import { OpenVPNServerWrapper } from "../Protocols/OpenVPN/OpenVPNServer.wrapper";
 import { WireguardServerWrapper } from "../Protocols/Wireguard/WireguardServer.wrapper";
+import { HiCogOutline } from "@qwikest/icons/heroicons";
 
 interface ConfigStepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -233,10 +234,23 @@ export const ConfigStep = component$<ConfigStepProps>(({ enabledProtocols }) => 
     }
   });
 
-  // Minimal render
+  // Check if we have any protocols to show
+  const hasEnabledProtocols = Object.values(enabledProtocols).some(enabled => enabled);
+
+  // Now includes a visible UI when there are no enabled protocols
   return (
     <div class="py-2">
-      {/* No visible UI needed as we're just managing steps */}
+      {!hasEnabledProtocols && (
+        <div class="flex flex-col items-center justify-center space-y-4 py-8">
+          <HiCogOutline class="h-12 w-12 text-primary-500 dark:text-primary-400" />
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
+            {$localize`VPN Protocol Configuration`}
+          </h2>
+          <p class="text-center text-gray-600 dark:text-gray-400 max-w-md">
+            {$localize`No VPN protocols are currently enabled. Return to the previous step to select at least one protocol to configure.`}
+          </p>
+        </div>
+      )}
     </div>
   );
 }); 

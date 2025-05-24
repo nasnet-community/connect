@@ -1,8 +1,34 @@
-import { $, component$, useContext, useTask$ } from "@builder.io/qwik";
+import { $, component$, useContext, useTask$, useStylesScoped$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import type { ServiceType } from "../../StarContext/ExtraType";
 import { Select } from "~/components/Core/Select/Select";
+
+// Add scoped styles to fix dropdown positioning
+const dropdownStyles = `
+  .dropdown-container {
+    position: relative;
+    z-index: 0;
+  }
+  
+  .dropdown-container:hover,
+  .dropdown-container:focus-within {
+    z-index: 50;
+  }
+  
+  /* Force dropdown menu to appear above all other elements */
+  :global(.dropdown-container [role="listbox"]) {
+    z-index: 50 !important;
+    position: absolute !important;
+    max-height: 200px !important;
+  }
+  
+  /* Adjust positioning for last rows */
+  tr:nth-last-child(-n+2) .dropdown-container :global([role="listbox"]) {
+    bottom: 100% !important;
+    top: auto !important;
+  }
+`;
 
 type ServiceName =
   | "api"
@@ -22,6 +48,9 @@ interface ServiceItem {
 
 export const Services = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
+
+  // Apply scoped styles to fix dropdown positioning
+  useStylesScoped$(dropdownStyles);
 
   // Initialize services if they don't exist
   useTask$(() => {
@@ -145,7 +174,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
 
         {/* Table Content */}
         <div class="p-6">
-          <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">
+          <div class="overflow-visible rounded-xl border border-border dark:border-border-dark">
             <table class="w-full text-left text-sm">
               <thead>
                 <tr class="border-b border-border bg-surface-secondary dark:border-border-dark dark:bg-surface-dark-secondary">
@@ -196,38 +225,40 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                         {service.description}
                       </td>
                       <td class="px-6 py-4">
-                        <Select
-                          options={[
-                            { value: "Enable", label: $localize`Enable` },
-                            { value: "Disable", label: $localize`Disable` },
-                            { value: "Local", label: $localize`Local` }
-                          ]}
-                          value={currentValue}
-                          onChange$={(value) => {
-                            if (!ctx.state.ExtraConfig.services) {
-                              ctx.updateExtraConfig$({
-                                services: {
-                                  api: "Disable" as ServiceType,
-                                  apissl: "Disable" as ServiceType,
-                                  ftp: "Disable" as ServiceType,
-                                  ssh: "Enable" as ServiceType,
-                                  telnet: "Disable" as ServiceType,
-                                  winbox: "Enable" as ServiceType,
-                                  web: "Disable" as ServiceType,
-                                  webssl: "Disable" as ServiceType,
-                                }
-                              });
-                            }
-                            
-                            if (ctx.state.ExtraConfig.services) {
-                              ctx.state.ExtraConfig.services[service.name] = 
-                                value as ServiceType;
-                            }
-                          }}
-                          clearable={false}
-                          class="w-full"
-                          size="sm"
-                        />
+                        <div class="dropdown-container">
+                          <Select
+                            options={[
+                              { value: "Enable", label: $localize`Enable` },
+                              { value: "Disable", label: $localize`Disable` },
+                              { value: "Local", label: $localize`Local` }
+                            ]}
+                            value={currentValue}
+                            onChange$={(value) => {
+                              if (!ctx.state.ExtraConfig.services) {
+                                ctx.updateExtraConfig$({
+                                  services: {
+                                    api: "Disable" as ServiceType,
+                                    apissl: "Disable" as ServiceType,
+                                    ftp: "Disable" as ServiceType,
+                                    ssh: "Enable" as ServiceType,
+                                    telnet: "Disable" as ServiceType,
+                                    winbox: "Enable" as ServiceType,
+                                    web: "Disable" as ServiceType,
+                                    webssl: "Disable" as ServiceType,
+                                  }
+                                });
+                              }
+                              
+                              if (ctx.state.ExtraConfig.services) {
+                                ctx.state.ExtraConfig.services[service.name] = 
+                                  value as ServiceType;
+                              }
+                            }}
+                            clearable={false}
+                            class="w-full"
+                            size="sm"
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
