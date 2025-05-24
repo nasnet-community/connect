@@ -33,7 +33,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
       currentlySelected.set(intf.name, intf.bridge);
     });
 
-    // Get default network based on DometicLink setting
+    // Get default network based on DomesticLink setting
     const defaultNetwork = await getDefaultNetwork();
 
     const allIntfs = [...availableEInterfaces.value].map(name => {
@@ -114,7 +114,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     // If no changes were made but interfaces are available,
     // consider the default configuration as valid and proceed
     if (!unsavedChanges.value && allInterfaces.value.length > 0) {
-      // Get default network based on DometicLink setting
+      // Get default network based on DomesticLink setting
       const defaultNetwork = await getDefaultNetwork();
       
       // Assign default configuration for all available interfaces that are not in use

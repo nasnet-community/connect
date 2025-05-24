@@ -41,7 +41,7 @@ export const LANCG = (state: StarState): RouterConfig => {
               Object.assign(config, WirelessConfig(
                      state.LAN.Wireless,
                      state.WAN.WANLink,
-                     state.Choose.DometicLink
+                     state.Choose.DomesticLink
               ));
        }
        

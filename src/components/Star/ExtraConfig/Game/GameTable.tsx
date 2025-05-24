@@ -9,7 +9,7 @@ export const GameTable = component$<GameTableProps>(
     const { handleGameSelection } = useGameLogic();
     
     // Check if DomesticLink is enabled
-    const isDomesticLinkEnabled = context.state.Choose.DometicLink === true;
+    const isDomesticLinkEnabled = context.state.Choose.DomesticLink === true;
 
     return (
       <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">

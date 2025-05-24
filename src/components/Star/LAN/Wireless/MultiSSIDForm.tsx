@@ -28,7 +28,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     toggleNetworkSplitBand,
   }) => {
     const starContext = useContext(StarContext);
-    const isDomesticLinkEnabled = starContext.state.Choose.DometicLink === true;
+    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
 
     // Filter network keys based on DomesticLink value
     const filteredNetworkKeys = NETWORK_KEYS.filter(key => 

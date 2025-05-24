@@ -118,11 +118,11 @@ export function Master(Network: Networks, Band: Band, WirelessConfig: WirelessCo
     return command;
 }
 
-export const WirelessBridgePortsSingle = (DometicLink: boolean): RouterConfig => {
+export const WirelessBridgePortsSingle = (DomesticLink: boolean): RouterConfig => {
     const config: RouterConfig = {
       "/interface bridge port": [],
     };  
-    if (DometicLink) {
+    if (DomesticLink) {
         config["/interface bridge port"].push(
             `add bridge=LANBridgeSplit interface=wifi2.4-SplitLAN`,
             `add bridge=LANBridgeSplit interface=wifi5-SplitLAN`,
@@ -157,13 +157,13 @@ export const WirelessBridgePortsMulti = (Wireless: Wireless): RouterConfig => {
     return config;
 }
 
-export const SingleSSID = (SingleMode: WirelessConfig, WANLink: WANLink, DometicLink: boolean): RouterConfig => {
+export const SingleSSID = (SingleMode: WirelessConfig, WANLink: WANLink, DomesticLink: boolean): RouterConfig => {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
     
     const {isWifi2_4, isWifi5} = CheckMasters(WANLink);
-    const Network = DometicLink ? "Split" : "VPN";
+    const Network = DomesticLink ? "Split" : "VPN";
     
     // Configure 2.4GHz band
     if(isWifi2_4) {
@@ -234,7 +234,7 @@ export const MultiSSID = (MultiMode: MultiMode, WANLink: WANLink): RouterConfig 
     return config;
 }
 
-export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DometicLink: boolean) {
+export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DomesticLink: boolean) {
     const {SingleMode, MultiMode} = Wireless;
     const config: RouterConfig = {
         "/interface wifi": [],
@@ -243,8 +243,8 @@ export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DometicLink
     
     // Generate WiFi interface configuration based on mode
     if (SingleMode) {
-        const singleSSIDConfig = SingleSSID(SingleMode, WANLink, DometicLink);
-        const bridgePortsConfig = WirelessBridgePortsSingle(DometicLink);
+        const singleSSIDConfig = SingleSSID(SingleMode, WANLink, DomesticLink);
+        const bridgePortsConfig = WirelessBridgePortsSingle(DomesticLink);
         
         // Merge configurations
         if (singleSSIDConfig["/interface wifi"]) {
