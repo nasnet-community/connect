@@ -34,6 +34,78 @@ export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => 
     toggleSingleSplitBand,
   } = useWirelessForm();
 
+  const handleSave = $(async () => {
+    if (!wirelessEnabled.value) {
+      // If wireless is disabled, remove any wireless config
+      starContext.updateLAN$({
+        Wireless: undefined
+      });
+    } else if (!isMultiSSID.value) {
+      starContext.updateLAN$({
+        Wireless: {
+          SingleMode: {
+            SSID: ssid.value,
+            Password: password.value,
+            isHide: isHide.value,
+            isDisabled: isDisabled.value,
+            SplitBand: splitBand.value,
+          }
+        }
+      });
+    } else {
+      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
+      
+      if (!networks.foreign.isDisabled) {
+        enabledNetworks.Foreign = {
+          SSID: networks.foreign.ssid,
+          Password: networks.foreign.password,
+          isHide: networks.foreign.isHide,
+          isDisabled: networks.foreign.isDisabled,
+          SplitBand: networks.foreign.splitBand,
+        };
+      }
+      
+      if (!networks.domestic.isDisabled) {
+        enabledNetworks.Domestic = {
+          SSID: networks.domestic.ssid,
+          Password: networks.domestic.password,
+          isHide: networks.domestic.isHide,
+          isDisabled: networks.domestic.isDisabled,
+          SplitBand: networks.domestic.splitBand,
+        };
+      }
+      
+      if (!networks.split.isDisabled) {
+        enabledNetworks.Split = {
+          SSID: networks.split.ssid,
+          Password: networks.split.password,
+          isHide: networks.split.isHide,
+          isDisabled: networks.split.isDisabled,
+          SplitBand: networks.split.splitBand,
+        };
+      }
+      
+      if (!networks.vpn.isDisabled) {
+        enabledNetworks.VPN = {
+          SSID: networks.vpn.ssid,
+          Password: networks.vpn.password,
+          isHide: networks.vpn.isHide,
+          isDisabled: networks.vpn.isDisabled,
+          SplitBand: networks.vpn.splitBand,
+        };
+      }
+
+      starContext.updateLAN$({
+        Wireless: {
+          MultiMode: enabledNetworks
+        }
+      });
+    }
+
+    // Always call onComplete$ when saving
+    await onComplete$();
+  });
+
   return (
     <div class="mx-auto w-full max-w-4xl p-4">
       <div class="rounded-lg bg-surface p-6 shadow-lg dark:bg-surface-dark">
@@ -90,77 +162,8 @@ export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => 
         )}
 
         <ActionButtons
-          onSubmit={$(async () => {
-            if (!wirelessEnabled.value) {
-              // If wireless is disabled, remove any wireless config
-              starContext.updateLAN$({
-                Wireless: undefined
-              });
-            } else if (!isMultiSSID.value) {
-              starContext.updateLAN$({
-                Wireless: {
-                  SingleMode: {
-                    SSID: ssid.value,
-                    Password: password.value,
-                    isHide: isHide.value,
-                    isDisabled: isDisabled.value,
-                    SplitBand: splitBand.value,
-                  }
-                }
-              });
-            } else {
-              const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
-              
-              if (!networks.foreign.isDisabled) {
-                enabledNetworks.Foreign = {
-                  SSID: networks.foreign.ssid,
-                  Password: networks.foreign.password,
-                  isHide: networks.foreign.isHide,
-                  isDisabled: networks.foreign.isDisabled,
-                  SplitBand: networks.foreign.splitBand,
-                };
-              }
-              
-              if (!networks.domestic.isDisabled) {
-                enabledNetworks.Domestic = {
-                  SSID: networks.domestic.ssid,
-                  Password: networks.domestic.password,
-                  isHide: networks.domestic.isHide,
-                  isDisabled: networks.domestic.isDisabled,
-                  SplitBand: networks.domestic.splitBand,
-                };
-              }
-              
-              if (!networks.split.isDisabled) {
-                enabledNetworks.Split = {
-                  SSID: networks.split.ssid,
-                  Password: networks.split.password,
-                  isHide: networks.split.isHide,
-                  isDisabled: networks.split.isDisabled,
-                  SplitBand: networks.split.splitBand,
-                };
-              }
-              
-              if (!networks.vpn.isDisabled) {
-                enabledNetworks.VPN = {
-                  SSID: networks.vpn.ssid,
-                  Password: networks.vpn.password,
-                  isHide: networks.vpn.isHide,
-                  isDisabled: networks.vpn.isDisabled,
-                  SplitBand: networks.vpn.splitBand,
-                };
-              }
-
-              starContext.updateLAN$({
-                Wireless: {
-                  MultiMode: enabledNetworks
-                }
-              });
-            }
-
-            await onComplete$();
-          })}
-          isValid={isFormValid.value}
+          onSubmit={handleSave}
+          isValid={wirelessEnabled.value ? isFormValid.value : true}
         />
       </div>
     </div>

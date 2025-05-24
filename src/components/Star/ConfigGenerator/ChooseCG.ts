@@ -242,7 +242,6 @@ export const DNS = (): RouterConfig => {
 
 
 export const ChooseCG = (state: StarState): RouterConfig => {
-       console.log(state)
        const config: RouterConfig = {
               ...BaseConfig(),
               ...DometicBase(),

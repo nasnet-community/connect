@@ -1,4 +1,4 @@
-import { component$, $ } from "@builder.io/qwik";
+import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
 import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
@@ -11,10 +11,7 @@ import { ServerFormField, Select } from "~/components/Core/Form/ServerField";
 export const IPIPTunnelStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
   
-  // Auto-complete step if tunnels are disabled
-  if (!stepper.data.tunnelEnabled.value) {
-    stepper.completeStep$();
-  }
+  // Auto-complete step if tunnels are disabled - moved to useTask$
   
   // Handler to add a new IPIP tunnel
   const addTunnel$ = $(() => {
@@ -46,7 +43,6 @@ export const IPIPTunnelStep = component$(() => {
     
     // If there are no tunnels, the step is still valid
     if (stepper.data.ipip.length === 0) {
-      stepper.completeStep$();
       return true;
     }
     
@@ -58,18 +54,45 @@ export const IPIPTunnelStep = component$(() => {
       }
     }
     
-    if (isValid) {
+    return isValid;
+  });
+
+  // Use useTask$ to handle step completion based on protocol selection and tunnel status
+  useTask$(({ track }) => {
+    // Track tunnel enabled state
+    track(() => stepper.data.tunnelEnabled.value);
+    
+    // Auto-complete step if tunnels are disabled
+    if (!stepper.data.tunnelEnabled.value) {
       stepper.completeStep$();
+      return;
     }
     
-    return isValid;
+    // Skip this step if a different protocol was selected
+    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'ipip') {
+      stepper.completeStep$();
+      return;
+    }
+    
+    // Track tunnels to revalidate when they change
+    track(() => stepper.data.ipip.length);
+    for (let i = 0; i < stepper.data.ipip.length; i++) {
+      const tunnel = stepper.data.ipip[i];
+      track(() => tunnel.name);
+      track(() => tunnel.localAddress);
+      track(() => tunnel.remoteAddress);
+    }
+    
+    // Validate and update step completion
+    validateTunnels$().then((isValid) => {
+      if (isValid) {
+        stepper.completeStep$();
+      }
+    });
   });
 
   // If tunnels are disabled, skip this step
   if (!stepper.data.tunnelEnabled.value) {
-    // Mark step as complete so CStepper navigation works
-    stepper.completeStep$();
-    
     return (
       <Card>
         <p class="text-gray-700 dark:text-gray-300">
@@ -78,9 +101,6 @@ export const IPIPTunnelStep = component$(() => {
       </Card>
     );
   }
-  
-  // Validate tunnels whenever the component renders to update completion status
-  validateTunnels$();
   
   return (
     <div class="space-y-6">

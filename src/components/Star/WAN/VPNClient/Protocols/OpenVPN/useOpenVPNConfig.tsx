@@ -186,7 +186,6 @@ export const useOpenVPNConfig = (
       }
     });
     
-    console.log("OpenVPN config updated in context:", openVPNClientConfig);
   });
 
   const handleConfigChange$ = $(async (value: string) => {

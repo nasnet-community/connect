@@ -110,7 +110,6 @@ export const usePPTPConfig = (
       }
     });
     
-    console.log("PPTP config updated in context:", pptpClientConfig);
   });
 
   const handleManualFormSubmit$ = $(async () => {

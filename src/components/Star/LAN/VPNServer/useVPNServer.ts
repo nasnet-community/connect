@@ -1,4 +1,4 @@
-import { useContext, $, useSignal, useStore, useComputed$ } from "@builder.io/qwik";
+import { useContext, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { Credentials } from "../../StarContext/LANType";
 import type { VPNType } from "../../StarContext/CommonType";
@@ -17,6 +17,7 @@ export const useVPNServer = () => {
   const vpnServerEnabled = useSignal(true);
   const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.CertificateKeyPassphrase || "");
   const passphraseError = useSignal("");
+  const isValid = useSignal(true);
   
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
@@ -36,6 +37,44 @@ export const useVPNServer = () => {
     ikev2: false,
     openvpn: false,
     wireguard: false
+  });
+
+  // Replace useComputed$ with useTask$ to properly handle state mutations
+  useTask$(({ track }) => {
+    track(() => vpnServerEnabled.value);
+    track(() => enabledProtocols.Wireguard);
+    track(() => enabledProtocols.OpenVPN);
+    track(() => enabledProtocols.PPTP);
+    track(() => enabledProtocols.L2TP);
+    track(() => enabledProtocols.SSTP);
+    track(() => enabledProtocols.IKeV2);
+    track(() => passphraseValue.value);
+    track(() => users);
+    
+    if (!vpnServerEnabled.value) {
+      isValid.value = true;
+      return;
+    }
+
+    const hasEnabledProtocol = Object.values(enabledProtocols).some(value => value);
+    
+    const hasValidUsers = users.every(user => {
+      const hasCredentials = user.Username.trim() !== "" && user.Password.trim() !== "";
+      const hasProtocols = (user.VPNType?.length || 0) > 0;
+      return hasCredentials && hasProtocols;
+    });
+
+    if (enabledProtocols.OpenVPN) {
+      if (passphraseValue.value.length < 10) {
+        passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
+        isValid.value = false;
+        return;
+      } else {
+        passphraseError.value = "";
+      }
+    }
+
+    isValid.value = hasEnabledProtocol && hasValidUsers;
   });
 
   const toggleSection = $((section: string) => {
@@ -90,29 +129,6 @@ export const useVPNServer = () => {
     } else {
       passphraseError.value = "";
     }
-  });
-
-  const isValid = useComputed$(() => {
-    if (!vpnServerEnabled.value) return true;
-
-    const hasEnabledProtocol = Object.values(enabledProtocols).some(value => value);
-    
-    const hasValidUsers = users.every(user => {
-      const hasCredentials = user.Username.trim() !== "" && user.Password.trim() !== "";
-      const hasProtocols = (user.VPNType?.length || 0) > 0;
-      return hasCredentials && hasProtocols;
-    });
-
-    if (enabledProtocols.OpenVPN) {
-      if (passphraseValue.value.length < 10) {
-        passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-        return false;
-      } else {
-        passphraseError.value = "";
-      }
-    }
-
-    return hasEnabledProtocol && hasValidUsers;
   });
 
   const saveSettings = $((onComplete$?: QRL<() => void>) => {

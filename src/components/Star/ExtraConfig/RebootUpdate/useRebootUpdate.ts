@@ -41,7 +41,6 @@ export const useRebootUpdate = () => {
   // Track changes to selectedTimezone
   useTask$(({ track }) => {
     const timezone = track(() => selectedTimezone.value);
-    console.log("Timezone changed:", timezone);
     
     // Update the context when timezone changes
     if (timezone && timezone !== ctx.state.ExtraConfig.Timezone) {

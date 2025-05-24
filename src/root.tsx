@@ -70,7 +70,9 @@ export default component$(() => {
         })();
         window.addEventListener('load', function() {
           const themeSwitch = document.getElementById('hide-checkbox');
-          themeSwitch.checked = localStorage.getItem('theme') === 'light'? true: false;
+          if (themeSwitch) {
+            themeSwitch.checked = localStorage.getItem('theme') === 'light' ? true : false;
+          }
         }
         );
       `}

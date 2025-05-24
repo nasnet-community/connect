@@ -238,7 +238,6 @@ export const useIKEv2Config = (
       }
     });
     
-    console.log("IKEv2 config updated in context:", ikev2ClientConfig);
   });
   
   const handleManualFormSubmit$ = $(async () => {

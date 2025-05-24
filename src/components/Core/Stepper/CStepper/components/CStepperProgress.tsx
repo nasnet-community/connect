@@ -115,7 +115,7 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
           const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
           
           return (
-            <li key={step.id} class="mb-10 ml-4">
+            <li key={`step-${step.id}-mobile-${index}`} class="mb-10 ml-4">
               <div 
                 class={`absolute flex items-center justify-center w-9 h-9 rounded-full -left-4.5 ring-8 ring-white dark:ring-gray-900 
                 ${hasErrors 
@@ -197,8 +197,9 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                 positionClass = "mr-0";
               }
               
+              // Ensure unique keys by combining step.id with displayIndex
               return (
-                <div key={step.id} class={`flex flex-col items-center ${positionClass}`}>
+                <div key={`step-${step.id}-display-${displayIndex}`} class={`flex flex-col items-center ${positionClass}`}>
                   {/* Ellipsis indicator before step if needed */}
                   {showEllipsisBefore && (
                     <span class="absolute text-xs text-gray-400" style={{ 

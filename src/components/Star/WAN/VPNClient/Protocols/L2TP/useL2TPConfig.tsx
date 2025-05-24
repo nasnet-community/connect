@@ -118,7 +118,6 @@ export const useL2TPConfig = (
       }
     });
     
-    console.log("L2TP config updated in context:", l2tpClientConfig);
   });
 
   const handleManualFormSubmit$ = $(async () => {

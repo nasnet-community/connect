@@ -70,7 +70,6 @@ export const SelectPerformanceTest = component$(() => {
     };
 
     // We'll let the components render on their own, and measure change performance
-    console.log('Performance test initialized. Select options to measure render times.');
   });
 
   return (

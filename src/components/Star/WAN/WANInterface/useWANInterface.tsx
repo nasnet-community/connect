@@ -1,4 +1,4 @@
-import { $, useContext, useSignal } from "@builder.io/qwik";
+import { $, useContext, useSignal, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { WANConfig } from "../../StarContext/WANType";
 import type { LTE, Sfp, Wireless, Ethernet } from "../../StarContext/CommonType";
@@ -11,31 +11,14 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const password = useSignal("");
   const isValid = useSignal(false);
 
-  // Initialize values from context if they exist
-  const interfaceData = starContext.state.WAN.WANLink[mode];
-  if (interfaceData) {
-    if (interfaceData.InterfaceName && selectedInterface.value === "") {
-      selectedInterface.value = interfaceData.InterfaceName;
-    }
-    
-    if (interfaceData.WirelessCredentials) {
-      if (interfaceData.WirelessCredentials.SSID && ssid.value === "") {
-        ssid.value = interfaceData.WirelessCredentials.SSID;
-      }
-      
-      if (interfaceData.WirelessCredentials.Password && password.value === "") {
-        password.value = interfaceData.WirelessCredentials.Password;
-      }
-    }
-  }
-
+  // Define validateForm first before using it in useTask$
   const validateForm = $(() => {
     if (!selectedInterface.value) {
       isValid.value = false;
       return false;
     }
 
-    if (selectedInterface.value.startsWith("wlan")) {
+    if (selectedInterface.value.startsWith("wifi")) {
       if (!ssid.value || !password.value || password.value.length < 8) {
         isValid.value = false;
         return false;
@@ -44,6 +27,33 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
 
     isValid.value = true;
     return true;
+  });
+
+  // Move initialization to useTask$ to avoid state mutation during render
+  useTask$(({ track }) => {
+    // Track state changes to re-run this task when needed
+    track(() => starContext.state.WAN.WANLink);
+    
+    // Initialize values from context if they exist
+    const interfaceData = starContext.state.WAN.WANLink[mode];
+    if (interfaceData) {
+      if (interfaceData.InterfaceName && selectedInterface.value === "") {
+        selectedInterface.value = interfaceData.InterfaceName;
+      }
+      
+      if (interfaceData.WirelessCredentials) {
+        if (interfaceData.WirelessCredentials.SSID && ssid.value === "") {
+          ssid.value = interfaceData.WirelessCredentials.SSID;
+        }
+        
+        if (interfaceData.WirelessCredentials.Password && password.value === "") {
+          password.value = interfaceData.WirelessCredentials.Password;
+        }
+      }
+    }
+    
+    // Run validation whenever state changes
+    validateForm();
   });
 
   const updateStarContext = $(() => {
@@ -67,7 +77,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       InterfaceName: selectedInterface.value as Ethernet | Wireless | Sfp | LTE,
     };
 
-    if (selectedInterface.value.startsWith("wlan")) {
+    if (selectedInterface.value.startsWith("wifi")) {
       modeConfig.WirelessCredentials = {
         SSID: ssid.value,
         Password: password.value
@@ -85,7 +95,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const handleInterfaceSelect = $((value: string) => {
     selectedInterface.value = value;
 
-    if (!value.startsWith("wlan")) {
+    if (!value.startsWith("wifi")) {
       ssid.value = "";
       password.value = "";
     }
@@ -105,8 +115,6 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     updateStarContext();
     validateForm();
   });
-
-  validateForm();
 
   return {
     selectedInterface,

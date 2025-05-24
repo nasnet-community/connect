@@ -1,4 +1,4 @@
-import { component$, useContext, useStore, $ } from "@builder.io/qwik";
+import { component$, useContext, useStore, $, useTask$ } from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
 import { Tunnel } from "./Tunnel/Tunnel";
@@ -17,6 +17,32 @@ export const LAN = component$((props: StepProps) => {
 
   const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
 
+  // Create a store to manage steps
+  const stepsStore = useStore({
+    activeStep: 0,
+    steps: [] as StepItem[],
+  });
+
+  const handleStepComplete = $((id: number) => {
+    const stepIndex = stepsStore.steps.findIndex((step) => step.id === id);
+    if (stepIndex > -1) {
+      stepsStore.steps[stepIndex].isComplete = true;
+      
+      // Move to the next step if there is one
+      if (stepIndex < stepsStore.steps.length - 1) {
+        stepsStore.activeStep = stepIndex + 1;
+      } else {
+        // This was the last step, so complete the entire LAN section
+        props.onComplete$();
+      }
+
+      // Check if all steps are now complete
+      if (stepsStore.steps.every((step) => step.isComplete)) {
+        props.onComplete$();
+      }
+    }
+  });
+
   const EInterfaceStep = component$((props: StepProps) => (
     <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
@@ -25,14 +51,8 @@ export const LAN = component$((props: StepProps) => {
     <Wireless 
       isComplete={props.isComplete} 
       onComplete$={props.onComplete$} 
-      onDisabled$={$(() => {
-        // When Wireless is disabled, automatically mark the step as complete
-        const step = stepsStore.steps.find(step => step.title === $localize`Wireless`);
-        if (step) {
-          step.isComplete = true;
-          handleStepComplete(step.id);
-        }
-      })}
+      // Don't advance to the next step when disabled - let the Save button handle it
+      onDisabled$={$(() => {})}
     />
   ));
 
@@ -40,14 +60,8 @@ export const LAN = component$((props: StepProps) => {
     <VPNServer 
       isComplete={props.isComplete} 
       onComplete$={props.onComplete$} 
-      onDisabled$={$(() => {
-        // When VPN Server is disabled, automatically mark the step as complete
-        const step = stepsStore.steps.find(step => step.title === $localize`VPN Server`);
-        if (step) {
-          step.isComplete = true;
-          handleStepComplete(step.id);
-        }
-      })}
+      // Don't advance to the next step when disabled - let the Save button handle it
+      onDisabled$={$(() => {})}
     />
   ));
 
@@ -55,14 +69,8 @@ export const LAN = component$((props: StepProps) => {
     <Tunnel 
       isComplete={props.isComplete} 
       onComplete$={props.onComplete$}
-      onDisabled$={$(() => {
-        // When Tunnel is disabled, automatically mark the step as complete
-        const step = stepsStore.steps.find(step => step.title === $localize`Network Tunnels`);
-        if (step) {
-          step.isComplete = true;
-          handleStepComplete(step.id);
-        }
-      })}
+      // Don't advance to the next step when disabled - let the Save button handle it
+      onDisabled$={$(() => {})}
     />
   ));
 
@@ -114,30 +122,10 @@ export const LAN = component$((props: StepProps) => {
   ];
 
   const steps = isAdvancedMode ? advancedSteps : baseSteps;
-
-  const stepsStore = useStore({
-    activeStep: 0,
-    steps,
-  });
-
-  const handleStepComplete = $((id: number) => {
-    const stepIndex = stepsStore.steps.findIndex((step) => step.id === id);
-    if (stepIndex > -1) {
-      stepsStore.steps[stepIndex].isComplete = true;
-      
-      // Move to the next step if there is one
-      if (stepIndex < stepsStore.steps.length - 1) {
-        stepsStore.activeStep = stepIndex + 1;
-      } else {
-        // This was the last step, so complete the entire LAN section
-        props.onComplete$();
-      }
-
-      // Check if all steps are now complete
-      if (stepsStore.steps.every((step) => step.isComplete)) {
-        props.onComplete$();
-      }
-    }
+  
+  // Initialize steps in the store
+  useTask$(() => {
+    stepsStore.steps = steps;
   });
 
   return (

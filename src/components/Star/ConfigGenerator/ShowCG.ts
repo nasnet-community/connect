@@ -15,7 +15,6 @@ import type { RouterConfig } from "./ConfigGenerator";
 //   const domesticInterface = state.WAN.Easy.Domestic.interface;
 //   const foreignInterface = state.WAN.Easy.Foreign.interface;
 
-//   console.log(allInterfaces);
 
 //   // Filter out WAN interfaces
 //   const lanInterfaces = allInterfaces.filter(
@@ -24,7 +23,6 @@ import type { RouterConfig } from "./ConfigGenerator";
 //       iface !== foreignInterface &&
 //       !iface.startsWith("wifi"),
 //   );
-//   console.log(lanInterfaces);
 
 //   // Add LAN interfaces to LANBridgeSplit
 //   lanInterfaces.forEach((iface) => {

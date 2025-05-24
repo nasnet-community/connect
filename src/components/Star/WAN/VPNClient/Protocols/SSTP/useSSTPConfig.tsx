@@ -1,4 +1,4 @@
-import { $, useSignal, useContext } from "@builder.io/qwik";
+import { $, useSignal, useContext, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType";
@@ -45,33 +45,37 @@ export const useSSTPConfig = (
   const verifyServerCertificate = useSignal(false);
   const tlsVersion = useSignal<TLSVersion>("any");
   
-  if (starContext.state.WAN.VPNClient?.SSTP?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.SSTP[0];
-    serverAddress.value = existingConfig.ConnectTo || "";
+  useTask$(({ track }) => {
+    track(() => starContext.state.WAN.VPNClient?.SSTP?.[0]);
     
-    if (existingConfig.Credentials) {
-      username.value = existingConfig.Credentials.Username || "";
-      password.value = existingConfig.Credentials.Password || "";
-    }
-    
-    if (existingConfig.Port !== undefined) {
-      port.value = existingConfig.Port.toString();
-    }
-    
-    if (existingConfig.VerifyServerCertificate !== undefined) {
-      verifyServerCertificate.value = existingConfig.VerifyServerCertificate;
-    }
-    
-    if (existingConfig.TlsVersion) {
-      tlsVersion.value = existingConfig.TlsVersion;
-    }
-    
-    if (serverAddress.value && username.value && password.value) {
-      if (onIsValidChange$) {
-        setTimeout(() => onIsValidChange$(true), 0);
+    if (starContext.state.WAN.VPNClient?.SSTP?.[0]) {
+      const existingConfig = starContext.state.WAN.VPNClient.SSTP[0];
+      serverAddress.value = existingConfig.ConnectTo || "";
+      
+      if (existingConfig.Credentials) {
+        username.value = existingConfig.Credentials.Username || "";
+        password.value = existingConfig.Credentials.Password || "";
+      }
+      
+      if (existingConfig.Port !== undefined) {
+        port.value = existingConfig.Port.toString();
+      }
+      
+      if (existingConfig.VerifyServerCertificate !== undefined) {
+        verifyServerCertificate.value = existingConfig.VerifyServerCertificate;
+      }
+      
+      if (existingConfig.TlsVersion) {
+        tlsVersion.value = existingConfig.TlsVersion;
+      }
+      
+      if (serverAddress.value && username.value && password.value) {
+        if (onIsValidChange$) {
+          setTimeout(() => onIsValidChange$(true), 0);
+        }
       }
     }
-  }
+  });
   
   const validateSSTPConfig = $(async (config: SSTPConfig) => {
     const requiredFields = [
@@ -123,7 +127,6 @@ export const useSSTPConfig = (
       }
     });
     
-    console.log("SSTP config updated in context:", sstpClientConfig);
   });
 
   const handleManualFormSubmit$ = $(async () => {

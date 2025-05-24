@@ -1,4 +1,4 @@
-import { component$, $ } from "@builder.io/qwik";
+import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
 import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
@@ -11,11 +11,7 @@ import { ServerFormField, Select } from "~/components/Core/Form/ServerField";
 export const GRETunnelStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
   
-  // Skip this step if a different protocol was selected
-  if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'gre') {
-    stepper.completeStep$();
-    return null;
-  }
+  // Skip this step if a different protocol was selected - moved to useTask$
   
   // Handler to add a new GRE tunnel
   const addTunnel$ = $(() => {
@@ -47,7 +43,6 @@ export const GRETunnelStep = component$(() => {
     
     // If there are no tunnels, the step is still valid
     if (stepper.data.gre.length === 0) {
-      stepper.completeStep$();
       return true;
     }
     
@@ -59,15 +54,38 @@ export const GRETunnelStep = component$(() => {
       }
     }
     
-    if (isValid) {
-      stepper.completeStep$();
-    }
-    
     return isValid;
   });
   
-  // Validate tunnels whenever the component renders to update completion status
-  validateTunnels$();
+  // Use useTask$ to handle step completion based on protocol selection
+  useTask$(({ track }) => {
+    // Skip this step if a different protocol was selected
+    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'gre') {
+      stepper.completeStep$();
+      return;
+    }
+    
+    // Track tunnels to revalidate when they change
+    track(() => stepper.data.gre.length);
+    for (let i = 0; i < stepper.data.gre.length; i++) {
+      const tunnel = stepper.data.gre[i];
+      track(() => tunnel.name);
+      track(() => tunnel.localAddress);
+      track(() => tunnel.remoteAddress);
+    }
+    
+    // Validate and update step completion
+    validateTunnels$().then((isValid) => {
+      if (isValid) {
+        stepper.completeStep$();
+      }
+    });
+  });
+
+  // Skip rendering if a different protocol was selected
+  if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'gre') {
+    return null;
+  }
 
   return (
     <div class="space-y-6">

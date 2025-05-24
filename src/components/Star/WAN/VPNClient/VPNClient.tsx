@@ -54,9 +54,7 @@ export const VPNClient = component$<StepProps>(
         const saved = await saveVPNSelection$();
         
         if (saved && onComplete$) {
-          console.log("VPN configuration saved successfully, proceeding to next step");
           
-          console.log("Current VPN Client state:", starContext.state.WAN.VPNClient);
           
           await onComplete$();
         } else if (!saved) {

@@ -271,10 +271,8 @@ export const FormErrorMessageExamples = component$(() => {
  */
 export const ComprehensiveFormExample = component$(() => {
   const handleSubmit$ = $((values: Record<string, any>) => {
-    console.log('Form submitted with values:', values);
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        console.log('Form submitted successfully');
         resolve();
       }, 1000);
     });

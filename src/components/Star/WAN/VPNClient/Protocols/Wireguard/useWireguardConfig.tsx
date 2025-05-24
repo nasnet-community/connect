@@ -198,7 +198,6 @@ export const useWireguardConfig = (
       }
     });
     
-    console.log("Wireguard config updated in context:", wireguardClientConfig);
   });
 
   const handleConfigChange$ = $(async (value: string) => {

@@ -58,7 +58,7 @@ export const WANInterface = component$<WANInterfaceProps>(
               mode={mode}
             />
 
-            {selectedInterface.value.startsWith("wlan") && (
+            {selectedInterface.value.startsWith("wifi") && (
               <WirelessSettings
                 ssid={ssid.value}
                 password={password.value}

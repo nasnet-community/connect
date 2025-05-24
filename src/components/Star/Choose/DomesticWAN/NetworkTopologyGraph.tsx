@@ -50,15 +50,15 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
   const renderNodeIcon = (type: string) => {
     switch (type) {
       case 'laptop':
-        return <LuLaptop class="h-8 w-8 text-amber-600" />;
+        return <LuLaptop class="h-8 w-8 text-amber-600 dark:text-secondary-400" />;
       case 'wifi':
-        return <LuWifi class="h-8 w-8 text-amber-600" />;
+        return <LuWifi class="h-8 w-8 text-amber-600 dark:text-secondary-400" />;
       case 'globe':
-        return <LuGlobe class="h-8 w-8 text-amber-600" />;
+        return <LuGlobe class="h-8 w-8 text-amber-600 dark:text-secondary-400" />;
       case 'globe2':
-        return <LuGlobe2 class="h-8 w-8 text-amber-600" />;
+        return <LuGlobe2 class="h-8 w-8 text-amber-600 dark:text-secondary-400" />;
       case 'server':
-        return <LuServer class="h-8 w-8 text-amber-600" />;
+        return <LuServer class="h-8 w-8 text-amber-600 dark:text-secondary-400" />;
       default:
         return null;
     }
@@ -119,33 +119,33 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
       role="region"
       aria-label={title}
     >
-      <div class="network-graph h-full w-full rounded-xl bg-amber-50/50 p-5 dark:bg-amber-950/20 shadow-sm transition-all duration-500 ease-in-out cursor-zoom-in relative">
+      <div class="network-graph h-full w-full rounded-xl bg-amber-50/50 p-5 dark:bg-gray-900/95 shadow-sm transition-all duration-500 ease-in-out relative dark:border dark:border-gray-800">
         {/* Graph header with title, legend, and close icon button (when expanded) */}
         <div class={`graph-header hidden mb-4 ${isExpanded.value ? 'expanded-header' : 'items-center justify-between relative'}`}>
           {/* Centered legend and title */}
           <div class={`legend-center flex flex-col items-center w-full ${isExpanded.value ? 'absolute left-1/2 top-6 -translate-x-1/2 z-10' : ''}`} style={isExpanded.value ? 'pointer-events: auto;' : ''}>
-            <span class="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1">
+            <span class="text-sm font-medium text-amber-800 dark:text-secondary-300 mb-1">
               {title}
             </span>
             <div class="flex items-center space-x-3">
-              <div class="flex items-center">
-                <div class="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5"></div>
-                <span class="text-xs text-amber-800 dark:text-amber-300">
-                  {$localize`Traffic Path`}
-                </span>
-              </div>
+                <div class="flex items-center">
+                  <div class="h-2.5 w-2.5 rounded-full bg-amber-500 dark:bg-secondary-500 mr-1.5"></div>
+                  <span class="text-xs text-amber-800 dark:text-secondary-300">
+                    {$localize`Traffic Path`}
+                  </span>
+                </div>
               {/* Add legend for domestic and foreign connections */}
               {showDomesticLegend && (
                 <div class="flex items-center">
                   <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 mr-1.5"></div>
-                  <span class="text-xs text-amber-800 dark:text-amber-300">
+                  <span class="text-xs text-amber-800 dark:text-emerald-300">
                     {$localize`Domestic`}
                   </span>
                 </div>
               )}
               <div class="flex items-center">
                 <div class="h-2.5 w-2.5 rounded-full bg-purple-500 mr-1.5"></div>
-                <span class="text-xs text-amber-800 dark:text-amber-300">
+                <span class="text-xs text-amber-800 dark:text-purple-300">
                   {$localize`Foreign`}
                 </span>
               </div>
@@ -154,7 +154,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           {/* Close icon button - visible when expanded, top right of expanded graph */}
           {isExpanded.value && (
             <button
-              class="close-graph-btn absolute top-4 right-4 p-2 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-800 dark:text-amber-200 shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 z-20"
+              class="close-graph-btn absolute top-4 right-4 p-2 rounded-full bg-amber-100 hover:bg-amber-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-amber-800 dark:text-gray-200 shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 z-20"
               onClick$={$((e) => {
                 e.stopPropagation();
                 handleCollapse();
@@ -190,9 +190,11 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
                 arrowPoints = `${x2},${y2} ${x2-10},${y2+5} ${x2-3},${y2+12}`;
               }
               
+              // Use the connection color from props (amber in light mode)
               const lineColor = conn.color;
-              const domesticPacketColor = "rgb(16, 185, 129)"; 
-              const foreignPacketColor = "rgb(168, 85, 247)"; 
+              // Modern color palette with better visibility in dark mode
+              const domesticPacketColor = "rgb(16, 185, 129)"; // Emerald-500
+              const foreignPacketColor = "rgb(168, 85, 247)"; // Purple-500
               
               const packetColor = conn.isDomestic ? domesticPacketColor : foreignPacketColor;
               
@@ -207,8 +209,9 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
                     x2={x2} 
                     y2={y2} 
                     stroke={lineColor}
-                    stroke-width="2" 
-                    stroke-dasharray="5,3"
+                    class="traffic-path"
+                    stroke-width="2.5" 
+                    stroke-dasharray="4,3"
                   >
                     <animate 
                       attributeName="stroke-dashoffset" 
@@ -220,7 +223,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
                   </line>
                   
                   {/* Arrow pointing to destination node */}
-                  <polygon points={arrowPoints} fill={lineColor} />
+                  <polygon points={arrowPoints} fill={lineColor} class="traffic-path-arrow" />
                   
                   {/* For the User to Router connection, render domestic packets */}
                   {destinations.hasDomestic && (
@@ -352,7 +355,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
                 <circle
                   r="22"
                   fill="rgba(251, 191, 36, 0.2)"
-                  class="node-highlight"
+                  class="node-highlight dark:fill-secondary-500/20"
                 />
                 
                 <foreignObject x="-16" y="-16" width="32" height="32">
@@ -364,7 +367,8 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
                   x="0" 
                   y={node.y < 100 ? "-20" : "25"} 
                   text-anchor="middle" 
-                  fill={node.y < 100 ? "#eab308" : "#f59e0b"} 
+                  fill={node.y < 100 ? "#eab308" : "#f59e0b"}
+                  class="dark:fill-secondary-300"
                   font-size="11" 
                   font-weight="bold"
                 >
@@ -375,12 +379,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           </svg>
         </div>
         
-        {/* Hover indicator with instruction text - now visible in normal state */}
-        <div class="expand-indicator absolute inset-0 flex items-end justify-center pb-2">
-          <span class="text-xs font-medium text-amber-800/90 dark:text-amber-300/90 bg-amber-50/70 dark:bg-amber-950/70 px-2 py-1 rounded">
-            {$localize`Click to expand`}
-          </span>
-        </div>
+
       </div>
       
       {/* Add CSS directly inside component */}
@@ -412,6 +411,11 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           padding: 0.5rem 1.5rem;
           box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
         }
+        .dark .topology-container.expanded .graph-header.expanded-header .legend-center {
+          background: rgba(31, 41, 55, 0.95);
+          border: 1px solid rgba(75, 85, 99, 0.4);
+          box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+        }
         .topology-container.expanded .graph-header.expanded-header .close-graph-btn {
           z-index: 20;
         }
@@ -419,12 +423,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         .graph-header button[type="button"] {
           z-index: 1;
         }
-        .expand-indicator {
-          background: linear-gradient(to bottom, transparent 60%, rgba(254, 243, 199, 0.5) 100%);
-        }
-        .dark .expand-indicator {
-          background: linear-gradient(to bottom, transparent 60%, rgba(20, 10, 0, 0.5) 100%);
-        }
+
         /* Use .expanded instead of :hover for expanded state */
         .topology-container.expanded .network-graph {
           position: fixed;
@@ -467,7 +466,9 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         }
         
         .dark .topology-container.expanded .network-graph {
-          background-color: rgb(10 5 0 / 0.97);
+          background-color: rgb(17, 24, 39, 0.98);
+          border: 1px solid rgb(55, 65, 81);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         
         .topology-container.expanded .topology-content {
@@ -475,10 +476,7 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
           max-height: 450px;
         }
         
-        .topology-container.expanded .expand-indicator {
-          opacity: 0;
-          transition: opacity 0.2s ease-out;
-        }
+
         
         /* Node highlight pulse animation */
         .node-highlight {
@@ -498,6 +496,17 @@ export const NetworkTopologyGraph = component$((props: NetworkTopologyGraphProps
         
         .topology-container.expanded circle {
           animation-duration: 3s;
+        }
+        
+        /* Apply secondary color to traffic paths in dark mode - using Connect's design system secondary color */
+        .dark .traffic-path {
+          stroke: #4972ba !important; /* Using the exact secondary-500 color from tailwind.config.js */
+          stroke-opacity: 1 !important;
+          stroke-width: 3px !important;
+        }
+        
+        .dark .traffic-path-arrow {
+          fill: #4972ba !important; /* Using the exact secondary-500 color from tailwind.config.js */
         }
       `} />
     </div>

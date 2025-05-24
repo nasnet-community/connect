@@ -24,7 +24,6 @@ export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     greTunnels,
     vxlanTunnels,
     saveTunnels,
-    isValid,
   } = useTunnel();
 
   // Define saveSettings function wrapper
@@ -126,8 +125,10 @@ export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
               </p>
             </div>
             <ActionFooter 
-              saveDisabled={!isValid.value}
-              onSave$={() => saveSettings$(onComplete$)}
+              saveDisabled={false}
+              onSave$={$(async () => {
+                await saveSettings$(onComplete$);
+              })}
               saveText={$localize`Save`}
             />
           </div>

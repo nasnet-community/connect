@@ -1,4 +1,4 @@
-import { component$, $ } from "@builder.io/qwik";
+import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
 import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
@@ -13,7 +13,7 @@ export const VXLANTunnelStep = component$(() => {
   
   // Skip this step if a different protocol was selected
   if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'vxlan') {
-    stepper.completeStep$();
+    // Don't directly call completeStep$ here - move to useTask$
     return null;
   }
   
@@ -48,7 +48,6 @@ export const VXLANTunnelStep = component$(() => {
     
     // If there are no tunnels, the step is still valid
     if (stepper.data.vxlan.length === 0) {
-      stepper.completeStep$();
       return true;
     }
     
@@ -60,15 +59,34 @@ export const VXLANTunnelStep = component$(() => {
       }
     }
     
-    if (isValid) {
-      stepper.completeStep$();
-    }
-    
     return isValid;
   });
   
-  // Validate tunnels whenever the component renders to update completion status
-  validateTunnels$();
+  // Use useTask$ to handle step completion based on protocol selection
+  useTask$(({ track }) => {
+    // Skip this step if a different protocol was selected
+    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'vxlan') {
+      stepper.completeStep$();
+      return;
+    }
+    
+    // Track tunnels to revalidate when they change
+    track(() => stepper.data.vxlan.length);
+    for (let i = 0; i < stepper.data.vxlan.length; i++) {
+      const tunnel = stepper.data.vxlan[i];
+      track(() => tunnel.name);
+      track(() => tunnel.localAddress);
+      track(() => tunnel.remoteAddress);
+      track(() => tunnel.vni);
+    }
+    
+    // Validate and update step completion
+    validateTunnels$().then((isValid) => {
+      if (isValid) {
+        stepper.completeStep$();
+      }
+    });
+  });
 
   return (
     <div class="space-y-6">

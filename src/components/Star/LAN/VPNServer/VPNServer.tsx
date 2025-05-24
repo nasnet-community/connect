@@ -158,8 +158,10 @@ export const VPNServer = component$<StepProps>(({ onComplete$, onDisabled$ }) =>
               </p>
             </div>
             <ActionFooter 
-              saveDisabled={!isValid.value}
-              onSave$={() => saveSettings$(onComplete$)}
+              saveDisabled={false}
+              onSave$={$(async () => {
+                await saveSettings$(onComplete$);
+              })}
             />
           </div>
         )}
