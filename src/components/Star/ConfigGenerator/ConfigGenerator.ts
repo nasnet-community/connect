@@ -124,7 +124,7 @@ export const ConfigGenerator = (state: StarState): string => {
 
   try {
     // Generate configurations from each module
-    const chooseConfig = ChooseCG(state);
+    const chooseConfig = ChooseCG();
     const wanConfig = WANCG(state);
     const lanConfig = LANCG(state);
     const extraConfig = ExtraCG(state.ExtraConfig);
