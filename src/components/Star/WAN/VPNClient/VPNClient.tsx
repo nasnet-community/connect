@@ -5,8 +5,8 @@ import { VPNSelector } from "./VPNSelector";
 import { ErrorMessage } from "./components/ErrorMessage";
 import { ActionFooter } from "./ActionFooter";
 import type { VPNType } from "~/components/Star/StarContext/CommonType";
-import { useContext } from "@builder.io/qwik";
-import { StarContext } from "~/components/Star/StarContext/StarContext";
+// import { useContext } from "@builder.io/qwik";
+// import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { PromoL2TPBanner } from "./PromoL2TPBanner";
 
 import { WireguardConfig } from "./Protocols/Wireguard/WireguardConfig";
@@ -18,7 +18,7 @@ import { SSTPConfig } from "./Protocols/SSTP/SSTPConfig";
 
 export const VPNClient = component$<StepProps>(
   ({ isComplete, onComplete$ }) => {
-    const starContext = useContext(StarContext);
+    // const starContext = useContext(StarContext);
     const {
       isValid,
       vpnType,

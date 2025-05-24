@@ -1,6 +1,6 @@
 import type { RouterConfig } from "./ConfigGenerator";
 // import { mergeMultipleConfigs } from "./ConfigGenerator";
-import type { StarState } from "~/components/Star/StarContext/StarContext";
+// import type { StarState } from "~/components/Star/StarContext/StarContext";
 
 
 export const BaseConfig = (): RouterConfig => {
@@ -241,7 +241,7 @@ export const DNS = (): RouterConfig => {
 
 
 
-export const ChooseCG = (state: StarState): RouterConfig => {
+export const ChooseCG = (): RouterConfig => {
        const config: RouterConfig = {
               ...BaseConfig(),
               ...DometicBase(),
