@@ -11,11 +11,12 @@ import { VXLANTunnelStep } from "./Steps/VXLANTunnelStep";
 import { TunnelSummaryStep } from "./Steps/TunnelSummaryStep";
 import type { PropFunction } from "@builder.io/qwik";
 import type { TunnelStepperData } from "./types";
+import { ActionFooter } from "./ActionFooter";
 
 // Create a typed context for Tunnel
 export const TunnelContextId = createStepperContext<TunnelStepperData>("tunnel-stepper-context");
 
-export const Tunnel = component$<StepProps>(({ onComplete$ }) => {
+export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const {
     tunnelsEnabled,
     ipipTunnels,
@@ -23,6 +24,7 @@ export const Tunnel = component$<StepProps>(({ onComplete$ }) => {
     greTunnels,
     vxlanTunnels,
     saveTunnels,
+    isValid,
   } = useTunnel();
 
   // Define saveSettings function wrapper
@@ -106,19 +108,31 @@ export const Tunnel = component$<StepProps>(({ onComplete$ }) => {
     <div class="mx-auto w-full max-w-5xl p-4">
       <div class="space-y-8">
         {/* Header with enable/disable toggle */}
-        <TunnelHeader tunnelsEnabled={tunnelsEnabled} />
+        <TunnelHeader 
+          tunnelsEnabled={tunnelsEnabled} 
+          onToggle$={$(async (enabled: boolean) => {
+            if (!enabled && onDisabled$) {
+              await onDisabled$();
+            }
+          })}
+        />
 
         {/* Message when tunnels are disabled */}
-        {!tunnelsEnabled.value && (
-          <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
-            <p class="text-gray-700 dark:text-gray-300">
-              {$localize`Network tunneling is currently disabled. Enable it using the toggle above to configure tunnel settings.`}
-            </p>
+        {!tunnelsEnabled.value ? (
+          <div class="space-y-4">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+              <p class="text-gray-700 dark:text-gray-300">
+                {$localize`Network tunneling is currently disabled. Enable it using the toggle above to configure tunnel settings.`}
+              </p>
+            </div>
+            <ActionFooter 
+              saveDisabled={!isValid.value}
+              onSave$={() => saveSettings$(onComplete$)}
+              saveText={$localize`Save`}
+            />
           </div>
-        )}
-
-        {/* Stepper - only shown when tunnels are enabled */}
-        {tunnelsEnabled.value && (
+        ) : (
+          /* Stepper - only shown when tunnels are enabled */
           <CStepper
             steps={steps.value}
             onComplete$={handleComplete$}

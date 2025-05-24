@@ -1,11 +1,12 @@
-import { component$, type Signal } from "@builder.io/qwik";
+import { component$, type Signal, type QRL } from "@builder.io/qwik";
 import { HiWifiOutline, HiExclamationTriangleOutline, HiCheckCircleOutline, HiXCircleOutline } from "@qwikest/icons/heroicons";
 
 interface WirelessHeaderProps {
   wirelessEnabled: Signal<boolean>;
+  onToggle$?: QRL<(enabled: boolean) => void>;
 }
 
-export const WirelessHeader = component$<WirelessHeaderProps>(({ wirelessEnabled }) => {
+export const WirelessHeader = component$<WirelessHeaderProps>(({ wirelessEnabled, onToggle$ }) => {
   return (
     <div class="mb-6 space-y-4">
       <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
@@ -35,7 +36,12 @@ export const WirelessHeader = component$<WirelessHeaderProps>(({ wirelessEnabled
               type="radio"
               name="wireless"
               checked={!wirelessEnabled.value}
-              onChange$={() => wirelessEnabled.value = false}
+              onChange$={async () => {
+                wirelessEnabled.value = false;
+                if (onToggle$) {
+                  await onToggle$(false);
+                }
+              }}
               class="hidden"
             />
             <HiXCircleOutline class="h-5 w-5" />
@@ -53,7 +59,12 @@ export const WirelessHeader = component$<WirelessHeaderProps>(({ wirelessEnabled
               type="radio"
               name="wireless"
               checked={wirelessEnabled.value}
-              onChange$={() => wirelessEnabled.value = true}
+              onChange$={async () => {
+                wirelessEnabled.value = true;
+                if (onToggle$) {
+                  await onToggle$(true);
+                }
+              }}
               class="hidden"
             />
             <HiCheckCircleOutline class="h-5 w-5" />

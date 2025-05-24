@@ -28,7 +28,7 @@ export interface VPNServerContextData {
 
 export const VPNServerContextId = createStepperContext<VPNServerContextData>("vpn-server");
 
-export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
+export const VPNServer = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const {
     users,
     vpnServerEnabled,
@@ -132,7 +132,14 @@ export const VPNServer = component$<StepProps>(({ onComplete$ }) => {
     <div class="mx-auto w-full max-w-5xl p-4">
       <div class="space-y-8">
         {/* Header with Enable/Disable Toggle */}
-        <VPNServerHeader vpnServerEnabled={vpnServerEnabled} />
+        <VPNServerHeader 
+          vpnServerEnabled={vpnServerEnabled}
+          onToggle$={$(async (enabled: boolean) => {
+            if (!enabled && onDisabled$) {
+              await onDisabled$();
+            }
+          })}
+        />
 
         {vpnServerEnabled.value ? (
           <CStepper

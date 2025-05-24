@@ -22,15 +22,48 @@ export const LAN = component$((props: StepProps) => {
   ));
 
   const WirelessStep = component$((props: StepProps) => (
-    <Wireless isComplete={props.isComplete} onComplete$={props.onComplete$} />
+    <Wireless 
+      isComplete={props.isComplete} 
+      onComplete$={props.onComplete$} 
+      onDisabled$={$(() => {
+        // When Wireless is disabled, automatically mark the step as complete
+        const step = stepsStore.steps.find(step => step.title === $localize`Wireless`);
+        if (step) {
+          step.isComplete = true;
+          handleStepComplete(step.id);
+        }
+      })}
+    />
   ));
 
   const VPNServerStep = component$((props: StepProps) => (
-    <VPNServer isComplete={props.isComplete} onComplete$={props.onComplete$} />
+    <VPNServer 
+      isComplete={props.isComplete} 
+      onComplete$={props.onComplete$} 
+      onDisabled$={$(() => {
+        // When VPN Server is disabled, automatically mark the step as complete
+        const step = stepsStore.steps.find(step => step.title === $localize`VPN Server`);
+        if (step) {
+          step.isComplete = true;
+          handleStepComplete(step.id);
+        }
+      })}
+    />
   ));
 
   const TunnelStep = component$((props: StepProps) => (
-    <Tunnel isComplete={props.isComplete} onComplete$={props.onComplete$} />
+    <Tunnel 
+      isComplete={props.isComplete} 
+      onComplete$={props.onComplete$}
+      onDisabled$={$(() => {
+        // When Tunnel is disabled, automatically mark the step as complete
+        const step = stepsStore.steps.find(step => step.title === $localize`Network Tunnels`);
+        if (step) {
+          step.isComplete = true;
+          handleStepComplete(step.id);
+        }
+      })}
+    />
   ));
 
   const isAdvancedMode = starContext.state.Choose.Mode === "advance";
@@ -91,8 +124,16 @@ export const LAN = component$((props: StepProps) => {
     const stepIndex = stepsStore.steps.findIndex((step) => step.id === id);
     if (stepIndex > -1) {
       stepsStore.steps[stepIndex].isComplete = true;
-      stepsStore.activeStep = stepIndex + 1;
+      
+      // Move to the next step if there is one
+      if (stepIndex < stepsStore.steps.length - 1) {
+        stepsStore.activeStep = stepIndex + 1;
+      } else {
+        // This was the last step, so complete the entire LAN section
+        props.onComplete$();
+      }
 
+      // Check if all steps are now complete
       if (stepsStore.steps.every((step) => step.isComplete)) {
         props.onComplete$();
       }

@@ -1,11 +1,12 @@
-import { component$, type Signal } from "@builder.io/qwik";
+import { component$, type Signal, type QRL } from "@builder.io/qwik";
 import { HiCubeTransparentOutline, HiCheckCircleOutline, HiXCircleOutline } from "@qwikest/icons/heroicons";
 
 interface TunnelHeaderProps {
   tunnelsEnabled: Signal<boolean>;
+  onToggle$?: QRL<(enabled: boolean) => void>;
 }
 
-export const TunnelHeader = component$<TunnelHeaderProps>(({ tunnelsEnabled }) => {
+export const TunnelHeader = component$<TunnelHeaderProps>(({ tunnelsEnabled, onToggle$ }) => {
   return (
     <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
       <div class="flex items-center gap-4">
@@ -36,7 +37,12 @@ export const TunnelHeader = component$<TunnelHeaderProps>(({ tunnelsEnabled }) =
             type="radio"
             name="tunnelenable"
             checked={!tunnelsEnabled.value}
-            onChange$={() => tunnelsEnabled.value = false}
+            onChange$={async () => {
+              tunnelsEnabled.value = false;
+              if (onToggle$) {
+                await onToggle$(false);
+              }
+            }}
             class="hidden"
           />
           <HiXCircleOutline class="h-5 w-5" />
@@ -54,7 +60,12 @@ export const TunnelHeader = component$<TunnelHeaderProps>(({ tunnelsEnabled }) =
             type="radio"
             name="tunnelenable"
             checked={tunnelsEnabled.value}
-            onChange$={() => tunnelsEnabled.value = true}
+            onChange$={async () => {
+              tunnelsEnabled.value = true;
+              if (onToggle$) {
+                await onToggle$(true);
+              }
+            }}
             class="hidden"
           />
           <HiCheckCircleOutline class="h-5 w-5" />

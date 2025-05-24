@@ -8,7 +8,7 @@ import { ActionButtons } from "./ActionButtons";
 import { StarContext } from "../../StarContext/StarContext";
 import type { StepProps } from "~/types/step";
 
-export const Wireless = component$<StepProps>(({ onComplete$ }) => {
+export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const starContext = useContext(StarContext);
   const {
     wirelessEnabled,
@@ -37,7 +37,14 @@ export const Wireless = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="mx-auto w-full max-w-4xl p-4">
       <div class="rounded-lg bg-surface p-6 shadow-lg dark:bg-surface-dark">
-        <WirelessHeader wirelessEnabled={wirelessEnabled} />
+        <WirelessHeader 
+          wirelessEnabled={wirelessEnabled} 
+          onToggle$={$(async (enabled: boolean) => {
+            if (!enabled && onDisabled$) {
+              await onDisabled$();
+            }
+          })}
+        />
 
         {/* Message when wireless is disabled */}
         {!wirelessEnabled.value && (
