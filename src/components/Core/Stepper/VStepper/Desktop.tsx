@@ -2,7 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { DesktopProps } from "./types";
 
 export const Desktop = component$((props: DesktopProps) => {
-  const { activeStep, position } = props;
+  const { activeStep, position, allowStepNavigation = false, onStepClick$ } = props;
 
   return (
     <div
@@ -37,7 +37,8 @@ export const Desktop = component$((props: DesktopProps) => {
                 key={step.id}
                 class={`relative flex items-start gap-3 ${
                   position === "right" ? "flex-row-reverse" : ""
-                }`}
+                } ${allowStepNavigation ? "cursor-pointer" : ""}`}
+                onClick$={allowStepNavigation && onStepClick$ ? () => onStepClick$(index) : undefined}
               >
                 {/* Enhanced step indicators */}
                 <div class="relative flex-shrink-0">
@@ -49,7 +50,7 @@ export const Desktop = component$((props: DesktopProps) => {
                         : index === activeStep.value
                           ? "border-primary-500 bg-surface shadow-md shadow-primary-500/20 dark:bg-surface-dark"
                           : "border-border/50 bg-surface-secondary/50 dark:border-border-dark/50 dark:bg-surface-dark-secondary/50"
-                    }`}
+                    } ${allowStepNavigation ? "hover:scale-110" : ""}`}
                   >
                     {step.isComplete ? (
                       <svg
@@ -88,7 +89,7 @@ export const Desktop = component$((props: DesktopProps) => {
                         : step.isComplete
                           ? "text-text-secondary dark:text-text-dark-secondary"
                           : "text-text-secondary/90 dark:text-text-dark-secondary/90"
-                    }`}
+                    } ${allowStepNavigation ? "hover:text-primary-500 dark:hover:text-primary-400" : ""}`}
                   >
                     {step.title}
                   </h3>

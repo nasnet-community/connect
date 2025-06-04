@@ -4,21 +4,40 @@ import type { VStepperProps } from "./types";
 import { Step } from "./Step";
 import { Desktop } from "./Desktop";
 import { Mobile } from "./Mobile";
+import { VStepperManagement } from "./components/VStepperManagement";
 
 export const VStepper = component$((props: VStepperProps) => {
   const {
     activeStep,
+    steps,
     isStepsVisible,
     position,
     completeStep,
     toggleStepsVisibility,
     isComplete,
+    addStep$,
+    removeStep$,
+    swapSteps$,
+    goToStep$,
   } = useVStepper(props);
 
   return (
     <div class="relative min-h-screen w-full">
+      {/* Step Management UI (only visible in edit mode) */}
+      {props.isEditMode && (
+        <VStepperManagement 
+          steps={steps.value}
+          activeStep={activeStep.value}
+          addStep$={addStep$}
+          removeStep$={removeStep$}
+          swapSteps$={swapSteps$}
+          isEditMode={props.isEditMode}
+          dynamicStepComponent={props.dynamicStepComponent}
+        />
+      )}
+
       <div class="space-y-12">
-        {props.steps.map((step, index) => (
+        {steps.value.map((step, index) => (
           <Step
             key={step.id}
             step={step}
@@ -32,18 +51,22 @@ export const VStepper = component$((props: VStepperProps) => {
       </div>
 
       <Desktop
-        steps={props.steps}
+        steps={steps.value}
         activeStep={activeStep}
         position={position}
         isComplete={isComplete}
+        allowStepNavigation={props.allowStepNavigation}
+        onStepClick$={goToStep$}
       />
 
       <Mobile
-        steps={props.steps}
+        steps={steps.value}
         activeStep={activeStep}
         isStepsVisible={isStepsVisible}
         toggleStepsVisibility={toggleStepsVisibility}
         isComplete={isComplete}
+        allowStepNavigation={props.allowStepNavigation}
+        onStepClick$={goToStep$}
       />
     </div>
   );

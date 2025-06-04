@@ -2,7 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { MobileProps } from "./types";
 
 export const Mobile = component$((props: MobileProps) => {
-  const { activeStep, isStepsVisible, toggleStepsVisibility } = props;
+  const { activeStep, isStepsVisible, toggleStepsVisibility, allowStepNavigation = false, onStepClick$ } = props;
 
   return (
     <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden">
@@ -32,7 +32,8 @@ export const Mobile = component$((props: MobileProps) => {
                     : index < activeStep.value
                       ? "w-4 bg-primary-500/50"
                       : "w-4 bg-border dark:bg-border-dark"
-                }`}
+                } ${allowStepNavigation ? "cursor-pointer" : ""}`}
+                onClick$={allowStepNavigation && onStepClick$ ? () => onStepClick$(index) : undefined}
               />
             ))}
           </div>
@@ -52,7 +53,8 @@ export const Mobile = component$((props: MobileProps) => {
               key={step.id}
               class={`flex items-center gap-3 rounded-lg p-2 ${
                 index === activeStep.value ? "bg-primary-500/10" : ""
-              }`}
+              } ${allowStepNavigation ? "cursor-pointer hover:bg-primary-500/5" : ""}`}
+              onClick$={allowStepNavigation && onStepClick$ ? () => onStepClick$(index) : undefined}
             >
               <div
                 class={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${
