@@ -88,7 +88,7 @@ export const Frimware = component$((props: FrimwareProps) => {
         $localize`Community Support`,
         $localize`Custom Scripting`,
       ],
-      disabled: true,
+      disabled: false,
     },
   ];
 
