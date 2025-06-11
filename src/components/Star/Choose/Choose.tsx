@@ -35,13 +35,6 @@ const DomesticStep = component$((props: StepProps) => (
   />
 ));
 
-const OWRTFISStep = component$((props: StepProps) => (
-  <OWRT
-    isComplete={props.isComplete}
-    onComplete$={props.onComplete$}
-  />
-));
-
 const OWRTInstallStep = component$((props: StepProps) => (
   <OWRTInstall
     isComplete={props.isComplete}
@@ -58,6 +51,12 @@ const OWRTPackageStep = component$(() => (
 
 export const Choose = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
+  const openWRTOption = useSignal<"stock" | "already-installed" | undefined>(undefined);
+
+  // Handle OpenWRT option selection
+  const handleOpenWRTOptionSelect = $((option: "stock" | "already-installed") => {
+    openWRTOption.value = option;
+  });
 
   // Create step building functions to avoid serialization issues
   const createMikroTikSteps = $(() => [
@@ -81,26 +80,42 @@ export const Choose = component$((props: StepProps) => {
     },
   ]);
 
-  const createOpenWRTSteps = $(() => [
-    {
-      id: 2,
-      title: $localize`Configuration`,
-      component: OWRTFISStep,
-      isComplete: false,
-    },
-    {
-      id: 3,
-      title: $localize`Install OpenWrt`,
-      component: OWRTInstallStep,
-      isComplete: false,
-    },
-    {
-      id: 4,
+  const createOpenWRTSteps = $(() => {
+    const baseSteps = [
+      {
+        id: 2,
+        title: $localize`Configuration`,
+        component: component$((stepProps: StepProps) => (
+          <OWRT 
+            isComplete={stepProps.isComplete} 
+            onComplete$={stepProps.onComplete$}
+            onOptionSelect$={handleOpenWRTOptionSelect}
+          />
+        )),
+        isComplete: false,
+      },
+    ];
+
+    // Only add Install step if user selected stock firmware
+    if (openWRTOption.value === "stock") {
+      baseSteps.push({
+        id: 3,
+        title: $localize`Install OpenWrt`,
+        component: OWRTInstallStep,
+        isComplete: false,
+      });
+    }
+
+    // Always add Package step (with different ID based on whether Install step exists)
+    baseSteps.push({
+      id: openWRTOption.value === "stock" ? 4 : 3,
       title: $localize`Install Package`,
       component: OWRTPackageStep,
       isComplete: false,
-    },
-  ]);
+    });
+
+    return baseSteps;
+  });
 
   // Initialize with default MikroTik steps (same as before)
   const steps = useSignal<StepItem[]>([
@@ -146,6 +161,9 @@ export const Choose = component$((props: StepProps) => {
       console.log('No firmware selected yet'); // Debug log
       return;
     }
+
+    // Preserve the firmware step completion status
+    const firmwareStepComplete = steps.value.find(step => step.id === 1)?.isComplete || false;
     
     if (selectedFirmware === "OpenWRT") {
       // Remove MikroTik-specific steps and add OpenWRT steps
@@ -158,7 +176,7 @@ export const Choose = component$((props: StepProps) => {
           id: 1,
           title: $localize`Firmware`,
           component: FirmwareStep,
-          isComplete: false,
+          isComplete: firmwareStepComplete, // Preserve completion status
         },
         ...owrtSteps
       ];
@@ -184,7 +202,7 @@ export const Choose = component$((props: StepProps) => {
           id: 1,
           title: $localize`Firmware`,
           component: FirmwareStep,
-          isComplete: false,
+          isComplete: firmwareStepComplete, // Preserve completion status
         },
         ...mikrotikSteps
       ];
@@ -198,6 +216,41 @@ export const Choose = component$((props: StepProps) => {
       }
       
       console.log('Steps after MikroTik selection:', steps.value.length, 'steps'); // Debug log
+      console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
+    }
+  });
+
+  // Watch for OpenWRT option changes and rebuild steps
+  useTask$(async ({ track }) => {
+    const selectedFirmware = starContext.state.Choose.Firmware;
+    const currentOpenWRTOption = track(() => openWRTOption.value);
+    
+    // Only rebuild steps if firmware is OpenWRT and option has changed
+    if (selectedFirmware === "OpenWRT" && currentOpenWRTOption) {
+      console.log('=== OPENWRT OPTION CHANGE DETECTED ==='); // Debug log
+      console.log('OpenWRT option changed to:', currentOpenWRTOption); // Debug log
+      
+      // Preserve the firmware step completion status
+      const firmwareStepComplete = steps.value.find(step => step.id === 1)?.isComplete || false;
+      
+      const owrtSteps = await createOpenWRTSteps();
+      console.log('Rebuilding OpenWRT steps:', owrtSteps); // Debug log
+      
+      // Create new array with firmware and updated OpenWRT steps
+      const newSteps = [
+        {
+          id: 1,
+          title: $localize`Firmware`,
+          component: FirmwareStep,
+          isComplete: firmwareStepComplete, // Preserve completion status
+        },
+        ...owrtSteps
+      ];
+      
+      steps.value = newSteps;
+      stepperKey.value++; // Force re-render
+      
+      console.log('Steps after OpenWRT option change:', steps.value.length, 'steps'); // Debug log
       console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
     }
   });

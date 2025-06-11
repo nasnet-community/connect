@@ -1,6 +1,6 @@
 import { useContext, $, useStore } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { IpipTunnelConfig } from "../../../../StarContext/LANType";
+import type { IpipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const useIPIP = () => {
   const starContext = useContext(StarContext);

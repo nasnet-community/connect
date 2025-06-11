@@ -1,7 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiLockClosedOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
 import { useEOIP } from "./useEOIP";
-import type { EoipTunnelConfig } from "../../../../StarContext/LANType";
+import type { EoipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 import type { ARPState } from "../../../../StarContext/CommonType";
 
 export const EOIPProtocol = component$(() => {

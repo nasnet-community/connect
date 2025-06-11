@@ -1,65 +1,20 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
-import { ChooseCG } from "./ChooseCG";
-import { WANCG } from "./WANCG";
-import { LANCG } from "./LANCG";
-import { ExtraCG } from "./ExtraCG";
-
+import { ChooseCG } from "./Choose/ChooseCG";
+import { WANCG } from "./WAN/WANCG";
+import { LANCG } from "./LAN/LANCG";
+import { ExtraCG } from "./Extra/ExtraCG";
+import { 
+  mergeMultipleConfigs,
+  // mergeConfigurations,
+  removeEmptyArrays,
+  removeEmptyLines,
+  formatConfig ,
+} from "./utils/ConfigGeneratorUtil"
 export interface RouterConfig {
   [key: string]: string[];
 }
 
-const mergeMultipleConfigs = (...configs: RouterConfig[]): RouterConfig => {
-  return configs.reduce((acc, curr) => mergeConfigurations(acc, curr));
-};
 
-const mergeConfigurations = (
-  baseConfig: RouterConfig,
-  newConfig: RouterConfig,
-): RouterConfig => {
-  const mergedConfig = { ...baseConfig };
-
-  Object.entries(newConfig).forEach(([key, value]) => {
-    if (mergedConfig[key]) {
-      mergedConfig[key] = [...mergedConfig[key], ...value];
-    } else {
-      mergedConfig[key] = value;
-    }
-  });
-
-  return mergedConfig;
-};
-
-const removeEmptyArrays = (config: RouterConfig): RouterConfig => {
-  const filteredConfig: RouterConfig = {};
-
-  Object.entries(config).forEach(([key, value]) => {
-    if (value && value.length > 0) {
-      filteredConfig[key] = value;
-    }
-  });
-
-  return filteredConfig;
-};
-
-const removeEmptyLines = (str: string): string => {
-  return str
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
-    .join("\n");
-};
-
-const formatConfig = (config: RouterConfig): string => {
-  return Object.entries(config)
-    .map(([key, values]) => {
-      const cleanValues = values.filter((v) => v.trim());
-      return `${key}\n${cleanValues.join("\n")}`;
-    })
-    .filter(Boolean)
-    .join("\n")
-    .trim()
-    .replace(/\n+$/, "");
-  // .replace(/#/g, "");
-};
 
 export const ConfigGenerator = (state: StarState): string => {
   const config: RouterConfig = {
@@ -124,8 +79,8 @@ export const ConfigGenerator = (state: StarState): string => {
 
   try {
     // Generate configurations from each module
-    const chooseConfig = ChooseCG();
-    const wanConfig = WANCG(state);
+    const chooseConfig = ChooseCG(state.Choose.DomesticLink);
+    const wanConfig = WANCG(state.WAN, state.Choose.DomesticLink);
     const lanConfig = LANCG(state);
     const extraConfig = ExtraCG(state.ExtraConfig);
 

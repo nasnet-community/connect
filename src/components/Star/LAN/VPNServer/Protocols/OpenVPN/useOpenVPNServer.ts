@@ -1,8 +1,7 @@
 import { $, useSignal } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
+import type { OpenVpnServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { OpenVpnServerConfig } from "../../../../StarContext/LANType";
-
 
 export const useOpenVPNServer = () => {
   const starContext = useContext(StarContext);
@@ -10,29 +9,48 @@ export const useOpenVPNServer = () => {
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
   const openVpnState = vpnServerState.OpenVpnServer || {
-    Profile: "default",
-    Certificate: "",
-    Enabled: true,
+    name: "default",
+    enabled: true,
     Port: 1194,
-    Protocol: "tcp",
+    Protocol: "udp",
     Mode: "ip",
-    Netmask: 24,
-    AddressPool: "192.168.78.0/24",
-    RequireClientCertificate: false,
-    Auth: "sha256",
-    Cipher: "aes256-gcm",
-    CertificateKeyPassphrase: "",
-    MaxSessions: 10,
     DefaultProfile: "default",
-    TlsVersion: "only-1.2"
+    Authentication: ["mschap2"],
+    PacketSize: {
+      MaxMtu: 1450,
+      MaxMru: 1450
+    },
+    KeepaliveTimeout: 30,
+    VRF: "",
+    RedirectGetway: "def1",
+    PushRoutes: "",
+    RenegSec: 3600,
+    Encryption: {
+      Auth: ["sha256"],
+      UserAuthMethod: "mschap2",
+      Cipher: ["aes256-cbc"],
+      TlsVersion: "any"
+    },
+    IPV6: {
+      EnableTunIPv6: false,
+      IPv6PrefixLength: 64,
+      TunServerIPv6: ""
+    },
+    Certificate: {
+      Certificate: "default",
+      RequireClientCertificate: false,
+      CertificateKeyPassphrase: ""
+    },
+    Address: {
+      Netmask: 24,
+      MacAddress: "",
+      MaxMtu: 1450,
+      AddressPool: ""
+    }
   };
 
   const certificateError = useSignal("");
   const passphraseError = useSignal("");
-  const profileError = useSignal("");
-  const addressPoolError = useSignal("");
-  const portError = useSignal("");
-  
 
   const updateOpenVPNServer$ = $((config: Partial<OpenVpnServerConfig>) => {
     const newConfig = {
@@ -42,8 +60,9 @@ export const useOpenVPNServer = () => {
     
     let isValid = true;
     
-    if (config.Certificate !== undefined || (config.Profile !== undefined && config.Profile !== "")) {
-      if (!newConfig.Certificate || !newConfig.Certificate.trim()) {
+    // Validate certificate
+    if (config.Certificate?.Certificate !== undefined) {
+      if (!newConfig.Certificate.Certificate || !newConfig.Certificate.Certificate.trim()) {
         certificateError.value = $localize`Certificate is required`;
         isValid = false;
       } else {
@@ -51,8 +70,9 @@ export const useOpenVPNServer = () => {
       }
     }
     
-    if (config.CertificateKeyPassphrase !== undefined) {
-      if (newConfig.CertificateKeyPassphrase && newConfig.CertificateKeyPassphrase.length < 10) {
+    // Validate passphrase
+    if (config.Certificate?.CertificateKeyPassphrase !== undefined) {
+      if (newConfig.Certificate.CertificateKeyPassphrase && newConfig.Certificate.CertificateKeyPassphrase.length < 10) {
         passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
         isValid = false;
       } else {
@@ -60,55 +80,20 @@ export const useOpenVPNServer = () => {
       }
     }
     
-    if (config.Profile !== undefined) {
-      if (!newConfig.Profile || !newConfig.Profile.trim()) {
-        profileError.value = $localize`Profile name is required`;
-        isValid = false;
-      } else {
-        profileError.value = "";
-      }
-    }
-    
-    if (config.AddressPool !== undefined) {
-      if (!newConfig.AddressPool || !newConfig.AddressPool.trim()) {
-        addressPoolError.value = $localize`Address pool is required`;
-        isValid = false;
-      } else if (!newConfig.AddressPool.includes("/")) {
-        addressPoolError.value = $localize`Address pool must include subnet mask (e.g., 192.168.78.0/24)`;
-        isValid = false;
-      } else {
-        addressPoolError.value = "";
-      }
-    }
-    
-    if (config.Port !== undefined) {
-      if (!newConfig.Port || newConfig.Port < 1 || newConfig.Port > 65535) {
-        portError.value = $localize`Valid port number (1-65535) is required`;
-        isValid = false;
-      } else {
-        portError.value = "";
-      }
-    }
-    
-    if (isValid || config.Profile === "") {
+    if (isValid || (config.name && config.name === "")) {
       starContext.updateLAN$({ 
         VPNServer: {
           ...vpnServerState,
-          OpenVpnServer: config.Profile === "" ? undefined : newConfig
+          OpenVpnServer: (config.name && config.name === "") ? undefined : newConfig
         }
       });
     }
   });
 
-
-
   return {
     openVpnState,
     updateOpenVPNServer$,
     certificateError,
-    passphraseError,
-    profileError,
-    addressPoolError,
-    portError
+    passphraseError
   };
 }; 

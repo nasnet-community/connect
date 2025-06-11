@@ -1,7 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiLockClosedOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
 import { useGRE } from "./useGRE";
-import type { GreTunnelConfig } from "../../../../StarContext/LANType";
+import type { GreTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const GREProtocol = component$(() => {
   const {

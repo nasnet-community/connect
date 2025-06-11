@@ -3,7 +3,7 @@ import type { QRL } from "@builder.io/qwik";
 import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
 import { UserCredential } from "../UserCredential/UserCredential";
-import type { Credentials } from "../../../StarContext/LANType";
+import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServer";

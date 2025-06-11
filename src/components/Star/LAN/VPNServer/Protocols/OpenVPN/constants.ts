@@ -1,5 +1,5 @@
 import type { NetworkProtocol, LayerMode, TLSVersion } from "../../../../StarContext/CommonType";
-import type { OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/LANType";
+import type { OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/Utils/VPNServerType";
 
 
 

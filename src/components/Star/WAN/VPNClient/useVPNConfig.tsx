@@ -13,22 +13,22 @@ export const useVPNConfig = () => {
     track(() => starContext.state.WAN.VPNClient);
     
     if (starContext.state.WAN.VPNClient) {
-      if (starContext.state.WAN.VPNClient.Wireguard?.length) {
+      if (starContext.state.WAN.VPNClient.Wireguard) {
         vpnType.value = "Wireguard";
         isValid.value = true;
-      } else if (starContext.state.WAN.VPNClient.OpenVPN?.length) {
+      } else if (starContext.state.WAN.VPNClient.OpenVPN) {
         vpnType.value = "OpenVPN";
         isValid.value = true;
-      } else if (starContext.state.WAN.VPNClient.L2TP?.length) {
+      } else if (starContext.state.WAN.VPNClient.L2TP) {
         vpnType.value = "L2TP";
         isValid.value = true;
-      } else if (starContext.state.WAN.VPNClient.PPTP?.length) {
+      } else if (starContext.state.WAN.VPNClient.PPTP) {
         vpnType.value = "PPTP";
         isValid.value = true;
-      } else if (starContext.state.WAN.VPNClient.SSTP?.length) {
+      } else if (starContext.state.WAN.VPNClient.SSTP) {
         vpnType.value = "SSTP";
         isValid.value = true;
-      } else if (starContext.state.WAN.VPNClient.IKeV2?.length) {
+      } else if (starContext.state.WAN.VPNClient.IKeV2) {
         vpnType.value = "IKeV2";
         isValid.value = true;
       } else {

@@ -1,6 +1,6 @@
 import { useContext, $, useStore } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { EoipTunnelConfig } from "../../../../StarContext/LANType";
+import type { EoipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const useEOIP = () => {
   const starContext = useContext(StarContext);

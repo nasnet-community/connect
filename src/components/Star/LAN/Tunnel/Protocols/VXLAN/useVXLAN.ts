@@ -1,6 +1,6 @@
 import { useContext, $, useStore } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { VxlanInterfaceConfig } from "../../../../StarContext/LANType";
+import type { VxlanInterfaceConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const useVXLAN = () => {
   const starContext = useContext(StarContext);

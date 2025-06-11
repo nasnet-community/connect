@@ -1,15 +1,8 @@
 import { $, useSignal, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
+import type { L2tpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
-
-export interface L2TPConfig {
-  ConnectTo: string;
-  Username: string;
-  Password: string;
-  UseIPsec?: boolean;
-  IPsecSecret?: string;
-}
 
 export interface UseL2TPConfigResult {
   serverAddress: {value: string};
@@ -19,11 +12,11 @@ export interface UseL2TPConfigResult {
   ipsecSecret: {value: string};
   errorMessage: {value: string};
   handleManualFormSubmit$: QRL<() => Promise<void>>;
-  validateL2TPConfig: QRL<(config: L2TPConfig) => Promise<{
+  validateL2TPConfig: QRL<(config: L2tpClientConfig) => Promise<{
     isValid: boolean;
     emptyFields: string[];
   }>>;
-  updateContextWithConfig$: QRL<(parsedConfig: L2TPConfig) => Promise<void>>;
+  updateContextWithConfig$: QRL<(parsedConfig: L2tpClientConfig) => Promise<void>>;
 }
 
 export const useL2TPConfig = (
@@ -38,9 +31,10 @@ export const useL2TPConfig = (
   const useIPsec = useSignal(false);
   const ipsecSecret = useSignal("");
   
-  if (starContext.state.WAN.VPNClient?.L2TP?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
-    serverAddress.value = existingConfig.ConnectTo || "";
+  // Initialize with existing config if available
+  if (starContext.state.WAN.VPNClient?.L2TP) {
+    const existingConfig = starContext.state.WAN.VPNClient.L2TP;
+    serverAddress.value = existingConfig.Server.Address || "";
     
     if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
@@ -55,6 +49,7 @@ export const useL2TPConfig = (
       ipsecSecret.value = existingConfig.IPsecSecret;
     }
     
+    // Check if config is valid
     const isConfigValid = serverAddress.value && username.value && password.value && 
                           (!useIPsec.value || (useIPsec.value && ipsecSecret.value));
     
@@ -65,17 +60,20 @@ export const useL2TPConfig = (
     }
   }
   
-  const validateL2TPConfig = $(async (config: L2TPConfig) => {
-    const requiredFields = [
-      "ConnectTo",
-      "Username", 
-      "Password"
-    ];
+  const validateL2TPConfig = $(async (config: L2tpClientConfig) => {
+    const emptyFields: string[] = [];
     
-    const emptyFields = requiredFields.filter((field) => {
-      const value = config[field as keyof L2TPConfig];
-      return !value || (typeof value === 'string' && value.trim() === "");
-    });
+    if (!config.Server?.Address || config.Server.Address.trim() === "") {
+      emptyFields.push("Server Address");
+    }
+    
+    if (!config.Credentials?.Username || config.Credentials.Username.trim() === "") {
+      emptyFields.push("Username");
+    }
+    
+    if (!config.Credentials?.Password || config.Credentials.Password.trim() === "") {
+      emptyFields.push("Password");
+    }
 
     if (config.UseIPsec && (!config.IPsecSecret || config.IPsecSecret.trim() === "")) {
       emptyFields.push("IPsecSecret");
@@ -87,48 +85,34 @@ export const useL2TPConfig = (
     };
   });
 
-  const updateContextWithConfig$ = $(async (parsedConfig: L2TPConfig) => {
-    const l2tpClientConfig = {
-      ConnectTo: parsedConfig.ConnectTo,
-      Credentials: {
-        Username: parsedConfig.Username, 
-        Password: parsedConfig.Password
-      },
-      UseIPsec: parsedConfig.UseIPsec,
-      IPsecSecret: parsedConfig.IPsecSecret,
-      AddDefaultRoute: true,
-      UsePeerDNS: true,
-      AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
-    };
-
+  const updateContextWithConfig$ = $(async (parsedConfig: L2tpClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
-    
-    const l2tpConfigs = currentVPNClient.L2TP || [];
-    
-    if (l2tpConfigs.length > 0) {
-      l2tpConfigs[0] = l2tpClientConfig;
-    } else {
-      l2tpConfigs.push(l2tpClientConfig);
-    }
     
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        L2TP: l2tpConfigs
+        L2TP: parsedConfig
       }
     });
-    
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
     
-    const manualConfig: L2TPConfig = {
-      ConnectTo: serverAddress.value,
-      Username: username.value,
-      Password: password.value,
+    const manualConfig: L2tpClientConfig = {
+      Server: {
+        Address: serverAddress.value
+      },
+      Credentials: {
+        Username: username.value, 
+        Password: password.value
+      },
       UseIPsec: useIPsec.value,
       IPsecSecret: useIPsec.value ? ipsecSecret.value : undefined,
+      AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+      ProtoVersion: 'l2tpv2',
+      FastPath: true,
+      DialOnDemand: false,
     };
 
     const { isValid, emptyFields } = await validateL2TPConfig(manualConfig);

@@ -1,45 +1,8 @@
 import { $, useSignal, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
+import type { OpenVpnClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { LayerMode, NetworkProtocol } from "../../../../StarContext/CommonType";
-
-export interface OpenVPNConfig {
-  ServerAddress: string;
-  Port: string;
-  Protocol: "tcp" | "udp";
-  Credentials?: {
-    Username: string;
-    Password: string;
-  };
-  Certificates?: {
-    Ca?: string;
-    Cert?: string;
-    Key?: string;
-  };
-  AuthType: "credentials" | "certificates" | "both";
-  Cipher?: string;
-  Auth?: string;
-  Redirect?: string;
-  TLSAuth?: {
-    Key?: string;
-    Direction?: number;
-  };
-  KeyDirection?: number;
-  DeviceType?: "tun" | "tap";
-  KeepAlive?: {
-    Ping: number;
-    Restart: number;
-  };
-  Mtu?: number;
-  Fragment?: number;
-  Mssfix?: number;
-  VerifyServerCert?: boolean;
-  NsCertType?: string;
-  RemoteControlEndpoint?: string;
-  RemoteCertTls?: "server" | "client";
-  Resolv?: boolean;
-  PullFilter?: string[];
-}
 
 export interface UseOpenVPNConfigResult {
   config: {value: string};
@@ -48,7 +11,7 @@ export interface UseOpenVPNConfigResult {
   serverAddress: {value: string};
   serverPort: {value: string};
   protocol: {value: "tcp" | "udp"};
-  authType: {value: "credentials" | "certificates" | "both"};
+  authType: {value: "Credentials" | "Certificate" | "CredentialsCertificate"};
   username: {value: string};
   password: {value: string};
   cipher: {value: string};
@@ -56,12 +19,12 @@ export interface UseOpenVPNConfigResult {
   handleConfigChange$: QRL<(value: string) => Promise<void>>;
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
-  validateOpenVPNConfig: QRL<(config: OpenVPNConfig) => Promise<{
+  validateOpenVPNConfig: QRL<(config: OpenVpnClientConfig) => Promise<{
     isValid: boolean;
     emptyFields: string[];
   }>>;
-  parseOpenVPNConfig: QRL<(configText: string) => OpenVPNConfig | null>;
-  updateContextWithConfig$: QRL<(parsedConfig: OpenVPNConfig) => Promise<void>>;
+  parseOpenVPNConfig: QRL<(configText: string) => OpenVpnClientConfig | null>;
+  updateContextWithConfig$: QRL<(parsedConfig: OpenVpnClientConfig) => Promise<void>>;
 }
 
 export const useOpenVPNConfig = (
@@ -75,30 +38,27 @@ export const useOpenVPNConfig = (
   const serverAddress = useSignal("");
   const serverPort = useSignal("1194");
   const protocol = useSignal<"tcp" | "udp">("udp");
-  const authType = useSignal<"credentials" | "certificates" | "both">("credentials");
+  const authType = useSignal<"Credentials" | "Certificate" | "CredentialsCertificate">("Credentials");
   const username = useSignal("");
   const password = useSignal("");
   const cipher = useSignal("");
   const auth = useSignal("");
   
-  if (starContext.state.WAN.VPNClient?.OpenVPN?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.OpenVPN[0];
-    serverAddress.value = existingConfig.ConnectTo || "";
-    
-    if (existingConfig.Port !== undefined) {
-      serverPort.value = existingConfig.Port.toString();
-    }
+  // Initialize with existing config if available
+  if (starContext.state.WAN.VPNClient?.OpenVPN) {
+    const existingConfig = starContext.state.WAN.VPNClient.OpenVPN;
+    serverAddress.value = existingConfig.Server.Address || "";
+    serverPort.value = existingConfig.Server.Port?.toString() || "1194";
     
     if (existingConfig.Protocol) {
       protocol.value = existingConfig.Protocol as "tcp" | "udp";
     }
     
+    authType.value = existingConfig.AuthType;
+    
     if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
-      authType.value = "credentials";
-    } else if (existingConfig.ClientCertificateName) {
-      authType.value = "certificates";
     }
     
     if (existingConfig.Auth) {
@@ -109,42 +69,38 @@ export const useOpenVPNConfig = (
       cipher.value = existingConfig.Cipher;
     }
     
-    let isConfigValid = serverAddress.value !== "";
+    // Check if config is valid
+    let isConfigValid = serverAddress.value !== "" && serverPort.value !== "";
     
-    if (authType.value === "credentials") {
+    if (authType.value === "Credentials" || authType.value === "CredentialsCertificate") {
       isConfigValid = isConfigValid && username.value !== "" && password.value !== "";
     }
     
-    if (isConfigValid) {
-      if (onIsValidChange$) {
-        setTimeout(() => onIsValidChange$(true), 0);
-      }
+    if (isConfigValid && onIsValidChange$) {
+      setTimeout(() => onIsValidChange$(true), 0);
     }
   }
   
-  const validateOpenVPNConfig = $(async (config: OpenVPNConfig) => {
-    const commonRequiredFields = [
-      "ServerAddress",
-      "Port",
-      "Protocol",
-      "AuthType",
-    ];
+  const validateOpenVPNConfig = $(async (config: OpenVpnClientConfig) => {
+    const emptyFields: string[] = [];
     
-    const emptyFields = commonRequiredFields.filter((field) => {
-      const value = config[field as keyof OpenVPNConfig];
-      return !value || (typeof value === 'string' && value.trim() === "");
-    });
-    
-    if (config.AuthType === "credentials" || config.AuthType === "both") {
-      if (!config.Credentials?.Username || !config.Credentials?.Password) {
-        emptyFields.push("Credentials");
-      }
+    // Check Server object
+    if (!config.Server?.Address || config.Server.Address.trim() === "") {
+      emptyFields.push("Server Address");
     }
     
-    if (config.AuthType === "certificates" || config.AuthType === "both") {
-      if (!config.Certificates?.Ca || !config.Certificates?.Cert || !config.Certificates?.Key) {
-        emptyFields.push("Certificates");
-      }
+    if (!config.AuthType || config.AuthType.trim() === "") {
+      emptyFields.push("AuthType");
+    }
+    
+    if ((config.AuthType === "Credentials" || config.AuthType === "CredentialsCertificate") && 
+        (!config.Credentials?.Username || !config.Credentials?.Password)) {
+      emptyFields.push("Credentials");
+    }
+    
+    if ((config.AuthType === "Certificate" || config.AuthType === "CredentialsCertificate") && 
+        (!config.ClientCertificateName || !config.CaCertificateName)) {
+      emptyFields.push("Certificates");
     }
     
     return {
@@ -153,39 +109,15 @@ export const useOpenVPNConfig = (
     };
   });
 
-  const updateContextWithConfig$ = $(async (parsedConfig: OpenVPNConfig) => {
-    const openVPNClientConfig = {
-      ConnectTo: parsedConfig.ServerAddress,
-      Port: parseInt(parsedConfig.Port),
-      Protocol: parsedConfig.Protocol as NetworkProtocol,
-      Mode: "ip" as LayerMode,
-      Credentials: parsedConfig.Credentials,
-      CaCertificateName: parsedConfig.Certificates?.Ca ? "openvpn-ca" : undefined,
-      ClientCertificateName: parsedConfig.Certificates?.Cert ? "openvpn-cert" : undefined,
-      Auth: parsedConfig.Auth,
-      Cipher: parsedConfig.Cipher,
-      AddDefaultRoute: true,
-      UsePeerDNS: true,
-      VerifyServerCertificate: true,
-    };
-
+  const updateContextWithConfig$ = $(async (parsedConfig: OpenVpnClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
-    
-    const openVPNConfigs = currentVPNClient.OpenVPN || [];
-    
-    if (openVPNConfigs.length > 0) {
-      openVPNConfigs[0] = openVPNClientConfig;
-    } else {
-      openVPNConfigs.push(openVPNClientConfig);
-    }
     
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        OpenVPN: openVPNConfigs
+        OpenVPN: parsedConfig
       }
     });
-    
   });
 
   const handleConfigChange$ = $(async (value: string) => {
@@ -220,16 +152,21 @@ export const useOpenVPNConfig = (
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
     
-    const manualConfig: OpenVPNConfig = {
-      ServerAddress: serverAddress.value,
-      Port: serverPort.value,
-      Protocol: protocol.value,
+    const manualConfig: OpenVpnClientConfig = {
+      Server: {
+        Address: serverAddress.value,
+        Port: parseInt(serverPort.value)
+      },
+      Protocol: protocol.value as NetworkProtocol,
+      Mode: "ip" as LayerMode,
       AuthType: authType.value,
-      Credentials: authType.value === "credentials" || authType.value === "both" 
+      Auth: auth.value as 'md5' | 'sha1' | 'null' | 'sha256' | 'sha512',
+      Credentials: (authType.value === "Credentials" || authType.value === "CredentialsCertificate") 
         ? { Username: username.value, Password: password.value } 
         : undefined,
-      Cipher: cipher.value || undefined,
-      Auth: auth.value || undefined,
+      Cipher: cipher.value as 'null' | 'aes128-cbc' | 'aes128-gcm' | 'aes192-cbc' | 'aes192-gcm' | 'aes256-cbc' | 'aes256-gcm' | 'blowfish128' || undefined,
+      VerifyServerCertificate: true,
+      RouteNoPull: false
     };
 
     const { isValid, emptyFields } = await validateOpenVPNConfig(manualConfig);
@@ -261,27 +198,19 @@ export const useOpenVPNConfig = (
   });
 
   const parseOpenVPNConfig = $(
-    (configText: string): OpenVPNConfig | null => {
+    (configText: string): OpenVpnClientConfig | null => {
       try {
-        const config: OpenVPNConfig = {
-          ServerAddress: "",
-          Port: "1194",
+        const config: Partial<OpenVpnClientConfig> = {
+          Server: { Address: "", Port: 1194 },
           Protocol: "udp",
-          AuthType: "credentials",
-          VerifyServerCert: true,
+          Mode: "ip",
+          AuthType: "Credentials",
+          Auth: "sha256",
+          VerifyServerCertificate: true,
+          RouteNoPull: false
         };
         
         const lines = configText.split('\n').map(line => line.trim());
-        
-        const extractBlockContent = (startTag: string, endTag: string): string | undefined => {
-          const startIndex = lines.findIndex(line => line.includes(startTag));
-          if (startIndex === -1) return undefined;
-          
-          const endIndex = lines.findIndex((line, idx) => idx > startIndex && line.includes(endTag));
-          if (endIndex === -1) return undefined;
-          
-          return lines.slice(startIndex + 1, endIndex).join('\n');
-        };
         
         for (const line of lines) {
           if (!line || line.startsWith('#') || line.startsWith(';')) {
@@ -291,15 +220,15 @@ export const useOpenVPNConfig = (
           if (line.startsWith('remote ')) {
             const parts = line.split(' ');
             if (parts.length >= 2) {
-              config.ServerAddress = parts[1];
+              config.Server!.Address = parts[1];
               
               if (parts.length >= 3 && !isNaN(parseInt(parts[2]))) {
-                config.Port = parts[2];
+                config.Server!.Port = parseInt(parts[2]);
               }
             }
           }
           else if (line.startsWith('port ')) {
-            config.Port = line.split(' ')[1];
+            config.Server!.Port = parseInt(line.split(' ')[1]);
           }
           else if (line.startsWith('proto ')) {
             const protoValue = line.split(' ')[1].toLowerCase();
@@ -310,111 +239,60 @@ export const useOpenVPNConfig = (
             }
           }
           else if (line === 'auth-user-pass') {
-            if (config.AuthType !== 'both') {
-              config.AuthType = 'credentials';
+            if (config.AuthType !== 'CredentialsCertificate') {
+              config.AuthType = 'Credentials';
             }
           }
           else if (line.includes('<ca>')) {
-            if (!config.Certificates) config.Certificates = {};
-            config.Certificates.Ca = extractBlockContent('<ca>', '</ca>');
-            if (config.AuthType !== 'both') {
-              config.AuthType = 'certificates';
+            config.CaCertificateName = "openvpn-ca";
+            if (config.AuthType !== 'CredentialsCertificate') {
+              config.AuthType = 'Certificate';
             }
           }
           else if (line.includes('<cert>')) {
-            if (!config.Certificates) config.Certificates = {};
-            config.Certificates.Cert = extractBlockContent('<cert>', '</cert>');
-            if (config.AuthType !== 'both') {
-              config.AuthType = 'certificates';
+            config.ClientCertificateName = "openvpn-cert";
+            if (config.AuthType !== 'CredentialsCertificate') {
+              config.AuthType = 'Certificate';
             }
           }
           else if (line.includes('<key>')) {
-            if (!config.Certificates) config.Certificates = {};
-            config.Certificates.Key = extractBlockContent('<key>', '</key>');
-            if (config.AuthType !== 'both') {
-              config.AuthType = 'certificates';
+            if (config.AuthType !== 'CredentialsCertificate') {
+              config.AuthType = 'Certificate';
             }
           }
           else if (line.startsWith('cipher ')) {
-            config.Cipher = line.split(' ')[1];
+            config.Cipher = line.split(' ')[1] as 'null' | 'aes128-cbc' | 'aes128-gcm' | 'aes192-cbc' | 'aes192-gcm' | 'aes256-cbc' | 'aes256-gcm' | 'blowfish128';
           }
           else if (line.startsWith('auth ')) {
-            config.Auth = line.split(' ')[1];
-          }
-          else if (line.startsWith('redirect-gateway')) {
-            config.Redirect = line;
-          }
-          else if (line.startsWith('tls-auth')) {
-            if (!config.TLSAuth) config.TLSAuth = {};
-            const parts = line.split(' ');
-            if (parts.length >= 2) {
-              config.TLSAuth.Key = parts[1];
-              if (parts.length >= 3) {
-                config.KeyDirection = parseInt(parts[2]);
-              }
-            }
-          }
-          else if (line.startsWith('key-direction')) {
-            config.KeyDirection = parseInt(line.split(' ')[1]);
+            config.Auth = line.split(' ')[1] as 'md5' | 'sha1' | 'null' | 'sha256' | 'sha512';
           }
           else if (line.startsWith('dev ')) {
             const dev = line.split(' ')[1].toLowerCase();
             if (dev.startsWith('tun')) {
-              config.DeviceType = 'tun';
+              config.Mode = 'ip';
             } else if (dev.startsWith('tap')) {
-              config.DeviceType = 'tap';
+              config.Mode = 'ethernet';
             }
-          }
-          else if (line.startsWith('keepalive ')) {
-            const parts = line.split(' ');
-            if (parts.length >= 3) {
-              config.KeepAlive = {
-                Ping: parseInt(parts[1]),
-                Restart: parseInt(parts[2])
-              };
-            }
-          }
-          else if (line.startsWith('tun-mtu ')) {
-            config.Mtu = parseInt(line.split(' ')[1]);
-          }
-          else if (line.startsWith('fragment ')) {
-            config.Fragment = parseInt(line.split(' ')[1]);
-          }
-          else if (line.startsWith('mssfix ')) {
-            config.Mssfix = parseInt(line.split(' ')[1]);
           }
           else if (line === 'verify-server-cert' || line === 'verify-server-certificate') {
-            config.VerifyServerCert = true;
+            config.VerifyServerCertificate = true;
           }
-          else if (line.startsWith('ns-cert-type ')) {
-            config.NsCertType = line.split(' ')[1];
-          }
-          else if (line.startsWith('management ')) {
-            const parts = line.split(' ');
-            if (parts.length >= 3) {
-              config.RemoteControlEndpoint = `${parts[1]}:${parts[2]}`;
-            }
-          }
-          else if (line.startsWith('remote-cert-tls ')) {
-            const value = line.split(' ')[1].toLowerCase();
-            if (value === 'server' || value === 'client') {
-              config.RemoteCertTls = value as 'server' | 'client';
-            }
-          }
-          else if (line.includes('resolv-retry')) {
-            config.Resolv = true;
-          }
-          else if (line.startsWith('pull-filter ')) {
-            if (!config.PullFilter) config.PullFilter = [];
-            config.PullFilter.push(line.substring('pull-filter '.length));
+          else if (line.startsWith('route-nopull')) {
+            config.RouteNoPull = true;
           }
         }
         
-        if (config.Certificates?.Cert && config.AuthType === "credentials") {
-          config.AuthType = "both";
+        // If both certificates and auth-user-pass are present, it's both
+        if (config.CaCertificateName && (config.AuthType === "Credentials")) {
+          config.AuthType = "CredentialsCertificate";
         }
         
-        return config;
+        // Validate required fields
+        if (!config.Server?.Address) {
+          return null;
+        }
+        
+        return config as OpenVpnClientConfig;
       } catch (error) {
         console.error("Error parsing OpenVPN config:", error);
         return null;

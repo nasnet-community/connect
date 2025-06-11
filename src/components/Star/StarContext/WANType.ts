@@ -1,11 +1,12 @@
-import type {
-  //  VPNType,
-   AuthMethod,
-   TLSVersion,
-   NetworkProtocol,
-   LayerMode,
-   WirelessCredentials } from "./CommonType";
-import type { Ethernet, Wireless, Sfp, LTE } from "./CommonType";
+import type { 
+    Ethernet,
+   Wireless,
+   Sfp,
+   LTE,
+   WirelessCredentials,
+   Credentials 
+  } from "./CommonType";
+import type { VPNClient } from "./Utils/VPNClientType";
 
 
 // export type MultiLinkMode = 'LoadBalance' | 'FailOver' | 'LoadBalanceFailOver' | '';
@@ -16,6 +17,15 @@ import type { Ethernet, Wireless, Sfp, LTE } from "./CommonType";
 export type WANType = 'PPPOR' | 'DHCP' | 'StaticIP' | 'LTE';
 export type InterfaceType = 'Ethernet' | 'VLAN' | 'Celular' | 'Wireless';
 
+
+// type IkeHashAlgorithm = 'md5' | 'sha1' | 'sha256' | 'sha384' | 'sha512';
+// type IkeEncAlgorithm = 'des' | '3des' | 'aes-128' | 'aes-192' | 'aes-256' | 'blowfish' | 'aes-128-cbc' | 'aes-192-cbc' | 'aes-256-cbc' | 'aes-128-gcm' | 'aes-256-gcm';
+// type IkeDhGroup = 'modp1024' | 'modp1536' | 'modp2048' | 'modp3072' | 'modp4096' | 'modp6144' | 'modp8192' | 'ecp256' | 'ecp384' | 'ecp521';
+// type IkeAuthMethod = 'pre-shared-key' | 'rsa-signature' | 'eap';
+// type IkeEapMethod = 'eap-mschapv2' | 'eap-tls'; 
+// type IkeIdType = 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | string; 
+// type IkePolicyAction = 'encrypt' | 'none' | 'discard';
+// type IkePolicyLevel = 'require' | 'unique' | 'use';
 
 
 // // Network Configurations
@@ -36,115 +46,11 @@ export type InterfaceType = 'Ethernet' | 'VLAN' | 'Celular' | 'Wireless';
 //   } & Credentials;
 // }
 
-
-
-
-
-export interface Credentials {
-  Username: string;
-  Password: string;
-}
-
-interface BasePppClientOptions {
-  Profile?: string;
-  AddDefaultRoute?: boolean;
-  UsePeerDNS?: boolean;
-  AllowAuth?: AuthMethod[];
-}
-
-export interface PptpClientConfig extends BasePppClientOptions {
-  ConnectTo: string;
-  Credentials: Credentials; 
-  KeepaliveTimeout?: number;
-}
-
-export interface L2tpClientConfig extends BasePppClientOptions {
-  ConnectTo: string;
-  Credentials: Credentials;
-  UseIPsec?: boolean;
-  IPsecSecret?: string;
-}
-
-export interface SstpClientConfig extends BasePppClientOptions {
-  ConnectTo: string;
-  Credentials: Credentials; 
-  Port?: number;
-  ClientCertificateName?: string;
-  VerifyServerCertificate?: boolean;
-  TlsVersion?: TLSVersion;
-}
-
-export interface OpenVpnClientConfig {
-  ConnectTo: string;
-  Port?: number;
-  Mode?: LayerMode;
-  Protocol?: NetworkProtocol;
-  Credentials?: Credentials;
-  ClientCertificateName?: string;
-  CaCertificateName?: string;
-  Auth?: string;
-  Cipher?: string;
-  AddDefaultRoute?: boolean;
-  UsePeerDNS?: boolean;
-  VerifyServerCertificate?: boolean;
-}
-
-export interface Ike2ClientConfig {
-  ServerAddress: string;
-  AuthMethod: 'psk' | 'eap' | 'certificate';
-  PresharedKey?: string;
-  Credentials?: Credentials; 
-  ClientCertificateName?: string;
-  CaCertificateName?: string;
-  PolicySrcAddress?: string;
-  PolicyDstAddress?: string;
-}
-
-export interface WireguardClientConfig {
-  InterfacePrivateKey: string;
-  InterfaceAddress: string; 
-  InterfaceListenPort?: number;
-  InterfaceMTU?: number;
-  PeerPublicKey: string;
-  PeerEndpointAddress: string;
-  PeerEndpointPort: number;
-  PeerAllowedIPs: string; 
-  PeerPresharedKey?: string;
-  PeerPersistentKeepalive?: number; 
-}
-
-
-
-
-
 export interface VPNConfig {
     ServerAddress: string;
     ServerPort: string;
     Credentials?: Credentials;
   }
-
-  export interface Credentials {
-    Username: string;
-    Password: string;
-  }
-
-
- 
-// export interface WireguardConfig {
-//   Address: string;
-//   PrivateKey: string;
-//   PublicKey: string;
-//   AllowedIPs: string;
-//   ListeningPort?: string;
-//   DNS: string;
-//   MTU: string;
-//   PreSharedKey?: string;
-//   PersistentKeepalive?: string;
-//   ServerAddress: string;
-//   ServerPort: string;
-// }
-
-
 
 export interface WANConfig {
   InterfaceName: Ethernet | Wireless | Sfp | LTE;
@@ -154,15 +60,6 @@ export interface WANConfig {
 export interface WANLink {
   Foreign: WANConfig;
   Domestic?: WANConfig;
-}
-
-export interface VPNClient {
-  Wireguard?: WireguardClientConfig[];
-  OpenVPN?: OpenVpnClientConfig[];
-  PPTP?: PptpClientConfig[];
-  L2TP?: L2tpClientConfig[];
-  SSTP?: SstpClientConfig[];
-  IKeV2?: Ike2ClientConfig[]; 
 }
 
 

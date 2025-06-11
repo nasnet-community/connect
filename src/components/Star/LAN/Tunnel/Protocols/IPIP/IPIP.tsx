@@ -1,7 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiLockClosedOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
 import { useIPIP } from "./useIPIP";
-import type { IpipTunnelConfig } from "../../../../StarContext/LANType";
+import type { IpipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const IPIPProtocol = component$(() => {
   const {

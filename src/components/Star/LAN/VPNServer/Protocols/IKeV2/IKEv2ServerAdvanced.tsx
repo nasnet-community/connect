@@ -1,7 +1,6 @@
 import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline, HiDocumentOutline } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
-import type { ClientAuthMethod } from "../../../../StarContext/LANType";
 import { 
   ServerCard, 
   ServerFormField, 
@@ -9,7 +8,8 @@ import {
   Select,
   SectionTitle,
   Input
-} from "../../../VPNServer/UI";
+} from "../../UI";
+import type { IpsecIdentityAuthMethod, IpsecIdentityEapMethod } from "../../../../StarContext/Utils/VPNServerType";
 
 export const IKEv2ServerAdvanced = component$(() => {
   const { 
@@ -21,25 +21,33 @@ export const IKEv2ServerAdvanced = component$(() => {
   } = useIKEv2Server();
   
   const formState = useStore({
-    addressPool: ikev2State.AddressPool || "192.168.77.0/24",
-    clientAuthMethod: ikev2State.ClientAuthMethod || "digital-signature",
-    presharedKey: ikev2State.PresharedKey || "",
-    eapMethods: ikev2State.EapMethods || "eap-mschapv2,eap-tls",
-    serverCertificate: ikev2State.ServerCertificate || "",
-    clientCaCertificate: ikev2State.ClientCaCertificate || "",
-    dnsServers: ikev2State.DnsServers || "",
-    peerName: ikev2State.PeerName || "",
-    ipsecProfile: ikev2State.IpsecProfile || "default",
-    ipsecProposal: ikev2State.IpsecProposal || "default",
-    policyTemplateGroup: ikev2State.PolicyTemplateGroup || "default"
+    addressPoolRanges: ikev2State.ipPools?.Ranges || "192.168.77.2-192.168.77.254",
+    addressPoolName: ikev2State.ipPools?.Name || "ike2-pool",
+    authMethod: ikev2State.identities?.authMethod || "digital-signature",
+    presharedKey: ikev2State.identities?.secret || "",
+    eapMethods: ikev2State.identities?.eapMethods || "eap-mschapv2",
+    serverCertificate: ikev2State.identities?.certificate || "",
+    peerName: ikev2State.peer?.name || "ike2",
+    profileName: ikev2State.profile?.name || "ike2",
+    proposalName: ikev2State.proposal?.name || "ike2",
+    policyGroupName: ikev2State.policyGroup?.name || "ike2-policies",
+    modeConfigName: ikev2State.modeConfigs?.name || "ike2-conf",
+    staticDns: ikev2State.modeConfigs?.staticDns || ""
   });
 
   const showPassword = useSignal(false);
 
-  const authMethods: {value: ClientAuthMethod, label: string}[] = [
+  const authMethods: {value: IpsecIdentityAuthMethod, label: string}[] = [
     { value: "digital-signature", label: "Digital Signature (Certificate)" },
     { value: "pre-shared-key", label: "Pre-shared Key" },
     { value: "eap", label: "EAP" }
+  ];
+
+  const eapMethods: {value: IpsecIdentityEapMethod, label: string}[] = [
+    { value: "eap-mschapv2", label: "EAP-MSCHAPv2" },
+    { value: "eap-tls", label: "EAP-TLS" },
+    { value: "eap-peap", label: "EAP-PEAP" },
+    { value: "eap-ttls", label: "EAP-TTLS" }
   ];
 
   // Helper function to update the server configuration
@@ -47,19 +55,43 @@ export const IKEv2ServerAdvanced = component$(() => {
     // Update local state first
     Object.assign(formState, updatedValues);
     
-    // Then update server config
+    // Then update server config with proper StarContext structure
     updateIKEv2Server$({
-      AddressPool: formState.addressPool,
-      ClientAuthMethod: formState.clientAuthMethod as ClientAuthMethod,
-      PresharedKey: formState.presharedKey,
-      EapMethods: formState.eapMethods,
-      ServerCertificate: formState.serverCertificate,
-      ClientCaCertificate: formState.clientCaCertificate,
-      DnsServers: formState.dnsServers,
-      PeerName: formState.peerName,
-      IpsecProfile: formState.ipsecProfile,
-      IpsecProposal: formState.ipsecProposal,
-      PolicyTemplateGroup: formState.policyTemplateGroup
+      ipPools: {
+        Name: formState.addressPoolName,
+        Ranges: formState.addressPoolRanges
+      },
+      identities: {
+        authMethod: formState.authMethod,
+        secret: formState.presharedKey,
+        eapMethods: formState.eapMethods,
+        certificate: formState.serverCertificate,
+        peer: formState.peerName,
+        generatePolicy: "port-strict",
+        policyTemplateGroup: formState.policyGroupName
+      },
+      peer: {
+        name: formState.peerName,
+        exchangeMode: "ike2",
+        passive: true,
+        profile: formState.profileName
+      },
+      profile: {
+        name: formState.profileName
+      },
+      proposal: {
+        name: formState.proposalName
+      },
+      policyGroup: {
+        name: formState.policyGroupName
+      },
+      modeConfigs: {
+        name: formState.modeConfigName,
+        addressPool: formState.addressPoolName,
+        addressPrefixLength: 32,
+        responder: true,
+        staticDns: formState.staticDns
+      }
     });
   });
 
@@ -75,27 +107,37 @@ export const IKEv2ServerAdvanced = component$(() => {
           <div class="space-y-4">
             {/* Address Pool */}
             <ServerFormField 
-              label={$localize`Address Pool`}
+              label={$localize`Address Pool Range`}
               errorMessage={addressPoolError.value}
             >
               <Input
                 type="text"
-                value={formState.addressPool}
-                onChange$={(_, value) => updateServerConfig({ addressPool: value })}
-                placeholder={$localize`e.g. 192.168.77.0/24`}
+                value={formState.addressPoolRanges}
+                onChange$={(_, value) => updateServerConfig({ addressPoolRanges: value })}
+                placeholder={$localize`e.g. 192.168.77.2-192.168.77.254`}
                 validation={addressPoolError.value ? "invalid" : "default"}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {$localize`IP pool for client address assignment`}
+                {$localize`IP range for client address assignment`}
               </p>
+            </ServerFormField>
+
+            {/* Address Pool Name */}
+            <ServerFormField label={$localize`Address Pool Name`}>
+              <Input
+                type="text"
+                value={formState.addressPoolName}
+                onChange$={(_, value) => updateServerConfig({ addressPoolName: value })}
+                placeholder={$localize`e.g. ike2-pool`}
+              />
             </ServerFormField>
 
             {/* DNS Servers */}
             <ServerFormField label={$localize`DNS Servers`}>
               <Input
                 type="text"
-                value={formState.dnsServers}
-                onChange$={(_, value) => updateServerConfig({ dnsServers: value })}
+                value={formState.staticDns}
+                onChange$={(_, value) => updateServerConfig({ staticDns: value })}
                 placeholder={$localize`e.g. 8.8.8.8,1.1.1.1`}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -123,13 +165,13 @@ export const IKEv2ServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Client Authentication Method`}>
               <Select
                 options={authMethods}
-                value={formState.clientAuthMethod}
-                onChange$={(value) => updateServerConfig({ clientAuthMethod: value as ClientAuthMethod })}
+                value={formState.authMethod}
+                onChange$={(value) => updateServerConfig({ authMethod: value as IpsecIdentityAuthMethod })}
               />
             </ServerFormField>
 
             {/* Pre-shared Key */}
-            {formState.clientAuthMethod === "pre-shared-key" && (
+            {formState.authMethod === "pre-shared-key" && (
               <ServerFormField 
                 label={$localize`Pre-shared Key`}
                 errorMessage={presharedKeyError.value}
@@ -157,22 +199,18 @@ export const IKEv2ServerAdvanced = component$(() => {
             )}
 
             {/* EAP Methods */}
-            {formState.clientAuthMethod === "eap" && (
-              <ServerFormField label={$localize`EAP Methods`}>
-                <Input
-                  type="text"
+            {formState.authMethod === "eap" && (
+              <ServerFormField label={$localize`EAP Method`}>
+                <Select
+                  options={eapMethods}
                   value={formState.eapMethods}
-                  onChange$={(_, value) => updateServerConfig({ eapMethods: value })}
-                  placeholder={$localize`e.g. eap-mschapv2,eap-tls`}
+                  onChange$={(value) => updateServerConfig({ eapMethods: value as IpsecIdentityEapMethod })}
                 />
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {$localize`Comma-separated list of supported EAP methods`}
-                </p>
               </ServerFormField>
             )}
 
             {/* Server Certificate */}
-            {(formState.clientAuthMethod === "digital-signature" || formState.clientAuthMethod === "eap") && (
+            {(formState.authMethod === "digital-signature" || formState.authMethod === "eap") && (
               <ServerFormField 
                 label={$localize`Server Certificate`}
                 errorMessage={certificateError.value}
@@ -196,28 +234,6 @@ export const IKEv2ServerAdvanced = component$(() => {
                 </div>
               </ServerFormField>
             )}
-
-            {/* Client CA Certificate */}
-            {formState.clientAuthMethod === "digital-signature" && (
-              <ServerFormField label={$localize`Client CA Certificate`}>
-                <div class="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={formState.clientCaCertificate}
-                    onChange$={(_, value) => updateServerConfig({ clientCaCertificate: value })}
-                    placeholder={$localize`Enter CA certificate name`}
-                  />
-                  <ServerButton
-                    onClick$={() => {}}
-                    primary={false}
-                    class="flex items-center gap-1"
-                  >
-                    <HiDocumentOutline class="h-5 w-5" />
-                    {$localize`Select`}
-                  </ServerButton>
-                </div>
-              </ServerFormField>
-            )}
           </div>
         </div>
 
@@ -226,21 +242,21 @@ export const IKEv2ServerAdvanced = component$(() => {
           <SectionTitle title={$localize`IPsec Settings`} />
           <div class="space-y-4">
             {/* IPsec Profile */}
-            <ServerFormField label={$localize`IPsec Profile`}>
+            <ServerFormField label={$localize`IPsec Profile Name`}>
               <Input
                 type="text"
-                value={formState.ipsecProfile}
-                onChange$={(_, value) => updateServerConfig({ ipsecProfile: value })}
+                value={formState.profileName}
+                onChange$={(_, value) => updateServerConfig({ profileName: value })}
                 placeholder={$localize`Enter IPsec profile name`}
               />
             </ServerFormField>
 
             {/* IPsec Proposal */}
-            <ServerFormField label={$localize`IPsec Proposal`}>
+            <ServerFormField label={$localize`IPsec Proposal Name`}>
               <Input
                 type="text"
-                value={formState.ipsecProposal}
-                onChange$={(_, value) => updateServerConfig({ ipsecProposal: value })}
+                value={formState.proposalName}
+                onChange$={(_, value) => updateServerConfig({ proposalName: value })}
                 placeholder={$localize`Enter IPsec proposal name`}
               />
             </ServerFormField>
@@ -249,9 +265,19 @@ export const IKEv2ServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Policy Template Group`}>
               <Input
                 type="text"
-                value={formState.policyTemplateGroup}
-                onChange$={(_, value) => updateServerConfig({ policyTemplateGroup: value })}
+                value={formState.policyGroupName}
+                onChange$={(_, value) => updateServerConfig({ policyGroupName: value })}
                 placeholder={$localize`Enter policy template group name`}
+              />
+            </ServerFormField>
+
+            {/* Mode Config Name */}
+            <ServerFormField label={$localize`Mode Config Name`}>
+              <Input
+                type="text"
+                value={formState.modeConfigName}
+                onChange$={(_, value) => updateServerConfig({ modeConfigName: value })}
+                placeholder={$localize`Enter mode config name`}
               />
             </ServerFormField>
           </div>

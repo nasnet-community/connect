@@ -1,27 +1,39 @@
 import { $, useSignal } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
+import type { L2tpServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { L2tpServerConfig } from "../../../../StarContext/LANType";
 
 export const useL2TPServer = () => {
   const starContext = useContext(StarContext);
-  
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
   const l2tpState = vpnServerState.L2tpServer || {
-    Profile: "default",
-    UseIpsec: "required",
-    IpsecSecret: "",
-    Authentication: ["mschap2", "mschap1"],
-    MaxMtu: 1450,
-    MaxMru: 1450,
+    enabled: true,
+    DefaultProfile: "default",
+    Authentication: ["mschap2"],
+    PacketSize: {
+      MaxMtu: 1450,
+      MaxMru: 1450
+    },
     KeepaliveTimeout: 30,
-    OneSessionPerHost: true
+    IPsec: {
+      UseIpsec: "yes",
+      IpsecSecret: ""
+    },
+    allowFastPath: false,
+    maxSessions: "unlimited",
+    OneSessionPerHost: false,
+    L2TPV3: {
+      l2tpv3CircuitId: "",
+      l2tpv3CookieLength: 0,
+      l2tpv3DigestHash: "md5",
+      l2tpv3EtherInterfaceList: ""
+    },
+    acceptProtoVersion: "all",
+    callerIdType: "ip-address"
   };
 
   const secretError = useSignal("");
-  const profileError = useSignal("");
-  
 
   const updateL2TPServer$ = $((config: Partial<L2tpServerConfig>) => {
     const newConfig = {
@@ -29,39 +41,29 @@ export const useL2TPServer = () => {
       ...config
     };
     
-    let isValid = true;
-    
-    if ((newConfig.UseIpsec === "required" || newConfig.UseIpsec === "yes") && 
-        (!newConfig.IpsecSecret || !newConfig.IpsecSecret.trim())) {
-      secretError.value = $localize`IPsec secret is required`;
-      isValid = false;
-    } else {
-      secretError.value = "";
-    }
-    
-    if (config.Profile !== undefined) {
-      if (!newConfig.Profile || !newConfig.Profile.trim()) {
-        profileError.value = $localize`Profile name is required`;
-        isValid = false;
+    // Validate IPsec secret if required
+    if (config.IPsec?.IpsecSecret !== undefined) {
+      const useIpsec = config.IPsec?.UseIpsec || newConfig.IPsec?.UseIpsec;
+      if ((useIpsec === "yes" || useIpsec === "required") && 
+          (!config.IPsec.IpsecSecret || !config.IPsec.IpsecSecret.trim())) {
+        secretError.value = $localize`IPsec secret is required when IPsec is enabled`;
+        return;
       } else {
-        profileError.value = "";
+        secretError.value = "";
       }
     }
     
-    if (isValid || config.Profile === "") {
-      starContext.updateLAN$({ 
-        VPNServer: {
-          ...vpnServerState,
-          L2tpServer: config.Profile === "" ? undefined : newConfig
-        }
-      });
-    }
+    starContext.updateLAN$({ 
+      VPNServer: {
+        ...vpnServerState,
+        L2tpServer: config.DefaultProfile === "" ? undefined : newConfig 
+      }
+    });
   });
 
   return {
     l2tpState,
     updateL2TPServer$,
-    secretError,
-    profileError
+    secretError
   };
 }; 

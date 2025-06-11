@@ -8,7 +8,7 @@ import {
   CheckboxGroup, 
   SectionTitle,
   Input
-} from "../../../VPNServer/UI";
+} from "../../UI";
 
 /**
  * PPTP Server Configuration Component
@@ -23,10 +23,10 @@ export const PPTPServerAdvanced = component$(() => {
   
   // Local form state to track user input before submitting
   const formState = useStore({
-    profile: pptpState.Profile || "default",
+    profile: pptpState.DefaultProfile || "default",
     authentication: [...(pptpState.Authentication || ["mschap2", "mschap1"])],
-    maxMtu: pptpState.MaxMtu || 1450,
-    maxMru: pptpState.MaxMru || 1450,
+    maxMtu: pptpState.PacketSize?.MaxMtu || 1450,
+    maxMru: pptpState.PacketSize?.MaxMru || 1450,
     keepaliveTimeout: pptpState.KeepaliveTimeout || 30
   });
 
@@ -37,11 +37,14 @@ export const PPTPServerAdvanced = component$(() => {
     
     // Then update server config
     updatePPTPServer$({
-      Profile: formState.profile,
+      DefaultProfile: formState.profile,
       Authentication: [...formState.authentication],
-      MaxMtu: formState.maxMtu,
-      MaxMru: formState.maxMru,
-      KeepaliveTimeout: formState.keepaliveTimeout
+      PacketSize: {
+        MaxMtu: formState.maxMtu,
+        MaxMru: formState.maxMru
+      },
+      KeepaliveTimeout: formState.keepaliveTimeout,
+      enabled: true
     });
   });
 

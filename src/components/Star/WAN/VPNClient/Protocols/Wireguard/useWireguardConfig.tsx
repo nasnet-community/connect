@@ -1,20 +1,7 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { QRL } from "@builder.io/qwik";
-
-export interface WireguardConfig {
-  PrivateKey: string;
-  PublicKey: string;
-  AllowedIPs: string;
-  ServerAddress: string;
-  ServerPort: string;
-  Address: string;
-  ListeningPort?: string;
-  DNS?: string;
-  MTU?: string;
-  PreSharedKey?: string;
-  PersistentKeepalive?: string;
-}
+import type { WireguardClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 
 export interface UseWireguardConfigResult {
   config: {value: string};
@@ -30,16 +17,17 @@ export interface UseWireguardConfigResult {
   mtu: {value: string};
   preSharedKey: {value: string};
   persistentKeepalive: {value: string};
+  listeningPort: {value: string};
   handleConfigChange$: QRL<(value: string) => Promise<void>>;
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
   setConfigMethod$: QRL<(method: "file" | "manual") => Promise<void>>;
-  validateWireguardConfig: QRL<(config: WireguardConfig) => Promise<{
+  validateWireguardConfig: QRL<(config: WireguardClientConfig) => Promise<{
     isValid: boolean;
     emptyFields: string[];
   }>>;
-  parseWireguardConfig: QRL<(configText: string) => Promise<WireguardConfig | null>>;
-  updateContextWithConfig$: QRL<(parsedConfig: WireguardConfig) => Promise<void>>;
+  parseWireguardConfig: QRL<(configText: string) => Promise<WireguardClientConfig | null>>;
+  updateContextWithConfig$: QRL<(parsedConfig: WireguardClientConfig) => Promise<void>>;
 }
 
 export const useWireguardConfig = (
@@ -52,7 +40,7 @@ export const useWireguardConfig = (
   
   const privateKey = useSignal("");
   const publicKey = useSignal("");
-  const allowedIPs = useSignal("0.0.0.0/0");
+  const allowedIPs = useSignal("0.0.0.0/0, ::/0");
   const serverAddress = useSignal("");
   const serverPort = useSignal("51820");
   const address = useSignal("");
@@ -60,38 +48,43 @@ export const useWireguardConfig = (
   const mtu = useSignal("1420");
   const preSharedKey = useSignal("");
   const persistentKeepalive = useSignal("25");
+  const listeningPort = useSignal("");
   
-  if (starContext.state.WAN.VPNClient?.Wireguard?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.Wireguard[0];
+  if (starContext.state.WAN.VPNClient?.Wireguard) {
+    const existingConfig = starContext.state.WAN.VPNClient.Wireguard;
     privateKey.value = existingConfig.InterfacePrivateKey || "";
+    address.value = existingConfig.InterfaceAddress || "";
+    listeningPort.value = existingConfig.InterfaceListenPort?.toString() || "";
+    mtu.value = existingConfig.InterfaceMTU?.toString() || "1420";
+    dns.value = existingConfig.InterfaceDNS || "";
     publicKey.value = existingConfig.PeerPublicKey || "";
-    allowedIPs.value = existingConfig.PeerAllowedIPs || "0.0.0.0/0";
     serverAddress.value = existingConfig.PeerEndpointAddress || "";
     serverPort.value = existingConfig.PeerEndpointPort?.toString() || "51820";
-    address.value = existingConfig.InterfaceAddress || "";
-    mtu.value = existingConfig.InterfaceMTU?.toString() || "1420";
+    allowedIPs.value = existingConfig.PeerAllowedIPs || "0.0.0.0/0, ::/0";
     preSharedKey.value = existingConfig.PeerPresharedKey || "";
     persistentKeepalive.value = existingConfig.PeerPersistentKeepalive?.toString() || "25";
     
-    if (privateKey.value && publicKey.value && serverAddress.value && address.value) {
-      if (onIsValidChange$) {
-        setTimeout(() => onIsValidChange$(true), 0);
-      }
+    const isConfigValid = privateKey.value && address.value && publicKey.value && 
+                          serverAddress.value && serverPort.value && allowedIPs.value;
+    
+    if (isConfigValid && onIsValidChange$) {
+      setTimeout(() => onIsValidChange$(true), 0);
     }
   }
   
-  const validateWireguardConfig = $(async (config: WireguardConfig) => {
+  const validateWireguardConfig = $(async (config: WireguardClientConfig) => {
     const requiredFields = [
-      "PrivateKey",
-      "PublicKey",
-      "AllowedIPs",
-      "ServerAddress",
-      "Address",
-      "ServerPort",
+      "InterfacePrivateKey",
+      "InterfaceAddress", 
+      "PeerPublicKey",
+      "PeerEndpointAddress",
+      "PeerEndpointPort",
+      "PeerAllowedIPs"
     ];
+    
     const emptyFields = requiredFields.filter((field) => {
-      const value = config[field as keyof WireguardConfig];
-      return !value || value.trim() === "";
+      const value = config[field as keyof WireguardClientConfig];
+      return !value || (typeof value === 'string' && value.trim() === "");
     });
 
     return {
@@ -100,104 +93,15 @@ export const useWireguardConfig = (
     };
   });
 
-  const parseWireguardConfig = $(
-    async (configText: string): Promise<WireguardConfig | null> => {
-      try {
-        const sections: { [key: string]: { [key: string]: string } } = {};
-        let currentSection = "";
-
-        configText.split("\n").forEach((line) => {
-          line = line.trim();
-          if (!line || line.startsWith("#")) return;
-
-          if (line.startsWith("[") && line.endsWith("]")) {
-            currentSection = line.slice(1, -1);
-            sections[currentSection] = {};
-            return;
-          }
-
-          if (currentSection) {
-            const [key, value] = line.split(" = ").map((s) => s.trim());
-            if (key && value) {
-              sections[currentSection][key] = value;
-            }
-          }
-        });
-
-        const endpoint = sections["Peer"]?.Endpoint || "";
-        const [serverAddress, serverPort] = endpoint.split(":");
-
-        const addresses = sections["Interface"]?.Address?.split(",") || [];
-        const ipv4Address = addresses.find((addr) => !addr.includes(":")) || "";
-
-        const config: WireguardConfig = {
-          PrivateKey: sections["Interface"]?.PrivateKey || "",
-          PublicKey: sections["Peer"]?.PublicKey || "",
-          AllowedIPs: sections["Peer"]?.AllowedIPs || "",
-          ServerAddress: serverAddress || "",
-          ServerPort: serverPort || "",
-          Address: ipv4Address,
-          ListeningPort: sections["Interface"]?.ListenPort || "13231",
-          DNS: sections["Interface"]?.DNS || "",
-          MTU: sections["Interface"]?.MTU || "1420",
-          PreSharedKey: sections["Peer"]?.PresharedKey || "",
-          PersistentKeepalive: sections["Peer"]?.PersistentKeepalive || "25s",
-        };
-
-        const requiredFields = [
-          "PrivateKey",
-          "PublicKey",
-          "AllowedIPs",
-          "ServerAddress",
-          "Address",
-          "ServerPort",
-        ];
-        const isValid = requiredFields.every((field) => {
-          const value = config[field as keyof WireguardConfig];
-          return value !== undefined && value !== "";
-        });
-
-        return isValid ? config : null;
-      } catch (error) {
-        console.error("Error parsing WireGuard config:", error);
-        return null;
-      }
-    },
-  );
-
-  const updateContextWithConfig$ = $(async (parsedConfig: WireguardConfig) => {
-    const wireguardClientConfig = {
-      InterfacePrivateKey: parsedConfig.PrivateKey,
-      InterfaceAddress: parsedConfig.Address,
-      InterfaceListenPort: parseInt(parsedConfig.ListeningPort || "13231"),
-      InterfaceMTU: parseInt(parsedConfig.MTU || "1420"),
-      PeerPublicKey: parsedConfig.PublicKey,
-      PeerEndpointAddress: parsedConfig.ServerAddress,
-      PeerEndpointPort: parseInt(parsedConfig.ServerPort),
-      PeerAllowedIPs: parsedConfig.AllowedIPs,
-      PeerPresharedKey: parsedConfig.PreSharedKey,
-      PeerPersistentKeepalive: parsedConfig.PersistentKeepalive 
-        ? parseInt(parsedConfig.PersistentKeepalive.replace('s', '')) 
-        : 25,
-    };
-
+  const updateContextWithConfig$ = $(async (parsedConfig: WireguardClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
-    
-    const wireguardConfigs = currentVPNClient.Wireguard || [];
-    
-    if (wireguardConfigs.length > 0) {
-      wireguardConfigs[0] = wireguardClientConfig;
-    } else {
-      wireguardConfigs.push(wireguardClientConfig);
-    }
     
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        Wireguard: wireguardConfigs
+        Wireguard: parsedConfig
       }
     });
-    
   });
 
   const handleConfigChange$ = $(async (value: string) => {
@@ -232,17 +136,18 @@ export const useWireguardConfig = (
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
     
-    const manualConfig: WireguardConfig = {
-      PrivateKey: privateKey.value,
-      PublicKey: publicKey.value,
-      AllowedIPs: allowedIPs.value,
-      ServerAddress: serverAddress.value,
-      ServerPort: serverPort.value,
-      Address: address.value,
-      DNS: dns.value || undefined,
-      MTU: mtu.value,
-      PreSharedKey: preSharedKey.value || undefined,
-      PersistentKeepalive: persistentKeepalive.value ? `${persistentKeepalive.value}s` : undefined,
+    const manualConfig: WireguardClientConfig = {
+      InterfacePrivateKey: privateKey.value,
+      InterfaceAddress: address.value,
+      InterfaceListenPort: listeningPort.value ? parseInt(listeningPort.value) : undefined,
+      InterfaceMTU: mtu.value ? parseInt(mtu.value) : undefined,
+      InterfaceDNS: dns.value || undefined,
+      PeerPublicKey: publicKey.value,
+      PeerEndpointAddress: serverAddress.value,
+      PeerEndpointPort: parseInt(serverPort.value),
+      PeerAllowedIPs: allowedIPs.value,
+      PeerPresharedKey: preSharedKey.value || undefined,
+      PeerPersistentKeepalive: persistentKeepalive.value ? parseInt(persistentKeepalive.value) : undefined
     };
 
     const { isValid, emptyFields } = await validateWireguardConfig(manualConfig);
@@ -275,8 +180,98 @@ export const useWireguardConfig = (
 
   const setConfigMethod$ = $(async (method: "file" | "manual") => {
     configMethod.value = method;
-    return Promise.resolve();
   });
+
+  const parseWireguardConfig = $(
+    async (configText: string): Promise<WireguardClientConfig | null> => {
+      try {
+        const lines = configText.split('\n').map(line => line.trim());
+        
+        let inInterface = false;
+        let inPeer = false;
+        
+        const config: Partial<WireguardClientConfig> = {};
+        
+        for (const line of lines) {
+          if (!line || line.startsWith('#')) continue;
+          
+          if (line === '[Interface]') {
+            inInterface = true;
+            inPeer = false;
+            continue;
+          }
+          
+          if (line === '[Peer]') {
+            inInterface = false;
+            inPeer = true;
+            continue;
+          }
+          
+          if (line.startsWith('[') && line.endsWith(']')) {
+            inInterface = false;
+            inPeer = false;
+            continue;
+          }
+          
+          const [key, value] = line.split('=').map(s => s.trim());
+          if (!key || !value) continue;
+          
+          if (inInterface) {
+            switch (key.toLowerCase()) {
+              case 'privatekey':
+                config.InterfacePrivateKey = value;
+                break;
+              case 'address':
+                config.InterfaceAddress = value;
+                break;
+              case 'listenport':
+                config.InterfaceListenPort = parseInt(value);
+                break;
+              case 'mtu':
+                config.InterfaceMTU = parseInt(value);
+                break;
+              case 'dns':
+                config.InterfaceDNS = value;
+                break;
+            }
+          }
+          
+          if (inPeer) {
+            switch (key.toLowerCase()) {
+              case 'publickey':
+                config.PeerPublicKey = value;
+                break;
+              case 'endpoint':
+                const [address, port] = value.split(':');
+                config.PeerEndpointAddress = address;
+                config.PeerEndpointPort = parseInt(port);
+                break;
+              case 'allowedips':
+                config.PeerAllowedIPs = value;
+                break;
+              case 'presharedkey':
+                config.PeerPresharedKey = value;
+                break;
+              case 'persistentkeepalive':
+                config.PeerPersistentKeepalive = parseInt(value);
+                break;
+            }
+          }
+        }
+        
+        if (!config.InterfacePrivateKey || !config.InterfaceAddress || 
+            !config.PeerPublicKey || !config.PeerEndpointAddress || 
+            !config.PeerEndpointPort || !config.PeerAllowedIPs) {
+          return null;
+        }
+        
+        return config as WireguardClientConfig;
+      } catch (error) {
+        console.error("Error parsing Wireguard config:", error);
+        return null;
+      }
+    }
+  );
 
   return {
     config,
@@ -292,6 +287,7 @@ export const useWireguardConfig = (
     mtu,
     preSharedKey,
     persistentKeepalive,
+    listeningPort,
     handleConfigChange$,
     handleManualFormSubmit$,
     handleFileUpload$,

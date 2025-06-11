@@ -1,194 +1,191 @@
-import { $, useSignal, useStore } from "@builder.io/qwik";
+import { $, useSignal } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { WireguardInterfaceConfig, WireguardPeerConfig, WireguardServerInstanceConfig } from "../../../../StarContext/LANType";
+import type { WireguardPeerConfig, WireguardServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
-  
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
-  const wireguardServers = useStore<WireguardServerInstanceConfig[]>(
-    vpnServerState.WireguardServers || []
-  );
-
-  const isGeneratingKeys = useSignal(false);
-  
-  const currentServerIndex = useSignal(0);
-  
   const privateKeyError = useSignal("");
-  const interfaceAddressError = useSignal("");
-  const peerPublicKeyError = useSignal("");
-  const peerAddressError = useSignal("");
-  
-  const validatePrivateKey = $((value: string) => {
-    if (!value.trim()) {
-      privateKeyError.value = $localize`Private key is required`;
-      return false;
-    } else if (value.length < 32) {
-      privateKeyError.value = $localize`Private key should be at least 32 characters`;
-      return false;
-    } else {
-      privateKeyError.value = "";
-      return true;
+  const addressError = useSignal("");
+
+  const generatePrivateKey = $(() => {
+    // Generate a random private key (simplified for demo)
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let result = "";
+    for (let i = 0; i < 44; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-  });
-  
-  const validateInterfaceAddress = $((value: string) => {
-    if (!value.trim()) {
-      interfaceAddressError.value = $localize`Interface address is required`;
-      return false;
-    } else if (!value.includes("/")) {
-      interfaceAddressError.value = $localize`Address must include subnet mask (e.g., 10.0.0.1/24)`;
-      return false;
-    } else {
-      interfaceAddressError.value = "";
-      return true;
-    }
-  });
-  
-  const validatePeerPublicKey = $((value: string) => {
-    if (!value.trim()) {
-      peerPublicKeyError.value = $localize`Public key is required`;
-      return false;
-    } else if (value.length < 32) {
-      peerPublicKeyError.value = $localize`Public key should be at least 32 characters`;
-      return false;
-    } else {
-      peerPublicKeyError.value = "";
-      return true;
-    }
-  });
-  
-  const validatePeerAddress = $((value: string) => {
-    if (!value.trim()) {
-      peerAddressError.value = $localize`Allowed address is required`;
-      return false;
-    } else {
-      peerAddressError.value = "";
-      return true;
-    }
+    return result;
   });
 
-  const generateWireguardServer$ = $(() => {
-    isGeneratingKeys.value = true;
-    
-
-    setTimeout(() => {
-      const newServer: WireguardServerInstanceConfig = {
-        Interface: {
-          Name: `wg${wireguardServers.length}`,
-          PrivateKey: "private_key_" + Math.random().toString(36).substring(2, 15),
-          InterfaceAddress: `10.10.${wireguardServers.length}.1/24`,
-          ListenPort: 51820 + wireguardServers.length,
-          Mtu: 1420
-        },
-        Peers: []
-      };
-      
-      wireguardServers.push(newServer);
-      currentServerIndex.value = wireguardServers.length - 1;
-      isGeneratingKeys.value = false;
-      
-      updateWireguardServers$();
-    }, 500);
-  });
-  
-  const addPeer$ = $(() => {
-    if (wireguardServers.length === 0) return;
-    
-    const newPeer: WireguardPeerConfig = {
-      PublicKey: "",
-      AllowedAddress: `10.10.${currentServerIndex.value}.0/24`,
-      PresharedKey: "",
-      PersistentKeepalive: 25,
-      Comment: ""
+  const addServer = $(() => {
+    const newServer: WireguardServerConfig = {
+      Interface: {
+        Name: `wg-server-${Date.now()}`,
+        PrivateKey: "",
+        PublicKey: "",
+        InterfaceAddress: "192.168.79.1/24",
+        ListenPort: 51820,
+        Mtu: 1420
+      },
+      Peers: []
     };
-    
-    wireguardServers[currentServerIndex.value].Peers.push(newPeer);
-    
-    updateWireguardServers$();
-  });
-  
-  const removePeer$ = $((peerIndex: number) => {
-    if (wireguardServers.length === 0) return;
-    
-    wireguardServers[currentServerIndex.value].Peers.splice(peerIndex, 1);
-    
-    updateWireguardServers$();
-  });
-  
-  const updateInterface$ = $(<K extends keyof WireguardInterfaceConfig>(property: K, value: WireguardInterfaceConfig[K]) => {
-    if (wireguardServers.length === 0) return;
-    
-    if (property === 'PrivateKey' && typeof value === 'string') {
-      if (!validatePrivateKey(value)) return;
-    } else if (property === 'InterfaceAddress' && typeof value === 'string') {
-      if (!validateInterfaceAddress(value)) return;
-    }
-    
-    if (property === 'PublicKey') return;
-    
-    wireguardServers[currentServerIndex.value].Interface[property] = value;
-    
-    updateWireguardServers$();
-  });
-  
-  const updatePeer$ = $(<K extends keyof WireguardPeerConfig>(peerIndex: number, property: K, value: WireguardPeerConfig[K]) => {
-    if (wireguardServers.length === 0) return;
-    
-    if (property === 'PublicKey' && typeof value === 'string') {
-      if (!validatePeerPublicKey(value)) return;
-    } else if (property === 'AllowedAddress' && typeof value === 'string') {
-      if (!validatePeerAddress(value)) return;
-    }
-    
-    wireguardServers[currentServerIndex.value].Peers[peerIndex][property] = value;
-    
-    updateWireguardServers$();
-  });
-  
-  const deleteServer$ = $(() => {
-    if (wireguardServers.length === 0) return;
-    
-    wireguardServers.splice(currentServerIndex.value, 1);
-    
-    if (currentServerIndex.value >= wireguardServers.length) {
-      currentServerIndex.value = Math.max(0, wireguardServers.length - 1);
-    }
-    
-    updateWireguardServers$();
-  });
-  
-  const selectServer$ = $((index: number) => {
-    if (index >= 0 && index < wireguardServers.length) {
-      currentServerIndex.value = index;
-    }
-  });
-  
-  const updateWireguardServers$ = $(() => {
-    starContext.updateLAN$({ 
+
+    const currentServers = vpnServerState.WireguardServers || [];
+    starContext.updateLAN$({
       VPNServer: {
         ...vpnServerState,
-        WireguardServers: wireguardServers.length > 0 ? [...wireguardServers] : undefined
+        WireguardServers: [...currentServers, newServer]
       }
     });
   });
 
+  const updateServer = $((index: number, config: Partial<WireguardServerConfig>) => {
+    const currentServers = vpnServerState.WireguardServers || [];
+    if (index >= 0 && index < currentServers.length) {
+      const updatedServers = [...currentServers];
+      updatedServers[index] = { ...updatedServers[index], ...config };
+      
+      starContext.updateLAN$({
+        VPNServer: {
+          ...vpnServerState,
+          WireguardServers: updatedServers
+        }
+      });
+    }
+  });
+
+  const addPeer = $((serverIndex: number) => {
+    const newPeer: WireguardPeerConfig = {
+      PublicKey: "",
+      AllowedAddress: "",
+      PresharedKey: "",
+      EndpointAddress: "",
+      EndpointPort: 0,
+      PersistentKeepalive: 25,
+      Responder: false,
+      Comment: ""
+    };
+
+    const currentServers = vpnServerState.WireguardServers || [];
+    if (serverIndex >= 0 && serverIndex < currentServers.length) {
+      const updatedServers = [...currentServers];
+      updatedServers[serverIndex] = {
+        ...updatedServers[serverIndex],
+        Peers: [...updatedServers[serverIndex].Peers, newPeer]
+      };
+
+      starContext.updateLAN$({
+        VPNServer: {
+          ...vpnServerState,
+          WireguardServers: updatedServers
+        }
+      });
+    }
+  });
+
+  const updatePeer$ = $((serverIndex: number, peerIndex: number, config: Partial<WireguardPeerConfig>) => {
+    const currentServers = vpnServerState.WireguardServers || [];
+    if (serverIndex >= 0 && serverIndex < currentServers.length) {
+      const server = currentServers[serverIndex];
+      if (peerIndex >= 0 && peerIndex < server.Peers.length) {
+        const updatedServers = [...currentServers];
+        const updatedPeers = [...server.Peers];
+        updatedPeers[peerIndex] = { ...updatedPeers[peerIndex], ...config };
+        updatedServers[serverIndex] = { ...server, Peers: updatedPeers };
+
+        starContext.updateLAN$({
+          VPNServer: {
+            ...vpnServerState,
+            WireguardServers: updatedServers
+          }
+        });
+      }
+    }
+  });
+
+  const deleteServer$ = $((index: number) => {
+    const currentServers = vpnServerState.WireguardServers || [];
+    if (index >= 0 && index < currentServers.length) {
+      const updatedServers = currentServers.filter((_, i) => i !== index);
+      starContext.updateLAN$({
+        VPNServer: {
+          ...vpnServerState,
+          WireguardServers: updatedServers.length > 0 ? updatedServers : undefined
+        }
+      });
+    }
+  });
+
+  const selectServer$ = $((index: number) => {
+    // This would be used if there's a selected server concept
+    console.log("Selected server:", index);
+  });
+
+  const wireguardState = vpnServerState.WireguardServers?.[0] || {
+    Interface: {
+      Name: "wg-server",
+      PrivateKey: "",
+      PublicKey: "",
+      InterfaceAddress: "192.168.79.1/24",
+      ListenPort: 51820,
+      Mtu: 1420
+    },
+    Peers: []
+  };
+
+  const updateWireguardServer$ = $((config: Partial<WireguardServerConfig>) => {
+    const newConfig = {
+      ...wireguardState,
+      ...config
+    };
+    
+    let isValid = true;
+    
+    if (config.Interface?.PrivateKey !== undefined) {
+      if (!newConfig.Interface.PrivateKey || !newConfig.Interface.PrivateKey.trim()) {
+        privateKeyError.value = $localize`Private key is required`;
+        isValid = false;
+      } else {
+        privateKeyError.value = "";
+      }
+    }
+    
+    if (config.Interface?.InterfaceAddress !== undefined) {
+      if (!newConfig.Interface.InterfaceAddress || !newConfig.Interface.InterfaceAddress.trim()) {
+        addressError.value = $localize`Interface address is required`;
+        isValid = false;
+      } else if (!newConfig.Interface.InterfaceAddress.includes("/")) {
+        addressError.value = $localize`Interface address must include subnet mask (e.g., 192.168.79.1/24)`;
+        isValid = false;
+      } else {
+        addressError.value = "";
+      }
+    }
+    
+    if (isValid || (config.Interface && config.Interface.PrivateKey === "")) {
+      starContext.updateLAN$({ 
+        VPNServer: {
+          ...vpnServerState,
+          WireguardServers: (config.Interface && config.Interface.PrivateKey === "") ? undefined : [newConfig]
+        }
+      });
+    }
+  });
+
   return {
-    wireguardServers,
-    currentServerIndex,
-    isGeneratingKeys,
     privateKeyError,
-    interfaceAddressError,
-    peerPublicKeyError,
-    peerAddressError,
-    generateWireguardServer$,
-    addPeer$,
-    removePeer$,
-    updateInterface$,
+    addressError,
+    generatePrivateKey,
+    addServer,
+    updateServer,
+    addPeer,
     updatePeer$,
     deleteServer$,
-    selectServer$
+    selectServer$,
+    updateWireguardServer$,
+    wireguardState
   };
 }; 

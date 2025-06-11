@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
-import type { BaseTunnelConfig } from "../../StarContext/LANType";
+import type { BaseTunnelConfig } from "../../StarContext/Utils/TunnelType";
 import type { QRL } from "@builder.io/qwik";
 
 interface TunnelListProps {

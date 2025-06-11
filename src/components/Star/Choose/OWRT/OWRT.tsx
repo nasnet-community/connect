@@ -14,6 +14,7 @@ interface OpenWRTOptionData {
 interface OWRTFISProps {
   isComplete?: boolean;
   onComplete$?: PropFunction<() => void>;
+  onOptionSelect$?: PropFunction<(option: OpenWRTOption) => void>;
 }
 
 export const OWRT = component$((props: OWRTFISProps) => {
@@ -21,6 +22,7 @@ export const OWRT = component$((props: OWRTFISProps) => {
 
   const handleOptionSelect = $((option: OpenWRTOption) => {
     selectedOption.value = option;
+    props.onOptionSelect$?.(option);
     props.onComplete$?.();
   });
 

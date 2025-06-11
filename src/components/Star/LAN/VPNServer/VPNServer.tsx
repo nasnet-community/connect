@@ -9,7 +9,7 @@ import { ConfigStep } from "./steps/ConfigStep";
 import { UsersStep } from "./steps/UsersStep";
 import type { PropFunction } from "@builder.io/qwik";
 import type { VPNType } from "../../StarContext/CommonType";
-import type { Credentials } from "../../StarContext/LANType";
+import type { Credentials } from "../../StarContext/Utils/VPNServerType";
 
 // Create and export a context for VPN Server settings
 export interface VPNServerContextData {

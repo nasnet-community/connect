@@ -122,23 +122,23 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
                 <select
                   value={authType.value}
                   onChange$={(_, el) => {
-                    authType.value = el.value as "credentials" | "certificates" | "both";
+                    authType.value = el.value as "Credentials" | "Certificate" | "CredentialsCertificate";
                     handleManualFormSubmit$();
                   }}
                   class="mt-1 block w-full rounded-lg border border-border bg-white px-3 py-2
                          focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                          dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                 >
-                  <option value="credentials">{$localize`Username/Password`}</option>
-                  <option value="certificates" disabled>{$localize`Certificates (Coming Soon)`}</option>
-                  <option value="both" disabled>{$localize`Username/Password & Certificates (Coming Soon)`}</option>
+                  <option value="Credentials">{$localize`Username/Password`}</option>
+                  <option value="Certificate" disabled>{$localize`Certificates (Coming Soon)`}</option>
+                  <option value="CredentialsCertificate" disabled>{$localize`Username/Password & Certificates (Coming Soon)`}</option>
                 </select>
               </div>
             </div>
           </FormContainer>
           
           {/* Authentication Section - Conditionally Rendered */}
-          {(authType.value === "credentials" || authType.value === "both") && (
+          {(authType.value === "Credentials" || authType.value === "CredentialsCertificate") && (
             <FormContainer 
               title={$localize`Authentication Details`}
               bordered
@@ -169,7 +169,7 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
           )}
           
           {/* Certificate Note - Conditionally Rendered */}
-          {(authType.value === "certificates" || authType.value === "both") && (
+          {(authType.value === "Certificate" || authType.value === "CredentialsCertificate") && (
             <div class="rounded-lg bg-info-50/70 p-4 dark:bg-info-900/20 border border-info-200 dark:border-info-700/30">
               <div class="flex items-start">
                 <div class="flex-shrink-0 pt-0.5">

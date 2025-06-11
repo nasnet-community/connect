@@ -1,16 +1,8 @@
 import { $, useSignal, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
+import type { PptpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
-
-export interface PPTPConfig {
-  ConnectTo: string;
-  Username: string;
-  Password: string;
-  Profile?: string;
-  AllowedAuthMethods?: AuthMethod[];
-  KeepaliveTimeout?: number;
-}
 
 export interface UsePPTPConfigResult {
   serverAddress: {value: string};
@@ -19,12 +11,12 @@ export interface UsePPTPConfigResult {
   keepaliveTimeout: {value: string};
   errorMessage: {value: string};
   handleManualFormSubmit$: QRL<() => Promise<void>>;
-  validatePPTPConfig: QRL<(config: PPTPConfig) => Promise<{
+  validatePPTPConfig: QRL<(config: PptpClientConfig) => Promise<{
     isValid: boolean;
     emptyFields: string[];
   }>>;
-  updateContextWithConfig$: QRL<(parsedConfig: PPTPConfig) => Promise<void>>;
-  parsePPTPConfig: QRL<(configText: string) => PPTPConfig | null>;
+  updateContextWithConfig$: QRL<(parsedConfig: PptpClientConfig) => Promise<void>>;
+  parsePPTPConfig: QRL<(configText: string) => PptpClientConfig | null>;
 }
 
 export const usePPTPConfig = (
@@ -38,8 +30,9 @@ export const usePPTPConfig = (
   const password = useSignal("");
   const keepaliveTimeout = useSignal("30");
   
-  if (starContext.state.WAN.VPNClient?.PPTP?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
+  // Initialize with existing config if available
+  if (starContext.state.WAN.VPNClient?.PPTP) {
+    const existingConfig = starContext.state.WAN.VPNClient.PPTP;
     serverAddress.value = existingConfig.ConnectTo || "";
     
     if (existingConfig.Credentials) {
@@ -51,6 +44,7 @@ export const usePPTPConfig = (
       keepaliveTimeout.value = existingConfig.KeepaliveTimeout.toString();
     }
     
+    // Check if config is valid
     if (serverAddress.value && username.value && password.value) {
       if (onIsValidChange$) {
         setTimeout(() => onIsValidChange$(true), 0);
@@ -58,17 +52,20 @@ export const usePPTPConfig = (
     }
   }
   
-  const validatePPTPConfig = $(async (config: PPTPConfig) => {
-    const requiredFields = [
-      "ConnectTo",
-      "Username", 
-      "Password"
-    ];
+  const validatePPTPConfig = $(async (config: PptpClientConfig) => {
+    const emptyFields: string[] = [];
     
-    const emptyFields = requiredFields.filter((field) => {
-      const value = config[field as keyof PPTPConfig];
-      return !value || (typeof value === 'string' && value.trim() === "");
-    });
+    if (!config.ConnectTo || config.ConnectTo.trim() === "") {
+      emptyFields.push("ConnectTo");
+    }
+    
+    if (!config.Credentials?.Username || config.Credentials.Username.trim() === "") {
+      emptyFields.push("Username");
+    }
+    
+    if (!config.Credentials?.Password || config.Credentials.Password.trim() === "") {
+      emptyFields.push("Password");
+    }
 
     return {
       isValid: emptyFields.length === 0,
@@ -76,50 +73,29 @@ export const usePPTPConfig = (
     };
   });
 
-  const updateContextWithConfig$ = $(async (parsedConfig: PPTPConfig) => {
-    const pptpClientConfig = {
-      ConnectTo: parsedConfig.ConnectTo,
-      Credentials: {
-        Username: parsedConfig.Username, 
-        Password: parsedConfig.Password
-      },
-      KeepaliveTimeout: parsedConfig.KeepaliveTimeout,
-      AddDefaultRoute: true,
-      UsePeerDNS: true,
-      AllowAuth: ["mschap2", "mschap"] as AuthMethod[],
-      AllowMPPE: true,
-      MPPERequired: true,
-      MPPE128: true,
-      MPPEStateful: true
-    };
-
+  const updateContextWithConfig$ = $(async (parsedConfig: PptpClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
-    
-    const pptpConfigs = currentVPNClient.PPTP || [];
-    
-    if (pptpConfigs.length > 0) {
-      pptpConfigs[0] = pptpClientConfig;
-    } else {
-      pptpConfigs.push(pptpClientConfig);
-    }
     
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        PPTP: pptpConfigs
+        PPTP: parsedConfig
       }
     });
-    
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
     
-    const manualConfig: PPTPConfig = {
+    const manualConfig: PptpClientConfig = {
       ConnectTo: serverAddress.value,
-      Username: username.value,
-      Password: password.value,
+      Credentials: {
+        Username: username.value, 
+        Password: password.value
+      },
       KeepaliveTimeout: parseInt(keepaliveTimeout.value) || 30,
+      AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+      DialOnDemand: false,
     };
 
     const { isValid, emptyFields } = await validatePPTPConfig(manualConfig);
@@ -139,13 +115,14 @@ export const usePPTPConfig = (
   });
 
   const parsePPTPConfig = $(
-    (configText: string): PPTPConfig | null => {
+    (configText: string): PptpClientConfig | null => {
       try {
-        const config: PPTPConfig = {
+        const config: Partial<PptpClientConfig> = {
           ConnectTo: "",
-          Username: "",
-          Password: "",
+          Credentials: { Username: "", Password: "" },
           KeepaliveTimeout: 30,
+          AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+          DialOnDemand: false,
         };
         
         const lines = configText.split('\n').map(line => line.trim());
@@ -159,17 +136,16 @@ export const usePPTPConfig = (
             config.ConnectTo = line.split(' ')[1];
           }
           else if (line.startsWith('user ')) {
-            config.Username = line.split(' ')[1];
+            if (!config.Credentials) config.Credentials = { Username: "", Password: "" };
+            config.Credentials.Username = line.split(' ')[1];
           }
           else if (line.startsWith('password ')) {
-            config.Password = line.split(' ')[1];
-          }
-          else if (line.startsWith('profile ')) {
-            config.Profile = line.split(' ')[1];
+            if (!config.Credentials) config.Credentials = { Username: "", Password: "" };
+            config.Credentials.Password = line.split(' ')[1];
           }
           else if (line.startsWith('auth ')) {
             const authMethods = line.substring(5).split(' ') as AuthMethod[];
-            config.AllowedAuthMethods = authMethods;
+            config.AuthMethod = authMethods;
           }
           else if (line.startsWith('keepalive ') || line.startsWith('lcp-echo-interval ')) {
             const parts = line.split(' ');
@@ -179,7 +155,12 @@ export const usePPTPConfig = (
           }
         }
         
-        return config;
+        // Validate required fields
+        if (!config.ConnectTo || !config.Credentials?.Username || !config.Credentials?.Password) {
+          return null;
+        }
+        
+        return config as PptpClientConfig;
       } catch (error) {
         console.error("Error parsing PPTP config:", error);
         return null;

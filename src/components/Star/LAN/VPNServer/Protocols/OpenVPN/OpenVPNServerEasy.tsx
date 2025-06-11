@@ -1,13 +1,13 @@
 import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
-import { ServerCard, ServerFormField } from "../../../VPNServer/UI";
+import { ServerCard, ServerFormField } from "../../UI";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 
 export const OpenVPNServerEasy = component$(() => {
   const { openVpnState, updateOpenVPNServer$, passphraseError } = useOpenVPNServer();
   
   const formState = useStore({
-    certificateKeyPassphrase: openVpnState.CertificateKeyPassphrase || "",
+    certificateKeyPassphrase: openVpnState.Certificate.CertificateKeyPassphrase || "",
   });
 
   const showPassphrase = useSignal(false);
@@ -15,9 +15,13 @@ export const OpenVPNServerEasy = component$(() => {
   // Helper function to update the server configuration
   const updateServerConfig = $(() => {
     updateOpenVPNServer$({
-      Profile: "default", // Use default profile in easy mode
-      Certificate: "default", // Use default certificate in easy mode
-      CertificateKeyPassphrase: formState.certificateKeyPassphrase,
+      name: "default",
+      Certificate: {
+        Certificate: "default",
+        CertificateKeyPassphrase: formState.certificateKeyPassphrase,
+        RequireClientCertificate: false
+      },
+      enabled: true
     });
   });
 

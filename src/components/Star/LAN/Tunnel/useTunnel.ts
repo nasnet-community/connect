@@ -5,10 +5,10 @@ import type {
   GreTunnelConfig, 
   IpipTunnelConfig, 
   VxlanInterfaceConfig 
-} from "../../StarContext/LANType";
+} from "../../StarContext/Utils/TunnelType";
 import type { PropFunction } from "@builder.io/qwik";
-import { useCStepper } from "../../../../components/Core/Stepper/CStepper";
 import type { TunnelStepperData } from "./types";
+import { useCStepper } from "~/components/Core/Stepper/CStepper";
 
 export const useTunnel = () => {
   const starContext = useContext(StarContext);
@@ -167,7 +167,8 @@ export const useTunnel = () => {
       remoteAddress: "",
       vni: Math.floor(Math.random() * 16777215),
       port: 4789,
-      mtu: 1450
+      mtu: 1450,
+      bumMode: 'unicast'
     });
   });
 

@@ -234,14 +234,33 @@ export const MultiSSID = (MultiMode: MultiMode, WANLink: WANLink): RouterConfig 
     return config;
 }
 
+export const CheckWireless = (Wireless: Wireless): boolean => {
+
+    if (!Wireless) {
+        return false;
+    }
+    
+    const { SingleMode, MultiMode } = Wireless;
+    
+    if (!SingleMode && !MultiMode) {
+        return false;
+    }
+    
+    return true;
+}
+
 export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DomesticLink: boolean) {
     const {SingleMode, MultiMode} = Wireless;
     const config: RouterConfig = {
         "/interface wifi": [],
         "/interface bridge port": [],
     };
+
+    if(!CheckWireless(Wireless)){
+        return config;
+    }
+
     
-    // Generate WiFi interface configuration based on mode
     if (SingleMode) {
         const singleSSIDConfig = SingleSSID(SingleMode, WANLink, DomesticLink);
         const bridgePortsConfig = WirelessBridgePortsSingle(DomesticLink);

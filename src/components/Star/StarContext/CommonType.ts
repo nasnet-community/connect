@@ -4,6 +4,7 @@ export type PppAuthMethod = "pap" | "chap" | "mschap1" | "mschap2";
 export type ARPState = "enabled" | "disabled" | "proxy-arp" | "reply-only";
 export type AuthMethod = "pap" | "chap" | "mschap1" | "mschap2";
 export type TLSVersion = "any" | "only-1.2" | "only-1.3";
+
 // export type TLSVersion = 'any' | '1.0' | '1.1' | '1.2' | 'only-1.2';
 export type NetworkProtocol = "tcp" | "udp";
 export type LayerMode = 'ip' | 'ethernet';
@@ -37,6 +38,21 @@ export interface WirelessCredentials  {
 }
 export type Networks = "VPN" | "Domestic" | "Foreign" | "Split";
 
+export interface Server {
+  Address: string;
+  Port?: number;
+}
 
+export interface Credentials {
+  Username: string;
+  Password: string;
+}
 
-
+export type IkeHashAlgorithm = 'md5' | 'sha1' | 'sha256' | 'sha384' | 'sha512';
+export type IkeEncAlgorithm = 'des' | '3des' | 'aes-128' | 'aes-192' | 'aes-256' | 'blowfish' | 'aes-128-cbc' | 'aes-192-cbc' | 'aes-256-cbc' | 'aes-128-gcm' | 'aes-256-gcm' | 'camellia-128' | 'camellia-192' | 'camellia-256'; // Added camellia [6]
+export type IkeDhGroup = 'modp1024' | 'modp1536' | 'modp2048' | 'modp3072' | 'modp4096' | 'modp6144' | 'modp8192' | 'ecp256' | 'ecp384' | 'ecp521';
+export type IkeAuthMethod = 'pre-shared-key' | 'rsa-signature' | 'eap';
+export type IkeEapMethod = 'eap-mschapv2' | 'eap-tls'; 
+export type IkeIdType = 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | 'key-id'; 
+export type IkePolicyAction = 'encrypt' | 'none' | 'discard';
+export type IkePolicyLevel = 'require' | 'unique' | 'use';

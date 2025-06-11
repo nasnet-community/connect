@@ -1,6 +1,6 @@
 import { useContext, $, useStore } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-import type { GreTunnelConfig } from "../../../../StarContext/LANType";
+import type { GreTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const useGRE = () => {
   const starContext = useContext(StarContext);

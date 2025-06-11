@@ -1,5 +1,6 @@
-import type { RouterConfig } from "./ConfigGenerator";
+import type { RouterConfig } from "../ConfigGenerator";
 import type { services, RouterIdentityRomon, AutoReboot, Update, GameConfig, ExtraConfigState } from "~/components/Star/StarContext/ExtraType";
+import { PublicCert } from "../utils/Certificate";
 // import { mergeMultipleConfigs } from "./ConfigGenerator";
 
 
@@ -327,6 +328,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState): RouterConfig => {
     ...Graph(),
     ...update(),
     ...DDNS(),
+    ...PublicCert(),
   }
 
   return config

@@ -1,7 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiLockClosedOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
 import { useVXLAN } from "./useVXLAN";
-import type { VxlanInterfaceConfig } from "../../../../StarContext/LANType";
+import type { VxlanInterfaceConfig } from "../../../../StarContext/Utils/TunnelType";
 
 export const VXLANProtocol = component$(() => {
   const {

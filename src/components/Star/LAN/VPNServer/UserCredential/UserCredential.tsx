@@ -1,6 +1,6 @@
 import { component$, $, useVisibleTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
-import type { Credentials } from "../../../StarContext/LANType";
+import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { VPN_PROTOCOLS } from "../Protocols/constants";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
@@ -53,7 +53,7 @@ export const UserCredential = component$<UserCredentialProps>(({
       const hasCredentials = u.Username?.trim() !== "" && u.Password?.trim() !== "";
       const hasProtocols = Array.isArray(u.VPNType) && u.VPNType.length > 0;
       const hasValidProtocols = Array.isArray(u.VPNType) && 
-        u.VPNType.every(protocol => stepper.data.enabledProtocols[protocol] === true);
+        u.VPNType.every((protocol: VPNType) => stepper.data.enabledProtocols[protocol] === true);
       return hasCredentials && hasProtocols && hasValidProtocols;
     });
     

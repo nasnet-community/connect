@@ -1,29 +1,20 @@
 import { $, useSignal, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
-
-export interface IKEv2Config {
-  ServerAddress: string;
-  AuthMethod: 'psk' | 'eap' | 'certificate';
-  PresharedKey?: string;
-  Username?: string;
-  Password?: string;
-  ClientCertificateName?: string;
-  CaCertificateName?: string;
-  PolicyDstAddress?: string;
-  Phase1HashAlgorithm?: string;
-  Phase1EncryptionAlgorithm?: string;
-  Phase1DHGroup?: string;
-  Phase2HashAlgorithm?: string;
-  Phase2EncryptionAlgorithm?: string;
-  Phase2PFSGroup?: string;
-}
+import type { Ike2ClientConfig } from "../../../../StarContext/Utils/VPNClientType";
+import type { 
+  IkeV2AuthMethod, 
+  IkeV2EncAlgorithm, 
+  IkeV2HashAlgorithm, 
+  IkeV2DhGroup, 
+  IkeV2PfsGroup 
+} from "../../../../StarContext/Utils/VPNClientType";
 
 export interface UseIKEv2ConfigResult {
   serverAddress: {value: string};
   username: {value: string};
   password: {value: string};
-  authMethod: {value: 'psk' | 'eap' | 'certificate'};
+  authMethod: {value: IkeV2AuthMethod};
   presharedKey: {value: string};
   policyDstAddress: {value: string};
   phase1HashAlgorithm: {value: string};
@@ -34,12 +25,12 @@ export interface UseIKEv2ConfigResult {
   phase2PFSGroup: {value: string};
   errorMessage: {value: string};
   handleManualFormSubmit$: QRL<() => Promise<void>>;
-  validateIKEv2Config: QRL<(config: IKEv2Config) => Promise<{
+  validateIKEv2Config: QRL<(config: Ike2ClientConfig) => Promise<{
     isValid: boolean;
     emptyFields: string[];
   }>>;
-  parseIKEv2Config: QRL<(configText: string) => IKEv2Config | null>;
-  updateContextWithConfig$: QRL<(parsedConfig: IKEv2Config) => Promise<void>>;
+  parseIKEv2Config: QRL<(configText: string) => Ike2ClientConfig | null>;
+  updateContextWithConfig$: QRL<(parsedConfig: Ike2ClientConfig) => Promise<void>>;
 }
 
 export const useIKEv2Config = (
@@ -49,20 +40,21 @@ export const useIKEv2Config = (
   const errorMessage = useSignal("");
   
   const serverAddress = useSignal("");
-  const authMethod = useSignal<"psk" | "eap" | "certificate">("psk");
+  const authMethod = useSignal<IkeV2AuthMethod>("pre-shared-key");
   const presharedKey = useSignal("");
   const username = useSignal("");
   const password = useSignal("");
   const policyDstAddress = useSignal("0.0.0.0/0");
-  const phase1HashAlgorithm = useSignal("SHA256");
-  const phase1EncryptionAlgorithm = useSignal("AES-256-CBC");
+  const phase1HashAlgorithm = useSignal("sha256");
+  const phase1EncryptionAlgorithm = useSignal("aes-256");
   const phase1DHGroup = useSignal("modp2048");
-  const phase2HashAlgorithm = useSignal("SHA256");
-  const phase2EncryptionAlgorithm = useSignal("AES-256-CBC");
+  const phase2HashAlgorithm = useSignal("sha256");
+  const phase2EncryptionAlgorithm = useSignal("aes-256");
   const phase2PFSGroup = useSignal("none");
   
-  if (starContext.state.WAN.VPNClient?.IKeV2?.[0]) {
-    const existingConfig = starContext.state.WAN.VPNClient.IKeV2[0];
+  // Initialize with existing config if available
+  if (starContext.state.WAN.VPNClient?.IKeV2) {
+    const existingConfig = starContext.state.WAN.VPNClient.IKeV2;
     serverAddress.value = existingConfig.ServerAddress || "";
     
     if (existingConfig.AuthMethod) {
@@ -82,9 +74,27 @@ export const useIKEv2Config = (
       policyDstAddress.value = existingConfig.PolicyDstAddress;
     }
     
+    // Map algorithm values if they exist
+    if (existingConfig.HashAlgorithm && existingConfig.HashAlgorithm.length > 0) {
+      phase1HashAlgorithm.value = existingConfig.HashAlgorithm[0];
+    }
+    
+    if (existingConfig.EncAlgorithm && existingConfig.EncAlgorithm.length > 0) {
+      phase1EncryptionAlgorithm.value = existingConfig.EncAlgorithm[0];
+    }
+    
+    if (existingConfig.DhGroup && existingConfig.DhGroup.length > 0) {
+      phase1DHGroup.value = existingConfig.DhGroup[0];
+    }
+    
+    if (existingConfig.PfsGroup) {
+      phase2PFSGroup.value = existingConfig.PfsGroup;
+    }
+    
+    // Check if config is valid
     let isConfigValid = serverAddress.value !== "";
     
-    if (authMethod.value === "psk") {
+    if (authMethod.value === "pre-shared-key") {
       isConfigValid = isConfigValid && presharedKey.value !== "";
     } else if (authMethod.value === "eap") {
       isConfigValid = isConfigValid && username.value !== "" && password.value !== "";
@@ -97,26 +107,26 @@ export const useIKEv2Config = (
     }
   }
   
-  const validateIKEv2Config = $(async (config: IKEv2Config) => {
-    const commonRequiredFields = [
-      "ServerAddress",
-      "AuthMethod",
-    ];
+  const validateIKEv2Config = $(async (config: Ike2ClientConfig) => {
+    const emptyFields: string[] = [];
     
-    const emptyFields = commonRequiredFields.filter((field) => {
-      const value = config[field as keyof IKEv2Config];
-      return !value || (typeof value === 'string' && value.trim() === "");
-    });
+    if (!config.ServerAddress || config.ServerAddress.trim() === "") {
+      emptyFields.push("ServerAddress");
+    }
     
-    if (config.AuthMethod === "psk" && (!config.PresharedKey || config.PresharedKey.trim() === "")) {
+    if (!config.AuthMethod) {
+      emptyFields.push("AuthMethod");
+    }
+    
+    if (config.AuthMethod === "pre-shared-key" && (!config.PresharedKey || config.PresharedKey.trim() === "")) {
       emptyFields.push("PresharedKey");
     }
     
-    if (config.AuthMethod === "eap" && (!config.Username || !config.Password)) {
+    if (config.AuthMethod === "eap" && (!config.Credentials?.Username || !config.Credentials?.Password)) {
       emptyFields.push("Credentials");
     }
     
-    if (config.AuthMethod === "certificate" && (!config.ClientCertificateName || !config.CaCertificateName)) {
+    if (config.AuthMethod === "digital-signature" && (!config.ClientCertificateName || !config.CaCertificateName)) {
       emptyFields.push("Certificates");
     }
 
@@ -127,18 +137,21 @@ export const useIKEv2Config = (
   });
 
   const parseIKEv2Config = $(
-    (configText: string): IKEv2Config | null => {
+    (configText: string): Ike2ClientConfig | null => {
       try {
-        const config: IKEv2Config = {
+        const config: Partial<Ike2ClientConfig> = {
           ServerAddress: "",
-          AuthMethod: "psk",
+          AuthMethod: "pre-shared-key",
+          PolicySrcAddress: "0.0.0.0/0",
           PolicyDstAddress: "0.0.0.0/0",
-          Phase1HashAlgorithm: "SHA256",
-          Phase1EncryptionAlgorithm: "AES-256-CBC",
-          Phase1DHGroup: "modp2048",
-          Phase2HashAlgorithm: "SHA256",
-          Phase2EncryptionAlgorithm: "AES-256-CBC",
-          Phase2PFSGroup: "none",
+          HashAlgorithm: ["sha256"],
+          EncAlgorithm: ["aes-256"],
+          DhGroup: ["modp2048"],
+          PfsGroup: "none",
+          NatTraversal: true,
+          DpdInterval: "8s",
+          Lifetime: "1d",
+          ProposalLifetime: "30m",
         };
         
         const lines = configText.split('\n').map(line => line.trim());
@@ -170,35 +183,35 @@ export const useIKEv2Config = (
             const ike = line.substring(4).trim();
             const parts = ike.split('-');
             if (parts.length >= 3) {
-              config.Phase1EncryptionAlgorithm = parts[0]; 
-              config.Phase1HashAlgorithm = parts[1]; 
-              config.Phase1DHGroup = parts[2]; 
+              config.EncAlgorithm = [parts[0] as IkeV2EncAlgorithm]; 
+              config.HashAlgorithm = [parts[1] as IkeV2HashAlgorithm]; 
+              config.DhGroup = [parts[2] as IkeV2DhGroup]; 
             }
           }
           else if (line.startsWith('esp=')) {
             const esp = line.substring(4).trim();
             const parts = esp.split('-');
             if (parts.length >= 2) {
-              config.Phase2EncryptionAlgorithm = parts[0]; 
-              config.Phase2HashAlgorithm = parts[1];
+              // Phase 2 settings would be handled differently in a real implementation
+              continue;
             }
           }
           else if (line.startsWith('leftcert=')) {
-            config.AuthMethod = "certificate";
+            config.AuthMethod = "digital-signature";
             config.ClientCertificateName = line.substring(9).trim();
           }
           else if (line.includes('eap-radius')) {
             config.AuthMethod = "eap";
           }
           else if (line.includes('authby=secret') || line.includes('authby=psk')) {
-            config.AuthMethod = "psk";
+            config.AuthMethod = "pre-shared-key";
           }
           else if (line.startsWith('rightsubnet=')) {
             config.PolicyDstAddress = line.substring(12).trim();
           }
         }
         
-        return config;
+        return config as Ike2ClientConfig;
       } catch (error) {
         console.error("Error parsing IKEv2 config:", error);
         return null;
@@ -206,56 +219,38 @@ export const useIKEv2Config = (
     }
   );
 
-  const updateContextWithConfig$ = $(async (parsedConfig: IKEv2Config) => {
-    const ikev2ClientConfig = {
-      ServerAddress: parsedConfig.ServerAddress,
-      AuthMethod: parsedConfig.AuthMethod,
-      PresharedKey: parsedConfig.PresharedKey,
-      Credentials: parsedConfig.Username && parsedConfig.Password ? {
-        Username: parsedConfig.Username,
-        Password: parsedConfig.Password
-      } : undefined,
-      ClientCertificateName: parsedConfig.ClientCertificateName,
-      CaCertificateName: parsedConfig.CaCertificateName,
-      PolicySrcAddress: "0.0.0.0/0",
-      PolicyDstAddress: parsedConfig.PolicyDstAddress,
-    };
-
+  const updateContextWithConfig$ = $(async (parsedConfig: Ike2ClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
-    
-    const ikev2Configs = currentVPNClient.IKeV2 || [];
-    
-    if (ikev2Configs.length > 0) {
-      ikev2Configs[0] = ikev2ClientConfig;
-    } else {
-      ikev2Configs.push(ikev2ClientConfig);
-    }
     
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        IKeV2: ikev2Configs
+        IKeV2: parsedConfig
       }
     });
-    
   });
   
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
     
-    const manualConfig: IKEv2Config = {
+    const manualConfig: Ike2ClientConfig = {
       ServerAddress: serverAddress.value,
       AuthMethod: authMethod.value,
-      PresharedKey: authMethod.value === "psk" ? presharedKey.value : undefined,
-      Username: authMethod.value === "eap" ? username.value : undefined,
-      Password: authMethod.value === "eap" ? password.value : undefined,
+      PresharedKey: authMethod.value === "pre-shared-key" ? presharedKey.value : undefined,
+      Credentials: authMethod.value === "eap" ? {
+        Username: username.value,
+        Password: password.value
+      } : undefined,
+      PolicySrcAddress: "0.0.0.0/0",
       PolicyDstAddress: policyDstAddress.value,
-      Phase1HashAlgorithm: phase1HashAlgorithm.value,
-      Phase1EncryptionAlgorithm: phase1EncryptionAlgorithm.value,
-      Phase1DHGroup: phase1DHGroup.value,
-      Phase2HashAlgorithm: phase2HashAlgorithm.value,
-      Phase2EncryptionAlgorithm: phase2EncryptionAlgorithm.value,
-      Phase2PFSGroup: phase2PFSGroup.value,
+      HashAlgorithm: [phase1HashAlgorithm.value as IkeV2HashAlgorithm],
+      EncAlgorithm: [phase1EncryptionAlgorithm.value as IkeV2EncAlgorithm],
+      DhGroup: [phase1DHGroup.value as IkeV2DhGroup],
+      PfsGroup: phase2PFSGroup.value as IkeV2PfsGroup,
+      NatTraversal: true,
+      DpdInterval: "8s",
+      Lifetime: "1d",
+      ProposalLifetime: "30m",
     };
 
     const { isValid, emptyFields } = await validateIKEv2Config(manualConfig);

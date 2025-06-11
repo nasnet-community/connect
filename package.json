@@ -12,6 +12,11 @@
   "trustedDependencies-annotation": "Needed for bun to allow running install scripts",
   "type": "module",
   "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
     "build": "qwik build",
     "build-storybook": "storybook build",
     "build.client": "vite build && npm run i18n-translate",
@@ -42,7 +47,7 @@
     "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.2.0",
     "@qwikest/icons": "^0.0.13",
-    "@rollup/rollup-linux-x64-gnu": "^4.32.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/compression": "^1.7.2",
     "@types/eslint": "8.56.10",
@@ -52,6 +57,7 @@
     "@types/react-dom": "^18.2.13",
     "@typescript-eslint/eslint-plugin": "7.16.1",
     "@typescript-eslint/parser": "7.16.1",
+    "@vitest/ui": "^3.2.2",
     "autoprefixer": "^10.4.19",
     "compression": "^1.7.4",
     "dotenv": "^16.3.2",
@@ -71,7 +77,8 @@
     "undici": "*",
     "vercel": "^32.0.1",
     "vite": "^5.1.4",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "vitest": "^3.2.2"
   },
   "dependencies": {
     "@angular/compiler": "^16.2.12",

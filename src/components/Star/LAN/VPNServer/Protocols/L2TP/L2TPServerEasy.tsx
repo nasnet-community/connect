@@ -1,20 +1,18 @@
 import { component$, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
-import { ServerCard, ServerFormField, Select } from "../../../VPNServer/UI";
+import { ServerCard, ServerFormField, Select } from "../../UI";
 // import { FormField } from "../../../../WAN/VPNClient/components/FormField";
 
 export const L2TPServerEasy = component$(() => {
   const { l2tpState, updateL2TPServer$, secretError } = useL2TPServer();
   
   const formState = useStore({
-    useIpsec: l2tpState.UseIpsec !== undefined ? 
-      (typeof l2tpState.UseIpsec === 'boolean' ? (l2tpState.UseIpsec ? "yes" : "no") : l2tpState.UseIpsec) : 
-      "yes",
-    ipsecSecret: l2tpState.IpsecSecret || "",
+    useIpsec: l2tpState.IPsec?.UseIpsec || "yes",
+    ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
   });
 
-  const isEnabled = useStore({ value: !!l2tpState.Profile });
+  const isEnabled = useStore({ value: !!l2tpState.DefaultProfile });
 
   // Auto-apply changes when IPsec settings change
   const applyIpsecSettings = $((updatedValues: Partial<typeof formState>) => {
@@ -24,11 +22,14 @@ export const L2TPServerEasy = component$(() => {
       
       if (isEnabled.value) {
         updateL2TPServer$({
-          Profile: "default",
-          UseIpsec: formState.useIpsec as 'yes' | 'no' | 'required',
-          IpsecSecret: formState.ipsecSecret,
+          DefaultProfile: "default",
+          IPsec: {
+            UseIpsec: formState.useIpsec,
+            IpsecSecret: formState.ipsecSecret
+          },
           // Use default authentication methods
-          Authentication: ["mschap2", "mschap1"]
+          Authentication: ["mschap2", "mschap1"],
+          enabled: true
         });
       }
     } catch (error) {
@@ -42,14 +43,17 @@ export const L2TPServerEasy = component$(() => {
       
       if (enabled) {
         updateL2TPServer$({
-          Profile: "default",
-          UseIpsec: formState.useIpsec as 'yes' | 'no' | 'required',
-          IpsecSecret: formState.ipsecSecret,
-          Authentication: ["mschap2", "mschap1"]
+          DefaultProfile: "default",
+          IPsec: {
+            UseIpsec: formState.useIpsec,
+            IpsecSecret: formState.ipsecSecret
+          },
+          Authentication: ["mschap2", "mschap1"],
+          enabled: true
         });
       } else {
         updateL2TPServer$({
-          Profile: ""
+          DefaultProfile: ""
         });
       }
     } catch (error) {

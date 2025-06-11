@@ -2,7 +2,7 @@ import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
 import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
-import type { IpipTunnelConfig } from "../../../StarContext/LANType";
+import type { IpipTunnelConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";

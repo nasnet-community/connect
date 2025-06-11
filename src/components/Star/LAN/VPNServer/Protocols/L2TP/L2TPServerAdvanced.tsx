@@ -2,7 +2,7 @@ import { component$, useStore, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
-import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, ServerButton, Select, SectionTitle, Input } from "../../../VPNServer/UI";
+import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, ServerButton, Select, SectionTitle, Input } from "../../UI";
 
 /**
  * L2TP Server Configuration Component
@@ -17,16 +17,19 @@ export const L2TPServerAdvanced = component$(() => {
   const { l2tpState, updateL2TPServer$ } = useL2TPServer();
   
   const formState = useStore({
-    profile: l2tpState.Profile || "default",
+    profile: l2tpState.DefaultProfile || "default",
     authentication: [...(l2tpState.Authentication || ["mschap2", "mschap1"])],
-    maxMru: l2tpState.MaxMru || 1450,
-    maxMtu: l2tpState.MaxMtu || 1450,
-    useIpsec: l2tpState.UseIpsec !== undefined ? (typeof l2tpState.UseIpsec === 'boolean' ? (l2tpState.UseIpsec ? "yes" : "no") : l2tpState.UseIpsec) : "yes",
-    ipsecSecret: l2tpState.IpsecSecret || "",
-    keepaliveTimeout: l2tpState.KeepaliveTimeout || 30
+    maxMru: l2tpState.PacketSize?.MaxMru || 1450,
+    maxMtu: l2tpState.PacketSize?.MaxMtu || 1450,
+    useIpsec: l2tpState.IPsec?.UseIpsec || "yes",
+    ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
+    keepaliveTimeout: l2tpState.KeepaliveTimeout || 30,
+    allowFastPath: l2tpState.allowFastPath || false,
+    maxSessions: l2tpState.maxSessions || "unlimited",
+    oneSessionPerHost: l2tpState.OneSessionPerHost || false
   });
 
-  const isEnabled = useStore({ value: !!l2tpState.Profile });
+  const isEnabled = useStore({ value: !!l2tpState.DefaultProfile });
 
   const authMethods: AuthMethod[] = ["pap", "chap", "mschap1", "mschap2"];
   
@@ -53,17 +56,25 @@ export const L2TPServerAdvanced = component$(() => {
     try {
       if (isEnabled.value) {
         updateL2TPServer$({
-          Profile: formState.profile,
+          DefaultProfile: formState.profile,
           Authentication: [...formState.authentication],
-          MaxMru: formState.maxMru,
-          MaxMtu: formState.maxMtu,
-          UseIpsec: formState.useIpsec as 'yes' | 'no' | 'required',
-          IpsecSecret: formState.ipsecSecret,
-          KeepaliveTimeout: formState.keepaliveTimeout
+          PacketSize: {
+            MaxMru: formState.maxMru,
+            MaxMtu: formState.maxMtu
+          },
+          IPsec: {
+            UseIpsec: formState.useIpsec,
+            IpsecSecret: formState.ipsecSecret
+          },
+          KeepaliveTimeout: formState.keepaliveTimeout,
+          allowFastPath: formState.allowFastPath,
+          maxSessions: formState.maxSessions,
+          OneSessionPerHost: formState.oneSessionPerHost,
+          enabled: true
         });
       } else {
         updateL2TPServer$({
-          Profile: ""
+          DefaultProfile: ""
         });
       }
     } catch (error) {
@@ -175,6 +186,26 @@ export const L2TPServerAdvanced = component$(() => {
             type="number"
             value={formState.keepaliveTimeout.toString()}
             onChange$={(_, value) => (formState.keepaliveTimeout = parseInt(value, 10) || 30)}
+          />
+        </ServerFormField>
+
+        {/* Allow Fast Path */}
+        <ServerFormField label={$localize`Allow Fast Path`}>
+          <input
+            type="checkbox"
+            checked={formState.allowFastPath}
+            onChange$={() => (formState.allowFastPath = !formState.allowFastPath)}
+            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+          />
+        </ServerFormField>
+
+        {/* One Session Per Host */}
+        <ServerFormField label={$localize`One Session Per Host`}>
+          <input
+            type="checkbox"
+            checked={formState.oneSessionPerHost}
+            onChange$={() => (formState.oneSessionPerHost = !formState.oneSessionPerHost)}
+            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
           />
         </ServerFormField>
       </div>

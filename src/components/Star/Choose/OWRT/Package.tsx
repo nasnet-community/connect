@@ -24,100 +24,51 @@ export const OWRTPackage = component$(() => {
           {$localize`Install custom package from GitHub using LuCI (web interface):`}
         </div>
 
-        {/* Step 1: Open LuCI */}
+        {/* Step 1: SSH into OpenWrt router */}
         <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
           <div class="mb-4 flex items-center">
             <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
               1
             </div>
             <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Open LuCI`}
+              {$localize`SSH into OpenWrt router`}
             </h3>
           </div>
-          <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
-            {$localize`In your browser, go to:`}{" "}
-            <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-              http://192.168.1.1
-            </code>{" "}
-            {$localize`(default)`}
-          </p>
+          <div class="space-y-3 text-text-secondary/90 dark:text-text-dark-secondary/95">
+            <p>{$localize`Open the Terminal app on your device and SSH into your OpenWrt router by typing the following command:`}</p>
+            <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
+              <code class="text-sm">
+                ssh root@192.168.1.1
+              </code>
+            </div>
+          </div>
         </div>
 
-        {/* Step 2: Log in */}
+        {/* Step 2: Run installation script */}
         <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
           <div class="mb-4 flex items-center">
             <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
               2
             </div>
             <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Log in`}
+              {$localize`Run installation script`}
             </h3>
           </div>
-          <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
-            {$localize`Use your router username/password (default is usually root / no password)`}
-          </p>
+          <div class="space-y-3 text-text-secondary/90 dark:text-text-dark-secondary/95">
+            <p>{$localize`Run the following command to download and execute the installation script:`}</p>
+            <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
+              <code class="text-sm">
+                wget -O- https://raw.githubusercontent.com/happynet-why/nclink/main/install.sh | sh
+              </code>
+            </div>
+          </div>
         </div>
 
-        {/* Step 3: Add custom package source */}
+        {/* Step 3: Final Setup via Wizard */}
         <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
           <div class="mb-4 flex items-center">
             <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
               3
-            </div>
-            <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Add custom package source`}
-            </h3>
-          </div>
-          <div class="space-y-3 text-text-secondary/90 dark:text-text-dark-secondary/95">
-            <p>{$localize`Go to:`} <strong>System → Software</strong></p>
-            <p>{$localize`Click "Configuration"`}</p>
-            <p>{$localize`Add this line under "Custom feeds":`}</p>
-            <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
-              <code class="text-sm">
-                src/gz custompkg https://github.com/nasnet-community/linkmask/packages
-              </code>
-            </div>
-            <p>{$localize`Click "Save & Apply"`}</p>
-          </div>
-        </div>
-
-        {/* Step 4: Update package list */}
-        <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
-          <div class="mb-4 flex items-center">
-            <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
-              4
-            </div>
-            <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Update package list`}
-            </h3>
-          </div>
-          <div class="space-y-3 text-text-secondary/90 dark:text-text-dark-secondary/95">
-            <p>{$localize`Go back to`} <strong>System → Software</strong></p>
-            <p>{$localize`Click "Update lists..."`}</p>
-          </div>
-        </div>
-
-        {/* Step 5: Install your package */}
-        <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
-          <div class="mb-4 flex items-center">
-            <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
-              5
-            </div>
-            <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Install your package`}
-            </h3>
-          </div>
-          <div class="space-y-3 text-text-secondary/90 dark:text-text-dark-secondary/95">
-            <p>{$localize`In the search box, type:`} <strong>linkmask</strong></p>
-            <p>{$localize`Click "Install" next to the package`}</p>
-          </div>
-        </div>
-
-        {/* Step 6: Final Setup via Wizard */}
-        <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
-          <div class="mb-4 flex items-center">
-            <div class="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white font-bold">
-              6
             </div>
             <h3 class="text-xl font-semibold text-text dark:text-text-dark-default">
               {$localize`Final Setup via Wizard`}

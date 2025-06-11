@@ -4,7 +4,7 @@ import type {
   EoipTunnelConfig,
   GreTunnelConfig,
   VxlanInterfaceConfig
-} from "../../StarContext/LANType";
+} from "../../StarContext/Utils/TunnelType";
 
 export interface TunnelStepperData {
   tunnelEnabled: Signal<boolean>;

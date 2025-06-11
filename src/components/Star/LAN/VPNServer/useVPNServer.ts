@@ -1,6 +1,6 @@
 import { useContext, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-import type { Credentials } from "../../StarContext/LANType";
+import type { Credentials } from "../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../StarContext/CommonType";
 import type { QRL } from "@builder.io/qwik";
 
@@ -15,17 +15,17 @@ export const useVPNServer = () => {
   );
   
   const vpnServerEnabled = useSignal(true);
-  const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.CertificateKeyPassphrase || "");
+  const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.Certificate?.CertificateKeyPassphrase || "");
   const passphraseError = useSignal("");
   const isValid = useSignal(true);
   
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
-    OpenVPN: !!vpnServerState.OpenVpnServer?.Profile || false,
-    PPTP: !!vpnServerState.PptpServer?.Profile || false,
-    L2TP: !!vpnServerState.L2tpServer?.Profile || false,
-    SSTP: !!vpnServerState.SstpServer?.Profile || false,
-    IKeV2: !!vpnServerState.Ikev2Server?.AddressPool || false
+    OpenVPN: !!vpnServerState.OpenVpnServer?.enabled || false,
+    PPTP: !!vpnServerState.PptpServer?.enabled || false,
+    L2TP: !!vpnServerState.L2tpServer?.enabled || false,
+    SSTP: !!vpnServerState.SstpServer?.enabled || false,
+    IKeV2: !!vpnServerState.Ikev2Server?.ipPools?.Ranges || false
   });
 
   const expandedSections = useStore<Record<string, boolean>>({
@@ -144,26 +144,82 @@ export const useVPNServer = () => {
           Users: validUsers,
           
           PptpServer: enabledProtocols.PPTP 
-            ? vpnServerState.PptpServer || { Profile: "default" } 
+            ? vpnServerState.PptpServer || { enabled: true, DefaultProfile: "default", Authentication: ["mschap2"], PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, KeepaliveTimeout: 30 } 
             : undefined,
             
           L2tpServer: enabledProtocols.L2TP 
-            ? vpnServerState.L2tpServer || { Profile: "default", UseIpsec: "yes" } 
+            ? vpnServerState.L2tpServer || { 
+                enabled: true, 
+                DefaultProfile: "default", 
+                Authentication: ["mschap2"], 
+                PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
+                KeepaliveTimeout: 30,
+                IPsec: { UseIpsec: "yes", IpsecSecret: "" },
+                allowFastPath: false,
+                maxSessions: "unlimited",
+                OneSessionPerHost: false,
+                L2TPV3: { l2tpv3CircuitId: "", l2tpv3CookieLength: 0, l2tpv3DigestHash: "md5", l2tpv3EtherInterfaceList: "" },
+                acceptProtoVersion: "all",
+                callerIdType: "ip-address"
+              } 
             : undefined,
             
           SstpServer: enabledProtocols.SSTP 
-            ? vpnServerState.SstpServer || { Profile: "default", Certificate: "default" } 
+            ? vpnServerState.SstpServer || { 
+                enabled: true, 
+                Certificate: "default", 
+                DefaultProfile: "default", 
+                Authentication: ["mschap2"], 
+                PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
+                KeepaliveTimeout: 30,
+                Port: 443,
+                ForceAes: false,
+                Pfs: false,
+                Ciphers: "aes256-sha",
+                VerifyClientCertificate: false,
+                TlsVersion: "any"
+              } 
             : undefined,
             
           OpenVpnServer: enabledProtocols.OpenVPN 
             ? {
-                ...(vpnServerState.OpenVpnServer || { Profile: "default", Certificate: "default" }),
-                CertificateKeyPassphrase: passphraseValue.value,
+                ...(vpnServerState.OpenVpnServer || { 
+                  name: "default", 
+                  enabled: true, 
+                  Port: 1194, 
+                  Protocol: "udp", 
+                  Mode: "ip",
+                  DefaultProfile: "default",
+                  Authentication: ["mschap2"],
+                  PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
+                  KeepaliveTimeout: 30,
+                  VRF: "",
+                  RedirectGetway: "def1",
+                  PushRoutes: "",
+                  RenegSec: 3600,
+                  Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
+                  IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
+                  Certificate: { Certificate: "default", RequireClientCertificate: false, CertificateKeyPassphrase: "" },
+                  Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "" }
+                }),
+                Certificate: {
+                  ...((vpnServerState.OpenVpnServer?.Certificate || { Certificate: "default", RequireClientCertificate: false, CertificateKeyPassphrase: "" })),
+                  CertificateKeyPassphrase: passphraseValue.value,
+                }
               } 
             : undefined,
             
           Ikev2Server: enabledProtocols.IKeV2 
-            ? vpnServerState.Ikev2Server || { AddressPool: "192.168.77.0/24", ClientAuthMethod: "pre-shared-key" } 
+            ? vpnServerState.Ikev2Server || { 
+                ipPools: { Name: "ike2-pool", Ranges: "192.168.77.2-192.168.77.254" },
+                profile: { name: "ike2", hashAlgorithm: "sha1", encAlgorithm: "aes-128", dhGroup: "modp1024" },
+                proposal: { name: "ike2", authAlgorithms: "sha1", encAlgorithms: "aes-256-cbc", pfsGroup: "none" },
+                policyGroup: { name: "ike2-policies" },
+                policyTemplates: { group: "ike2-policies", proposal: "ike2", srcAddress: "0.0.0.0/0", dstAddress: "192.168.77.0/24" },
+                peer: { name: "ike2", exchangeMode: "ike2", passive: true, profile: "ike2" },
+                identities: { authMethod: "digital-signature", peer: "ike2", generatePolicy: "port-strict", policyTemplateGroup: "ike2-policies" },
+                modeConfigs: { name: "ike2-conf", addressPool: "ike2-pool", addressPrefixLength: 32, responder: true }
+              } 
             : undefined,
             
           WireguardServers: enabledProtocols.Wireguard 
@@ -199,10 +255,11 @@ export const useVPNServer = () => {
     vpnServerEnabled,
     passphraseValue,
     passphraseError,
+    isValid,
     enabledProtocols,
     expandedSections,
-    isValid,
     
+    // Actions
     toggleSection,
     addUser,
     removeUser,
@@ -212,6 +269,6 @@ export const useVPNServer = () => {
     toggleProtocol,
     handlePassphraseChange,
     saveSettings,
-    toggleVpnServerEnabled
+    toggleVpnServerEnabled,
   };
 }; 

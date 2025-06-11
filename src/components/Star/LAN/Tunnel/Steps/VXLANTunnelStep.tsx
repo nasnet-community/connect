@@ -2,7 +2,7 @@ import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
 import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
-import type { VxlanInterfaceConfig } from "../../../StarContext/LANType";
+import type { VxlanInterfaceConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
@@ -25,6 +25,7 @@ export const VXLANTunnelStep = component$(() => {
       localAddress: "",
       remoteAddress: "",
       vni: stepper.data.vxlan.length + 1,
+      bumMode: 'unicast',
     };
     
     stepper.data.vxlan.push(newTunnel);

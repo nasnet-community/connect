@@ -56,7 +56,7 @@ export const OWRTInstall = component$((props: OWRTInstallProps) => {
             <p class="bg-warning/10 border border-warning/20 rounded-lg p-3 text-warning-dark dark:text-warning-light">
               <strong>{$localize`Important:`}</strong> {$localize`Set the Version to 23.05.5`}
             </p>
-            <p>{$localize`Find and download the correct .bin file for your device.`}</p>
+            <p>{$localize`Find and download the factory .bin file for your device`}</p>
           </div>
         </div>
 

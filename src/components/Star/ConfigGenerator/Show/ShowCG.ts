@@ -1,4 +1,4 @@
-import type { RouterConfig } from "./ConfigGenerator";
+import type { RouterConfig } from "../ConfigGenerator";
 
 
 

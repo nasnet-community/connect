@@ -49,16 +49,16 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(({ onIsValidChange$, isS
           <select
             value={authMethod.value}
             onChange$={(_, el) => { 
-              authMethod.value = el.value as "psk" | "eap" | "certificate";
+              authMethod.value = el.value as "pre-shared-key" | "eap" | "digital-signature";
               handleManualFormSubmit$();
             }}
             class="block w-full rounded-lg border border-border bg-white px-3 py-2
                    focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                    dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
           >
-            <option value="psk">Pre-Shared Key (PSK)</option>
+            <option value="pre-shared-key">Pre-Shared Key (PSK)</option>
             <option value="eap">Username/Password (EAP)</option>
-            <option value="certificate" disabled>Certificates (Coming Soon)</option>
+            <option value="digital-signature" disabled>Certificates (Coming Soon)</option>
           </select>
         </div>
       </FormContainer>
@@ -81,7 +81,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(({ onIsValidChange$, isS
           />
 
           {/* Auth-specific fields based on authentication method */}
-          {authMethod.value === "psk" && (
+          {authMethod.value === "pre-shared-key" && (
             <FormField
               type="text"
               label={$localize`Pre-Shared Key`}

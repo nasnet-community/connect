@@ -49,7 +49,7 @@ export const PromoL2TPBanner = component$<PromoL2TPBannerProps>(({ onVPNTypeChan
           
           {/* Main Heading */}
           <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
-            6 Months Free High-Speed & Unlimited VPN
+          FREE Hyper Speed VPN Until February 2026! Powered by Nasnet Connect
           </h2>
           
           {/* Description */}
