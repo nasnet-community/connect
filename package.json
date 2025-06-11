@@ -47,7 +47,7 @@
     "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.2.0",
     "@qwikest/icons": "^0.0.13",
-    "@rollup/rollup-win32-x64-msvc": "^4.32.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/compression": "^1.7.2",
     "@types/eslint": "8.56.10",
