@@ -90,30 +90,39 @@ export const CommandShortner = (config: RouterConfig): RouterConfig => {
                 return command;
             }
 
-            // Split by spaces but keep quoted strings together
+            // Split by spaces but keep quoted strings and bracketed expressions together
             const parts = [];
             let current = '';
             let inQuotes = false;
             let quoteChar = '';
-            
+            let bracketDepth = 0;
+
             for (let i = 0; i < command.length; i++) {
                 const char = command[i];
-                
-                if ((char === '"' || char === "'") && !inQuotes) {
-                    inQuotes = true;
-                    quoteChar = char;
-                    current += char;
-                } else if (char === quoteChar && inQuotes) {
-                    inQuotes = false;
-                    quoteChar = '';
-                    current += char;
-                } else if (char === ' ' && !inQuotes) {
+
+                if (char === ' ' && !inQuotes && bracketDepth === 0) {
                     if (current.trim()) {
                         parts.push(current.trim());
-                        current = '';
+                    }
+                    current = '';
+                    continue;
+                }
+                
+                current += char;
+
+                if (inQuotes) {
+                    if (char === quoteChar) {
+                        inQuotes = false;
                     }
                 } else {
-                    current += char;
+                    if (char === '"' || char === "'") {
+                        inQuotes = true;
+                        quoteChar = char;
+                    } else if (char === '[') {
+                        bracketDepth++;
+                    } else if (char === ']') {
+                        bracketDepth = Math.max(0, bracketDepth - 1);
+                    }
                 }
             }
             

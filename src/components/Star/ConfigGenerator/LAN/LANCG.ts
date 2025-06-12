@@ -1,6 +1,6 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { RouterConfig } from "../ConfigGenerator";
-import { WirelessConfig } from "./Wireless";
+import { DisableInterfaces, WirelessConfig } from "./Wireless";
 import type { EthernetInterfaceConfig } from "~/components/Star/StarContext/LANType";
 import { TunnelWrapper } from "./TunnelCG";
 import { VPNServerWrapper } from "./VPNServer/VPNServerCG";
@@ -44,6 +44,8 @@ export const LANCG = (state: StarState): RouterConfig => {
                      state.WAN.WANLink,
                      state.Choose.DomesticLink
               ));
+       } else {
+              Object.assign(config, DisableInterfaces());
        }
 
        if (state.LAN.Tunnel) {

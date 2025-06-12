@@ -2,6 +2,42 @@ import { expect } from 'vitest';
 import { SConfigGenerator } from '../components/Star/ConfigGenerator/utils/ConfigGeneratorUtil';
 import type { RouterConfig } from '../components/Star/ConfigGenerator/ConfigGenerator';
 
+// Helper function to format input parameters with proper indentation and structure
+const formatInputParameters = (inputs: Record<string, any>): string => {
+  const formatValue = (value: any, depth = 0): string => {
+    const indent = '  '.repeat(depth);
+    
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (typeof value === 'string') return `"${value}"`;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '[]';
+      const items = value.map(item => `${indent}  ${formatValue(item, depth + 1)}`).join(',\n');
+      return `[\n${items}\n${indent}]`;
+    }
+    
+    if (typeof value === 'object') {
+      const entries = Object.entries(value);
+      if (entries.length === 0) return '{}';
+      
+      const formattedEntries = entries.map(([key, val]) => {
+        const formattedValue = formatValue(val, depth + 1);
+        return `${indent}  ${key}: ${formattedValue}`;
+      }).join(',\n');
+      
+      return `{\n${formattedEntries}\n${indent}}`;
+    }
+    
+    return String(value);
+  };
+
+  return Object.entries(inputs)
+    .map(([key, value]) => `   ${key}: ${formatValue(value)}`)
+    .join('\n');
+};
+
 // Helper function to display test results with formatted output for RouterConfig functions
 export const testWithOutput = (
   functionName: string,
@@ -12,10 +48,9 @@ export const testWithOutput = (
   console.log('\n' + '='.repeat(80));
   console.log(`🧪 Testing: ${functionName}`);
   console.log(`📝 Test Case: ${testCase}`);
+  console.log(`⚙️  Function: ${functionName}`);
   console.log('📥 Input Parameters:');
-  Object.entries(inputs).forEach(([key, value]) => {
-    console.log(`   ${key}: ${JSON.stringify(value)}`);
-  });
+  console.log(formatInputParameters(inputs));
   
   const result = testFn();
   const formattedOutput = SConfigGenerator(result);
@@ -41,10 +76,9 @@ export const testWithGenericOutput = (
   console.log('\n' + '='.repeat(80));
   console.log(`🧪 Testing: ${functionName}`);
   console.log(`📝 Test Case: ${testCase}`);
+  console.log(`⚙️  Function: ${functionName}`);
   console.log('📥 Input Parameters:');
-  Object.entries(inputs).forEach(([key, value]) => {
-    console.log(`   ${key}: ${JSON.stringify(value)}`);
-  });
+  console.log(formatInputParameters(inputs));
   
   const result = testFn();
   
@@ -90,10 +124,9 @@ export const displaySimpleTest = (
   console.log('\n' + '='.repeat(80));
   console.log(`🧪 Testing: ${functionName}`);
   console.log(`📝 Test Case: ${testCase}`);
+  console.log(`⚙️  Function: ${functionName}`);
   console.log('📥 Input Parameters:');
-  Object.entries(inputs).forEach(([key, value]) => {
-    console.log(`   ${key}: ${JSON.stringify(value)}`);
-  });
+  console.log(formatInputParameters(inputs));
   console.log('\n📤 Output:');
   console.log(`   Result: ${JSON.stringify(result)}`);
   console.log('─'.repeat(40));

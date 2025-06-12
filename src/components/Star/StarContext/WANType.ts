@@ -8,6 +8,12 @@ import type {
   } from "./CommonType";
 import type { VPNClient } from "./Utils/VPNClientType";
 
+export interface DNSConfig {
+  ForeignDNS: string;
+  DomesticDNS: string;
+  SplitDNS: string;
+  VPNDNS: string;
+}
 
 // export type MultiLinkMode = 'LoadBalance' | 'FailOver' | 'LoadBalanceFailOver' | '';
 // export type InterfaceType = 'Ethernet' | 'VLAN' | 'Celular' | 'Wireless';
