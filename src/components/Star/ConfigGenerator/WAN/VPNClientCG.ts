@@ -8,17 +8,31 @@ import type {
     Ike2ClientConfig,
     VPNClient,
 } from "../../StarContext/Utils/VPNClientType";
+import { CommandShortner } from "../utils/ConfigGeneratorUtil";
+
+// VPN Client Utils
+
+export const isFQDN = (address: string): boolean => {
+    const regex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$/;
+    return regex.test(address);
+}
 
 export const RouteToVPN = (InterfaceName: string, EndpointAddress: string): RouterConfig =>{
     const config: RouterConfig = {
         "/ip route": []
     };
+    if(!isFQDN(EndpointAddress)){
+        config["/ip route"].push(
+            `add comment="Route-to-FRN" disabled=no distance=1 dst-address=${EndpointAddress} gateway=192.168.1.1 \\
+            pref-src="" routing-table=main scope=30 suppress-hw-offload=no target-scope=10`,
+        );
+    } 
+        
 
     config["/ip route"].push(
-        `add comment="Route-to-VPN" disabled=no distance=1 dst-address=0.0.0.0/0 gateway=${InterfaceName} pref-src=""\\
-             routing-table=to-VPN scope=30 suppress-hw-offload=no target-scope=10`,
-        `add comment="Route-to-FRN" disabled=no distance=1 dst-address=${EndpointAddress} gateway=192.168.1.1 pref-src=""\\
-             routing-table=main scope=30 suppress-hw-offload=no target-scope=10`,
+        `add comment="Route-to-VPN" disabled=no distance=1 dst-address=0.0.0.0/0 gateway=${InterfaceName} \\
+        pref-src="" routing-table=to-VPN scope=30 suppress-hw-offload=no target-scope=10`,
+
       );
 
     return config
@@ -37,7 +51,28 @@ export const InterfaceList = (InterfaceName: string): RouterConfig =>{
     return config
 }
 
-export const AddressList = (InterfaceName: string, Address: string): RouterConfig =>{
+export const AddressList = (Address: string): RouterConfig =>{
+    const config: RouterConfig = {
+        "/ip firewall address-list": [],
+        "/ip firewall mangle": [],
+    }
+
+    config["/ip firewall address-list"].push(
+        `add address="${Address}" list=VPNE`,
+    );
+    config["/ip firewall mangle"].push(
+        `add action=mark-connection chain=output comment="VPN Endpoint" \\
+        dst-address-list=VPNE new-connection-mark=conn-VPNE passthrough=yes`,
+        `add action=mark-routing chain=output comment="VPN Endpoint" \\
+        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-SL passthrough=no`,
+        `add action=mark-routing chain=output comment="VPN Endpoint" \\
+        dst-address-list=VPNE new-routing-mark=to-SL passthrough=no`,
+    );
+
+    return config
+}
+
+export const IPAddress = (InterfaceName: string, Address: string): RouterConfig =>{
     const config: RouterConfig = {
         "/ip address": []
     };
@@ -56,21 +91,21 @@ export const DNSVPN = (DNS: string, DomesticLink: boolean): RouterConfig =>{
 
     if(DomesticLink){
         config["/ip firewall nat"].push(
-            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 protocol=udp\\
-                 src-address-list=VPN-Local to-addresses=${DNS}`,
-            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 protocol=tcp\\
-                 src-address-list=VPN-Local to-addresses=${DNS}`,
-            `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 protocol=udp\\
-                 src-address-list=Split-Local to-addresses=${DNS}`,
-            `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 protocol=tcp\\
-                 src-address-list=Split-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
+            protocol=udp src-address-list=VPN-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
+            protocol=tcp src-address-list=VPN-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 \\
+            protocol=udp src-address-list=Split-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 \\
+            protocol=tcp src-address-list=Split-Local to-addresses=${DNS}`,
         );
     } else {
         config["/ip firewall nat"].push(
-            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 protocol=udp\\
-                 src-address-list=VPN-Local to-addresses=${DNS}`,
-            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 protocol=tcp\\
-                 src-address-list=VPN-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
+            protocol=udp src-address-list=VPN-Local to-addresses=${DNS}`,
+            `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
+            protocol=tcp src-address-list=VPN-Local to-addresses=${DNS}`,
         );
     }
 
@@ -83,6 +118,8 @@ export const BaseVPNConfig = (InterfaceName: string, EndpointAddress: string, DN
         "/ip firewall nat": [],
         "/interface list member": [],
         "/ip route": [],
+        "/ip firewall address-list": [],
+        "/ip firewall mangle": [],
     };
     
     // call the functions and add the output of the functions to the config
@@ -98,8 +135,14 @@ export const BaseVPNConfig = (InterfaceName: string, EndpointAddress: string, DN
     const routeConfig = RouteToVPN(InterfaceName, EndpointAddress);
     config["/ip route"].push(...routeConfig["/ip route"]);
 
+    const addressListConfig = AddressList(EndpointAddress);
+    config["/ip firewall address-list"].push(...addressListConfig["/ip firewall address-list"]);
+    config["/ip firewall mangle"].push(...addressListConfig["/ip firewall mangle"]);
+
     return config;
 }
+
+// Wireguard Client
 
 export const WireguardClient = (config: WireguardClientConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
@@ -152,13 +195,20 @@ export const WireguardClient = (config: WireguardClientConfig): RouterConfig => 
         `add address=${InterfaceAddress} interface=wireguard-client`
     );
 
+    // routerConfig["/ip route"].push(
+    //     `add dst-address=${PeerEndpointAddress}/32 gateway=[/ip dhcp-client get [find] gateway] \\
+    //      comment="WireGuard endpoint route"`
+    // );
+
     routerConfig["/ip route"].push(
-        `add dst-address=${PeerEndpointAddress}/32 gateway=[/ip dhcp-client get [find] gateway] \\
+        `add dst-address=0.0.0.0/0 gateway=wireguard-client table=to-VPN \\
          comment="WireGuard endpoint route"`
     );
 
     return routerConfig;
 };
+
+// OpenVPN Client
 
 export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
     const routerConfig: RouterConfig = {
@@ -223,8 +273,10 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
 
     routerConfig["/interface ovpn-client"].push(command);
 
-    return routerConfig;
+    return CommandShortner(routerConfig);
 }
+
+// PPTP Client
 
 export const PPTPClient = (config: PptpClientConfig): RouterConfig =>{
     const routerConfig: RouterConfig = {
@@ -237,7 +289,6 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig =>{
         AuthMethod,
         KeepaliveTimeout,
         DialOnDemand,
-        KeepAlive,
     } = config;
 
     let command = `add name=pptp-client connect-to=${ConnectTo}`;
@@ -255,16 +306,16 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig =>{
         command += ` dial-on-demand=${DialOnDemand ? 'yes' : 'no'}`;
     }
     
-    if (KeepAlive) {
-        command += ` keepalive=${KeepAlive}`;
-    }
+
     
     command += ` disabled=no`;
 
     routerConfig["/interface pptp-client"].push(command);
 
-    return routerConfig;
+    return CommandShortner(routerConfig);
 }
+
+// L2TP Client
 
 export const L2TPClient = (config: L2tpClientConfig): RouterConfig =>{
     const routerConfig: RouterConfig = {
@@ -286,11 +337,15 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig =>{
         CircuitId,
     } = config;
 
+    // if port exist add it to the server address
+    // let ServerAddress = Server.Address;
+    // if (Server.Port) {
+    //     ServerAddress += `:${Server.Port}`;
+    // }
+
+    // let command = `add name=l2tp-client connect-to=${ServerAddress}`;
     let command = `add name=l2tp-client connect-to=${Server.Address}`;
 
-    if (Server.Port) {
-        command += ` port=${Server.Port}`;
-    }
 
     command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
     
@@ -311,11 +366,14 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig =>{
     }
     
     if (FastPath !== undefined) {
-        command += ` fast-path=${FastPath ? 'yes' : 'no'}`;
+        command += ` allow-fast-path=${FastPath ? 'yes' : 'no'}`;
     }
+
+    // make the keepalive timeout a number
+    const keepAliveTimeout = parseInt(keepAlive || '0');
     
-    if (keepAlive) {
-        command += ` keepalive=${keepAlive}`;
+    if (keepAliveTimeout) {
+        command += ` keepalive-timeout=${keepAliveTimeout}`;
     }
     
     if (DialOnDemand !== undefined) {
@@ -323,23 +381,25 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig =>{
     }
     
     if (CookieLength !== undefined) {
-        command += ` cookie-length=${CookieLength}`;
+        command += ` l2tpv3-cookie-length=${CookieLength}`;
     }
     
     if (DigestHash) {
-        command += ` digest-hash=${DigestHash}`;
+        command += ` l2tpv3-digest-hash=${DigestHash}`;
     }
     
     if (CircuitId) {
-        command += ` circuit-id="${CircuitId}"`;
+        command += ` l2tpv3-circuit-id="${CircuitId}"`;
     }
     
     command += ` disabled=no`;
 
     routerConfig["/interface l2tp-client"].push(command);
 
-    return routerConfig;
+    return CommandShortner(routerConfig);
 }
+
+// SSTP Client
 
 export const SSTPClient = (config: SstpClientConfig): RouterConfig =>{
     const routerConfig: RouterConfig = {
@@ -364,11 +424,13 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig =>{
 
     let command = `add name=sstp-client connect-to=${Server.Address}`;
     
-    if (Server.Port) {
-        command += ` port=${Server.Port}`;
-    }
+    // if (Server.Port) {
+    //     command += ` port=${Server.Port}`;
+    // }
     
-    command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
+    // command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
+    command += ` user="${Credentials.Username}" `;
+
     
     if (AuthMethod && AuthMethod.length > 0) {
         command += ` authentication=${AuthMethod.join(',')}`;
@@ -383,7 +445,8 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig =>{
     }
     
     if (Proxy) {
-        command += ` proxy=${Proxy.Address}:${Proxy.Port || 8080}`;
+        command += ` http-proxy=${Proxy.Address} proxy-port=${Proxy.Port || 8080}`;
+
     }
     
     if (SNI !== undefined) {
@@ -418,8 +481,159 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig =>{
 
     routerConfig["/interface sstp-client"].push(command);
 
-    return routerConfig;
+    return CommandShortner(routerConfig);
 }
+
+// IKeV2 Utility Functions
+
+export const IKeV2Profile = (config: Ike2ClientConfig, profileName: string): string => {
+    const profileParams = [
+        `name=${profileName}`,
+        `enc-algorithm=${config.EncAlgorithm?.join(',') || 'aes-256,aes-192,aes-128'}`,
+        `hash-algorithm=${config.HashAlgorithm?.join(',') || 'sha256,sha1'}`,
+        `dh-group=${config.DhGroup?.join(',') || 'modp2048,modp1536'}`,
+        `lifetime=${config.Lifetime || '8h'}`,
+        `nat-traversal=${config.NatTraversal !== false ? 'yes' : 'no'}`
+    ];
+    
+    if (config.DpdInterval) {
+        profileParams.push(`dpd-interval=${config.DpdInterval}`);
+    }
+    
+    return `add ${profileParams.join(' ')}`;
+};
+
+export const IKeV2Proposal = (config: Ike2ClientConfig, proposalName: string): string => {
+    const phase2EncAlgorithms = config.EncAlgorithm?.map(alg => {
+        switch (alg) {
+            case 'aes-128': return 'aes-128-cbc';
+            case 'aes-192': return 'aes-192-cbc';
+            case 'aes-256': return 'aes-256-cbc';
+            default: return alg;
+        }
+    }) || ['aes-256-cbc', 'aes-192-cbc', 'aes-128-cbc'];
+
+    const proposalParams = [
+        `name=${proposalName}`,
+        `pfs-group=${config.PfsGroup || 'modp2048'}`,
+        `enc-algorithms=${phase2EncAlgorithms.join(',')}`,
+        `auth-algorithms=${config.HashAlgorithm?.join(',') || 'sha256,sha1'}`,
+        `lifetime=${config.ProposalLifetime || '30m'}`
+    ];
+    
+    return `add ${proposalParams.join(' ')}`;
+};
+
+export const IKeV2Peer = (config: Ike2ClientConfig, peerName: string, profileName: string): string => {
+    const peerParams = [
+        `name=${peerName}`,
+        `address=${config.ServerAddress}`,
+        `profile=${profileName}`,
+        'exchange-mode=ike2'
+    ];
+    
+    if (config.Port && config.Port !== 500) {
+        peerParams.push(`port=${config.Port}`);
+    }
+    
+    if (config.LocalAddress) {
+        peerParams.push(`local-address=${config.LocalAddress}`);
+    }
+    
+    peerParams.push(`send-initial-contact=${config.SendInitialContact !== false ? 'yes' : 'no'}`);
+    
+    return `add ${peerParams.join(' ')}`;
+};
+
+export const IKeV2Identity = (config: Ike2ClientConfig, peerName: string, modeConfigName: string, policyGroupName: string): string => {
+    const identityParams = [`peer=${peerName}`, `auth-method=${config.AuthMethod}`];
+    
+    switch (config.AuthMethod) {
+        case 'pre-shared-key':
+            if (!config.PresharedKey) {
+                throw new Error('PresharedKey is required when AuthMethod is pre-shared-key');
+            }
+            identityParams.push(`secret="${config.PresharedKey}"`);
+            break;
+            
+        case 'eap':
+            if (!config.Credentials) {
+                throw new Error('Credentials are required when AuthMethod is eap');
+            }
+            
+            identityParams.push(`eap-methods=${config.EapMethods?.join(',') || 'eap-mschapv2'}`);
+            identityParams.push(`username="${config.Credentials.Username}"`);
+            identityParams.push(`password="${config.Credentials.Password}"`);
+            
+            if (config.ClientCertificateName) {
+                identityParams.push(`certificate=${config.ClientCertificateName}`);
+            }
+            break;
+            
+        case 'digital-signature':
+            if (!config.ClientCertificateName) {
+                throw new Error('ClientCertificateName is required when AuthMethod is digital-signature');
+            }
+            identityParams.push(`certificate=${config.ClientCertificateName}`);
+            break;
+    }
+    
+    // Add identity configuration parameters
+    if (config.MyIdType && config.MyId) {
+        identityParams.push(`my-id=${config.MyIdType}:${config.MyId}`);
+    } else {
+        identityParams.push('my-id=auto');
+    }
+    
+    if (config.RemoteIdType && config.RemoteId) {
+        identityParams.push(`remote-id=${config.RemoteIdType}:${config.RemoteId}`);
+    } else {
+        identityParams.push(`remote-id=fqdn:${config.ServerAddress}`);
+    }
+    
+    if (config.EnableModeConfig !== false) {
+        identityParams.push(`mode-config=${modeConfigName}`);
+    }
+    
+    identityParams.push(`generate-policy=${config.GeneratePolicy || 'port-strict'}`);
+    identityParams.push(`policy-template-group=${policyGroupName}`);
+    
+    return `add ${identityParams.join(' ')}`;
+};
+
+export const IKeV2Policy = (config: Ike2ClientConfig, policyGroupName: string, proposalName: string): string => {
+    const policyParams = [
+        `group=${policyGroupName}`,
+        'template=yes',
+        `src-address=${config.PolicySrcAddress || '0.0.0.0/0'}`,
+        `dst-address=${config.PolicyDstAddress || '0.0.0.0/0'}`,
+        `proposal=${proposalName}`,
+        `action=${config.PolicyAction || 'encrypt'}`,
+        `level=${config.PolicyLevel || 'require'}`
+    ];
+    
+    return `add ${policyParams.join(' ')}`;
+};
+
+export const IKeV2ModeConfig = (config: Ike2ClientConfig, modeConfigName: string): string | null => {
+    if (config.EnableModeConfig === false) {
+        return null;
+    }
+    
+    const modeConfigParams = [`name=${modeConfigName}`, 'responder=no'];
+    
+    if (config.SrcAddressList) {
+        modeConfigParams.push(`src-address-list=${config.SrcAddressList}`);
+    }
+    
+    if (config.ConnectionMark) {
+        modeConfigParams.push(`connection-mark=${config.ConnectionMark}`);
+    }
+    
+    return `add ${modeConfigParams.join(' ')}`;
+};
+
+// IKeV2 Client
 
 export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
@@ -439,208 +653,34 @@ export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
     const policyGroupName = config.PolicyGroupName || 'ike2-policies';
     const modeConfigName = config.ModeConfigName || 'ike2-modeconf';
 
-    // 1. Create IPsec Profile (Phase 1 parameters)
-    let profileCommand = `add name=${profileName}`;
-    
-    // Add encryption algorithms
-    if (config.EncAlgorithm && config.EncAlgorithm.length > 0) {
-        profileCommand += ` enc-algorithm=${config.EncAlgorithm.join(',')}`;
-    } else {
-        profileCommand += ` enc-algorithm=aes-256,aes-192,aes-128`;
-    }
-    
-    // Add hash algorithms
-    if (config.HashAlgorithm && config.HashAlgorithm.length > 0) {
-        profileCommand += ` hash-algorithm=${config.HashAlgorithm.join(',')}`;
-    } else {
-        profileCommand += ` hash-algorithm=sha256,sha1`;
-    }
-    
-    // Add DH groups
-    if (config.DhGroup && config.DhGroup.length > 0) {
-        profileCommand += ` dh-group=${config.DhGroup.join(',')}`;
-    } else {
-        profileCommand += ` dh-group=modp2048,modp1536`;
-    }
-    
-    // Add lifetime
-    if (config.Lifetime) {
-        profileCommand += ` lifetime=${config.Lifetime}`;
-    } else {
-        profileCommand += ` lifetime=8h`;
-    }
-    
-    // Add NAT traversal
-    profileCommand += ` nat-traversal=${config.NatTraversal !== false ? 'yes' : 'no'}`;
-    
-    // Add DPD interval
-    if (config.DpdInterval) {
-        profileCommand += ` dpd-interval=${config.DpdInterval}`;
-    }
-    
-    routerConfig["/ip ipsec profile"].push(profileCommand);
+    // Create IPsec Profile (Phase 1 parameters)
+    routerConfig["/ip ipsec profile"].push(IKeV2Profile(config, profileName));
 
-    // 2. Create IPsec Proposal (Phase 2 parameters)
-    let proposalCommand = `add name=${proposalName}`;
-    
-    // Add PFS group
-    proposalCommand += ` pfs-group=${config.PfsGroup || 'modp2048'}`;
-    
-    // Add encryption algorithms for phase 2
-    if (config.EncAlgorithm && config.EncAlgorithm.length > 0) {
-        const phase2Enc = config.EncAlgorithm.map(alg => {
-            // Convert phase 1 algorithms to phase 2 format
-            switch (alg) {
-                case 'aes-128': return 'aes-128-cbc';
-                case 'aes-192': return 'aes-192-cbc';
-                case 'aes-256': return 'aes-256-cbc';
-                default: return alg;
-            }
-        });
-        proposalCommand += ` enc-algorithms=${phase2Enc.join(',')}`;
-    } else {
-        proposalCommand += ` enc-algorithms=aes-256-cbc,aes-192-cbc,aes-128-cbc`;
-    }
-    
-    // Add auth algorithms
-    if (config.HashAlgorithm && config.HashAlgorithm.length > 0) {
-        proposalCommand += ` auth-algorithms=${config.HashAlgorithm.join(',')}`;
-    } else {
-        proposalCommand += ` auth-algorithms=sha256,sha1`;
-    }
-    
-    // Add lifetime
-    if (config.ProposalLifetime) {
-        proposalCommand += ` lifetime=${config.ProposalLifetime}`;
-    } else {
-        proposalCommand += ` lifetime=30m`;
-    }
-    
-    routerConfig["/ip ipsec proposal"].push(proposalCommand);
+    // Create IPsec Proposal (Phase 2 parameters)
+    routerConfig["/ip ipsec proposal"].push(IKeV2Proposal(config, proposalName));
 
-    // 3. Create Policy Group (if needed)
-    routerConfig["/ip ipsec policy group"].push(
-        `add name=${policyGroupName}`
-    );
+    // Create Policy Group
+    routerConfig["/ip ipsec policy group"].push(`add name=${policyGroupName}`);
 
-    // 4. Create Mode Config (for road warrior setups)
-    if (config.EnableModeConfig !== false) {
-        let modeConfigCommand = `add name=${modeConfigName} responder=no`;
-        
-        if (config.SrcAddressList) {
-            modeConfigCommand += ` src-address-list=${config.SrcAddressList}`;
-        }
-        
-        if (config.ConnectionMark) {
-            modeConfigCommand += ` connection-mark=${config.ConnectionMark}`;
-        }
-        
+    // Create Mode Config (for road warrior setups)
+    const modeConfigCommand = IKeV2ModeConfig(config, modeConfigName);
+    if (modeConfigCommand) {
         routerConfig["/ip ipsec mode-config"].push(modeConfigCommand);
     }
 
-    // 5. Create IPsec Peer
-    let peerCommand = `add name=${peerName} address=${config.ServerAddress} profile=${profileName} exchange-mode=ike2`;
-    
-    if (config.Port && config.Port !== 500) {
-        peerCommand += ` port=${config.Port}`;
-    }
-    
-    if (config.LocalAddress) {
-        peerCommand += ` local-address=${config.LocalAddress}`;
-    }
-    
-    peerCommand += ` send-initial-contact=${config.SendInitialContact !== false ? 'yes' : 'no'}`;
-    
-    routerConfig["/ip ipsec peer"].push(peerCommand);
+    // Create IPsec Peer
+    routerConfig["/ip ipsec peer"].push(IKeV2Peer(config, peerName, profileName));
 
-    // 6. Create IPsec Identity
-    let identityCommand = `add peer=${peerName} auth-method=${config.AuthMethod}`;
-    
-    // Add authentication-specific parameters
-    switch (config.AuthMethod) {
-        case 'pre-shared-key':
-            if (!config.PresharedKey) {
-                throw new Error('PresharedKey is required when AuthMethod is pre-shared-key');
-            }
-            identityCommand += ` secret="${config.PresharedKey}"`;
-            break;
-            
-        case 'eap':
-            if (!config.Credentials) {
-                throw new Error('Credentials are required when AuthMethod is eap');
-            }
-            
-            // Add EAP methods
-            if (config.EapMethods && config.EapMethods.length > 0) {
-                identityCommand += ` eap-methods=${config.EapMethods.join(',')}`;
-            } else {
-                identityCommand += ` eap-methods=eap-mschapv2`;
-            }
-            
-            identityCommand += ` username="${config.Credentials.Username}" password="${config.Credentials.Password}"`;
-            
-            // Add certificate if specified (for EAP-TLS)
-            if (config.ClientCertificateName) {
-                identityCommand += ` certificate=${config.ClientCertificateName}`;
-            }
-            break;
-            
-        case 'digital-signature':
-            if (!config.ClientCertificateName) {
-                throw new Error('ClientCertificateName is required when AuthMethod is digital-signature');
-            }
-            identityCommand += ` certificate=${config.ClientCertificateName}`;
-            break;
-    }
-    
-    // Add identity parameters
-    if (config.MyIdType && config.MyId) {
-        identityCommand += ` my-id=${config.MyIdType}:${config.MyId}`;
-    } else {
-        identityCommand += ` my-id=auto`;
-    }
-    
-    if (config.RemoteIdType && config.RemoteId) {
-        identityCommand += ` remote-id=${config.RemoteIdType}:${config.RemoteId}`;
-    } else {
-        identityCommand += ` remote-id=fqdn:${config.ServerAddress}`;
-    }
-    
-    // Add mode-config if enabled
-    if (config.EnableModeConfig !== false) {
-        identityCommand += ` mode-config=${modeConfigName}`;
-    }
-    
-    // Add policy generation
-    if (config.GeneratePolicy) {
-        identityCommand += ` generate-policy=${config.GeneratePolicy}`;
-    } else {
-        identityCommand += ` generate-policy=port-strict`;
-    }
-    
-    // Add policy template group
-    identityCommand += ` policy-template-group=${policyGroupName}`;
-    
-    routerConfig["/ip ipsec identity"].push(identityCommand);
+    // Create IPsec Identity
+    routerConfig["/ip ipsec identity"].push(IKeV2Identity(config, peerName, modeConfigName, policyGroupName));
 
-    // 7. Create IPsec Policy Template
-    let policyCommand = `add group=${policyGroupName} template=yes`;
-    
-    // Add source and destination addresses
-    policyCommand += ` src-address=${config.PolicySrcAddress || '0.0.0.0/0'}`;
-    policyCommand += ` dst-address=${config.PolicyDstAddress || '0.0.0.0/0'}`;
-    
-    // Add proposal
-    policyCommand += ` proposal=${proposalName}`;
-    
-    // Add action and level
-    policyCommand += ` action=${config.PolicyAction || 'encrypt'}`;
-    policyCommand += ` level=${config.PolicyLevel || 'require'}`;
-    
-    routerConfig["/ip ipsec policy"].push(policyCommand);
+    // Create IPsec Policy Template
+    routerConfig["/ip ipsec policy"].push(IKeV2Policy(config, policyGroupName, proposalName));
 
-    return routerConfig;
+    return CommandShortner(routerConfig);
 };
+
+// VPN Client Wrapper
 
 export const VPNClientWrapper = (vpnClient: VPNClient, DomesticLink: boolean): RouterConfig =>{
     const { Wireguard, OpenVPN, PPTP, L2TP, SSTP, IKeV2 } = vpnClient;

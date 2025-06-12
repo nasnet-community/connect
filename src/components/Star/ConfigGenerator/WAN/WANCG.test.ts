@@ -282,7 +282,6 @@ describe('WANCG Module', () => {
             ConnectTo: 'pptp.example.com',
             Credentials: { Username: 'pptpuser', Password: 'pptppass' },
             AuthMethod: ['mschap2'],
-            KeepAlive: 30,
           },
         },
       };

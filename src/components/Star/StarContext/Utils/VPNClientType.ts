@@ -69,7 +69,6 @@ export interface PptpClientConfig {
     AuthMethod?: AuthMethod[];
     KeepaliveTimeout?: number;
     DialOnDemand?: boolean;
-    KeepAlive?: number;
   }
 
 
