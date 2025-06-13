@@ -933,6 +933,152 @@ export const PublicCert = (
     });
 };
 
+export const AddCert = (
+    targetCertificateName: string = "your-certificate-name-here"
+): RouterConfig => {
+    // Create the VPN Certificate Assignment script content as RouterConfig
+    const addCertScriptContent: RouterConfig = {
+        "": [
+            "# MikroTik RouterOS VPN Certificate Assignment Script",
+            "# Version 1.0 - ONE TIME EXECUTION",
+            "",
+            "# --- Configuration ---",
+            "#!!! IMPORTANT: Set this variable to the name of the certificate you want to assign.",
+            "# This certificate must already be imported into /certificate.",
+            `:global targetCertificateName "${targetCertificateName}";`,
+            "#!!!",
+            "",
+            `:log info "VPN Certificate Assignment Script: Starting.";`,
+            `:log info "VPN Certificate Assignment Script: Target certificate name: '$targetCertificateName'.";`,
+            "",
+            "# Check if the target certificate exists",
+            `:if ([/certificate find count-only where name=$targetCertificateName] = 0) do={`,
+            `    :log error "VPN Certificate Assignment Script: Target certificate '$targetCertificateName' not found in /certificate. Exiting.";`,
+            `} else={`,
+            `    :log info "VPN Certificate Assignment Script: Target certificate '$targetCertificateName' found.";`,
+            "",
+            `    # --- IKEv2 VPN Server ---`,
+            `    :log info "VPN Certificate Assignment Script: Checking IKEv2 server status...";`,
+            `    :local ikev2PeerExists ([/ip ipsec peer find count-only where exchange-mode=ike2 passive=yes] > 0);`,
+            "",
+            `    :if ($ikev2PeerExists) do={`,
+            `        :log info "VPN Certificate Assignment Script: IKEv2 server (passive peer with exchange-mode=ike2) detected as enabled.";`,
+            `        :local identitiesUpdated 0;`,
+            `        /ip ipsec identity`,
+            `        # Iterate only over identities that are already using a certificate`,
+            `        :foreach id in=[find where certificate!="none" and certificate!=""] do={`,
+            `            :local currentCertName [/ip ipsec identity get $id certificate];`,
+            `            :local peerName [/ip ipsec identity get $id peer];`,
+            `            # Verify this identity's peer is indeed an active IKEv2 listener`,
+            `            :local isIkev2Peer ([/ip ipsec peer find count-only where name=$peerName exchange-mode=ike2 passive=yes] > 0);`,
+            "",
+            `            :if ($isIkev2Peer) do={`,
+            `                :if ($currentCertName!= $targetCertificateName) do={`,
+            `                    set $id certificate=$targetCertificateName;`,
+            `                    :log info "VPN Certificate Assignment Script: IKEv2: Assigned certificate '$targetCertificateName' to identity number '$id' (peer '$peerName').";`,
+            `                    :set identitiesUpdated ($identitiesUpdated + 1);`,
+            `                } else={`,
+            `                    :log info "VPN Certificate Assignment Script: IKEv2: Identity number '$id' (peer '$peerName') already uses '$targetCertificateName'.";`,
+            `                }`,
+            `            }`,
+            `        }`,
+            `        :if ($identitiesUpdated = 0) do={`,
+            `            :if ([:len [/ip ipsec identity find where certificate!="none" and certificate!=""]] > 0) do={`,
+            `                 :log info "VPN Certificate Assignment Script: IKEv2: All relevant certificate-based identities linked to active IKEv2 peers already use '$targetCertificateName' or no updates were needed.";`,
+            `            } else={`,
+            `                 :log warning "VPN Certificate Assignment Script: IKEv2: No certificate-based identities found that are linked to an active IKEv2 peer.";`,
+            `            }`,
+            `        }`,
+            `    } else={`,
+            `        :log info "VPN Certificate Assignment Script: IKEv2 server (passive peer with exchange-mode=ike2) not found or not enabled.";`,
+            `    }`,
+            "",
+            `    # --- SSTP VPN Server ---`,
+            `    :log info "VPN Certificate Assignment Script: Checking SSTP server status...";`,
+            `    :local sstpEnabled false;`,
+            `    # Check if sstp-server configuration path exists to prevent errors if the package is disabled or not installed`,
+            `    :if ([:len [/interface sstp-server find]] > 0) do={`,
+            `         :set sstpEnabled [/interface sstp-server server get enabled];`,
+            `    }`,
+            "",
+            `    :if ($sstpEnabled) do={`,
+            `        :log info "VPN Certificate Assignment Script: SSTP server detected as enabled.";`,
+            `        :local currentSstpCert [/interface sstp-server server get certificate];`,
+            `        :if ($currentSstpCert!= $targetCertificateName) do={`,
+            `            # Applying the certificate with a reset for robustness`,
+            `            /interface sstp-server server set certificate=none;`,
+            `            :delay 1s;`,
+            `            /interface sstp-server server set certificate=$targetCertificateName;`,
+            `            :log info "VPN Certificate Assignment Script: SSTP: Assigned certificate '$targetCertificateName'.";`,
+            `        } else={`,
+            `            :log info "VPN Certificate Assignment Script: SSTP: Server already uses certificate '$targetCertificateName'.";`,
+            `        }`,
+            `    } else={`,
+            `        :log info "VPN Certificate Assignment Script: SSTP server not found or not enabled.";`,
+            `    }`,
+            "",
+            `    # --- OpenVPN Server ---`,
+            `    :log info "VPN Certificate Assignment Script: Checking OpenVPN server status...";`,
+            `    :local ovpnServersUpdated 0;`,
+            `    :local enabledOvpnInstances 0;`,
+            `    /interface ovpn-server server`,
+            `    :foreach i in=[find] do={`,
+            `        :local ovpnServerName [get $i name];`,
+            `        :if ([get $i disabled] = false) do={`,
+            `            :set enabledOvpnInstances ($enabledOvpnInstances + 1);`,
+            `            :log info "VPN Certificate Assignment Script: OpenVPN server instance '$ovpnServerName' detected as enabled.";`,
+            `            :local currentOvpnCert [get $i certificate];`,
+            `            :if ($currentOvpnCert!= $targetCertificateName) do={`,
+            `                set $i certificate=$targetCertificateName;`,
+            `                :log info "VPN Certificate Assignment Script: OpenVPN: Assigned certificate '$targetCertificateName' to server instance '$ovpnServerName'.";`,
+            `                :set ovpnServersUpdated ($ovpnServersUpdated + 1);`,
+            `            } else={`,
+            `                :log info "VPN Certificate Assignment Script: OpenVPN: Server instance '$ovpnServerName' already uses certificate '$targetCertificateName'.";`,
+            `            }`,
+            `        } else={`,
+            `            :log info "VPN Certificate Assignment Script: OpenVPN server instance '$ovpnServerName' is disabled.";`,
+            `        }`,
+            `    }`,
+            "",
+            `    :if ([:len [/interface ovpn-server server find]] = 0) do={`,
+            `        :log info "VPN Certificate Assignment Script: OpenVPN: No OVPN server instances configured.";`,
+            `    } else {`,
+            `        :if ($enabledOvpnInstances = 0) do={`,
+            `            :log info "VPN Certificate Assignment Script: OpenVPN: No enabled server instances found.";`,
+            `        } else {`,
+            `            :if ($ovpnServersUpdated = 0) do={`,
+            `                :log info "VPN Certificate Assignment Script: OpenVPN: All enabled server instances already use the target certificate or no updates were needed.";`,
+            `            }`,
+            `        }`,
+            `    }`,
+            `}`,
+            `:log info "VPN Certificate Assignment Script: Finished.";`,
+            "",
+            "# Script will now self-destruct (scheduler removal handled automatically)"
+        ]
+    };
+
+    // Use OneTimeScript to create a one-time script and scheduler
+    return OneTimeScript({
+        ScriptContent: addCertScriptContent,
+        name: "Add-VPN-Cert",
+        startTime: "startup"
+    });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 import type { RouterConfig } from "../ConfigGenerator";
-// import { mergeMultipleConfigs } from "./ConfigGenerator";
-// import type { StarState } from "~/components/Star/StarContext/StarContext";
+import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import { DomesticIP } from "../Choose/DomesticIP";
 
 
 export const BaseConfig = (): RouterConfig => {
@@ -53,21 +53,21 @@ export const DometicBase = (): RouterConfig => {
                      "add interface=LANBridgeDOM list=DOM-LAN",
               ],
               "/ip firewall address-list": [
-                     "add address=192.168.20.0/24 list=DOM-Local",
+                     "add address=192.168.20.0/24 list=DOM-LAN",
               ],
               "/ip firewall mangle": [
                      `add action=mark-connection chain=forward comment=DOM new-connection-mark=conn-DOM \\
-                            passthrough=yes src-address-list=DOM-Local`,
+                            passthrough=yes src-address-list=DOM-LAN`,
                      `add action=mark-routing chain=prerouting comment=DOM connection-mark=conn-DOM \\
-                            new-routing-mark=to-DOM passthrough=no src-address-list=DOM-Local`,
+                            new-routing-mark=to-DOM passthrough=no src-address-list=DOM-LAN`,
                      `add action=mark-routing chain=prerouting comment=DOM new-routing-mark=to-DOM \\
-                            passthrough=no src-address-list=DOM-Local`,
+                            passthrough=no src-address-list=DOM-LAN`,
               ],
               "/ip firewall nat": [
                      `add action=dst-nat chain=dstnat comment="DNS DOM" dst-port=53 protocol=udp \\
-                            src-address-list=DOM-Local to-addresses=8.8.8.8`,
+                            src-address-list=DOM-LAN to-addresses=8.8.8.8`,
                      `add action=dst-nat chain=dstnat comment="DNS DOM" dst-port=53 protocol=tcp \\
-                            src-address-list=DOM-Local to-addresses=8.8.8.8`,
+                            src-address-list=DOM-LAN to-addresses=8.8.8.8`,
               ],
               "/ip route": [
                      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
@@ -76,6 +76,19 @@ export const DometicBase = (): RouterConfig => {
 
        return config
 };
+
+
+export const DomesticAddresslist = (): RouterConfig => {
+       const config: RouterConfig = {
+              "/ip firewall address-list": [
+                     // Add DomesticIP addresses
+                     // ...DomesticIP.map(ip => `add address=${ip} list=DOMAddList`)
+                     ...DomesticIP,
+                   ],
+       }
+     
+       return config
+     }
 
 export const ForeignBase = (): RouterConfig => {
        const config: RouterConfig = {
@@ -106,21 +119,21 @@ export const ForeignBase = (): RouterConfig => {
                      "add interface=LANBridgeFRN list=FRN-LAN",
               ],
               "/ip firewall address-list": [
-                     "add address=192.168.30.0/24 list=FRN-Local",
+                     "add address=192.168.30.0/24 list=FRN-LAN",
               ],
               "/ip firewall mangle": [
                      `add action=mark-connection chain=forward comment=FRN dst-address-list=!DOMAddList \\
-                            new-connection-mark=conn-FRN passthrough=yes src-address-list=FRN-Local`,
+                            new-connection-mark=conn-FRN passthrough=yes src-address-list=FRN-LAN`,
                      `add action=mark-routing chain=prerouting comment=FRN connection-mark=conn-FRN \\
-                            dst-address-list=!DOMAddList new-routing-mark=to-FRN passthrough=no src-address-list=FRN-Local`,
+                            dst-address-list=!DOMAddList new-routing-mark=to-FRN passthrough=no src-address-list=FRN-LAN`,
                      `add action=mark-routing chain=prerouting comment=FRN dst-address-list=!DOMAddList \\
-                            new-routing-mark=to-FRN passthrough=no src-address-list=FRN-Local`,
+                            new-routing-mark=to-FRN passthrough=no src-address-list=FRN-LAN`,
               ],
               "/ip firewall nat": [
                      `add action=dst-nat chain=dstnat comment="DNS FRN" dst-port=53 protocol=udp \\
-                            src-address-list=FRN-Local to-addresses=1.1.1.1`,
+                            src-address-list=FRN-LAN to-addresses=1.1.1.1`,
                      `add action=dst-nat chain=dstnat comment="DNS FRN" dst-port=53 protocol=tcp \\
-                            src-address-list=FRN-Local to-addresses=1.1.1.1`,
+                            src-address-list=FRN-LAN to-addresses=1.1.1.1`,
               ],
               "/ip route": [
                      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-FRN`,
@@ -160,15 +173,15 @@ export const VPNBase = (): RouterConfig => {
                      "add interface=LANBridgeVPN list=VPN-LAN",
               ],
               "/ip firewall address-list": [
-                     "add address=192.168.40.0/24 list=VPN-Local",
+                     "add address=192.168.40.0/24 list=VPN-LAN",
               ],
               "/ip firewall mangle": [
                      `add action=mark-connection chain=forward comment=VPN new-connection-mark=conn-VPN \\
-                            passthrough=yes src-address-list=VPN-Local`,
+                            passthrough=yes src-address-list=VPN-LAN`,
                      `add action=mark-routing chain=prerouting comment=VPN connection-mark=conn-VPN \\
-                            new-routing-mark=to-VPN passthrough=no src-address-list=VPN-Local`,
+                            new-routing-mark=to-VPN passthrough=no src-address-list=VPN-LAN`,
                      `add action=mark-routing chain=prerouting comment=VPN new-routing-mark=to-VPN \\
-                            passthrough=no src-address-list=VPN-Local`,
+                            passthrough=no src-address-list=VPN-LAN`,
               ],
               "/ip route": [
                      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
@@ -205,23 +218,23 @@ export const SplitBase = (): RouterConfig => {
                      "add interface=LANBridgeSplit list=Split-LAN",
               ],
               "/ip firewall address-list": [
-                     "add address=192.168.10.0/24 list=Split-Local",
+                     "add address=192.168.10.0/24 list=Split-LAN",
               ],
               "/ip firewall mangle": [
                      // Split DOM Traffic
                      `add action=mark-connection chain=forward comment=Split-DOM dst-address-list=DOMAddList \\
-                            new-connection-mark=conn-Split-DOM passthrough=yes src-address-list=Split-Local`,
+                            new-connection-mark=conn-Split-DOM passthrough=yes src-address-list=Split-LAN`,
                      `add action=mark-routing chain=prerouting comment=Split-DOM connection-mark=conn-Split-DOM \\
-                            dst-address-list=DOMAddList new-routing-mark=to-DOM passthrough=no src-address-list=Split-Local`,
+                            dst-address-list=DOMAddList new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
                      `add action=mark-routing chain=prerouting comment=Split-DOM dst-address-list=DOMAddList \\
-                            new-routing-mark=to-DOM passthrough=no src-address-list=Split-Local`,
+                            new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
                      // Split FRN Traffic
                      `add action=mark-connection chain=forward comment=Split-!DOM dst-address-list=!DOMAddList\\
-                            new-connection-mark=conn-Split-!DOM passthrough=yes src-address-list=Split-Local`,
+                            new-connection-mark=conn-Split-!DOM passthrough=yes src-address-list=Split-LAN`,
                      `add action=mark-routing chain=prerouting comment=Split-!DOM connection-mark=conn-Split-!DOM\\
-                            dst-address-list=!DOMAddList new-routing-mark=to-VPN passthrough=no src-address-list=Split-Local`,
+                            dst-address-list=!DOMAddList new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
                      `add action=mark-routing chain=prerouting comment=Split-!DOM dst-address-list=!DOMAddList\\
-                            new-routing-mark=to-VPN passthrough=no src-address-list=Split-Local`,
+                            new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
               ],
               "/ip route": [],
        }
@@ -243,17 +256,17 @@ export const AdvanceDNS = (): RouterConfig => {
                      "set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1,9.9.9.9,208.67.222.222",
                      "set cache-size=4096KiB cache-max-ttl=1d",
               ],
-              "/routing table": [
-                     "add fib=yes name=dns_route_bridge1 comment=\"Routing table for DNS via DOM-WAN\"",
-                     "add fib=yes name=dns_route_bridge2 comment=\"Routing table for DNS via FRN-WAN\"", 
-                     "add fib=yes name=dns_route_bridge3 comment=\"Routing table for DNS via VPN-WAN\"",
-                     "add fib=yes name=dns_route_bridge4 comment=\"Routing table for DNS via Split DNS\"",
-              ],
               "/ip route": [
                      "add dst-address=8.8.8.8/32 gateway=DOM-WAN routing-mark=rm_dns_bridge1 comment=\"Route to DNS_SERVER_1 via DOM-WAN\"",
                      "add dst-address=1.1.1.1/32 gateway=FRN-WAN routing-mark=rm_dns_bridge2 comment=\"Route to DNS_SERVER_2 via FRN-WAN\"",
                      "add dst-address=9.9.9.9/32 gateway=VPN-WAN routing-mark=rm_dns_bridge3 comment=\"Route to DNS_SERVER_3 via VPN-WAN\"", 
                      "add dst-address=208.67.222.222/32 gateway=Split-WAN routing-mark=rm_dns_bridge4 comment=\"Route to DNS_SERVER_4 via Split-WAN\"",
+              ],
+              "/routing table": [
+                     "add fib=yes name=dns_route_bridge1 comment=\"Routing table for DNS via DOM-WAN\"",
+                     "add fib=yes name=dns_route_bridge2 comment=\"Routing table for DNS via FRN-WAN\"", 
+                     "add fib=yes name=dns_route_bridge3 comment=\"Routing table for DNS via VPN-WAN\"",
+                     "add fib=yes name=dns_route_bridge4 comment=\"Routing table for DNS via Split DNS\"",
               ],
               "/ip firewall mangle": [
                      // DNS PBR Rules for Router's Output Chain
@@ -363,25 +376,24 @@ export const AdvanceDNS = (): RouterConfig => {
 }
 
 export const WithDomestic = (): RouterConfig => {
-       const config: RouterConfig = {
-              ...BaseConfig(),
-              ...DometicBase(),
-              ...ForeignBase(),
-              ...VPNBase(),
-              ...SplitBase(),
-              ...DNS(),
-       }
-       return config
+       return mergeMultipleConfigs(
+              BaseConfig(),
+              DometicBase(),
+              ForeignBase(),
+              VPNBase(),
+              SplitBase(),
+              DNS(),
+              DomesticAddresslist(),
+       );
 }
 
 export const WithoutDomestic = (): RouterConfig => {
-       const config: RouterConfig = {
-              ...BaseConfig(),
-              ...ForeignBase(),
-              ...VPNBase(),
-              ...DNS(),
-       }
-       return config
+       return mergeMultipleConfigs(
+              BaseConfig(),
+              ForeignBase(),
+              VPNBase(),
+              DNS(),
+       );
 }
 
 export const ChooseCG = (DomesticLink: boolean): RouterConfig => {

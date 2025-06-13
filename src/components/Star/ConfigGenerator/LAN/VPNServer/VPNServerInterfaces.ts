@@ -12,9 +12,7 @@ import type {
 import {
     formatBooleanValue,
     formatArrayValue,
-    generateVPNFirewallRules,
     generateIPPool,
-    type VPNFirewallRule,
     type IPPoolConfig
 } from "./VPNServerUtil";
 import { calculateNetworkAddress } from "../../utils/IPAddress";
@@ -74,7 +72,7 @@ export const WireguardServer = (WireguardInterfaceConfig: WireguardInterfaceConf
     // Add address list for VPN network
     if (InterfaceAddress) {
         config["/ip firewall address-list"].push(
-            `add address="${InterfaceAddress}" list="VPN-Local"`
+            `add address="${InterfaceAddress}" list="VPN-LAN"`
         );
     }
 
@@ -142,7 +140,7 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
     // Create OpenVPN server instance
     const serverParams: string[] = [
         `name=${name}`,
-        `certificate=${Certificate.Certificate}`,
+        // `certificate=${Certificate.Certificate}`,
         `default-profile=${DefaultProfile}`,
         `disabled=${formatBooleanValue(!enabled)}`,
         `port=${Port}`,
@@ -193,7 +191,7 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
 
     // Add address list
     routerConfig["/ip firewall address-list"].push(
-        'add address=192.168.60.0/24 list=VPN-Local'
+        'add address=192.168.60.0/24 list=VPN-LAN'
     );
 
     return CommandShortner(routerConfig);
@@ -203,7 +201,11 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
 
 export const PptpServer = (config: PptpServerConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
-        "/interface pptp-server server": []
+        "/ip pool": [],
+        "/ppp profile": [],
+        "/interface pptp-server server": [],
+        "/ip firewall filter": [],
+        "/ip firewall address-list": []
     };
 
     const {
@@ -214,6 +216,25 @@ export const PptpServer = (config: PptpServerConfig): RouterConfig => {
         PacketSize
     } = config;
 
+    // Create IP pool for PPTP clients
+    routerConfig["/ip pool"].push(
+        `add name=pptp-pool ranges=192.168.70.5-192.168.70.250`
+    );
+
+    // Create PPP profile for PPTP
+    const profileParams: string[] = [
+        `name=${DefaultProfile}`,
+        'dns-server=1.1.1.1',
+        'local-address=192.168.70.1',
+        'remote-address=pptp-pool',
+        'use-encryption=yes'
+    ];
+
+    routerConfig["/ppp profile"].push(
+        `add ${profileParams.join(' ')}`
+    );
+
+    // Configure PPTP server
     const serverParams: string[] = [
         `enabled=${formatBooleanValue(enabled)}`
     ];
@@ -246,6 +267,16 @@ export const PptpServer = (config: PptpServerConfig): RouterConfig => {
         `set ${serverParams.join(' ')}`
     );
 
+    // Add firewall rule for PPTP
+    routerConfig["/ip firewall filter"].push(
+        `add action=accept chain=input comment="PPTP Server" dst-port=1723 in-interface-list=DOM-WAN protocol=tcp`
+    );
+
+    // Add address list for PPTP network
+    routerConfig["/ip firewall address-list"].push(
+        'add address=192.168.70.0/24 list=VPN-LAN'
+    );
+
     return CommandShortner(routerConfig);
 };
 
@@ -253,7 +284,11 @@ export const PptpServer = (config: PptpServerConfig): RouterConfig => {
 
 export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
-        "/interface l2tp-server server": []
+        "/ip pool": [],
+        "/ppp profile": [],
+        "/interface l2tp-server server": [],
+        "/ip firewall filter": [],
+        "/ip firewall address-list": []
     };
 
     const {
@@ -271,6 +306,25 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
         L2TPV3
     } = config;
 
+    // Create IP pool for L2TP clients
+    routerConfig["/ip pool"].push(
+        `add name=l2tp-pool ranges=192.168.80.5-192.168.80.250`
+    );
+
+    // Create PPP profile for L2TP
+    const profileParams: string[] = [
+        `name=${DefaultProfile}`,
+        'dns-server=1.1.1.1',
+        'local-address=192.168.80.1',
+        'remote-address=l2tp-pool',
+        'use-encryption=yes'
+    ];
+
+    routerConfig["/ppp profile"].push(
+        `add ${profileParams.join(' ')}`
+    );
+
+    // Configure L2TP server
     const serverParams: string[] = [
         `enabled=${formatBooleanValue(enabled)}`
     ];
@@ -343,6 +397,26 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
         `set ${serverParams.join(' ')}`
     );
 
+    // Add firewall rules for L2TP
+    routerConfig["/ip firewall filter"].push(
+        `add action=accept chain=input comment="L2TP Server" dst-port=1701 in-interface-list=DOM-WAN protocol=udp`
+    );
+
+    // Add IPsec firewall rules if IPsec is enabled
+    if (IPsec.UseIpsec !== 'no') {
+        routerConfig["/ip firewall filter"].push(
+            `add action=accept chain=input comment="L2TP IPsec ESP" in-interface-list=DOM-WAN protocol=ipsec-esp`,
+            `add action=accept chain=input comment="L2TP IPsec AH" in-interface-list=DOM-WAN protocol=ipsec-ah`,
+            `add action=accept chain=input comment="L2TP IPsec UDP 500" dst-port=500 in-interface-list=DOM-WAN protocol=udp`,
+            `add action=accept chain=input comment="L2TP IPsec UDP 4500" dst-port=4500 in-interface-list=DOM-WAN protocol=udp`
+        );
+    }
+
+    // Add address list for L2TP network
+    routerConfig["/ip firewall address-list"].push(
+        'add address=192.168.80.0/24 list=VPN-LAN'
+    );
+
     return CommandShortner(routerConfig);
 };
 
@@ -350,38 +424,60 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
 
 export const SstpServer = (config: SstpServerConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
+        "/ip pool": [],
+        "/ppp profile": [],
         "/interface sstp-server server": [],
-        "/ip firewall filter": []
+        "/ip firewall filter": [],
+        "/ip firewall address-list": []
     };
 
     const {
         enabled,
-        Certificate,
-        Port = 443,
+        // Certificate,
+        Port = 4443,
         Authentication,
         DefaultProfile = 'sstp-profile',
         KeepaliveTimeout = 30,
         PacketSize,
-        ForceAes,
+        // ForceAes,
         Pfs,
         Ciphers,
         VerifyClientCertificate,
         TlsVersion
     } = config;
 
+    // Create IP pool for SSTP clients
+    routerConfig["/ip pool"].push(
+        `add name=sstp-pool ranges=192.168.90.5-192.168.90.250`
+    );
+
+    // Create PPP profile for SSTP
+    const profileParams: string[] = [
+        `name=${DefaultProfile}`,
+        'dns-server=1.1.1.1',
+        'local-address=192.168.90.1',
+        'remote-address=sstp-pool',
+        'use-encryption=yes'
+    ];
+
+    routerConfig["/ppp profile"].push(
+        `add ${profileParams.join(' ')}`
+    );
+
+    // Configure SSTP server
     const serverParams: string[] = [
         `enabled=${formatBooleanValue(enabled)}`
     ];
 
-    if (Certificate) {
-        serverParams.push(`certificate=${Certificate}`);
+    // if (Certificate) {
+    //     serverParams.push(`certificate=${Certificate}`);
         
-        if (Certificate === 'none') {
-            routerConfig["/interface sstp-server server"].push(
-                "# WARNING: SSTP server configured with certificate=none is insecure and incompatible with Windows clients."
-            );
-        }
-    }
+    //     if (Certificate === 'none') {
+    //         routerConfig["/interface sstp-server server"].push(
+    //             "# WARNING: SSTP server configured with certificate=none is insecure and incompatible with Windows clients."
+    //         );
+    //     }
+    // }
 
     if (Port) {
         serverParams.push(`port=${Port}`);
@@ -411,9 +507,9 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
         serverParams.push(`mrru=${PacketSize.mrru}`);
     }
 
-    if (ForceAes !== undefined) {
-        serverParams.push(`force-aes=${formatBooleanValue(ForceAes)}`);
-    }
+    // if (ForceAes !== undefined) {
+    //     serverParams.push(`force-aes=${formatBooleanValue(ForceAes)}`);
+    // }
 
     if (Pfs !== undefined) {
         serverParams.push(`pfs=${formatBooleanValue(Pfs)}`);
@@ -441,9 +537,14 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
         `set ${serverParams.join(' ')}`
     );
 
-    // Add firewall rule
+    // Add firewall rule for SSTP
     routerConfig["/ip firewall filter"].push(
         `add action=accept chain=input comment="SSTP Server" dst-port=${Port} in-interface-list=DOM-WAN protocol=tcp`
+    );
+
+    // Add address list for SSTP network
+    routerConfig["/ip firewall address-list"].push(
+        'add address=192.168.90.0/24 list=VPN-LAN'
     );
 
     return CommandShortner(routerConfig);
@@ -452,50 +553,70 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
 // IKEv2 Server Helper Functions
 
 const Ikev2ProfileConfig = (config: Ikev2ServerConfig): string[] => {
-    const profileParams: string[] = [`name=${config.profile.name}`];
+    // Use provided config or defaults following MikroTik documentation
+    const profileName = config.profile?.name || 'ike2';
+    const profileParams: string[] = [`name=${profileName}`];
+
+    // Apply MikroTik best practices defaults if not specified
+    const defaults = {
+        hashAlgorithm: config.profile?.hashAlgorithm || 'sha1',
+        encAlgorithm: config.profile?.encAlgorithm || 'aes-128',
+        dhGroup: config.profile?.dhGroup || 'modp1024,modp2048',
+        lifetime: config.profile?.lifetime || '1d',
+        natTraversal: config.profile?.natTraversal !== undefined ? config.profile.natTraversal : true,
+        dpdInterval: config.profile?.dpdInterval || '8s',
+        dpdMaximumFailures: config.profile?.dpdMaximumFailures || 4,
+        proposalCheck: config.profile?.proposalCheck || 'obey'
+    };
 
     const optionalParams = [
-        { key: 'hash-algorithm', value: config.profile.hashAlgorithm, isArray: true },
-        { key: 'enc-algorithm', value: config.profile.encAlgorithm, isArray: true },
-        { key: 'dh-group', value: config.profile.dhGroup, isArray: true },
-        { key: 'lifetime', value: config.profile.lifetime },
-        { key: 'nat-traversal', value: config.profile.natTraversal, isBoolean: true },
-        { key: 'dpd-interval', value: config.profile.dpdInterval },
-        { key: 'dpd-maximum-failures', value: config.profile.dpdMaximumFailures },
-        { key: 'proposal-check', value: config.profile.proposalCheck }
+        { key: 'hash-algorithm', value: defaults.hashAlgorithm, isArray: true },
+        { key: 'enc-algorithm', value: defaults.encAlgorithm, isArray: true },
+        { key: 'dh-group', value: defaults.dhGroup, isArray: true },
+        { key: 'lifetime', value: defaults.lifetime },
+        { key: 'nat-traversal', value: defaults.natTraversal, isBoolean: true },
+        { key: 'dpd-interval', value: defaults.dpdInterval },
+        { key: 'dpd-maximum-failures', value: defaults.dpdMaximumFailures },
+        { key: 'proposal-check', value: defaults.proposalCheck }
     ];
 
     optionalParams.forEach(param => {
-        if (param.value !== undefined) {
-            const formattedValue = param.isBoolean 
-                ? formatBooleanValue(param.value as boolean)
-                : param.isArray 
-                    ? formatArrayValue(param.value)
-                    : param.value;
-            profileParams.push(`${param.key}=${formattedValue}`);
-        }
+        const formattedValue = param.isBoolean 
+            ? formatBooleanValue(param.value as boolean)
+            : param.isArray 
+                ? formatArrayValue(param.value)
+                : param.value;
+        profileParams.push(`${param.key}=${formattedValue}`);
     });
 
     return [`add ${profileParams.join(' ')}`];
 };
 
 const Ikev2ProposalConfig = (config: Ikev2ServerConfig): string[] => {
-    const proposalParams: string[] = [`name=${config.proposal.name}`];
+    // Use provided config or defaults following MikroTik documentation
+    const proposalName = config.proposal?.name || 'ike2';
+    const proposalParams: string[] = [`name=${proposalName}`];
+
+    // Apply MikroTik best practices: pfs-group=none for road warrior as per documentation
+    const defaults = {
+        authAlgorithms: config.proposal?.authAlgorithms || 'sha1',
+        encAlgorithms: config.proposal?.encAlgorithms || 'aes-256-cbc,aes-192-cbc,aes-128-cbc',
+        lifetime: config.proposal?.lifetime || '30m',
+        pfsGroup: config.proposal?.pfsGroup || 'none'  // Documentation recommends 'none' for road warrior
+    };
 
     const optionalParams = [
-        { key: 'auth-algorithms', value: config.proposal.authAlgorithms, isArray: true },
-        { key: 'enc-algorithms', value: config.proposal.encAlgorithms, isArray: true },
-        { key: 'lifetime', value: config.proposal.lifetime },
-        { key: 'pfs-group', value: config.proposal.pfsGroup }
+        { key: 'auth-algorithms', value: defaults.authAlgorithms, isArray: true },
+        { key: 'enc-algorithms', value: defaults.encAlgorithms, isArray: true },
+        { key: 'lifetime', value: defaults.lifetime },
+        { key: 'pfs-group', value: defaults.pfsGroup }
     ];
 
     optionalParams.forEach(param => {
-        if (param.value !== undefined) {
-            const formattedValue = param.isArray 
-                ? formatArrayValue(param.value)
-                : param.value;
-            proposalParams.push(`${param.key}=${formattedValue}`);
-        }
+        const formattedValue = param.isArray 
+            ? formatArrayValue(param.value)
+            : param.value;
+        proposalParams.push(`${param.key}=${formattedValue}`);
     });
 
     return [`add ${proposalParams.join(' ')}`];
@@ -593,25 +714,39 @@ const Ikev2ModeConfig = (config: Ikev2ServerConfig): string[] => {
 };
 
 const Ikev2IdentityConfig = (config: Ikev2ServerConfig): string[] => {
+    // Use provided config or defaults following MikroTik documentation
+    const peerName = config.peer?.name || 'ike2';
+    const authMethod = config.identities?.authMethod || 'digital-signature';
+    
     const identityParams: string[] = [
-        `peer=${config.peer.name}`,
-        `auth-method=${config.identities.authMethod}`
+        `peer=${peerName}`,
+        `auth-method=${authMethod}`
     ];
 
-    const optionalParams = [
-        { key: 'secret', value: config.identities.secret },
-        { key: 'certificate', value: config.identities.certificate },
-        { key: 'eap-methods', value: config.identities.eapMethods },
-        { key: 'generate-policy', value: config.identities.generatePolicy },
-        { key: 'mode-config', value: config.identities.modeConfig },
-        { key: 'policy-template-group', value: config.identities.policyTemplateGroup }
-    ];
+    // Apply MikroTik best practices defaults following documentation
+    const defaults = {
+        certificate: config.identities?.certificate || 'server1',
+        generatePolicy: config.identities?.generatePolicy || 'port-strict',
+        modeConfig: config.identities?.modeConfig || 'ike2-conf',
+        policyTemplateGroup: config.identities?.policyTemplateGroup || 'ike2-policies'
+    };
 
-    optionalParams.forEach(param => {
-        if (param.value !== undefined) {
-            identityParams.push(`${param.key}=${param.value}`);
-        }
-    });
+    // Add required parameters based on auth method
+    if (authMethod === 'digital-signature') {
+        // identityParams.push(`certificate=${defaults.certificate}`);
+    } else if (authMethod === 'pre-shared-key' && config.identities?.secret) {
+        identityParams.push(`secret="${config.identities.secret}"`);
+    }
+
+    // Add standard parameters for server configuration
+    identityParams.push(`generate-policy=${defaults.generatePolicy}`);
+    identityParams.push(`mode-config=${defaults.modeConfig}`);
+    identityParams.push(`policy-template-group=${defaults.policyTemplateGroup}`);
+
+    // Add optional EAP methods if specified
+    if (config.identities?.eapMethods) {
+        identityParams.push(`eap-methods=${config.identities.eapMethods}`);
+    }
 
     return [`add ${identityParams.join(' ')}`];
 };
@@ -628,10 +763,26 @@ export const Ikev2Server = (config: Ikev2ServerConfig): RouterConfig => {
         "/ip ipsec peer": [],
         "/ip ipsec mode-config": [],
         "/ip ipsec identity": [],
-        "/ip firewall filter": []
+        "/ip firewall filter": [],
+        "/ip firewall address-list": [],
+        "": []
     };
 
-    // Build IP Pool configuration using helper function
+    // Add configuration order comments following MikroTik best practices
+    routerConfig[""].push(
+        "# IKEv2 Server Configuration following MikroTik best practices:",
+        "# 1. IP Pool for client addresses",
+        "# 2. IPsec Profile (Phase 1 parameters)",
+        "# 3. IPsec Proposal (Phase 2 parameters) with pfs-group=none",
+        "# 4. Policy Group and Policy Template",
+        "# 5. Mode Config for address distribution",
+        "# 6. IPsec Peer (passive=yes for server)",
+        "# 7. IPsec Identity for authentication",
+        "# 8. Firewall rules for IKE and ESP",
+        ""
+    );
+
+    // 1. Build IP Pool configuration - Following MikroTik documentation pattern
     if (config.ipPools) {
         const poolConfig: IPPoolConfig = {
             name: config.ipPools.Name,
@@ -640,34 +791,97 @@ export const Ikev2Server = (config: Ikev2ServerConfig): RouterConfig => {
             comment: config.ipPools.comment
         };
         routerConfig["/ip pool"].push(...generateIPPool(poolConfig));
+    } else {
+        // Default pool following documentation example
+        routerConfig["/ip pool"].push(
+            `add name=ike2-pool ranges=192.168.77.2-192.168.77.254`
+        );
     }
 
-    // Build each configuration section using helper functions
+    // 2. Build IPsec Profile (Phase 1) - Following documentation
     routerConfig["/ip ipsec profile"].push(...Ikev2ProfileConfig(config));
-    routerConfig["/ip ipsec proposal"].push(...Ikev2ProposalConfig(config));
-    routerConfig["/ip ipsec policy group"].push(...Ikev2PolicyGroupConfig(config));
-    routerConfig["/ip ipsec policy"].push(...Ikev2PolicyTemplateConfig(config));
-    routerConfig["/ip ipsec peer"].push(...Ikev2PeerConfig(config));
-    routerConfig["/ip ipsec mode-config"].push(...Ikev2ModeConfig(config));
+
+    // 3. Build IPsec Proposal (Phase 2) with pfs-group=none as per documentation
+    const proposalConfig = Ikev2ProposalConfig(config);
+    if (proposalConfig.length === 0) {
+        // Default proposal following documentation with pfs-group=none
+        routerConfig["/ip ipsec proposal"].push(
+            `add name=ike2 pfs-group=none`
+        );
+    } else {
+        routerConfig["/ip ipsec proposal"].push(...proposalConfig);
+    }
+
+    // 4. Build Policy Group and Policy Template - Following documentation pattern
+    if (config.policyGroup) {
+        routerConfig["/ip ipsec policy group"].push(...Ikev2PolicyGroupConfig(config));
+    } else {
+        // Default policy group following documentation
+        routerConfig["/ip ipsec policy group"].push(
+            `add name=ike2-policies`
+        );
+    }
+
+    if (config.policyTemplates) {
+        routerConfig["/ip ipsec policy"].push(...Ikev2PolicyTemplateConfig(config));
+    } else {
+        // Default policy template following documentation
+        const groupName = config.policyGroup?.name || 'ike2-policies';
+        const proposalName = config.proposal?.name || 'ike2';
+        routerConfig["/ip ipsec policy"].push(
+            `add dst-address=192.168.77.0/24 group=${groupName} proposal=${proposalName} src-address=0.0.0.0/0 template=yes`
+        );
+    }
+
+    // 5. Build Mode Config for address distribution - Following documentation
+    if (config.modeConfigs) {
+        routerConfig["/ip ipsec mode-config"].push(...Ikev2ModeConfig(config));
+    } else {
+        // Default mode config following documentation
+        const poolName = config.ipPools?.Name || 'ike2-pool';
+        routerConfig["/ip ipsec mode-config"].push(
+            `add address-pool=${poolName} address-prefix-length=32 name=ike2-conf`
+        );
+    }
+
+    // 6. Build IPsec Peer (passive=yes for server) - Following documentation
+    if (config.peer) {
+        routerConfig["/ip ipsec peer"].push(...Ikev2PeerConfig(config));
+    } else {
+        // Default peer following documentation
+        const profileName = config.profile?.name || 'ike2';
+        routerConfig["/ip ipsec peer"].push(
+            `add exchange-mode=ike2 name=ike2 passive=yes profile=${profileName}`
+        );
+    }
+
+    // 7. Build IPsec Identity for authentication - Following documentation
     routerConfig["/ip ipsec identity"].push(...Ikev2IdentityConfig(config));
 
-    // Add firewall rules using generateVPNFirewallRules
-    const ikev2FirewallRules: VPNFirewallRule[] = [
-        {
-            port: '500,4500',
-            protocol: 'udp',
-            comment: 'Allow IKEv2',
-            interfaceList: 'DOM-WAN'
-        },
-        {
-            port: 'ipsec-esp',
-            protocol: 'udp',
-            comment: 'Allow ESP'
-        }
-    ];
-    
-    const firewallConfig = generateVPNFirewallRules(ikev2FirewallRules);
-    routerConfig["/ip firewall filter"].push(...firewallConfig["/ip firewall filter"]);
+    // 8. Add firewall rules for IKEv2 and ESP - Following documentation requirements
+    routerConfig["/ip firewall filter"].push(
+        `add action=accept chain=input comment="Allow IKE" dst-port=500 in-interface-list=DOM-WAN protocol=udp`,
+        `add action=accept chain=input comment="Allow IKE NAT-T" dst-port=4500 in-interface-list=DOM-WAN protocol=udp`,
+        `add action=accept chain=input comment="Allow ESP" in-interface-list=DOM-WAN protocol=ipsec-esp`
+    );
+
+    // Add address list for IKEv2 network
+    const poolNetwork = config.ipPools?.Ranges?.split('-')[0]?.replace(/\.\d+$/, '.0/24') || '192.168.77.0/24';
+    routerConfig["/ip firewall address-list"].push(
+        `add address=${poolNetwork} list=VPN-LAN comment="IKEv2 clients network"`
+    );
+
+    // Add best practices notes
+    routerConfig[""].push(
+        "# IKEv2 Server Configuration Notes:",
+        "# - Uses exchange-mode=ike2 and passive=yes for server operation",
+        "# - PFS group set to 'none' in proposal as recommended for road warrior setup",
+        "# - Mode config provides address pool and DNS configuration to clients",
+        "# - Policy template allows traffic from any source to IKEv2 network",
+        "# - Separate firewall rules for IKE (500), NAT-T (4500), and ESP protocols",
+        "# - Network added to VPN-LAN address list for firewall rules",
+        ""
+    );
 
     return CommandShortner(routerConfig);
 };
@@ -747,12 +961,12 @@ export const VPNServerInterfaceWrapper = (config: VPNServer): RouterConfig => {
     if (config.SstpServer) configuredProtocols.push('SSTP');
     if (config.Ikev2Server) configuredProtocols.push('IKEv2');
 
-    finalConfig[""].unshift(
-        "# VPN Server Interface Configuration Summary:",
-        `# Configured protocols: ${configuredProtocols.join(', ')}`,
-        `# Total configurations: ${configs.length}`,
-        ""
-    );
+    // finalConfig[""].unshift(
+    //     "# VPN Server Interface Configuration Summary:",
+    //     `# Configured protocols: ${configuredProtocols.join(', ')}`,
+    //     `# Total configurations: ${configs.length}`,
+    //     ""
+    // );
 
     return CommandShortner(finalConfig);
 }

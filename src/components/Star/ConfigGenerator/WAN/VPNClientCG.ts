@@ -92,20 +92,20 @@ export const DNSVPN = (DNS: string, DomesticLink: boolean): RouterConfig =>{
     if(DomesticLink){
         config["/ip firewall nat"].push(
             `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
-            protocol=udp src-address-list=VPN-Local to-addresses=${DNS}`,
+            protocol=udp src-address-list=VPN-LAN to-addresses=${DNS}`,
             `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
-            protocol=tcp src-address-list=VPN-Local to-addresses=${DNS}`,
+            protocol=tcp src-address-list=VPN-LAN to-addresses=${DNS}`,
             `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 \\
-            protocol=udp src-address-list=Split-Local to-addresses=${DNS}`,
+            protocol=udp src-address-list=Split-LAN to-addresses=${DNS}`,
             `add action=dst-nat chain=dstnat comment="DNS Split" dst-port=53 \\
-            protocol=tcp src-address-list=Split-Local to-addresses=${DNS}`,
+            protocol=tcp src-address-list=Split-LAN to-addresses=${DNS}`,
         );
     } else {
         config["/ip firewall nat"].push(
             `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
-            protocol=udp src-address-list=VPN-Local to-addresses=${DNS}`,
+            protocol=udp src-address-list=VPN-LAN to-addresses=${DNS}`,
             `add action=dst-nat chain=dstnat comment="DNS VPN" dst-port=53 \\
-            protocol=tcp src-address-list=VPN-Local to-addresses=${DNS}`,
+            protocol=tcp src-address-list=VPN-LAN to-addresses=${DNS}`,
         );
     }
 

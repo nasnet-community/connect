@@ -16,54 +16,24 @@ import type {
   WireguardInterfaceConfig,
   VPNServer
 } from '~/components/Star/StarContext/Utils/VPNServerType';
-import type { RouterConfig } from '~/components/Star/ConfigGenerator/ConfigGenerator';
 
-// Test helper functions
-function testWithOutput(
-  functionName: string,
-  testDescription: string,
-  parameters: any,
-  testFunction: () => RouterConfig
-): void {
-  console.log(`\n=== ${functionName} - ${testDescription} ===`);
-  console.log('Parameters:', JSON.stringify(parameters, null, 2));
-  const result = testFunction();
-  console.log('Result:', JSON.stringify(result, null, 2));
-}
-
-function validateRouterConfig(
-  config: RouterConfig,
-  expectedSections?: string[]
-): void {
-  expect(config).toBeDefined();
-  expect(typeof config).toBe('object');
-  
-  if (expectedSections) {
-    for (const section of expectedSections) {
-      expect(config).toHaveProperty(section);
-      expect(Array.isArray(config[section])).toBe(true);
-    }
-  }
-}
 
 describe('VPN Server Users Tests', () => {
 
-  const sampleCredentials: Credentials[] = [
+  const testUsers: Credentials[] = [
     { Username: 'user1', Password: 'pass1', VPNType: ['Wireguard', 'OpenVPN'] },
     { Username: 'user2', Password: 'pass2', VPNType: ['PPTP', 'L2TP'] },
     { Username: 'user3', Password: 'pass3', VPNType: ['SSTP', 'IKeV2'] },
-    { Username: 'user4', Password: 'pass4', VPNType: ['OpenVPN'] },
-    { Username: 'user5', Password: 'pass5', VPNType: ['Wireguard'] }
+    { Username: 'multiuser', Password: 'passMulti', VPNType: ['Wireguard', 'OpenVPN', 'PPTP', 'L2TP', 'SSTP'] }
   ];
 
-  describe('VPN Server Certificate Configuration', () => {
-    it('should generate certificate configuration for certificate-requiring VPN servers', () => {
+  describe('VPNServerCertificate', () => {
+    it('should generate certificate configuration for VPN servers requiring certificates', () => {
       const vpnServer: VPNServer = {
-        Users: [],
+        Users: testUsers,
         SstpServer: {
           enabled: true,
-          Certificate: 'server-cert',
-          Authentication: ['mschap2']
+          Certificate: 'server-cert'
         },
         OpenVpnServer: {
           name: 'ovpn-server',
@@ -74,47 +44,31 @@ describe('VPN Server Users Tests', () => {
             Certificate: 'server-cert'
           },
           Address: {}
-        },
-        Ikev2Server: {
-          profile: { name: 'ikev2-profile' },
-          proposal: { name: 'ikev2-proposal' },
-          peer: { name: 'ikev2-peer', profile: 'ikev2-profile' },
-          identities: { authMethod: 'pre-shared-key', peer: 'ikev2-peer' }
         }
       };
 
       testWithOutput(
         'VPNServerCertificate',
-        'Certificate configuration for SSTP, OpenVPN, and IKEv2',
+        'Generate certificates for SSTP and OpenVPN servers',
         { vpnServer },
         () => VPNServerCertificate(vpnServer)
       );
 
       const result = VPNServerCertificate(vpnServer);
       validateRouterConfig(result);
-      
-      // Check for informational comments
+
+      // Check that certificate-related sections are included
       const comments = result[""] || [];
-      const hasCertInfo = comments.some(comment => 
-        comment.includes('Certificate configuration for VPN servers')
-      );
-      expect(hasCertInfo).toBe(true);
+      expect(comments.some((c: string) => c.includes('Certificate configuration for VPN servers'))).toBe(true);
+      expect(comments.some((c: string) => c.includes('SSTP Server requires certificates'))).toBe(true);
+      expect(comments.some((c: string) => c.includes('OpenVPN Server requires certificates'))).toBe(true);
     });
 
-    it('should handle VPN server with no certificate-requiring protocols', () => {
+    it('should return appropriate message when no certificate-requiring VPN servers are configured', () => {
       const vpnServer: VPNServer = {
-        Users: [],
-        WireguardServers: [{
-          Interface: {
-            Name: 'wireguard-server',
-            PrivateKey: 'test-key',
-            InterfaceAddress: '192.168.170.1/24'
-          },
-          Peers: []
-        }],
+        Users: testUsers,
         PptpServer: {
-          enabled: true,
-          Authentication: ['mschap2']
+          enabled: true
         }
       };
 
@@ -127,296 +81,265 @@ describe('VPN Server Users Tests', () => {
 
       const result = VPNServerCertificate(vpnServer);
       validateRouterConfig(result, [""]);
-      
-      // Check for appropriate message
+
       const comments = result[""] || [];
-      const hasMessage = comments.some(comment => 
-        comment.includes('No VPN servers requiring certificates are configured')
-      );
-      expect(hasMessage).toBe(true);
+      expect(comments.some((c: string) => c.includes('No VPN servers requiring certificates are configured'))).toBe(true);
     });
   });
 
-  describe('WireGuard Peer Address Update Script', () => {
+  describe('WireguardPeerAddress', () => {
     it('should generate WireGuard peer address update script', () => {
       testWithOutput(
         'WireguardPeerAddress',
-        'WireGuard peer address update script',
-        { interfaceName: 'wireguard-server' },
-        () => WireguardPeerAddress('wireguard-server')
+        'Generate peer address update script',
+        { interfaceName: 'wireguard-server', scriptName: 'WG-Update', startTime: 'startup' },
+        () => WireguardPeerAddress('wireguard-server', 'WG-Update', 'startup')
       );
 
-      const result = WireguardPeerAddress('wireguard-server');
+      const result = WireguardPeerAddress('wireguard-server', 'WG-Update', 'startup');
       validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      // Check script creation
+      const scriptCommands = result['/system script'] || [];
+      expect(scriptCommands.length).toBeGreaterThan(0);
+      expect(scriptCommands.some((cmd: string) => cmd.includes('name=WG-Update'))).toBe(true);
     });
 
-    it('should generate custom WireGuard peer address script', () => {
+    it('should generate script with default parameters', () => {
       testWithOutput(
         'WireguardPeerAddress',
-        'Custom WireGuard peer address script',
-        { 
-          interfaceName: 'wg-custom',
-          scriptName: 'Custom-WG-Script',
-          startTime: '03:00:00'
-        },
-        () => WireguardPeerAddress('wg-custom', 'Custom-WG-Script', '03:00:00')
+        'Generate script with defaults',
+        { interfaceName: 'wg-default' },
+        () => WireguardPeerAddress('wg-default')
       );
 
-      const result = WireguardPeerAddress('wg-custom', 'Custom-WG-Script', '03:00:00');
+      const result = WireguardPeerAddress('wg-default');
       validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      const scriptCommands = result['/system script'] || [];
+      expect(scriptCommands.some((cmd: string) => cmd.includes('WireGuard-Peer-Update'))).toBe(true);
     });
   });
 
-  describe('VPN Server Binding Configuration', () => {
-    it('should generate VPN server binding for supported protocols', () => {
-      const supportedCredentials: Credentials[] = [
-        { Username: 'l2tp-user', Password: 'pass1', VPNType: ['L2TP'] },
-        { Username: 'pptp-user', Password: 'pass2', VPNType: ['PPTP'] },
-        { Username: 'sstp-user', Password: 'pass3', VPNType: ['SSTP'] },
-        { Username: 'ovpn-user', Password: 'pass4', VPNType: ['OpenVPN'] }
-      ];
-
+  describe('VPNServerBinding', () => {
+    it('should generate static interface bindings for supported VPN types', () => {
       testWithOutput(
         'VPNServerBinding',
-        'VPN server binding for supported protocols',
-        { credentials: supportedCredentials },
-        () => VPNServerBinding(supportedCredentials)
+        'Generate VPN server bindings',
+        { credentials: testUsers },
+        () => VPNServerBinding(testUsers)
       );
 
-      const result = VPNServerBinding(supportedCredentials);
+      const result = VPNServerBinding(testUsers);
       validateRouterConfig(result, [
         '/interface l2tp-server',
         '/interface pptp-server',
         '/interface sstp-server',
         '/interface ovpn-server'
       ]);
+
+      // Check that bindings are created for each VPN type
+      const l2tpCommands = result['/interface l2tp-server'] || [];
+      const pptpCommands = result['/interface pptp-server'] || [];
+      const sstpCommands = result['/interface sstp-server'] || [];
+      const ovpnCommands = result['/interface ovpn-server'] || [];
+
+      expect(l2tpCommands.some((cmd: string) => cmd.includes('user="user2"'))).toBe(true);
+      expect(pptpCommands.some((cmd: string) => cmd.includes('user="user2"'))).toBe(true);
+      expect(sstpCommands.some((cmd: string) => cmd.includes('user="user3"'))).toBe(true);
+      expect(ovpnCommands.some((cmd: string) => cmd.includes('user="user1"'))).toBe(true);
     });
 
     it('should handle empty credentials array', () => {
       testWithOutput(
         'VPNServerBinding',
-        'Empty credentials array',
+        'Handle empty credentials',
         { credentials: [] },
         () => VPNServerBinding([])
       );
 
       const result = VPNServerBinding([]);
       validateRouterConfig(result, [""]);
-      
-      // Check for appropriate message
+
       const comments = result[""] || [];
-      const hasMessage = comments.some(comment => 
-        comment.includes('No credentials provided for VPN server binding')
-      );
-      expect(hasMessage).toBe(true);
+      expect(comments.some((c: string) => c.includes('No credentials provided'))).toBe(true);
     });
 
-    it('should handle credentials with unsupported VPN types only', () => {
-      const unsupportedCredentials: Credentials[] = [
-        { Username: 'wg-user', Password: 'pass1', VPNType: ['Wireguard'] },
-        { Username: 'ikev2-user', Password: 'pass2', VPNType: ['IKeV2'] }
+    it('should handle users with unsupported VPN types', () => {
+      const wireguardOnlyUsers: Credentials[] = [
+        { Username: 'wguser', Password: 'pass', VPNType: ['Wireguard'] }
       ];
 
       testWithOutput(
         'VPNServerBinding',
-        'Credentials with unsupported VPN types only',
-        { credentials: unsupportedCredentials },
-        () => VPNServerBinding(unsupportedCredentials)
+        'Handle unsupported VPN types',
+        { credentials: wireguardOnlyUsers },
+        () => VPNServerBinding(wireguardOnlyUsers)
       );
 
-      const result = VPNServerBinding(unsupportedCredentials);
+      const result = VPNServerBinding(wireguardOnlyUsers);
       validateRouterConfig(result, [""]);
-      
-      // Check for appropriate message
+
       const comments = result[""] || [];
-      const hasMessage = comments.some(comment => 
-        comment.includes('No users configured for supported VPN binding types')
-      );
-      expect(hasMessage).toBe(true);
+      expect(comments.some((c: string) => c.includes('No users configured for supported VPN binding types'))).toBe(true);
     });
   });
 
-  describe('WireGuard Server Users', () => {
-    it('should generate WireGuard server users configuration', () => {
+  describe('WireguardServerUsers', () => {
+    it('should generate WireGuard peers for users', () => {
       const serverConfig: WireguardInterfaceConfig = {
         Name: 'wireguard-server',
-        PrivateKey: 'test-private-key',
+        PrivateKey: 'test-key',
         InterfaceAddress: '192.168.170.1/24',
         ListenPort: 13231
       };
 
       testWithOutput(
         'WireguardServerUsers',
-        'WireGuard server users configuration',
-        { serverConfig, users: sampleCredentials },
-        () => WireguardServerUsers(serverConfig, sampleCredentials)
+        'Generate WireGuard users',
+        { serverConfig, users: testUsers },
+        () => WireguardServerUsers(serverConfig, testUsers)
       );
 
-      const result = WireguardServerUsers(serverConfig, sampleCredentials);
+      const result = WireguardServerUsers(serverConfig, testUsers);
       validateRouterConfig(result, ['/interface wireguard peers']);
+
+      const peerCommands = result['/interface wireguard peers'] || [];
+      expect(peerCommands.some((cmd: string) => cmd.includes('name="user1"'))).toBe(true);
+      expect(peerCommands.some((cmd: string) => cmd.includes('name="multiuser"'))).toBe(true);
     });
 
-    it('should handle WireGuard server without interface address', () => {
+    it('should handle server without interface address', () => {
       const serverConfig: WireguardInterfaceConfig = {
         Name: 'wireguard-server',
-        PrivateKey: 'test-private-key',
+        PrivateKey: 'test-key',
         InterfaceAddress: ''
       };
 
       testWithOutput(
         'WireguardServerUsers',
-        'WireGuard server without interface address',
-        { serverConfig, users: sampleCredentials },
-        () => WireguardServerUsers(serverConfig, sampleCredentials)
+        'Handle server without interface address',
+        { serverConfig, users: testUsers },
+        () => WireguardServerUsers(serverConfig, testUsers)
       );
 
-      const result = WireguardServerUsers(serverConfig, sampleCredentials);
-      validateRouterConfig(result, ['/interface wireguard peers']);
-      
-      // Check for error message
+      const result = WireguardServerUsers(serverConfig, testUsers);
       const peerCommands = result['/interface wireguard peers'] || [];
-      const hasError = peerCommands.some(cmd => 
-        cmd.includes('Error: Server interface address is required')
-      );
-      expect(hasError).toBe(true);
-    });
-
-    it('should handle users with no WireGuard VPN type', () => {
-      const nonWireguardUsers: Credentials[] = [
-        { Username: 'user1', Password: 'pass1', VPNType: ['OpenVPN'] },
-        { Username: 'user2', Password: 'pass2', VPNType: ['PPTP'] }
-      ];
-
-      const serverConfig: WireguardInterfaceConfig = {
-        Name: 'wireguard-server',
-        PrivateKey: 'test-private-key',
-        InterfaceAddress: '192.168.170.1/24'
-      };
-
-      testWithOutput(
-        'WireguardServerUsers',
-        'Users with no WireGuard VPN type',
-        { serverConfig, users: nonWireguardUsers },
-        () => WireguardServerUsers(serverConfig, nonWireguardUsers)
-      );
-
-      const result = WireguardServerUsers(serverConfig, nonWireguardUsers);
-      validateRouterConfig(result, ['/interface wireguard peers']);
-      
-      // Check for no users message
-      const peerCommands = result['/interface wireguard peers'] || [];
-      const hasMessage = peerCommands.some(cmd => 
-        cmd.includes('No users configured for WireGuard VPN')
-      );
-      expect(hasMessage).toBe(true);
+      expect(peerCommands.some((cmd: string) => cmd.includes('Server interface address is required'))).toBe(true);
     });
   });
 
-  describe('OpenVPN Server Users', () => {
-    it('should generate OpenVPN server users configuration', () => {
+  describe('OVPNServerUsers', () => {
+    it('should generate OpenVPN users', () => {
       testWithOutput(
         'OVPNServerUsers',
-        'OpenVPN server users configuration',
-        { users: sampleCredentials },
-        () => OVPNServerUsers(sampleCredentials)
+        'Generate OpenVPN users',
+        { users: testUsers },
+        () => OVPNServerUsers(testUsers)
       );
 
-      const result = OVPNServerUsers(sampleCredentials);
+      const result = OVPNServerUsers(testUsers);
       validateRouterConfig(result, ['/ppp secret']);
-    });
 
-    it('should handle users with no OpenVPN VPN type', () => {
-      const nonOpenVpnUsers: Credentials[] = [
-        { Username: 'user1', Password: 'pass1', VPNType: ['Wireguard'] },
-        { Username: 'user2', Password: 'pass2', VPNType: ['PPTP'] }
-      ];
-
-      testWithOutput(
-        'OVPNServerUsers',
-        'Users with no OpenVPN VPN type',
-        { users: nonOpenVpnUsers },
-        () => OVPNServerUsers(nonOpenVpnUsers)
-      );
-
-      const result = OVPNServerUsers(nonOpenVpnUsers);
-      validateRouterConfig(result, ['/ppp secret']);
-      
-      // Check for no users message
       const secretCommands = result['/ppp secret'] || [];
-      const hasMessage = secretCommands.some(cmd => 
-        cmd.includes('No users configured for OpenVPN')
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="user1"') && cmd.includes('service=ovpn'))).toBe(true);
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="multiuser"') && cmd.includes('service=ovpn'))).toBe(true);
+    });
+
+    it('should handle no OpenVPN users', () => {
+      const nonOvpnUsers: Credentials[] = [
+        { Username: 'user1', Password: 'pass1', VPNType: ['Wireguard'] }
+      ];
+
+      testWithOutput(
+        'OVPNServerUsers',
+        'Handle no OpenVPN users',
+        { users: nonOvpnUsers },
+        () => OVPNServerUsers(nonOvpnUsers)
       );
-      expect(hasMessage).toBe(true);
+
+      const result = OVPNServerUsers(nonOvpnUsers);
+      const secretCommands = result['/ppp secret'] || [];
+      expect(secretCommands.some((cmd: string) => cmd.includes('No users configured for OpenVPN'))).toBe(true);
     });
   });
 
-  describe('PPTP Server Users', () => {
-    it('should generate PPTP server users configuration', () => {
+  describe('PptpServerUsers', () => {
+    it('should generate PPTP users', () => {
       testWithOutput(
         'PptpServerUsers',
-        'PPTP server users configuration',
-        { users: sampleCredentials },
-        () => PptpServerUsers(sampleCredentials)
+        'Generate PPTP users',
+        { users: testUsers },
+        () => PptpServerUsers(testUsers)
       );
 
-      const result = PptpServerUsers(sampleCredentials);
+      const result = PptpServerUsers(testUsers);
       validateRouterConfig(result, ['/ppp secret']);
+
+      const secretCommands = result['/ppp secret'] || [];
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="user2"') && cmd.includes('service=pptp'))).toBe(true);
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="multiuser"') && cmd.includes('service=pptp'))).toBe(true);
     });
   });
 
-  describe('L2TP Server Users', () => {
-    it('should generate L2TP server users configuration', () => {
+  describe('L2tpServerUsers', () => {
+    it('should generate L2TP users', () => {
       testWithOutput(
         'L2tpServerUsers',
-        'L2TP server users configuration',
-        { users: sampleCredentials },
-        () => L2tpServerUsers(sampleCredentials)
+        'Generate L2TP users',
+        { users: testUsers },
+        () => L2tpServerUsers(testUsers)
       );
 
-      const result = L2tpServerUsers(sampleCredentials);
+      const result = L2tpServerUsers(testUsers);
       validateRouterConfig(result, ['/ppp secret']);
+
+      const secretCommands = result['/ppp secret'] || [];
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="user2"') && cmd.includes('service=l2tp'))).toBe(true);
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="multiuser"') && cmd.includes('service=l2tp'))).toBe(true);
     });
   });
 
-  describe('SSTP Server Users', () => {
-    it('should generate SSTP server users configuration', () => {
+  describe('SstpServerUsers', () => {
+    it('should generate SSTP users', () => {
       testWithOutput(
         'SstpServerUsers',
-        'SSTP server users configuration',
-        { users: sampleCredentials },
-        () => SstpServerUsers(sampleCredentials)
+        'Generate SSTP users',
+        { users: testUsers },
+        () => SstpServerUsers(testUsers)
       );
 
-      const result = SstpServerUsers(sampleCredentials);
+      const result = SstpServerUsers(testUsers);
       validateRouterConfig(result, ['/ppp secret']);
+
+      const secretCommands = result['/ppp secret'] || [];
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="user3"') && cmd.includes('service=sstp'))).toBe(true);
+      expect(secretCommands.some((cmd: string) => cmd.includes('name="multiuser"') && cmd.includes('service=sstp'))).toBe(true);
     });
   });
 
-  describe('IKEv2 Server Users', () => {
-    it('should generate IKEv2 server users information', () => {
+  describe('Ikev2ServerUsers', () => {
+    it('should generate IKEv2 users info', () => {
       testWithOutput(
         'Ikev2ServerUsers',
-        'IKEv2 server users information',
-        { users: sampleCredentials },
-        () => Ikev2ServerUsers(sampleCredentials)
+        'Generate IKEv2 users info',
+        { users: testUsers },
+        () => Ikev2ServerUsers(testUsers)
       );
 
-      const result = Ikev2ServerUsers(sampleCredentials);
+      const result = Ikev2ServerUsers(testUsers);
       validateRouterConfig(result, [""]);
-      
-      // Check for informational comments
+
       const comments = result[""] || [];
-      const hasInfo = comments.some(comment => 
-        comment.includes('IKEv2 users are managed through IPsec identities')
-      );
-      expect(hasInfo).toBe(true);
+      expect(comments.some((c: string) => c.includes('IKEv2 users are managed through IPsec identities'))).toBe(true);
+      expect(comments.some((c: string) => c.includes('1 users configured for IKEv2'))).toBe(true);
     });
   });
 
-  describe('VPN Server Users Wrapper', () => {
-    it('should generate complete VPN server users configuration', () => {
+  describe('VPNServerUsersWrapper', () => {
+    it('should generate complete VPN users configuration', () => {
       const vpnServer: VPNServer = {
-        Users: sampleCredentials,
+        Users: testUsers,
         WireguardServers: [{
           Interface: {
             Name: 'wireguard-server',
@@ -430,174 +353,80 @@ describe('VPN Server Users Tests', () => {
           enabled: true,
           Encryption: {},
           IPV6: {},
-          Certificate: {
-            Certificate: 'server-cert'
-          },
+          Certificate: { Certificate: 'cert' },
           Address: {}
         },
-        SstpServer: {
+        PptpServer: {
+          enabled: true
+        },
+        L2tpServer: {
           enabled: true,
-          Certificate: 'server-cert',
-          Authentication: ['mschap2']
+          IPsec: { UseIpsec: 'no' },
+          L2TPV3: { l2tpv3EtherInterfaceList: 'LAN' }
         }
       };
 
       testWithOutput(
         'VPNServerUsersWrapper',
-        'Complete VPN server users configuration',
-        { credentials: sampleCredentials, vpnServer },
-        () => VPNServerUsersWrapper(sampleCredentials, vpnServer)
+        'Complete VPN users configuration',
+        { credentials: testUsers, vpnServer },
+        () => VPNServerUsersWrapper(testUsers, vpnServer)
       );
 
-      const result = VPNServerUsersWrapper(sampleCredentials, vpnServer);
+      const result = VPNServerUsersWrapper(testUsers, vpnServer);
       validateRouterConfig(result);
-      
-      // Check for summary comments
+
+      // Should include multiple VPN user configurations
       const comments = result[""] || [];
-      const hasSummary = comments.some(comment => 
-        comment.includes('VPN Server Users Configuration Summary')
-      );
-      expect(hasSummary).toBe(true);
+      expect(comments.some((c: string) => c.includes('VPN Server Users Configuration Summary'))).toBe(true);
+      expect(comments.some((c: string) => c.includes('Total users: 4'))).toBe(true);
     });
 
-    it('should handle empty credentials array', () => {
+    it('should handle empty users array', () => {
       const vpnServer: VPNServer = {
-        Users: [],
-        OpenVpnServer: {
-          name: 'ovpn-server',
-          enabled: true,
-          Encryption: {},
-          IPV6: {},
-          Certificate: {
-            Certificate: 'server-cert'
-          },
-          Address: {}
-        }
+        Users: []
       };
 
       testWithOutput(
         'VPNServerUsersWrapper',
-        'Empty credentials array',
+        'Handle empty users',
         { credentials: [], vpnServer },
         () => VPNServerUsersWrapper([], vpnServer)
       );
 
       const result = VPNServerUsersWrapper([], vpnServer);
       validateRouterConfig(result, [""]);
-      
-      // Check for appropriate message
+
       const comments = result[""] || [];
-      const hasMessage = comments.some(comment => 
-        comment.includes('No VPN types found in user credentials')
-      );
-      expect(hasMessage).toBe(true);
-    });
-
-    it('should handle VPN server with only certificate-requiring protocols', () => {
-      const vpnServer: VPNServer = {
-        Users: [],
-        SstpServer: {
-          enabled: true,
-          Certificate: 'server-cert',
-          Authentication: ['mschap2']
-        },
-        Ikev2Server: {
-          profile: { name: 'ikev2-profile' },
-          proposal: { name: 'ikev2-proposal' },
-          peer: { name: 'ikev2-peer', profile: 'ikev2-profile' },
-          identities: { authMethod: 'pre-shared-key', peer: 'ikev2-peer' }
-        }
-      };
-
-      const certificateUsers: Credentials[] = [
-        { Username: 'sstp-user', Password: 'pass1', VPNType: ['SSTP'] },
-        { Username: 'ikev2-user', Password: 'pass2', VPNType: ['IKeV2'] }
-      ];
-
-      testWithOutput(
-        'VPNServerUsersWrapper',
-        'Certificate-requiring protocols only',
-        { credentials: certificateUsers, vpnServer },
-        () => VPNServerUsersWrapper(certificateUsers, vpnServer)
-      );
-
-      const result = VPNServerUsersWrapper(certificateUsers, vpnServer);
-      validateRouterConfig(result);
-      
-      // Should include certificate configuration
-      const comments = result[""] || [];
-      const hasCertConfig = comments.some(comment => 
-        comment.includes('Certificate configuration for VPN servers')
-      );
-      expect(hasCertConfig).toBe(true);
+      expect(comments.some((c: string) => c.includes('No VPN types found in user credentials'))).toBe(true);
     });
   });
 
-  describe('Edge Cases and Error Handling', () => {
-    it('should handle malformed credentials', () => {
-      const malformedCredentials: Credentials[] = [
-        { Username: '', Password: 'pass1', VPNType: ['OpenVPN'] },
-        { Username: 'user2', Password: '', VPNType: ['PPTP'] }
+  describe('Edge Cases', () => {
+    it('should handle mixed VPN type filtering correctly', () => {
+      const mixedUsers: Credentials[] = [
+        { Username: 'wg-only', Password: 'pass', VPNType: ['Wireguard'] },
+        { Username: 'pptp-only', Password: 'pass', VPNType: ['PPTP'] },
+        { Username: 'multi-vpn', Password: 'pass', VPNType: ['Wireguard', 'PPTP', 'L2TP'] }
       ];
 
-      testWithOutput(
-        'OVPNServerUsers',
-        'Malformed credentials',
-        { users: malformedCredentials },
-        () => OVPNServerUsers(malformedCredentials)
-      );
-
-      const result = OVPNServerUsers(malformedCredentials);
-      validateRouterConfig(result, ['/ppp secret']);
-    });
-
-    it('should handle users with multiple VPN types', () => {
-      const multiVpnUsers: Credentials[] = [
-        { Username: 'multi-user', Password: 'pass1', VPNType: ['OpenVPN', 'PPTP', 'L2TP', 'SSTP'] }
-      ];
-
-      testWithOutput(
-        'VPNServerUsersWrapper',
-        'Users with multiple VPN types',
-        { credentials: multiVpnUsers, vpnServer: { Users: [] } },
-        () => VPNServerUsersWrapper(multiVpnUsers, { Users: [] })
-      );
-
-      const result = VPNServerUsersWrapper(multiVpnUsers, { Users: [] });
-      validateRouterConfig(result);
+      const pptpResult = PptpServerUsers(mixedUsers);
+      const pptpCommands = pptpResult['/ppp secret'] || [];
       
-      // Should include all VPN types in summary
-      const comments = result[""] || [];
-      const hasMultipleTypes = comments.some(comment => 
-        comment.includes('OpenVPN') && 
-        comment.includes('PPTP') && 
-        comment.includes('L2TP') && 
-        comment.includes('SSTP')
-      );
-      expect(hasMultipleTypes).toBe(true);
+      // Should include pptp-only and multi-vpn users
+      expect(pptpCommands.filter((cmd: string) => cmd.includes('add')).length).toBe(2);
+      expect(pptpCommands.some((cmd: string) => cmd.includes('name="pptp-only"'))).toBe(true);
+      expect(pptpCommands.some((cmd: string) => cmd.includes('name="multi-vpn"'))).toBe(true);
     });
 
-    it('should handle WireGuard server without interface configuration', () => {
-      const vpnServer: VPNServer = {
-        Users: [],
-        WireguardServers: [{
-          Peers: []
-        } as any]
-      };
-
-      const wireguardUsers: Credentials[] = [
-        { Username: 'wg-user', Password: 'pass1', VPNType: ['Wireguard'] }
+    it('should handle users with empty VPNType arrays', () => {
+      const emptyVpnUsers: Credentials[] = [
+        { Username: 'no-vpn', Password: 'pass', VPNType: [] }
       ];
 
-      testWithOutput(
-        'VPNServerUsersWrapper',
-        'WireGuard server without interface configuration',
-        { credentials: wireguardUsers, vpnServer },
-        () => VPNServerUsersWrapper(wireguardUsers, vpnServer)
-      );
-
-      const result = VPNServerUsersWrapper(wireguardUsers, vpnServer);
-      validateRouterConfig(result);
+      const result = OVPNServerUsers(emptyVpnUsers);
+      const secretCommands = result['/ppp secret'] || [];
+      expect(secretCommands.some((cmd: string) => cmd.includes('No users configured for OpenVPN'))).toBe(true);
     });
   });
 }); 

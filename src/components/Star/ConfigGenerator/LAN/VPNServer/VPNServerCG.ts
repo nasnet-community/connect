@@ -1,14 +1,10 @@
 // import type { StarState } from "~/components/Star/StarContext/StarContext";
-import type { RouterConfig } from "../../ConfigGenerator";
-import type {
-    // Credentials,
-    // VPNServer
-} from "../../../StarContext/Utils/VPNServerType"
-import { addCommonVPNConfiguration } from "~/components/Star/ConfigGenerator/LAN/VPNServer/VPNServerUtil";
-import { VPNServerInterfaceWrapper } from "./VPNServerInterfaces";
-import { VPNServerUsersWrapper } from "./VPNServerUsers";
-import { mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
-import type { VPNServer } from "~/components/Star/StarContext/Utils/VPNServerType";
+// import type {
+//     // Credentials,
+//     // VPNServer
+// } from "../../../StarContext/Utils/VPNServerType"
+
+// 
 
 
 
@@ -88,54 +84,6 @@ import type { VPNServer } from "~/components/Star/StarContext/Utils/VPNServerTyp
 
 
 
-export const VPNServerWrapper = (
-    vpnServer: VPNServer,
-): RouterConfig => {
-    const configs: RouterConfig[] = [];
-    
-    // Check if VPN Server exists in LAN configuration
-    // const vpnServer = state.LAN.VPNServer;
-    if (!vpnServer) {
-        return {
-            "": ["# No VPN Server configuration found in StarContext"]
-        };
-    }
-
-    const { Users } = vpnServer;
-    if (!Users || Users.length === 0) {
-        return {
-            "": ["# No VPN users configured"]
-        };
-    }
-
-    // Helper function to add configuration if it exists
-    const addConfig = (config: RouterConfig) => {
-        if (config && Object.keys(config).length > 0) {
-            configs.push(config);
-        }
-    };
-
-    // Generate VPN Server Interface Configurations
-    addConfig(VPNServerInterfaceWrapper(vpnServer));
-
-    // Generate VPN Server User Configurations
-    addConfig(VPNServerUsersWrapper(Users, vpnServer));
-
-    // If no VPN protocols are configured, return empty config with message
-    if (configs.length === 0) {
-        return {
-            "": ["# No VPN server protocols are configured in StarContext"]
-        };
-    }
-
-    // Merge all configurations
-    const finalConfig = mergeRouterConfigs(...configs);
-
-    // Add common VPN server configurations
-    addCommonVPNConfiguration(finalConfig, vpnServer);
-
-    return finalConfig;
-};
 
 
 

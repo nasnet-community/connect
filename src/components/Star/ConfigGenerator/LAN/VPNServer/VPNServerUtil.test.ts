@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { 
-  CertificateGenerator,
   generateVPNFirewallRules,
   generateVPNAddressLists,
   generateVPNInterfaceLists,
@@ -15,20 +14,6 @@ import type {
 } from './VPNServerUtil';
 
 describe('VPN Server Utility Functions Tests', () => {
-
-  describe('Certificate Generator', () => {
-    it('should generate certificate configuration', () => {
-      testWithOutput(
-        'CertificateGenerator',
-        'Certificate generation',
-        {},
-        () => CertificateGenerator()
-      );
-
-      const result = CertificateGenerator();
-      validateRouterConfig(result, ['/certificate']);
-    });
-  });
 
   describe('VPN Firewall Rules Generator', () => {
     it('should generate basic VPN firewall rules', () => {
@@ -56,6 +41,20 @@ describe('VPN Server Utility Functions Tests', () => {
       const result = generateVPNFirewallRules(vpnRules);
       validateRouterConfig(result, ['/ip firewall filter']);
     });
+
+    it('should handle empty firewall rules array', () => {
+      const emptyRules: VPNFirewallRule[] = [];
+
+      testWithOutput(
+        'generateVPNFirewallRules',
+        'Empty firewall rules array',
+        { emptyRules },
+        () => generateVPNFirewallRules(emptyRules)
+      );
+
+      const result = generateVPNFirewallRules(emptyRules);
+      validateRouterConfig(result, ['/ip firewall filter']);
+    });
   });
 
   describe('VPN Address Lists Generator', () => {
@@ -81,6 +80,20 @@ describe('VPN Server Utility Functions Tests', () => {
       const result = generateVPNAddressLists(addressLists);
       validateRouterConfig(result, ['/ip firewall address-list']);
     });
+
+    it('should handle empty address lists array', () => {
+      const emptyLists: VPNAddressList[] = [];
+
+      testWithOutput(
+        'generateVPNAddressLists',
+        'Empty address lists array',
+        { emptyLists },
+        () => generateVPNAddressLists(emptyLists)
+      );
+
+      const result = generateVPNAddressLists(emptyLists);
+      validateRouterConfig(result, ['/ip firewall address-list']);
+    });
   });
 
   describe('VPN Interface Lists Generator', () => {
@@ -104,6 +117,20 @@ describe('VPN Server Utility Functions Tests', () => {
       );
 
       const result = generateVPNInterfaceLists(interfaceLists);
+      validateRouterConfig(result, ['/interface list member']);
+    });
+
+    it('should handle empty interface lists array', () => {
+      const emptyInterfaceLists: VPNInterfaceList[] = [];
+
+      testWithOutput(
+        'generateVPNInterfaceLists',
+        'Empty interface lists array',
+        { emptyInterfaceLists },
+        () => generateVPNInterfaceLists(emptyInterfaceLists)
+      );
+
+      const result = generateVPNInterfaceLists(emptyInterfaceLists);
       validateRouterConfig(result, ['/interface list member']);
     });
   });
@@ -158,49 +185,122 @@ describe('VPN Server Utility Functions Tests', () => {
       expect(formatBooleanValue(true)).toBe('yes');
       expect(formatBooleanValue(false)).toBe('no');
     });
+
+    it('should handle empty arrays in formatArrayValue', () => {
+      testWithGenericOutput(
+        'formatArrayValue',
+        'Format empty array',
+        { value: [] },
+        () => formatArrayValue([])
+      );
+
+      const result = formatArrayValue([]);
+      expect(result).toBe('');
+    });
+
+    it('should handle single item arrays in formatArrayValue', () => {
+      testWithGenericOutput(
+        'formatArrayValue',
+        'Format single item array',
+        { value: ['sha256'] },
+        () => formatArrayValue(['sha256'])
+      );
+
+      const result = formatArrayValue(['sha256']);
+      expect(result).toBe('sha256');
+    });
   });
 
   describe('Edge Cases and Error Handling', () => {
-    it('should handle empty firewall rules array', () => {
-      const emptyRules: VPNFirewallRule[] = [];
+    it('should handle null and undefined values in formatArrayValue', () => {
+      testWithGenericOutput(
+        'formatArrayValue',
+        'Format null value',
+        { value: null },
+        () => formatArrayValue(null)
+      );
+
+      const nullResult = formatArrayValue(null);
+      expect(nullResult).toBe('');
+
+      testWithGenericOutput(
+        'formatArrayValue',
+        'Format undefined value',
+        { value: undefined },
+        () => formatArrayValue(undefined)
+      );
+
+      const undefinedResult = formatArrayValue(undefined);
+      expect(undefinedResult).toBe('');
+    });
+
+    it('should handle mixed data types in arrays', () => {
+      testWithGenericOutput(
+        'formatArrayValue',
+        'Format mixed type array',
+        { value: ['string', 123, true] },
+        () => formatArrayValue(['string', 123, true])
+      );
+
+      const result = formatArrayValue(['string', 123, true]);
+      expect(result).toBe('string,123,true');
+    });
+
+    it('should handle complex firewall rule configurations', () => {
+      const complexRules: VPNFirewallRule[] = [
+        {
+          port: '1194,1195',
+          protocol: 'tcp,udp',
+          comment: 'OpenVPN Multi-Port',
+          interfaceList: 'WAN'
+        },
+        {
+          port: 443,
+          protocol: 'tcp',
+          comment: 'SSTP over HTTPS'
+        }
+      ];
 
       testWithOutput(
         'generateVPNFirewallRules',
-        'Empty firewall rules array',
-        { emptyRules },
-        () => generateVPNFirewallRules(emptyRules)
+        'Complex firewall rules',
+        { complexRules },
+        () => generateVPNFirewallRules(complexRules)
       );
 
-      const result = generateVPNFirewallRules(emptyRules);
+      const result = generateVPNFirewallRules(complexRules);
       validateRouterConfig(result, ['/ip firewall filter']);
+
+      const filterCommands = result['/ip firewall filter'] || [];
+      expect(filterCommands.some((cmd: string) => cmd.includes('dst-port=1194,1195'))).toBe(true);
+      expect(filterCommands.some((cmd: string) => cmd.includes('protocol=tcp,udp'))).toBe(true);
     });
 
-    it('should handle empty address lists array', () => {
-      const emptyLists: VPNAddressList[] = [];
+    it('should handle address lists with special characters', () => {
+      const specialAddressLists: VPNAddressList[] = [
+        {
+          address: '192.168.1.0/24',
+          listName: 'VPN-CLIENTS_2024'
+        },
+        {
+          address: '10.0.0.0/8',
+          listName: 'PRIVATE-NETWORKS'
+        }
+      ];
 
       testWithOutput(
         'generateVPNAddressLists',
-        'Empty address lists array',
-        { emptyLists },
-        () => generateVPNAddressLists(emptyLists)
+        'Address lists with special characters',
+        { specialAddressLists },
+        () => generateVPNAddressLists(specialAddressLists)
       );
 
-      const result = generateVPNAddressLists(emptyLists);
+      const result = generateVPNAddressLists(specialAddressLists);
       validateRouterConfig(result, ['/ip firewall address-list']);
-    });
 
-    it('should handle empty interface lists array', () => {
-      const emptyInterfaceLists: VPNInterfaceList[] = [];
-
-      testWithOutput(
-        'generateVPNInterfaceLists',
-        'Empty interface lists array',
-        { emptyInterfaceLists },
-        () => generateVPNInterfaceLists(emptyInterfaceLists)
-      );
-
-      const result = generateVPNInterfaceLists(emptyInterfaceLists);
-      validateRouterConfig(result, ['/interface list member']);
+      const addressCommands = result['/ip firewall address-list'] || [];
+      expect(addressCommands.some((cmd: string) => cmd.includes('list=VPN-CLIENTS_2024'))).toBe(true);
+      expect(addressCommands.some((cmd: string) => cmd.includes('list=PRIVATE-NETWORKS'))).toBe(true);
     });
   });
 }); 

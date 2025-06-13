@@ -9,6 +9,7 @@ import {
     LetsEncrypt,
     PrivateCert,
     ExportCert,
+    AddCert,
 } from "../../utils/Certificate";
 import { OneTimeScript } from "../../utils/ScriptSchedule";
 import { CommandShortner, mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
@@ -47,6 +48,10 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     // 4. Export certificates for client use
     configs.push(ExportCert("admin"));
     
+    // 5. Add certificate assignment script for VPN servers
+    // Use the private certificate name that matches the PrivateCert function default
+    configs.push(AddCert("MikroTik-Private-Cert"));
+    
     // Merge all certificate configurations
     const finalConfig: RouterConfig = {};
     
@@ -64,12 +69,23 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
         finalConfig[""] = [];
     }
     
-    finalConfig[""].unshift(
+    // Ensure the /certificate section exists before trying to use unshift
+    if (!finalConfig["/certificate"]) {
+        finalConfig["/certificate"] = [];
+    }
+    
+    finalConfig["/certificate"].unshift(
         "# Certificate configuration for VPN servers:",
         vpnServer.SstpServer ? "# - SSTP Server requires certificates" : "",
         vpnServer.OpenVpnServer ? "# - OpenVPN Server requires certificates" : "", 
         vpnServer.Ikev2Server ? "# - IKEv2 Server requires certificates" : "",
-        "# Certificate configurations include: CGNAT check, Let's Encrypt, Private certificates, and Export certificates"
+        "# Certificate configurations include:",
+        "# 1. CGNAT check for Let's Encrypt compatibility",
+        "# 2. Let's Encrypt certificate generation",
+        "# 3. Private certificate generation as fallback",
+        "# 4. Certificate export for client configuration",
+        "# 5. Automatic certificate assignment to VPN servers",
+        ""
     );
     
     // Remove empty comment lines
@@ -163,6 +179,7 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
         "/interface pptp-server": [],
         "/interface sstp-server": [],
         "/interface ovpn-server": [],
+        "/interface list member": [],
         "": []
     };
 
@@ -201,8 +218,12 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
         "# VPN Server Binding Configuration",
         `# Total users: ${filteredCredentials.length}`,
         `# Supported VPN types: ${Object.keys(usersByVpnType).join(', ')}`,
+        "# Each binding interface is added to LAN and VPN-LAN interface lists for proper network management",
         ""
     );
+
+    // Keep track of created interfaces for interface list membership
+    const createdInterfaces: string[] = [];
 
     // L2TP Static Interface Bindings
     if (usersByVpnType['L2TP']) {
@@ -215,6 +236,8 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
             config["/interface l2tp-server"].push(
                 `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`
             );
+            
+            createdInterfaces.push(staticBindingName);
         });
         config[""].push("");
     }
@@ -230,6 +253,8 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
             config["/interface pptp-server"].push(
                 `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`
             );
+            
+            createdInterfaces.push(staticBindingName);
         });
         config[""].push("");
     }
@@ -245,6 +270,8 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
             config["/interface sstp-server"].push(
                 `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`
             );
+            
+            createdInterfaces.push(staticBindingName);
         });
         config[""].push("");
     }
@@ -260,6 +287,27 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
             config["/interface ovpn-server"].push(
                 `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`
             );
+            
+            createdInterfaces.push(staticBindingName);
+        });
+        config[""].push("");
+    }
+
+    // Add all created interfaces to LAN and VPN-LAN interface lists
+    if (createdInterfaces.length > 0) {
+        config[""].push("# Adding VPN binding interfaces to interface lists");
+        config[""].push("# This enables proper network segmentation and management");
+        
+        createdInterfaces.forEach(interfaceName => {
+            // Add to LAN interface list
+            config["/interface list member"].push(
+                `add interface="${interfaceName}" list="LAN" comment="VPN binding interface for network management"`
+            );
+            
+            // Add to VPN-LAN interface list
+            config["/interface list member"].push(
+                `add interface="${interfaceName}" list="VPN-LAN" comment="VPN binding interface for VPN-specific rules"`
+            );
         });
         config[""].push("");
     }
@@ -270,6 +318,8 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
     config[""].push("# 2. Per-user queue management capabilities");
     config[""].push("# 3. Individual user traffic monitoring");
     config[""].push("# 4. User-specific interface list assignments");
+    config[""].push("# 5. Proper network segmentation through interface lists");
+    config[""].push("# 6. Simplified management via LAN and VPN-LAN lists");
     config[""].push("");
     config[""].push("# Note: Users must still be configured in /ppp secret for authentication");
     config[""].push("");
@@ -279,6 +329,13 @@ export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
     Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
         config[""].push(`# ${vpnType}: ${users.length} users - ${users.map(u => u.Username).join(', ')}`);
     });
+    
+    if (createdInterfaces.length > 0) {
+        config[""].push("");
+        config[""].push("# Interface List Memberships:");
+        config[""].push(`# ${createdInterfaces.length} interfaces added to both LAN and VPN-LAN lists`);
+        config[""].push(`# Interface names: ${createdInterfaces.join(', ')}`);
+    }
 
     return config;
 };
@@ -497,7 +554,9 @@ export const SstpServerUsers = (users: Credentials[]): RouterConfig => {
 
 export const Ikev2ServerUsers = (users: Credentials[]): RouterConfig => {
     const config: RouterConfig = {
-        "": ["# IKEv2 users are managed through IPsec identities and mode-config"]
+        "/ip ipsec identity": [],
+        "/ip ipsec mode-config": [],
+        "": []
     };
 
     // Filter users who have IKeV2 in their VPNType array
@@ -507,9 +566,57 @@ export const Ikev2ServerUsers = (users: Credentials[]): RouterConfig => {
 
     if (ikev2Users.length === 0) {
         config[""].push("# No users configured for IKEv2");
-    } else {
-        config[""].push(`# ${ikev2Users.length} users configured for IKEv2: ${ikev2Users.map(u => u.Username).join(', ')}`);
+        return CommandShortner(config);
     }
+
+    // Configure IKEv2 users with pre-shared key authentication
+    config[""].push(
+        "# IKEv2 User Configuration with Pre-Shared Key Authentication",
+        "# Each user gets individual IPsec identity and mode-config",
+        ""
+    );
+
+    // Create individual mode-config for each user with specific IP assignment
+    config[""].push("# Individual mode-config for specific user IP assignments");
+    ikev2Users.forEach((user, index) => {
+        const userIP = `192.168.77.${index + 10}`;
+        config["/ip ipsec mode-config"].push(
+            `add address=${userIP} address-prefix-length=32 name=ikev2-${user.Username} responder=yes static-dns=1.1.1.1,8.8.8.8 system-dns=no comment="Mode config for ${user.Username}"`
+        );
+    });
+
+    config[""].push("");
+
+    // Create IPsec identities for each user with PSK authentication
+    config[""].push("# IPsec identities for individual user authentication");
+    ikev2Users.forEach(user => {
+        config["/ip ipsec identity"].push(
+            `add auth-method=pre-shared-key secret="${user.Password}" peer=ikev2-peer generate-policy=port-strict mode-config=ikev2-${user.Username} my-id=user-fqdn:${user.Username}@ikev2.local remote-id=ignore comment="PSK identity for ${user.Username}"`
+        );
+    });
+
+    // Add summary information
+    config[""].push("");
+    config[""].push("# IKEv2 User Configuration Summary:");
+    config[""].push(`# Total IKEv2 users: ${ikev2Users.length}`);
+    config[""].push("# Authentication method: Pre-shared key (PSK)");
+    config[""].push("# Each user has individual IP assignment and identity");
+    config[""].push("");
+    config[""].push("# IKEv2 Users:");
+    ikev2Users.forEach((user, index) => {
+        const userIP = `192.168.77.${index + 10}`;
+        config[""].push(`#   ${user.Username} - IP: ${userIP} - PSK: ${user.Password}`);
+    });
+
+    config[""].push("");
+    config[""].push("# Client Configuration Instructions:");
+    config[""].push("# 1. Set server address to your router's public IP or DDNS name");
+    config[""].push("# 2. Use pre-shared key authentication");
+    config[""].push("# 3. Set user identity to: user@ikev2.local (e.g., user1@ikev2.local)");
+    config[""].push("# 4. Use the corresponding user password as PSK");
+    config[""].push("");
+    config[""].push("# Note: This configuration uses PSK authentication which is simpler");
+    config[""].push("# but may be less secure than certificate-based authentication");
 
     return CommandShortner(config);
 };

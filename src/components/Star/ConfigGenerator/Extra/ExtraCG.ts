@@ -1,7 +1,7 @@
 import type { RouterConfig } from "../ConfigGenerator";
 import type { services, RouterIdentityRomon, AutoReboot, Update, GameConfig, ExtraConfigState } from "~/components/Star/StarContext/ExtraType";
 import { PublicCert } from "../utils/Certificate";
-// import { mergeMultipleConfigs } from "./ConfigGenerator";
+import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
 
 
 
@@ -133,19 +133,19 @@ export const Game = (Game: GameConfig[]): RouterConfig => {
     "/ip firewall mangle": [
       // Split Game FRN Traffic
       `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
-             new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-Local`,
+             new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-LAN`,
       `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
-             new-routing-mark=to-FRN passthrough=no src-address-list=Split-Local`,
+             new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
       // Split Game DOM Traffic
       `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
-             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-Local`,
+             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
       `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
-             new-routing-mark=to-DOM passthrough=no src-address-list=Split-Local`,
+             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
       // Split Game VPN Traffic
       `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
-             new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-Local`,
+             new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
       `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
-             new-routing-mark=to-VPN passthrough=no src-address-list=Split-Local`,
+             new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
     ],
   };
 
@@ -315,23 +315,45 @@ export const DDNS = (): RouterConfig => {
 
 
 export const ExtraCG = (ExtraConfigState: ExtraConfigState): RouterConfig => {
-  const config: RouterConfig = {
-    ...(ExtraConfigState.RouterIdentityRomon ? IdentityRomon(ExtraConfigState.RouterIdentityRomon) : {}),
-    ...(ExtraConfigState.services ? AccessServices(ExtraConfigState.services) : {}),
-    ...(ExtraConfigState.Timezone ? Timezone(ExtraConfigState.Timezone) : {}),
-    ...(ExtraConfigState.AutoReboot ? AReboot(ExtraConfigState.AutoReboot) : {}),
-    ...(ExtraConfigState.Update ? AUpdate(ExtraConfigState.Update) : {}),
-    ...(ExtraConfigState.Games ? Game(ExtraConfigState.Games) : {}),
-    ...(ExtraConfigState.isCertificate !== undefined ? Certificate(ExtraConfigState.isCertificate) : {}),
-    ...Clock(),
-    ...NTP(),
-    ...Graph(),
-    ...update(),
-    ...DDNS(),
-    ...PublicCert(),
+  const configs: RouterConfig[] = [
+    Clock(),
+    NTP(),
+    Graph(),
+    update(),
+    DDNS(),
+    PublicCert(),
+  ];
+
+  // Add conditional configurations
+  if (ExtraConfigState.RouterIdentityRomon) {
+    configs.push(IdentityRomon(ExtraConfigState.RouterIdentityRomon));
   }
 
-  return config
+  if (ExtraConfigState.services) {
+    configs.push(AccessServices(ExtraConfigState.services));
+  }
+
+  if (ExtraConfigState.Timezone) {
+    configs.push(Timezone(ExtraConfigState.Timezone));
+  }
+
+  if (ExtraConfigState.AutoReboot) {
+    configs.push(AReboot(ExtraConfigState.AutoReboot));
+  }
+
+  if (ExtraConfigState.Update) {
+    configs.push(AUpdate(ExtraConfigState.Update));
+  }
+
+  if (ExtraConfigState.Games) {
+    configs.push(Game(ExtraConfigState.Games));
+  }
+
+  if (ExtraConfigState.isCertificate !== undefined) {
+    configs.push(Certificate(ExtraConfigState.isCertificate));
+  }
+
+  return mergeMultipleConfigs(...configs);
 }
 
 

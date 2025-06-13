@@ -3,16 +3,29 @@ import type { VPNServer } from "../../../StarContext/Utils/VPNServerType";
 import type { StarState } from "../../../StarContext/StarContext";
 import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 
-export const CertificateGenerator = (): RouterConfig => {
 
-    const config: RouterConfig = {
-        "": [
+export interface VPNFirewallRule {
+    port: number | string;
+    protocol: 'tcp' | 'udp' | 'tcp,udp';
+    comment: string;
+    interfaceList?: string;
+}
 
-        ]
-    }
+export interface VPNAddressList {
+    address: string;
+    listName: string;
+}
 
-    return config
+export interface VPNInterfaceList {
+    interfaceName: string;
+    lists: string[];
+}
 
+export interface IPPoolConfig {
+    name: string;
+    ranges: string;
+    nextPool?: string;
+    comment?: string;
 }
 
 export function addNetworkSegmentation(config: RouterConfig, vpnServer: VPNServer): void {
@@ -72,33 +85,8 @@ export function formatBooleanValue(value: boolean): string {
     return value ? 'yes' : 'no';
 }
 
-
-
 // VPN Server Utility Functions
 
-export interface VPNFirewallRule {
-    port: number | string;
-    protocol: 'tcp' | 'udp' | 'tcp,udp';
-    comment: string;
-    interfaceList?: string;
-}
-
-export interface VPNAddressList {
-    address: string;
-    listName: string;
-}
-
-export interface VPNInterfaceList {
-    interfaceName: string;
-    lists: string[];
-}
-
-export interface IPPoolConfig {
-    name: string;
-    ranges: string;
-    nextPool?: string;
-    comment?: string;
-}
 
 
 export const generateVPNFirewallRules = (rules: VPNFirewallRule[]): RouterConfig => {
@@ -112,14 +100,17 @@ export const generateVPNFirewallRules = (rules: VPNFirewallRule[]): RouterConfig
         if (rule.protocol === 'tcp,udp') {
             // Add separate rules for TCP and UDP
             config["/ip firewall filter"].push(
-                `add action=accept chain=input comment="${rule.comment} TCP" dst-port=${rule.port} in-interface-list=${interfaceList} protocol=tcp`
+                `add action=accept chain=input comment="${rule.comment} TCP" dst-port=${rule.port} \\
+                in-interface-list=${interfaceList} protocol=tcp`
             );
             config["/ip firewall filter"].push(
-                `add action=accept chain=input comment="${rule.comment} UDP" dst-port=${rule.port} in-interface-list=${interfaceList} protocol=udp`
+                `add action=accept chain=input comment="${rule.comment} UDP" dst-port=${rule.port} \\
+                in-interface-list=${interfaceList} protocol=udp`
             );
         } else {
             config["/ip firewall filter"].push(
-                `add action=accept chain=input comment="${rule.comment}" dst-port=${rule.port} in-interface-list=${interfaceList} protocol=${rule.protocol}`
+                `add action=accept chain=input comment="${rule.comment}" dst-port=${rule.port} \\
+                in-interface-list=${interfaceList} protocol=${rule.protocol}`
             );
         }
     });
@@ -287,14 +278,14 @@ export function addCommonVPNConfiguration(config: RouterConfig, vpnServer: VPNSe
     }
 
     config["/ip firewall nat"].push(
-        'add action=masquerade chain=srcnat comment="NAT for VPN clients" out-interface-list=WAN src-address-list=VPN-Local'
+        'add action=masquerade chain=srcnat comment="NAT for VPN clients" out-interface-list=WAN src-address-list=VPN-LAN'
     );
 
     // Add forward rules to allow VPN clients to access LAN and internet
     config["/ip firewall filter"].push(
-        'add action=accept chain=forward comment="Allow VPN to LAN" src-address-list=VPN-Local dst-address-list=LOCAL-IP',
-        'add action=accept chain=forward comment="Allow LAN to VPN" src-address-list=LOCAL-IP dst-address-list=VPN-Local',
-        'add action=accept chain=forward comment="Allow VPN to Internet" src-address-list=VPN-Local out-interface-list=WAN'
+        'add action=accept chain=forward comment="Allow VPN to LAN" src-address-list=VPN-LAN dst-address-list=LOCAL-IP',
+        'add action=accept chain=forward comment="Allow LAN to VPN" src-address-list=LOCAL-IP dst-address-list=VPN-LAN',
+        'add action=accept chain=forward comment="Allow VPN to Internet" src-address-list=VPN-LAN out-interface-list=WAN'
     );
 
     // Add comments about VPN server configuration

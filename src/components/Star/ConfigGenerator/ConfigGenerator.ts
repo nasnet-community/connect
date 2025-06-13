@@ -10,6 +10,7 @@ import {
   removeEmptyLines,
   formatConfig ,
 } from "./utils/ConfigGeneratorUtil"
+
 export interface RouterConfig {
   [key: string]: string[];
 }
@@ -18,12 +19,20 @@ export interface RouterConfig {
 
 export const ConfigGenerator = (state: StarState): string => {
   const config: RouterConfig = {
+    "/interface pptp-server": [],
     "/disk": [],
     "/interface bridge": [],
+    "/interface sstp-server": [],
+    "/interface ovpn-server": [],
     "/interface ethernet": [],
+    "/interface l2tp-server": [],
     "/interface veth": [],
     "/interface wireguard": [],
     "/interface list": [],
+    "/ip ipsec policy group": [],
+    "/ip ipsec profile": [],
+    "/ip ipsec peer": [],
+    "/ip ipsec proposal": [],
     "/interface vlan": [],
     "/interface wifi security": [],
     "/interface wifi": [
@@ -34,13 +43,17 @@ export const ConfigGenerator = (state: StarState): string => {
     "/interface pppoe-client": [],
     // '/interface list': [],
     "/ip pool": [],
+    "/ppp profile": [],
     "/ip dhcp-server": [],
     "/routing table": [],
     "/interface bridge port": [],
     "/ip settings": [],
     "/ipv6 settings": [],
+    "/interface l2tp-server server": [],
     "/interface list member": [],
     "/interface wireguard peers": [],
+    "/interface pptp-server server": [],
+    "/interface sstp-server server": [],
     "/ip address": [],
     "/ip cloud": [],
     "/ip dhcp-client": [],
@@ -55,10 +68,13 @@ export const ConfigGenerator = (state: StarState): string => {
     "/ip nat-pmp": [],
     "/ip nat-pmp interfaces": [],
     "/ip route": [],
+    "/ip ipsec mode-config": [],
+    "/ip ipsec policy": [],
     "/ip service": [],
     "/ip upnp": [],
     "/ip upnp interfaces": [],
     "/ipv6 firewall filter": [],
+    "/ppp secret": [],
     "/system clock": [],
     "/system identity": [],
     "/system logging": [],

@@ -1,8 +1,7 @@
 import type { RouterConfig } from "../ConfigGenerator";
-import { DomesticIP } from "./DomesticIP";
 import type { WANConfig, WANLink, WANState } from "../../StarContext/WANType";
 import { VPNClientWrapper } from "./VPNClientCG";
-// import { mergeMultipleConfigs } from "./ConfigGenerator";
+import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
 
 
 export const ForeignWAN = (WANConfig: WANConfig): RouterConfig => {
@@ -87,34 +86,18 @@ export const DomesticWAN = (WANConfig: WANConfig): RouterConfig => {
   return config;
 };
 
-export const DomesticAddresslist = (): RouterConfig => {
-  const config: RouterConfig = {
-         "/ip firewall address-list": [
-                // Add DomesticIP addresses
-                // ...DomesticIP.map(ip => `add address=${ip} list=DOMAddList`)
-                ...DomesticIP,
-              ],
-  }
-
-  return config
-}
 
 export const WANLinks = (WANLink: WANLink): RouterConfig => {
 
   const { Foreign, Domestic } = WANLink;
 
   if(Domestic){
-    const config: RouterConfig = {
-      ...ForeignWAN(Foreign),
-      ...DomesticWAN(Domestic),
-      ...DomesticAddresslist(),
-    }
-    return config
+    return mergeMultipleConfigs(
+      ForeignWAN(Foreign),
+      DomesticWAN(Domestic),
+    );
   } else{
-    const config: RouterConfig = {
-      ...ForeignWAN(Foreign),
-    }
-    return config
+    return ForeignWAN(Foreign);
   }
 
 }
@@ -123,13 +106,14 @@ export const WANLinks = (WANLink: WANLink): RouterConfig => {
 export const WANCG = (WANState: WANState, DomesticLink: boolean): RouterConfig => {
   const { WANLink, VPNClient } = WANState;
 
-  const config: RouterConfig = {
-    ...WANLinks(WANLink),
-    ...(VPNClient ? VPNClientWrapper(VPNClient, DomesticLink) : {}),
+  if (VPNClient) {
+    return mergeMultipleConfigs(
+      WANLinks(WANLink),
+      VPNClientWrapper(VPNClient, DomesticLink),
+    );
+  } else {
+    return WANLinks(WANLink);
   }
-
-
-  return config
 }
 
 
