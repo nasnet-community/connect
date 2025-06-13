@@ -57,7 +57,7 @@
     "@types/react-dom": "^18.2.13",
     "@typescript-eslint/eslint-plugin": "7.16.1",
     "@typescript-eslint/parser": "7.16.1",
-    "@vitest/ui": "^3.2.2",
+    "@vitest/ui": "^3.2.3",
     "autoprefixer": "^10.4.19",
     "compression": "^1.7.4",
     "dotenv": "^16.3.2",
@@ -86,9 +86,7 @@
     "@angular/localize": "^16.2.12",
     "@supabase/supabase-js": "^2.49.4",
     "@vercel/analytics": "^1.5.0",
-    "express": "4.20.0",
-    "vitest": "^3.2.2",
-    "@vitest/ui": "^3.2.2"
+    "express": "4.20.0"
   },
   "peerDependencies": {
     "@builder.io/qwik": "^1.12.0"
