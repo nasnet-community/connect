@@ -1,5 +1,5 @@
 import type { RouterConfig } from "../ConfigGenerator";
-import { mergeRouterConfigs } from "./ConfigGeneratorUtil";
+import { mergeMultipleConfigs } from "./ConfigGeneratorUtil";
 import { 
     ScriptAndScheduler,
     OneTimeScript
@@ -468,8 +468,8 @@ export const LetsEncrypt = (
     // Get the renewal script with scheduler (uses the renewalStartTime parameter)
     const renewalScript = RenewalLetsEncrypt(certNameToRenew, daysBeforeExpiryToRenew);
     
-    // Merge all configurations using mergeRouterConfigs
-    const config = mergeRouterConfigs(initScript, renewalScript);
+    // Merge all configurations using mergeMultipleConfigs
+    const config = mergeMultipleConfigs(initScript, renewalScript);
 
     // Add comprehensive comments at the beginning
     const comments = [
@@ -1064,6 +1064,131 @@ export const AddCert = (
         name: "Add-VPN-Cert",
         startTime: "startup"
     });
+};
+
+export interface AllCertConfig {
+    // CGNAT Check parameters
+    wanInterfaceName?: string;
+    
+    // Let's Encrypt parameters
+    certNameToRenew?: string;
+    daysBeforeExpiryToRenew?: number;
+    renewalStartTime?: string;
+    
+    // Private Certificate parameters
+    country?: string;
+    state?: string;
+    locality?: string;
+    organization?: string;
+    organizationalUnit?: string;
+    keySize?: number;
+    daysValid?: number;
+    
+    // Export Certificate parameters
+    username?: string;
+    userPassword?: string;
+    
+    // Public Certificate parameters
+    checkServerCert?: boolean;
+    
+    // Add Certificate parameters
+    targetCertificateName?: string;
+}
+
+export const AllCert = (config: AllCertConfig = {}): RouterConfig => {
+    // Set default values
+    const {
+        wanInterfaceName = "ether1",
+        certNameToRenew = "MikroTik-LE-Cert",
+        daysBeforeExpiryToRenew = 30,
+        renewalStartTime = "03:00:00",
+        country = "US",
+        state = "YourState",
+        locality = "YourCity",
+        organization = "YourOrganization",
+        organizationalUnit = "IT",
+        keySize = 2048,
+        daysValid = 3650,
+        username = "defaultuser",
+        userPassword = "defaultpassword",
+        checkServerCert = false,
+        targetCertificateName = "your-certificate-name-here"
+    } = config;
+
+    // Generate all certificate configurations
+    const cgnatCheck = CheckCGNAT(wanInterfaceName);
+    const initLetsEncrypt = InitLetsEncrypt();
+    const renewalLetsEncrypt = RenewalLetsEncrypt(certNameToRenew, daysBeforeExpiryToRenew);
+    const letsEncrypt = LetsEncrypt(certNameToRenew, daysBeforeExpiryToRenew, renewalStartTime);
+    const privateCert = PrivateCert(country, state, locality, organization, organizationalUnit, keySize, daysValid);
+    const exportCert = ExportCert(username, userPassword);
+    const publicCert = PublicCert(checkServerCert);
+    const addCert = AddCert(targetCertificateName);
+
+    // Merge all configurations using mergeMultipleConfigs
+    const mergedConfig = mergeMultipleConfigs(
+        cgnatCheck,
+        initLetsEncrypt,
+        renewalLetsEncrypt,
+        letsEncrypt,
+        privateCert,
+        exportCert,
+        publicCert,
+        addCert
+    );
+
+    // Add comprehensive comments at the beginning
+    const comments = [
+        "# Complete Certificate Management Configuration Bundle",
+        "# ==================================================",
+        "",
+        "# This configuration includes ALL certificate management functions:",
+        "# 1. CGNAT Detection and Monitoring",
+        "# 2. Let's Encrypt Certificate Management (Initial + Renewal)",
+        "# 3. Private CA and Certificate Setup",
+        "# 4. Certificate Export for VPN Users",
+        "# 5. Public Certificate Authority Updates",
+        "# 6. VPN Certificate Assignment",
+        "",
+        `# Configuration Parameters:`,
+        `# - WAN Interface: ${wanInterfaceName}`,
+        `# - Let's Encrypt Certificate: ${certNameToRenew}`,
+        `# - Renewal Threshold: ${daysBeforeExpiryToRenew} days`,
+        `# - Renewal Time: ${renewalStartTime}`,
+        `# - Private CA Country: ${country}`,
+        `# - Private CA State: ${state}`,
+        `# - Private CA City: ${locality}`,
+        `# - Private CA Organization: ${organization}`,
+        `# - Certificate Key Size: ${keySize} bits`,
+        `# - Certificate Validity: ${daysValid} days`,
+        `# - Export User: ${username}`,
+        `# - Public Cert Validation: ${checkServerCert ? 'Enabled' : 'Disabled'}`,
+        `# - Target Certificate: ${targetCertificateName}`,
+        "",
+        "# Scripts and Schedulers Created:",
+        "# - CGNAT-Check: CGNAT detection with daily monitoring",
+        "# - Init-LetsEncrypt: One-time Let's Encrypt initialization",
+        "# - Renewal-LetsEncrypt: Daily Let's Encrypt renewal checks",
+        "# - Private-Cert-Setup: One-time private CA setup",
+        "# - Export-Certs: One-time certificate export for users",
+        "# - Public-Cert-Update: One-time public CA update",
+        "# - Add-VPN-Cert: One-time VPN certificate assignment",
+        "",
+        "# Usage:",
+        "# 1. All scripts run automatically based on their schedules",
+        "# 2. One-time scripts execute at startup and self-remove",
+        "# 3. Recurring scripts run daily for monitoring and renewal",
+        "# 4. Manual execution: /system script run [script-name]",
+        ""
+    ];
+
+    // Add comments to the beginning
+    if (!mergedConfig[""]) {
+        mergedConfig[""] = [];
+    }
+    mergedConfig[""] = [...comments, ...mergedConfig[""]];
+
+    return mergedConfig;
 };
 
 

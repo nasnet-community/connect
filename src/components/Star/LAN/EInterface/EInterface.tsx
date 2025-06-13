@@ -118,11 +118,14 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
       const defaultNetwork = await getDefaultNetwork();
       
       // Assign default configuration for all available interfaces that are not in use
-      allInterfaces.value.forEach(async (intf) => {
+      for (const intf of allInterfaces.value) {
         if (!intf.inUse && !intf.selected) {
-          addEInterface(intf.name as Ethernet, defaultNetwork);
+          await addEInterface(intf.name as Ethernet, defaultNetwork);
         }
-      });
+      }
+      
+      // Update the interface list to reflect the changes
+      await updateInterfacesList();
     }
     
     unsavedChanges.value = false;
