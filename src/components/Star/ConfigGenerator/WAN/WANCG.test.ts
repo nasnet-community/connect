@@ -6,10 +6,11 @@ import type { WANConfig, WANLink, WANState } from '../../StarContext/WANType';
 import {
   ForeignWAN,
   DomesticWAN,
-  DomesticAddresslist,
   WANLinks,
   WANCG,
 } from './WANCG';
+
+import { DomesticAddresslist } from '../Choose/ChooseCG';
 
 describe('WANCG Module', () => {
   describe('ForeignWAN', () => {
