@@ -3,7 +3,14 @@ import type { WANLink, WANConfig } from "../../../StarContext/WANType";
 import type { Networks, Band } from "../../../StarContext/CommonType";
 import type { RouterConfig } from "../../ConfigGenerator";
 import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
+import type { RouterModels } from "../../../StarContext/ChooseType";
 
+
+export const hasWirelessInterfaces = (routerModels: RouterModels[]): boolean => {
+    return routerModels.some((model: RouterModels) => 
+           model.Interfaces.wireless && model.Interfaces.wireless.length > 0
+    );
+};
 
 export const CheckWireless = (Wireless: Wireless): boolean => {
 

@@ -1,7 +1,7 @@
 import type { WirelessConfig, MultiMode, Wireless } from "../../../StarContext/LANType";
 import type { WANLink } from "../../../StarContext/WANType";
 import type { RouterConfig } from "../../ConfigGenerator";
-import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
+import { CommandShortner, mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
 import { 
     CheckMasters, 
     DisableInterfaces, 
@@ -136,7 +136,13 @@ export const MultiSSID = (MultiMode: MultiMode, WANLink: WANLink): RouterConfig 
     return config;
 }
 
-export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DomesticLink: boolean) {
+export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DomesticLink: boolean): RouterConfig {
+    const baseConfig: RouterConfig = {
+        "/interface wifi": [
+            "set [ find default-name=wifi2 ] name=wifi2.4 disabled=no",
+            "set [ find default-name=wifi1 ] name=wifi5 disabled=no",
+        ],
+    };
     const {SingleMode, MultiMode} = Wireless;
 
     if(!CheckWireless(Wireless)){
@@ -147,10 +153,12 @@ export function WirelessConfig(Wireless: Wireless, WANLink: WANLink, DomesticLin
     
     if (SingleMode) {
         const singleSSIDConfig = SingleSSID(SingleMode, WANLink, DomesticLink);
-        return CommandShortner(singleSSIDConfig);
+        const mergedConfig = mergeMultipleConfigs(baseConfig, singleSSIDConfig);
+        return CommandShortner(mergedConfig);
     } else if (MultiMode) {
         const multiSSIDConfig = MultiSSID(MultiMode, WANLink);
-        return CommandShortner(multiSSIDConfig);
+        const mergedConfig = mergeMultipleConfigs(baseConfig, multiSSIDConfig);
+        return CommandShortner(mergedConfig);
     }
     
     // Fallback to disable interfaces if no valid configuration

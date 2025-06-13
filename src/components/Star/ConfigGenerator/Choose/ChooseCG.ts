@@ -34,10 +34,10 @@ export const DometicBase = (): RouterConfig => {
                      "add name=DOM-LAN",
               ],
               "/ip pool": [
-                     "add name=dhcp_pool1 ranges=192.168.20.2-192.168.20.254",
+                     "add name=DHCP-pool-DOM ranges=192.168.20.2-192.168.20.254",
               ],
               "/ip dhcp-server": [
-                     "add address-pool=dhcp_pool0 interface=LANBridgeSplit name=dhcp1",
+                     "add address-pool=DHCP-pool-DOM interface=LANBridgeDOM name=DHCP-DOM",
               ],
               "/ip dhcp-server network": [
                      "add address=192.168.20.0/24 dns-server=192.168.20.1 gateway=192.168.20.1",
@@ -77,7 +77,6 @@ export const DometicBase = (): RouterConfig => {
        return config
 };
 
-
 export const DomesticAddresslist = (): RouterConfig => {
        const config: RouterConfig = {
               "/ip firewall address-list": [
@@ -100,10 +99,10 @@ export const ForeignBase = (): RouterConfig => {
                      "add name=FRN-LAN",
               ],
               "/ip pool": [
-                     "add name=dhcp_pool2 ranges=192.168.30.2-192.168.30.254",
+                     "add name=DHCP-pool-FRN ranges=192.168.30.2-192.168.30.254",
               ],
               "/ip dhcp-server": [
-                     "add address-pool=dhcp_pool2 interface=LANBridgeFRN name=dhcp3",
+                     "add address-pool=DHCP-pool-FRN interface=LANBridgeFRN name=DHCP-FRN",
               ],
               "/ip dhcp-server network": [
                      "add address=192.168.30.0/24 dns-server=192.168.30.1 gateway=192.168.30.1",
@@ -154,10 +153,10 @@ export const VPNBase = (): RouterConfig => {
                      "add name=VPN-LAN",
               ],
               "/ip pool": [
-                     "add name=dhcp_pool3 ranges=192.168.40.2-192.168.40.254",
+                     "add name=DHCP-pool-VPN ranges=192.168.40.2-192.168.40.254",
               ],
               "/ip dhcp-server": [
-                     "add address-pool=dhcp_pool3 interface=LANBridgeVPN name=dhcp4",
+                     "add address-pool=DHCP-pool-VPN interface=LANBridgeVPN name=DHCP-VPN",
               ],
               "/ip dhcp-server network": [
                      "add address=192.168.40.0/24 dns-server=192.168.40.1 gateway=192.168.40.1",
@@ -202,10 +201,10 @@ export const SplitBase = (): RouterConfig => {
                      "add name=Split-LAN",
               ],
               "/ip pool": [
-                     "add name=dhcp_pool0 ranges=192.168.10.2-192.168.10.254",
+                     "add name=DHCP-pool-Split ranges=192.168.10.2-192.168.10.254",
               ],
               "/ip dhcp-server": [
-                     "add address-pool=dhcp_pool0 interface=LANBridgeSplit name=dhcp1",
+                     "add address-pool=DHCP-pool-Split interface=LANBridgeSplit name=DHCP-Split",
               ],
               "/ip dhcp-server network": [
                      "add address=192.168.10.0/24 dns-server=192.168.10.1 gateway=192.168.10.1",

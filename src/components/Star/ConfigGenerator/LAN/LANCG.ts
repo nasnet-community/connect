@@ -6,6 +6,7 @@ import type { EthernetInterfaceConfig } from "~/components/Star/StarContext/LANT
 import { TunnelWrapper } from "./TunnelCG";
 import { VPNServerWrapper } from "./VPNServer/VPNServerWrapper";
 import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import { hasWirelessInterfaces } from "./Wireless/WirelessUtil";
 
 export const  IPv6 = (): RouterConfig => {
        const config: RouterConfig = {
@@ -34,17 +35,22 @@ export const EthernetBridgePorts = (Ethernet: EthernetInterfaceConfig[]): Router
      }
 
 
+
+
 export const LANCG = (state: StarState): RouterConfig => {
        const configs: RouterConfig[] = [IPv6()];
 
-       // Only call WirelessConfig if state.LAN.Wireless is defined
-       if (state.LAN.Wireless) {
+       // Only configure wireless if router models have wireless interfaces AND LAN.Wireless is defined
+       const hasWireless = hasWirelessInterfaces(state.Choose.RouterModels);
+       
+       if (hasWireless && state.LAN.Wireless) {
               configs.push(WirelessConfig(
                      state.LAN.Wireless,
                      state.WAN.WANLink,
                      state.Choose.DomesticLink
               ));
-       } else {
+       } else if (hasWireless) {
+              // Only disable interfaces if the router actually has wireless interfaces
               configs.push(DisableInterfaces());
        }
 
