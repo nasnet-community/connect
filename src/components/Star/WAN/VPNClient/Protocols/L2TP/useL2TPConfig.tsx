@@ -109,7 +109,7 @@ export const useL2TPConfig = (
       },
       UseIPsec: useIPsec.value,
       IPsecSecret: useIPsec.value ? ipsecSecret.value : undefined,
-      AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+      AuthMethod: ["mschap2", "mschap1"] as AuthMethod[],
       ProtoVersion: 'l2tpv2',
       FastPath: true,
       DialOnDemand: false,

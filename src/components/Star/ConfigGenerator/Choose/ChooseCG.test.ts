@@ -60,11 +60,11 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
       testWithOutput(
         'ForeignBase',
         'Foreign base configuration with bridge and routing setup',
-        {},
-        () => ForeignBase()
+        { DomesticLink: true },
+        () => ForeignBase(true)
       );
 
-      const result = ForeignBase();
+      const result = ForeignBase(true);
       validateRouterConfig(result, [
         '/interface bridge',
         '/interface list',
@@ -168,11 +168,11 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
       testWithOutput(
         'WithDomestic',
         'Complete configuration with domestic link enabled',
-        {},
-        () => WithDomestic()
+        { DomesticLink: true },
+        () => WithDomestic(true)
       );
 
-      const result = WithDomestic();
+      const result = WithDomestic(true);
       validateRouterConfig(result, [
         '/interface list',
         '/ip firewall address-list',
@@ -194,11 +194,11 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
       testWithOutput(
         'WithoutDomestic',
         'Complete configuration with domestic link disabled',
-        {},
-        () => WithoutDomestic()
+        { DomesticLink: false },
+        () => WithoutDomestic(false)
       );
 
-      const result = WithoutDomestic();
+      const result = WithoutDomestic(false);
       validateRouterConfig(result, [
         '/interface list',
         '/ip firewall address-list',
@@ -330,8 +330,8 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
     });
 
     it('should validate network segmentation in combined configs', () => {
-      const withDomestic = WithDomestic();
-      const withoutDomestic = WithoutDomestic();
+      const withDomestic = WithDomestic(true);
+      const withoutDomestic = WithoutDomestic(false);
       
       testWithGenericOutput(
         'Network Segmentation Comparison',
@@ -446,7 +446,7 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
           // Benchmark WithDomestic
           const domesticStart = performance.now();
           for (let i = 0; i < iterations; i++) {
-            WithDomestic();
+            WithDomestic(true);
           }
           const domesticTime = performance.now() - domesticStart;
           
@@ -478,8 +478,8 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
         () => {
           const baseConfig = BaseConfig();
           const advanceDNS = AdvanceDNS();
-          const withDomestic = WithDomestic();
-          const withoutDomestic = WithoutDomestic();
+          const withDomestic = WithDomestic(true);
+          const withoutDomestic = WithoutDomestic(false);
           
           const calculateStats = (config: any) => {
             const sections = Object.keys(config).length;

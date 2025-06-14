@@ -105,7 +105,7 @@ export const useSSTPConfig = (
         Username: username.value, 
         Password: password.value
       },
-      AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+      AuthMethod: ["mschap2", "mschap1"] as AuthMethod[],
       TlsVersion: tlsVersion.value,
       VerifyServerCertificate: verifyServerCertificate.value,
       VerifyServerAddressFromCertificate: false,
@@ -134,7 +134,7 @@ export const useSSTPConfig = (
         const config: Partial<SstpClientConfig> = {
           Server: { Address: "", Port: 443 },
           Credentials: { Username: "", Password: "" },
-          AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+          AuthMethod: ["mschap2", "mschap1"] as AuthMethod[],
           TlsVersion: "any",
           VerifyServerCertificate: true,
           VerifyServerAddressFromCertificate: false,

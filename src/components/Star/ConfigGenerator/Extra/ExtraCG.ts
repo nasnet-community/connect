@@ -130,24 +130,32 @@ export const AUpdate = (Update: Update): RouterConfig => {
 export const Game = (Game: GameConfig[]): RouterConfig => {
   const config: RouterConfig = {
     "/ip firewall raw": [],
-    "/ip firewall mangle": [
-      // Split Game FRN Traffic
-      `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
-             new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-LAN`,
-      `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
-             new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
-      // Split Game DOM Traffic
-      `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
-             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
-      `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
-             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
-      // Split Game VPN Traffic
-      `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
-             new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
-      `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
-             new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
-    ],
+    "/ip firewall mangle": [],
   };
+
+  // Check if Games array has any items
+  if (!Game || Game.length === 0) {
+    return config;
+  }
+
+  // Only add mangle rules if there are games configured
+  config["/ip firewall mangle"] = [
+    // Split Game FRN Traffic
+    `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
+           new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-LAN`,
+    `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
+           new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
+    // Split Game DOM Traffic
+    `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
+           new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
+    `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
+           new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
+    // Split Game VPN Traffic
+    `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
+           new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
+    `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
+           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
+  ];
 
   const Games = Game;
 

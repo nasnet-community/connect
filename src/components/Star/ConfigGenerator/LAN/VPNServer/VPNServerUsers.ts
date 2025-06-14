@@ -46,7 +46,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     configs.push(PrivateCert());
     
     // 4. Export certificates for client use
-    configs.push(ExportCert("admin"));
+    configs.push(ExportCert());
     
     // 5. Add certificate assignment script for VPN servers
     // Use the private certificate name that matches the PrivateCert function default

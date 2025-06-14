@@ -94,7 +94,7 @@ export const usePPTPConfig = (
         Password: password.value
       },
       KeepaliveTimeout: parseInt(keepaliveTimeout.value) || 30,
-      AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+      AuthMethod: ["mschap2", "mschap1"] as AuthMethod[],
       DialOnDemand: false,
     };
 
@@ -121,7 +121,7 @@ export const usePPTPConfig = (
           ConnectTo: "",
           Credentials: { Username: "", Password: "" },
           KeepaliveTimeout: 30,
-          AuthMethod: ["mschap2", "mschap"] as AuthMethod[],
+          AuthMethod: ["mschap2", "mschap1"] as AuthMethod[],
           DialOnDemand: false,
         };
         

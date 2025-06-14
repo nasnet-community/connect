@@ -87,9 +87,9 @@ export const DomesticAddresslist = (): RouterConfig => {
        }
      
        return config
-     }
+}
 
-export const ForeignBase = (): RouterConfig => {
+export const ForeignBase = (DomesticLink: boolean): RouterConfig => {
        const config: RouterConfig = {
               "/interface bridge": [
                      "add name=LANBridgeFRN",
@@ -139,6 +139,12 @@ export const ForeignBase = (): RouterConfig => {
               ],
        }
 
+       // Add blackhole route to main table when DomesticLink is false
+       if (!DomesticLink) {
+              config["/ip route"].push(
+                     `add comment=Route-to-FRN disabled=no distance=1 dst-address=0.0.0.0/0 gateway=192.168.1.1 routing-table=main`
+              );
+       }
 
        return config
 }
@@ -183,7 +189,7 @@ export const VPNBase = (): RouterConfig => {
                             passthrough=no src-address-list=VPN-LAN`,
               ],
               "/ip route": [
-                     `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
+                     `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-VPN`,
                      "add comment=Route-to-FRN disabled=no distance=1 dst-address=192.168.100.0/24 gateway=192.168.1.1 routing-table=to-VPN",
               ],
        }
@@ -374,11 +380,11 @@ export const AdvanceDNS = (): RouterConfig => {
        return config
 }
 
-export const WithDomestic = (): RouterConfig => {
+export const WithDomestic = (DomesticLink: boolean): RouterConfig => {
        return mergeMultipleConfigs(
               BaseConfig(),
               DometicBase(),
-              ForeignBase(),
+              ForeignBase(DomesticLink),
               VPNBase(),
               SplitBase(),
               DNS(),
@@ -386,20 +392,21 @@ export const WithDomestic = (): RouterConfig => {
        );
 }
 
-export const WithoutDomestic = (): RouterConfig => {
+export const WithoutDomestic = (DomesticLink: boolean): RouterConfig => {
        return mergeMultipleConfigs(
               BaseConfig(),
-              ForeignBase(),
+              ForeignBase(DomesticLink),
               VPNBase(),
               DNS(),
+              DomesticAddresslist(),
        );
 }
 
 export const ChooseCG = (DomesticLink: boolean): RouterConfig => {
        if(DomesticLink){
-              return WithDomestic()
+              return WithDomestic(DomesticLink)
        } else{
-              return WithoutDomestic()
+              return WithoutDomestic(DomesticLink)
        }
 }
 

@@ -13,7 +13,7 @@ import { CommandShortner } from "../utils/ConfigGeneratorUtil";
 // VPN Client Utils
 
 export const isFQDN = (address: string): boolean => {
-    const regex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$/;
+    const regex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
     return regex.test(address);
 }
 
@@ -64,9 +64,9 @@ export const AddressList = (Address: string): RouterConfig =>{
         `add action=mark-connection chain=output comment="VPN Endpoint" \\
         dst-address-list=VPNE new-connection-mark=conn-VPNE passthrough=yes`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-SL passthrough=no`,
+        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-FRN passthrough=no`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        dst-address-list=VPNE new-routing-mark=to-SL passthrough=no`,
+        dst-address-list=VPNE new-routing-mark=to-FRN passthrough=no`,
     );
 
     return config
@@ -229,7 +229,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
         RouteNoPull,
     } = config;
 
-    let command = `add name=ovpn-client connect-to=${Server.Address}`;
+    let command = `add name=ovpn-client connect-to="${Server.Address}"`;
     
     if (Server.Port) {
         command += ` port=${Server.Port}`;
@@ -291,7 +291,7 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig =>{
         DialOnDemand,
     } = config;
 
-    let command = `add name=pptp-client connect-to=${ConnectTo}`;
+    let command = `add name=pptp-client connect-to="${ConnectTo}"`;
     command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
     
     if (AuthMethod && AuthMethod.length > 0) {
@@ -732,6 +732,21 @@ export const VPNClientWrapper = (vpnClient: VPNClient, DomesticLink: boolean): R
                 vpnConfig[key] = baseConfig[key];
             }
         });
+
+        // If DomesticLink is false, copy "/ip route" entries and change table to "main"
+        // if (!DomesticLink && baseConfig["/ip route"]) {
+        //     const mainTableRoutes = baseConfig["/ip route"].map(route => {
+        //         // Change routing-table=to-VPN to routing-table=main
+        //         return route.replace(/routing-table=to-VPN/g, 'routing-table=main');
+        //     });
+            
+        //     // Add the modified routes to the existing routes
+        //     if (vpnConfig["/ip route"]) {
+        //         vpnConfig["/ip route"] = [...vpnConfig["/ip route"], ...mainTableRoutes];
+        //     } else {
+        //         vpnConfig["/ip route"] = mainTableRoutes;
+        //     }
+        // }
     }
 
     return vpnConfig;

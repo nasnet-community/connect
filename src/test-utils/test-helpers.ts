@@ -97,18 +97,31 @@ export const validateRouterConfig = (config: RouterConfig, expectedSections: str
   expectedSections.forEach(section => {
     expect(config).toHaveProperty(section);
     expect(Array.isArray(config[section])).toBe(true);
+    // For expected sections, we expect them to have content
     expect(config[section].length).toBeGreaterThan(0);
   });
   
-  // Validate that all commands are strings and non-empty
+  // Validate that all commands are strings
   Object.entries(config).forEach(([, commands]) => {
     if (Array.isArray(commands)) {
       commands.forEach((command) => {
         expect(typeof command).toBe('string');
-        // Only check length for non-empty strings (allow empty strings for spacing)
-        if (command.trim().length > 0) {
-          expect(command.trim().length).toBeGreaterThan(0);
-        }
+        // Allow empty strings for spacing/formatting
+      });
+    }
+  });
+};
+
+// Flexible validation helper that doesn't require specific sections to have content
+export const validateRouterConfigStructure = (config: RouterConfig) => {
+  expect(config).toBeDefined();
+  expect(typeof config).toBe('object');
+  
+  // Validate that all commands are strings
+  Object.entries(config).forEach(([, commands]) => {
+    if (Array.isArray(commands)) {
+      commands.forEach((command) => {
+        expect(typeof command).toBe('string');
       });
     }
   });

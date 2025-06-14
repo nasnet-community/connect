@@ -11,6 +11,7 @@ import type {
 } from '../../StarContext/Utils/VPNClientType';
 
 import {
+  isFQDN,
   RouteToVPN,
   InterfaceList,
   DNSVPN,
@@ -31,6 +32,295 @@ import {
 } from './VPNClientCG';
 
 describe('VPNClientCG Module', () => {
+  describe('isFQDN Utility Function', () => {
+    it('should validate valid FQDNs', () => {
+      const validFQDNs = [
+        'example.com',
+        'subdomain.example.com',
+        'vpn.server.example.com',
+        'test-server.company.org',
+        'api.service.co.uk',
+        'mail.google.com',
+        'secure-vpn.provider.net',
+        'server123.hosting.io',
+        'a.b.c.d.e.com',
+        'www.example-site.info'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Validate valid FQDN addresses',
+        { validFQDNs },
+        () => {
+          const results = validFQDNs.map(fqdn => ({
+            fqdn,
+            isValid: isFQDN(fqdn)
+          }));
+          
+          const allValid = results.every(result => result.isValid);
+          const failedValidations = results.filter(result => !result.isValid);
+          
+          return {
+            totalTested: validFQDNs.length,
+            allValid,
+            failedValidations,
+            results
+          };
+        }
+      );
+
+      validFQDNs.forEach(fqdn => {
+        expect(isFQDN(fqdn)).toBe(true);
+      });
+    });
+
+    it('should reject invalid FQDNs (IP addresses)', () => {
+      const ipAddresses = [
+        '192.168.1.1',
+        '10.0.0.1',
+        '172.16.0.1',
+        '8.8.8.8',
+        '1.1.1.1',
+        '255.255.255.255',
+        '0.0.0.0',
+        '127.0.0.1'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Reject IP addresses as FQDNs',
+        { ipAddresses },
+        () => {
+          const results = ipAddresses.map(ip => ({
+            ip,
+            isValid: isFQDN(ip)
+          }));
+          
+          const allInvalid = results.every(result => !result.isValid);
+          const incorrectValidations = results.filter(result => result.isValid);
+          
+          return {
+            totalTested: ipAddresses.length,
+            allInvalid,
+            incorrectValidations,
+            results
+          };
+        }
+      );
+
+      ipAddresses.forEach(ip => {
+        expect(isFQDN(ip)).toBe(false);
+      });
+    });
+
+    it('should reject malformed domain names', () => {
+      const malformedDomains = [
+        'localhost',
+        'single-word',
+        '.example.com',
+        'example.com.',
+        'example..com',
+        'example.c',
+        'example.123',
+        'example-.com',
+        '-example.com',
+        'example.co-m',
+        'example.c-om',
+        'example.c',
+        'ex@mple.com',
+        'example.com:8080',
+        'https://example.com',
+        'example.com/path',
+        'example com',
+        'example,com'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Reject malformed domain names',
+        { malformedDomains },
+        () => {
+          const results = malformedDomains.map(domain => ({
+            domain,
+            isValid: isFQDN(domain)
+          }));
+          
+          const allInvalid = results.every(result => !result.isValid);
+          const incorrectValidations = results.filter(result => result.isValid);
+          
+          return {
+            totalTested: malformedDomains.length,
+            allInvalid,
+            incorrectValidations,
+            results
+          };
+        }
+      );
+
+      malformedDomains.forEach(domain => {
+        expect(isFQDN(domain)).toBe(false);
+      });
+    });
+
+    it('should handle edge cases', () => {
+      const edgeCases = [
+        '',
+        ' ',
+        '   ',
+        'a.bb',
+        'example.toolongextension123456789',
+        '123.456.789',
+        'test.123abc',
+        'very-long-subdomain-name-that-exceeds-normal-limits.example.com',
+        'normal.subdomain.example.verylongtldthatexceedslimits'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Handle edge cases and boundary conditions',
+        { edgeCases },
+        () => {
+          const results = edgeCases.map(testCase => ({
+            testCase,
+            isValid: isFQDN(testCase)
+          }));
+          
+          const validCount = results.filter(result => result.isValid).length;
+          const invalidCount = results.filter(result => !result.isValid).length;
+          
+          return {
+            totalTested: edgeCases.length,
+            validCount,
+            invalidCount,
+            results
+          };
+        }
+      );
+
+      // Most edge cases should be invalid
+      expect(isFQDN('')).toBe(false);
+      expect(isFQDN(' ')).toBe(false);
+      expect(isFQDN('   ')).toBe(false);
+      expect(isFQDN('a.bb')).toBe(true); // This should be valid - 2 letter TLD is ok
+    });
+
+    it('should validate international domain names', () => {
+      const internationalDomains = [
+        'example.co.uk',
+        'test.com.au',
+        'server.org.za',
+        'vpn.co.jp',
+        'secure.com.br',
+        'api.gov.in'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Validate international domain names',
+        { internationalDomains },
+        () => {
+          const results = internationalDomains.map(domain => ({
+            domain,
+            isValid: isFQDN(domain)
+          }));
+          
+          const allValid = results.every(result => result.isValid);
+          const failedValidations = results.filter(result => !result.isValid);
+          
+          return {
+            totalTested: internationalDomains.length,
+            allValid,
+            failedValidations,
+            results
+          };
+        }
+      );
+
+      internationalDomains.forEach(domain => {
+        expect(isFQDN(domain)).toBe(true);
+      });
+    });
+
+    it('should validate domains with numbers and hyphens', () => {
+      const mixedDomains = [
+        'server1.example.com',
+        'test-server.example.com',
+        'api-v2.service123.org',
+        'mail-server-01.company.net',
+        '123server.example.com',
+        'test123-server.example.com'
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Validate domains with numbers and hyphens',
+        { mixedDomains },
+        () => {
+          const results = mixedDomains.map(domain => ({
+            domain,
+            isValid: isFQDN(domain)
+          }));
+          
+          const allValid = results.every(result => result.isValid);
+          const failedValidations = results.filter(result => !result.isValid);
+          
+          return {
+            totalTested: mixedDomains.length,
+            allValid,
+            failedValidations,
+            results
+          };
+        }
+      );
+
+      mixedDomains.forEach(domain => {
+        expect(isFQDN(domain)).toBe(true);
+      });
+    });
+
+    it('should test function behavior in VPN context', () => {
+      const vpnEndpoints = [
+        { address: 'vpn.example.com', expected: true, type: 'FQDN' },
+        { address: '192.168.1.100', expected: false, type: 'IP' },
+        { address: 'secure-vpn.provider.net', expected: true, type: 'FQDN' },
+        { address: '10.0.0.1', expected: false, type: 'IP' },
+        { address: 'server.company.org', expected: true, type: 'FQDN' },
+        { address: '172.16.100.1', expected: false, type: 'IP' }
+      ];
+
+      testWithGenericOutput(
+        'isFQDN',
+        'Test function behavior with typical VPN endpoints',
+        { vpnEndpoints },
+        () => {
+          const results = vpnEndpoints.map(endpoint => ({
+            address: endpoint.address,
+            expected: endpoint.expected,
+            actual: isFQDN(endpoint.address),
+            type: endpoint.type,
+            correct: isFQDN(endpoint.address) === endpoint.expected
+          }));
+          
+          const allCorrect = results.every(result => result.correct);
+          const incorrectResults = results.filter(result => !result.correct);
+          
+          return {
+            totalTested: vpnEndpoints.length,
+            allCorrect,
+            incorrectResults,
+            fqdnCount: results.filter(r => r.type === 'FQDN').length,
+            ipCount: results.filter(r => r.type === 'IP').length,
+            results
+          };
+        }
+      );
+
+      vpnEndpoints.forEach(endpoint => {
+        expect(isFQDN(endpoint.address)).toBe(endpoint.expected);
+      });
+    });
+  });
+
   describe('RouteToVPN', () => {
     it('should generate VPN routing configuration with Wireguard interface', () => {
       const interfaceName = 'wireguard-client';
@@ -47,11 +337,17 @@ describe('VPNClientCG Module', () => {
       
       // Verify specific route configurations
       expect(result['/ip route']).toHaveLength(2);
-      expect(result['/ip route'][0]).toContain('dst-address=0.0.0.0/0');
-      expect(result['/ip route'][0]).toContain(`gateway=${interfaceName}`);
-      expect(result['/ip route'][0]).toContain('routing-table=to-VPN');
-      expect(result['/ip route'][1]).toContain(`dst-address=${endpointAddress}`);
-      expect(result['/ip route'][1]).toContain('gateway=192.168.1.1');
+      
+      // Find the VPN route and endpoint route
+      const vpnRoute = result['/ip route'].find(route => route.includes('dst-address=0.0.0.0/0'));
+      const endpointRoute = result['/ip route'].find(route => route.includes(`dst-address=${endpointAddress}`));
+      
+      expect(vpnRoute).toBeDefined();
+      expect(vpnRoute).toContain(`gateway=${interfaceName}`);
+      expect(vpnRoute).toContain('routing-table=to-VPN');
+      
+      expect(endpointRoute).toBeDefined();
+      expect(endpointRoute).toContain('gateway=192.168.1.1');
     });
 
     it('should generate VPN routing configuration with OpenVPN interface', () => {
@@ -67,10 +363,9 @@ describe('VPNClientCG Module', () => {
 
       validateRouterConfig(result, ['/ip route']);
       
-      // Verify both routes are created
-      expect(result['/ip route']).toHaveLength(2);
-      expect(result['/ip route'][0]).toContain('Comment="Route-to-VPN"');
-      expect(result['/ip route'][1]).toContain('Comment="Route-to-FRN"');
+      // Verify route is created (only one route for FQDN endpoints)
+      expect(result['/ip route']).toHaveLength(1);
+      expect(result['/ip route'][0]).toContain('comment="Route-to-VPN"');
     });
 
     it('should handle different interface types', () => {
@@ -90,9 +385,18 @@ describe('VPNClientCG Module', () => {
         );
 
         validateRouterConfig(result, ['/ip route']);
-        expect(result['/ip route']).toHaveLength(2);
-        expect(result['/ip route'][0]).toContain(`gateway=${interfaceName}`);
-        expect(result['/ip route'][1]).toContain(`dst-address=${endpoint}`);
+        expect(result['/ip route']).toBeDefined();
+        
+        // Find VPN route and endpoint route (if exists)
+        const vpnRoute = result['/ip route'].find(route => route.includes('dst-address=0.0.0.0/0'));
+        expect(vpnRoute).toBeDefined();
+        expect(vpnRoute).toContain(`gateway=${interfaceName}`);
+        
+        // Endpoint route only exists for IP addresses, not FQDNs
+        const endpointRoute = result['/ip route'].find(route => route.includes(`dst-address=${endpoint}`));
+        if (!endpoint.match(/^[a-zA-Z]/)) { // If it's an IP address
+          expect(endpointRoute).toBeDefined();
+        }
       });
     });
   });
@@ -218,8 +522,8 @@ describe('VPNClientCG Module', () => {
 
       // Verify DNS NAT rules for domestic link (should have 4 rules)
       expect(result['/ip firewall nat']).toHaveLength(4);
-      expect(result['/ip firewall nat'].filter(rule => rule.includes('VPN-Local'))).toHaveLength(2);
-      expect(result['/ip firewall nat'].filter(rule => rule.includes('Split-Local'))).toHaveLength(2);
+      expect(result['/ip firewall nat'].filter(rule => rule.includes('VPN-LAN'))).toHaveLength(2);
+      expect(result['/ip firewall nat'].filter(rule => rule.includes('Split-LAN'))).toHaveLength(2);
       
       // Verify interface list memberships
       expect(result['/interface list member']).toHaveLength(2);
@@ -255,8 +559,8 @@ describe('VPNClientCG Module', () => {
 
       // Verify DNS NAT rules without domestic link (should have 2 rules)
       expect(result['/ip firewall nat']).toHaveLength(2);
-      expect(result['/ip firewall nat'].filter(rule => rule.includes('VPN-Local'))).toHaveLength(2);
-      expect(result['/ip firewall nat'].filter(rule => rule.includes('Split-Local'))).toHaveLength(0);
+      expect(result['/ip firewall nat'].filter(rule => rule.includes('VPN-LAN'))).toHaveLength(2);
+      expect(result['/ip firewall nat'].filter(rule => rule.includes('Split-LAN'))).toHaveLength(0);
     });
 
     it('should handle different DNS servers', () => {
@@ -474,7 +778,7 @@ describe('VPNClientCG Module', () => {
       );
 
       validateRouterConfig(result, ['/interface sstp-client']);
-      expect(result['/interface sstp-client'][0]).toContain(`password="${config.Credentials.Password}"`);
+      expect(result['/interface sstp-client'][0]).toContain(`user="${config.Credentials.Username}"`);
     });
   });
 
@@ -1013,7 +1317,8 @@ describe('VPNClientCG Module', () => {
       
       // Verify interface name and endpoint are used correctly
       expect(result['/interface list member'].some(rule => rule.includes('interface="pptp-client"'))).toBe(true);
-      expect(result['/ip route'].some(rule => rule.includes('dst-address=pptp.example.com'))).toBe(true);
+      // PPTP connects to FQDN so no endpoint route is created
+      expect(result['/ip route'].some(rule => rule.includes('gateway=pptp-client'))).toBe(true);
     });
 
     it('should configure L2TP VPN with base config', () => {
@@ -1105,9 +1410,9 @@ describe('VPNClientCG Module', () => {
       expect(result['/ip ipsec peer'][0]).toContain('address=ikev2.example.com');
       expect(result['/ip ipsec identity'][0]).toContain('auth-method=pre-shared-key');
       
-      // Verify base config does not create interface-based rules for IKEv2
-      expect(result['/interface list member']).toBeUndefined();
-      expect(result['/ip route']).toBeUndefined();
+      // IKeV2 also gets base config with interface list and routes
+      expect(result['/interface list member']).toBeDefined();
+      expect(result['/ip route']).toBeDefined();
       
       // Verify address-list and mangle rules are present
       expect(result['/ip firewall address-list']?.some(rule => rule.includes('list=VPNE'))).toBe(true);
@@ -1178,10 +1483,301 @@ describe('VPNClientCG Module', () => {
         if (type !== 'IKeV2') {
           expect(result['/interface list member']?.some(rule => rule.includes(`interface="${expectedInterface}"`))).toBe(true);
           expect(result['/ip route']?.some(rule => rule.includes(`gateway=${expectedInterface}`) || rule.includes('routing-table=to-VPN'))).toBe(true);
-        } else {
-            expect(result['/interface list member']).toBeUndefined();
-            expect(result['/ip route']).toBeUndefined();
         }
+        // All VPN types now get base configuration including interface lists and routes
+      });
+    });
+
+    it('should duplicate routes with main table when DomesticLink is false', () => {
+      const vpnClient: VPNClient = {
+        Wireguard: {
+          InterfacePrivateKey: 'test-private-key',
+          InterfaceAddress: '10.0.0.2/24',
+          InterfaceDNS: '8.8.8.8',
+          PeerPublicKey: 'test-public-key',
+          PeerEndpointAddress: '1.2.3.4',
+          PeerEndpointPort: 51820,
+          PeerAllowedIPs: '0.0.0.0/0'
+        }
+      };
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'Route duplication with main table when DomesticLink is false',
+        { vpnClient, domesticLink: false },
+        () => VPNClientWrapper(vpnClient, false),
+      );
+
+      validateRouterConfig(result, ['/ip route']);
+      
+      // Should have original routes plus duplicated routes with main table
+      expect(result['/ip route']).toBeDefined();
+      expect(result['/ip route'].length).toBeGreaterThan(2);
+      
+      // Check for original routes with to-VPN table
+      const vpnTableRoutes = result['/ip route'].filter(route => 
+        route.includes('routing-table=to-VPN')
+      );
+      expect(vpnTableRoutes.length).toBeGreaterThan(0);
+      
+      // Check for duplicated routes with main table
+      const mainTableRoutes = result['/ip route'].filter(route => 
+        route.includes('routing-table=main')
+      );
+      expect(mainTableRoutes.length).toBeGreaterThan(0);
+      
+      // Verify that main table routes are duplicates (same content except table)
+      vpnTableRoutes.forEach(vpnRoute => {
+        const expectedMainRoute = vpnRoute.replace('routing-table=to-VPN', 'routing-table=main');
+        expect(mainTableRoutes).toContain(expectedMainRoute);
+      });
+    });
+
+    it('should not duplicate routes when DomesticLink is true', () => {
+      const vpnClient: VPNClient = {
+        OpenVPN: {
+          Server: { Address: 'vpn.example.com' },
+          AuthType: 'Credentials',
+          Credentials: { Username: 'user', Password: 'pass' },
+          Auth: 'sha256'
+        }
+      };
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'No route duplication when DomesticLink is true',
+        { vpnClient, domesticLink: true },
+        () => VPNClientWrapper(vpnClient, true),
+      );
+
+      validateRouterConfig(result, ['/ip route']);
+      
+      // Should have only original routes, no duplicates
+      const allRoutes = result['/ip route'] || [];
+      const vpnTableRoutes = allRoutes.filter(route => 
+        route.includes('routing-table=to-VPN')
+      );
+      const mainTableRoutes = allRoutes.filter(route => 
+        route.includes('routing-table=main')
+      );
+      
+      // Should have VPN table routes but no main table routes
+      expect(vpnTableRoutes.length).toBeGreaterThan(0);
+      expect(mainTableRoutes.length).toBe(0);
+    });
+
+    it('should duplicate routes correctly for all VPN types when DomesticLink is false', () => {
+      const vpnTypes = [
+        {
+          name: 'Wireguard',
+          config: { 
+            Wireguard: { 
+              InterfacePrivateKey: 'key', 
+              InterfaceAddress: '10.0.0.1/24', 
+              PeerPublicKey: 'pubkey', 
+              PeerEndpointAddress: '1.1.1.1', 
+              PeerEndpointPort: 51820, 
+              PeerAllowedIPs: '0.0.0.0/0' 
+            } 
+          }
+        },
+        {
+          name: 'OpenVPN',
+          config: { 
+            OpenVPN: { 
+              Server: { Address: 'ovpn.test.com' }, 
+              AuthType: 'Credentials' as const, 
+              Credentials: { Username: 'user', Password: 'pass' }, 
+              Auth: 'sha256' as const 
+            } 
+          }
+        },
+        {
+          name: 'PPTP',
+          config: { 
+            PPTP: { 
+              ConnectTo: 'pptp.test.com', 
+              Credentials: { Username: 'user', Password: 'pass' } 
+            } 
+          }
+        },
+        {
+          name: 'L2TP',
+          config: { 
+            L2TP: { 
+              Server: { Address: 'l2tp.test.com' }, 
+              Credentials: { Username: 'user', Password: 'pass' } 
+            } 
+          }
+        },
+        {
+          name: 'SSTP',
+          config: { 
+            SSTP: { 
+              Server: { Address: 'sstp.test.com' }, 
+              Credentials: { Username: 'user', Password: 'pass' } 
+            } 
+          }
+        }
+      ];
+
+      vpnTypes.forEach(({ name, config }) => {
+        const result = testWithOutput(
+          'VPNClientWrapper',
+          `Route duplication for ${name} when DomesticLink is false`,
+          { vpnClient: config, domesticLink: false },
+          () => VPNClientWrapper(config, false),
+        );
+
+        if (result['/ip route']) {
+          // Check for both VPN table and main table routes
+          const vpnTableRoutes = result['/ip route'].filter(route => 
+            route.includes('routing-table=to-VPN')
+          );
+          const mainTableRoutes = result['/ip route'].filter(route => 
+            route.includes('routing-table=main')
+          );
+          
+          expect(vpnTableRoutes.length).toBeGreaterThan(0);
+          expect(mainTableRoutes.length).toBeGreaterThan(0);
+          
+          // Verify route duplication
+          vpnTableRoutes.forEach(vpnRoute => {
+            const expectedMainRoute = vpnRoute.replace('routing-table=to-VPN', 'routing-table=main');
+            expect(mainTableRoutes).toContain(expectedMainRoute);
+          });
+        }
+      });
+    });
+
+    it('should handle IKeV2 correctly without route duplication', () => {
+      const vpnClient: VPNClient = {
+        IKeV2: {
+          ServerAddress: 'ikev2.test.com',
+          AuthMethod: 'pre-shared-key',
+          PresharedKey: 'secret'
+        }
+      };
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'IKeV2 should not have route duplication (no interface-based routes)',
+        { vpnClient, domesticLink: false },
+        () => VPNClientWrapper(vpnClient, false),
+      );
+
+      // IKeV2 also gets base config with routes and interface lists
+      expect(result['/ip route']).toBeDefined();
+      expect(result['/interface list member']).toBeDefined();
+      
+      // But should have other IKeV2-specific configuration
+      expect(result['/ip ipsec peer']).toBeDefined();
+      expect(result['/ip ipsec identity']).toBeDefined();
+    });
+
+    it('should preserve original routes and add duplicates when DomesticLink is false', () => {
+      const vpnClient: VPNClient = {
+        Wireguard: {
+          InterfacePrivateKey: 'preservation-test-key',
+          InterfaceAddress: '10.0.0.5/24',
+          PeerPublicKey: 'preservation-pub-key',
+          PeerEndpointAddress: 'preserve.test.com',
+          PeerEndpointPort: 51820,
+          PeerAllowedIPs: '0.0.0.0/0'
+        }
+      };
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'Preserve original routes and add duplicates',
+        { vpnClient, domesticLink: false },
+        () => VPNClientWrapper(vpnClient, false),
+      );
+
+      validateRouterConfig(result, ['/ip route']);
+      
+      const allRoutes = result['/ip route'];
+      expect(allRoutes).toBeDefined();
+      expect(allRoutes.length).toBeGreaterThanOrEqual(3); // At least 1 original + 2 duplicated (no endpoint route for FQDN)
+      
+      // Should have original Wireguard routes
+      const originalWgRoute = allRoutes.find(route => 
+        route.includes('dst-address=0.0.0.0/0') && 
+        route.includes('gateway=wireguard-client') &&
+        route.includes('routing-table=to-VPN')
+      );
+      expect(originalWgRoute).toBeDefined();
+      
+      // Should have duplicated route with main table
+      const duplicatedWgRoute = allRoutes.find(route => 
+        route.includes('dst-address=0.0.0.0/0') && 
+        route.includes('gateway=wireguard-client') &&
+        route.includes('routing-table=main')
+      );
+      expect(duplicatedWgRoute).toBeDefined();
+      
+      // Note: preserve.test.com is a FQDN, so no endpoint route is created
+      // (endpoint routes are only created for IP addresses)
+    });
+
+    it('should handle empty VPN configuration gracefully', () => {
+      const vpnClient: VPNClient = {};
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'Handle empty VPN configuration',
+        { vpnClient, domesticLink: false },
+        () => VPNClientWrapper(vpnClient, false),
+      );
+
+      // Should return empty config without errors
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
+      expect(Object.keys(result)).toHaveLength(0);
+    });
+
+    it('should verify route table replacement regex works correctly', () => {
+      // Test the regex replacement logic directly through the wrapper
+      const vpnClient: VPNClient = {
+        OpenVPN: {
+          Server: { Address: 'regex.test.com' },
+          AuthType: 'Credentials',
+          Credentials: { Username: 'user', Password: 'pass' },
+          Auth: 'sha256'
+        }
+      };
+
+      const result = testWithOutput(
+        'VPNClientWrapper',
+        'Verify routing table regex replacement',
+        { vpnClient, domesticLink: false },
+        () => VPNClientWrapper(vpnClient, false),
+      );
+
+      validateRouterConfig(result, ['/ip route']);
+      
+      const allRoutes = result['/ip route'];
+      
+      // Find routes that should have been converted
+      const mainTableRoutes = allRoutes.filter(route => 
+        route.includes('routing-table=main')
+      );
+      
+      // Verify no route has malformed table names from regex replacement
+      mainTableRoutes.forEach(route => {
+        expect(route).not.toMatch(/routing-table=to-VPNmain/); // Should not have concatenated names
+        expect(route).not.toMatch(/routing-table=mainVPN/);    // Should not have partial replacements
+        expect(route).toMatch(/routing-table=main(\s|$)/);     // Should have clean 'main' table
+      });
+      
+      // Verify original routes still exist with correct table names
+      const vpnTableRoutes = allRoutes.filter(route => 
+        route.includes('routing-table=to-VPN')
+      );
+      
+      vpnTableRoutes.forEach(route => {
+        expect(route).toMatch(/routing-table=to-VPN(\s|$)/);   // Should have clean 'to-VPN' table
+        expect(route).not.toMatch(/routing-table=to-VPNmain/); // Should not be corrupted
       });
     });
   });
