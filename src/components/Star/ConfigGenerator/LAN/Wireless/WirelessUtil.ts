@@ -173,18 +173,20 @@ export const WirelessBridgePortsMulti = (wireless: Wireless): RouterConfig => {
     if(!wireless.MultiMode){ return config;}
 
     const Networks = Object.keys(wireless.MultiMode);
-    // shorten the Networks array to only convert the options to "Split", "DOM", "FRN", "VPN"
-    const Networkss = Networks.map(
+    // Use full network names for interface naming
+    const NetworkNames = Networks.map(
         Network => Network === "Split" ? "Split" : 
-        Network === "Domestic" ? "DOM" : 
-        Network === "Foreign" ? "FRN" : 
+        Network === "Domestic" ? "Domestic" : 
+        Network === "Foreign" ? "Foreign" : 
         Network === "VPN" ? "VPN" : "");
 
-    for(const Network of Networkss){
-        config["/interface bridge port"].push(
-            `add bridge=LANBridgeSplit interface=wifi2.4-${Network}LAN`,
-            `add bridge=LANBridgeSplit interface=wifi5-${Network}LAN`,
-        );
+    for(const Network of NetworkNames){
+        if(Network) { // Only add if Network is not empty
+            config["/interface bridge port"].push(
+                `add bridge=LANBridgeSplit interface=wifi2.4-${Network}LAN`,
+                `add bridge=LANBridgeSplit interface=wifi5-${Network}LAN`,
+            );
+        }
     }
     return config;
 }
@@ -225,26 +227,26 @@ export const WirelessInterfaceListMulti = (wireless: Wireless): RouterConfig => 
     const networks = GetNetworks(wireless.MultiMode);
 
     for(const network of networks){
-        // Convert network names to their appropriate list names and abbreviated forms
+        // Convert network names to their appropriate list names and full interface names
         let listName: string;
-        let abbreviatedName: string;
+        let interfaceName: string;
         
         switch(network) {
             case "Split":
                 listName = "Split-LAN";
-                abbreviatedName = "Split";
+                interfaceName = "Split";
                 break;
             case "Domestic":
                 listName = "DOM-LAN";
-                abbreviatedName = "DOM";
+                interfaceName = "Domestic";
                 break;
             case "Foreign":
                 listName = "FRN-LAN";
-                abbreviatedName = "FRN";
+                interfaceName = "Foreign";
                 break;
             case "VPN":
                 listName = "VPN-LAN";
-                abbreviatedName = "VPN";
+                interfaceName = "VPN";
                 break;
             default:
                 continue;
@@ -252,10 +254,10 @@ export const WirelessInterfaceListMulti = (wireless: Wireless): RouterConfig => 
 
         // Add both 2.4GHz and 5GHz interfaces to their respective network lists
         config["/interface list member"].push(
-            `add interface=wifi2.4-${abbreviatedName}LAN list=${listName}`,
-            `add interface=wifi5-${abbreviatedName}LAN list=${listName}`,
-            `add interface=wifi2.4-${abbreviatedName}LAN list=LAN`,
-            `add interface=wifi5-${abbreviatedName}LAN list=LAN`,
+            `add interface=wifi2.4-${interfaceName}LAN list=${listName}`,
+            `add interface=wifi5-${interfaceName}LAN list=${listName}`,
+            `add interface=wifi2.4-${interfaceName}LAN list=LAN`,
+            `add interface=wifi5-${interfaceName}LAN list=LAN`,
         );
     }
 

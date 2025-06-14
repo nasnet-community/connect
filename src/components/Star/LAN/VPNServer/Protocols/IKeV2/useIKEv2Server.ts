@@ -21,7 +21,7 @@ export const useIKEv2Server = () => {
     },
     peer: { name: "ike2", exchangeMode: "ike2", passive: true, profile: "ike2" },
     identities: { 
-      authMethod: "digital-signature", 
+      authMethod: "pre-shared-key", 
       peer: "ike2", 
       generatePolicy: "port-strict", 
       policyTemplateGroup: "ike2-policies" 

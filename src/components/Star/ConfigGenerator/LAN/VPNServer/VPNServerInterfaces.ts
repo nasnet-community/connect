@@ -117,19 +117,21 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
         PushRoutes
     } = config;
 
-    // Create IP pool for OpenVPN clients
-    if (Address?.AddressPool) {
-        routerConfig["/ip pool"].push(
-            `add name=${Address.AddressPool} ranges=192.168.60.5-192.168.60.250`
-        );
-    }
+    // Determine the pool name to use consistently
+    const poolName = Address?.AddressPool || 'ovpn-pool';
+
+    // Create IP pool for OpenVPN clients - always create the pool
+    routerConfig["/ip pool"].push(
+        `add name=${poolName} ranges=192.168.60.5-192.168.60.250`
+    );
 
     // Create PPP profile
     const profileParams: string[] = [
-        `name=${DefaultProfile}`,
+        // `name=${DefaultProfile}`,
+        `name=ovpn-profile`,
         'dns-server=1.1.1.1',
         'local-address=192.168.60.1',
-        `remote-address=${Address?.AddressPool || 'ovpn-pool'}`,
+        `remote-address=${poolName}`,
         'use-encryption=yes'
     ];
 
@@ -223,7 +225,7 @@ export const PptpServer = (config: PptpServerConfig): RouterConfig => {
 
     // Create PPP profile for PPTP
     const profileParams: string[] = [
-        `name=${DefaultProfile}`,
+        `name=pptp-profile`,
         'dns-server=1.1.1.1',
         'local-address=192.168.70.1',
         'remote-address=pptp-pool',
@@ -313,7 +315,7 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
 
     // Create PPP profile for L2TP
     const profileParams: string[] = [
-        `name=${DefaultProfile}`,
+        `name=l2tp-profile`,
         'dns-server=1.1.1.1',
         'local-address=192.168.80.1',
         'remote-address=l2tp-pool',
@@ -453,7 +455,7 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
 
     // Create PPP profile for SSTP
     const profileParams: string[] = [
-        `name=${DefaultProfile}`,
+        `name=sstp-profile`,
         'dns-server=1.1.1.1',
         'local-address=192.168.90.1',
         'remote-address=sstp-pool',
@@ -713,43 +715,44 @@ const Ikev2ModeConfig = (config: Ikev2ServerConfig): string[] => {
     return [`add ${modeConfigParams.join(' ')}`];
 };
 
-const Ikev2IdentityConfig = (config: Ikev2ServerConfig): string[] => {
-    // Use provided config or defaults following MikroTik documentation
-    const peerName = config.peer?.name || 'ike2';
-    const authMethod = config.identities?.authMethod || 'digital-signature';
+// Note: This function is now handled in VPNServerUsers.ts for per-user identity configuration
+// const Ikev2IdentityConfig = (config: Ikev2ServerConfig): string[] => {
+//     // Use provided config or defaults following MikroTik documentation
+//     const peerName = config.peer?.name || 'ike2';
+//     const authMethod = config.identities?.authMethod || 'pre-shared-key';
     
-    const identityParams: string[] = [
-        `peer=${peerName}`,
-        `auth-method=${authMethod}`
-    ];
+//     const identityParams: string[] = [
+//         `peer=${peerName}`,
+//         `auth-method=${authMethod}`
+//     ];
 
-    // Apply MikroTik best practices defaults following documentation
-    const defaults = {
-        certificate: config.identities?.certificate || 'server1',
-        generatePolicy: config.identities?.generatePolicy || 'port-strict',
-        modeConfig: config.identities?.modeConfig || 'ike2-conf',
-        policyTemplateGroup: config.identities?.policyTemplateGroup || 'ike2-policies'
-    };
+//     // Apply MikroTik best practices defaults following documentation
+//     const defaults = {
+//         certificate: config.identities?.certificate || 'server1',
+//         generatePolicy: config.identities?.generatePolicy || 'port-strict',
+//         modeConfig: config.identities?.modeConfig || 'ike2-conf',
+//         policyTemplateGroup: config.identities?.policyTemplateGroup || 'ike2-policies'
+//     };
 
-    // Add required parameters based on auth method
-    if (authMethod === 'digital-signature') {
-        // identityParams.push(`certificate=${defaults.certificate}`);
-    } else if (authMethod === 'pre-shared-key' && config.identities?.secret) {
-        identityParams.push(`secret="${config.identities.secret}"`);
-    }
+//     // Add required parameters based on auth method
+//     if (authMethod === 'digital-signature') {
+//         // identityParams.push(`certificate=${defaults.certificate}`);
+//     } else if (authMethod === 'pre-shared-key' && config.identities?.secret) {
+//         identityParams.push(`secret="${config.identities.secret}"`);
+//     }
 
-    // Add standard parameters for server configuration
-    identityParams.push(`generate-policy=${defaults.generatePolicy}`);
-    identityParams.push(`mode-config=${defaults.modeConfig}`);
-    identityParams.push(`policy-template-group=${defaults.policyTemplateGroup}`);
+//     // Add standard parameters for server configuration
+//     identityParams.push(`generate-policy=${defaults.generatePolicy}`);
+//     identityParams.push(`mode-config=${defaults.modeConfig}`);
+//     identityParams.push(`policy-template-group=${defaults.policyTemplateGroup}`);
 
-    // Add optional EAP methods if specified
-    if (config.identities?.eapMethods) {
-        identityParams.push(`eap-methods=${config.identities.eapMethods}`);
-    }
+//     // Add optional EAP methods if specified
+//     if (config.identities?.eapMethods) {
+//         identityParams.push(`eap-methods=${config.identities.eapMethods}`);
+//     }
 
-    return [`add ${identityParams.join(' ')}`];
-};
+//     return [`add ${identityParams.join(' ')}`];
+// };
 
 // Main IKEv2 Server Function
 
@@ -856,7 +859,8 @@ export const Ikev2Server = (config: Ikev2ServerConfig): RouterConfig => {
     }
 
     // 7. Build IPsec Identity for authentication - Following documentation
-    routerConfig["/ip ipsec identity"].push(...Ikev2IdentityConfig(config));
+    // Note: IPsec Identity configuration is now handled in VPNServerUsers.ts
+    // routerConfig["/ip ipsec identity"].push(...Ikev2IdentityConfig(config));
 
     // 8. Add firewall rules for IKEv2 and ESP - Following documentation requirements
     routerConfig["/ip firewall filter"].push(

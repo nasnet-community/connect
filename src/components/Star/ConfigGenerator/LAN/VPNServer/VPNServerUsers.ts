@@ -552,7 +552,7 @@ export const SstpServerUsers = (users: Credentials[]): RouterConfig => {
 
 // IKEv2 Server Users
 
-export const Ikev2ServerUsers = (users: Credentials[]): RouterConfig => {
+export const Ikev2ServerUsers = (users: Credentials[], ikev2Config?: any): RouterConfig => {
     const config: RouterConfig = {
         "/ip ipsec identity": [],
         "/ip ipsec mode-config": [],
@@ -576,22 +576,50 @@ export const Ikev2ServerUsers = (users: Credentials[]): RouterConfig => {
         ""
     );
 
+    // Get configuration from ikev2Config or use defaults
+    const peerName = ikev2Config?.peer?.name || 'ike2';
+    const authMethod = ikev2Config?.identities?.authMethod || 'pre-shared-key';
+    const generatePolicy = ikev2Config?.identities?.generatePolicy || 'port-strict';
+    const policyTemplateGroup = ikev2Config?.identities?.policyTemplateGroup || 'ike2-policies';
+
     // Create individual mode-config for each user with specific IP assignment
     config[""].push("# Individual mode-config for specific user IP assignments");
     ikev2Users.forEach((user, index) => {
         const userIP = `192.168.77.${index + 10}`;
         config["/ip ipsec mode-config"].push(
-            `add address=${userIP} address-prefix-length=32 name=ikev2-${user.Username} responder=yes static-dns=1.1.1.1,8.8.8.8 system-dns=no comment="Mode config for ${user.Username}"`
+            `add address=${userIP} address-prefix-length=32 name=ikev2-${user.Username} responder=yes static-dns=1.1.1.1,8.8.8.8 system-dns=no `
         );
     });
 
     config[""].push("");
 
-    // Create IPsec identities for each user with PSK authentication
-    config[""].push("# IPsec identities for individual user authentication");
+    // Create IPsec identities for each user based on auth method
+    config[""].push(`# IPsec identities for individual user authentication (${authMethod})`);
     ikev2Users.forEach(user => {
+        const identityParams: string[] = [
+            `peer=${peerName}`,
+            `auth-method=${authMethod}`
+        ];
+
+        // Add authentication-specific parameters
+        if (authMethod === 'pre-shared-key') {
+            const secret = ikev2Config?.identities?.secret || user.Password;
+            identityParams.push(`secret="${secret}"`);
+        } else if (authMethod === 'digital-signature') {
+            const certificate = ikev2Config?.identities?.certificate || 'server1';
+            identityParams.push(`certificate=${certificate}`);
+        }
+
+        // Add standard parameters
+        identityParams.push(`generate-policy=${generatePolicy}`);
+        identityParams.push(`mode-config=ikev2-${user.Username}`);
+        identityParams.push(`policy-template-group=${policyTemplateGroup}`);
+        identityParams.push(`my-id=user-fqdn:${user.Username}@ikev2.local`);
+        identityParams.push(`remote-id=ignore`);
+        identityParams.push(`comment="Identity for ${user.Username}"`);
+
         config["/ip ipsec identity"].push(
-            `add auth-method=pre-shared-key secret="${user.Password}" peer=ikev2-peer generate-policy=port-strict mode-config=ikev2-${user.Username} my-id=user-fqdn:${user.Username}@ikev2.local remote-id=ignore comment="PSK identity for ${user.Username}"`
+            `add ${identityParams.join(' ')}`
         );
     });
 
@@ -599,24 +627,33 @@ export const Ikev2ServerUsers = (users: Credentials[]): RouterConfig => {
     config[""].push("");
     config[""].push("# IKEv2 User Configuration Summary:");
     config[""].push(`# Total IKEv2 users: ${ikev2Users.length}`);
-    config[""].push("# Authentication method: Pre-shared key (PSK)");
+    config[""].push(`# Authentication method: ${authMethod}`);
+    config[""].push(`# Peer name: ${peerName}`);
     config[""].push("# Each user has individual IP assignment and identity");
     config[""].push("");
     config[""].push("# IKEv2 Users:");
     ikev2Users.forEach((user, index) => {
         const userIP = `192.168.77.${index + 10}`;
-        config[""].push(`#   ${user.Username} - IP: ${userIP} - PSK: ${user.Password}`);
+        if (authMethod === 'pre-shared-key') {
+            const secret = ikev2Config?.identities?.secret || user.Password;
+            config[""].push(`#   ${user.Username} - IP: ${userIP} - PSK: ${secret}`);
+        } else {
+            config[""].push(`#   ${user.Username} - IP: ${userIP}`);
+        }
     });
 
     config[""].push("");
     config[""].push("# Client Configuration Instructions:");
     config[""].push("# 1. Set server address to your router's public IP or DDNS name");
-    config[""].push("# 2. Use pre-shared key authentication");
+    config[""].push(`# 2. Use ${authMethod} authentication`);
     config[""].push("# 3. Set user identity to: user@ikev2.local (e.g., user1@ikev2.local)");
-    config[""].push("# 4. Use the corresponding user password as PSK");
+    if (authMethod === 'pre-shared-key') {
+        config[""].push("# 4. Use the corresponding user password as PSK");
+    } else if (authMethod === 'digital-signature') {
+        config[""].push("# 4. Install the appropriate client certificate");
+    }
     config[""].push("");
-    config[""].push("# Note: This configuration uses PSK authentication which is simpler");
-    config[""].push("# but may be less secure than certificate-based authentication");
+    config[""].push(`# Note: This configuration uses ${authMethod} authentication`);
 
     return CommandShortner(config);
 };
@@ -689,7 +726,7 @@ export const VPNServerUsersWrapper = (
 
     if (usedVpnTypes.includes('IKeV2')) {
         console.log('Generating IKEv2 users configuration');
-        addConfig(Ikev2ServerUsers(credentials));
+        addConfig(Ikev2ServerUsers(credentials, vpnServer.Ikev2Server));
     }
 
     // If no valid configurations were generated, return minimal config
