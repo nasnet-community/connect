@@ -17,7 +17,7 @@ export const ForeignWAN = (WANConfig: WANConfig): RouterConfig => {
 
   const { InterfaceName, WirelessCredentials } = WANConfig;
 
-
+// some comment to remind me to use wireless module 
   if (WirelessCredentials) {
     const { SSID, Password } = WirelessCredentials;
     config["/interface wifi"].push(
