@@ -24,10 +24,19 @@ export const EthernetBridgePorts = (Ethernet: EthernetInterfaceConfig[]): Router
        const config: RouterConfig = {
          "/interface bridge port": [],
        };
+
+       // Map network types to bridge names
+       const bridgeNameMap: Record<string, string> = {
+         "Foreign": "FRN",
+         "Domestic": "DOM", 
+         "VPN": "VPN",
+         "Split": "Split"
+       };
      
        Ethernet.forEach((iface) => {
+         const bridgeName = bridgeNameMap[iface.bridge] || iface.bridge;
          config["/interface bridge port"].push(
-           `add bridge=LANBridge${iface.bridge} interface=${iface.name}`,
+           `add bridge=${bridgeName} interface=${iface.name}`,
          );
        });
      

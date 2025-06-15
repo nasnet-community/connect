@@ -27,6 +27,7 @@ export const useWirelessForm = () => {
   const checkSamePassword = $(() => {
     if (!isMultiSSID.value) return;
 
+    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
     const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
     
     if (!networks.foreign.isDisabled) {
@@ -39,7 +40,8 @@ export const useWirelessForm = () => {
       };
     }
     
-    if (!networks.domestic.isDisabled) {
+    // Only include domestic and split networks if DomesticLink is enabled
+    if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
       enabledNetworks.Domestic = {
         SSID: networks.domestic.ssid,
         Password: networks.domestic.password,
@@ -49,7 +51,7 @@ export const useWirelessForm = () => {
       };
     }
     
-    if (!networks.split.isDisabled) {
+    if (isDomesticLinkEnabled && !networks.split.isDisabled) {
       enabledNetworks.Split = {
         SSID: networks.split.ssid,
         Password: networks.split.password,
@@ -81,7 +83,14 @@ export const useWirelessForm = () => {
       isLoading.value = { ...isLoading.value, allPasswords: true };
       const commonPassword = await generatePasswordFromAPI();
 
-      Object.keys(networks).forEach((network) => {
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      
+      // Only set passwords for available networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+
+      availableNetworks.forEach((network) => {
         networks[network as NetworkKey].password = commonPassword;
       });
 
@@ -97,7 +106,8 @@ export const useWirelessForm = () => {
         };
       }
       
-      if (!networks.domestic.isDisabled) {
+      // Only include domestic and split networks if DomesticLink is enabled
+      if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
         enabledNetworks.Domestic = {
           SSID: networks.domestic.ssid,
           Password: networks.domestic.password,
@@ -107,7 +117,7 @@ export const useWirelessForm = () => {
         };
       }
       
-      if (!networks.split.isDisabled) {
+      if (isDomesticLinkEnabled && !networks.split.isDisabled) {
         enabledNetworks.Split = {
           SSID: networks.split.ssid,
           Password: networks.split.password,
@@ -156,8 +166,22 @@ export const useWirelessForm = () => {
   });
 
   const toggleNetworkDisabled = $((network: NetworkKey) => {
+    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+    
+    // Don't allow enabling domestic or split networks when DomesticLink is false
+    if (!isDomesticLinkEnabled && (network === 'domestic' || network === 'split')) {
+      return;
+    }
+    
     if (!networks[network].isDisabled) {
-      const enabledCount = Object.values(networks).filter(n => !n.isDisabled).length;
+      // Count available networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+      
+      const enabledCount = availableNetworks
+        .map(key => networks[key as NetworkKey])
+        .filter(n => !n.isDisabled).length;
       
       if (enabledCount > 1) {
         networks[network].isDisabled = true;
@@ -242,6 +266,17 @@ export const useWirelessForm = () => {
     }
   });
 
+  // Handle DomesticLink changes - disable domestic and split networks when DomesticLink is false
+  useTask$(({ track }) => {
+    const isDomesticLinkEnabled = track(() => starContext.state.Choose.DomesticLink);
+    
+    if (!isDomesticLinkEnabled) {
+      // Disable domestic and split networks when DomesticLink is false
+      networks.domestic.isDisabled = true;
+      networks.split.isDisabled = true;
+    }
+  });
+
   useTask$(({ track }) => {
     // Skip updating wireless config if disabled
     if (!wirelessEnabled.value) {
@@ -260,6 +295,7 @@ export const useWirelessForm = () => {
     }));
 
     if (isMultiSSID.value) {
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
       const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
       
       if (!networks.foreign.isDisabled) {
@@ -272,7 +308,8 @@ export const useWirelessForm = () => {
         };
       }
       
-      if (!networks.domestic.isDisabled) {
+      // Only include domestic and split networks if DomesticLink is enabled
+      if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
         enabledNetworks.Domestic = {
           SSID: networks.domestic.ssid,
           Password: networks.domestic.password,
@@ -282,7 +319,7 @@ export const useWirelessForm = () => {
         };
       }
       
-      if (!networks.split.isDisabled) {
+      if (isDomesticLinkEnabled && !networks.split.isDisabled) {
         enabledNetworks.Split = {
           SSID: networks.split.ssid,
           Password: networks.split.password,
@@ -363,9 +400,16 @@ export const useWirelessForm = () => {
     }
 
     if (isMultiSSID.value) {
-      const enabledNetworks = Object.values(networks).filter(
-        (network) => !network.isDisabled
-      );
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      
+      // Filter networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+      
+      const enabledNetworks = availableNetworks
+        .map(key => networks[key as NetworkKey])
+        .filter(network => !network.isDisabled);
       
       const atLeastOneEnabled = enabledNetworks.length > 0;
       

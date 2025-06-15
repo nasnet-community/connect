@@ -1,7 +1,7 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import type { WANConfig, WANLink, WANState } from "../../StarContext/WANType";
-import { VPNClientWrapper } from "./VPNClientCG";
-import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import type { RouterConfig } from "../../ConfigGenerator";
+import type { WANConfig, WANLink, WANState } from "../../../StarContext/WANType";
+import { VPNClientWrapper } from "../VPNClient/VPNClientCG";
+import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
 
 
 export const ForeignWAN = (WANConfig: WANConfig): RouterConfig => {

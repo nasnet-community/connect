@@ -53,6 +53,7 @@ export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => 
         }
       });
     } else {
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
       const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
       
       if (!networks.foreign.isDisabled) {
@@ -65,7 +66,8 @@ export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => 
         };
       }
       
-      if (!networks.domestic.isDisabled) {
+      // Only include domestic and split networks if DomesticLink is enabled
+      if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
         enabledNetworks.Domestic = {
           SSID: networks.domestic.ssid,
           Password: networks.domestic.password,
@@ -75,7 +77,7 @@ export const Wireless = component$<StepProps>(({ onComplete$, onDisabled$ }) => 
         };
       }
       
-      if (!networks.split.isDisabled) {
+      if (isDomesticLinkEnabled && !networks.split.isDisabled) {
         enabledNetworks.Split = {
           SSID: networks.split.ssid,
           Password: networks.split.password,

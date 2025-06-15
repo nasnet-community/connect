@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { RouterConfig } from '../ConfigGenerator';
+import type { RouterConfig } from '../../ConfigGenerator';
 import type {
   WireguardClientConfig,
   OpenVpnClientConfig,
@@ -8,7 +8,7 @@ import type {
   SstpClientConfig,
   Ike2ClientConfig,
   VPNClient
-} from '../../StarContext/Utils/VPNClientType';
+} from '../../../StarContext/Utils/VPNClientType';
 
 import {
   isFQDN,

@@ -1,4 +1,4 @@
-import type { RouterConfig } from "../ConfigGenerator";
+import type { RouterConfig } from "../../ConfigGenerator";
 import type {
     WireguardClientConfig,
     OpenVpnClientConfig,
@@ -7,8 +7,8 @@ import type {
     SstpClientConfig,
     Ike2ClientConfig,
     VPNClient,
-} from "../../StarContext/Utils/VPNClientType";
-import { CommandShortner } from "../utils/ConfigGeneratorUtil";
+} from "../../../StarContext/Utils/VPNClientType";
+import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
 
 // VPN Client Utils
 

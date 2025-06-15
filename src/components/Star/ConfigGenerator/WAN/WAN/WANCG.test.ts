@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 // import type { RouterConfig } from '../ConfigGenerator';
-import type { WANConfig, WANLink, WANState } from '../../StarContext/WANType';
+import type { WANConfig, WANLink, WANState } from '../../../StarContext/WANType';
 // import type { VPNClient } from '../../StarContext/Utils/VPNClientType';
 
 import {
@@ -10,7 +10,7 @@ import {
   WANCG,
 } from './WANCG';
 
-import { DomesticAddresslist } from '../Choose/ChooseCG';
+import { DomesticAddresslist } from '../../Choose/ChooseCG';
 
 describe('WANCG Module', () => {
   describe('ForeignWAN', () => {

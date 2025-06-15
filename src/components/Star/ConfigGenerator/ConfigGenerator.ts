@@ -1,6 +1,6 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
 import { ChooseCG } from "./Choose/ChooseCG";
-import { WANCG } from "./WAN/WANCG";
+import { WANCG } from "./WAN/WAN/WANCG";
 import { LANCG } from "./LAN/LANCG";
 import { ExtraCG } from "./Extra/ExtraCG";
 import { 
@@ -103,7 +103,7 @@ export const ConfigGenerator = (state: StarState): string => {
     const chooseConfig = ChooseCG(state.Choose.DomesticLink);
     const wanConfig = WANCG(state.WAN, state.Choose.DomesticLink);
     const lanConfig = LANCG(state);
-    const extraConfig = ExtraCG(state.ExtraConfig);
+    const extraConfig = ExtraCG(state.ExtraConfig, state.Choose.DomesticLink);
 
     // Merge all configurations
     const finalConfig = mergeMultipleConfigs(

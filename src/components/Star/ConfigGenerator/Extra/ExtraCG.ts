@@ -127,7 +127,7 @@ export const AUpdate = (Update: Update): RouterConfig => {
   return config;
 }
 
-export const Game = (Game: GameConfig[]): RouterConfig => {
+export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig => {
   const config: RouterConfig = {
     "/ip firewall raw": [],
     "/ip firewall mangle": [],
@@ -139,23 +139,35 @@ export const Game = (Game: GameConfig[]): RouterConfig => {
   }
 
   // Only add mangle rules if there are games configured
-  config["/ip firewall mangle"] = [
+  const mangleRules = [
     // Split Game FRN Traffic
     `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
            new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-LAN`,
     `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
            new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
-    // Split Game DOM Traffic
-    `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
-           new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
-    `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
-           new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
+  ];
+
+  // Only add DOM traffic rules if DomesticLink is true
+  if (DomesticLink) {
+    mangleRules.push(
+      // Split Game DOM Traffic
+      `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
+             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
+      `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
+             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`
+    );
+  }
+
+  // Add VPN traffic rules
+  mangleRules.push(
     // Split Game VPN Traffic
     `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
            new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
     `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
-           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
-  ];
+           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`
+  );
+
+  config["/ip firewall mangle"] = mangleRules;
 
   const Games = Game;
 
@@ -322,7 +334,7 @@ export const DDNS = (): RouterConfig => {
 
 
 
-export const ExtraCG = (ExtraConfigState: ExtraConfigState): RouterConfig => {
+export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolean): RouterConfig => {
   const configs: RouterConfig[] = [
     Clock(),
     NTP(),
@@ -354,7 +366,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState): RouterConfig => {
   }
 
   if (ExtraConfigState.Games) {
-    configs.push(Game(ExtraConfigState.Games));
+    configs.push(Game(ExtraConfigState.Games, DomesticLink));
   }
 
   if (ExtraConfigState.isCertificate !== undefined) {

@@ -202,7 +202,71 @@ describe('ExtraCG Module', () => {
   });
 
   describe('Game', () => {
-    it('should configure game traffic splitting', () => {
+    it('should configure game traffic splitting with DomesticLink enabled', () => {
+      const games: GameConfig[] = [
+        {
+          name: 'Steam',
+          link: 'foreign',
+          ports: {
+            tcp: ['27015', '27036'],
+            udp: ['27015']
+          }
+        },
+        {
+          name: 'Fortnite',
+          link: 'vpn',
+          ports: {
+            tcp: ['443', '80'],
+            udp: ['3478-3479']
+          }
+        },
+        {
+          name: 'PUBG',
+          link: 'domestic',
+          ports: {
+            tcp: ['5222'],
+            udp: ['12070-12460']
+          }
+        }
+      ];
+
+      const result = testWithOutput(
+        'Game',
+        'Configure game traffic splitting with Steam, Fortnite and PUBG with DomesticLink enabled',
+        { games, DomesticLink: true },
+        () => Game(games, true)
+      );
+      
+      validateRouterConfig(result, ['/ip firewall raw', '/ip firewall mangle']);
+      
+      // Check for mangle rules including DOM traffic when DomesticLink is true
+      expect(result['/ip firewall mangle']).toContain(
+        expect.stringContaining('Split-Game-FRN')
+      );
+      expect(result['/ip firewall mangle']).toContain(
+        expect.stringContaining('Split-Game-DOM')
+      );
+      expect(result['/ip firewall mangle']).toContain(
+        expect.stringContaining('Split-Game-VPN')
+      );
+      
+      // Check for Steam foreign traffic
+      expect(result['/ip firewall raw']).toContain(
+        'add action=add-dst-to-address-list address-list="FRN-IP-Games" address-list-timeout=1d chain=prerouting comment="Steam" dst-address-list=!LOCAL-IP dst-port=27015,27036 protocol=tcp'
+      );
+      
+      // Check for Fortnite VPN traffic
+      expect(result['/ip firewall raw']).toContain(
+        'add action=add-dst-to-address-list address-list="VPN-IP-Games" address-list-timeout=1d chain=prerouting comment="Fortnite" dst-address-list=!LOCAL-IP dst-port=443,80 protocol=tcp'
+      );
+
+      // Check for PUBG domestic traffic
+      expect(result['/ip firewall raw']).toContain(
+        'add action=add-dst-to-address-list address-list="DOM-IP-Games" address-list-timeout=1d chain=prerouting comment="PUBG" dst-address-list=!LOCAL-IP dst-port=5222 protocol=tcp'
+      );
+    });
+
+    it('should configure game traffic splitting with DomesticLink disabled', () => {
       const games: GameConfig[] = [
         {
           name: 'Steam',
@@ -224,12 +288,23 @@ describe('ExtraCG Module', () => {
 
       const result = testWithOutput(
         'Game',
-        'Configure game traffic splitting with Steam and Fortnite',
-        { games },
-        () => Game(games)
+        'Configure game traffic splitting with Steam and Fortnite with DomesticLink disabled',
+        { games, DomesticLink: false },
+        () => Game(games, false)
       );
       
       validateRouterConfig(result, ['/ip firewall raw', '/ip firewall mangle']);
+      
+      // Check for mangle rules excluding DOM traffic when DomesticLink is false
+      expect(result['/ip firewall mangle']).toContain(
+        expect.stringContaining('Split-Game-FRN')
+      );
+      expect(result['/ip firewall mangle']).not.toContain(
+        expect.stringContaining('Split-Game-DOM')
+      );
+      expect(result['/ip firewall mangle']).toContain(
+        expect.stringContaining('Split-Game-VPN')
+      );
       
       // Check for Steam foreign traffic
       expect(result['/ip firewall raw']).toContain(
@@ -240,6 +315,21 @@ describe('ExtraCG Module', () => {
       expect(result['/ip firewall raw']).toContain(
         'add action=add-dst-to-address-list address-list="VPN-IP-Games" address-list-timeout=1d chain=prerouting comment="Fortnite" dst-address-list=!LOCAL-IP dst-port=443,80 protocol=tcp'
       );
+    });
+
+    it('should handle empty games array', () => {
+      const games: GameConfig[] = [];
+
+      const result = testWithOutput(
+        'Game',
+        'Handle empty games array with DomesticLink enabled',
+        { games, DomesticLink: true },
+        () => Game(games, true)
+      );
+      
+      validateRouterConfig(result);
+      expect(result['/ip firewall raw']).toHaveLength(0);
+      expect(result['/ip firewall mangle']).toHaveLength(0);
     });
 
     it('should handle empty ports', () => {
@@ -257,8 +347,8 @@ describe('ExtraCG Module', () => {
       const result = testWithOutput(
         'Game',
         'Handle games with empty ports configuration',
-        { games },
-        () => Game(games)
+        { games, DomesticLink: true },
+        () => Game(games, true)
       );
       
       validateRouterConfig(result);
@@ -420,7 +510,7 @@ describe('ExtraCG Module', () => {
   });
 
   describe('ExtraCG', () => {
-    it('should merge all extra configurations', () => {
+    it('should merge all extra configurations with DomesticLink enabled', () => {
       const extraConfigState: ExtraConfigState = {
         RouterIdentityRomon: {
           RouterIdentity: 'MainRouter',
@@ -461,9 +551,9 @@ describe('ExtraCG Module', () => {
 
       const result = testWithOutput(
         'ExtraCG',
-        'Merge all extra configurations into complete config',
-        { extraConfigState },
-        () => ExtraCG(extraConfigState)
+        'Merge all extra configurations into complete config with DomesticLink enabled',
+        { extraConfigState, DomesticLink: true },
+        () => ExtraCG(extraConfigState, true)
       );
       
       // Verify it contains configurations from all modules
@@ -484,14 +574,75 @@ describe('ExtraCG Module', () => {
       expect(result['/system clock']).toContain('time-zone-name=Asia/Tehran');
     });
 
-    it('should handle empty configuration', () => {
+    it('should merge all extra configurations with DomesticLink disabled', () => {
+      const extraConfigState: ExtraConfigState = {
+        RouterIdentityRomon: {
+          RouterIdentity: 'TestRouter',
+          isRomon: false
+        },
+        Games: [
+          {
+            name: 'Steam',
+            link: 'foreign',
+            ports: {
+              tcp: ['27015'],
+              udp: ['27015']
+            }
+          }
+        ],
+        isCertificate: false
+      };
+
+      const result = testWithOutput(
+        'ExtraCG',
+        'Merge extra configurations with DomesticLink disabled',
+        { extraConfigState, DomesticLink: false },
+        () => ExtraCG(extraConfigState, false)
+      );
+      
+      // Verify it contains base configurations and game config without DOM traffic
+      validateRouterConfig(result, [
+        '/system identity',
+        '/system clock',
+        '/system ntp client',
+        '/tool graphing interface',
+        '/ip firewall raw',
+        '/ip firewall mangle'
+      ]);
+      
+      // Verify specific values
+      expect(result['/system identity']).toContain('set name="TestRouter"');
+      
+      // Verify DOM traffic rules are not present when DomesticLink is false
+      if (result['/ip firewall mangle']) {
+        expect(result['/ip firewall mangle']).not.toContain(
+          expect.stringContaining('Split-Game-DOM')
+        );
+      }
+    });
+
+    it('should handle empty configuration with DomesticLink enabled', () => {
       const extraConfigState: ExtraConfigState = {};
 
       const result = testWithOutput(
         'ExtraCG',
-        'Handle empty extra configuration with base settings only',
-        { extraConfigState },
-        () => ExtraCG(extraConfigState)
+        'Handle empty extra configuration with base settings only and DomesticLink enabled',
+        { extraConfigState, DomesticLink: true },
+        () => ExtraCG(extraConfigState, true)
+      );
+      
+      // Should still have base configurations (Clock, NTP, Graph, etc.)
+      validateRouterConfig(result, ['/system clock', '/system ntp client', '/tool graphing interface']);
+    });
+
+    it('should handle empty configuration with DomesticLink disabled', () => {
+      const extraConfigState: ExtraConfigState = {};
+
+      const result = testWithOutput(
+        'ExtraCG',
+        'Handle empty extra configuration with base settings only and DomesticLink disabled',
+        { extraConfigState, DomesticLink: false },
+        () => ExtraCG(extraConfigState, false)
       );
       
       // Should still have base configurations (Clock, NTP, Graph, etc.)
