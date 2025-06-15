@@ -36,7 +36,7 @@ export const EthernetBridgePorts = (Ethernet: EthernetInterfaceConfig[]): Router
        Ethernet.forEach((iface) => {
          const bridgeName = bridgeNameMap[iface.bridge] || iface.bridge;
          config["/interface bridge port"].push(
-           `add bridge=${bridgeName} interface=${iface.name}`,
+           `add bridge=LANBridge${bridgeName} interface=${iface.name}`,
          );
        });
      

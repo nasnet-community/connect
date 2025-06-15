@@ -180,11 +180,20 @@ export const WirelessBridgePortsMulti = (wireless: Wireless): RouterConfig => {
         Network === "Foreign" ? "Foreign" : 
         Network === "VPN" ? "VPN" : "");
 
+    // Map network types to bridge names (matching the full bridge naming)
+    const bridgeNameMap: Record<string, string> = {
+        "Foreign": "LANBridgeFRN",
+        "Domestic": "LANBridgeDOM", 
+        "VPN": "LANBridgeVPN",
+        "Split": "LANBridgeSplit"
+    };
+
     for(const Network of NetworkNames){
         if(Network) { // Only add if Network is not empty
+            const bridgeName = bridgeNameMap[Network] || Network;
             config["/interface bridge port"].push(
-                `add bridge=LANBridgeSplit interface=wifi2.4-${Network}LAN`,
-                `add bridge=LANBridgeSplit interface=wifi5-${Network}LAN`,
+                `add bridge=${bridgeName} interface=wifi2.4-${Network}LAN`,
+                `add bridge=${bridgeName} interface=wifi5-${Network}LAN`,
             );
         }
     }

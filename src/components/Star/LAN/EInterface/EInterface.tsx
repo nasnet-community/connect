@@ -111,22 +111,32 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
   });
 
   const handleSave = $(async () => {
-    // If no changes were made but interfaces are available,
-    // consider the default configuration as valid and proceed
-    if (!unsavedChanges.value && allInterfaces.value.length > 0) {
-      // Get default network based on DomesticLink setting
-      const defaultNetwork = await getDefaultNetwork();
-      
-      // Assign default configuration for all available interfaces that are not in use
-      for (const intf of allInterfaces.value) {
-        if (!intf.inUse && !intf.selected) {
-          await addEInterface(intf.name as Ethernet, defaultNetwork);
+    // Get default network based on DomesticLink setting
+    const defaultNetwork = await getDefaultNetwork();
+    
+    // Always ensure all available interfaces are assigned to networks
+    // This includes both explicitly selected interfaces and unselected ones
+    for (const intf of allInterfaces.value) {
+      if (!intf.inUse) {
+        // If interface is already selected, keep its current network assignment
+        // If interface is not selected, assign it to the default network
+        const networkToAssign = intf.selected ? intf.network : defaultNetwork;
+        
+        // Check if this interface is already in the selected list
+        const existingInterface = selectedEInterfaces.value.find(selected => selected.name === intf.name);
+        
+        if (!existingInterface) {
+          // Add new interface
+          await addEInterface(intf.name as Ethernet, networkToAssign);
+        } else if (existingInterface.bridge !== networkToAssign) {
+          // Update existing interface if network changed
+          await updateEInterface(intf.name as Ethernet, networkToAssign);
         }
       }
-      
-      // Update the interface list to reflect the changes
-      await updateInterfacesList();
     }
+    
+    // Update the interface list to reflect all changes
+    await updateInterfacesList();
     
     unsavedChanges.value = false;
     onComplete$();
@@ -159,10 +169,10 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
               </h2>
               <div class="flex items-center space-x-2">
                 <p class="text-sm font-medium text-primary-50">
-                  {$localize`Assign interfaces to network bridges`}
+                  {$localize`All available interfaces will be assigned to network bridges`}
                 </p>
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white">
-                  {allInterfaces.value.filter(i => i.selected).length} {$localize`Selected`}
+                  {allInterfaces.value.filter(i => !i.inUse).length} {$localize`Available`}
                 </span>
               </div>
             </div>
@@ -204,11 +214,11 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                         </span>
                       ) : intf.selected ? (
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                          {$localize`In Use`}
+                          {$localize`Configured`}
                         </span>
                       ) : (
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                          {$localize`Available`}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                          {$localize`Will be assigned`}
                         </span>
                       )}
                     </td>
