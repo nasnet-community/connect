@@ -11,6 +11,7 @@ export default extendConfig(baseConfig, () => {
         output: {
           format: "es",
         },
+        external: ["@supabase/supabase-js", "@angular/localize/init"],
       },
       outDir: ".vercel/output/functions/_qwik-city.func",
     },
