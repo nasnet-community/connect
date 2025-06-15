@@ -45,3 +45,9 @@ lerna-debug.log*
 .vercel
 /.cursor
 /supabase
+
+/adapters/express/
+/adapters/node-server/
+/adapters/static/
+
+package-lock.json
