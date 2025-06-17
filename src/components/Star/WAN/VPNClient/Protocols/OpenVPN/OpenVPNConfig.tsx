@@ -28,9 +28,12 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
     cipher,
     auth,
     errorMessage,
+    missingFields,
+    clientCertName,
     handleConfigChange$,
     handleManualFormSubmit$,
-    handleFileUpload$
+    handleFileUpload$,
+    unsupportedDirectives,
   } = useOpenVPNConfig(onIsValidChange$);
 
   useTask$(({ track }) => {
@@ -51,6 +54,33 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
         />
       </div>
       
+      {unsupportedDirectives.value.length > 0 && (
+        <div class="mb-4 rounded-md bg-warning-50 p-4 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-700/30">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-warning-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-warning-800 dark:text-warning-200">
+                {$localize`Unsupported Configuration`}
+              </h3>
+              <div class="mt-2 text-sm text-warning-700 dark:text-warning-300">
+                <p>
+                  {$localize`Your configuration file contains directives that are not supported by MikroTik RouterOS and will be ignored. This may cause connection issues.`}
+                </p>
+                <ul class="list-disc space-y-1 pl-5 mt-2">
+                  {unsupportedDirectives.value.map(directive => (
+                    <li><code>{directive}</code></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* File-based Configuration */}
       {configMethod.value === "file" && (
         <VPNConfigFileSection
@@ -61,6 +91,54 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(({ onIsValidChange$,
           onFileUpload$={handleFileUpload$}
           placeholder={$localize`Paste your OpenVPN configuration here. It should include directives like 'remote', 'proto', 'dev', etc.`}
         />
+      )}
+
+      {configMethod.value === "file" && missingFields.value.length > 0 && (
+         <div class="mt-4">
+            <FormContainer 
+              title={$localize`Complete Your Configuration`}
+              description={$localize`Your .ovpn file is missing some required details. Please provide them below.`}
+              bordered
+            >
+              <div class="space-y-4 p-4">
+                {missingFields.value.includes("Username") && (
+                   <FormField
+                     label={$localize`Username`}
+                     value={username.value}
+                     onInput$={(_, el) => {
+                       username.value = el.value;
+                       handleManualFormSubmit$();
+                     }}
+                     required
+                   />
+                 )}
+                 {missingFields.value.includes("Password") && (
+                   <FormField
+                     type="password"
+                     label={$localize`Password`}
+                     value={password.value}
+                     onInput$={(_, el) => {
+                       password.value = el.value;
+                       handleManualFormSubmit$();
+                     }}
+                     required
+                   />
+                 )}
+                 {missingFields.value.includes("Client Certificate") && (
+                  <FormField
+                    label={$localize`Client Certificate Name`}
+                    value={clientCertName.value} 
+                    onInput$={(_, el) => {
+                      clientCertName.value = el.value;
+                      handleManualFormSubmit$();
+                    }}
+                    required
+                    helperText={$localize`Enter the name of the client certificate installed on your router.`}
+                  />
+                 )}
+              </div>
+            </FormContainer>
+         </div>
       )}
 
       {/* Manual Configuration */}

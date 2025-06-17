@@ -90,7 +90,7 @@ export const Security = (): RouterConfig => {
   // DNS Poisoning Protection
   config["/ip firewall filter"].push(
     'add chain=input dst-port=53 in-interface-list=WAN protocol=tcp action=drop comment="Block Open Recursive DNS"',
-    "add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop",
+    `add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop comment="Block Open Recursive DNS"`,
   );
 
   // MAC Address Block

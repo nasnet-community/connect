@@ -1,4 +1,3 @@
-
 export type Band = '2.4' | '5';
 export type PppAuthMethod = "pap" | "chap" | "mschap1" | "mschap2";
 export type ARPState = "enabled" | "disabled" | "proxy-arp" | "reply-only";

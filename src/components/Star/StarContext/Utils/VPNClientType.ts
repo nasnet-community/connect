@@ -38,6 +38,13 @@ export interface WireguardClientConfig {
 
 // OpenVPN
 
+export interface OpenVpnClientCertificates {
+  ClientCertificateName?: string;
+  CaCertificateName?: string;
+  CaCertificateContent?: string;
+  ClientCertificateContent?: string;
+  ClientKeyContent?: string;
+}
 
 export interface OpenVpnClientConfig {
     Server: Server;
@@ -48,8 +55,7 @@ export interface OpenVpnClientConfig {
     Auth: 'md5' | 'sha1' | 'null' | 'sha256' | 'sha512';
     Cipher?: 'null' | 'aes128-cbc' | 'aes128-gcm' | 'aes192-cbc' | 'aes192-gcm' | 'aes256-cbc' | 'aes256-gcm' | 'blowfish128';
     TlsVersion?: TLSVersion;
-    ClientCertificateName?: string;
-    CaCertificateName?: string;
+    Certificates?: OpenVpnClientCertificates;
     VerifyServerCertificate?: boolean;
     RouteNoPull?: boolean;
   }

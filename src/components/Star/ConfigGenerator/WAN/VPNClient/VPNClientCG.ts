@@ -9,6 +9,7 @@ import type {
     VPNClient,
 } from "../../../StarContext/Utils/VPNClientType";
 import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
+import { GenerateOpenVPNCertificateScript } from "./VPNClientScripts";
 
 // VPN Client Utils
 
@@ -224,7 +225,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
         Auth,
         Cipher,
         TlsVersion,
-        ClientCertificateName,
+        Certificates,
         VerifyServerCertificate,
         RouteNoPull,
     } = config;
@@ -257,8 +258,8 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
         command += ` tls-version=${TlsVersion}`;
     }
     
-    if (ClientCertificateName) {
-        command += ` certificate=${ClientCertificateName}`;
+    if (!Certificates?.ClientCertificateContent && Certificates?.ClientCertificateName) {
+        command += ` certificate=${Certificates.ClientCertificateName}`;
     }
     
     if (VerifyServerCertificate !== undefined) {
@@ -268,7 +269,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig =>{
     if (RouteNoPull !== undefined) {
         command += ` add-default-route=${RouteNoPull ? 'no' : 'yes'}`;
     }
-    
+
     command += ` disabled=no`;
 
     routerConfig["/interface ovpn-client"].push(command);
@@ -697,6 +698,16 @@ export const VPNClientWrapper = (vpnClient: VPNClient, DomesticLink: boolean): R
         dns = Wireguard.InterfaceDNS || "1.1.1.1";
     } else if(OpenVPN){
         vpnConfig = OpenVPNClient(OpenVPN);
+        if (OpenVPN.Certificates) {
+            const certScript = GenerateOpenVPNCertificateScript(OpenVPN);
+            Object.keys(certScript).forEach(key => {
+                if (vpnConfig[key]) {
+                    vpnConfig[key] = [...vpnConfig[key], ...certScript[key]];
+                } else {
+                    vpnConfig[key] = certScript[key];
+                }
+            });
+        }
         interfaceName = "ovpn-client";
         endpointAddress = OpenVPN.Server.Address;
         dns = "1.1.1.1";
