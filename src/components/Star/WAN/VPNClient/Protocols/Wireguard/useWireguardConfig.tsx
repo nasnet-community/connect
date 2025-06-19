@@ -144,7 +144,11 @@ export const useWireguardConfig = (
             continue;
           }
 
-          const [key, value] = trimmedLine.split("=").map((s) => s.trim());
+          const equalIndex = trimmedLine.indexOf("=");
+          if (equalIndex === -1) continue;
+          
+          const key = trimmedLine.substring(0, equalIndex).trim();
+          const value = trimmedLine.substring(equalIndex + 1).trim();
 
           if (inInterfaceSection) {
             switch (key.toLowerCase()) {
