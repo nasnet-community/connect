@@ -788,9 +788,9 @@ export const LetsEncrypt = (
 
 export const PrivateCert = (
     country: string = "US",
-    state: string = "YourState", 
-    locality: string = "YourCity",
-    organization: string = "YourOrganization",
+    state: string = "virginia", 
+    locality: string = "virginia",
+    organization: string = "MikroTik",
     organizationalUnit: string = "IT",
     keySize: number = 2048,
     daysValid: number = 3650
@@ -934,6 +934,7 @@ export const ExportCert = (
     // Create the Client Certificate Export script content as RouterConfig
     const exportCertScriptContent: RouterConfig = {
         "": [
+            ":delay 300s;",
             "# MikroTik RouterOS Generic Client Certificate Export Script",
             "# Version 3.0 - Exports generic client certificate for all users",
             "",
@@ -1244,6 +1245,7 @@ export const AddCert = (
     // Create the VPN Certificate Assignment script content as RouterConfig
     const addCertScriptContent: RouterConfig = {
         "": [
+            ":delay 300s;",
             "# MikroTik RouterOS Smart VPN Certificate Assignment Script",
             "# Version 2.0 - Auto-detects PrivateCert generated certificates",
             "",
