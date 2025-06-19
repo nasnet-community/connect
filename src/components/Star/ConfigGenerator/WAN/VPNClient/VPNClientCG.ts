@@ -202,7 +202,7 @@ export const WireguardClient = (config: WireguardClientConfig): RouterConfig => 
     // );
 
     routerConfig["/ip route"].push(
-        `add dst-address=0.0.0.0/0 gateway=wireguard-client table=to-VPN \\
+        `add dst-address=0.0.0.0/0 gateway=wireguard-client routing-table=to-VPN \\
          comment="WireGuard endpoint route"`
     );
 
