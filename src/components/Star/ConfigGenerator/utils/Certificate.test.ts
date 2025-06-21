@@ -234,33 +234,26 @@ describe('Certificate Functions', () => {
       
       validateRouterConfig(result, ['/system script', '/system scheduler']);
       expect(SConfigGenerator(result)).toContain('Private-Cert-Setup');
-      expect(SConfigGenerator(result)).toContain('US');
       expect(SConfigGenerator(result)).toContain('2048');
+      expect(SConfigGenerator(result)).toContain('3650');
     });
 
     it('should generate private certificate setup with custom parameters', () => {
-      const country = 'CA';
-      const state = 'Ontario';
-      const locality = 'Toronto';
-      const organization = 'TestCorp';
-      const organizationalUnit = 'Security';
       const keySize = 4096;
       const daysValid = 7300;
-      const inputs = { country, state, locality, organization, organizationalUnit, keySize, daysValid };
+      const inputs = { keySize, daysValid };
       const result = testWithOutput(
         'PrivateCert',
         'Custom private certificate setup',
         inputs,
-        () => PrivateCert(country, state, locality, organization, organizationalUnit, keySize, daysValid)
+        () => PrivateCert(keySize, daysValid)
       );
       
       validateRouterConfig(result, ['/system script', '/system scheduler']);
-      expect(SConfigGenerator(result)).toContain(country);
-      expect(SConfigGenerator(result)).toContain(state);
-      expect(SConfigGenerator(result)).toContain(locality);
-      expect(SConfigGenerator(result)).toContain(organization);
       expect(SConfigGenerator(result)).toContain(keySize.toString());
       expect(SConfigGenerator(result)).toContain(daysValid.toString());
+      expect(SConfigGenerator(result)).toContain('Private-Cert-Setup');
+      expect(SConfigGenerator(result)).toContain('Simplified based on MikroTik documentation best practices');
     });
   });
 
@@ -554,11 +547,6 @@ describe('Certificate Functions', () => {
         certNameToRenew: 'CustomCompanyCert',
         daysBeforeExpiryToRenew: 15,
         renewalStartTime: '01:30:00',
-        country: 'CA',
-        state: 'Ontario',
-        locality: 'Toronto',
-        organization: 'CustomOrg',
-        organizationalUnit: 'Security',
         keySize: 4096,
         daysValid: 7300,
         certPassword: 'SecurePass123',
@@ -583,11 +571,6 @@ describe('Certificate Functions', () => {
       expect(configString).toContain('CustomCompanyCert');
       expect(configString).toContain('15');
       expect(configString).toContain('01:30:00');
-      expect(configString).toContain('CA');
-      expect(configString).toContain('Ontario');
-      expect(configString).toContain('Toronto');
-      expect(configString).toContain('CustomOrg');
-      expect(configString).toContain('Security');
       expect(configString).toContain('4096');
       expect(configString).toContain('7300');
       expect(configString).toContain('SecurePass123');
@@ -598,7 +581,6 @@ describe('Certificate Functions', () => {
     it('should generate configuration with partial custom parameters', () => {
       const config: AllCertConfig = {
         certNameToRenew: 'PartialCert',
-        country: 'UK',
         keySize: 4096,
         checkServerCert: true
       };
@@ -617,7 +599,6 @@ describe('Certificate Functions', () => {
       
       // Verify partial custom parameters and defaults
       expect(configString).toContain('PartialCert');
-      expect(configString).toContain('UK');
       expect(configString).toContain('4096');
       expect(configString).toContain('checkServerCert "yes"');
       // Verify defaults are still used
@@ -708,7 +689,7 @@ describe('Certificate Functions', () => {
         SConfigGenerator(completeResult).includes('Renewal-LetsEncrypt'));
       
       // Test PrivateCert
-      const privateResult = PrivateCert('US', 'CA', 'SF', 'TestOrg');
+      const privateResult = PrivateCert(4096, 7300);
       console.log('\n📤 Function Output: PrivateCert');
       console.log('Contains Private-Cert-Setup:', SConfigGenerator(privateResult).includes('Private-Cert-Setup'));
       
@@ -760,9 +741,7 @@ describe('Certificate Functions', () => {
           const enterpriseConfig = AllCert({
             certNameToRenew: 'Enterprise-Cert',
             keySize: 4096,
-            daysValid: 3650,
-            country: 'US',
-            organization: 'Enterprise Corp'
+            daysValid: 3650
           });
           const vpnConfig = AllCert({
             certPassword: 'VPNPass123',

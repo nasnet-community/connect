@@ -16,7 +16,7 @@ import {
   AReboot,
   AUpdate,
   Game,
-  Certificate,
+  // Certificate,
   Clock,
   NTP,
   Graph,
@@ -357,33 +357,33 @@ describe('ExtraCG Module', () => {
   });
 
   describe('Certificate', () => {
-    it('should configure certificate download when enabled', () => {
-      const result = testWithOutput(
-        'Certificate',
-        'Configure certificate download when enabled',
-        { enabled: true },
-        () => Certificate(true)
-      );
+    // it('should configure certificate download when enabled', () => {
+    //   const result = testWithOutput(
+    //     'Certificate',
+    //     'Configure certificate download when enabled',
+    //     { enabled: true },
+    //     () => Certificate(true)
+    //   );
       
-      validateRouterConfig(result, ['/system script', '/system scheduler']);
-      expect(result['/system script']).toHaveLength(1);
-      expect(result['/system scheduler']).toHaveLength(1);
-      expect(result['/system script'][0]).toContain('Certificate-Script');
-      expect(result['/system script'][0]).toContain('DigiCertGlobalRootCA.crt.pem');
-    });
+    //   validateRouterConfig(result, ['/system script', '/system scheduler']);
+    //   expect(result['/system script']).toHaveLength(1);
+    //   expect(result['/system scheduler']).toHaveLength(1);
+    //   expect(result['/system script'][0]).toContain('Certificate-Script');
+    //   expect(result['/system script'][0]).toContain('DigiCertGlobalRootCA.crt.pem');
+    // });
 
-    it('should return empty config when disabled', () => {
-      const result = testWithOutput(
-        'Certificate',
-        'Return empty config when certificate download disabled',
-        { enabled: false },
-        () => Certificate(false)
-      );
+    // it('should return empty config when disabled', () => {
+    //   const result = testWithOutput(
+    //     'Certificate',
+    //     'Return empty config when certificate download disabled',
+    //     { enabled: false },
+    //     () => Certificate(false)
+    //   );
       
-      validateRouterConfig(result);
-      expect(result['/system script']).toHaveLength(0);
-      expect(result['/system scheduler']).toHaveLength(0);
-    });
+    //   validateRouterConfig(result);
+    //   expect(result['/system script']).toHaveLength(0);
+    //   expect(result['/system scheduler']).toHaveLength(0);
+    // });
   });
 
   describe('Clock', () => {

@@ -274,9 +274,82 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
     return CommandShortner(config);
 }
 
+// Function to generate inbound traffic marking rules for tunnel protocols
+export const InboundTraffic = (tunnel: Tunnel): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall mangle": []
+    };
+
+    if (!tunnel) {
+        return config;
+    }
+
+    // Add comment header
+    config["/ip firewall mangle"].push(
+        "# --- Tunnel Server Inbound Traffic Marking ---",
+        "# Mark inbound tunnel connections and route outbound replies"
+    );
+
+    // Check for IPIP tunnels - single rule for all IPIP tunnels (protocol-based)
+    if (tunnel.IPIP && tunnel.IPIP.length > 0) {
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound IPIP Tunnel Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=ipip \\
+                new-connection-mark=conn-tunnel-server passthrough=yes`
+        );
+    }
+
+    // Check for GRE/EoIP tunnels - single rule for all GRE/EoIP tunnels (protocol-based)
+    if ((tunnel.Eoip && tunnel.Eoip.length > 0) || (tunnel.Gre && tunnel.Gre.length > 0)) {
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound GRE/EoIP Tunnel Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=gre \\
+                new-connection-mark=conn-tunnel-server passthrough=yes`
+        );
+    }
+
+    // Check for VXLAN tunnels (can have multiple instances with different ports)
+    if (tunnel.Vxlan && tunnel.Vxlan.length > 0) {
+        tunnel.Vxlan.forEach((vxlanConfig) => {
+            const port = vxlanConfig.port || 4789; // Default VXLAN port
+            const interfaceName = vxlanConfig.name;
+            const vni = vxlanConfig.vni;
+            
+            config["/ip firewall mangle"].push(
+                `add action=mark-connection chain=input comment="Mark Inbound VXLAN Tunnel Connections (${interfaceName}, VNI ${vni}, Port ${port})" \\
+                    connection-state=new in-interface-list=DOM-WAN protocol=udp dst-port=${port} \\
+                    new-connection-mark=conn-tunnel-server passthrough=yes`
+            );
+        });
+    }
+
+    // Add routing rule for outbound tunnel replies (only if we have any tunnels configured)
+    const hasTunnels = (tunnel.IPIP && tunnel.IPIP.length > 0) ||
+                      (tunnel.Eoip && tunnel.Eoip.length > 0) ||
+                      (tunnel.Gre && tunnel.Gre.length > 0) ||
+                      (tunnel.Vxlan && tunnel.Vxlan.length > 0);
+
+    if (hasTunnels) {
+        config["/ip firewall mangle"].push(
+            "",
+            "# --- Route Outbound Tunnel Replies ---",
+            `add action=mark-routing chain=output comment="Route Tunnel Server Replies via Domestic WAN" \\
+                connection-mark=conn-tunnel-server new-routing-mark=to-DOM passthrough=no`
+        );
+    }
+
+    return config;
+};
+
 // Utility function to process a single tunnel object
 export const TunnelWrapper = (tunnel: Tunnel): RouterConfig => {
     const configs: RouterConfig[] = [];
+
+    // Add Inbound Traffic Marking rules for tunnel protocols
+    const inboundTrafficConfig = InboundTraffic(tunnel);
+    if (inboundTrafficConfig["/ip firewall mangle"] && inboundTrafficConfig["/ip firewall mangle"].length > 0) {
+        configs.push(inboundTrafficConfig);
+    }
 
     // Process IPIP tunnels
     if (tunnel.IPIP && tunnel.IPIP.length > 0) {

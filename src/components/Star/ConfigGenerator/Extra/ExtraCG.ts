@@ -200,46 +200,46 @@ export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig =>
   return config;
 };
 
-export const Certificate = (isCertificate: boolean): RouterConfig => {
-  const config: RouterConfig = {
-    "/system script": [],
-    "/system scheduler": [],
-  };
+// export const Certificate = (isCertificate: boolean): RouterConfig => {
+//   const config: RouterConfig = {
+//     "/system script": [],
+//     "/system scheduler": [],
+//   };
 
 
-  if (!isCertificate) {
-    return config;
-  }
+//   if (!isCertificate) {
+//     return config;
+//   }
 
-  const scriptContent = `":delay 00:00:30 \\r\\n /tool \\r\\
-    \\nfetch url=https://cacerts.digicert.com/DigiCertGlobalRootCA.crt.pem \\r\\
-    \\n\\r\\
-    \\n:delay 60\\r\\
-    \\n\\r\\
-    \\n/certificate import file-name=DigiCertGlobalRootCA.crt.pem\\r\\
-    \\n\\r\\
-    \\n:delay 30\\r\\
-    \\n\\r\\
-    \\n/tool fetch url=https://curl.se/ca/cacert.pem \\r\\
-    \\n\\r\\
-    \\n:delay 60\\r\\
-    \\n\\r\\
-    \\n/certificate import file-name=cacert.pem\\r\\
-    \\n\\r\\
-    \\n /system schedule remove [find name=Certificate-Script ] \\r\\n"`;
+//   const scriptContent = `":delay 00:00:30 \\r\\n /tool \\r\\
+//     \\nfetch url=https://cacerts.digicert.com/DigiCertGlobalRootCA.crt.pem \\r\\
+//     \\n\\r\\
+//     \\n:delay 60\\r\\
+//     \\n\\r\\
+//     \\n/certificate import file-name=DigiCertGlobalRootCA.crt.pem\\r\\
+//     \\n\\r\\
+//     \\n:delay 30\\r\\
+//     \\n\\r\\
+//     \\n/tool fetch url=https://curl.se/ca/cacert.pem \\r\\
+//     \\n\\r\\
+//     \\n:delay 60\\r\\
+//     \\n\\r\\
+//     \\n/certificate import file-name=cacert.pem\\r\\
+//     \\n\\r\\
+//     \\n /system schedule remove [find name=Certificate-Script ] \\r\\n"`;
 
-  config["/system script"].push(
-    `add dont-require-permissions=yes name=Certificate-Script owner=admin\\
-         policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source=${scriptContent}`,
-  );
+//   config["/system script"].push(
+//     `add dont-require-permissions=yes name=Certificate-Script owner=admin\\
+//          policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source=${scriptContent}`,
+//   );
 
-  config["/system scheduler"].push(
-    `add interval=00:00:00 name=Certificate-Script on-event="/system script run Certificate-Script" policy=\\
-    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup`,
-  );
+//   config["/system scheduler"].push(
+//     `add interval=00:00:00 name=Certificate-Script on-event="/system script run Certificate-Script" policy=\\
+//     ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup`,
+//   );
 
-  return config;
-};
+//   return config;
+// };
 
 export const Clock = (): RouterConfig => {
 
@@ -327,6 +327,20 @@ export const Firewall = (): RouterConfig => {
 export const DDNS = (): RouterConfig => {
   const config: RouterConfig = {
     "/ip cloud": ["set ddns-enabled=yes ddns-update-interval=1m"],
+    "/ip firewall address-list": [
+      `add list=MikroTik-Cloud-Services address=cloud2.mikrotik.com \\
+       comment="Dynamic list for MikroTik Cloud DDNS"`,
+      `add list=MikroTik-Cloud-Services address=cloud.mikrotik.com \\
+       comment="Legacy endpoint for completeness"`,
+    ],
+    "/ip firewall mangle": [
+      `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
+       new-routing-mark=to-DOM passthrough=no \\
+       comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
+      `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
+       protocol=udp dst-port=15252 new-routing-mark=to-DOM passthrough=no \\
+       comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
+    ],
   }
 
   return config
@@ -341,7 +355,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
     Graph(),
     update(),
     DDNS(),
-    PublicCert(),
+    // PublicCert(),
   ];
 
   // Add conditional configurations
@@ -370,7 +384,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
   }
 
   if (ExtraConfigState.isCertificate !== undefined) {
-    configs.push(Certificate(ExtraConfigState.isCertificate));
+    configs.push(PublicCert(ExtraConfigState.isCertificate));
   }
 
   return mergeMultipleConfigs(...configs);

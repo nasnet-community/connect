@@ -368,6 +368,128 @@ export const getVPNUsersForProtocol = (state: StarState, protocol: string): Cred
     );
 };
 
+// Function to generate inbound traffic marking rules for VPN server
+export const InboundTraffic = (vpnServer: VPNServer): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall mangle": []
+    };
+
+    if (!vpnServer) {
+        return config;
+    }
+
+    // Add comment header
+    config["/ip firewall mangle"].push(
+        "# --- VPN Server Inbound Traffic Marking ---",
+        "# Mark inbound VPN connections and route outbound replies"
+    );
+
+    // Check for OpenVPN Server(s) - handle both single and potential multiple servers
+    if (vpnServer.OpenVpnServer) {
+        const openVpnServers = Array.isArray(vpnServer.OpenVpnServer) 
+            ? vpnServer.OpenVpnServer 
+            : [vpnServer.OpenVpnServer];
+        
+        openVpnServers.forEach((openVpnConfig) => {
+            const port = openVpnConfig.Port || 1194;
+            const protocol = openVpnConfig.Protocol || 'udp';
+            const serverName = openVpnConfig.name || 'OpenVPN';
+            
+            config["/ip firewall mangle"].push(
+                `add action=mark-connection chain=input comment="Mark Inbound OpenVPN Connections (${serverName})" \\
+                    connection-state=new in-interface-list=DOM-WAN protocol=${protocol} dst-port=${port} \\
+                    new-connection-mark=conn-vpn-server passthrough=yes`
+            );
+        });
+    }
+
+    // Check for SSTP Server
+    if (vpnServer.SstpServer) {
+        const port = vpnServer.SstpServer.Port || 443;
+        
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound SSTP Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=tcp dst-port=${port} \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+    }
+
+    // Check for PPTP Server
+    if (vpnServer.PptpServer) {
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=tcp dst-port=1723 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+    }
+
+    // Check for L2TP Server
+    if (vpnServer.L2tpServer) {
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound L2TP Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=udp dst-port=1701 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+    }
+
+    // Check for WireGuard Servers - already handles multiple servers
+    if (vpnServer.WireguardServers && vpnServer.WireguardServers.length > 0) {
+        vpnServer.WireguardServers.forEach((wireguardConfig) => {
+            const port = wireguardConfig.Interface.ListenPort || 13231;
+            const interfaceName = wireguardConfig.Interface.Name;
+            
+            config["/ip firewall mangle"].push(
+                `add action=mark-connection chain=input comment="Mark Inbound WireGuard Connections (${interfaceName})" \\
+                    connection-state=new in-interface-list=DOM-WAN protocol=udp dst-port=${port} \\
+                    new-connection-mark=conn-vpn-server passthrough=yes`
+            );
+        });
+    }
+
+    // Check for IKEv2/IPsec Server
+    if (vpnServer.Ikev2Server) {
+        // IKE main mode (UDP/500)
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound IPsec/IKE Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=udp dst-port=500 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+
+        // IKE NAT-T (UDP/4500)
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound IPsec/IKE NAT-T Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=udp dst-port=4500 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+
+        // IPsec ESP (protocol 50)
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound IPsec ESP Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=ipsec-esp \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+
+        // IPsec AH (protocol 51)
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound IPsec AH Connections" \\
+                connection-state=new in-interface-list=DOM-WAN protocol=ipsec-ah \\
+                new-connection-mark=conn-vpn-server passthrough=yes`
+        );
+    }
+
+    // Add routing rule for outbound VPN replies
+    if (config["/ip firewall mangle"].length > 2) { // More than just comments
+        config["/ip firewall mangle"].push(
+            "",
+            "# Route outbound VPN server replies via Domestic WAN",
+            `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
+                connection-mark=conn-vpn-server new-routing-mark=to-DOM passthrough=no`
+        );
+    }
+
+    return config;
+};
+
 
 
 

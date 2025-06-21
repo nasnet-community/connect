@@ -26,6 +26,7 @@ import {
     Ikev2ServerUsers,
     VPNServerCertificate
 } from "./VPNServerUsers";
+import { InboundTraffic } from "./VPNServerUtil";
 import { mergeRouterConfigs, CommandShortner } from "../../utils/ConfigGeneratorUtil";
 
 
@@ -276,6 +277,10 @@ export const VPNServerWrapper = (
     // Add VPN Server Certificate configuration first (required for certificate-based VPNs)
     console.log('Generating VPN Server Certificate configuration');
     addConfig(VPNServerCertificate(vpnServer));
+
+    // Add Inbound Traffic Marking rules for VPN server protocols
+    console.log('Generating VPN Inbound Traffic Marking rules');
+    addConfig(InboundTraffic(vpnServer));
 
     // Generate WireGuard Server configurations
     if (vpnServer.WireguardServers && vpnServer.WireguardServers.length > 0) {
