@@ -51,6 +51,15 @@ export const useVPNServer = () => {
     track(() => passphraseValue.value);
     track(() => users);
     
+    // Track changes to OpenVPN certificate passphrase in StarContext
+    track(() => starContext.state.LAN.VPNServer?.OpenVpnServer?.Certificate?.CertificateKeyPassphrase);
+    
+    // Update local passphraseValue when StarContext changes
+    const currentPassphrase = starContext.state.LAN.VPNServer?.OpenVpnServer?.Certificate?.CertificateKeyPassphrase;
+    if (currentPassphrase !== undefined && currentPassphrase !== passphraseValue.value) {
+      passphraseValue.value = currentPassphrase;
+    }
+    
     if (!vpnServerEnabled.value) {
       isValid.value = true;
       return;
@@ -202,10 +211,18 @@ export const useVPNServer = () => {
                   Certificate: { Certificate: "default", RequireClientCertificate: false, CertificateKeyPassphrase: "" },
                   Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "" }
                 }),
-                Certificate: {
-                  ...((vpnServerState.OpenVpnServer?.Certificate || { Certificate: "default", RequireClientCertificate: false, CertificateKeyPassphrase: "" })),
-                  CertificateKeyPassphrase: passphraseValue.value,
-                }
+                // Preserve existing certificate configuration to avoid overriding user input
+                Certificate: vpnServerState.OpenVpnServer?.Certificate 
+                  ? {
+                      ...vpnServerState.OpenVpnServer.Certificate,
+                      // Only override passphrase if local value is different and not empty
+                      CertificateKeyPassphrase: passphraseValue.value || vpnServerState.OpenVpnServer.Certificate.CertificateKeyPassphrase || "",
+                    }
+                  : {
+                      Certificate: "default",
+                      RequireClientCertificate: false,
+                      CertificateKeyPassphrase: passphraseValue.value,
+                    }
               } 
             : undefined,
             

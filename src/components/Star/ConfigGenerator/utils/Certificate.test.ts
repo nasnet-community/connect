@@ -12,6 +12,7 @@ import {
   DiagnosticLetsEncrypt,
   SimpleLetsEncryptRenewal,
   DiagnosticLetsEncryptAdvanced,
+  ExportOpenVPN,
   type AllCertConfig
 } from './Certificate';
 import { SConfigGenerator } from './ConfigGeneratorUtil';
@@ -219,6 +220,56 @@ describe('Certificate Functions', () => {
       expect(SConfigGenerator(result)).toContain(certName);
       expect(SConfigGenerator(result)).toContain('Certificate Name: ' + certName);
       expect(SConfigGenerator(result)).toContain('Renewal Threshold: ' + daysBeforeExpiry);
+    });
+  });
+
+  describe('ExportOpenVPN', () => {
+    it('should generate OpenVPN client configuration export script with default parameters', () => {
+      const inputs = {};
+      const result = testWithOutput(
+        'ExportOpenVPN',
+        'Default OpenVPN client configuration export',
+        inputs,
+        () => ExportOpenVPN()
+      );
+      
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+      expect(SConfigGenerator(result)).toContain('Export-OpenVPN-Config');
+      expect(SConfigGenerator(result)).toContain('vpn-client');
+      expect(SConfigGenerator(result)).toContain('1194');
+      expect(SConfigGenerator(result)).toContain('udp');
+    });
+
+    it('should generate OpenVPN export script with simplified configuration', () => {
+      const inputs = {};
+      const result = testWithOutput(
+        'ExportOpenVPN',
+        'Simplified OpenVPN configuration export',
+        inputs,
+        () => ExportOpenVPN()
+      );
+      
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+      expect(SConfigGenerator(result)).toContain('Export-OpenVPN-Config');
+      expect(SConfigGenerator(result)).toContain('Version 2.0 - Uses ExportCert certificates');
+      expect(SConfigGenerator(result)).toContain('Uses certificates exported by ExportCert function');
+    });
+
+    it('should include DDNS detection and certificate integration', () => {
+      const inputs = {};
+      const result = testWithOutput(
+        'ExportOpenVPN',
+        'DDNS and certificate integration verification',
+        inputs,
+        () => ExportOpenVPN()
+      );
+      
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+      const output = SConfigGenerator(result);
+      expect(output).toContain('cloud');
+      expect(output).toContain('certificate');
+      expect(output).toContain('PrivateCert');
+      expect(output).toContain('export-client-configuration');
     });
   });
 
@@ -606,12 +657,46 @@ describe('Certificate Functions', () => {
       expect(configString).toContain('client-cert-password'); // default cert password
     });
 
+    it('should generate complete certificate management with custom configuration', () => {
+      const config: AllCertConfig = {
+        wanInterfaceName: 'ether1',
+        certNameToRenew: 'MikroTik-LE-Cert',
+        keySize: 4096,
+        daysValid: 7300,
+        certPassword: 'custom-cert-password',
+        targetCertificateName: 'Custom-VPN-Cert'
+      };
+      
+      const inputs = config;
+      const result = testWithOutput(
+        'AllCert',
+        'Complete certificate management with custom configuration',
+        inputs,
+        () => AllCert(config)
+      );
+      
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+      
+      const configString = SConfigGenerator(result);
+      
+      // Verify custom parameters are applied
+      expect(configString).toContain('4096');
+      expect(configString).toContain('7300');
+      expect(configString).toContain('custom-cert-password');
+      expect(configString).toContain('Export-OpenVPN-Config');
+      
+      // Verify all other components are still present
+      expect(configString).toContain('CGNAT-Check');
+      expect(configString).toContain('Private-Cert-Setup');
+      expect(configString).toContain('Add-VPN-Cert');
+    });
+
     it('should include comprehensive documentation and comments', () => {
       const result = AllCert();
       const configString = SConfigGenerator(result);
       
       // Check for documentation sections
-      expect(configString).toContain('Complete Certificate Management Configuration Bundle');
+      expect(configString).toContain('Complete Certificate Management Configuration Bundle with OpenVPN');
       expect(configString).toContain('Configuration Parameters:');
       expect(configString).toContain('Scripts and Schedulers Created:');
       expect(configString).toContain('Usage:');
@@ -621,6 +706,8 @@ describe('Certificate Functions', () => {
       expect(configString).toContain('Certificate Export for VPN Users');
       expect(configString).toContain('Public Certificate Authority Updates');
       expect(configString).toContain('VPN Certificate Assignment');
+      expect(configString).toContain('OpenVPN Client Configuration Export with DDNS Integration');
+      expect(configString).toContain('Export-OpenVPN-Config');
     });
 
     it('should validate all individual components are present', () => {
