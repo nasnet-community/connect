@@ -495,7 +495,7 @@ export const ExportOpenVPN = (): RouterConfig => {
     // Create the OpenVPN Client Configuration Export script content as RouterConfig
     const exportOpenVPNScriptContent: RouterConfig = {
         "": [
-            ":delay 30s;",
+            ":delay 130s;",
             "# MikroTik RouterOS OpenVPN Client Configuration Export Script",
             "# Simplified version - exports .ovpn configuration files for OpenVPN clients",
             "",
