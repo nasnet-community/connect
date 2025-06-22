@@ -105,7 +105,7 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
         name,
         enabled = true,
         Port = 1194,
-        Protocol = 'udp',
+        Protocol = 'tcp',
         Mode = 'ip',
         Certificate,
         Encryption,
