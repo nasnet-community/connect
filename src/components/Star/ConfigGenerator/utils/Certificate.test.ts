@@ -12,7 +12,6 @@ import {
   DiagnosticLetsEncrypt,
   SimpleLetsEncryptRenewal,
   DiagnosticLetsEncryptAdvanced,
-  ExportOpenVPN,
   type AllCertConfig
 } from './Certificate';
 import { SConfigGenerator } from './ConfigGeneratorUtil';
@@ -220,56 +219,6 @@ describe('Certificate Functions', () => {
       expect(SConfigGenerator(result)).toContain(certName);
       expect(SConfigGenerator(result)).toContain('Certificate Name: ' + certName);
       expect(SConfigGenerator(result)).toContain('Renewal Threshold: ' + daysBeforeExpiry);
-    });
-  });
-
-  describe('ExportOpenVPN', () => {
-    it('should generate OpenVPN client configuration export script with default parameters', () => {
-      const inputs = {};
-      const result = testWithOutput(
-        'ExportOpenVPN',
-        'Default OpenVPN client configuration export',
-        inputs,
-        () => ExportOpenVPN()
-      );
-      
-      validateRouterConfig(result, ['/system script', '/system scheduler']);
-      expect(SConfigGenerator(result)).toContain('Export-OpenVPN-Config');
-      expect(SConfigGenerator(result)).toContain('vpn-client');
-      expect(SConfigGenerator(result)).toContain('1194');
-      expect(SConfigGenerator(result)).toContain('udp');
-    });
-
-    it('should generate OpenVPN export script with simplified configuration', () => {
-      const inputs = {};
-      const result = testWithOutput(
-        'ExportOpenVPN',
-        'Simplified OpenVPN configuration export',
-        inputs,
-        () => ExportOpenVPN()
-      );
-      
-      validateRouterConfig(result, ['/system script', '/system scheduler']);
-      expect(SConfigGenerator(result)).toContain('Export-OpenVPN-Config');
-      expect(SConfigGenerator(result)).toContain('Version 2.0 - Uses ExportCert certificates');
-      expect(SConfigGenerator(result)).toContain('Uses certificates exported by ExportCert function');
-    });
-
-    it('should include DDNS detection and certificate integration', () => {
-      const inputs = {};
-      const result = testWithOutput(
-        'ExportOpenVPN',
-        'DDNS and certificate integration verification',
-        inputs,
-        () => ExportOpenVPN()
-      );
-      
-      validateRouterConfig(result, ['/system script', '/system scheduler']);
-      const output = SConfigGenerator(result);
-      expect(output).toContain('cloud');
-      expect(output).toContain('certificate');
-      expect(output).toContain('PrivateCert');
-      expect(output).toContain('export-client-configuration');
     });
   });
 

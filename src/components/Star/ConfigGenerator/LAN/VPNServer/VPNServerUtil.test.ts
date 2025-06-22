@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
+import { testWithOutput, validateRouterConfig, testWithGenericOutput } from '../../../../../test-utils/test-helpers';
 import { 
   generateVPNFirewallRules,
   generateVPNAddressLists,
   generateVPNInterfaceLists,
   generateVPNServerNetworkConfig,
   formatArrayValue,
-  formatBooleanValue
+  formatBooleanValue,
+  ExportOpenVPN
 } from './VPNServerUtil';
 import type { 
   VPNFirewallRule,
@@ -301,6 +303,84 @@ describe('VPN Server Utility Functions Tests', () => {
       const addressCommands = result['/ip firewall address-list'] || [];
       expect(addressCommands.some((cmd: string) => cmd.includes('list=VPN-CLIENTS_2024'))).toBe(true);
       expect(addressCommands.some((cmd: string) => cmd.includes('list=PRIVATE-NETWORKS'))).toBe(true);
+    });
+  });
+
+  describe('OpenVPN Export Script', () => {
+    it('should generate simplified OpenVPN client configuration export script', () => {
+      testWithOutput(
+        'ExportOpenVPN',
+        'Generate simplified OpenVPN export script',
+        {},
+        () => ExportOpenVPN()
+      );
+
+      const result = ExportOpenVPN();
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      // Verify the script contains essential OpenVPN export functionality
+      const scriptCommands = result['/system script'] || [];
+      expect(scriptCommands.length).toBeGreaterThan(0);
+      
+      // Check that the script content includes key OpenVPN export features
+      const scriptContent = scriptCommands.join(' ');
+      expect(scriptContent).toContain('export-client-configuration');
+      expect(scriptContent).toContain('ddns-enabled=yes');
+      expect(scriptContent).toContain('ca_certificate.crt');
+      expect(scriptContent).toContain('client_bundle.crt');
+      expect(scriptContent).toContain('client_bundle.key');
+
+      // Verify scheduler is configured
+      const schedulerCommands = result['/system scheduler'] || [];
+      expect(schedulerCommands.length).toBeGreaterThan(0);
+      
+      const schedulerContent = schedulerCommands.join(' ');
+      expect(schedulerContent).toContain('Export-OpenVPN-Config');
+      expect(schedulerContent).toContain('startup');
+    });
+
+    it('should create a properly structured script with error handling', () => {
+      const result = ExportOpenVPN();
+      
+      // Verify RouterConfig structure
+      validateRouterConfig(result);
+      
+      // Check script contains error handling
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+      
+      expect(scriptContent).toContain(':do {');
+      expect(scriptContent).toContain('} on-error={');
+      expect(scriptContent).toContain(':log');
+      
+      // Verify it contains the main steps mentioned in the documentation
+      expect(scriptContent).toContain('OpenVPN server found');
+      expect(scriptContent).toContain('Cloud DDNS');
+      expect(scriptContent).toContain('Certificate files');
+      expect(scriptContent).toContain('Export Status');
+    });
+
+    it('should include proper troubleshooting instructions', () => {
+      const result = ExportOpenVPN();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+      
+      // Verify troubleshooting guidance is included
+      expect(scriptContent).toContain('Troubleshooting:');
+      expect(scriptContent).toContain('/interface ovpn-server server set disabled=no');
+      expect(scriptContent).toContain('Run ExportCert function');
+      expect(scriptContent).toContain('/interface ovpn-server server print detail');
+      expect(scriptContent).toContain('/certificate print detail');
+    });
+
+    it('should be compatible with RouterOS 7.17+ and older versions', () => {
+      const result = ExportOpenVPN();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+      
+      // Verify it includes both new and legacy export syntax
+      expect(scriptContent).toContain('server=$serverName server-address=');
+      expect(scriptContent).toContain('Fallback for older RouterOS versions');
     });
   });
 }); 

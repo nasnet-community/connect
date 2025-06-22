@@ -26,7 +26,7 @@ import {
     Ikev2ServerUsers,
     VPNServerCertificate
 } from "./VPNServerUsers";
-import { InboundTraffic } from "./VPNServerUtil";
+import { ExportOpenVPN, InboundTraffic } from "./VPNServerUtil";
 import { mergeRouterConfigs, CommandShortner } from "../../utils/ConfigGeneratorUtil";
 
 
@@ -81,6 +81,9 @@ export const OVPNServerWrapper = (
         configs.push(OVPNServerUsers(users));
     }
 
+    // Add OpenVPN client configuration export functionality
+    configs.push(ExportOpenVPN());
+
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
 
@@ -97,6 +100,7 @@ export const OVPNServerWrapper = (
         `# Port: ${serverConfig.Port || 1194}`,
         `# Protocol: ${serverConfig.Protocol || 'udp'}`,
         `# Users: ${ovpnUsers.length}`,
+        `# Client Config Export: Automated via Export-OpenVPN-Config script`,
         ""
     );
 
