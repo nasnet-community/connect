@@ -15,13 +15,13 @@ export const useVPNServer = () => {
   );
   
   const vpnServerEnabled = useSignal(true);
-  const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.Certificate?.CertificateKeyPassphrase || "");
+  const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase || "");
   const passphraseError = useSignal("");
   const isValid = useSignal(true);
   
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
-    OpenVPN: !!vpnServerState.OpenVpnServer?.enabled || false,
+    OpenVPN: !!vpnServerState.OpenVpnServer?.[0]?.enabled || false,
     PPTP: !!vpnServerState.PptpServer?.enabled || false,
     L2TP: !!vpnServerState.L2tpServer?.enabled || false,
     SSTP: !!vpnServerState.SstpServer?.enabled || false,
@@ -52,10 +52,10 @@ export const useVPNServer = () => {
     track(() => users);
     
     // Track changes to OpenVPN certificate passphrase in StarContext
-    track(() => starContext.state.LAN.VPNServer?.OpenVpnServer?.Certificate?.CertificateKeyPassphrase);
+    track(() => starContext.state.LAN.VPNServer?.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase);
     
     // Update local passphraseValue when StarContext changes
-    const currentPassphrase = starContext.state.LAN.VPNServer?.OpenVpnServer?.Certificate?.CertificateKeyPassphrase;
+    const currentPassphrase = starContext.state.LAN.VPNServer?.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase;
     if (currentPassphrase !== undefined && currentPassphrase !== passphraseValue.value) {
       passphraseValue.value = currentPassphrase;
     }
@@ -153,18 +153,18 @@ export const useVPNServer = () => {
           Users: validUsers,
           
           PptpServer: enabledProtocols.PPTP 
-            ? vpnServerState.PptpServer || { enabled: true, DefaultProfile: "default", Authentication: ["mschap2"], PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, KeepaliveTimeout: 30 } 
+            ? vpnServerState.PptpServer || { enabled: true, DefaultProfile: "pptp-profile", Authentication: ["mschap2"], PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, KeepaliveTimeout: 30 } 
             : undefined,
             
           L2tpServer: enabledProtocols.L2TP 
             ? vpnServerState.L2tpServer || { 
                 enabled: true, 
-                DefaultProfile: "default", 
+                DefaultProfile: "l2tp-profile", 
                 Authentication: ["mschap2"], 
                 PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
                 KeepaliveTimeout: 30,
-                IPsec: { UseIpsec: "yes", IpsecSecret: "" },
-                allowFastPath: false,
+                IPsec: { UseIpsec: "no", IpsecSecret: "" },
+                allowFastPath: true,
                 maxSessions: "unlimited",
                 OneSessionPerHost: false,
                 L2TPV3: { l2tpv3CircuitId: "", l2tpv3CookieLength: 0, l2tpv3DigestHash: "md5", l2tpv3EtherInterfaceList: "" },
@@ -177,11 +177,11 @@ export const useVPNServer = () => {
             ? vpnServerState.SstpServer || { 
                 enabled: true, 
                 Certificate: "default", 
-                DefaultProfile: "default", 
+                DefaultProfile: "sstp-profile", 
                 Authentication: ["mschap2"], 
                 PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
                 KeepaliveTimeout: 30,
-                Port: 443,
+                Port: 4443,
                 ForceAes: false,
                 Pfs: false,
                 Ciphers: "aes256-sha",
@@ -191,39 +191,64 @@ export const useVPNServer = () => {
             : undefined,
             
           OpenVpnServer: enabledProtocols.OpenVPN 
-            ? {
-                ...(vpnServerState.OpenVpnServer || { 
-                  name: "default", 
-                  enabled: true, 
-                  Port: 1194, 
-                  Protocol: "udp", 
-                  Mode: "ip",
-                  DefaultProfile: "default",
-                  Authentication: ["mschap2"],
-                  PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
-                  KeepaliveTimeout: 30,
-                  VRF: "",
-                  RedirectGetway: "def1",
-                  PushRoutes: "",
-                  RenegSec: 3600,
-                  Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
-                  IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
-                  Certificate: { Certificate: "default", RequireClientCertificate: false, CertificateKeyPassphrase: "" },
-                  Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "" }
-                }),
-                // Preserve existing certificate configuration to avoid overriding user input
-                Certificate: vpnServerState.OpenVpnServer?.Certificate 
-                  ? {
-                      ...vpnServerState.OpenVpnServer.Certificate,
-                      // Only override passphrase if local value is different and not empty
-                      CertificateKeyPassphrase: passphraseValue.value || vpnServerState.OpenVpnServer.Certificate.CertificateKeyPassphrase || "",
+            ? (vpnServerState.OpenVpnServer && vpnServerState.OpenVpnServer.length > 0
+                ? vpnServerState.OpenVpnServer.map((server) => ({
+                    ...server,
+                    // Preserve existing certificate configuration to avoid overriding user input
+                    Certificate: server.Certificate 
+                      ? {
+                          ...server.Certificate,
+                          // Only override passphrase if local value is different and not empty
+                          CertificateKeyPassphrase: passphraseValue.value || server.Certificate.CertificateKeyPassphrase || "",
+                        }
+                      : {
+                          Certificate: "server-cert",
+                          RequireClientCertificate: false,
+                          CertificateKeyPassphrase: passphraseValue.value,
+                        }
+                  }))
+                : [
+                    // UDP Server (Standard OpenVPN)
+                    {
+                      name: "openvpn-udp", 
+                      enabled: true, 
+                      Port: 1194, 
+                      Protocol: "udp", 
+                      Mode: "ip",
+                      DefaultProfile: "ovpn-profile",
+                      Authentication: ["mschap2"],
+                      PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
+                      KeepaliveTimeout: 30,
+                      VRF: "",
+                      RedirectGetway: "def1",
+                      PushRoutes: "",
+                      RenegSec: 3600,
+                      Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
+                      IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
+                      Certificate: { Certificate: "server-cert", RequireClientCertificate: false, CertificateKeyPassphrase: passphraseValue.value },
+                      Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "ovpn-pool" }
+                    },
+                    // TCP Server (Better firewall traversal)
+                    {
+                      name: "openvpn-tcp", 
+                      enabled: true, 
+                      Port: 1195, 
+                      Protocol: "tcp", 
+                      Mode: "ip",
+                      DefaultProfile: "ovpn-profile",
+                      Authentication: ["mschap2"],
+                      PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
+                      KeepaliveTimeout: 30,
+                      VRF: "",
+                      RedirectGetway: "def1",
+                      PushRoutes: "",
+                      RenegSec: 3600,
+                      Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
+                      IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
+                      Certificate: { Certificate: "server-cert", RequireClientCertificate: false, CertificateKeyPassphrase: passphraseValue.value },
+                      Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "ovpn-pool" }
                     }
-                  : {
-                      Certificate: "default",
-                      RequireClientCertificate: false,
-                      CertificateKeyPassphrase: passphraseValue.value,
-                    }
-              } 
+                  ])
             : undefined,
             
           Ikev2Server: enabledProtocols.IKeV2 
@@ -240,7 +265,19 @@ export const useVPNServer = () => {
             : undefined,
             
           WireguardServers: enabledProtocols.Wireguard 
-            ? vpnServerState.WireguardServers || [] 
+            ? (vpnServerState.WireguardServers && vpnServerState.WireguardServers.length > 0
+                ? vpnServerState.WireguardServers
+                : [{
+                    Interface: {
+                      Name: "wg-server",
+                      PrivateKey: "",
+                      PublicKey: "",
+                      InterfaceAddress: "192.168.110.1/24",
+                      ListenPort: 51820,
+                      Mtu: 1420
+                    },
+                    Peers: []
+                  }])
             : undefined,
         }
       });

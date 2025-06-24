@@ -538,7 +538,7 @@ export interface VPNServer {
     PptpServer?: PptpServerConfig;
     L2tpServer?: L2tpServerConfig;
     SstpServer?: SstpServerConfig;
-    OpenVpnServer?: OpenVpnServerConfig;
+    OpenVpnServer?: OpenVpnServerConfig[];
     Ikev2Server?: Ikev2ServerConfig;
     WireguardServers?: WireguardServerConfig[];
 }

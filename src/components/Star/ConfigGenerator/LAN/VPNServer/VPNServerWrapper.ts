@@ -1,6 +1,6 @@
 import type { RouterConfig } from "../../ConfigGenerator";
 import type {
-    WireguardInterfaceConfig,
+    WireguardServerConfig,
     OpenVpnServerConfig,
     PptpServerConfig,
     L2tpServerConfig,
@@ -24,26 +24,43 @@ import {
     L2tpServerUsers,
     SstpServerUsers,
     Ikev2ServerUsers,
-    VPNServerCertificate
+    VPNServerCertificate,
+    VPNServerBinding
 } from "./VPNServerUsers";
-import { ExportOpenVPN, InboundTraffic } from "./VPNServerUtil";
+import { ExportOpenVPN, ExportWireGuard, InboundTraffic } from "./VPNServerUtil";
 import { mergeRouterConfigs, CommandShortner } from "../../utils/ConfigGeneratorUtil";
 
 
 
 
 export const WireguardServerWrapper = (
-    interfaceConfig: WireguardInterfaceConfig,
+    wireguardConfigs: WireguardServerConfig[],
     users: Credentials[] = []
 ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Generate WireGuard interface configuration
-    configs.push(WireguardServer(interfaceConfig));
+    // Process each WireGuard server configuration
+    wireguardConfigs.forEach(wireguardConfig => {
+        if (wireguardConfig.Interface) {
+            // Generate WireGuard interface configuration
+            configs.push(WireguardServer(wireguardConfig.Interface));
 
-    // Generate WireGuard users configuration if users are provided
-    if (users.length > 0) {
-        configs.push(WireguardServerUsers(interfaceConfig, users));
+        }
+        // Generate WireGuard users configuration if users are provided
+        if (users.length > 0) {
+            configs.push(WireguardServerUsers(wireguardConfig.Interface, users));
+        }
+    });
+
+    // Add WireGuard client configuration export functionality (only once)
+    configs.push(ExportWireGuard());
+    
+
+    // If no configurations were generated, return empty config
+    if (configs.length === 0) {
+        return {
+            "": ["# No WireGuard server configurations provided"]
+        };
     }
 
     // Merge configurations
@@ -55,12 +72,17 @@ export const WireguardServerWrapper = (
     }
 
     const wireguardUsers = users.filter(user => user.VPNType.includes('Wireguard'));
+    const interfaceNames = wireguardConfigs
+        .filter(config => config.Interface)
+        .map(config => config.Interface!.Name)
+        .join(', ');
     
     finalConfig[""].unshift(
         "# WireGuard Server Configuration Summary:",
-        `# Interface: ${interfaceConfig.Name}`,
-        `# Listen Port: ${interfaceConfig.ListenPort || 13231}`,
+        `# Interfaces: ${interfaceNames}`,
+        `# Total Servers: ${wireguardConfigs.length}`,
         `# Users: ${wireguardUsers.length}`,
+        `# Client Config Export: Automated via Export-WireGuard-Simple script`,
         ""
     );
 
@@ -68,21 +90,48 @@ export const WireguardServerWrapper = (
 };
 
 export const OVPNServerWrapper = (
-    serverConfig: OpenVpnServerConfig,
+    serverConfigs: OpenVpnServerConfig[],
     users: Credentials[] = []
 ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Generate OpenVPN interface configuration
-    configs.push(OVPNServer(serverConfig));
+    // Create basic OpenVPN configuration (pool and profile)
+    const poolName = 'ovpn-pool';
+    const basicConfig: RouterConfig = {
+        "/ip pool": [
+            `add name=${poolName} ranges=192.168.60.5-192.168.60.250`
+        ],
+        "/ppp profile": [
+            `add name=ovpn-profile dns-server=1.1.1.1 local-address=192.168.60.1 remote-address=${poolName} use-encryption=yes`
+        ],
+        "/ip firewall address-list": [
+            'add address=192.168.60.0/24 list=VPN-LAN'
+        ]
+    };
+    configs.push(basicConfig);
+
+    // Process each OpenVPN server configuration
+    serverConfigs.forEach(serverConfig => {
+        // Generate OpenVPN interface configuration
+        configs.push(OVPNServer(serverConfig));
+    });
 
     // Generate OpenVPN users configuration if users are provided
     if (users.length > 0) {
         configs.push(OVPNServerUsers(users));
     }
 
-    // Add OpenVPN client configuration export functionality
-    configs.push(ExportOpenVPN());
+    // Add OpenVPN client configuration export functionality (only once)
+    if (configs.length > 0) {
+        configs.push(ExportOpenVPN());
+    }
+
+    // If no configurations were generated, return empty config
+    if (configs.length === 0) {
+        return {
+            "": ["# No OpenVPN server configurations provided"]
+        };
+    }
 
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
@@ -93,12 +142,12 @@ export const OVPNServerWrapper = (
     }
 
     const ovpnUsers = users.filter(user => user.VPNType.includes('OpenVPN'));
+    const serverNames = serverConfigs.map(config => config.name).join(', ');
     
     finalConfig[""].unshift(
         "# OpenVPN Server Configuration Summary:",
-        `# Server: ${serverConfig.name}`,
-        `# Port: ${serverConfig.Port || 1194}`,
-        `# Protocol: ${serverConfig.Protocol || 'udp'}`,
+        `# Servers: ${serverNames}`,
+        `# Total Servers: ${serverConfigs.length}`,
         `# Users: ${ovpnUsers.length}`,
         `# Client Config Export: Automated via Export-OpenVPN-Config script`,
         ""
@@ -282,6 +331,10 @@ export const VPNServerWrapper = (
     console.log('Generating VPN Server Certificate configuration');
     addConfig(VPNServerCertificate(vpnServer));
 
+    // Add VPN Server Binding configuration for supported VPN types (L2TP, PPTP, SSTP, OpenVPN)
+    console.log('Generating VPN Server Binding configuration');
+    addConfig(VPNServerBinding(Users));
+
     // Add Inbound Traffic Marking rules for VPN server protocols
     console.log('Generating VPN Inbound Traffic Marking rules');
     addConfig(InboundTraffic(vpnServer));
@@ -289,15 +342,11 @@ export const VPNServerWrapper = (
     // Generate WireGuard Server configurations
     if (vpnServer.WireguardServers && vpnServer.WireguardServers.length > 0) {
         console.log('Generating WireGuard server configurations');
-        vpnServer.WireguardServers.forEach(wireguardConfig => {
-            if (wireguardConfig.Interface) {
-                addConfig(WireguardServerWrapper(wireguardConfig.Interface, Users));
-            }
-        });
+        addConfig(WireguardServerWrapper(vpnServer.WireguardServers, Users));
     }
 
     // Generate OpenVPN Server configuration
-    if (vpnServer.OpenVpnServer) {
+    if (vpnServer.OpenVpnServer && vpnServer.OpenVpnServer.length > 0) {
         console.log('Generating OpenVPN server configuration');
         addConfig(OVPNServerWrapper(vpnServer.OpenVpnServer, Users));
     }

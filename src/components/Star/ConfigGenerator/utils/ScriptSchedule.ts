@@ -239,7 +239,7 @@ export const OneTimeScript = (config: OneTimeScript): RouterConfig => {
     if (!enhancedScriptContent["/system scheduler"]) {
         enhancedScriptContent["/system scheduler"] = [];
     }
-    enhancedScriptContent["/system scheduler"].push(`remove [find name=${schedulerName}]`);
+    enhancedScriptContent["/system scheduler"].push(`remove [find name=${schedulerName}];`);
 
     // Generate script with enhanced content (including scheduler removal)
     const scriptConfig = ScriptGenerator({

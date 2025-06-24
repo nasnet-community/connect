@@ -13,7 +13,7 @@ export const useSSTPServer = () => {
     Port: 443,
     ForceAes: false,
     Pfs: false,
-    DefaultProfile: "default",
+    DefaultProfile: "sstp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,

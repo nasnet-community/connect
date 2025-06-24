@@ -1,6 +1,5 @@
 import { component$ } from "@builder.io/qwik";
 import type { StarContextType } from "~/components/Star/StarContext/StarContext";
-import { $localize } from "@angular/localize/init";
 
 export const GameSelected = component$<{ context: StarContextType }>(
   ({ context }) => {

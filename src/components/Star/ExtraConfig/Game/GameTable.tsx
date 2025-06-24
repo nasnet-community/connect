@@ -2,7 +2,6 @@ import { $, component$ } from "@builder.io/qwik";
 import { games } from "./GameData";
 import { useGameLogic } from "./useGame";
 import type { GameTableProps } from "./type";
-import { $localize } from "@angular/localize/init";
 
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {

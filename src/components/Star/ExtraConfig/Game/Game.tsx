@@ -7,7 +7,6 @@ import { GameSelected } from "./GameSelected";
 import { GamePagination } from "./GamePagination";
 import { useGameLogic } from "./useGame";
 // import { GameForm } from "./GameForm";
-import { $localize } from "@angular/localize/init";
 
 export const Game = component$<StepProps>(({ onComplete$ }) => {
   const { searchQuery, currentPage, itemsPerPage, context } = useGameLogic();

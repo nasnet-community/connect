@@ -222,7 +222,7 @@ describe('LANCG Module Tests', () => {
               { Username: 'vpnuser1', Password: 'vpnpass1', VPNType: ['OpenVPN'] },
               { Username: 'vpnuser2', Password: 'vpnpass2', VPNType: ['Wireguard'] }
             ],
-            OpenVpnServer: {
+            OpenVpnServer: [{
               name: 'openvpn-server',
               enabled: true,
               Port: 1194,
@@ -239,7 +239,7 @@ describe('LANCG Module Tests', () => {
               Address: {
                 AddressPool: 'ovpn-pool'
               }
-            },
+            }],
             WireguardServers: [{
               Interface: {
                 Name: 'wireguard-main',

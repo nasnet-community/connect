@@ -17,7 +17,53 @@ export const useWireguardServer = () => {
     for (let i = 0; i < 44; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return result;
+    return Promise.resolve(result);
+  });
+
+  // Get the current WireGuard state (use first server or default)
+  const wireguardState = vpnServerState.WireguardServers?.[0] || {
+    Interface: {
+      Name: "wg-server",
+      PrivateKey: "",
+      PublicKey: "",
+      InterfaceAddress: "192.168.110.1/24",
+      ListenPort: 51820,
+      Mtu: 1420
+    },
+    Peers: []
+  };
+
+  const updateWireguardServer$ = $((config: Partial<WireguardServerConfig>) => {
+    const newConfig = {
+      ...wireguardState,
+      ...config
+    };
+    
+    if (config.Interface?.PrivateKey !== undefined) {
+      if (!newConfig.Interface.PrivateKey || !newConfig.Interface.PrivateKey.trim()) {
+        privateKeyError.value = $localize`Private key is required`;
+      } else {
+        privateKeyError.value = "";
+      }
+    }
+    
+    if (config.Interface?.InterfaceAddress !== undefined) {
+      if (!newConfig.Interface.InterfaceAddress || !newConfig.Interface.InterfaceAddress.trim()) {
+        addressError.value = $localize`Interface address is required`;
+      } else if (!newConfig.Interface.InterfaceAddress.includes("/")) {
+        addressError.value = $localize`Interface address must include subnet mask (e.g., 192.168.110.1/24)`;
+      } else {
+        addressError.value = "";
+      }
+    }
+    
+    // Always update the WireguardServers with the new config, never set to undefined
+    starContext.updateLAN$({ 
+      VPNServer: {
+        ...vpnServerState,
+        WireguardServers: [newConfig]
+      }
+    });
   });
 
   const addServer = $(() => {
@@ -26,7 +72,7 @@ export const useWireguardServer = () => {
         Name: `wg-server-${Date.now()}`,
         PrivateKey: "",
         PublicKey: "",
-        InterfaceAddress: "192.168.79.1/24",
+        InterfaceAddress: "192.168.110.1/24",
         ListenPort: 51820,
         Mtu: 1420
       },
@@ -76,7 +122,7 @@ export const useWireguardServer = () => {
         ...updatedServers[serverIndex],
         Peers: [...updatedServers[serverIndex].Peers, newPeer]
       };
-
+      
       starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
@@ -95,7 +141,7 @@ export const useWireguardServer = () => {
         const updatedPeers = [...server.Peers];
         updatedPeers[peerIndex] = { ...updatedPeers[peerIndex], ...config };
         updatedServers[serverIndex] = { ...server, Peers: updatedPeers };
-
+        
         starContext.updateLAN$({
           VPNServer: {
             ...vpnServerState,
@@ -110,6 +156,7 @@ export const useWireguardServer = () => {
     const currentServers = vpnServerState.WireguardServers || [];
     if (index >= 0 && index < currentServers.length) {
       const updatedServers = currentServers.filter((_, i) => i !== index);
+      
       starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
@@ -122,57 +169,6 @@ export const useWireguardServer = () => {
   const selectServer$ = $((index: number) => {
     // This would be used if there's a selected server concept
     console.log("Selected server:", index);
-  });
-
-  const wireguardState = vpnServerState.WireguardServers?.[0] || {
-    Interface: {
-      Name: "wg-server",
-      PrivateKey: "",
-      PublicKey: "",
-      InterfaceAddress: "192.168.79.1/24",
-      ListenPort: 51820,
-      Mtu: 1420
-    },
-    Peers: []
-  };
-
-  const updateWireguardServer$ = $((config: Partial<WireguardServerConfig>) => {
-    const newConfig = {
-      ...wireguardState,
-      ...config
-    };
-    
-    let isValid = true;
-    
-    if (config.Interface?.PrivateKey !== undefined) {
-      if (!newConfig.Interface.PrivateKey || !newConfig.Interface.PrivateKey.trim()) {
-        privateKeyError.value = $localize`Private key is required`;
-        isValid = false;
-      } else {
-        privateKeyError.value = "";
-      }
-    }
-    
-    if (config.Interface?.InterfaceAddress !== undefined) {
-      if (!newConfig.Interface.InterfaceAddress || !newConfig.Interface.InterfaceAddress.trim()) {
-        addressError.value = $localize`Interface address is required`;
-        isValid = false;
-      } else if (!newConfig.Interface.InterfaceAddress.includes("/")) {
-        addressError.value = $localize`Interface address must include subnet mask (e.g., 192.168.79.1/24)`;
-        isValid = false;
-      } else {
-        addressError.value = "";
-      }
-    }
-    
-    if (isValid || (config.Interface && config.Interface.PrivateKey === "")) {
-      starContext.updateLAN$({ 
-        VPNServer: {
-          ...vpnServerState,
-          WireguardServers: (config.Interface && config.Interface.PrivateKey === "") ? undefined : [newConfig]
-        }
-      });
-    }
   });
 
   return {

@@ -26,7 +26,7 @@ export const IKEv2ServerEasy = component$(() => {
         >
           <div class="relative">
             <input
-              type={showPassword.value ? "text" : "password"}
+              type="text"
               value={formState.presharedKey}
               onInput$={(e) => {
                 const target = e.target as HTMLInputElement;

@@ -165,7 +165,9 @@ export const useWireguardConfig = (
                 config.InterfaceMTU = parseInt(value, 10);
                 break;
               case "dns":
-                config.InterfaceDNS = value;
+                // Handle multiple DNS servers separated by comma, take only the first one
+                const dnsServers = value.split(',');
+                config.InterfaceDNS = dnsServers[0].trim();
                 break;
             }
           } else if (inPeerSection) {

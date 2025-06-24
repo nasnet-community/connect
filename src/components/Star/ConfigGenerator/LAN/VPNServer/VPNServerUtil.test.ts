@@ -7,7 +7,9 @@ import {
   generateVPNServerNetworkConfig,
   formatArrayValue,
   formatBooleanValue,
-  ExportOpenVPN
+  ExportOpenVPN,
+  ExportWireGuard,
+  WireguardPeerAddress
 } from './VPNServerUtil';
 import type { 
   VPNFirewallRule,
@@ -381,6 +383,231 @@ describe('VPN Server Utility Functions Tests', () => {
       // Verify it includes both new and legacy export syntax
       expect(scriptContent).toContain('server=$serverName server-address=');
       expect(scriptContent).toContain('Fallback for older RouterOS versions');
+    });
+  });
+
+  describe('WireGuard Peer Address Update Script', () => {
+    it('should generate WireGuard peer address update script with default parameters', () => {
+      testWithOutput(
+        'WireguardPeerAddress',
+        'Generate peer address update script with defaults',
+        { interfaceName: 'wireguard-server' },
+        () => WireguardPeerAddress('wireguard-server')
+      );
+
+      const result = WireguardPeerAddress('wireguard-server');
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      // Check that script and scheduler sections are created
+      const scriptCommands = result['/system script'] || [];
+      const schedulerCommands = result['/system scheduler'] || [];
+      
+      expect(scriptCommands.length).toBeGreaterThan(0);
+      expect(schedulerCommands.length).toBeGreaterThan(0);
+
+      // Verify default script name and scheduler name
+      const scriptContent = scriptCommands.join(' ');
+      const schedulerContent = schedulerCommands.join(' ');
+      
+      expect(scriptContent).toContain('name=WireGuard-Peer-Update');
+      expect(schedulerContent).toContain('name=Run-WireGuard-Peer-Update');
+      expect(schedulerContent).toContain('start-time=startup');
+    });
+
+    it('should generate script with custom parameters', () => {
+      testWithOutput(
+        'WireguardPeerAddress',
+        'Generate script with custom parameters',
+        { 
+          interfaceName: 'wg-custom', 
+          scriptName: 'Custom-WG-Script',
+          startTime: '02:30:00'
+        },
+        () => WireguardPeerAddress('wg-custom', 'Custom-WG-Script', '02:30:00')
+      );
+
+      const result = WireguardPeerAddress('wg-custom', 'Custom-WG-Script', '02:30:00');
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      const scriptContent = result['/system script']?.join(' ') || '';
+      const schedulerContent = result['/system scheduler']?.join(' ') || '';
+      
+      expect(scriptContent).toContain('name=Custom-WG-Script');
+      expect(schedulerContent).toContain('name=Run-Custom-WG-Script');
+      expect(schedulerContent).toContain('start-time=02:30:00');
+    });
+
+    it('should include proper WireGuard functionality in peer address script', () => {
+      const result = WireguardPeerAddress('wg-test');
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify script contains essential WireGuard peer functionality
+      expect(scriptContent).toContain('wireguard-server');
+      expect(scriptContent).toContain('peers');
+      expect(scriptContent).toContain('endpoint');
+      expect(scriptContent).toContain('ddns-enabled=yes');
+      expect(scriptContent).toContain('/ip cloud');
+    });
+
+    it('should include DDNS and cloud functionality', () => {
+      const result = WireguardPeerAddress('wg-test');
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify DDNS and cloud functionality
+      expect(scriptContent).toContain('/ip cloud');
+      expect(scriptContent).toContain('ddns-enabled');
+      expect(scriptContent).toContain('dns-name');
+      expect(scriptContent).toContain('update-time');
+    });
+
+    it('should include error handling and logging', () => {
+      const result = WireguardPeerAddress('wg-test');
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify error handling and logging
+      expect(scriptContent).toContain(':do {');
+      expect(scriptContent).toContain('} on-error={');
+      expect(scriptContent).toContain(':log');
+      expect(scriptContent).toContain('error');
+      expect(scriptContent).toContain('info');
+    });
+
+    it('should configure scheduler properly with interval', () => {
+      const result = WireguardPeerAddress('wg-test', 'test-script', 'startup');
+      const schedulerCommands = result['/system scheduler'] || [];
+      const schedulerContent = schedulerCommands.join(' ');
+
+      // Verify scheduler configuration
+      expect(schedulerContent).toContain('name=Run-test-script');
+      expect(schedulerContent).toContain('start-time=startup');
+      expect(schedulerContent).toContain('interval=30m');
+      expect(schedulerContent).toContain('on-event=test-script');
+      expect(schedulerContent).toContain('comment=');
+    });
+  });
+
+  describe('WireGuard Export Script', () => {
+    it('should generate comprehensive WireGuard client configuration export script', () => {
+      testWithOutput(
+        'ExportWireGuard',
+        'Generate comprehensive WireGuard export script',
+        {},
+        () => ExportWireGuard()
+      );
+
+      const result = ExportWireGuard();
+      validateRouterConfig(result, ['/system script', '/system scheduler']);
+
+      // Verify script structure
+      expect(result['/system script']).toBeDefined();
+      expect(result['/system scheduler']).toBeDefined();
+
+      // Extract script content for detailed validation
+      const scriptCommands = result['/system script'] || [];
+      expect(scriptCommands.length).toBeGreaterThan(0);
+      
+      const scriptContent = scriptCommands.join(' ');
+      expect(scriptContent).toContain('Export-WireGuard-Clients');
+
+      // Check scheduler configuration
+      const schedulerCommands = result['/system scheduler'] || [];
+      expect(schedulerCommands.length).toBeGreaterThan(0);
+      
+      const schedulerContent = schedulerCommands.join(' ');
+      expect(schedulerContent).toContain('Run-Export-WireGuard-Clients');
+      expect(schedulerContent).toContain('start-time=startup');
+      expect(schedulerContent).toContain('interval=0');
+    });
+
+    it('should include proper WireGuard functionality in script', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify script contains essential WireGuard export functionality
+      expect(scriptContent).toContain('wireguard');
+      expect(scriptContent).toContain('show-client-config');
+      expect(scriptContent).toContain('.conf');
+      expect(scriptContent).toContain('server');
+      expect(scriptContent).toContain('peers');
+    });
+
+    it('should include DDNS configuration and management', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify DDNS functionality
+      expect(scriptContent).toContain('/ip cloud');
+      expect(scriptContent).toContain('ddns-enabled');
+      expect(scriptContent).toContain('dns-name');
+      expect(scriptContent).toContain('client-endpoint');
+    });
+
+    it('should include proper error handling and logging', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify error handling and logging
+      expect(scriptContent).toContain(':do {');
+      expect(scriptContent).toContain('} on-error={');
+      expect(scriptContent).toContain(':log error');
+      expect(scriptContent).toContain(':log info');
+      expect(scriptContent).toContain(':log warning');
+    });
+
+    it('should include file naming and cleanup logic', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify file naming logic
+      expect(scriptContent).toContain('fileName');
+      expect(scriptContent).toContain('peerName');
+      expect(scriptContent).toContain('peerComment');
+      expect(scriptContent).toContain('publicKey');
+      expect(scriptContent).toContain('Replace spaces with underscores');
+    });
+
+    it('should filter peers by server interface names', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify server interface filtering
+      expect(scriptContent).toContain('name~"server"');
+      expect(scriptContent).toContain('Processing WireGuard server interface');
+      expect(scriptContent).toContain('interface=$interfaceName');
+    });
+
+    it('should include comprehensive status reporting', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify status reporting
+      expect(scriptContent).toContain('WireGuard Export Summary');
+      expect(scriptContent).toContain('Server Address:');
+      expect(scriptContent).toContain('DDNS Status:');
+      expect(scriptContent).toContain('Export Status:');
+      expect(scriptContent).toContain('Server Peers Exported:');
+      expect(scriptContent).toContain('Download the .conf files');
+    });
+
+    it('should provide troubleshooting guidance', () => {
+      const result = ExportWireGuard();
+      const scriptCommands = result['/system script'] || [];
+      const scriptContent = scriptCommands.join(' ');
+
+      // Verify troubleshooting instructions
+      expect(scriptContent).toContain('Troubleshooting:');
+      expect(scriptContent).toContain('/ip cloud set ddns-enabled=yes');
+      expect(scriptContent).toContain('No WireGuard server interfaces found');
+      expect(scriptContent).toContain('interfaces must contain');
     });
   });
 }); 

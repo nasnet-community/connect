@@ -9,7 +9,7 @@ export const usePPTPServer = () => {
   
   const pptpState = vpnServerState.PptpServer || {
     enabled: true,
-    DefaultProfile: "default",
+    DefaultProfile: "pptp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,

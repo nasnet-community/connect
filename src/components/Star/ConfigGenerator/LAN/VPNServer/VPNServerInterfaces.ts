@@ -117,27 +117,27 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
         PushRoutes
     } = config;
 
-    // Determine the pool name to use consistently
-    const poolName = Address?.AddressPool || 'ovpn-pool';
+    // // Determine the pool name to use consistently
+    // const poolName = Address?.AddressPool || 'ovpn-pool';
 
-    // Create IP pool for OpenVPN clients - always create the pool
-    routerConfig["/ip pool"].push(
-        `add name=${poolName} ranges=192.168.60.5-192.168.60.250`
-    );
+    // // Create IP pool for OpenVPN clients - always create the pool
+    // routerConfig["/ip pool"].push(
+    //     `add name=${poolName} ranges=192.168.60.5-192.168.60.250`
+    // );
 
-    // Create PPP profile
-    const profileParams: string[] = [
-        // `name=${DefaultProfile}`,
-        `name=ovpn-profile`,
-        'dns-server=1.1.1.1',
-        'local-address=192.168.60.1',
-        `remote-address=${poolName}`,
-        'use-encryption=yes'
-    ];
+    // // Create PPP profile
+    // const profileParams: string[] = [
+    //     // `name=${DefaultProfile}`,
+    //     `name=ovpn-profile`,
+    //     'dns-server=1.1.1.1',
+    //     'local-address=192.168.60.1',
+    //     `remote-address=${poolName}`,
+    //     'use-encryption=yes'
+    // ];
 
-    routerConfig["/ppp profile"].push(
-        `add ${profileParams.join(' ')}`
-    );
+    // routerConfig["/ppp profile"].push(
+    //     `add ${profileParams.join(' ')}`
+    // );
 
     // Create OpenVPN server instance
     const serverParams: string[] = [
@@ -191,10 +191,7 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
         `add action=accept chain=input comment="OpenVPN Server ${Protocol}" dst-port=${Port} in-interface-list=DOM-WAN protocol=${Protocol}`
     );
 
-    // Add address list
-    routerConfig["/ip firewall address-list"].push(
-        'add address=192.168.60.0/24 list=VPN-LAN'
-    );
+
 
     return CommandShortner(routerConfig);
 };
@@ -913,9 +910,11 @@ export const VPNServerInterfaceWrapper = (config: VPNServer): RouterConfig => {
     }
 
     // Check and generate OpenVPN Server Interface
-    if (config.OpenVpnServer) {
+    if (config.OpenVpnServer && config.OpenVpnServer.length > 0) {
         console.log('Generating OpenVPN server interface configuration');
-        addConfig(OVPNServer(config.OpenVpnServer));
+        config.OpenVpnServer.forEach(ovpnConfig => {
+            addConfig(OVPNServer(ovpnConfig));
+        });
     }
 
     // Check and generate PPTP Server Interface

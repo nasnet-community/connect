@@ -11,9 +11,9 @@ import {
     ExportCert,
     AddCert,
 } from "../../utils/Certificate";
-import { OneTimeScript } from "../../utils/ScriptSchedule";
+// import { OneTimeScript } from "../../utils/ScriptSchedule";
 import { CommandShortner, mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
-
+import { WireguardPeerAddress } from "./VPNServerUtil"
 
 
 // VPN Server Utils
@@ -94,84 +94,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     return finalConfig;
 };
 
-export const WireguardPeerAddress = (
-    interfaceName: string,
-    scriptName: string = "WireGuard-Peer-Update",
-    startTime: string = "startup"
-): RouterConfig => {
-    
-    const scriptContent: RouterConfig = {
-        "": [
-            "# Define the WireGuard interface name as a parameter for the script",
-            "# To run: /system script run <script_name> wg-interface=<your_wg_interface_name>",
-            `:local wgInterfaceName "${interfaceName}";`,
-            "",
-            ":if ([:len $wgInterfaceName] = 0) do={",
-            '    :log error "WireGuard interface name not provided. Use: /system script run <script_name> wg-interface=<your_wg_interface_name>";',
-            "} else {",
-            '    :log info "Starting script for WireGuard interface: $wgInterfaceName";',
-            "",
-            "    # Step 1: Check and Enable IP Cloud DDNS",
-            "    :local ddnsStatus [/ip cloud get ddns-enabled];",
-            '    if ($ddnsStatus != "yes") do={',
-            "        /ip cloud set ddns-enabled=yes;",
-            '        :log info "IP Cloud DDNS has been enabled.";',
-            "    } else {",
-            '        :log info "IP Cloud DDNS is already enabled.";',
-            "    }",
-            "",
-            "    # Step 2: Force IP Cloud Update (and allow time for it)",
-            '    :log info "Forcing IP Cloud DDNS update...";',
-            "    /ip cloud force-update;",
-            '    :log info "Waiting 10 seconds for IP Cloud to synchronize...";',
-            "    :delay 10s; # Allow time for the update to process and dns-name to be available",
-            "",
-            "    # Step 3: Retrieve and Store the Cloud DNS Name (Global Variable)",
-            "    :global globalCloudDnsName;",
-            "    :set globalCloudDnsName [/ip cloud get dns-name];",
-            "",
-            "    :if ([:len $globalCloudDnsName] = 0) do={",
-            '        :log error "Failed to retrieve IP Cloud DNS Name. Status: [/ip cloud get status]. Public IP: [/ip cloud get public-address]. Ensure IP Cloud is functioning correctly.";',
-            "    } else {",
-            '        :log info "Successfully retrieved IP Cloud DNS Name: $globalCloudDnsName";',
-            "",
-            "        # Step 4: Identify Target WireGuard Peers",
-            '        :log info "Searching for WireGuard peers on interface \'$wgInterfaceName\'...";',
-            "        :local peerIds [/interface wireguard peers find interface=$wgInterfaceName];",
-            "",
-            "        :if ([:len $peerIds] = 0) do={",
-            '            :log warning "No WireGuard peers found for interface \'$wgInterfaceName\'. No peers to update.";',
-            "        } else {",
-            '            :log info "Found [:len $peerIds] peer(s) on interface \'$wgInterfaceName\'. Proceeding with update.";',
-            "",
-            "            # Step 5: Update WireGuard Peer endpoint-address",
-            "            :foreach peerId in=$peerIds do={",
-            "                # Retrieve current peer details for logging",
-            "                :local currentPeerComment [/interface wireguard peers get $peerId comment];",
-            "                :local currentPeerPublicKey [/interface wireguard peers get $peerId public-key];",
-            "                :local currentEndpointAddress [/interface wireguard peers get $peerId endpoint-address];",
-            "",
-            '                :log info "Updating peer ID: $peerId (Comment: \'$currentPeerComment\', PK: $[:pick $currentPeerPublicKey 0 10]..., Current Endpoint: \'$currentEndpointAddress\')";',
-            "                ",
-            "                /interface wireguard peers set $peerId endpoint-address=$globalCloudDnsName;",
-            "                ",
-            '                :log info "Peer ID: $peerId - endpoint-address updated to \'$globalCloudDnsName\'.";',
-            "            }",
-            '            :log info "Finished updating WireGuard peers for interface \'$wgInterfaceName\'.";',
-            "        }",
-            "    }",
-            '    :log info "Script finished.";',
-            "}"
-        ]
-    };
 
-    return OneTimeScript({
-        ScriptContent: scriptContent,
-        name: scriptName,
-        interval: "00:00:00",
-        startTime: startTime
-    });
-};
 
 export const VPNServerBinding = (credentials: Credentials[]): RouterConfig => {
     const config: RouterConfig = {

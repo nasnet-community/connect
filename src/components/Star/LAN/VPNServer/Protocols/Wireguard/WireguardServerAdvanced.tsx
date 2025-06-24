@@ -26,7 +26,7 @@ export const WireguardServerAdvanced = component$(() => {
   const formState = useStore({
     name: wireguardState.Interface?.Name || "wg-server",
     privateKey: wireguardState.Interface?.PrivateKey || "",
-    interfaceAddress: wireguardState.Interface?.InterfaceAddress || "192.168.79.1/24",
+    interfaceAddress: wireguardState.Interface?.InterfaceAddress || "192.168.110.1/24",
     listenPort: wireguardState.Interface?.ListenPort || 51820,
     mtu: wireguardState.Interface?.Mtu || 1420
   });
@@ -122,7 +122,7 @@ export const WireguardServerAdvanced = component$(() => {
                 type="text"
                 value={formState.interfaceAddress}
                 onChange$={(_, value) => updateServerConfig({ interfaceAddress: value })}
-                placeholder={$localize`e.g. 192.168.79.1/24`}
+                placeholder={$localize`e.g. 192.168.110.1/24`}
                 validation={addressError.value ? "invalid" : "default"}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">

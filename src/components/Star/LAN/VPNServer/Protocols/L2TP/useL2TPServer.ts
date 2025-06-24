@@ -9,7 +9,7 @@ export const useL2TPServer = () => {
   
   const l2tpState = vpnServerState.L2tpServer || {
     enabled: true,
-    DefaultProfile: "default",
+    DefaultProfile: "l2tp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,
@@ -17,7 +17,7 @@ export const useL2TPServer = () => {
     },
     KeepaliveTimeout: 30,
     IPsec: {
-      UseIpsec: "yes",
+      UseIpsec: "no",
       IpsecSecret: ""
     },
     allowFastPath: false,

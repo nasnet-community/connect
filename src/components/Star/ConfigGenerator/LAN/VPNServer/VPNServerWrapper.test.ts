@@ -55,7 +55,7 @@ describe('VPN Server Wrapper Tests', () => {
                     },
                     Peers: []
                 }],
-                OpenVpnServer: {
+                OpenVpnServer: [{
                     name: 'openvpn-server',
                     enabled: true,
                     Port: 1194,
@@ -73,7 +73,7 @@ describe('VPN Server Wrapper Tests', () => {
                     Address: {
                         AddressPool: 'ovpn-pool'
                     }
-                },
+                }],
                 PptpServer: {
                     enabled: true,
                     Authentication: ['mschap2'],
@@ -227,7 +227,7 @@ describe('VPN Server Wrapper Tests', () => {
                 'WireguardServerWrapper',
                 'Complete WireGuard configuration with users',
                 { interfaceConfig, users: testUsers },
-                () => WireguardServerWrapper(interfaceConfig, testUsers)
+                () => WireguardServerWrapper([{ Interface: interfaceConfig, Peers: [] }], testUsers)
             );
 
             validateRouterConfig(result, [
@@ -255,7 +255,7 @@ describe('VPN Server Wrapper Tests', () => {
                 'WireguardServerWrapper',
                 'WireGuard configuration without users',
                 { interfaceConfig, users: [] },
-                () => WireguardServerWrapper(interfaceConfig, [])
+                () => WireguardServerWrapper([{ Interface: interfaceConfig, Peers: [] }], [])
             );
 
             validateRouterConfig(result, ['/interface wireguard']);
@@ -291,7 +291,7 @@ describe('VPN Server Wrapper Tests', () => {
                 'OVPNServerWrapper',
                 'Complete OpenVPN configuration with users',
                 { serverConfig, users: testUsers },
-                () => OVPNServerWrapper(serverConfig, testUsers)
+                () => OVPNServerWrapper([serverConfig], testUsers)
             );
 
             validateRouterConfig(result, [
@@ -486,7 +486,7 @@ describe('VPN Server Wrapper Tests', () => {
                 InterfaceAddress: '192.168.1.1/24'
             };
 
-            const result = WireguardServerWrapper(wireguardConfig, []);
+            const result = WireguardServerWrapper([{ Interface: wireguardConfig, Peers: [] }], []);
             validateRouterConfig(result);
             
             const comments = result[""] || [];
@@ -506,7 +506,7 @@ describe('VPN Server Wrapper Tests', () => {
                 InterfaceAddress: '192.168.1.1/24'
             };
 
-            const result = WireguardServerWrapper(wireguardConfig, mixedUsers);
+            const result = WireguardServerWrapper([{ Interface: wireguardConfig, Peers: [] }], mixedUsers);
             
             const comments = result[""] || [];
             expect(comments.some((c: string) => c.includes('Users: 2'))).toBe(true); // wg-user and multi-user
@@ -595,14 +595,14 @@ describe('VPN Server Wrapper Tests', () => {
                     },
                     Peers: []
                 }],
-                OpenVpnServer: {
+                OpenVpnServer: [{
                     name: 'ovpn-server',
                     enabled: true,
                     Encryption: {},
                     IPV6: {},
                     Certificate: { Certificate: 'cert' },
                     Address: {}
-                }
+                }]
             };
 
             const result = testWithOutput(

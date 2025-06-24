@@ -8,7 +8,7 @@ export const L2TPServerEasy = component$(() => {
   const { l2tpState, updateL2TPServer$, secretError } = useL2TPServer();
   
   const formState = useStore({
-    useIpsec: l2tpState.IPsec?.UseIpsec || "yes",
+    useIpsec: l2tpState.IPsec?.UseIpsec || "no",
     ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
   });
 
@@ -37,37 +37,10 @@ export const L2TPServerEasy = component$(() => {
     }
   });
 
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      
-      if (enabled) {
-        updateL2TPServer$({
-          DefaultProfile: "default",
-          IPsec: {
-            UseIpsec: formState.useIpsec,
-            IpsecSecret: formState.ipsecSecret
-          },
-          Authentication: ["mschap2", "mschap1"],
-          enabled: true
-        });
-      } else {
-        updateL2TPServer$({
-          DefaultProfile: ""
-        });
-      }
-    } catch (error) {
-      console.error("Error toggling L2TP server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
-    }
-  });
-
   return (
     <ServerCard
       title={$localize`L2TP Server`}
       icon={<HiServerOutline class="h-5 w-5" />}
-      enabled={isEnabled.value}
-      onToggle$={handleToggle}
     >
       {isEnabled.value && (
         <div class="space-y-6">

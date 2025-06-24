@@ -464,7 +464,7 @@ describe('VPN Server Interfaces Tests', () => {
           },
           Peers: []
         }],
-        OpenVpnServer: {
+        OpenVpnServer: [{
           name: 'openvpn-server',
           enabled: true,
           Port: 1194,
@@ -473,7 +473,7 @@ describe('VPN Server Interfaces Tests', () => {
           IPV6: {},
           Certificate: { Certificate: 'server-cert' },
           Address: {}
-        },
+        }],
         PptpServer: {
           enabled: true,
           Authentication: ['mschap2']
