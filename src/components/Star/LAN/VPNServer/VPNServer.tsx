@@ -34,6 +34,7 @@ export const VPNServer = component$<StepProps>(({ onComplete$, onDisabled$ }) =>
     vpnServerEnabled,
     enabledProtocols,
     expandedSections,
+    usernameErrors,
     isValid,
     toggleSection,
     addUser,
@@ -78,6 +79,7 @@ export const VPNServer = component$<StepProps>(({ onComplete$, onDisabled$ }) =>
     <UsersStep
       {...props}
       users={users}
+      usernameErrors={usernameErrors}
       addUser={addUser}
       removeUser={removeUser}
       handleUsernameChange={handleUsernameChange}

@@ -1,24 +1,39 @@
 import { useContext, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-import type { Credentials } from "../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../StarContext/CommonType";
 import type { QRL } from "@builder.io/qwik";
+
+// Import protocol hooks for default configuration
+import { usePPTPServer } from "./Protocols/PPTP/usePPTPServer";
+import { useL2TPServer } from "./Protocols/L2TP/useL2TPServer";
+import { useSSTPServer } from "./Protocols/SSTP/useSSTPServer";
+import { useOpenVPNServer } from "./Protocols/OpenVPN/useOpenVPNServer";
+import { useIKEv2Server } from "./Protocols/IKeV2/useIKEv2Server";
+import { useWireguardServer } from "./Protocols/Wireguard/useWireguardServer";
+
+// Import the new user management hook
+import { useUserManagement } from "./UserCredential/useUserCredential";
 
 export const useVPNServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
   
-  const users = useStore<Credentials[]>(
-    vpnServerState.Users?.length 
-      ? [...vpnServerState.Users] 
-      : [{ Username: "", Password: "", VPNType: [] }]
-  );
+  // === PROTOCOL HOOKS FOR DEFAULT CONFIGS ===
+  const pptpHook = usePPTPServer();
+  const l2tpHook = useL2TPServer();
+  const sstpHook = useSSTPServer();
+  const openVpnHook = useOpenVPNServer();
+  const ikev2Hook = useIKEv2Server();
+  const wireguardHook = useWireguardServer();
   
+  // === USER MANAGEMENT (delegated to useUserManagement hook) ===
+  const userManagement = useUserManagement();
+  
+  // === VPN SERVER STATE ===
   const vpnServerEnabled = useSignal(true);
-  const passphraseValue = useSignal(vpnServerState.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase || "");
-  const passphraseError = useSignal("");
   const isValid = useSignal(true);
   
+  // === PROTOCOL ENABLING/DISABLING ===
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
     OpenVPN: !!vpnServerState.OpenVpnServer?.[0]?.enabled || false,
@@ -28,6 +43,7 @@ export const useVPNServer = () => {
     IKeV2: !!vpnServerState.Ikev2Server?.ipPools?.Ranges || false
   });
 
+  // === UI STATE ===
   const expandedSections = useStore<Record<string, boolean>>({
     users: true,
     protocols: true,
@@ -39,7 +55,7 @@ export const useVPNServer = () => {
     wireguard: false
   });
 
-  // Replace useComputed$ with useTask$ to properly handle state mutations
+  // === VALIDATION TASK ===
   useTask$(({ track }) => {
     track(() => vpnServerEnabled.value);
     track(() => enabledProtocols.Wireguard);
@@ -48,17 +64,8 @@ export const useVPNServer = () => {
     track(() => enabledProtocols.L2TP);
     track(() => enabledProtocols.SSTP);
     track(() => enabledProtocols.IKeV2);
-    track(() => passphraseValue.value);
-    track(() => users);
-    
-    // Track changes to OpenVPN certificate passphrase in StarContext
-    track(() => starContext.state.LAN.VPNServer?.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase);
-    
-    // Update local passphraseValue when StarContext changes
-    const currentPassphrase = starContext.state.LAN.VPNServer?.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase;
-    if (currentPassphrase !== undefined && currentPassphrase !== passphraseValue.value) {
-      passphraseValue.value = currentPassphrase;
-    }
+    track(() => userManagement.users);
+    track(() => userManagement.isValid);
     
     if (!vpnServerEnabled.value) {
       isValid.value = true;
@@ -67,59 +74,20 @@ export const useVPNServer = () => {
 
     const hasEnabledProtocol = Object.values(enabledProtocols).some(value => value);
     
-    const hasValidUsers = users.every(user => {
-      const hasCredentials = user.Username.trim() !== "" && user.Password.trim() !== "";
-      const hasProtocols = (user.VPNType?.length || 0) > 0;
-      return hasCredentials && hasProtocols;
-    });
-
-    if (enabledProtocols.OpenVPN) {
-      if (passphraseValue.value.length < 10) {
-        passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-        isValid.value = false;
-        return;
-      } else {
-        passphraseError.value = "";
-      }
-    }
+    // Use user management validation
+    const hasValidUsers = userManagement.isValid.value;
 
     isValid.value = hasEnabledProtocol && hasValidUsers;
   });
 
+  // === UI ACTIONS ===
   const toggleSection = $((section: string) => {
     expandedSections[section] = !expandedSections[section];
   });
 
-  const addUser = $(() => {
-    users.push({ Username: "", Password: "", VPNType: [] });
-  });
-
-  const removeUser = $((index: number) => {
-    if (users.length > 1) {
-      users.splice(index, 1);
-    }
-  });
-  
-  const handleUsernameChange = $((value: string, index: number) => {
-    users[index].Username = value;
-  });
-  
-  const handlePasswordChange = $((value: string, index: number) => {
-    users[index].Password = value;
-  });
-  
-  const handleProtocolToggle = $((protocol: VPNType, index: number) => {
-    const userVpnTypes = users[index].VPNType || [];
-    const typeIndex = userVpnTypes.indexOf(protocol);
+  const toggleProtocol = $(async (protocol: VPNType) => {
+    const wasEnabled = enabledProtocols[protocol];
     
-    if (typeIndex === -1) {
-      users[index].VPNType = [...userVpnTypes, protocol];
-    } else {
-      users[index].VPNType = userVpnTypes.filter(t => t !== protocol);
-    }
-  });
-
-  const toggleProtocol = $((protocol: VPNType) => {
     // Toggle the protocol state
     enabledProtocols[protocol] = !enabledProtocols[protocol];
     
@@ -128,160 +96,86 @@ export const useVPNServer = () => {
       expandedSections[protocol.toLowerCase()] = false;
     } else {
       expandedSections[protocol.toLowerCase()] = true;
-    }
-  });
-  
-  const handlePassphraseChange = $((value: string) => {
-    passphraseValue.value = value;
-    if (passphraseValue.value.length < 10) {
-      passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-    } else {
-      passphraseError.value = "";
+      
+      // Ensure default configuration when enabling a protocol
+      if (!wasEnabled) {
+        switch (protocol) {
+          case "PPTP":
+            await pptpHook.ensureDefaultConfig();
+            break;
+          case "L2TP":
+            await l2tpHook.ensureDefaultConfig();
+            break;
+          case "SSTP":
+            await sstpHook.ensureDefaultConfig();
+            break;
+          case "OpenVPN":
+            await openVpnHook.ensureDefaultConfig();
+            break;
+          case "IKeV2":
+            await ikev2Hook.ensureDefaultConfig();
+            break;
+          case "Wireguard":
+            await wireguardHook.ensureDefaultConfig();
+            break;
+        }
+      }
     }
   });
 
+  const toggleVpnServerEnabled = $(() => {
+    vpnServerEnabled.value = !vpnServerEnabled.value;
+  });
+
+  // === SAVE SETTINGS ===
   const saveSettings = $((onComplete$?: QRL<() => void>) => {
     if (vpnServerEnabled.value) {
-      const validUsers = users.filter(user => 
-        user.Username.trim() !== "" && 
-        user.Password.trim() !== "" && 
-        (user.VPNType?.length || 0) > 0
-      );
+      // Save users first using the user management hook
+      userManagement.saveUsers();
       
-      starContext.updateLAN$({
-        VPNServer: {
-          Users: validUsers,
-          
-          PptpServer: enabledProtocols.PPTP 
-            ? vpnServerState.PptpServer || { enabled: true, DefaultProfile: "pptp-profile", Authentication: ["mschap2"], PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, KeepaliveTimeout: 30 } 
-            : undefined,
-            
-          L2tpServer: enabledProtocols.L2TP 
-            ? vpnServerState.L2tpServer || { 
-                enabled: true, 
-                DefaultProfile: "l2tp-profile", 
-                Authentication: ["mschap2"], 
-                PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
-                KeepaliveTimeout: 30,
-                IPsec: { UseIpsec: "no", IpsecSecret: "" },
-                allowFastPath: true,
-                maxSessions: "unlimited",
-                OneSessionPerHost: false,
-                L2TPV3: { l2tpv3CircuitId: "", l2tpv3CookieLength: 0, l2tpv3DigestHash: "md5", l2tpv3EtherInterfaceList: "" },
-                acceptProtoVersion: "all",
-                callerIdType: "ip-address"
-              } 
-            : undefined,
-            
-          SstpServer: enabledProtocols.SSTP 
-            ? vpnServerState.SstpServer || { 
-                enabled: true, 
-                Certificate: "default", 
-                DefaultProfile: "sstp-profile", 
-                Authentication: ["mschap2"], 
-                PacketSize: { MaxMtu: 1450, MaxMru: 1450 }, 
-                KeepaliveTimeout: 30,
-                Port: 4443,
-                ForceAes: false,
-                Pfs: false,
-                Ciphers: "aes256-sha",
-                VerifyClientCertificate: false,
-                TlsVersion: "any"
-              } 
-            : undefined,
-            
-          OpenVpnServer: enabledProtocols.OpenVPN 
-            ? (vpnServerState.OpenVpnServer && vpnServerState.OpenVpnServer.length > 0
-                ? vpnServerState.OpenVpnServer.map((server) => ({
-                    ...server,
-                    // Preserve existing certificate configuration to avoid overriding user input
-                    Certificate: server.Certificate 
-                      ? {
-                          ...server.Certificate,
-                          // Only override passphrase if local value is different and not empty
-                          CertificateKeyPassphrase: passphraseValue.value || server.Certificate.CertificateKeyPassphrase || "",
-                        }
-                      : {
-                          Certificate: "server-cert",
-                          RequireClientCertificate: false,
-                          CertificateKeyPassphrase: passphraseValue.value,
-                        }
-                  }))
-                : [
-                    // UDP Server (Standard OpenVPN)
-                    {
-                      name: "openvpn-udp", 
-                      enabled: true, 
-                      Port: 1194, 
-                      Protocol: "udp", 
-                      Mode: "ip",
-                      DefaultProfile: "ovpn-profile",
-                      Authentication: ["mschap2"],
-                      PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
-                      KeepaliveTimeout: 30,
-                      VRF: "",
-                      RedirectGetway: "def1",
-                      PushRoutes: "",
-                      RenegSec: 3600,
-                      Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
-                      IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
-                      Certificate: { Certificate: "server-cert", RequireClientCertificate: false, CertificateKeyPassphrase: passphraseValue.value },
-                      Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "ovpn-pool" }
-                    },
-                    // TCP Server (Better firewall traversal)
-                    {
-                      name: "openvpn-tcp", 
-                      enabled: true, 
-                      Port: 1195, 
-                      Protocol: "tcp", 
-                      Mode: "ip",
-                      DefaultProfile: "ovpn-profile",
-                      Authentication: ["mschap2"],
-                      PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
-                      KeepaliveTimeout: 30,
-                      VRF: "",
-                      RedirectGetway: "def1",
-                      PushRoutes: "",
-                      RenegSec: 3600,
-                      Encryption: { Auth: ["sha256"], UserAuthMethod: "mschap2", Cipher: ["aes256-cbc"], TlsVersion: "any" },
-                      IPV6: { EnableTunIPv6: false, IPv6PrefixLength: 64, TunServerIPv6: "" },
-                      Certificate: { Certificate: "server-cert", RequireClientCertificate: false, CertificateKeyPassphrase: passphraseValue.value },
-                      Address: { Netmask: 24, MacAddress: "", MaxMtu: 1450, AddressPool: "ovpn-pool" }
-                    }
-                  ])
-            : undefined,
-            
-          Ikev2Server: enabledProtocols.IKeV2 
-            ? vpnServerState.Ikev2Server || { 
-                ipPools: { Name: "ike2-pool", Ranges: "192.168.77.2-192.168.77.254" },
-                profile: { name: "ike2", hashAlgorithm: "sha1", encAlgorithm: "aes-128", dhGroup: "modp1024" },
-                proposal: { name: "ike2", authAlgorithms: "sha1", encAlgorithms: "aes-256-cbc", pfsGroup: "none" },
-                policyGroup: { name: "ike2-policies" },
-                policyTemplates: { group: "ike2-policies", proposal: "ike2", srcAddress: "0.0.0.0/0", dstAddress: "192.168.77.0/24" },
-                peer: { name: "ike2", exchangeMode: "ike2", passive: true, profile: "ike2" },
-                identities: { authMethod: "digital-signature", peer: "ike2", generatePolicy: "port-strict", policyTemplateGroup: "ike2-policies" },
-                modeConfigs: { name: "ike2-conf", addressPool: "ike2-pool", addressPrefixLength: 32, responder: true }
-              } 
-            : undefined,
-            
-          WireguardServers: enabledProtocols.Wireguard 
-            ? (vpnServerState.WireguardServers && vpnServerState.WireguardServers.length > 0
-                ? vpnServerState.WireguardServers
-                : [{
-                    Interface: {
-                      Name: "wg-server",
-                      PrivateKey: "",
-                      PublicKey: "",
-                      InterfaceAddress: "192.168.110.1/24",
-                      ListenPort: 51820,
-                      Mtu: 1420
-                    },
-                    Peers: []
-                  }])
-            : undefined,
-        }
-      });
+      // Grab the latest VPN server configuration from StarContext to avoid stale references
+      const latestConfig = { ...(starContext.state.LAN.VPNServer || { Users: [] }) } as any;
+
+      // Start with latest config and update users
+      latestConfig.Users = userManagement.users;
+
+      // Conditionally include or exclude each protocol based on toggle state
+      if (!enabledProtocols.PPTP) {
+        latestConfig.PptpServer = undefined;
+      } else {
+        latestConfig.PptpServer = pptpHook.pptpState;
+      }
+
+      if (!enabledProtocols.L2TP) {
+        latestConfig.L2tpServer = undefined;
+      } else {
+        latestConfig.L2tpServer = l2tpHook.l2tpState;
+      }
+
+      if (!enabledProtocols.SSTP) {
+        latestConfig.SstpServer = undefined;
+      } else {
+        latestConfig.SstpServer = sstpHook.sstpState;
+      }
+
+      // Always preserve any existing OpenVPN configuration. The OpenVPN hook keeps this up-to-date.
+
+      if (!enabledProtocols.IKeV2) {
+        latestConfig.Ikev2Server = undefined;
+      } else {
+        latestConfig.Ikev2Server = ikev2Hook.ikev2State;
+      }
+
+      if (!enabledProtocols.Wireguard) {
+        latestConfig.WireguardServers = undefined;
+      } else {
+        latestConfig.WireguardServers = [wireguardHook.wireguardState];
+      }
+
+      // Finally persist into StarContext
+      starContext.updateLAN$({ VPNServer: latestConfig });
     } else {
+      // Disable all VPN server configurations
       starContext.updateLAN$({
         VPNServer: {
           Users: [],
@@ -300,29 +194,28 @@ export const useVPNServer = () => {
     }
   });
 
-  const toggleVpnServerEnabled = $(() => {
-    vpnServerEnabled.value = !vpnServerEnabled.value;
-  });
-
   return {
-    users,
+    // === STATE ===
+    users: userManagement.users,
     vpnServerEnabled,
-    passphraseValue,
-    passphraseError,
+    usernameErrors: userManagement.usernameErrors,
     isValid,
     enabledProtocols,
     expandedSections,
     
-    // Actions
+    // === USER MANAGEMENT ACTIONS (delegated to useUserManagement hook) ===
+    addUser: userManagement.addUser,
+    removeUser: userManagement.removeUser,
+    handleUsernameChange: userManagement.handleUsernameChange,
+    handlePasswordChange: userManagement.handlePasswordChange,
+    handleProtocolToggle: userManagement.handleProtocolToggle,
+    
+    // === UI ACTIONS ===
     toggleSection,
-    addUser,
-    removeUser,
-    handleUsernameChange,
-    handlePasswordChange,
-    handleProtocolToggle,
     toggleProtocol,
-    handlePassphraseChange,
-    saveSettings,
     toggleVpnServerEnabled,
+    
+    // === SAVE ===
+    saveSettings,
   };
 }; 

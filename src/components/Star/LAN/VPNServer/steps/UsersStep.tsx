@@ -10,6 +10,7 @@ import { VPNServerContextId } from "../VPNServer";
 
 interface UsersStepProps extends StepProps {
   users: Credentials[];
+  usernameErrors: Record<number, string>;
   addUser: QRL<() => void>;
   removeUser: QRL<(index: number) => void>;
   handleUsernameChange: QRL<(value: string, index: number) => void>;
@@ -20,6 +21,7 @@ interface UsersStepProps extends StepProps {
 
 export const UsersStep = component$<UsersStepProps>(({
   users,
+  usernameErrors,
   addUser,
   removeUser,
   handleUsernameChange,
@@ -53,6 +55,7 @@ export const UsersStep = component$<UsersStepProps>(({
             user={user}
             index={index}
             canDelete={index > 0}
+            usernameError={usernameErrors[index]}
             onUsernameChange$={handleUsernameChange}
             onPasswordChange$={handlePasswordChange}
             onProtocolToggle$={handleProtocolToggle}

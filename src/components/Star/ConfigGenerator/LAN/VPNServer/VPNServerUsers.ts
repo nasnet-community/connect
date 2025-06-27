@@ -34,19 +34,40 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
         };
     }
     
+    // Get certificate password from first OpenVPN server if available
+    const certPassword = vpnServer.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase || "client-cert-password";
+    
+    // Certificate parameters
+    const certParams = {
+        wanInterfaceName: "ether1", // WAN interface name for CGNAT check
+        certNameToRenew: "MikroTik-LE-Cert", // Certificate name for Let's Encrypt
+        daysBeforeExpiryToRenew: 30, // Days before expiration to renew certificate
+        renewalStartTime: "03:00:00", // Time to start renewal process
+        keySize: 2048, // Key size for private certificate
+        daysValid: 3650, // Days for certificate validity
+        certPassword: certPassword // Password for exported certificate from OpenVPN config
+    };
+    
     // Add certificate-related configurations
     
     // 1. Check CGNAT configuration (important for Let's Encrypt)
-    configs.push(CheckCGNAT());
+    configs.push(CheckCGNAT(certParams.wanInterfaceName));
     
     // 2. Generate Let's Encrypt certificate configuration
-    configs.push(LetsEncrypt());
+    configs.push(LetsEncrypt(
+        certParams.certNameToRenew, 
+        certParams.daysBeforeExpiryToRenew,
+        certParams.renewalStartTime
+    ));
     
     // 3. Generate private certificate configuration as fallback
-    configs.push(PrivateCert());
+    configs.push(PrivateCert(
+        certParams.keySize,
+        certParams.daysValid
+    ));
     
     // 4. Export certificates for client use
-    configs.push(ExportCert());
+    configs.push(ExportCert(certParams.certPassword));
     
     // 5. Add certificate assignment script for VPN servers
     // Use the private certificate name that matches the PrivateCert function default
@@ -85,6 +106,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
         "# 3. Private certificate generation as fallback",
         "# 4. Certificate export for client configuration",
         "# 5. Automatic certificate assignment to VPN servers",
+        certPassword !== "client-cert-password" ? `# Certificate password from OpenVPN config: ${certPassword}` : "",
         ""
     );
     

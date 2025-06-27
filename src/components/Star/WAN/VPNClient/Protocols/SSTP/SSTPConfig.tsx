@@ -59,7 +59,7 @@ export const SSTPConfig = component$<SSTPConfigProps>(({ onIsValidChange$, isSav
               port.value = el.value;
               handleManualFormSubmit$();
             }}
-            placeholder="443"
+            placeholder="4443"
           />
         </div>
       </FormContainer>

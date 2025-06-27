@@ -1,7 +1,6 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
-import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { 
   ServerCard, 
   ServerFormField, 
@@ -10,70 +9,23 @@ import {
   Input
 } from "../../UI";
 
-/**
- * PPTP Server Configuration Component
- * 
- * Allows users to configure PPTP VPN server settings including:
- * - Configure profile name
- * - Configure authentication methods
- * - Set MTU, MRU, and other connection parameters
- */
+
+
 export const PPTPServerAdvanced = component$(() => {
-  const { pptpState, updatePPTPServer$ } = usePPTPServer();
-  
-  // Local form state to track user input before submitting
-  const formState = useStore({
-    profile: pptpState.DefaultProfile || "default",
-    authentication: [...(pptpState.Authentication || ["mschap2", "mschap1"])],
-    maxMtu: pptpState.PacketSize?.MaxMtu || 1450,
-    maxMru: pptpState.PacketSize?.MaxMru || 1450,
-    keepaliveTimeout: pptpState.KeepaliveTimeout || 30
-  });
+  const { 
+    advancedFormState,
+    authOptions,
+    toggleAuthMethod,
+    updateDefaultProfile$,
+    updateMaxMtu$,
+    updateMaxMru$,
+    updateKeepaliveTimeout$
+  } = usePPTPServer();
 
-  // Helper function to update the server configuration
-  const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
-    // Update local state first
-    Object.assign(formState, updatedValues);
-    
-    // Then update server config
-    updatePPTPServer$({
-      DefaultProfile: formState.profile,
-      Authentication: [...formState.authentication],
-      PacketSize: {
-        MaxMtu: formState.maxMtu,
-        MaxMru: formState.maxMru
-      },
-      KeepaliveTimeout: formState.keepaliveTimeout,
-      enabled: true
-    });
-  });
-
-  // Available authentication methods
-  const authMethods: AuthMethod[] = ["pap", "chap", "mschap1", "mschap2"];
-  
-  // Format authentication methods as checkbox options
-  const authOptions = authMethods.map(method => ({
-    value: method,
-    label: method.toUpperCase()
-  }));
-
-  /**
-   * Toggle an authentication method in the selected list
-   */
-  const toggleAuthMethod = $((method: string) => {
-    try {
-      const authMethod = method as AuthMethod;
-      const index = formState.authentication.indexOf(authMethod);
-      if (index === -1) {
-        formState.authentication = [...formState.authentication, authMethod];
-      } else {
-        formState.authentication = formState.authentication.filter(m => m !== authMethod);
-      }
-      // Apply changes immediately
-      updateServerConfig({});
-    } catch (error) {
-      console.error("Error toggling auth method:", error);
-    }
+  // Create a wrapper for toggleAuthMethod that matches CheckboxGroup's expected signature
+  const handleToggleAuthMethod = $((method: string) => {
+    const isSelected = advancedFormState.authentication.includes(method as any);
+    toggleAuthMethod(method, !isSelected);
   });
 
   return (
@@ -87,8 +39,8 @@ export const PPTPServerAdvanced = component$(() => {
           <SectionTitle title={$localize`Authentication Methods`} />
           <CheckboxGroup
             options={authOptions}
-            selected={formState.authentication}
-            onToggle$={toggleAuthMethod}
+            selected={advancedFormState.authentication}
+            onToggle$={handleToggleAuthMethod}
           />
         </div>
 
@@ -100,8 +52,8 @@ export const PPTPServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Profile Name`}>
               <Input
                 type="text"
-                value={formState.profile}
-                onChange$={(_, value) => updateServerConfig({ profile: value })}
+                value={advancedFormState.defaultProfile}
+                onChange$={(_, value) => updateDefaultProfile$(value)}
               />
             </ServerFormField>
 
@@ -109,8 +61,8 @@ export const PPTPServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Maximum MTU`}>
               <Input
                 type="number"
-                value={formState.maxMtu.toString()}
-                onChange$={(_, value) => updateServerConfig({ maxMtu: parseInt(value, 10) || 1450 })}
+                value={advancedFormState.maxMtu.toString()}
+                onChange$={(_, value) => updateMaxMtu$(parseInt(value, 10) || 1450)}
               />
             </ServerFormField>
 
@@ -118,8 +70,8 @@ export const PPTPServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Maximum MRU`}>
               <Input
                 type="number"
-                value={formState.maxMru.toString()}
-                onChange$={(_, value) => updateServerConfig({ maxMru: parseInt(value, 10) || 1450 })}
+                value={advancedFormState.maxMru.toString()}
+                onChange$={(_, value) => updateMaxMru$(parseInt(value, 10) || 1450)}
               />
             </ServerFormField>
 
@@ -127,8 +79,8 @@ export const PPTPServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Keepalive Timeout (s)`}>
               <Input
                 type="number"
-                value={formState.keepaliveTimeout.toString()}
-                onChange$={(_, value) => updateServerConfig({ keepaliveTimeout: parseInt(value, 10) || 30 })}
+                value={advancedFormState.keepaliveTimeout.toString()}
+                onChange$={(_, value) => updateKeepaliveTimeout$(parseInt(value, 10) || 30)}
               />
             </ServerFormField>
           </div>

@@ -1,4 +1,4 @@
-import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import { 
   HiServerOutline, 
   HiLockClosedOutline, 
@@ -16,46 +16,15 @@ import { useWireguardServer } from "./useWireguardServer";
 
 export const WireguardServerAdvanced = component$(() => {
   const { 
-    wireguardState, 
-    updateWireguardServer$, 
-    generatePrivateKey,
+    wireguardState,
+    advancedFormState,
+    showPrivateKey,
     privateKeyError, 
-    addressError 
+    addressError,
+    updateServerConfig,
+    handleGeneratePrivateKey,
+    togglePrivateKeyVisibility
   } = useWireguardServer();
-  
-  const formState = useStore({
-    name: wireguardState.Interface?.Name || "wg-server",
-    privateKey: wireguardState.Interface?.PrivateKey || "",
-    interfaceAddress: wireguardState.Interface?.InterfaceAddress || "192.168.110.1/24",
-    listenPort: wireguardState.Interface?.ListenPort || 51820,
-    mtu: wireguardState.Interface?.Mtu || 1420
-  });
-
-  const showPrivateKey = useSignal(false);
-
-  // Helper function to update the server configuration
-  const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
-    // Update local state first
-    Object.assign(formState, updatedValues);
-    
-    // Then update server config with proper StarContext structure
-    updateWireguardServer$({
-      Interface: {
-        Name: formState.name,
-        PrivateKey: formState.privateKey,
-        PublicKey: "", // Public key would be derived from private key
-        InterfaceAddress: formState.interfaceAddress,
-        ListenPort: formState.listenPort,
-        Mtu: formState.mtu
-      },
-      Peers: wireguardState.Peers || []
-    });
-  });
-
-  const handleGeneratePrivateKey = $(async () => {
-    const newPrivateKey = await generatePrivateKey();
-    updateServerConfig({ privateKey: newPrivateKey });
-  });
 
   return (
     <ServerCard
@@ -71,7 +40,7 @@ export const WireguardServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Interface Name`}>
               <Input
                 type="text"
-                value={formState.name}
+                value={advancedFormState.name}
                 onChange$={(_, value) => updateServerConfig({ name: value })}
                 placeholder={$localize`e.g. wg-server`}
               />
@@ -86,7 +55,7 @@ export const WireguardServerAdvanced = component$(() => {
                 <div class="relative flex-1">
                   <Input
                     type={showPrivateKey.value ? "text" : "password"}
-                    value={formState.privateKey}
+                    value={advancedFormState.privateKey}
                     onChange$={(_, value) => updateServerConfig({ privateKey: value })}
                     placeholder={$localize`Enter or generate private key`}
                     validation={privateKeyError.value ? "invalid" : "default"}
@@ -95,7 +64,7 @@ export const WireguardServerAdvanced = component$(() => {
                     <button
                       q:slot="suffix"
                       type="button"
-                      onClick$={() => (showPrivateKey.value = !showPrivateKey.value)}
+                      onClick$={togglePrivateKeyVisibility}
                       class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     >
                       <HiLockClosedOutline class="h-5 w-5" />
@@ -120,7 +89,7 @@ export const WireguardServerAdvanced = component$(() => {
             >
               <Input
                 type="text"
-                value={formState.interfaceAddress}
+                value={advancedFormState.interfaceAddress}
                 onChange$={(_, value) => updateServerConfig({ interfaceAddress: value })}
                 placeholder={$localize`e.g. 192.168.110.1/24`}
                 validation={addressError.value ? "invalid" : "default"}
@@ -134,7 +103,7 @@ export const WireguardServerAdvanced = component$(() => {
             <ServerFormField label={$localize`Listen Port`}>
               <Input
                 type="number"
-                value={formState.listenPort.toString()}
+                value={advancedFormState.listenPort.toString()}
                 onChange$={(_, value) => updateServerConfig({ listenPort: parseInt(value, 10) || 51820 })}
                 placeholder="51820"
               />
@@ -147,7 +116,7 @@ export const WireguardServerAdvanced = component$(() => {
             <ServerFormField label={$localize`MTU`}>
               <Input
                 type="number"
-                value={formState.mtu.toString()}
+                value={advancedFormState.mtu.toString()}
                 onChange$={(_, value) => updateServerConfig({ mtu: parseInt(value, 10) || 1420 })}
                 placeholder="1420"
               />

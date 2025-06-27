@@ -255,7 +255,7 @@ export const SstpServerWrapper = (
         "# SSTP Server Configuration Summary:",
         `# Enabled: ${serverConfig.enabled}`,
         `# Certificate: ${serverConfig.Certificate}`,
-        `# Port: ${serverConfig.Port || 443}`,
+        `# Port: ${serverConfig.Port || 4443}`,
         `# Default Profile: ${serverConfig.DefaultProfile || 'sstp-profile'}`,
         `# Users: ${sstpUsers.length}`,
         ""

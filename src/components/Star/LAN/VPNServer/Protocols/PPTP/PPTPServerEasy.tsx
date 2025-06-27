@@ -1,8 +1,19 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
-import { ServerCard } from "../../../VPNServer/UI";
+// import { usePPTPServer } from "./usePPTPServer";
+import { 
+  ServerCard, 
+  // ServerFormField 
+} from "../../UI";
 
 export const PPTPServerEasy = component$(() => {
+  // const { 
+  //   easyFormState, 
+  //   isEnabled,
+  //   defaultProfileError,
+  //   updateEasyDefaultProfile$
+  // } = usePPTPServer();
+
   return (
     <ServerCard
       title={$localize`PPTP Server`}

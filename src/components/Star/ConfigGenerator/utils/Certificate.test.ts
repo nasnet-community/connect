@@ -350,7 +350,7 @@ describe('Certificate Functions', () => {
         'PublicCert',
         'Public certificate update with server validation',
         inputs,
-        () => PublicCert(checkServerCert)
+        () => PublicCert()
       );
       
       validateRouterConfig(result, ['/system script', '/system scheduler']);
@@ -730,7 +730,7 @@ describe('Certificate Functions', () => {
       console.log('Contains Private-Cert-Setup:', SConfigGenerator(privateResult).includes('Private-Cert-Setup'));
       
       // Test PublicCert
-      const publicResult = PublicCert(false);
+      const publicResult = PublicCert();
       console.log('\n📤 Function Output: PublicCert');
       console.log('Contains Public-Cert-Update:', SConfigGenerator(publicResult).includes('Public-Cert-Update'));
       

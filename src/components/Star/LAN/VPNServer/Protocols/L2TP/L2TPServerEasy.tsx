@@ -1,41 +1,17 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
 import { ServerCard, ServerFormField, Select } from "../../UI";
 // import { FormField } from "../../../../WAN/VPNClient/components/FormField";
 
 export const L2TPServerEasy = component$(() => {
-  const { l2tpState, updateL2TPServer$, secretError } = useL2TPServer();
-  
-  const formState = useStore({
-    useIpsec: l2tpState.IPsec?.UseIpsec || "no",
-    ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
-  });
-
-  const isEnabled = useStore({ value: !!l2tpState.DefaultProfile });
-
-  // Auto-apply changes when IPsec settings change
-  const applyIpsecSettings = $((updatedValues: Partial<typeof formState>) => {
-    try {
-      // Update local state
-      Object.assign(formState, updatedValues);
-      
-      if (isEnabled.value) {
-        updateL2TPServer$({
-          DefaultProfile: "default",
-          IPsec: {
-            UseIpsec: formState.useIpsec,
-            IpsecSecret: formState.ipsecSecret
-          },
-          // Use default authentication methods
-          Authentication: ["mschap2", "mschap1"],
-          enabled: true
-        });
-      }
-    } catch (error) {
-      console.error("Error updating L2TP settings:", error);
-    }
-  });
+  const { 
+    easyFormState, 
+    isEnabled, 
+    secretError,
+    updateEasyUseIpsec$,
+    updateEasyIpsecSecret$
+  } = useL2TPServer();
 
   return (
     <ServerCard
@@ -50,10 +26,10 @@ export const L2TPServerEasy = component$(() => {
             helperText={$localize`Controls IPsec encryption for L2TP connections`}
           >
             <Select
-              value={formState.useIpsec.toString()}
+              value={easyFormState.useIpsec.toString()}
               onChange$={(value) => {
                 if (value === "yes" || value === "no" || value === "required") {
-                  applyIpsecSettings({ useIpsec: value });
+                  updateEasyUseIpsec$(value);
                 }
               }}
               options={[
@@ -65,21 +41,21 @@ export const L2TPServerEasy = component$(() => {
           </ServerFormField>
 
           {/* IPsec Secret Key - Only shown when IPsec is enabled */}
-          {formState.useIpsec !== "no" && (
+          {easyFormState.useIpsec !== "no" && (
             <div class="relative">
               <ServerFormField
                 label={$localize`IPsec Secret Key`}
                 errorMessage={secretError.value}
-                required={formState.useIpsec === "required"}
+                required={easyFormState.useIpsec === "required"}
                 helperText={secretError.value ? undefined : $localize`Key used for encrypting L2TP/IPsec connections`}
               >
                 <div class="relative">
                   <input
                     type="text"
-                    value={formState.ipsecSecret}
+                    value={easyFormState.ipsecSecret}
                     onInput$={(e) => {
                       const target = e.target as HTMLInputElement;
-                      applyIpsecSettings({ ipsecSecret: target.value });
+                      updateEasyIpsecSecret$(target.value);
                     }}
                     placeholder={$localize`Enter IPsec secret key`}
                     class="w-full rounded-lg border border-border bg-white px-3 py-2

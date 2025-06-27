@@ -1,148 +1,40 @@
-import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
-import type { NetworkProtocol, LayerMode, AuthMethod } from "../../../../StarContext/CommonType";
-import type { OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/Utils/VPNServerType";
-import { Card, FormField, Input, Button, TabNavigation, Select } from "../../../VPNServer/UI";
+import { component$ } from "@builder.io/qwik";
 import { useOpenVPNServer } from "./useOpenVPNServer";
+import { Card, FormField, Input, Button, TabNavigation, Select } from "../../../VPNServer/UI";
 import { HiDocumentOutline, HiLockClosedOutline, HiServerOutline } from "@qwikest/icons/heroicons";
 
 export const OpenVPNServerAdvanced = component$(() => {
-  const { openVpnState, updateOpenVPNServer$, certificateError, passphraseError } = useOpenVPNServer();
-  
-  const formState = useStore({
-    name: openVpnState.name || "default",
-    certificate: openVpnState.Certificate?.Certificate || "",
-    enabled: openVpnState.enabled !== undefined ? openVpnState.enabled : true,
-    port: openVpnState.Port || 1194,
-    protocol: openVpnState.Protocol || "tcp",
-    mode: openVpnState.Mode || "ip",
-    addressPool: openVpnState.Address?.AddressPool || "192.168.78.0/24",
-    requireClientCertificate: openVpnState.Certificate?.RequireClientCertificate !== undefined ? openVpnState.Certificate.RequireClientCertificate : false,
-    auth: (openVpnState.Encryption?.Auth && openVpnState.Encryption.Auth[0]) || "sha256",
-    cipher: (openVpnState.Encryption?.Cipher && openVpnState.Encryption.Cipher[0]) || "aes256-gcm",
-    certificateKeyPassphrase: openVpnState.Certificate?.CertificateKeyPassphrase || "",
-    defaultProfile: openVpnState.DefaultProfile || "default",
-    tlsVersion: openVpnState.Encryption?.TlsVersion || "only-1.2",
-    maxMtu: openVpnState.PacketSize?.MaxMtu || 1450,
-    maxMru: openVpnState.PacketSize?.MaxMru || 1450,
-    keepaliveTimeout: openVpnState.KeepaliveTimeout || 30,
-    authentication: openVpnState.Authentication || ["mschap2"]
-  });
-
-  const isEnabled = useSignal(!!openVpnState.name);
-  const showPassphrase = useSignal(false);
-  const activeTab = useSignal<'basic' | 'network' | 'security'>('basic');
-
-  const tabOptions = [
-    { id: 'basic', label: $localize`Basic Settings` },
-    { id: 'network', label: $localize`Network Settings` },
-    { id: 'security', label: $localize`Security Settings` }
-  ];
-
-  // Protocol options
-  const protocolOptions = [
-    { value: "tcp", label: "TCP" },
-    { value: "udp", label: "UDP" }
-  ];
-
-  // Mode options
-  const modeOptions = [
-    { value: "ip", label: $localize`IP (Layer 3)` },
-    { value: "ethernet", label: $localize`Ethernet (Layer 2)` }
-  ];
-
-  // Auth method options
-  const authMethodOptions = [
-    { value: "md5", label: "MD5" },
-    { value: "sha1", label: "SHA1" },
-    { value: "sha256", label: "SHA256" },
-    { value: "sha512", label: "SHA512" },
-    { value: "null", label: "None" }
-  ];
-
-  // Cipher options
-  const cipherOptions = [
-    { value: "null", label: "None" },
-    { value: "aes128-cbc", label: "AES-128-CBC" },
-    { value: "aes192-cbc", label: "AES-192-CBC" },
-    { value: "aes256-cbc", label: "AES-256-CBC" },
-    { value: "aes128-gcm", label: "AES-128-GCM" },
-    { value: "aes192-gcm", label: "AES-192-GCM" },
-    { value: "aes256-gcm", label: "AES-256-GCM" },
-    { value: "blowfish128", label: "Blowfish-128" }
-  ];
-
-  // TLS version options
-  const tlsVersionOptions = [
-    { value: "any", label: $localize`Any` },
-    { value: "only-1.2", label: $localize`Only 1.2` }
-  ];
-
-  const applyChanges = $(() => {
-    try {
-      if (isEnabled.value) {
-        updateOpenVPNServer$({
-          name: formState.name,
-          enabled: formState.enabled,
-          Port: formState.port,
-          Protocol: formState.protocol as NetworkProtocol,
-          Mode: formState.mode as LayerMode,
-          DefaultProfile: formState.defaultProfile,
-          Authentication: formState.authentication as AuthMethod[],
-          PacketSize: {
-            MaxMtu: formState.maxMtu,
-            MaxMru: formState.maxMru,
-          },
-          KeepaliveTimeout: formState.keepaliveTimeout,
-          VRF: "",
-          RedirectGetway: "disabled",
-          PushRoutes: "",
-          RenegSec: 3600,
-          Encryption: {
-            Auth: [formState.auth as OvpnAuthMethod],
-            Cipher: [formState.cipher as OvpnCipher],
-            TlsVersion: formState.tlsVersion as "any" | "only-1.2",
-            UserAuthMethod: "mschap2"
-          },
-          IPV6: {
-            EnableTunIPv6: false,
-            IPv6PrefixLength: 64,
-            TunServerIPv6: ""
-          },
-          Certificate: {
-            Certificate: formState.certificate,
-            RequireClientCertificate: formState.requireClientCertificate,
-            CertificateKeyPassphrase: formState.certificateKeyPassphrase,
-          },
-          Address: {
-            AddressPool: formState.addressPool,
-            Netmask: 24,
-            MacAddress: "",
-            MaxMtu: formState.maxMtu
-          }
-        });
-      } else {
-        updateOpenVPNServer$({
-          name: "",
-          enabled: false
-        });
-      }
-    } catch (error) {
-      console.error("Error applying OpenVPN settings:", error);
-    }
-  });
-
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      if (isEnabled.value && !formState.name) {
-        formState.name = "default";
-      }
-      applyChanges();
-    } catch (error) {
-      console.error("Error toggling OpenVPN server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
-    }
-  });
+  const { 
+    advancedFormState,
+    isEnabled,
+    showPassphrase,
+    activeTab,
+    certificateError,
+    passphraseError,
+    tabOptions,
+    protocolOptions,
+    modeOptions,
+    authMethodOptions,
+    cipherOptions,
+    tlsVersionOptions,
+    updateName$,
+    updateCertificate$,
+    updateCertificateKeyPassphrase$,
+    updateProtocol$,
+    updatePort$,
+    updateMode$,
+    updateAddressPool$,
+    updateDefaultProfile$,
+    updateMaxMtu$,
+    updateMaxMru$,
+    updateKeepaliveTimeout$,
+    updateAuth$,
+    updateCipher$,
+    updateTlsVersion$,
+    updateRequireClientCertificate$,
+    handleToggle,
+    togglePassphraseVisibility$
+  } = useOpenVPNServer();
 
   return (
     <Card
@@ -175,10 +67,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Profile Name`}>
                 <Input
                   type="text"
-                  value={formState.name}
+                  value={advancedFormState.name}
                   onChange$={(event: Event, value: string) => {
-                    formState.name = value;
-                    applyChanges();
+                    updateName$(value);
                   }}
                   placeholder={$localize`Enter profile name`}
                 />
@@ -192,10 +83,9 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <div class="flex items-center gap-2">
                   <Input
                     type="text"
-                    value={formState.certificate}
+                    value={advancedFormState.certificate}
                     onChange$={(event: Event, value: string) => {
-                      formState.certificate = value;
-                      applyChanges();
+                      updateCertificate$(value);
                     }}
                     placeholder={$localize`Enter certificate name`}
                     validation={certificateError.value ? "invalid" : "default"}
@@ -219,10 +109,9 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <div class="relative">
                   <Input
                     type={showPassphrase.value ? "text" : "password"}
-                    value={formState.certificateKeyPassphrase}
+                    value={advancedFormState.certificateKeyPassphrase}
                     onChange$={(event: Event, value: string) => {
-                      formState.certificateKeyPassphrase = value;
-                      applyChanges();
+                      updateCertificateKeyPassphrase$(value);
                     }}
                     placeholder={$localize`Enter passphrase (at least 10 characters)`}
                     validation={passphraseError.value ? "invalid" : "default"}
@@ -231,7 +120,7 @@ export const OpenVPNServerAdvanced = component$(() => {
                     <button
                       q:slot="suffix"
                       type="button"
-                      onClick$={() => (showPassphrase.value = !showPassphrase.value)}
+                      onClick$={togglePassphraseVisibility$}
                       class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     >
                       <HiLockClosedOutline class="h-5 w-5" />
@@ -244,10 +133,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Protocol`}>
                 <Select
                   options={protocolOptions}
-                  value={formState.protocol}
+                  value={advancedFormState.protocol}
                   onChange$={(value: string) => {
-                    formState.protocol = value as NetworkProtocol;
-                    applyChanges();
+                    updateProtocol$(value as any);
                   }}
                 />
               </FormField>
@@ -256,10 +144,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Port`}>
                 <Input
                   type="number"
-                  value={formState.port.toString()}
+                  value={advancedFormState.port.toString()}
                   onChange$={(event: Event, value: string) => {
-                    formState.port = parseInt(value, 10) || 1194;
-                    applyChanges();
+                    updatePort$(parseInt(value, 10) || 1194);
                   }}
                   placeholder="1-65535"
                 />
@@ -274,10 +161,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Mode`}>
                 <Select
                   options={modeOptions}
-                  value={formState.mode}
+                  value={advancedFormState.mode}
                   onChange$={(value: string) => {
-                    formState.mode = value as LayerMode;
-                    applyChanges();
+                    updateMode$(value as any);
                   }}
                 />
               </FormField>
@@ -286,10 +172,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Address Pool`}>
                 <Input
                   type="text"
-                  value={formState.addressPool}
+                  value={advancedFormState.addressPool}
                   onChange$={(event: Event, value: string) => {
-                    formState.addressPool = value;
-                    applyChanges();
+                    updateAddressPool$(value);
                   }}
                   placeholder={$localize`e.g., 192.168.78.0/24`}
                 />
@@ -299,10 +184,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Default Profile`}>
                 <Input
                   type="text"
-                  value={formState.defaultProfile}
+                  value={advancedFormState.defaultProfile}
                   onChange$={(event: Event, value: string) => {
-                    formState.defaultProfile = value;
-                    applyChanges();
+                    updateDefaultProfile$(value);
                   }}
                   placeholder={$localize`Enter PPP profile name`}
                 />
@@ -312,10 +196,9 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <FormField label={$localize`Maximum MTU`}>
                   <Input
                     type="number"
-                    value={String(formState.maxMtu)}
+                    value={String(advancedFormState.maxMtu)}
                     onChange$={(event: Event, value: string) => {
-                      formState.maxMtu = parseInt(value) || 1450;
-                      applyChanges();
+                      updateMaxMtu$(parseInt(value) || 1450);
                     }}
                   />
                 </FormField>
@@ -323,10 +206,9 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <FormField label={$localize`Maximum MRU`}>
                   <Input
                     type="number"
-                    value={String(formState.maxMru)}
+                    value={String(advancedFormState.maxMru)}
                     onChange$={(event: Event, value: string) => {
-                      formState.maxMru = parseInt(value) || 1450;
-                      applyChanges();
+                      updateMaxMru$(parseInt(value) || 1450);
                     }}
                   />
                 </FormField>
@@ -335,10 +217,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Keepalive Timeout`}>
                 <Input
                   type="number"
-                  value={String(formState.keepaliveTimeout)}
+                  value={String(advancedFormState.keepaliveTimeout)}
                   onChange$={(event: Event, value: string) => {
-                    formState.keepaliveTimeout = parseInt(value) || 30;
-                    applyChanges();
+                    updateKeepaliveTimeout$(parseInt(value) || 30);
                   }}
                 />
               </FormField>
@@ -352,10 +233,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Authentication Algorithm`}>
                 <Select
                   options={authMethodOptions}
-                  value={formState.auth}
+                  value={advancedFormState.auth}
                   onChange$={(value: string) => {
-                    formState.auth = value as OvpnAuthMethod;
-                    applyChanges();
+                    updateAuth$(value as any);
                   }}
                 />
               </FormField>
@@ -364,10 +244,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Encryption Cipher`}>
                 <Select
                   options={cipherOptions}
-                  value={formState.cipher}
+                  value={advancedFormState.cipher}
                   onChange$={(value: string) => {
-                    formState.cipher = value as OvpnCipher;
-                    applyChanges();
+                    updateCipher$(value as any);
                   }}
                 />
               </FormField>
@@ -376,10 +255,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`TLS Version`}>
                 <Select
                   options={tlsVersionOptions}
-                  value={formState.tlsVersion}
+                  value={advancedFormState.tlsVersion}
                   onChange$={(value: string) => {
-                    formState.tlsVersion = value as "any" | "only-1.2";
-                    applyChanges();
+                    updateTlsVersion$(value as any);
                   }}
                 />
               </FormField>
@@ -388,10 +266,9 @@ export const OpenVPNServerAdvanced = component$(() => {
               <FormField label={$localize`Require Client Certificate`}>
                 <input
                   type="checkbox"
-                  checked={formState.requireClientCertificate}
+                  checked={advancedFormState.requireClientCertificate}
                   onChange$={() => {
-                    formState.requireClientCertificate = !formState.requireClientCertificate;
-                    applyChanges();
+                    updateRequireClientCertificate$(!advancedFormState.requireClientCertificate);
                   }}
                   class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                 />

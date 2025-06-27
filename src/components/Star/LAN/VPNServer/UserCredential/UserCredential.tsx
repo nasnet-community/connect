@@ -1,4 +1,4 @@
-import { component$, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
@@ -6,6 +6,7 @@ import { VPN_PROTOCOLS } from "../Protocols/constants";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServer";
 import { Card, FormField } from "../UI";
+import { useUserCredential } from "./useUserCredential";
 import { 
   HiUserOutline, 
   HiLockClosedOutline, 
@@ -18,6 +19,7 @@ interface UserCredentialProps {
   user: Credentials;
   index: number;
   canDelete: boolean;
+  usernameError?: string;
   onUsernameChange$: QRL<(value: string, index: number) => void>;
   onPasswordChange$: QRL<(value: string, index: number) => void>;
   onProtocolToggle$: QRL<(protocol: VPNType, index: number) => void>;
@@ -28,6 +30,7 @@ export const UserCredential = component$<UserCredentialProps>(({
   user,
   index,
   canDelete,
+  usernameError,
   onUsernameChange$,
   onPasswordChange$,
   onProtocolToggle$,
@@ -35,67 +38,21 @@ export const UserCredential = component$<UserCredentialProps>(({
 }) => {
   const stepper = useStepperContext(VPNServerContextId);
   
-  // Determine if this user is valid
-  const isUserValid = user.Username.trim() !== "" && 
-    user.Password.trim() !== "" && 
-    Array.isArray(user.VPNType) && 
-    user.VPNType.length > 0;
-  
-  // Use useVisibleTask$ to validate and update step completion
-  // This runs on the client and doesn't have serialization issues
-  useVisibleTask$(({ track }) => {
-    // Track the user and all users for validation
-    track(() => user);
-    track(() => stepper.data.users);
-    
-    // Check if all users are valid
-    const isFormValid = stepper.data.users.every(u => {
-      const hasCredentials = u.Username?.trim() !== "" && u.Password?.trim() !== "";
-      const hasProtocols = Array.isArray(u.VPNType) && u.VPNType.length > 0;
-      const hasValidProtocols = Array.isArray(u.VPNType) && 
-        u.VPNType.every((protocol: VPNType) => stepper.data.enabledProtocols[protocol] === true);
-      return hasCredentials && hasProtocols && hasValidProtocols;
-    });
-    
-    // Update the context data stepState directly
-    if (stepper.data.stepState) {
-      stepper.data.stepState.users = isFormValid;
-    }
-    
-    // Find the Users step and update its completion status
-    const usersStepId = stepper.steps.value.find(step => 
-      step.title.includes("Users")
-    )?.id;
-    
-    if (usersStepId !== undefined) {
-      if (isFormValid) {
-        stepper.completeStep$(usersStepId);
-      } else {
-        stepper.updateStepCompletion$(usersStepId, false);
-      }
-    }
+  const {
+    isUserValid,
+    cardTitle,
+    handleUsernameChange,
+    handlePasswordChange,
+    handleProtocolToggle,
+    handleDelete
+  } = useUserCredential({
+    user,
+    index,
+    onUsernameChange$,
+    onPasswordChange$,
+    onProtocolToggle$,
+    onDelete$
   });
-
-  // Event handlers for inputs - they don't need to call validation explicitly
-  // as useVisibleTask$ will handle that reactively
-  const handleUsernameChange = $(async (value: string) => {
-    await onUsernameChange$(value, index);
-  });
-  
-  const handlePasswordChange = $(async (value: string) => {
-    await onPasswordChange$(value, index);
-  });
-  
-  const handleProtocolToggle = $(async (protocol: VPNType) => {
-    await onProtocolToggle$(protocol, index);
-  });
-  
-  const handleDelete = $(async () => {
-    await onDelete$(index);
-  });
-
-  // Use a basic title for the Card component to satisfy TypeScript requirements
-  const cardTitle = $localize`User ${index + 1}`;
   
   return (
     <Card
@@ -140,8 +97,8 @@ export const UserCredential = component$<UserCredentialProps>(({
               id={`username-${index}`}
               required={true}
               size="sm"
-              validation={user.Username.trim() !== "" ? "valid" : "invalid"}
-              errorMessage={user.Username.trim() === "" ? $localize`Required` : undefined}
+              validation={usernameError ? "invalid" : (user.Username.trim() !== "" ? "valid" : "invalid")}
+              errorMessage={usernameError || (user.Username.trim() === "" ? $localize`Required` : undefined)}
             >
               <div class="relative">
                 <input

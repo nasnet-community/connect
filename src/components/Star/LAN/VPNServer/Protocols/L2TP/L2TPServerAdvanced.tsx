@@ -1,8 +1,7 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
-import type { AuthMethod } from "../../../../StarContext/CommonType";
-import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, ServerButton, Select, SectionTitle, Input } from "../../UI";
+import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, Select, SectionTitle, Input } from "../../UI";
 
 /**
  * L2TP Server Configuration Component
@@ -14,86 +13,21 @@ import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, ServerButton
  * - Configure MTU/MRU and other connection parameters
  */
 export const L2TPServerAdvanced = component$(() => {
-  const { l2tpState, updateL2TPServer$ } = useL2TPServer();
-  
-  const formState = useStore({
-    profile: l2tpState.DefaultProfile || "default",
-    authentication: [...(l2tpState.Authentication || ["mschap2", "mschap1"])],
-    maxMru: l2tpState.PacketSize?.MaxMru || 1450,
-    maxMtu: l2tpState.PacketSize?.MaxMtu || 1450,
-    useIpsec: l2tpState.IPsec?.UseIpsec || "yes",
-    ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
-    keepaliveTimeout: l2tpState.KeepaliveTimeout || 30,
-    allowFastPath: l2tpState.allowFastPath || false,
-    maxSessions: l2tpState.maxSessions || "unlimited",
-    oneSessionPerHost: l2tpState.OneSessionPerHost || false
-  });
-
-  const isEnabled = useStore({ value: !!l2tpState.DefaultProfile });
-
-  const authMethods: AuthMethod[] = ["pap", "chap", "mschap1", "mschap2"];
-  
-  const authOptions = authMethods.map(method => ({
-    value: method,
-    label: method.toUpperCase()
-  }));
-
-  const toggleAuthMethod = $((method: string) => {
-    try {
-      const authMethod = method as AuthMethod;
-      const index = formState.authentication.indexOf(authMethod);
-      if (index === -1) {
-        formState.authentication = [...formState.authentication, authMethod];
-      } else {
-        formState.authentication = formState.authentication.filter(m => m !== authMethod);
-      }
-    } catch (error) {
-      console.error("Error toggling auth method:", error);
-    }
-  });
-
-  const applyChanges = $(() => {
-    try {
-      if (isEnabled.value) {
-        updateL2TPServer$({
-          DefaultProfile: formState.profile,
-          Authentication: [...formState.authentication],
-          PacketSize: {
-            MaxMru: formState.maxMru,
-            MaxMtu: formState.maxMtu
-          },
-          IPsec: {
-            UseIpsec: formState.useIpsec,
-            IpsecSecret: formState.ipsecSecret
-          },
-          KeepaliveTimeout: formState.keepaliveTimeout,
-          allowFastPath: formState.allowFastPath,
-          maxSessions: formState.maxSessions,
-          OneSessionPerHost: formState.oneSessionPerHost,
-          enabled: true
-        });
-      } else {
-        updateL2TPServer$({
-          DefaultProfile: ""
-        });
-      }
-    } catch (error) {
-      console.error("Error applying L2TP settings:", error);
-    }
-  });
-
-  const handleToggle = $((enabled: boolean) => {
-    try {
-      isEnabled.value = enabled;
-      if (isEnabled.value && !formState.profile) {
-        formState.profile = "default";
-      }
-      applyChanges();
-    } catch (error) {
-      console.error("Error toggling L2TP server:", error);
-      isEnabled.value = !enabled; // Revert the change if there's an error
-    }
-  });
+  const { 
+    advancedFormState, 
+    isEnabled,
+    authOptions,
+    handleToggle,
+    toggleAuthMethod,
+    updateProfile$,
+    updateMaxMtu$,
+    updateMaxMru$,
+    updateUseIpsec$,
+    updateIpsecSecret$,
+    updateKeepaliveTimeout$,
+    updateAllowFastPath$,
+    updateOneSessionPerHost$
+  } = useL2TPServer();
 
   return (
     <ServerCard
@@ -112,8 +46,8 @@ export const L2TPServerAdvanced = component$(() => {
         >
           <Input
             type="text"
-            value={formState.profile}
-            onChange$={(_, value) => (formState.profile = value)}
+            value={advancedFormState.profile}
+            onChange$={(_, value) => updateProfile$(value)}
             placeholder={$localize`Enter profile name`}
           />
         </ServerFormField>
@@ -121,10 +55,10 @@ export const L2TPServerAdvanced = component$(() => {
         {/* IPsec Usage Dropdown */}
         <ServerFormField label={$localize`Use IPsec`}>
           <Select
-            value={formState.useIpsec.toString()}
+            value={advancedFormState.useIpsec.toString()}
             onChange$={(value) => {
               if (value === "yes" || value === "no" || value === "required") {
-                formState.useIpsec = value;
+                updateUseIpsec$(value);
               }
             }}
             options={[
@@ -136,13 +70,13 @@ export const L2TPServerAdvanced = component$(() => {
         </ServerFormField>
 
         {/* IPsec Secret Key - Only shown when IPsec is enabled */}
-        {formState.useIpsec !== "no" && (
+        {advancedFormState.useIpsec !== "no" && (
           <ServerFormField 
             label={$localize`IPsec Secret Key`}
           >
             <PasswordField
-              value={formState.ipsecSecret}
-              onChange$={(value) => (formState.ipsecSecret = value)}
+              value={advancedFormState.ipsecSecret}
+              onChange$={(value) => updateIpsecSecret$(value)}
               placeholder={$localize`Enter IPsec secret key`}
             />
           </ServerFormField>
@@ -152,7 +86,7 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`Authentication Methods`}>
           <CheckboxGroup
             options={authOptions}
-            selected={formState.authentication}
+            selected={advancedFormState.authentication}
             onToggle$={toggleAuthMethod}
           />
         </ServerFormField>
@@ -166,8 +100,8 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`Max MTU`}>
           <Input
             type="number"
-            value={formState.maxMtu.toString()}
-            onChange$={(_, value) => (formState.maxMtu = parseInt(value, 10) || 1450)}
+            value={advancedFormState.maxMtu.toString()}
+            onChange$={(_, value) => updateMaxMtu$(parseInt(value, 10) || 1450)}
           />
         </ServerFormField>
 
@@ -175,8 +109,8 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`Max MRU`}>
           <Input
             type="number"
-            value={formState.maxMru.toString()}
-            onChange$={(_, value) => (formState.maxMru = parseInt(value, 10) || 1450)}
+            value={advancedFormState.maxMru.toString()}
+            onChange$={(_, value) => updateMaxMru$(parseInt(value, 10) || 1450)}
           />
         </ServerFormField>
 
@@ -184,8 +118,8 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`Keepalive Timeout (seconds)`}>
           <Input
             type="number"
-            value={formState.keepaliveTimeout.toString()}
-            onChange$={(_, value) => (formState.keepaliveTimeout = parseInt(value, 10) || 30)}
+            value={advancedFormState.keepaliveTimeout.toString()}
+            onChange$={(_, value) => updateKeepaliveTimeout$(parseInt(value, 10) || 30)}
           />
         </ServerFormField>
 
@@ -193,8 +127,8 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`Allow Fast Path`}>
           <input
             type="checkbox"
-            checked={formState.allowFastPath}
-            onChange$={() => (formState.allowFastPath = !formState.allowFastPath)}
+            checked={advancedFormState.allowFastPath}
+            onChange$={() => updateAllowFastPath$(!advancedFormState.allowFastPath)}
             class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
           />
         </ServerFormField>
@@ -203,20 +137,20 @@ export const L2TPServerAdvanced = component$(() => {
         <ServerFormField label={$localize`One Session Per Host`}>
           <input
             type="checkbox"
-            checked={formState.oneSessionPerHost}
-            onChange$={() => (formState.oneSessionPerHost = !formState.oneSessionPerHost)}
+            checked={advancedFormState.oneSessionPerHost}
+            onChange$={() => updateOneSessionPerHost$(!advancedFormState.oneSessionPerHost)}
             class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
           />
         </ServerFormField>
       </div>
 
-      {/* Apply Settings Button */}
+      {/* Apply Settings Button
       <ServerButton
         onClick$={applyChanges}
         class="mt-4"
       >
         {$localize`Apply Settings`}
-      </ServerButton>
+      </ServerButton> */}
     </ServerCard>
   );
 }); 

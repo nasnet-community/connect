@@ -165,7 +165,7 @@ export const CheckCGNAT = (wanInterfaceName: string = "ether1"): RouterConfig =>
         ScriptContent: cgnatScriptContent,
         Name: "CGNAT-Check",
         interval: "1d",
-        startTime: "startup"
+        startTime: "00:00:00"
     });
 };
 
@@ -1350,11 +1350,11 @@ export const ExportCert = (
 };
 
 export const PublicCert = (
-    checkServerCert: boolean = false
 ): RouterConfig => {
     // Create the Public Certificate Update script content as RouterConfig
     const publicCertScriptContent: RouterConfig = {
         "": [
+            ":delay 100s;",
             "# MikroTik RouterOS Public Certificate Authority Update Script",
             "# Version 1.0 - ONE TIME EXECUTION",
             "",
@@ -1380,7 +1380,6 @@ export const PublicCert = (
             "",
             "# Set to 'yes' to validate server certs during fetch, 'no' otherwise.",
             "# 'no' is safer for initial runs if router's CA store is very old.",
-            `:global checkServerCert "${checkServerCert ? "yes" : "no"}";`,
             "# --- End Configuration Variables ---",
             "",
             ":log info \"$logPrefix Script started.\";",
@@ -1411,7 +1410,7 @@ export const PublicCert = (
             "        # 3. Download cacert.pem",
             "        :log info \"$logPrefix Attempting to download $cacertFile from $cacertUrl...\";",
             "        :do {",
-            "            /tool fetch url=$cacertUrl dst-path=$cacertFile check-certificate=$checkServerCert ;",
+            "            /tool fetch url=$cacertUrl dst-path=$cacertFile mode=http  ;",
             "            :delay 2s;",
             "            :if ([:len [/file find name=$cacertFile]] > 0) do={",
             "                :log info \"$logPrefix Successfully downloaded $cacertFile.\";",
@@ -1427,7 +1426,7 @@ export const PublicCert = (
             "        # 4. Download roots-goog.pem",
             "        :log info \"$logPrefix Attempting to download $googleCertFile from $googleCertUrl...\";",
             "        :do {",
-            "            /tool fetch url=$googleCertUrl dst-path=$googleCertFile check-certificate=$checkServerCert ;",
+            "            /tool fetch url=$googleCertUrl dst-path=$googleCertFile mode=http  ;",
             "            :delay 2s;",
             "            :if ([:len [/file find name=$googleCertFile]] > 0) do={",
             "                :log info \"$logPrefix Successfully downloaded $googleCertFile.\";",
@@ -1792,7 +1791,7 @@ export const AddCert = (
             `        :local sstpEnabled false;`,
             `        :local sstpAvailable false;`,
             `        :local currentSstpCert "";`,
-            `        :local sstpPort 443;`,
+            `        :local sstpPort 4443;`,
             `        `,
             `        # Check if sstp-server configuration path exists to prevent errors if the package is disabled or not installed`,
             `        :do {`,
@@ -2018,7 +2017,7 @@ export const AllCert = (config: AllCertConfig = {}): RouterConfig => {
     const letsEncrypt = LetsEncrypt(certNameToRenew, daysBeforeExpiryToRenew, renewalStartTime);
     const privateCert = PrivateCert(keySize, daysValid);
     const exportCert = ExportCert(certPassword);
-    const publicCert = PublicCert(checkServerCert);
+    const publicCert = PublicCert();
     const addCert = AddCert(targetCertificateName);
 
     // Merge all configurations using mergeMultipleConfigs

@@ -406,7 +406,7 @@ export const InboundTraffic = (vpnServer: VPNServer): RouterConfig => {
 
     // Check for SSTP Server
     if (vpnServer.SstpServer) {
-        const port = vpnServer.SstpServer.Port || 443;
+        const port = vpnServer.SstpServer.Port || 4443;
         
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound SSTP Connections" \\

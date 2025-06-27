@@ -384,7 +384,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
   }
 
   if (ExtraConfigState.isCertificate !== undefined) {
-    configs.push(PublicCert(ExtraConfigState.isCertificate));
+    configs.push(PublicCert());
   }
 
   return mergeMultipleConfigs(...configs);

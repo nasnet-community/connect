@@ -9,8 +9,28 @@ import {
   AdvanceDNS,
   WithDomestic,
   WithoutDomestic,
-  ChooseCG 
+  ChooseCG
 } from './ChooseCG';
+import type { RouterConfig } from '../ConfigGenerator';
+
+// Test helper functions from global setup
+declare global {
+  function testWithOutput(
+    functionName: string,
+    testCase: string,
+    inputs: Record<string, any>,
+    testFn: () => RouterConfig
+  ): RouterConfig;
+  
+  function testWithGenericOutput(
+    functionName: string,
+    testCase: string,
+    inputs: Record<string, any>,
+    testFn: () => any
+  ): any;
+  
+  function validateRouterConfig(config: RouterConfig, expectedSections?: string[]): boolean;
+}
 
 describe('ChooseCG Module Tests - Configuration Display', () => {
 
@@ -145,7 +165,7 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
     it('should display advanced DNS configuration output', () => {
       testWithOutput(
         'AdvanceDNS',
-        'Advanced DNS configuration with Policy-Based Routing and leak prevention',
+        'Advanced DNS configuration with forwarders, static entries, and policy-based routing',
         {},
         () => AdvanceDNS()
       );
@@ -153,13 +173,95 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
       const result = AdvanceDNS();
       validateRouterConfig(result, [
         '/ip dns',
+        '/ip dns forwarders',
+        '/ip dns static',
         '/routing table',
         '/ip route',
+        '/ip firewall address-list',
         '/ip firewall mangle',
         '/ip dhcp-server network',
         '/ip firewall nat',
-        '/ip firewall filter'
+        '/ip firewall filter',
+        '/ip firewall layer7-protocol'
       ]);
+    });
+
+    it('should include DNS forwarders for DOM, FRN, and VPN', () => {
+      const result = AdvanceDNS();
+      const forwarders = result['/ip dns forwarders'] || [];
+
+      testWithGenericOutput(
+        'AdvanceDNS Forwarders',
+        'Verify DNS forwarders are created for DOM, FRN, and VPN',
+        {},
+        () => ({
+          hasDOM: forwarders.some(cmd => cmd.includes('name=DOM')),
+          hasFRN: forwarders.some(cmd => cmd.includes('name=FRN')),
+          hasVPN: forwarders.some(cmd => cmd.includes('name=VPN')),
+          totalForwarders: forwarders.length,
+          forwarderCommands: forwarders
+        })
+      );
+    });
+
+    it('should include DNS static entries for .ir TLD and local addresses', () => {
+      const result = AdvanceDNS();
+
+      testWithGenericOutput(
+        'AdvanceDNS Static Entries',
+        'Verify DNS static entries for .ir TLD and local addresses',
+        {},
+        () => {
+          const staticEntries = result['/ip dns static'] || [];
+          const hasIrTLD = staticEntries.some(cmd => cmd.includes('.ir\\$'));
+          const hasS4iCo = staticEntries.some(cmd => cmd.includes('s4i.co'));
+          const hasLocalDNS = staticEntries.some(cmd => cmd.includes('dns.DOM.local'));
+
+          return {
+            hasIrTLD,
+            hasS4iCo,
+            hasLocalDNS,
+            totalStaticEntries: staticEntries.length,
+            staticEntryCommands: staticEntries
+          };
+        }
+      );
+    });
+
+    it('should validate AdvanceDNS contains policy-based routing and mangle rules', () => {
+      const result = AdvanceDNS();
+      
+      testWithGenericOutput(
+        'AdvanceDNS PBR and DoH Validation',
+        'Validate PBR and DoH components in advanced DNS config',
+        { expectedFeatures: ['routing tables', 'mangle rules', 'NAT rules', 'DNS forwarders'] },
+        () => {
+          const routingTables = result['/routing table'] || [];
+          const mangleRules = result['/ip firewall mangle'] || [];
+          const natRules = result['/ip firewall nat'] || [];
+          const filterRules = result['/ip firewall filter'] || [];
+          const forwarders = result['/ip dns forwarders'] || [];
+          const staticEntries = result['/ip dns static'] || [];
+          const layer7Protocols = result['/ip firewall layer7-protocol'] || [];
+          
+          return {
+            routingTableCount: routingTables.length,
+            mangleRuleCount: mangleRules.length,
+            natRuleCount: natRules.length,
+            filterRuleCount: filterRules.length,
+            forwarderCount: forwarders.length,
+            staticEntryCount: staticEntries.length,
+            layer7ProtocolCount: layer7Protocols.length,
+            hasDNSServers: result['/ip dns']?.some(cmd => cmd.includes('servers=')) || false,
+            hasDoHServer: result['/ip dns']?.some(cmd => cmd.includes('use-doh-server=')) || false,
+            hasDoHMangleRule: mangleRules.some(cmd => cmd.includes('dst-port=443')),
+            hasRedirectNatRule: natRules.some(cmd => cmd.includes('action=redirect') && cmd.includes('in-interface-list=LAN')),
+            sampleMangleRules: mangleRules.slice(0, 3),
+            sampleForwarders: forwarders.slice(0, 3),
+            sampleStaticEntries: staticEntries.slice(0, 3)
+          };
+        }
+      );
     });
   });
 
@@ -214,6 +316,45 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
         '/ip route',
         '/ip dns'
       ]);
+    });
+
+    it('should validate network segmentation in combined configs', () => {
+      const withDomestic = WithDomestic(true);
+      const withoutDomestic = WithoutDomestic(false);
+      
+      testWithGenericOutput(
+        'Network Segmentation Comparison',
+        'Compare configuration complexity between domestic and non-domestic setups',
+        { domesticEnabled: true, domesticDisabled: false },
+        () => {
+          const domesticBridges = withDomestic['/interface bridge']?.length || 0;
+          const nonDomesticBridges = withoutDomestic['/interface bridge']?.length || 0;
+          
+          const domesticRoutes = withDomestic['/ip route']?.length || 0;
+          const nonDomesticRoutes = withoutDomestic['/ip route']?.length || 0;
+          
+          const domesticMangle = withDomestic['/ip firewall mangle']?.length || 0;
+          const nonDomesticMangle = withoutDomestic['/ip firewall mangle']?.length || 0;
+          
+          return {
+            domesticComplexity: {
+              bridges: domesticBridges,
+              routes: domesticRoutes,
+              mangleRules: domesticMangle
+            },
+            nonDomesticComplexity: {
+              bridges: nonDomesticBridges,
+              routes: nonDomesticRoutes,
+              mangleRules: nonDomesticMangle
+            },
+            complexityDifference: {
+              bridges: domesticBridges - nonDomesticBridges,
+              routes: domesticRoutes - nonDomesticRoutes,
+              mangleRules: domesticMangle - nonDomesticMangle
+            }
+          };
+        }
+      );
     });
   });
 
@@ -301,69 +442,6 @@ describe('ChooseCG Module Tests - Configuration Display', () => {
           const hasBridge = bridgeCommands.some(cmd => cmd.includes('name=LANBridgeDOM'));
           const hasAddress = addressCommands.some(cmd => cmd.includes('interface=LANBridgeDOM'));
           return { hasBridge, hasAddress, bridgeCount: bridgeCommands.length };
-        }
-      );
-    });
-
-    it('should validate AdvanceDNS contains policy-based routing', () => {
-      const result = AdvanceDNS();
-      
-      testWithGenericOutput(
-        'AdvanceDNS PBR Validation',
-        'Validate Policy-Based Routing components in advanced DNS config',
-        { expectedFeatures: ['routing tables', 'mangle rules', 'NAT rules'] },
-        () => {
-          const routingTables = result['/routing table'] || [];
-          const mangleRules = result['/ip firewall mangle'] || [];
-          const natRules = result['/ip firewall nat'] || [];
-          const filterRules = result['/ip firewall filter'] || [];
-          
-          return {
-            routingTableCount: routingTables.length,
-            mangleRuleCount: mangleRules.length,
-            natRuleCount: natRules.length,
-            filterRuleCount: filterRules.length,
-            hasDNSServers: result['/ip dns']?.some(cmd => cmd.includes('servers=')) || false
-          };
-        }
-      );
-    });
-
-    it('should validate network segmentation in combined configs', () => {
-      const withDomestic = WithDomestic(true);
-      const withoutDomestic = WithoutDomestic(false);
-      
-      testWithGenericOutput(
-        'Network Segmentation Comparison',
-        'Compare configuration complexity between domestic and non-domestic setups',
-        { domesticEnabled: true, domesticDisabled: false },
-        () => {
-          const domesticBridges = withDomestic['/interface bridge']?.length || 0;
-          const nonDomesticBridges = withoutDomestic['/interface bridge']?.length || 0;
-          
-          const domesticRoutes = withDomestic['/ip route']?.length || 0;
-          const nonDomesticRoutes = withoutDomestic['/ip route']?.length || 0;
-          
-          const domesticMangle = withDomestic['/ip firewall mangle']?.length || 0;
-          const nonDomesticMangle = withoutDomestic['/ip firewall mangle']?.length || 0;
-          
-          return {
-            domesticComplexity: {
-              bridges: domesticBridges,
-              routes: domesticRoutes,
-              mangleRules: domesticMangle
-            },
-            nonDomesticComplexity: {
-              bridges: nonDomesticBridges,
-              routes: nonDomesticRoutes,
-              mangleRules: nonDomesticMangle
-            },
-            complexityDifference: {
-              bridges: domesticBridges - nonDomesticBridges,
-              routes: domesticRoutes - nonDomesticRoutes,
-              mangleRules: domesticMangle - nonDomesticMangle
-            }
-          };
         }
       );
     });

@@ -1,7 +1,6 @@
-import { component$, useStore, $, useId } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useSSTPServer } from "./useSSTPServer";
-import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType";
 import { 
   Card, 
   FormField, 
@@ -21,81 +20,19 @@ import {
  * - Configure authentication methods
  */
 export const SSTPServerAdvanced = component$(() => {
-  const { sstpState, updateSSTPServer$ } = useSSTPServer();
-  
-  // Local form state to track changes before applying
-  const formState = useStore({
-    certificate: sstpState.Certificate || "",
-    port: sstpState.Port || 443,
-    forceAes: sstpState.ForceAes || false,
-    pfs: sstpState.Pfs || false,
-    tlsVersion: sstpState.TlsVersion || "any",
-    ciphers: sstpState.Ciphers || "aes256-gcm-sha384",
-    verifyClientCertificate: sstpState.VerifyClientCertificate || false,
-    defaultProfile: sstpState.DefaultProfile || "default",
-    authentication: sstpState.Authentication || ["mschap2"],
-    maxMtu: sstpState.PacketSize?.MaxMtu || 1450,
-    maxMru: sstpState.PacketSize?.MaxMru || 1450,
-    keepaliveTimeout: sstpState.KeepaliveTimeout || 30,
-  });
-
-  const isEnabled = useStore({ value: sstpState.enabled });
-  
-  // Generate unique IDs for form controls
-  const enableSwitchId = useId();
-  const forceAesSwitchId = useId();
-  const pfsSwitchId = useId();
-  const verifyCertSwitchId = useId();
-
-  // Auto-apply changes when form state changes
-  const applyChanges = $((updatedValues: Partial<typeof formState>) => {
-    try {
-      // Update local state
-      Object.assign(formState, updatedValues);
-
-      // Update server configuration
-      updateSSTPServer$({
-        enabled: isEnabled.value,
-        Certificate: formState.certificate,
-        Port: formState.port,
-        ForceAes: formState.forceAes,
-        Pfs: formState.pfs,
-        TlsVersion: formState.tlsVersion as TLSVersion,
-        Ciphers: formState.ciphers as "aes256-gcm-sha384" | "aes256-sha",
-        VerifyClientCertificate: formState.verifyClientCertificate,
-        DefaultProfile: formState.defaultProfile,
-        Authentication: formState.authentication as AuthMethod[],
-        PacketSize: {
-          MaxMtu: formState.maxMtu,
-          MaxMru: formState.maxMru,
-        },
-        KeepaliveTimeout: formState.keepaliveTimeout,
-      });
-    } catch (error) {
-      console.error("Failed to update SSTP server configuration:", error);
-    }
-  });
-
-  // Authentication method options
-  const authMethodOptions = [
-    { value: "pap", label: $localize`PAP` },
-    { value: "chap", label: $localize`CHAP` },
-    { value: "mschap1", label: $localize`MS-CHAPv1` },
-    { value: "mschap2", label: $localize`MS-CHAPv2` },
-  ];
-
-  // TLS version options
-  const tlsVersionOptions = [
-    { value: "any", label: $localize`Any` },
-    { value: "only-1.2", label: $localize`Only 1.2` },
-    { value: "only-1.3", label: $localize`Only 1.3` },
-  ];
-
-  // Cipher options
-  const cipherOptions = [
-    { value: "aes256-gcm-sha384", label: $localize`AES256-GCM-SHA384` },
-    { value: "aes256-sha", label: $localize`AES256-SHA` },
-  ];
+  const { 
+    advancedFormState,
+    isEnabled,
+    enableSwitchId,
+    forceAesSwitchId,
+    pfsSwitchId,
+    verifyCertSwitchId,
+    authMethodOptions,
+    tlsVersionOptions,
+    cipherOptions,
+    applyChanges,
+    toggleAuthMethod
+  } = useSSTPServer();
 
   return (
     <Card
@@ -133,7 +70,7 @@ export const SSTPServerAdvanced = component$(() => {
               <Input
                 type="text"
                 placeholder={$localize`Enter certificate name`}
-                value={formState.certificate}
+                value={advancedFormState.certificate}
                 onChange$={(_, value) =>
                   applyChanges({ certificate: value })
                 }
@@ -142,13 +79,13 @@ export const SSTPServerAdvanced = component$(() => {
 
             <FormField
               label={$localize`Port`}
-              helperText={$localize`SSTP server port (default: 443)`}
+              helperText={$localize`SSTP server port (default: 4443)`}
             >
               <Input
                 type="number"
-                value={String(formState.port)}
+                value={String(advancedFormState.port)}
                 onChange$={(_, value) =>
-                  applyChanges({ port: parseInt(value) || 443 })
+                  applyChanges({ port: parseInt(value) || 4443 })
                 }
               />
             </FormField>
@@ -165,10 +102,10 @@ export const SSTPServerAdvanced = component$(() => {
               helperText={$localize`Required TLS version`}
             >
               <Select
-                value={formState.tlsVersion}
+                value={advancedFormState.tlsVersion}
                 options={tlsVersionOptions}
                 onChange$={(value) =>
-                  applyChanges({ tlsVersion: value as TLSVersion })
+                  applyChanges({ tlsVersion: value as any })
                 }
               />
             </FormField>
@@ -178,10 +115,10 @@ export const SSTPServerAdvanced = component$(() => {
               helperText={$localize`Encryption cipher to use`}
             >
               <Select
-                value={formState.ciphers}
+                value={advancedFormState.ciphers}
                 options={cipherOptions}
                 onChange$={(value) =>
-                  applyChanges({ ciphers: value as "aes256-gcm-sha384" | "aes256-sha" })
+                  applyChanges({ ciphers: value as any })
                 }
               />
             </FormField>
@@ -190,7 +127,7 @@ export const SSTPServerAdvanced = component$(() => {
               <Switch
                 id={forceAesSwitchId}
                 label={$localize`Enabled`}
-                checked={formState.forceAes}
+                checked={advancedFormState.forceAes}
                 onChange$={(checked) =>
                   applyChanges({ forceAes: checked })
                 }
@@ -201,7 +138,7 @@ export const SSTPServerAdvanced = component$(() => {
               <Switch
                 id={pfsSwitchId}
                 label={$localize`Enabled`}
-                checked={formState.pfs}
+                checked={advancedFormState.pfs}
                 onChange$={(checked) =>
                   applyChanges({ pfs: checked })
                 }
@@ -212,7 +149,7 @@ export const SSTPServerAdvanced = component$(() => {
               <Switch
                 id={verifyCertSwitchId}
                 label={$localize`Enabled`}
-                checked={formState.verifyClientCertificate}
+                checked={advancedFormState.verifyClientCertificate}
                 onChange$={(checked) =>
                   applyChanges({ verifyClientCertificate: checked })
                 }
@@ -232,20 +169,8 @@ export const SSTPServerAdvanced = component$(() => {
             >
               <CheckboxGroup
                 options={authMethodOptions}
-                selected={formState.authentication}
-                onToggle$={(method: string) => {
-                  const authMethod = method as AuthMethod;
-                  const currentAuth = [...formState.authentication];
-                  const index = currentAuth.indexOf(authMethod);
-                  
-                  if (index === -1) {
-                    currentAuth.push(authMethod);
-                  } else {
-                    currentAuth.splice(index, 1);
-                  }
-                  
-                  applyChanges({ authentication: currentAuth });
-                }}
+                selected={advancedFormState.authentication}
+                onToggle$={toggleAuthMethod}
               />
             </FormField>
 
@@ -262,7 +187,7 @@ export const SSTPServerAdvanced = component$(() => {
             >
               <Input
                 type="text"
-                value={formState.defaultProfile}
+                value={advancedFormState.defaultProfile}
                 onChange$={(_, value) =>
                   applyChanges({ defaultProfile: value })
                 }
@@ -276,7 +201,7 @@ export const SSTPServerAdvanced = component$(() => {
               >
                 <Input
                   type="number"
-                  value={String(formState.maxMtu)}
+                  value={String(advancedFormState.maxMtu)}
                   onChange$={(_, value) =>
                     applyChanges({ maxMtu: parseInt(value) || 1450 })
                   }
@@ -289,7 +214,7 @@ export const SSTPServerAdvanced = component$(() => {
               >
                 <Input
                   type="number"
-                  value={String(formState.maxMru)}
+                  value={String(advancedFormState.maxMru)}
                   onChange$={(_, value) =>
                     applyChanges({ maxMru: parseInt(value) || 1450 })
                   }
@@ -303,7 +228,7 @@ export const SSTPServerAdvanced = component$(() => {
             >
               <Input
                 type="number"
-                value={String(formState.keepaliveTimeout)}
+                value={String(advancedFormState.keepaliveTimeout)}
                 onChange$={(_, value) =>
                   applyChanges({ keepaliveTimeout: parseInt(value) || 30 })
                 }

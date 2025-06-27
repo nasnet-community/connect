@@ -2,6 +2,20 @@ import type { RouterConfig } from "../ConfigGenerator";
 import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
 import { DomesticIP } from "../Choose/DomesticIP";
 
+export interface DNSServer {
+       ip: string;
+       gateway: string;
+       DNS: string;
+       DOH: string;
+}
+
+interface DNSServers {
+       DOM: DNSServer;
+       FRN: DNSServer;
+       VPN: DNSServer;
+}
+
+
 
 export const BaseConfig = (): RouterConfig => {
        const config: RouterConfig = {
@@ -15,9 +29,9 @@ export const BaseConfig = (): RouterConfig => {
                      "add address=10.0.0.0/8 list=LOCAL-IP",
               ],
               "/ip firewall nat": [
-                     "add action=masquerade chain=srcnat out-interface-list=WAN",
+                     `add action=masquerade chain=srcnat out-interface-list=WAN comment="MASQUERADE the traffic go to WAN Interfaces"`,
               ],
-              
+
        }
 
 
@@ -72,6 +86,9 @@ export const DometicBase = (): RouterConfig => {
               "/ip route": [
                      `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-DOM`,
               ],
+              "/ip firewall filter": [
+                     `add action=accept chain=input protocol=icmp in-interface-list=DOM-WAN comment="Allow ping from DOM-WAN"`,
+              ],
        }
 
        return config
@@ -83,9 +100,9 @@ export const DomesticAddresslist = (): RouterConfig => {
                      // Add DomesticIP addresses
                      // ...DomesticIP.map(ip => `add address=${ip} list=DOMAddList`)
                      ...DomesticIP,
-                   ],
+              ],
        }
-     
+
        return config
 }
 
@@ -194,7 +211,7 @@ export const VPNBase = (): RouterConfig => {
               ],
        }
 
-       return config 
+       return config
 }
 
 export const SplitBase = (): RouterConfig => {
@@ -245,139 +262,204 @@ export const SplitBase = (): RouterConfig => {
        }
 
 
-       return config 
+       return config
 }
 
 export const DNS = (): RouterConfig => {
        const config: RouterConfig = {
               "/ip dns": ["set allow-remote-requests=yes servers=8.8.8.8"],
+              "/ip firewall filter": [
+                     'add chain=input dst-port=53 in-interface-list=WAN protocol=tcp action=drop comment="Block Open Recursive DNS"',
+                     `add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop comment="Block Open Recursive DNS"`,
+              ]
        }
+
        return config
 }
 
+// export const AdvanceDNS1 = (dnsServers: DNSServer[], domesticLink: boolean): RouterConfig => {
+//        const serversToProcess = domesticLink 
+//               ? dnsServers 
+//               : dnsServers.filter(s => s.name !== 'DOM' && s.name !== 'Split');
+
+//        if (!serversToProcess || serversToProcess.length === 0) {
+//               return {};
+//        }
+
+//        let baseConfig: RouterConfig = {
+//               "/ip dns": [],
+//               "/ip route": [],
+//               "/routing table": [],
+//               "/ip firewall mangle": [],
+//               "/ip dhcp-server network": [],
+//               "/ip firewall nat": [
+//                      'add action=redirect chain=dstnat dst-port=53 protocol=tcp in-interface-list=LAN dst-address-type=!local comment="Redirect all LAN DNS TCP to Router"',
+//                      'add action=redirect chain=dstnat dst-port=53 protocol=udp in-interface-list=LAN dst-address-type=!local comment="Redirect all LAN DNS UDP to Router"',
+//               ],
+//               "/ip firewall filter": [],
+//        };
+
+//        const serverIps = serversToProcess.map(s => s.ip).join(',');
+//        baseConfig["/ip dns"].push(`set allow-remote-requests=yes servers=${serverIps}`);
+//        baseConfig["/ip dns"].push("set cache-size=4096KiB cache-max-ttl=1d");
+
+//        serversToProcess.forEach((server, index) => {
+//               const routeIndex = index + 1;
+//               const routingMark = `rm_dns_bridge${routeIndex}`;
+//               const routingTable = `dns_route_bridge${routeIndex}`;
+//               const networkDetails = networkDetailsMap[server.name];
+
+//               if (!networkDetails) return;
+
+//               // IP Route
+//               baseConfig["/ip route"].push(`add dst-address=${server.ip}/32 gateway=${server.gateway} routing-mark=${routingMark} \\
+//                      comment="Route to DNS_SERVER_${routeIndex} (${server.name}) via ${server.gateway}"`);
+
+//               // Routing Table
+//               baseConfig["/routing table"].push(`add fib=yes name=${routingTable} comment="Routing table for DNS via ${server.gateway}"`);
+
+//               // Firewall Mangle for Router's Output
+//               baseConfig["/ip firewall mangle"].push(
+//                      `add action=mark-routing chain=output dst-address=${server.ip} protocol=tcp dst-port=53 new-routing-mark=${routingMark} passthrough=no \\
+//                             comment="Mark TCP DNS to ${server.ip} for ${server.name} path"`
+//               );
+//               baseConfig["/ip firewall mangle"].push(
+//                      `add action=mark-routing chain=output dst-address=${server.ip} protocol=udp dst-port=53 new-routing-mark=${routingMark} passthrough=no \\
+//                             comment="Mark UDP DNS to ${server.ip} for ${server.name} path"`
+//               );
+
+//               // DHCP Server Network Update
+//               baseConfig["/ip dhcp-server network"].push(`set [find address="${networkDetails.bridge.subnet}"] dns-server=${networkDetails.bridge.ip} \\
+//                      comment="${server.name} Bridge DNS to Router"`);
+
+//               // Firewall Filter Rules
+//               baseConfig["/ip firewall filter"].push(
+//                      `add action=accept chain=forward protocol=udp src-address=${networkDetails.bridge.subnet} dst-address=${networkDetails.bridge.ip} dst-port=53 \\
+//                             comment="Allow ${server.name} Bridge UDP DNS to Router"`
+//               );
+//               baseConfig["/ip firewall filter"].push(
+//                      `add action=accept chain=forward protocol=tcp src-address=${networkDetails.bridge.subnet} dst-address=${networkDetails.bridge.ip} dst-port=53 \\
+//                             comment="Allow ${server.name} Bridge TCP DNS to Router"`
+//               );
+//               baseConfig["/ip firewall filter"].push(
+//                      `add action=drop chain=forward protocol=udp src-address=${networkDetails.bridge.subnet} dst-port=53 \\
+//                             comment="Drop ${server.name} Bridge Rogue UDP DNS"`
+//               );
+//               baseConfig["/ip firewall filter"].push(
+//                      `add action=drop chain=forward protocol=tcp src-address=${networkDetails.bridge.subnet} dst-port=53 \\
+//                             comment="Drop ${server.name} Bridge Rogue TCP DNS"`
+//               );
+//        });
+
+//        if (domesticLink) {
+//               const dohServerName = 'DOM';
+//               const dohServer = serversToProcess.find(s => s.name === dohServerName);
+//               if (dohServer) {
+//                      const routeIndex = serversToProcess.findIndex(s => s.name === dohServerName) + 1;
+//                      const routingMark = `rm_dns_bridge${routeIndex}`;
+//                      const dohConfig = DOHConfig(`https://8.8.8.8/dns-query`, dohServer.ip, routingMark);
+//                      baseConfig = mergeMultipleConfigs(baseConfig, dohConfig);
+//               }
+//        }
+
+//        return baseConfig;
+// }
+
 export const AdvanceDNS = (): RouterConfig => {
+
+       const networkDetailsMap: DNSServers = {
+              DOM: {
+                     ip: "8.8.8.8",
+                     gateway: "DOM-WAN",
+                     DNS: "8.8.8.8",
+                     DOH: "https://dns.google/dns-query"
+              },
+              FRN: {
+                     ip: "1.1.1.1",
+                     gateway: "FRN-WAN",
+                     DNS: "1.1.1.1",
+                     DOH: "https://1.1.1.1/dns-query"
+              },
+              VPN: {
+                     ip: "1.0.0.1", 
+                     gateway: "VPN-WAN",
+                     DNS: "1.0.0.1",
+                     DOH: ""
+              }
+       };
+
+       const {DOM, FRN, VPN} = networkDetailsMap
+
        const config: RouterConfig = {
               "/ip dns": [
-                     "set allow-remote-requests=yes servers=8.8.8.8,1.1.1.1,9.9.9.9,208.67.222.222",
-                     "set cache-size=4096KiB cache-max-ttl=1d",
+                     "set allow-remote-requests=yes cache-size=10240KiB cache-max-ttl=7d",
+                     "set max-concurrent-queries=1000 query-server-timeout=3s",
+                     `set servers=${DOM.DNS},${FRN.DNS},${VPN.DNS}`,
               ],
-              "/ip route": [
-                     "add dst-address=8.8.8.8/32 gateway=DOM-WAN routing-mark=rm_dns_bridge1 comment=\"Route to DNS_SERVER_1 via DOM-WAN\"",
-                     "add dst-address=1.1.1.1/32 gateway=FRN-WAN routing-mark=rm_dns_bridge2 comment=\"Route to DNS_SERVER_2 via FRN-WAN\"",
-                     "add dst-address=9.9.9.9/32 gateway=VPN-WAN routing-mark=rm_dns_bridge3 comment=\"Route to DNS_SERVER_3 via VPN-WAN\"", 
-                     "add dst-address=208.67.222.222/32 gateway=Split-WAN routing-mark=rm_dns_bridge4 comment=\"Route to DNS_SERVER_4 via Split-WAN\"",
+              "/ip dns forwarders": [
+                     `add name=DOM dns-servers=${DOM.DNS} doh-servers=${DOM.DOH}`,
+                     `add name=FRN dns-servers=${FRN.DNS} doh-servers=${FRN.DOH}`,
+                     `add name=VPN dns-servers=${VPN.DNS} `,
               ],
-              "/routing table": [
-                     "add fib=yes name=dns_route_bridge1 comment=\"Routing table for DNS via DOM-WAN\"",
-                     "add fib=yes name=dns_route_bridge2 comment=\"Routing table for DNS via FRN-WAN\"", 
-                     "add fib=yes name=dns_route_bridge3 comment=\"Routing table for DNS via VPN-WAN\"",
-                     "add fib=yes name=dns_route_bridge4 comment=\"Routing table for DNS via Split DNS\"",
+              "/ip dns static": [
+                     `add regexp=".*\\\\.ir\\$" type=FWD forward-to=DOM match-subdomains=yes comment=".ir TLDs"`,
+
+                     `add name="s4i.co" type=FWD forward-to=FRN match-subdomains=yes comment="Handle s4i.co domain"`,
+
+                     `add name=dns.DOM.local address=${DOM.DNS}`,
+                     `add name=dns.FRN.local address=${FRN.DNS}`,
+                     `add name=dns.VPN.local address=${VPN.DNS}`,                     
+
+              ],
+              "/ip route": [],
+              "/routing table": [],
+              "/ip firewall address-list": [
+                     `add list=DNS_DOM address=${DOM.DNS}`,
+                     `add list=DNS_FRN address=${FRN.DNS}`,
+                     `add list=DNS_VPN address=${VPN.DNS}`,
               ],
               "/ip firewall mangle": [
-                     // DNS PBR Rules for Router's Output Chain
-                     "add action=mark-routing chain=output dst-address=8.8.8.8 protocol=udp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge1 passthrough=no comment=\"Mark UDP DNS to 8.8.8.8 for DOM path\"",
-                     "add action=mark-routing chain=output dst-address=8.8.8.8 protocol=tcp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge1 passthrough=no comment=\"Mark TCP DNS to 8.8.8.8 for DOM path\"",
-                     
-                     "add action=mark-routing chain=output dst-address=1.1.1.1 protocol=udp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge2 passthrough=no comment=\"Mark UDP DNS to 1.1.1.1 for FRN path\"",
-                     "add action=mark-routing chain=output dst-address=1.1.1.1 protocol=tcp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge2 passthrough=no comment=\"Mark TCP DNS to 1.1.1.1 for FRN path\"",
-                     
-                     "add action=mark-routing chain=output dst-address=9.9.9.9 protocol=udp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge3 passthrough=no comment=\"Mark UDP DNS to 9.9.9.9 for VPN path\"", 
-                     "add action=mark-routing chain=output dst-address=9.9.9.9 protocol=tcp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge3 passthrough=no comment=\"Mark TCP DNS to 9.9.9.9 for VPN path\"",
-                     
-                     "add action=mark-routing chain=output dst-address=208.67.222.222 protocol=udp dst-port=53 \\",
-                     "    new-routing-mark=rm_dns_bridge4 passthrough=no comment=\"Mark UDP DNS to 208.67.222.222 for Split path\"",
-                     "add action=mark-routing chain=output dst-address=208.67.222.222 protocol=tcp dst-port=53 \\", 
-                     "    new-routing-mark=rm_dns_bridge4 passthrough=no comment=\"Mark TCP DNS to 208.67.222.222 for Split path\"",
+                     `add chain=output protocol=udp dst-port=53 dst-address-list=DNS_DOM action=mark-routing \\
+                            new-routing-mark=to-DOM passthrough=no comment="Router DNS udp Traffic DOM"`,
+                     `add chain=output protocol=tcp dst-port=53 dst-address-list=DNS_DOM action=mark-routing \\
+                            new-routing-mark=to-DOM passthrough=no comment="Router DNS tcp Traffic DOM"`,
+                     `add chain=output protocol=udp dst-port=53 dst-address-list=DNS_FRN action=mark-routing \\
+                            new-routing-mark=to-FRN passthrough=no comment="Router DNS udp Traffic FRN"`,
+                     `add chain=output protocol=tcp dst-port=53 dst-address-list=DNS_FRN action=mark-routing \\
+                            new-routing-mark=to-FRN passthrough=no comment="Router DNS tcp Traffic FRN"`,
+                     `add chain=output protocol=udp dst-port=53 dst-address-list=DNS_VPN action=mark-routing \\
+                            new-routing-mark=to-VPN passthrough=no comment="Router DNS udp Traffic VPN"`,
+                     `add chain=output protocol=tcp dst-port=53 dst-address-list=DNS_VPN action=mark-routing \\
+                            new-routing-mark=to-VPN passthrough=no comment="Router DNS tcp Traffic VPN"`,
+
+                     `add chain=prerouting protocol=udp dst-port=53 layer7-protocol=ir-tld action=mark-routing \\
+                            new-routing-mark=to-DOM comment="Mark ir-tld to DOM via layer7-pattern"`,
               ],
-              "/ip dhcp-server network": [
-                     // Update DHCP networks to use router as DNS server for each bridge
-                     "set [find address=\"192.168.10.0/24\"] dns-server=192.168.10.1 comment=\"Split Bridge DNS to Router\"",
-                     "set [find address=\"192.168.20.0/24\"] dns-server=192.168.20.1 comment=\"DOM Bridge DNS to Router\"", 
-                     "set [find address=\"192.168.30.0/24\"] dns-server=192.168.30.1 comment=\"FRN Bridge DNS to Router\"",
-                     "set [find address=\"192.168.40.0/24\"] dns-server=192.168.40.1 comment=\"VPN Bridge DNS to Router\"",
-              ],
+              "/ip dhcp-server network": [],
               "/ip firewall nat": [
-                     // DNS Leak Prevention - Redirect rogue DNS queries to router
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.10.1 to-ports=53 protocol=udp \\",
-                     "    src-address=192.168.10.0/24 dst-address=!192.168.10.1 in-interface=LANBridgeSplit dst-port=53 \\",
-                     "    comment=\"Redirect Split Bridge UDP DNS to Router\"",
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.10.1 to-ports=53 protocol=tcp \\",
-                     "    src-address=192.168.10.0/24 dst-address=!192.168.10.1 in-interface=LANBridgeSplit dst-port=53 \\", 
-                     "    comment=\"Redirect Split Bridge TCP DNS to Router\"",
-                     
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.20.1 to-ports=53 protocol=udp \\",
-                     "    src-address=192.168.20.0/24 dst-address=!192.168.20.1 in-interface=LANBridgeDOM dst-port=53 \\",
-                     "    comment=\"Redirect DOM Bridge UDP DNS to Router\"",
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.20.1 to-ports=53 protocol=tcp \\",
-                     "    src-address=192.168.20.0/24 dst-address=!192.168.20.1 in-interface=LANBridgeDOM dst-port=53 \\",
-                     "    comment=\"Redirect DOM Bridge TCP DNS to Router\"",
-                     
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.30.1 to-ports=53 protocol=udp \\", 
-                     "    src-address=192.168.30.0/24 dst-address=!192.168.30.1 in-interface=LANBridgeFRN dst-port=53 \\",
-                     "    comment=\"Redirect FRN Bridge UDP DNS to Router\"",
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.30.1 to-ports=53 protocol=tcp \\",
-                     "    src-address=192.168.30.0/24 dst-address=!192.168.30.1 in-interface=LANBridgeFRN dst-port=53 \\",
-                     "    comment=\"Redirect FRN Bridge TCP DNS to Router\"",
-                     
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.40.1 to-ports=53 protocol=udp \\",
-                     "    src-address=192.168.40.0/24 dst-address=!192.168.40.1 in-interface=LANBridgeVPN dst-port=53 \\",
-                     "    comment=\"Redirect VPN Bridge UDP DNS to Router\"",
-                     "add action=dst-nat chain=dstnat to-addresses=192.168.40.1 to-ports=53 protocol=tcp \\",
-                     "    src-address=192.168.40.0/24 dst-address=!192.168.40.1 in-interface=LANBridgeVPN dst-port=53 \\",
-                     "    comment=\"Redirect VPN Bridge TCP DNS to Router\"",
+                     'add action=redirect chain=dstnat dst-port=53 protocol=tcp in-interface-list=LAN dst-address-type=!local comment="Redirect all LAN DNS TCP to Router"',
+                     'add action=redirect chain=dstnat dst-port=53 protocol=udp in-interface-list=LAN dst-address-type=!local comment="Redirect all LAN DNS UDP to Router"',
               ],
-              "/ip firewall filter": [
-                     // Allow legitimate DNS traffic from each bridge to router
-                     "add action=accept chain=forward protocol=udp src-address=192.168.10.0/24 \\",
-                     "    dst-address=192.168.10.1 dst-port=53 comment=\"Allow Split Bridge UDP DNS to Router\"",
-                     "add action=accept chain=forward protocol=tcp src-address=192.168.10.0/24 \\",
-                     "    dst-address=192.168.10.1 dst-port=53 comment=\"Allow Split Bridge TCP DNS to Router\"",
-                     
-                     "add action=accept chain=forward protocol=udp src-address=192.168.20.0/24 \\",
-                     "    dst-address=192.168.20.1 dst-port=53 comment=\"Allow DOM Bridge UDP DNS to Router\"", 
-                     "add action=accept chain=forward protocol=tcp src-address=192.168.20.0/24 \\",
-                     "    dst-address=192.168.20.1 dst-port=53 comment=\"Allow DOM Bridge TCP DNS to Router\"",
-                     
-                     "add action=accept chain=forward protocol=udp src-address=192.168.30.0/24 \\",
-                     "    dst-address=192.168.30.1 dst-port=53 comment=\"Allow FRN Bridge UDP DNS to Router\"",
-                     "add action=accept chain=forward protocol=tcp src-address=192.168.30.0/24 \\",
-                     "    dst-address=192.168.30.1 dst-port=53 comment=\"Allow FRN Bridge TCP DNS to Router\"",
-                     
-                     "add action=accept chain=forward protocol=udp src-address=192.168.40.0/24 \\",
-                     "    dst-address=192.168.40.1 dst-port=53 comment=\"Allow VPN Bridge UDP DNS to Router\"",
-                     "add action=accept chain=forward protocol=tcp src-address=192.168.40.0/24 \\", 
-                     "    dst-address=192.168.40.1 dst-port=53 comment=\"Allow VPN Bridge TCP DNS to Router\"",
-                     
-                     // Drop rogue DNS traffic that bypasses router
-                     "add action=drop chain=forward protocol=udp src-address=192.168.10.0/24 \\",
-                     "    dst-port=53 comment=\"Drop Split Bridge Rogue UDP DNS\"",
-                     "add action=drop chain=forward protocol=tcp src-address=192.168.10.0/24 \\",
-                     "    dst-port=53 comment=\"Drop Split Bridge Rogue TCP DNS\"",
-                     
-                     "add action=drop chain=forward protocol=udp src-address=192.168.20.0/24 \\",
-                     "    dst-port=53 comment=\"Drop DOM Bridge Rogue UDP DNS\"",
-                     "add action=drop chain=forward protocol=tcp src-address=192.168.20.0/24 \\",
-                     "    dst-port=53 comment=\"Drop DOM Bridge Rogue TCP DNS\"",
-                     
-                     "add action=drop chain=forward protocol=udp src-address=192.168.30.0/24 \\",
-                     "    dst-port=53 comment=\"Drop FRN Bridge Rogue UDP DNS\"",
-                     "add action=drop chain=forward protocol=tcp src-address=192.168.30.0/24 \\",
-                     "    dst-port=53 comment=\"Drop FRN Bridge Rogue TCP DNS\"",
-                     
-                     "add action=drop chain=forward protocol=udp src-address=192.168.40.0/24 \\",
-                     "    dst-port=53 comment=\"Drop VPN Bridge Rogue UDP DNS\"",
-                     "add action=drop chain=forward protocol=tcp src-address=192.168.40.0/24 \\",
-                     "    dst-port=53 comment=\"Drop VPN Bridge Rogue TCP DNS\"",
-              ],
-       }
+              "/ip firewall filter": [],
+              "/ip firewall layer7-protocol": [
+                     `add name="ir-tld" regexp="\\x02ir\\x00"`
+              ]
+       };
 
        return config
+}
+
+export const DOHConfig = (dohServerUrl: string, dohServerIp: string, routingMark: string): RouterConfig => {
+       const config: RouterConfig = {
+              "/ip dns": [
+                     `set use-doh-server=${dohServerUrl} verify-doh-cert=yes`,
+              ],
+              "/ip firewall mangle": [
+                     `add action=mark-routing chain=output dst-address=${dohServerIp} protocol=tcp dst-port=443 new-routing-mark=${routingMark} passthrough=no comment="Mark DoH to ${dohServerIp} for path ${routingMark}"`
+              ],
+       };
+
+       return config;
 }
 
 export const WithDomestic = (DomesticLink: boolean): RouterConfig => {
@@ -403,9 +485,9 @@ export const WithoutDomestic = (DomesticLink: boolean): RouterConfig => {
 }
 
 export const ChooseCG = (DomesticLink: boolean): RouterConfig => {
-       if(DomesticLink){
+       if (DomesticLink) {
               return WithDomestic(DomesticLink)
-       } else{
+       } else {
               return WithoutDomestic(DomesticLink)
        }
 }
