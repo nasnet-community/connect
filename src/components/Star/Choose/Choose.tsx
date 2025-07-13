@@ -1,4 +1,4 @@
-import { component$, useSignal, $, useContext, useTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useContext, useTask$, useVisibleTask$ } from "@builder.io/qwik";
 import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
@@ -11,6 +11,7 @@ import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../StarContext/StarContext";
+import { NewsletterModal } from "~/components/Core/newsletter";
 
 // Define step components outside the main component to avoid serialization issues
 const FirmwareStep = component$((props: StepProps) => (
@@ -52,6 +53,8 @@ const OWRTPackageStep = component$(() => (
 export const Choose = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const openWRTOption = useSignal<"stock" | "already-installed" | undefined>(undefined);
+  const showNewsletterModal = useSignal(false);
+  const newsletterModalShown = useSignal(false);
 
   // Handle OpenWRT option selection
   const handleOpenWRTOptionSelect = $((option: "stock" | "already-installed") => {
@@ -147,6 +150,20 @@ export const Choose = component$((props: StepProps) => {
 
   const activeStep = useSignal(0);
   const stepperKey = useSignal(0); // Force re-render when this changes
+
+  // Show newsletter modal on component mount if user hasn't subscribed
+  useVisibleTask$(() => {
+    if (typeof window !== 'undefined' && !newsletterModalShown.value) {
+      const isSubscribed = starContext.state.Choose.Newsletter?.isSubscribed;
+      if (!isSubscribed) {
+        // Show modal after a short delay to ensure everything is loaded
+        setTimeout(() => {
+          showNewsletterModal.value = true;
+          newsletterModalShown.value = true;
+        }, 1000);
+      }
+    }
+  });
 
   // Handle firmware changes - watch for OpenWRT vs MikroTik
   useTask$(async ({ track }) => {
@@ -275,6 +292,14 @@ export const Choose = component$((props: StepProps) => {
     }
   });
 
+  const handleNewsletterClose = $(() => {
+    showNewsletterModal.value = false;
+  });
+
+  const handleNewsletterSuccess = $(() => {
+    showNewsletterModal.value = false;
+  });
+
   return (
     <div class="container mx-auto w-full px-4">
       {/* Add a key to force re-render when steps change */}
@@ -290,6 +315,13 @@ export const Choose = component$((props: StepProps) => {
           }
         }}
         isComplete={props.isComplete}
+      />
+
+      {/* Newsletter Modal */}
+      <NewsletterModal
+        isVisible={showNewsletterModal.value}
+        onClose$={handleNewsletterClose}
+        onSuccess$={handleNewsletterSuccess}
       />
     </div>
   );

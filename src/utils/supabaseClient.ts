@@ -1,3 +1,11 @@
+// Environment variables
+const SUPABASE_BASE_URL = import.meta.env.VITE_SUPABASE_BASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const L2TP_FUNCTION_PATH = import.meta.env.VITE_L2TP_FUNCTION_PATH || "/functions/v1/l2tp-credentials";
+const REQUEST_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || "30000", 10);
+const ENABLE_L2TP_LOGGING = import.meta.env.VITE_ENABLE_L2TP_LOGGING === "true";
+const SESSION_STORAGE_KEY = import.meta.env.VITE_SESSION_STORAGE_KEY || "vpn_session_id";
+
 export interface L2TPCredentials {
   id: string;
   username: string;
@@ -33,41 +41,57 @@ export async function getL2TPCredentials(
   sessionId?: string
 ): Promise<L2TPCredentialsResponse> {
   try {
-    console.log("Fetching L2TP credentials from Supabase...");
+    if (!SUPABASE_BASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error("Supabase configuration not found");
+    }
 
-    const supabaseBaseUrl = import.meta.env.VITE_SUPABASE_BASE_URL
-    const supabaseFunctionURL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
-    const supabaseURL = `${supabaseBaseUrl}${supabaseFunctionURL}`
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Fetching L2TP credentials from Supabase...");
+    }
+
+    const url = `${SUPABASE_BASE_URL}${L2TP_FUNCTION_PATH}`;
     
-    const url = supabaseURL;
-    console.log("Function URL:", url);
-
-
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY 
-    console.log("Using authorization with token length:", supabaseAnonKey.length);
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Function URL:", url);
+      console.log("Using authorization with token length:", SUPABASE_ANON_KEY.length);
+    }
 
     const requestBody = {
       platform,
       referrer,
       sessionId
     };
-    console.log("Request body:", requestBody);
+    
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Request body:", requestBody);
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
     const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseAnonKey}`
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
       }
     );
 
-    console.log("Response status:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    clearTimeout(timeoutId);
+
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+    }
     
     const responseText = await response.text();
-    console.log("Raw response:", responseText);
+    
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Raw response:", responseText);
+    }
     
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}, Response: ${responseText}`);
@@ -80,10 +104,14 @@ export async function getL2TPCredentials(
       throw new Error(`Failed to parse response: ${responseText}`);
     }
     
-    console.log("Credentials received:", data);
+    if (ENABLE_L2TP_LOGGING) {
+      console.log("Credentials received:", data);
+    }
     return data;
   } catch (error: unknown) {
-    console.error("Error fetching L2TP credentials:", error);
+    if (ENABLE_L2TP_LOGGING) {
+      console.error("Error fetching L2TP credentials:", error);
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch L2TP credentials",
@@ -104,11 +132,11 @@ export function getReferrerFromURL(): string {
 export function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return '';
   
-  let sessionId = localStorage.getItem('vpn_session_id');
+  let sessionId = localStorage.getItem(SESSION_STORAGE_KEY);
   
   if (!sessionId) {
     sessionId = `sess_${Math.random().toString(36).substring(2, 15)}_${Date.now().toString(36)}`;
-    localStorage.setItem('vpn_session_id', sessionId);
+    localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
   }
   
   return sessionId;

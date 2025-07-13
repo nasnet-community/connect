@@ -19,11 +19,14 @@ export interface StateHistoryProps {
   onClearHistory$: QRL<() => void>;
   onRefresh$: QRL<() => void>;
   onGenerateConfig$: QRL<() => void>;
+  onDownloadLatest$: QRL<() => void>;
 }
 
 export interface ConfigViewerProps {
   currentConfig: string;
   pastedConfig: string;
+  onDownloadPastedConfig$?: QRL<() => void>;
+  onDownloadCurrentConfig$?: QRL<() => void>;
 }
 
 export interface StateHeaderProps {

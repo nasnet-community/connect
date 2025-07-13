@@ -23,9 +23,12 @@ export interface UseOpenVPNConfigResult {
   caCertificateContent: { value: string };
   clientCertificateContent: { value: string };
   clientKeyContent: { value: string };
+  authTypeSelectionNeeded: { value: boolean };
+  parsedConfigWaitingForAuth: { value: any };
   handleConfigChange$: QRL<(value: string) => Promise<void>>;
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
+  handleAuthTypeSelection$: QRL<(selectedAuthType: "Credentials" | "Certificate" | "CredentialsCertificate") => Promise<void>>;
   validateOpenVPNConfig: QRL<
     (config: OpenVpnClientConfig) => Promise<{
       isValid: boolean;
@@ -68,6 +71,8 @@ export const useOpenVPNConfig = (
   const caCertificateContent = useSignal("");
   const clientCertificateContent = useSignal("");
   const clientKeyContent = useSignal("");
+  const authTypeSelectionNeeded = useSignal(false);
+  const parsedConfigWaitingForAuth = useSignal<any>(null);
 
   if (starContext.state.WAN.VPNClient?.OpenVPN) {
     const existingConfig = starContext.state.WAN.VPNClient.OpenVPN;
@@ -101,23 +106,48 @@ export const useOpenVPNConfig = (
       config: OpenVpnClientConfig,
     ): Promise<{ isValid: boolean; emptyFields: string[] }> => {
       const emptyFields: string[] = [];
+      
+      // Basic required fields
       if (!config.Server?.Address) emptyFields.push("Server Address");
       if (!config.Server?.Port) emptyFields.push("Server Port");
 
+      // Credential validation with RouterOS constraints
       if (
         config.AuthType === "Credentials" ||
         config.AuthType === "CredentialsCertificate"
       ) {
-        if (!config.Credentials?.Username) emptyFields.push("Username");
-        if (!config.Credentials?.Password) emptyFields.push("Password");
+        if (!config.Credentials?.Username) {
+          emptyFields.push("Username");
+        } else if (config.Credentials.Username.length > 27) {
+          emptyFields.push("Username (max 27 characters for RouterOS)");
+        }
+        
+        if (!config.Credentials?.Password) {
+          emptyFields.push("Password");
+        } else if (config.Credentials.Password.length > 1000) {
+          emptyFields.push("Password (max 1000 characters for RouterOS)");
+        }
       }
 
+      // Certificate validation
       if (
         config.AuthType === "Certificate" ||
         config.AuthType === "CredentialsCertificate"
       ) {
         if (!config.Certificates?.ClientCertificateName)
           emptyFields.push("Client Certificate");
+      }
+
+      // RouterOS specific validation
+      const supportedCiphers = ['null', 'aes128-cbc', 'aes128-gcm', 'aes192-cbc', 'aes192-gcm', 'aes256-cbc', 'aes256-gcm', 'blowfish128'];
+      const supportedAuth = ['md5', 'sha1', 'null', 'sha256', 'sha512'];
+      
+      if (config.Cipher && !supportedCiphers.includes(config.Cipher)) {
+        emptyFields.push("Supported Cipher (RouterOS limitation)");
+      }
+      
+      if (config.Auth && !supportedAuth.includes(config.Auth)) {
+        emptyFields.push("Supported Auth Algorithm (RouterOS limitation)");
       }
 
       return { isValid: emptyFields.length === 0, emptyFields };
@@ -177,33 +207,44 @@ export const useOpenVPNConfig = (
         let authUserPass = false;
         let clientCertFound = false;
         let caFound = false;
-        let inBlock: 'ca' | 'cert' | 'key' | null = null;
-        const blockContent = { ca: "", cert: "", key: "" };
+        let inBlock: 'ca' | 'cert' | 'key' | 'tls-auth' | 'tls-crypt' | null = null;
+        const blockContent = { ca: "", cert: "", key: "", "tls-auth": "", "tls-crypt": "" };
         const unsupportedDirectivesFound: string[] = [];
+        const remoteServers: Array<{address: string, port: number}> = [];
         let detectedCipher = '';
         let detectedAuth: string | null = null;
+        let hasTlsAuth = false;
+        let hasTlsCrypt = false;
+        
+        // MikroTik RouterOS supported values
+        const supportedCiphers = ['null', 'aes128-cbc', 'aes128-gcm', 'aes192-cbc', 'aes192-gcm', 'aes256-cbc', 'aes256-gcm', 'blowfish128'];
+        const supportedAuth = ['md5', 'sha1', 'null', 'sha256', 'sha512'];
 
         for (let i = 0; i < lines.length; i++) {
           const trimmedLine = lines[i].trim();
 
+          // Handle end of blocks
           if (trimmedLine.startsWith("</")) {
             inBlock = null;
             continue;
           }
 
+          // Handle content inside blocks
           if (inBlock) {
-            blockContent[inBlock] += trimmedLine + '\\n';
+            if (inBlock === 'ca' || inBlock === 'cert' || inBlock === 'key') {
+              blockContent[inBlock] += trimmedLine + '\\n';
+            } else if (inBlock === 'tls-auth') {
+              hasTlsAuth = true;
+              blockContent[inBlock] += trimmedLine + '\\n';
+            } else if (inBlock === 'tls-crypt') {
+              hasTlsCrypt = true;
+              blockContent[inBlock] += trimmedLine + '\\n';
+            }
             continue;
           }
 
-          if (
-            trimmedLine.startsWith("<ca>") ||
-            trimmedLine.startsWith("<cert>") ||
-            trimmedLine.startsWith("<key>") ||
-            trimmedLine.startsWith("<tls-auth>") ||
-            trimmedLine.startsWith("<tls-crypt>")
-          ) {
-            
+          // Handle start of blocks
+          if (trimmedLine.startsWith("<") && !trimmedLine.startsWith("</")) {
             if (trimmedLine.startsWith("<ca>")) {
               inBlock = "ca";
               caFound = true;
@@ -213,15 +254,21 @@ export const useOpenVPNConfig = (
             } else if (trimmedLine.startsWith("<key>")) {
               inBlock = "key";
             } else if (trimmedLine.startsWith("<tls-auth>")) {
-              unsupportedDirectivesFound.push('tls-auth');
+              inBlock = "tls-auth";
+              hasTlsAuth = true;
             } else if (trimmedLine.startsWith("<tls-crypt>")) {
-              unsupportedDirectivesFound.push('tls-crypt');
+              inBlock = "tls-crypt";
+              hasTlsCrypt = true;
             }
-            if (!trimmedLine.includes("</")) {
-              continue;
+            
+            // Handle single-line blocks
+            if (trimmedLine.includes("</")) {
+              inBlock = null;
             }
+            continue;
           }
 
+          // Skip empty lines and comments
           if (!trimmedLine || trimmedLine.startsWith("#") || trimmedLine.startsWith(";"))
             continue;
 
@@ -231,72 +278,266 @@ export const useOpenVPNConfig = (
           const value2 = parts[2];
 
           switch (directive) {
+            case "client":
+              // Standard directive, no action needed
+              break;
+              
             case "remote":
-              if (!config.Server.Address) {
-                config.Server.Address = value;
-                config.Server.Port = value2 ? parseInt(value2, 10) : 1194;
+              if (value) {
+                const port = value2 ? parseInt(value2, 10) : 1194;
+                remoteServers.push({ address: value, port });
+                
+                // Set the first remote as primary if not already set
+                if (!config.Server.Address) {
+                  config.Server.Address = value;
+                  config.Server.Port = port;
+                }
               }
               break;
+              
             case "dev":
               if (value === "tun") config.Mode = "ip";
-              if (value === "tap") config.Mode = "ethernet";
+              else if (value === "tap") config.Mode = "ethernet";
+              else unsupportedDirectivesFound.push(`dev ${value}`);
               break;
+              
             case "proto":
               if (value === "tcp" || value === "udp") {
                 config.Protocol = value;
+              } else {
+                unsupportedDirectivesFound.push(`proto ${value}`);
               }
               break;
+              
             case "auth-user-pass":
               authUserPass = true;
+              // Note: File references are not supported in RouterOS
+              if (value) {
+                unsupportedDirectivesFound.push(`auth-user-pass with file reference (${value})`);
+              }
               break;
+              
             case "cipher":
-              config.Cipher = (value?.toUpperCase() as any);
-              detectedCipher = value?.toLowerCase() || '';
+              if (value) {
+                // Normalize cipher names to RouterOS format
+                const cipherLower = value.toLowerCase().replace(/-/g, '');
+                const cipherMap: Record<string, string> = {
+                  'aes256gcm': 'aes256-gcm',
+                  'aes256cbc': 'aes256-cbc', 
+                  'aes128gcm': 'aes128-gcm',
+                  'aes128cbc': 'aes128-cbc',
+                  'aes192gcm': 'aes192-gcm',
+                  'aes192cbc': 'aes192-cbc',
+                  'blowfish128': 'blowfish128',
+                  'null': 'null'
+                };
+                
+                const normalizedCipher = cipherMap[cipherLower] || value.toLowerCase();
+                
+                if (supportedCiphers.includes(normalizedCipher)) {
+                  config.Cipher = normalizedCipher as any;
+                } else {
+                  unsupportedDirectivesFound.push(`cipher ${value} (unsupported by RouterOS)`);
+                  // Use a default supported cipher
+                  config.Cipher = 'aes256-gcm' as any;
+                }
+                detectedCipher = value.toLowerCase();
+              }
               break;
+              
             case "auth":
-              config.Auth = (value?.toUpperCase() as any);
-              detectedAuth = value?.toLowerCase() || '';
+              if (value) {
+                const authLower = value.toLowerCase();
+                if (supportedAuth.includes(authLower)) {
+                  config.Auth = authLower as any;
+                } else {
+                  unsupportedDirectivesFound.push(`auth ${value} (unsupported by RouterOS)`);
+                  // Use a default supported auth
+                  config.Auth = 'sha256' as any;
+                }
+                detectedAuth = authLower;
+              }
               break;
+              
             case "ca":
-              config.Certificates.CaCertificateName = value;
-              caFound = true;
+              // Certificate file reference
+              if (value) {
+                config.Certificates.CaCertificateName = value.replace(/\.(crt|pem)$/, '');
+                caFound = true;
+              }
               break;
+              
             case "cert":
-              config.Certificates.ClientCertificateName = value;
-              clientCertFound = true;
+              // Certificate file reference
+              if (value) {
+                config.Certificates.ClientCertificateName = value.replace(/\.(crt|pem)$/, '');
+                clientCertFound = true;
+              }
               break;
+              
+            case "key":
+              // Key file reference - RouterOS doesn't support separate key files
+              if (value) {
+                unsupportedDirectivesFound.push(`separate key file reference (${value})`);
+              }
+              break;
+              
             case "remote-cert-tls":
               config.VerifyServerCertificate = value === "server";
               break;
-            case 'verify-x509-name':
-                config.VerifyServerCertificate = true;
-                break;
+              
+            case "verify-x509-name":
+              config.VerifyServerCertificate = true;
+              break;
+              
+            case "tls-version-min":
+              // RouterOS only supports "any" or "only-1.2"
+              if (value && !['1.2', '1.3'].includes(value)) {
+                unsupportedDirectivesFound.push(`tls-version-min ${value}`);
+              }
+              break;
+              
+            case "key-direction":
+              // Supported in RouterOS OpenVPN - but only with tls-auth/tls-crypt
+              break;
+              
+            // Compression features - NOT SUPPORTED in RouterOS
             case "comp-lzo":
             case "compress":
+            case "comp-noadapt":
+              unsupportedDirectivesFound.push(`${directive} (LZO compression not supported in RouterOS)`);
+              break;
+              
+            // NCP features - NOT SUPPORTED in RouterOS  
+            case "ncp-ciphers":
+            case "ncp-disable":
+              unsupportedDirectivesFound.push(`${directive} (NCP negotiation not supported in RouterOS)`);
+              break;
+              
+            // Network and performance directives - mostly ignored/supported
+            case "tun-mtu":
+            case "tun-mtu-extra":
+            case "mssfix":
+            case "sndbuf":
+            case "rcvbuf":
+            case "max-mtu":
+              // These are supported in RouterOS but may not be configurable via GUI
+              break;
+              
+            case "ping":
+            case "ping-restart":
+              // Keepalive settings - supported in RouterOS
+              break;
+              
+            case "verb":
+            case "mute":
+            case "mute-replay-warnings":
+              // Logging settings - not critical for basic connection
+              break;
+              
+            // Connection behavior - mostly supported
+            case "remote-random":
+            case "resolv-retry":
+            case "nobind":
+            case "persist-key":
+            case "persist-tun":
+            case "reneg-sec":
+            case "server-poll-timeout":
+            case "connect-retry":
+            case "connect-timeout":
+              // These are behavioral settings that RouterOS handles differently
+              break;
+              
+            case "setenv":
+              // Environment variables - limited support
+              if (value === "CLIENT_CERT") {
+                // CLIENT_CERT is supported
+              } else {
+                unsupportedDirectivesFound.push(`setenv ${value || ''}`);
+              }
+              break;
+              
+            // Provider-specific directives - NOT SUPPORTED
+            case "service":
+            case "block-outside-dns":
+            case "dhcp-option":
+            case "redirect-gateway":
+            case "route-nopull":
+            case "pull":
+            case "pull-filter":
+              unsupportedDirectivesFound.push(`${directive} (provider-specific feature)`);
+              break;
+              
+            // Security features with limited support
             case "crl-verify":
-                unsupportedDirectivesFound.push(directive);
-                break;
+            case "ns-cert-type":
+              unsupportedDirectivesFound.push(`${directive} (not supported in RouterOS)`);
+              break;
+              
+            // Username/password length validation  
+            case "username":
+              if (value && value.length > 27) {
+                unsupportedDirectivesFound.push(`username too long (max 27 characters in RouterOS)`);
+              }
+              break;
+              
+            // Ignore other known safe directives
+            case "script-security":
+            case "up":
+            case "down":
+            case "route-up":
+            case "route-pre-down":
+            case "client-disconnect":
+            case "learn-address":
+            case "auth-user-pass-verify":
+              // Script-related directives not supported
+              unsupportedDirectivesFound.push(`${directive} (script features not supported)`);
+              break;
+              
+            // Unknown directive handling
+            default:
+              if (directive && !directive.startsWith('#')) {
+                console.warn(`Unknown OpenVPN directive: ${directive}`);
+                // Don't add unknown directives to unsupported list to avoid noise
+              }
+              break;
           }
         }
         
-        if (detectedCipher.includes('gcm') && detectedAuth && detectedAuth !== 'null') {
-          unsupportedDirectivesFound.push(`auth ${detectedAuth} with GCM cipher`);
+        // Special handling for TLS security features
+        if (hasTlsAuth) {
+          unsupportedDirectivesFound.push('tls-auth (requires RouterOS 7.17+ with specific auth settings)');
         }
         
+        if (hasTlsCrypt) {
+          unsupportedDirectivesFound.push('tls-crypt (requires RouterOS 7.17+ with auth SHA256 and key-direction 1)');
+        }
+        
+        // Handle GCM ciphers with auth directive (should be ignored for GCM)
+        if (detectedCipher.includes('gcm') && detectedAuth && detectedAuth !== 'null') {
+          unsupportedDirectivesFound.push(`auth ${detectedAuth} with GCM cipher (GCM provides authentication)`);
+          // For GCM ciphers, auth should be null
+          config.Auth = 'null' as any;
+        }
+        
+        // Remove duplicates from unsupported directives
         unsupportedDirectives.value = [...new Set(unsupportedDirectivesFound)];
 
+        // Set default certificate names for inline content
         if (caFound && !config.Certificates.CaCertificateName) {
-            config.Certificates.CaCertificateName = "ovpn-client-ca";
+          config.Certificates.CaCertificateName = "ovpn-client-ca";
         }
 
         if (clientCertFound && !config.Certificates.ClientCertificateName) {
-            config.Certificates.ClientCertificateName = "ovpn-client-cert";
+          config.Certificates.ClientCertificateName = "ovpn-client-cert";
         }
 
+        // Store inline certificate content
         config.Certificates.CaCertificateContent = blockContent.ca.trim() || undefined;
         config.Certificates.ClientCertificateContent = blockContent.cert.trim() || undefined;
         config.Certificates.ClientKeyContent = blockContent.key.trim() || undefined;
 
+        // Determine authentication type
         if (authUserPass && clientCertFound) {
           config.AuthType = "CredentialsCertificate";
         } else if (clientCertFound) {
@@ -304,31 +545,30 @@ export const useOpenVPNConfig = (
         } else if (authUserPass) {
           config.AuthType = "Credentials";
         } else {
-            errorMessage.value = "Could not determine authentication type. No 'auth-user-pass' or certificate found.";
-            return null;
-        }
-        
-        if(config.Cipher) {
-            const cipherLower = config.Cipher.toLowerCase();
-            if(cipherLower.includes('aes-256-gcm')) config.Cipher = 'aes256-gcm';
-            else if(cipherLower.includes('aes-256-cbc')) config.Cipher = 'aes256-cbc';
-            else if(cipherLower.includes('aes-128-gcm')) config.Cipher = 'aes128-gcm';
-            else if(cipherLower.includes('aes-128-cbc')) config.Cipher = 'aes128-cbc';
-            else if(cipherLower.includes('aes-192-gcm')) config.Cipher = 'aes192-gcm';
-            else if(cipherLower.includes('aes-192-cbc')) config.Cipher = 'aes192-cbc';
-            else if(cipherLower.includes('blowfish128')) config.Cipher = 'blowfish128';
-            else if(cipherLower.includes('null')) config.Cipher = 'null';
-        }
-
-        if(config.Auth) {
-            const authLower = config.Auth.toLowerCase();
-            if(['md5', 'sha1', 'null', 'sha256', 'sha512'].includes(authLower)) {
-                config.Auth = authLower as any;
-            }
+          // Cannot determine authentication type - let user choose
+          authTypeSelectionNeeded.value = true;
+          parsedConfigWaitingForAuth.value = config;
+          errorMessage.value = "";
+          missingFields.value = ["Authentication Type"];
+          
+          // Set basic parsed values so user can see what was extracted
+          serverAddress.value = config.Server?.Address || "";
+          serverPort.value = config.Server?.Port?.toString() || "1194";
+          protocol.value = config.Protocol || "udp";
+          cipher.value = config.Cipher || "aes-256-gcm";
+          auth.value = config.Auth || "sha256";
+          caCertName.value = config.Certificates?.CaCertificateName || "";
+          caCertificateContent.value = config.Certificates?.CaCertificateContent || "";
+          clientCertificateContent.value = config.Certificates?.ClientCertificateContent || "";
+          clientKeyContent.value = config.Certificates?.ClientKeyContent || "";
+          
+          if (onIsValidChange$) onIsValidChange$(false);
+          return null;
         }
 
         const finalConfig = config as OpenVpnClientConfig;
 
+        // Update form fields with parsed values
         serverAddress.value = finalConfig.Server?.Address || "";
         serverPort.value = finalConfig.Server?.Port?.toString() || "1194";
         protocol.value = finalConfig.Protocol || "udp";
@@ -344,18 +584,14 @@ export const useOpenVPNConfig = (
         clientCertificateContent.value = finalConfig.Certificates?.ClientCertificateContent || "";
         clientKeyContent.value = finalConfig.Certificates?.ClientKeyContent || "";
 
-        const { isValid, emptyFields } =
-          await validateOpenVPNConfig(finalConfig);
+        const { isValid, emptyFields } = await validateOpenVPNConfig(finalConfig);
 
         if (!isValid) {
-            const message = `Configuration file is incomplete. Please provide the following: ${emptyFields.join(
-                ", ",
-              )}`;
-            errorMessage.value = message;
-            missingFields.value = emptyFields;
+          const message = `Configuration requires additional information. Please provide: ${emptyFields.join(", ")}`;
+          errorMessage.value = message;
+          missingFields.value = emptyFields;
 
-            if(onIsValidChange$) onIsValidChange$(false);
-
+          if (onIsValidChange$) onIsValidChange$(false);
           return null;
         }
 
@@ -367,6 +603,8 @@ export const useOpenVPNConfig = (
       }
     },
   );
+
+
 
   const handleConfigChange$ = $(async (value: string) => {
     config.value = value;
@@ -389,6 +627,54 @@ export const useOpenVPNConfig = (
       await handleConfigChange$(text);
     } catch (error) {
       errorMessage.value = `Error reading file: ${error}`;
+    }
+  });
+
+  const handleAuthTypeSelection$ = $(async (selectedAuthType: "Credentials" | "Certificate" | "CredentialsCertificate") => {
+    authType.value = selectedAuthType;
+    authTypeSelectionNeeded.value = false;
+    
+    if (parsedConfigWaitingForAuth.value) {
+      const config = parsedConfigWaitingForAuth.value;
+      config.AuthType = selectedAuthType;
+      
+      // Update missing fields based on selected auth type
+      const newMissingFields: string[] = [];
+      
+      if (selectedAuthType === "Credentials" || selectedAuthType === "CredentialsCertificate") {
+        if (!username.value) newMissingFields.push("Username");
+        if (!password.value) newMissingFields.push("Password");
+      }
+      
+      if (selectedAuthType === "Certificate" || selectedAuthType === "CredentialsCertificate") {
+        if (!clientCertName.value) newMissingFields.push("Client Certificate");
+      }
+      
+      missingFields.value = newMissingFields;
+      parsedConfigWaitingForAuth.value = null;
+      
+      if (newMissingFields.length === 0) {
+        // All required fields are available, complete the configuration
+        const finalConfig: OpenVpnClientConfig = {
+          ...config,
+          AuthType: selectedAuthType,
+          Credentials: (selectedAuthType === "Credentials" || selectedAuthType === "CredentialsCertificate") ? {
+            Username: username.value,
+            Password: password.value
+          } : undefined,
+          Certificates: {
+            ...config.Certificates,
+            ClientCertificateName: (selectedAuthType === "Certificate" || selectedAuthType === "CredentialsCertificate") 
+              ? clientCertName.value 
+              : undefined,
+          }
+        };
+        
+        await updateContextWithConfig$(finalConfig);
+      } else {
+        // Still need more fields from user
+        if (onIsValidChange$) onIsValidChange$(false);
+      }
     }
   });
 
@@ -460,9 +746,12 @@ export const useOpenVPNConfig = (
     caCertificateContent,
     clientCertificateContent,
     clientKeyContent,
+    authTypeSelectionNeeded,
+    parsedConfigWaitingForAuth,
     handleConfigChange$,
     handleManualFormSubmit$,
     handleFileUpload$,
+    handleAuthTypeSelection$,
     validateOpenVPNConfig,
     parseOpenVPNConfig,
     updateContextWithConfig$,

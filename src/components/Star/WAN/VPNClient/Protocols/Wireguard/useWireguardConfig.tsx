@@ -132,14 +132,43 @@ export const useWireguardConfig = (
 
         const config: Partial<WireguardClientConfig> = {};
 
+        // Helper function to check if an IP address is IPv6
+        const isIPv6 = (ip: string): boolean => {
+          return ip.includes(':') && !ip.includes('.');
+        };
+
+        // Helper function to filter out IPv6 addresses from comma-separated list
+        const filterIPv4Only = (addresses: string): string => {
+          return addresses
+            .split(',')
+            .map(addr => addr.trim())
+            .filter(addr => !isIPv6(addr.split('/')[0])) // Remove network suffix for IP check
+            .join(', ');
+        };
+
+        // Helper function to get first IPv4 address from comma-separated list
+        const getFirstIPv4 = (addresses: string): string => {
+          const addressList = addresses.split(',').map(addr => addr.trim());
+          for (const addr of addressList) {
+            const ipPart = addr.split('/')[0]; // Remove network suffix
+            if (!isIPv6(ipPart)) {
+              return addr;
+            }
+          }
+          return '';
+        };
+
         for (const line of lines) {
           const trimmedLine = line.trim();
+          
+          // Handle section headers
           if (trimmedLine.startsWith("[") && trimmedLine.endsWith("]")) {
             inInterfaceSection = trimmedLine.toLowerCase() === "[interface]";
             inPeerSection = trimmedLine.toLowerCase() === "[peer]";
             continue;
           }
 
+          // Skip empty lines and comments
           if (!trimmedLine || trimmedLine.startsWith("#")) {
             continue;
           }
@@ -156,18 +185,33 @@ export const useWireguardConfig = (
                 config.InterfacePrivateKey = value;
                 break;
               case "address":
-                config.InterfaceAddress = value;
+                // Handle multiple addresses, filter out IPv6, take first IPv4
+                const ipv4Address = getFirstIPv4(value);
+                if (ipv4Address) {
+                  config.InterfaceAddress = ipv4Address;
+                }
                 break;
               case "listenport":
-                config.InterfaceListenPort = parseInt(value, 10);
+                const listenPort = parseInt(value, 10);
+                if (!isNaN(listenPort) && listenPort > 0 && listenPort <= 65535) {
+                  config.InterfaceListenPort = listenPort;
+                }
                 break;
               case "mtu":
-                config.InterfaceMTU = parseInt(value, 10);
+                const mtu = parseInt(value, 10);
+                if (!isNaN(mtu) && mtu > 0) {
+                  config.InterfaceMTU = mtu;
+                }
                 break;
               case "dns":
-                // Handle multiple DNS servers separated by comma, take only the first one
-                const dnsServers = value.split(',');
-                config.InterfaceDNS = dnsServers[0].trim();
+                // Handle multiple DNS servers, filter out IPv6, take first IPv4
+                const dnsServers = value.split(',').map(dns => dns.trim());
+                for (const dns of dnsServers) {
+                  if (!isIPv6(dns)) {
+                    config.InterfaceDNS = dns;
+                    break;
+                  }
+                }
                 break;
             }
           } else if (inPeerSection) {
@@ -179,38 +223,64 @@ export const useWireguardConfig = (
                 config.PeerPresharedKey = value;
                 break;
               case "allowedips":
-                config.PeerAllowedIPs = value;
+                // Filter out IPv6 addresses from AllowedIPs
+                const filteredAllowedIPs = filterIPv4Only(value);
+                if (filteredAllowedIPs) {
+                  config.PeerAllowedIPs = filteredAllowedIPs;
+                } else {
+                  // If no IPv4 addresses found, default to IPv4 all traffic
+                  config.PeerAllowedIPs = "0.0.0.0/0";
+                }
                 break;
               case "endpoint":
-                // eslint-disable-next-line no-case-declarations
+                // Handle endpoint parsing for both IPv4 and domain names
                 const lastColonIndex = value.lastIndexOf(":");
                 if (lastColonIndex === -1) {
+                  // No port specified
                   config.PeerEndpointAddress = value;
+                  config.PeerEndpointPort = 51820; // Default WireGuard port
                 } else {
                   const potentialPort = value.substring(lastColonIndex + 1);
-                  if (!isNaN(parseInt(potentialPort, 10))) {
-                    config.PeerEndpointAddress = value.substring(
-                      0,
-                      lastColonIndex
-                    );
-                    config.PeerEndpointPort = parseInt(potentialPort, 10);
-                    if (
-                      config.PeerEndpointAddress.startsWith("[") &&
-                      config.PeerEndpointAddress.endsWith("]")
-                    ) {
-                      config.PeerEndpointAddress =
-                        config.PeerEndpointAddress.slice(1, -1);
+                  const portNum = parseInt(potentialPort, 10);
+                  
+                  if (!isNaN(portNum) && portNum > 0 && portNum <= 65535) {
+                    // Valid port found
+                    let address = value.substring(0, lastColonIndex);
+                    
+                    // Handle IPv6 addresses in brackets [::1]:port format
+                    if (address.startsWith("[") && address.endsWith("]")) {
+                      address = address.slice(1, -1);
+                      // Skip IPv6 addresses
+                      if (isIPv6(address)) {
+                        break;
+                      }
                     }
+                    
+                    config.PeerEndpointAddress = address;
+                    config.PeerEndpointPort = portNum;
                   } else {
+                    // No valid port, treat whole thing as address
                     config.PeerEndpointAddress = value;
+                    config.PeerEndpointPort = 51820; // Default WireGuard port
                   }
                 }
                 break;
               case "persistentkeepalive":
-                config.PeerPersistentKeepalive = parseInt(value, 10);
+                const keepalive = parseInt(value, 10);
+                if (!isNaN(keepalive) && keepalive >= 0) {
+                  config.PeerPersistentKeepalive = keepalive;
+                }
                 break;
             }
           }
+        }
+
+        // Set default values if not specified
+        if (!config.PeerEndpointPort) {
+          config.PeerEndpointPort = 51820;
+        }
+        if (!config.PeerAllowedIPs) {
+          config.PeerAllowedIPs = "0.0.0.0/0";
         }
 
         const { isValid, emptyFields } = await validateWireguardConfig(

@@ -20,6 +20,9 @@ export const StateViewer = component$(() => {
     handlePasteContext$,
     handleGenerateFromPaste$,
     refreshState$,
+    downloadLatest$,
+    downloadPastedConfig$,
+    downloadCurrentConfig$,
   } = useStateViewer(context.state);
 
   return (
@@ -68,6 +71,7 @@ export const StateViewer = component$(() => {
                   }
                   onRefresh$={refreshState$}
                   onGenerateConfig$={generateConfig$}
+                  onDownloadLatest$={downloadLatest$}
                 />
                 <ContextPaster
                   value={pastedContext.value}
@@ -80,6 +84,8 @@ export const StateViewer = component$(() => {
               <ConfigViewer
                 currentConfig={configOutput.value}
                 pastedConfig={pastedContextConfig.value}
+                onDownloadPastedConfig$={downloadPastedConfig$}
+                onDownloadCurrentConfig$={downloadCurrentConfig$}
               />
             </div>
           </div>

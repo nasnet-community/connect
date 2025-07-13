@@ -90,6 +90,105 @@ export function useStateViewer(initialState: any) {
     }
   });
 
+  const downloadLatest$ = $(() => {
+    if (!initialState || Object.keys(initialState).length === 0) {
+      console.warn("No current state available to download");
+      return;
+    }
+
+    try {
+      // Get the current state directly from StarContext
+      const currentState = JSON.parse(JSON.stringify(initialState));
+      
+      // Format the state as a readable JSON string
+      const stateContent = JSON.stringify(currentState, null, 2);
+      
+      // Create a blob with the state content
+      const blob = new Blob([stateContent], { type: 'text/plain' });
+      
+      // Create a download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with current timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.download = `router-state-${timestamp}.txt`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading current state:", error);
+    }
+  });
+
+  const downloadPastedConfig$ = $(() => {
+    if (!pastedContextConfig.value) {
+      console.warn("No pasted context config available to download");
+      return;
+    }
+
+    try {
+      // Create a blob with the pasted config content
+      const blob = new Blob([pastedContextConfig.value], { type: 'text/plain' });
+      
+      // Create a download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.download = `router-config-${timestamp}.rsc`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading pasted config:", error);
+    }
+  });
+
+  const downloadCurrentConfig$ = $(() => {
+    if (!configOutput.value) {
+      console.warn("No current configuration available to download");
+      return;
+    }
+
+    try {
+      // Create a blob with the current config content
+      const blob = new Blob([configOutput.value], { type: 'text/plain' });
+      
+      // Create a download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.download = `current-router-config-${timestamp}.rsc`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading current config:", error);
+    }
+  });
+
   return {
     isOpen,
     stateHistory,
@@ -101,5 +200,8 @@ export function useStateViewer(initialState: any) {
     handlePasteContext$,
     handleGenerateFromPaste$,
     refreshState$,
+    downloadLatest$,
+    downloadPastedConfig$,
+    downloadCurrentConfig$,
   };
 }

@@ -1,3 +1,4 @@
+import type { StarState } from "../../StarContext/StarContext";
 import type { RouterConfig } from "../ConfigGenerator";
 
 
@@ -144,3 +145,39 @@ export const Security = (): RouterConfig => {
 //   }
 //   return config
 // }
+
+
+const escapeForRouterOS = (content: string): string => {
+  // Escape backslashes, dollar signs, and double quotes, then handle newlines
+  return content.replace(/[\\$"]/g, "\\$&").replace(/\n/g, "\\n");
+};
+
+export const Note = (state: StarState): RouterConfig => {
+  const config: RouterConfig = {
+    "/system note": [],
+  }
+
+  const stateJson = JSON.stringify(state, null, 2);
+  const escapedState = escapeForRouterOS(stateJson);
+
+  config["/system note"].push(
+    `set show-at-login=no show-at-cli-login=no note=" \\
+    =========================================\\n
+    \\n
+    state: ${escapedState} \\n
+    \\n
+    =========================================\\n
+    "`,
+  )
+
+  return config;
+}
+
+
+export const ShowCG = (state: StarState): RouterConfig => {
+  const config: RouterConfig = {
+    ...Note(state),
+  }
+  
+  return config;
+}

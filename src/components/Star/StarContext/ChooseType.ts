@@ -19,10 +19,17 @@ export interface RouterModels {
   Interfaces: RouterInterfaces;
 }
 
+export interface NewsletterState {
+  isSubscribed: boolean;
+  userUUID?: string;
+  email?: string;
+}
+
 export interface ChooseState {
   Mode: Mode;
   Firmware: FrimwareType;
   DomesticLink: boolean;
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
+  Newsletter?: NewsletterState;
 }

@@ -21,6 +21,11 @@ export const StarContextProvider = component$(() => {
       RouterMode: "" as RouterModeType,
       DomesticLink: false,
       RouterModels: [],
+      Newsletter: {
+        isSubscribed: false,
+        userUUID: undefined,
+        email: undefined,
+      },
     },
     WAN: {
       WANLink: {

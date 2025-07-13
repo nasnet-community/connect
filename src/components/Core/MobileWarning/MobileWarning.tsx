@@ -55,7 +55,7 @@ export const MobileWarning = component$(() => {
         <button 
           onClick$={handleClose}
           class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-          aria-label="Close"
+          aria-label={$localize`Close`}
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -72,17 +72,17 @@ export const MobileWarning = component$(() => {
 
           {/* Title */}
           <h2 class="text-2xl font-bold text-white mb-4">
-            Desktop Experience Recommended
+            {$localize`Desktop Experience Recommended`}
           </h2>
 
           {/* Description */}
           <p class="text-slate-300 mb-6 leading-relaxed">
-            This application is optimized for desktop devices. For the best experience, please access NASNET Connect from a computer or laptop.
+            {$localize`This application is optimized for desktop devices. For the best experience, please access NASNET Connect from a computer or laptop.`}
           </p>
 
           {/* Additional info */}
           <p class="text-slate-400 text-sm mb-8">
-            You can continue on mobile, but some features may not work as expected.
+            {$localize`You can continue on mobile, but some features may not work as expected.`}
           </p>
 
           {/* Continue button */}
@@ -90,7 +90,7 @@ export const MobileWarning = component$(() => {
             onClick$={handleContinue}
             class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            Continue Anyway
+            {$localize`Continue Anyway`}
           </button>
         </div>
       </div>

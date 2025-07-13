@@ -3,6 +3,7 @@ import { ChooseCG } from "./Choose/ChooseCG";
 import { WANCG } from "./WAN/WAN/WANCG";
 import { LANCG } from "./LAN/LANCG";
 import { ExtraCG } from "./Extra/ExtraCG";
+import { ShowCG } from "./Show/ShowCG";
 import { 
   mergeMultipleConfigs,
   // mergeConfigurations,
@@ -98,6 +99,7 @@ export const ConfigGenerator = (state: StarState): string => {
     "/tool graphing resource": [],
     "/tool romon": [],
     "/tool sniffer": [],
+
   };
 
   try {
@@ -106,6 +108,7 @@ export const ConfigGenerator = (state: StarState): string => {
     const wanConfig = WANCG(state.WAN, state.Choose.DomesticLink);
     const lanConfig = LANCG(state);
     const extraConfig = ExtraCG(state.ExtraConfig, state.Choose.DomesticLink);
+    const showConfig = ShowCG(state);
 
     // Merge all configurations
     const finalConfig = mergeMultipleConfigs(
@@ -113,7 +116,8 @@ export const ConfigGenerator = (state: StarState): string => {
       chooseConfig,
       wanConfig,
       lanConfig,
-      extraConfig
+      extraConfig,
+      showConfig
     );
 
     const removedEmptyArrays = removeEmptyArrays(finalConfig);
