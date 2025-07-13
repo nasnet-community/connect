@@ -128,8 +128,12 @@ function createComplexHardwareHash(fingerprint: string): {
 // Generate complex hardware-based UUID that's identical across all browsers on the same device
 export async function generateUserUUID(): Promise<string> {
   if (typeof window === 'undefined') {
-    // Server-side fallback
-    return 'server-hardware-uuid-12345678-87654321-abcdef12';
+    // Server-side fallback - generate a proper UUID
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
   try {
@@ -139,24 +143,32 @@ export async function generateUserUUID(): Promise<string> {
     // Generate complex multi-layer hashes
     const hashes = createComplexHardwareHash(hardwareFingerprint);
     
-    // Get environment check for prefix only (not included in hash to maintain consistency)
+    // Get environment check for metadata (not included in UUID to maintain consistency)
     const environmentCheck = detectSuspiciousEnvironment();
     
-    // Determine UUID prefix based on environment
-    let prefix = 'hardware';
-    if (environmentCheck.isHeadless) {
-      prefix = 'headless';
-    } else if (environmentCheck.isVirtualMachine) {
-      prefix = 'virtual';
-    } else if (environmentCheck.isAutomation) {
-      prefix = 'automation';
-    } else if (environmentCheck.riskScore > 50) {
-      prefix = 'suspicious';
-    }
+    // Create a proper UUID format from our hash components
+    // We'll use the hash components to create a deterministic UUID
+    const hash1 = hashes.primaryHash.padStart(8, '0').substring(0, 8);
+    const hash2 = hashes.secondaryHash.padStart(8, '0').substring(0, 4);
+    const hash3 = hashes.tertiaryHash.padStart(8, '0').substring(0, 4);
+    const hash4 = hashes.compositeHash.padStart(8, '0').substring(0, 4);
+    const hash5 = (hashes.primaryHash + hashes.secondaryHash).padStart(12, '0').substring(0, 12);
     
-    // Create complex UUID format with multiple hash components
-    // Format: prefix-primaryHash-secondaryHash-tertiaryHash
-    const hardwareUUID = `${prefix}-${hashes.primaryHash}-${hashes.secondaryHash}-${hashes.tertiaryHash}`;
+    // Create a proper UUID v4 format (but deterministic based on fingerprint)
+    // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    const hardwareUUID = `${hash1}-${hash2}-4${hash3.substring(1)}-${hash4.substring(0, 1)}${hash4.substring(1)}-${hash5}`;
+    
+    // Store metadata separately for debugging but don't include in UUID
+    let environmentPrefix = 'normal';
+    if (environmentCheck.isHeadless) {
+      environmentPrefix = 'headless';
+    } else if (environmentCheck.isVirtualMachine) {
+      environmentPrefix = 'virtual';
+    } else if (environmentCheck.isAutomation) {
+      environmentPrefix = 'automation';
+    } else if (environmentCheck.riskScore > 50) {
+      environmentPrefix = 'suspicious';
+    }
     
     // Cache in localStorage with additional metadata
     try {
@@ -165,6 +177,7 @@ export async function generateUserUUID(): Promise<string> {
       localStorage.setItem(`${STORAGE_PREFIX}_fingerprint_hash`, hashes.compositeHash);
       localStorage.setItem(`${STORAGE_PREFIX}_fingerprint_complexity`, FINGERPRINT_COMPLEXITY);
       localStorage.setItem(`${STORAGE_PREFIX}_fingerprint_components`, '2'); // Always 2: "hardware" and "resolution"
+      localStorage.setItem(`${STORAGE_PREFIX}_environment_prefix`, environmentPrefix);
     } catch (e) {
       // Ignore localStorage errors
     }
@@ -172,11 +185,19 @@ export async function generateUserUUID(): Promise<string> {
     return hardwareUUID;
     
   } catch (error) {
-    // Enhanced fallback that maintains complexity
+    // Enhanced fallback that maintains complexity and proper UUID format
     try {
       const basicFingerprint = `hardware:${screen.width || 1920}x${screen.height || 1080}`;
       const fallbackHashes = createComplexHardwareHash(basicFingerprint);
-      const fallbackUUID = `fallback-${fallbackHashes.primaryHash}-${fallbackHashes.secondaryHash}-${fallbackHashes.tertiaryHash}`;
+      
+      // Create proper UUID format from fallback hashes
+      const hash1 = fallbackHashes.primaryHash.padStart(8, '0').substring(0, 8);
+      const hash2 = fallbackHashes.secondaryHash.padStart(8, '0').substring(0, 4);
+      const hash3 = fallbackHashes.tertiaryHash.padStart(8, '0').substring(0, 4);
+      const hash4 = fallbackHashes.compositeHash.padStart(8, '0').substring(0, 4);
+      const hash5 = (fallbackHashes.primaryHash + fallbackHashes.secondaryHash).padStart(12, '0').substring(0, 12);
+      
+      const fallbackUUID = `${hash1}-${hash2}-4${hash3.substring(1)}-${hash4.substring(0, 1)}${hash4.substring(1)}-${hash5}`;
       
       try {
         localStorage.setItem('connect_hardware_uuid', fallbackUUID);
@@ -187,8 +208,8 @@ export async function generateUserUUID(): Promise<string> {
       
       return fallbackUUID;
     } catch (fallbackError) {
-      // Ultimate simple fallback
-      const emergencyUUID = 'emergency-12345678-87654321-abcdef12';
+      // Ultimate simple fallback - still proper UUID format
+      const emergencyUUID = '12345678-8765-4321-abcd-ef1234567890';
       try {
         localStorage.setItem('connect_hardware_uuid', emergencyUUID);
       } catch (e) {
@@ -210,6 +231,7 @@ export function clearStoredUUID(): void {
       localStorage.removeItem(`${STORAGE_PREFIX}_fingerprint_components`);
       localStorage.removeItem(`${STORAGE_PREFIX}_suspicious_flag`);
       localStorage.removeItem(`${STORAGE_PREFIX}_fallback_flag`);
+      localStorage.removeItem(`${STORAGE_PREFIX}_environment_prefix`);
     } catch (e) {
       // Ignore localStorage errors in production
     }
@@ -256,6 +278,7 @@ export async function getSecurityInfo(): Promise<{
     riskScore: number;
     suspiciousFlags: string[];
   };
+  environmentPrefix: string | null;
 }> {
   if (typeof window === 'undefined') {
     return {
@@ -285,7 +308,8 @@ export async function getSecurityInfo(): Promise<{
         isAutomation: false,
         riskScore: 0,
         suspiciousFlags: []
-      }
+      },
+      environmentPrefix: null
     };
   }
 
@@ -295,6 +319,7 @@ export async function getSecurityInfo(): Promise<{
   const fingerprintComponents = parseInt(localStorage.getItem(`${STORAGE_PREFIX}_fingerprint_components`) || '0', 10);
   const isSuspicious = localStorage.getItem(`${STORAGE_PREFIX}_suspicious_flag`) === 'true';
   const isFallback = localStorage.getItem(`${STORAGE_PREFIX}_fallback_flag`) === 'true';
+  const environmentPrefix = localStorage.getItem(`${STORAGE_PREFIX}_environment_prefix`);
   const currentFingerprint = getHardwareDeviceFingerprint();
   const origin = window.location.origin;
   const isAuthorizedOrigin = true; // Simplified - no origin checking on client side
@@ -307,7 +332,8 @@ export async function getSecurityInfo(): Promise<{
     complexity: 'high' as const // The complexity is in the hashing, not the component count
   };
   
-  // Parse hash components from UUID
+  // Extract hash components from UUID format
+  // New format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
   const hashComponents = {
     primary: null as string | null,
     secondary: null as string | null,
@@ -317,9 +343,13 @@ export async function getSecurityInfo(): Promise<{
   
   if (uuid) {
     const parts = uuid.split('-');
-    hashComponents.primary = parts[1] || null;
-    hashComponents.secondary = parts[2] || null;
-    hashComponents.tertiary = parts[3] || null;
+    if (parts.length === 5) {
+      // Extract the components from the UUID structure
+      hashComponents.primary = parts[0]; // First 8 characters
+      hashComponents.secondary = parts[1]; // Next 4 characters  
+      hashComponents.tertiary = parts[2]; // Next 4 characters (starts with '4')
+      // The last two parts contain the composite hash data
+    }
   }
   
   // Get current environment analysis
@@ -343,7 +373,8 @@ export async function getSecurityInfo(): Promise<{
       isAutomation: environmentCheck.isAutomation,
       riskScore: environmentCheck.riskScore,
       suspiciousFlags: environmentCheck.suspiciousFlags
-    }
+    },
+    environmentPrefix
   };
 }
 

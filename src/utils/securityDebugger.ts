@@ -16,9 +16,10 @@ import {
   generateUserUUID, 
   getSecurityInfo, 
   clearStoredUUID, 
-  forceRegenerateUUID,
-  verifyApplicationEnvironment
+  forceRegenerateUUID
 } from './api';
+
+import { verifyApplicationEnvironment } from './securityDetection';
 
 export interface SecurityTestResults {
   uuid: string;
@@ -31,6 +32,7 @@ export interface SecurityTestResults {
   recommendations: string[];
   origin: string;
   isAuthorizedOrigin: boolean;
+  environmentPrefix: string | null;
 }
 
 export interface FingerprintAnalysis {
@@ -303,7 +305,8 @@ export async function runSecurityTests(): Promise<SecurityTestResults> {
     riskScore,
     recommendations,
     origin: securityInfo.origin || 'unknown',
-    isAuthorizedOrigin: securityInfo.isAuthorizedOrigin || false
+    isAuthorizedOrigin: securityInfo.isAuthorizedOrigin || false,
+    environmentPrefix: securityInfo.environmentPrefix || null
   };
   
   console.log("🎯 Security test results:", results);
@@ -350,6 +353,7 @@ export async function generateSecurityReport(): Promise<string> {
   const suspiciousTest = await testSuspiciousEnvironmentDetection();
   const fingerprintAnalysis = await analyzeFingerprintStability();
   const appEnvironment = verifyApplicationEnvironment();
+  const securityInfo = await getSecurityInfo();
   
   const reportText = `
 # Security System Report
@@ -357,7 +361,9 @@ Generated at: ${new Date().toISOString()}
 
 ## UUID Information
 - Current UUID: ${report.uuid}
+- UUID Format: ${report.uuid.includes('-') && report.uuid.length === 36 ? 'Valid UUID v4' : 'Invalid/Legacy Format'}
 - Consistency: ${report.isConsistent ? '✅ Consistent' : '❌ Inconsistent'}
+- Environment Type: ${report.environmentPrefix || 'Unknown'}
 
 ## Application Environment
 - Origin: ${report.origin}
@@ -369,6 +375,7 @@ Generated at: ${new Date().toISOString()}
 - Total Components: ${fingerprintAnalysis.totalComponents}
 - Uniqueness Score: ${fingerprintAnalysis.uniquenessScore}%
 - Stability Score: ${fingerprintAnalysis.stabilityScore}%
+- Fingerprint Hash: ${securityInfo.fingerprintHash || 'Not available'}
 
 ## Risk Assessment
 - Overall Risk Score: ${report.riskScore}/100
@@ -381,6 +388,12 @@ Generated at: ${new Date().toISOString()}
     .map(([key]) => key)
     .join(', ') || 'None'}
 
+## Hash Components (from UUID)
+- Primary Hash: ${securityInfo.hashComponents.primary || 'Not available'}
+- Secondary Hash: ${securityInfo.hashComponents.secondary || 'Not available'}
+- Tertiary Hash: ${securityInfo.hashComponents.tertiary || 'Not available'}
+- Composite Hash: ${securityInfo.hashComponents.composite || 'Not available'}
+
 ## Recommendations
 ${report.recommendations.map(rec => `- ${rec}`).join('\n')}
 
@@ -388,6 +401,11 @@ ${report.recommendations.map(rec => `- ${rec}`).join('\n')}
 ${Object.entries(fingerprintAnalysis.componentTypes)
   .map(([type, count]) => `- ${type}: ${count} samples`)
   .join('\n')}
+
+## Storage Information
+- Timestamp: ${securityInfo.timestamp ? new Date(parseInt(securityInfo.timestamp)).toISOString() : 'Not available'}
+- Is Fallback: ${securityInfo.isFallback ? '⚠️ Yes' : '✅ No'}
+- Fingerprint Components: ${securityInfo.fingerprintComponents}
   `;
   
   console.log(reportText);
