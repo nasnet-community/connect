@@ -52,16 +52,18 @@ export const LANCG = (state: StarState): RouterConfig => {
        // Only configure wireless if router models have wireless interfaces AND LAN.Wireless is defined
        const hasWireless = hasWirelessInterfaces(state.Choose.RouterModels);
        
-       if (hasWireless && state.LAN.Wireless) {
-              configs.push(WirelessConfig(
-                     state.LAN.Wireless,
-                     state.WAN.WANLink,
-                     state.Choose.DomesticLink
-              ));
-       } else if (hasWireless) {
-              // Only disable interfaces if the router actually has wireless interfaces
-              configs.push(DisableInterfaces());
-       }
+       if (hasWireless) {
+              if (state.LAN.Wireless) {
+                     configs.push(WirelessConfig(
+                            state.LAN.Wireless,
+                            state.WAN.WANLink,
+                            state.Choose.DomesticLink
+                     ));
+              } else {
+                     // Only disable interfaces if the router actually has wireless interfaces
+                     configs.push(DisableInterfaces());
+              }
+       }       
 
        if (state.LAN.Tunnel) {
               configs.push(TunnelWrapper(state.LAN.Tunnel));

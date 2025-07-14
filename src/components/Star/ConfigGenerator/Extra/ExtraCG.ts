@@ -324,26 +324,28 @@ export const Firewall = (): RouterConfig => {
   return config
 }
 
-export const DDNS = (): RouterConfig => {
-  const config: RouterConfig = {
-    "/ip cloud": ["set ddns-enabled=yes ddns-update-interval=1m"],
-    "/ip firewall address-list": [
+export const DDNS = (DomesticLink: boolean): RouterConfig => {
+  const config: RouterConfig = {};
+
+  if (DomesticLink) {
+    config["/ip cloud"] = ["set ddns-enabled=yes ddns-update-interval=1m"];
+    config["/ip firewall address-list"] = [
       `add list=MikroTik-Cloud-Services address=cloud2.mikrotik.com \\
        comment="Dynamic list for MikroTik Cloud DDNS"`,
       `add list=MikroTik-Cloud-Services address=cloud.mikrotik.com \\
        comment="Legacy endpoint for completeness"`,
-    ],
-    "/ip firewall mangle": [
+    ];
+    config["/ip firewall mangle"] = [
       `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
        new-routing-mark=to-DOM passthrough=no \\
        comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
       `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
        protocol=udp dst-port=15252 new-routing-mark=to-DOM passthrough=no \\
        comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
-    ],
+    ];
   }
 
-  return config
+  return config;
 }
 
 
@@ -354,7 +356,7 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
     NTP(),
     Graph(),
     update(),
-    DDNS(),
+    DDNS(DomesticLink),
     // PublicCert(),
   ];
 
