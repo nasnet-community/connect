@@ -169,13 +169,13 @@ export const Choose = component$((props: StepProps) => {
   useTask$(async ({ track }) => {
     const selectedFirmware = track(() => starContext.state.Choose.Firmware);
     
-    console.log('=== FIRMWARE CHANGE DETECTED ==='); // Debug log
-    console.log('Previous steps count:', steps.value.length); // Debug log
-    console.log('Firmware changed to:', selectedFirmware); // Debug log
+    // console.log('=== FIRMWARE CHANGE DETECTED ==='); // Debug log
+    // console.log('Previous steps count:', steps.value.length); // Debug log
+    // console.log('Firmware changed to:', selectedFirmware); // Debug log
     
     // Only proceed if we have a valid firmware selection
     if (!selectedFirmware) {
-      console.log('No firmware selected yet'); // Debug log
+      // console.log('No firmware selected yet'); // Debug log
       return;
     }
 
@@ -185,7 +185,7 @@ export const Choose = component$((props: StepProps) => {
     if (selectedFirmware === "OpenWRT") {
       // Remove MikroTik-specific steps and add OpenWRT steps
       const owrtSteps = await createOpenWRTSteps();
-      console.log('Adding OpenWRT steps:', owrtSteps); // Debug log
+      // console.log('Adding OpenWRT steps:', owrtSteps); // Debug log
       
       // Create new array with firmware and all OpenWRT steps
       const newSteps = [
@@ -206,12 +206,12 @@ export const Choose = component$((props: StepProps) => {
         activeStep.value = 0;
       }
       
-      console.log('Steps after OpenWRT selection:', steps.value.length, 'steps'); // Debug log
-      console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
+      // console.log('Steps after OpenWRT selection:', steps.value.length, 'steps'); // Debug log
+      // console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
     } else if (selectedFirmware === "MikroTik") {
       // Restore MikroTik steps if user switches back from OpenWRT
       const mikrotikSteps = await createMikroTikSteps();
-      console.log('Adding MikroTik steps:', mikrotikSteps); // Debug log
+      // console.log('Adding MikroTik steps:', mikrotikSteps); // Debug log
       
       // Create new array with firmware and MikroTik steps
       const newSteps = [
@@ -232,8 +232,8 @@ export const Choose = component$((props: StepProps) => {
         activeStep.value = 0;
       }
       
-      console.log('Steps after MikroTik selection:', steps.value.length, 'steps'); // Debug log
-      console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
+      // console.log('Steps after MikroTik selection:', steps.value.length, 'steps'); // Debug log
+      // console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
     }
   });
 
@@ -244,14 +244,14 @@ export const Choose = component$((props: StepProps) => {
     
     // Only rebuild steps if firmware is OpenWRT and option has changed
     if (selectedFirmware === "OpenWRT" && currentOpenWRTOption) {
-      console.log('=== OPENWRT OPTION CHANGE DETECTED ==='); // Debug log
-      console.log('OpenWRT option changed to:', currentOpenWRTOption); // Debug log
+      // console.log('=== OPENWRT OPTION CHANGE DETECTED ==='); // Debug log
+      // console.log('OpenWRT option changed to:', currentOpenWRTOption); // Debug log
       
       // Preserve the firmware step completion status
       const firmwareStepComplete = steps.value.find(step => step.id === 1)?.isComplete || false;
       
       const owrtSteps = await createOpenWRTSteps();
-      console.log('Rebuilding OpenWRT steps:', owrtSteps); // Debug log
+      // console.log('Rebuilding OpenWRT steps:', owrtSteps); // Debug log
       
       // Create new array with firmware and updated OpenWRT steps
       const newSteps = [
@@ -267,8 +267,8 @@ export const Choose = component$((props: StepProps) => {
       steps.value = newSteps;
       stepperKey.value++; // Force re-render
       
-      console.log('Steps after OpenWRT option change:', steps.value.length, 'steps'); // Debug log
-      console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
+      // console.log('Steps after OpenWRT option change:', steps.value.length, 'steps'); // Debug log
+      // console.log('Step titles:', steps.value.map(s => s.title)); // Debug log
     }
   });
 
@@ -296,10 +296,6 @@ export const Choose = component$((props: StepProps) => {
     showNewsletterModal.value = false;
   });
 
-  const handleNewsletterSuccess = $(() => {
-    showNewsletterModal.value = false;
-  });
-
   return (
     <div class="container mx-auto w-full px-4">
       {/* Add a key to force re-render when steps change */}
@@ -321,7 +317,6 @@ export const Choose = component$((props: StepProps) => {
       <NewsletterModal
         isVisible={showNewsletterModal.value}
         onClose$={handleNewsletterClose}
-        onSuccess$={handleNewsletterSuccess}
       />
     </div>
   );

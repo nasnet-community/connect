@@ -1,4 +1,5 @@
 import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { LuGlobe, LuGlobe2 } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { OptionCard } from "./OptionCard";
@@ -21,6 +22,13 @@ export const DomesticWAN = component$((props: DomesticProps) => {
   const hasUserSelected = useSignal(false);
 
   const handleDomesticSelect = $((hasDomestic: boolean) => {
+    // Track domestic WAN selection
+    track("domestic_wan_selected", {
+      has_domestic_link: hasDomestic,
+      configuration_type: hasDomestic ? "with_domestic" : "without_domestic",
+      step: "choose"
+    });
+
     starContext.updateChoose$({
       DomesticLink: hasDomestic,
     });

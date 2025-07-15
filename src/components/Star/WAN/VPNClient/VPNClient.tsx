@@ -1,4 +1,5 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import type { StepProps } from "~/types/step";
 import { useVPNConfig } from "./useVPNConfig";
 import { VPNSelector } from "./VPNSelector";
@@ -29,6 +30,13 @@ export const VPNClient = component$<StepProps>(
     const isSaving = useSignal(false);
 
     const handleVPNTypeChange = $((value: VPNType) => {
+      // Track VPN type selection
+      track("vpn_type_selected", {
+        vpn_type: value,
+        step: "wan_config",
+        component: "vpn_client"
+      });
+
       vpnType.value = value;
       isValid.value = false;
     });
@@ -54,10 +62,27 @@ export const VPNClient = component$<StepProps>(
         const saved = await saveVPNSelection$();
         
         if (saved && onComplete$) {
-          
+          // Track VPN client configuration completion
+          track("vpn_client_configured", {
+            vpn_protocol: vpnType.value,
+            step: "wan_config",
+            component: "vpn_client",
+            configuration_completed: true,
+            success: true
+          });
           
           await onComplete$();
         } else if (!saved) {
+          // Track failed VPN client configuration
+          track("vpn_client_configured", {
+            vpn_protocol: vpnType.value || "unknown",
+            step: "wan_config",
+            component: "vpn_client",
+            configuration_completed: false,
+            success: false,
+            error: "save_failed"
+          });
+          
           errorMessage.value = "Failed to save VPN configuration. Please check your inputs and try again.";
         }
       } else {

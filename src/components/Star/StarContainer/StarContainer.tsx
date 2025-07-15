@@ -36,9 +36,10 @@ export const StarContainer = component$(() => {
   // Track session start when component mounts
   useVisibleTask$(() => {
     if (!sessionStarted.value) {
-      track('config_session_started', {
+      track('router_config_session_started', {
         user_mode: state.Choose.Mode,
         entry_point: 'star_container',
+        browser: typeof window !== 'undefined' ? window.navigator.userAgent.split(' ')[0] : 'unknown',
         timestamp: new Date().toISOString()
       });
       sessionStarted.value = true;
@@ -47,55 +48,163 @@ export const StarContainer = component$(() => {
 
   // Track mode changes
   const handleModeChange = $((mode: Mode) => {
-    track('mode_changed', {
+    track('router_config_mode_changed', {
       from_mode: state.Choose.Mode,
       to_mode: mode,
       current_step: stepsStore.steps[activeStep.value]?.title || 'unknown',
-      step_number: activeStep.value + 1
+      step_number: activeStep.value + 1,
+      change_reason: 'user_selection'
     });
     updateChoose$({ Mode: mode });
   });
 
-  // Track step completion
-  const handleStepComplete = $((stepId: number, stepTitle: string) => {
+  // Track step completion with detailed step-specific events
+  const handleStepComplete = $((stepId: number) => {
     const stepIndex = stepsStore.steps.findIndex((step) => step.id === stepId);
     if (stepIndex > -1) {
       stepsStore.steps[stepIndex].isComplete = true;
       
-      // Track step completion event
-      track('step_completed', {
-        step_name: stepTitle,
+      // Track specific step completion events
+      const baseEventData = {
         step_number: stepId,
         step_index: stepIndex,
         user_mode: state.Choose.Mode,
         total_steps: stepsStore.steps.length,
-        progress_percentage: Math.round(((stepIndex + 1) / stepsStore.steps.length) * 100)
-      });
+        progress_percentage: Math.round(((stepIndex + 1) / stepsStore.steps.length) * 100),
+        completion_time: new Date().toISOString()
+      };
 
-      // Check if this is the final step
-      if (stepId === 5) { // ShowConfig is the final step
-        track('config_flow_completed', {
-          user_mode: state.Choose.Mode,
-          total_steps_completed: stepsStore.steps.filter(step => step.isComplete).length,
-          completion_time: new Date().toISOString()
-        });
+      // Step-specific tracking events
+      switch (stepId) {
+        case 1:
+          track('step_choose_completed', {
+            ...baseEventData,
+            firmware: state.Choose.Firmware,
+            router_mode: state.Choose.Mode,
+            router_models: state.Choose.RouterModels.map(rm => rm.Model).join(','),
+            has_domestic_link: state.Choose.DomesticLink
+          });
+          break;
+        case 2:
+          track('step_wan_completed', {
+            ...baseEventData,
+            vpn_client_enabled: !!(state.WAN.VPNClient?.Wireguard || state.WAN.VPNClient?.OpenVPN || state.WAN.VPNClient?.L2TP || state.WAN.VPNClient?.PPTP || state.WAN.VPNClient?.SSTP || state.WAN.VPNClient?.IKeV2),
+            vpn_client_type: state.WAN.VPNClient?.Wireguard ? 'Wireguard' : 
+                           state.WAN.VPNClient?.OpenVPN ? 'OpenVPN' :
+                           state.WAN.VPNClient?.L2TP ? 'L2TP' :
+                           state.WAN.VPNClient?.PPTP ? 'PPTP' :
+                           state.WAN.VPNClient?.SSTP ? 'SSTP' :
+                           state.WAN.VPNClient?.IKeV2 ? 'IKeV2' : 'none',
+            foreign_wan_configured: !!state.WAN.WANLink?.Foreign
+          });
+          break;
+        case 3:
+          track('step_lan_completed', {
+            ...baseEventData,
+            vpn_server_enabled: !!(state.LAN.VPNServer?.PptpServer || state.LAN.VPNServer?.L2tpServer || state.LAN.VPNServer?.SstpServer || state.LAN.VPNServer?.OpenVpnServer || state.LAN.VPNServer?.Ikev2Server || state.LAN.VPNServer?.WireguardServers),
+            vpn_server_protocols: [
+              state.LAN.VPNServer?.PptpServer ? 'PPTP' : null,
+              state.LAN.VPNServer?.L2tpServer ? 'L2TP' : null,
+              state.LAN.VPNServer?.SstpServer ? 'SSTP' : null,
+              state.LAN.VPNServer?.OpenVpnServer ? 'OpenVPN' : null,
+              state.LAN.VPNServer?.Ikev2Server ? 'IKeV2' : null,
+              state.LAN.VPNServer?.WireguardServers ? 'Wireguard' : null
+            ].filter(Boolean).join(','),
+            wireless_enabled: !!(state.LAN.Wireless?.SingleMode || state.LAN.Wireless?.MultiMode)
+          });
+          break;
+        case 4:
+          track('step_extra_config_completed', {
+            ...baseEventData,
+            gaming_rules_enabled: !!state.ExtraConfig.Games?.length,
+            ddns_enabled: !!state.ExtraConfig.isDDNS,
+            auto_update_enabled: !!state.ExtraConfig.Update,
+            auto_reboot_enabled: !!state.ExtraConfig.AutoReboot
+          });
+          break;
+        case 5:
+          track('step_show_config_completed', {
+            ...baseEventData,
+            config_generated: true
+          });
+          // Track overall flow completion
+          track('router_config_flow_completed', {
+            user_mode: state.Choose.Mode,
+            total_steps_completed: stepsStore.steps.filter(step => step.isComplete).length,
+            completion_time: new Date().toISOString(),
+            firmware: state.Choose.Firmware,
+            router_models: state.Choose.RouterModels.map(rm => rm.Model).join(','),
+            vpn_client_type: state.WAN.VPNClient?.Wireguard ? 'Wireguard' : 
+                           state.WAN.VPNClient?.OpenVPN ? 'OpenVPN' :
+                           state.WAN.VPNClient?.L2TP ? 'L2TP' :
+                           state.WAN.VPNClient?.PPTP ? 'PPTP' :
+                           state.WAN.VPNClient?.SSTP ? 'SSTP' :
+                           state.WAN.VPNClient?.IKeV2 ? 'IKeV2' : 'none',
+            vpn_server_enabled: !!(state.LAN.VPNServer?.PptpServer || state.LAN.VPNServer?.L2tpServer || state.LAN.VPNServer?.SstpServer || state.LAN.VPNServer?.OpenVpnServer || state.LAN.VPNServer?.Ikev2Server || state.LAN.VPNServer?.WireguardServers)
+          });
+          break;
+        default:
+          track('step_generic_completed', baseEventData);
       }
     }
   });
 
-  // Track step navigation
+  // Track step navigation with detailed step information
   const handleStepChange = $((stepId: number) => {
     const previousStep = activeStep.value;
     const newStep = stepId - 1;
     
-    track('step_navigated', {
-      from_step: stepsStore.steps[previousStep]?.title || 'unknown',
-      to_step: stepsStore.steps[newStep]?.title || 'unknown',
+    const fromStepName = stepsStore.steps[previousStep]?.title || 'unknown';
+    const toStepName = stepsStore.steps[newStep]?.title || 'unknown';
+    
+    track('router_config_step_navigated', {
+      from_step: fromStepName,
+      to_step: toStepName,
       from_step_number: previousStep + 1,
       to_step_number: stepId,
       user_mode: state.Choose.Mode,
-      navigation_direction: newStep > previousStep ? 'forward' : 'backward'
+      navigation_direction: newStep > previousStep ? 'forward' : 'backward',
+      is_completed_step: stepsStore.steps[newStep]?.isComplete || false,
+      navigation_method: 'stepper_click'
     });
+
+    // Track specific step entry events
+    switch (stepId) {
+      case 1:
+        track('step_choose_entered', {
+          entry_method: 'navigation',
+          previous_step: fromStepName
+        });
+        break;
+      case 2:
+        track('step_wan_entered', {
+          entry_method: 'navigation',
+          previous_step: fromStepName,
+          has_firmware_selected: !!state.Choose.Firmware
+        });
+        break;
+      case 3:
+        track('step_lan_entered', {
+          entry_method: 'navigation',
+          previous_step: fromStepName,
+          wan_configured: !!(state.WAN.VPNClient?.Wireguard || state.WAN.VPNClient?.OpenVPN || state.WAN.VPNClient?.L2TP || state.WAN.VPNClient?.PPTP || state.WAN.VPNClient?.SSTP || state.WAN.VPNClient?.IKeV2) || !!state.WAN.WANLink?.Foreign
+        });
+        break;
+      case 4:
+        track('step_extra_config_entered', {
+          entry_method: 'navigation',
+          previous_step: fromStepName,
+          lan_configured: !!(state.LAN.VPNServer?.PptpServer || state.LAN.VPNServer?.L2tpServer || state.LAN.VPNServer?.SstpServer || state.LAN.VPNServer?.OpenVpnServer || state.LAN.VPNServer?.Ikev2Server || state.LAN.VPNServer?.WireguardServers) || !!(state.LAN.Wireless?.SingleMode || state.LAN.Wireless?.MultiMode)
+        });
+        break;
+      case 5:
+        track('step_show_config_entered', {
+          entry_method: 'navigation',
+          previous_step: fromStepName,
+          ready_for_generation: true
+        });
+        break;
+    }
 
     activeStep.value = newStep;
   });
@@ -110,9 +219,8 @@ export const StarContainer = component$(() => {
           <Choose
             isComplete={stepsStore.steps[0].isComplete}
             onComplete$={() => {
-              stepsStore.steps[0].isComplete = true;
+              handleStepComplete(1);
               activeStep.value = 1;
-              handleStepComplete(1, 'Choose');
             }}
           />
         )),
@@ -126,9 +234,8 @@ export const StarContainer = component$(() => {
           <WAN
             isComplete={stepsStore.steps[1].isComplete}
             onComplete$={() => {
-              stepsStore.steps[1].isComplete = true;
+              handleStepComplete(2);
               activeStep.value = 2;
-              handleStepComplete(2, 'WAN');
             }}
           />
         )),
@@ -142,9 +249,8 @@ export const StarContainer = component$(() => {
           <LAN
             isComplete={stepsStore.steps[2].isComplete}
             onComplete$={() => {
-              stepsStore.steps[2].isComplete = true;
+              handleStepComplete(3);
               activeStep.value = 3;
-              handleStepComplete(3, 'LAN');
             }}
           />
         )),
@@ -158,9 +264,8 @@ export const StarContainer = component$(() => {
           <ExtraConfig
             isComplete={stepsStore.steps[3].isComplete}
             onComplete$={() => {
-              stepsStore.steps[3].isComplete = true;
+              handleStepComplete(4);
               activeStep.value = 4;
-              handleStepComplete(4, 'Extra Config');
             }}
           />
         )),
@@ -174,8 +279,7 @@ export const StarContainer = component$(() => {
           <ShowConfig
             isComplete={stepsStore.steps[4].isComplete}
             onComplete$={() => {
-              stepsStore.steps[4].isComplete = true;
-              handleStepComplete(5, 'Show Config');
+              handleStepComplete(5);
             }}
           />
         )),

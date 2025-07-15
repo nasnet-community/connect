@@ -1,4 +1,5 @@
 import { $, useContext, useSignal, type QRL } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type {
   OpenVpnClientConfig,
@@ -29,6 +30,7 @@ export interface UseOpenVPNConfigResult {
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
   handleAuthTypeSelection$: QRL<(selectedAuthType: "Credentials" | "Certificate" | "CredentialsCertificate") => Promise<void>>;
+  setConfigMethod$: QRL<(method: "file" | "manual") => Promise<void>>;
   validateOpenVPNConfig: QRL<
     (config: OpenVpnClientConfig) => Promise<{
       isValid: boolean;
@@ -622,10 +624,37 @@ export const useOpenVPNConfig = (
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
 
+    // Track file upload attempt
+    track("vpn_config_file_uploaded", {
+      vpn_protocol: "OpenVPN",
+      file_name: file.name,
+      file_size: file.size,
+      file_type: file.type || "unknown",
+      step: "wan_config",
+      component: "vpn_client"
+    });
+
     try {
       const text = await file.text();
       await handleConfigChange$(text);
+      
+      // Track successful file processing
+      track("vpn_config_file_processed", {
+        vpn_protocol: "OpenVPN",
+        success: true,
+        step: "wan_config",
+        component: "vpn_client"
+      });
     } catch (error) {
+      // Track file processing error
+      track("vpn_config_file_processed", {
+        vpn_protocol: "OpenVPN",
+        success: false,
+        error: "file_read_error",
+        step: "wan_config",
+        component: "vpn_client"
+      });
+      
       errorMessage.value = `Error reading file: ${error}`;
     }
   });
@@ -710,12 +739,29 @@ export const useOpenVPNConfig = (
     const { isValid, emptyFields } =
       await validateOpenVPNConfig(manualConfig);
     if (!isValid) {
+      // Track manual configuration validation failure
+      track("vpn_manual_config_validated", {
+        vpn_protocol: "OpenVPN",
+        success: false,
+        missing_fields: emptyFields.join(','),
+        step: "wan_config",
+        component: "vpn_client"
+      });
+      
       errorMessage.value = `Please fill all required fields: ${emptyFields.join(
         ", ",
       )}`;
       if (onIsValidChange$) onIsValidChange$(false);
       return;
     }
+
+    // Track successful manual configuration
+    track("vpn_manual_config_validated", {
+      vpn_protocol: "OpenVPN",
+      success: true,
+      step: "wan_config",
+      component: "vpn_client"
+    });
 
     await starContext.updateWAN$({
       VPNClient: {
@@ -726,6 +772,19 @@ export const useOpenVPNConfig = (
 
     errorMessage.value = "";
     if (onIsValidChange$) onIsValidChange$(true);
+  });
+
+  const setConfigMethod$ = $(async (method: "file" | "manual") => {
+    // Track configuration method change
+    track("vpn_config_method_changed", {
+      vpn_protocol: "OpenVPN",
+      config_method: method,
+      previous_method: configMethod.value,
+      step: "wan_config",
+      component: "vpn_client"
+    });
+    
+    configMethod.value = method;
   });
 
   return {
@@ -752,6 +811,7 @@ export const useOpenVPNConfig = (
     handleManualFormSubmit$,
     handleFileUpload$,
     handleAuthTypeSelection$,
+    setConfigMethod$,
     validateOpenVPNConfig,
     parseOpenVPNConfig,
     updateContextWithConfig$,

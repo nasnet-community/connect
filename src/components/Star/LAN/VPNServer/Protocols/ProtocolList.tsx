@@ -1,4 +1,5 @@
-import { component$, type QRL } from "@builder.io/qwik";
+import { component$, type QRL, $ } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { VPN_PROTOCOLS } from "./constants";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { HiCheckCircleOutline } from "@qwikest/icons/heroicons";
@@ -14,6 +15,23 @@ export const ProtocolList = component$<ProtocolListProps>(({
   enabledProtocols,
   toggleProtocol$
 }) => {
+  const handleProtocolToggle = $((protocol: VPNType) => {
+    const isCurrentlyEnabled = enabledProtocols[protocol];
+    const action = isCurrentlyEnabled ? "disabled" : "enabled";
+    
+    // Track VPN server protocol toggle with detailed information
+    track("vpn_server_protocol_toggled", {
+      protocol: protocol,
+      action: action,
+      step: "lan_config",
+      component: "vpn_server",
+      new_state: !isCurrentlyEnabled,
+      protocol_name: protocol,
+      total_enabled_protocols: Object.values(enabledProtocols).filter(Boolean).length + (isCurrentlyEnabled ? -1 : 1)
+    });
+
+    toggleProtocol$(protocol);
+  });
   return (
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {VPN_PROTOCOLS.map(protocol => (
@@ -59,7 +77,7 @@ export const ProtocolList = component$<ProtocolListProps>(({
           
           {/* Toggle Button */}
           <div 
-            onClick$={() => toggleProtocol$(protocol.id)}
+            onClick$={() => handleProtocolToggle(protocol.id)}
             class={`
               mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-center text-sm font-medium
               ${enabledProtocols[protocol.id]

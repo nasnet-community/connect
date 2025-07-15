@@ -51,3 +51,7 @@ lerna-debug.log*
 /adapters/static/
 
 package-lock.json
+
+/.claude
+/.kiro
+CLAUDE.md

@@ -1,4 +1,5 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { QRL } from "@builder.io/qwik";
 import type { WireguardClientConfig } from "../../../../StarContext/Utils/VPNClientType";
@@ -318,6 +319,17 @@ export const useWireguardConfig = (
     }
 
     const file = input.files[0];
+    
+    // Track file upload attempt
+    track("vpn_config_file_uploaded", {
+      vpn_protocol: "Wireguard",
+      file_name: file.name,
+      file_size: file.size,
+      file_type: file.type || "unknown",
+      step: "wan_config",
+      component: "vpn_client"
+    });
+    
     const readFileAsText = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -330,7 +342,24 @@ export const useWireguardConfig = (
     try {
       const fileContent = await readFileAsText(file);
       await handleConfigChange$(fileContent);
+      
+      // Track successful file processing
+      track("vpn_config_file_processed", {
+        vpn_protocol: "Wireguard",
+        success: true,
+        step: "wan_config",
+        component: "vpn_client"
+      });
     } catch (error) {
+      // Track file processing error
+      track("vpn_config_file_processed", {
+        vpn_protocol: "Wireguard",
+        success: false,
+        error: "file_read_error",
+        step: "wan_config",
+        component: "vpn_client"
+      });
+      
       errorMessage.value = `Error reading file: ${error}`;
       console.error("File reading error:", error);
     }
@@ -358,6 +387,15 @@ export const useWireguardConfig = (
     const { isValid, emptyFields } =
       await validateWireguardConfig(manualConfig);
     if (!isValid) {
+      // Track manual configuration validation failure
+      track("vpn_manual_config_validated", {
+        vpn_protocol: "Wireguard",
+        success: false,
+        missing_fields: emptyFields.join(','),
+        step: "wan_config",
+        component: "vpn_client"
+      });
+      
       errorMessage.value = `Please fill in all required fields: ${emptyFields.join(
         ", "
       )}`;
@@ -366,6 +404,14 @@ export const useWireguardConfig = (
       }
       return;
     }
+
+    // Track successful manual configuration
+    track("vpn_manual_config_validated", {
+      vpn_protocol: "Wireguard",
+      success: true,
+      step: "wan_config",
+      component: "vpn_client"
+    });
 
     await starContext.updateWAN$({
       VPNClient: {
@@ -381,6 +427,15 @@ export const useWireguardConfig = (
   });
 
   const setConfigMethod$ = $(async (method: "file" | "manual") => {
+    // Track configuration method change
+    track("vpn_config_method_changed", {
+      vpn_protocol: "Wireguard",
+      config_method: method,
+      previous_method: configMethod.value,
+      step: "wan_config",
+      component: "vpn_client"
+    });
+    
     configMethod.value = method;
   });
 

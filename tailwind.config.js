@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+import typography from "@tailwindcss/typography";
+import scrollbar from "tailwind-scrollbar";
+
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
@@ -134,8 +137,10 @@ export default {
     },
   },
   plugins: [
-    require("@tailwindcss/typography"),
-    require("tailwind-scrollbar"),
+    // require("@tailwindcss/typography"),
+    // require("tailwind-scrollbar"),
+    typography,
+    scrollbar,
   ],
   variants: {
     extend: {

@@ -1,4 +1,5 @@
 import { component$, $, type QRL } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import type { VPNType } from "~/components/Star/StarContext/CommonType";
 
 interface PromoL2TPBannerProps {
@@ -7,6 +8,13 @@ interface PromoL2TPBannerProps {
 
 export const PromoL2TPBanner = component$<PromoL2TPBannerProps>(({ onVPNTypeChange$ }) => {
   const handleCTAClick = $(() => {
+    // Track promo banner click
+    track("promo_l2tp_banner_clicked", {
+      action: "claim_free_vpn",
+      vpn_type: "L2TP",
+      step: "wan_config"
+    });
+
     onVPNTypeChange$("L2TP");
   });
 

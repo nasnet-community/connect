@@ -1,4 +1,5 @@
 import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import { LuRouter, LuWifi } from "@qwikest/icons/lucide";
 import { routers, type RouterData } from "./Constants";
@@ -28,6 +29,14 @@ export const RouterModel = component$((props: RouterModelProps) => {
   const handleSelect = $((model: RouterData["model"]) => {
     const selectedRouter = routers.find((r) => r.model === model);
     if (!selectedRouter) return;
+
+    // Track router model selection
+    track("router_model_selected", {
+      router_model: model,
+      router_mode: selectedMode,
+      step: "choose",
+      is_addition: selectedMode === "Trunk Mode" && !selectedModels.includes(model)
+    });
 
     const interfaces: RouterInterfaces = {};
     

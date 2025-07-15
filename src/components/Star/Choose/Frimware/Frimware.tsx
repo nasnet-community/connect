@@ -5,6 +5,7 @@ import {
   type PropFunction,
   type QwikJSX,
 } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 
 export type FrimwareType = "MikroTik" | "OpenWRT";
@@ -29,6 +30,13 @@ export const Frimware = component$((props: FrimwareProps) => {
 
   const handleSelect = $((firmware: FrimwareType, disabled?: boolean) => {
     if (disabled) return;
+    
+    // Track firmware selection
+    track("firmware_selected", {
+      firmware_type: firmware,
+      step: "choose"
+    });
+    
     starContext.updateChoose$({
       Firmware: firmware,
     });

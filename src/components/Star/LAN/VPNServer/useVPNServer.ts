@@ -1,4 +1,5 @@
 import { useContext, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import type { VPNType } from "../../StarContext/CommonType";
 import type { QRL } from "@builder.io/qwik";
@@ -136,6 +137,11 @@ export const useVPNServer = () => {
       // Grab the latest VPN server configuration from StarContext to avoid stale references
       const latestConfig = { ...(starContext.state.LAN.VPNServer || { Users: [] }) } as any;
 
+      // Track which protocols are being enabled
+      const enabledProtocolsList = Object.entries(enabledProtocols)
+        .filter(([, enabled]) => enabled)
+        .map(([protocol]) => protocol);
+
       // Start with latest config and update users
       latestConfig.Users = userManagement.users;
 
@@ -172,9 +178,33 @@ export const useVPNServer = () => {
         latestConfig.WireguardServers = [wireguardHook.wireguardState];
       }
 
+      // Track VPN server configuration completion
+      track("vpn_server_configured", {
+        vpn_server_enabled: true,
+        enabled_protocols: enabledProtocolsList.join(','),
+        protocol_count: enabledProtocolsList.length,
+        user_count: userManagement.users.length,
+        step: "lan_config",
+        component: "vpn_server",
+        configuration_completed: true,
+        success: true
+      });
+
       // Finally persist into StarContext
       starContext.updateLAN$({ VPNServer: latestConfig });
     } else {
+      // Track VPN server disabled
+      track("vpn_server_configured", {
+        vpn_server_enabled: false,
+        enabled_protocols: "none",
+        protocol_count: 0,
+        user_count: 0,
+        step: "lan_config",
+        component: "vpn_server",
+        configuration_completed: true,
+        success: true
+      });
+
       // Disable all VPN server configurations
       starContext.updateLAN$({
         VPNServer: {

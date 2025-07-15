@@ -1,14 +1,14 @@
 import { component$, useSignal, $, useContext, type QRL } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { subscribeToNewsletter, generateUserUUID, validateEmail, checkClientRateLimit } from "~/utils/api";
 
 export interface NewsletterModalProps {
   isVisible: boolean;
   onClose$: QRL<() => void>;
-  onSuccess$: QRL<() => void>;
 }
 
-export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, onClose$, onSuccess$ }) => {
+export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, onClose$ }) => {
   const starContext = useContext(StarContext);
   const email = useSignal("");
   const isLoading = useSignal(false);
@@ -53,6 +53,12 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
       );
 
       if (result.success) {
+        // Track successful newsletter subscription
+        track("newsletter_submitted", { 
+          success: true,
+          email_domain: email.value.split("@")[1] || "unknown"
+        });
+
         // Update context with subscription info
         await starContext.updateChoose$({
           Newsletter: {
@@ -63,11 +69,13 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
         });
 
         isSuccess.value = true;
-        // Use a simple timeout with stored callback
-        setTimeout(() => {
-          onSuccess$();
-        }, 2000);
       } else {
+        // Track failed newsletter subscription
+        track("newsletter_submitted", { 
+          success: false,
+          error: result.error_detail || result.error || "unknown_error"
+        });
+
         if (result.error_detail === "This email or UUID is already subscribed to the campaign") {
           error.value = $localize`This email is already entered in our giveaway! 🎉`;
         } else {
@@ -75,6 +83,12 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
         }
       }
     } catch (err) {
+      // Track exception during newsletter subscription
+      track("newsletter_submitted", { 
+        success: false,
+        error: "exception_occurred"
+      });
+
       error.value = $localize`Something went wrong. Please try again.`;
       console.error("Newsletter subscription error:", err);
     } finally {
@@ -84,6 +98,11 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
 
   const handleCloseClick = $(() => {
     if (!isLoading.value) {
+      // Track newsletter modal close
+      track("newsletter_closed", { 
+        completed: isSuccess.value,
+        had_error: !!error.value
+      });
       onClose$();
     }
   });
@@ -126,10 +145,10 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
                 <div class="space-y-4">
                   <div>
                     <h2 class="text-2xl font-bold text-text dark:text-text-dark-default mb-2 leading-tight">
-                      <span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">{$localize`Starlink Giveaway Campaign`}</span>
+                      <span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">{$localize`NasNet Giveaway Campaign`}</span>
                     </h2>
                     <p class="text-text-secondary dark:text-text-dark-secondary">
-                      {$localize`Exclusive opportunity for Connect users`}
+                      {$localize`Exclusive opportunity for NasNet Connect users`}
                     </p>
                   </div>
                   
@@ -137,7 +156,7 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
                     <div class="text-center space-y-3">
                       <div class="space-y-1">
                         <p class="text-xl font-bold text-text dark:text-text-dark-default">
-                          {$localize`Win 1 of 50 Gift Cards`}
+                          {$localize`Win 1 of 50 Starlink Subscriptions`}
                         </p>
                         <p class="text-2xl font-black text-primary-600 dark:text-primary-400">
                           {$localize`$100 Each`}
@@ -170,7 +189,7 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                   </div>
-                  <span class="font-medium">{$localize`$100 Starlink gift card each`}</span>
+                  <span class="font-medium">{$localize`$100 Starlink Subscription each`}</span>
                 </div>
                 <div class="flex items-center space-x-3 text-text-secondary dark:text-text-dark-secondary p-3 rounded-lg hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/50 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm">
                   <div class="w-5 h-5 rounded-full bg-success flex items-center justify-center flex-shrink-0">
@@ -253,19 +272,26 @@ export const NewsletterModal = component$<NewsletterModalProps>(({ isVisible, on
               
               <div class="space-y-4 mb-6 animate-in slide-in-from-bottom-3 duration-500 delay-700">
                 <p class="text-lg text-text dark:text-text-dark-default">
-                  {$localize`Thank you for participating in our Starlink giveaway campaign.`}
+                  {$localize`Thank you for participating in our giveaway.`}
                 </p>
                 <div class="bg-gradient-to-r from-primary-500/10 to-secondary-500/10 dark:from-primary-500/20 dark:to-secondary-500/20 p-4 rounded-lg border border-primary-500/20 dark:border-primary-500/30 animate-in zoom-in duration-400 delay-900">
                   <p class="text-text-secondary dark:text-text-dark-secondary font-medium">
-                    {$localize`You are now eligible to win one of 50 Starlink gift cards worth $100 each.`}
+                    {$localize`You are now eligible to win one of 50 Starlink Subscription worth $100 each.`}
                   </p>
                 </div>
               </div>
               
-              <div class="text-sm text-text-muted dark:text-text-dark-muted space-y-2 animate-in fade-in duration-500 delay-1000">
+              <div class="text-sm text-text-muted dark:text-text-dark-muted space-y-2 mb-6 animate-in fade-in duration-500 delay-1000">
                 <p>{$localize`Winner notification will be sent via email.`}</p>
-                <p>{$localize`Thank you for being part of the Connect community.`}</p>
+                <p>{$localize`Thank you for being part of the NasNet Connect community.`}</p>
               </div>
+              
+              <button
+                onClick$={handleCloseClick}
+                class="w-full py-3 px-6 rounded-lg font-semibold text-white bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg animate-in slide-in-from-bottom-3 duration-500 delay-1200"
+              >
+                {$localize`Close`}
+              </button>
             </div>
           )}
         </div>
