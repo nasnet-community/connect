@@ -4,6 +4,7 @@ import {
   useSignal,
   $,
   useTask$,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { Choose } from "../Choose/Choose";
 import { ExtraConfig } from "../ExtraConfig/ExtraConfig";
@@ -20,13 +21,83 @@ import {
   LuWrench,
   LuClipboardList,
 } from "@qwikest/icons/lucide";
+import { track } from '@vercel/analytics';
+import type { Mode } from "../StarContext/ChooseType";
 
 export const StarContainer = component$(() => {
   const activeStep = useSignal(0);
   const { state, updateChoose$ } = useContext(StarContext);
+  const sessionStarted = useSignal(false);
 
   const stepsStore = useStore({
     steps: [] as any[],
+  });
+
+  // Track session start when component mounts
+  useVisibleTask$(() => {
+    if (!sessionStarted.value) {
+      track('config_session_started', {
+        user_mode: state.Choose.Mode,
+        entry_point: 'star_container',
+        timestamp: new Date().toISOString()
+      });
+      sessionStarted.value = true;
+    }
+  });
+
+  // Track mode changes
+  const handleModeChange = $((mode: Mode) => {
+    track('mode_changed', {
+      from_mode: state.Choose.Mode,
+      to_mode: mode,
+      current_step: stepsStore.steps[activeStep.value]?.title || 'unknown',
+      step_number: activeStep.value + 1
+    });
+    updateChoose$({ Mode: mode });
+  });
+
+  // Track step completion
+  const handleStepComplete = $((stepId: number, stepTitle: string) => {
+    const stepIndex = stepsStore.steps.findIndex((step) => step.id === stepId);
+    if (stepIndex > -1) {
+      stepsStore.steps[stepIndex].isComplete = true;
+      
+      // Track step completion event
+      track('step_completed', {
+        step_name: stepTitle,
+        step_number: stepId,
+        step_index: stepIndex,
+        user_mode: state.Choose.Mode,
+        total_steps: stepsStore.steps.length,
+        progress_percentage: Math.round(((stepIndex + 1) / stepsStore.steps.length) * 100)
+      });
+
+      // Check if this is the final step
+      if (stepId === 5) { // ShowConfig is the final step
+        track('config_flow_completed', {
+          user_mode: state.Choose.Mode,
+          total_steps_completed: stepsStore.steps.filter(step => step.isComplete).length,
+          completion_time: new Date().toISOString()
+        });
+      }
+    }
+  });
+
+  // Track step navigation
+  const handleStepChange = $((stepId: number) => {
+    const previousStep = activeStep.value;
+    const newStep = stepId - 1;
+    
+    track('step_navigated', {
+      from_step: stepsStore.steps[previousStep]?.title || 'unknown',
+      to_step: stepsStore.steps[newStep]?.title || 'unknown',
+      from_step_number: previousStep + 1,
+      to_step_number: stepId,
+      user_mode: state.Choose.Mode,
+      navigation_direction: newStep > previousStep ? 'forward' : 'backward'
+    });
+
+    activeStep.value = newStep;
   });
 
   useTask$(() => {
@@ -41,6 +112,7 @@ export const StarContainer = component$(() => {
             onComplete$={() => {
               stepsStore.steps[0].isComplete = true;
               activeStep.value = 1;
+              handleStepComplete(1, 'Choose');
             }}
           />
         )),
@@ -56,6 +128,7 @@ export const StarContainer = component$(() => {
             onComplete$={() => {
               stepsStore.steps[1].isComplete = true;
               activeStep.value = 2;
+              handleStepComplete(2, 'WAN');
             }}
           />
         )),
@@ -71,6 +144,7 @@ export const StarContainer = component$(() => {
             onComplete$={() => {
               stepsStore.steps[2].isComplete = true;
               activeStep.value = 3;
+              handleStepComplete(3, 'LAN');
             }}
           />
         )),
@@ -86,6 +160,7 @@ export const StarContainer = component$(() => {
             onComplete$={() => {
               stepsStore.steps[3].isComplete = true;
               activeStep.value = 4;
+              handleStepComplete(4, 'Extra Config');
             }}
           />
         )),
@@ -100,6 +175,7 @@ export const StarContainer = component$(() => {
             isComplete={stepsStore.steps[4].isComplete}
             onComplete$={() => {
               stepsStore.steps[4].isComplete = true;
+              handleStepComplete(5, 'Show Config');
             }}
           />
         )),
@@ -113,7 +189,7 @@ export const StarContainer = component$(() => {
       <HStepper
         steps={stepsStore.steps}
         mode={state.Choose.Mode}
-        onModeChange$={(mode) => updateChoose$({ Mode: mode })}
+        onModeChange$={handleModeChange}
         activeStep={activeStep.value}
         onStepComplete$={(id) => {
           const stepIndex = stepsStore.steps.findIndex(
@@ -123,9 +199,7 @@ export const StarContainer = component$(() => {
             stepsStore.steps[stepIndex].isComplete = true;
           }
         }}
-        onStepChange$={(id) => {
-          activeStep.value = id - 1;
-        }}
+        onStepChange$={handleStepChange}
       />
     </div>
   );
