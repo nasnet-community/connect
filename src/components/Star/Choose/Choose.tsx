@@ -151,12 +151,14 @@ export const Choose = component$((props: StepProps) => {
   const activeStep = useSignal(0);
   const stepperKey = useSignal(0); // Force re-render when this changes
 
-  // Show newsletter modal on component mount if user hasn't subscribed
-  useVisibleTask$(() => {
-    if (typeof window !== 'undefined' && !newsletterModalShown.value) {
+  // Show newsletter modal when user selects MikroTik firmware if not already subscribed
+  useVisibleTask$(({ track }) => {
+    const selectedFirmware = track(() => starContext.state.Choose.Firmware);
+    
+    if (selectedFirmware === "MikroTik" && !newsletterModalShown.value) {
       const isSubscribed = starContext.state.Choose.Newsletter?.isSubscribed;
       if (!isSubscribed) {
-        // Show modal after a short delay to ensure everything is loaded
+        // Show modal after a short delay
         setTimeout(() => {
           showNewsletterModal.value = true;
           newsletterModalShown.value = true;
