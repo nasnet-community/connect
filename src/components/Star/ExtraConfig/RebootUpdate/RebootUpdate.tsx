@@ -35,9 +35,9 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
 
   return (
     <div class="mx-auto w-full max-w-5xl p-4">
-      <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
+      <div class="rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
         <RebootHeader />
-        <div class="space-y-6 p-6">
+        <div class="space-y-6 p-6 overflow-visible pb-20">
           <TimezoneCard selectedTimezone={selectedTimezone} />
           <RebootCard
             autoRebootEnabled={autoRebootEnabled}

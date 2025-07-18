@@ -1,4 +1,4 @@
-import type { PropFunction } from "@builder.io/qwik";
+import type { QRL } from "@builder.io/qwik";
 
 export type StepperMode = "easy" | "advance";
 
@@ -13,8 +13,8 @@ export interface StepItem {
 export interface HStepperProps {
   steps: StepItem[];
   activeStep?: number;
-  onStepComplete$?: PropFunction<(id: number) => void>;
-  onStepChange$?: PropFunction<(id: number) => void>;
+  onStepComplete$?: QRL<(id: number) => void>;
+  onStepChange$?: QRL<(id: number) => void>;
   mode?: StepperMode;
-  onModeChange$?: PropFunction<(mode: StepperMode) => void>;
+  onModeChange$?: QRL<(mode: StepperMode) => void>;
 }

@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { VPNType } from "~/components/Star/StarContext";
+import type { VPNType } from "~/components/Star/StarContext/CommonType";
 
 interface VPNSelectorProps {
   selectedType: string;
@@ -26,17 +26,11 @@ export const VPNSelector = component$<VPNSelectorProps>(
         >
           <option value="">{$localize`Select VPN type`}</option>
           <option value="Wireguard">{$localize`Wireguard`}</option>
-          <option
-            value="OpenVPN"
-            disabled
-          >{$localize`OpenVPN (Coming Soon)`}</option>
-          <option value="PPTP" disabled>{$localize`PPTP (Coming Soon)`}</option>
-          <option value="L2TP" disabled>{$localize`L2TP (Coming Soon)`}</option>
-          <option value="SSTP" disabled>{$localize`SSTP (Coming Soon)`}</option>
-          <option
-            value="IKeV2"
-            disabled
-          >{$localize`IKeV2 (Coming Soon)`}</option>
+          <option value="OpenVPN">{$localize`OpenVPN`}</option>
+          <option value="L2TP">{$localize`L2TP`}</option>
+          <option value="IKeV2">{$localize`IKEv2`}</option>
+          <option value="PPTP">{$localize`PPTP`}</option>
+          <option value="SSTP">{$localize`SSTP`}</option>
         </select>
       </div>
     );

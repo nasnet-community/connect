@@ -12,7 +12,13 @@
   "trustedDependencies-annotation": "Needed for bun to allow running install scripts",
   "type": "module",
   "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
     "build": "qwik build",
+    "build-storybook": "storybook build",
     "build.client": "vite build && npm run i18n-translate",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
     "build.server": "vite build -c adapters/vercel-edge/vite.config.ts",
@@ -30,6 +36,7 @@
     "serve": "node server/entry.node-server",
     "start": "vite --open --mode ssr",
     "start:prod": "node server/entry.express",
+    "storybook": "storybook dev -p 6006",
     "qwik": "qwik"
   },
   "devDependencies": {
@@ -50,6 +57,7 @@
     "@types/react-dom": "^18.2.13",
     "@typescript-eslint/eslint-plugin": "7.16.1",
     "@typescript-eslint/parser": "7.16.1",
+    "@vitest/ui": "^3.2.3",
     "autoprefixer": "^10.4.19",
     "compression": "^1.7.4",
     "dotenv": "^16.3.2",
@@ -60,18 +68,23 @@
     "prettier-plugin-tailwindcss": "^0.5.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "storybook": "^8.2.8",
+    "storybook-framework-qwik": "^0.4.2",
+    "supabase-auth-helpers-qwik": "^0.0.3",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.6",
     "typescript": "5.1.6",
     "undici": "*",
     "vercel": "^32.0.1",
     "vite": "^5.1.4",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "vitest": "^3.2.2"
   },
   "dependencies": {
+    "@angular/localize": "^16.2.12",
     "@angular/compiler": "^16.2.12",
     "@angular/compiler-cli": "^16.2.12",
-    "@angular/localize": "^16.2.12",
+    "@supabase/supabase-js": "^2.49.4",
     "@vercel/analytics": "^1.5.0",
     "express": "4.20.0"
   },

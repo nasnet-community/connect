@@ -1,12 +1,14 @@
-import { component$, useSignal, useContext, useTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useContext, useTask$, $ } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../StarContext";
+import { StarContext } from "../StarContext/StarContext";
 import { Header } from "./Header";
 import { Code } from "./Code";
 // import { PythonGuide } from './PythonGuide';
 import { ScriptGuide } from "./ScriptGuide";
 // import { TutorialCard } from './TutorialCard';
 import { useConfigGenerator } from "./useShow";
+// import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
 
 export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
@@ -24,6 +26,30 @@ export const ShowConfig = component$<StepProps>(() => {
     configPreview.value = await generateConfigPreview();
   });
 
+  const handlePythonDownload = $(async () => {
+    // Track Python script download
+    track("config_downloaded", {
+      file_type: "python",
+      format: "py",
+      step: "show_config"
+    });
+
+    const content = await generatePythonScript();
+    await downloadFile(content, "py");
+  });
+
+  const handleROSDownload = $(async () => {
+    // Track ROS script download
+    track("config_downloaded", {
+      file_type: "mikrotik_ros",
+      format: "rsc",
+      step: "show_config"
+    });
+
+    const content = await generateROSScript();
+    await downloadFile(content, "rsc");
+  });
+
   return (
     <div class="container mx-auto px-4 py-8">
       <Header />
@@ -32,17 +58,13 @@ export const ShowConfig = component$<StepProps>(() => {
         <Code
           // configPreview={generateConfigPreview()}
           configPreview={configPreview.value} // Use the signal value instead
-          onPythonDownload$={async () => {
-            const content = await generatePythonScript();
-            await downloadFile(content, "py");
-          }}
-          onROSDownload$={async () => {
-            const content = await generateROSScript();
-            await downloadFile(content, "rsc");
-          }}
+          onPythonDownload$={handlePythonDownload}
+          onROSDownload$={handleROSDownload}
         />
       </div>
 
+      {/* <MikrotikApplyConfig /> */}
+      
       <ScriptGuide />
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">

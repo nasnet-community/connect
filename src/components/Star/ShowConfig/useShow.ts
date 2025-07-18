@@ -1,6 +1,6 @@
 import { $ } from "@builder.io/qwik";
-import { ConfigGenerator } from "~/utils/ConfigGenerator/ConfigGenerator";
-import type { StarState } from "~/components/Star/StarContext";
+import { ConfigGenerator } from "~/components/Star/ConfigGenerator/ConfigGenerator";
+import type { StarState } from "~/components/Star/StarContext/StarContext";
 
 export const useConfigGenerator = (state: StarState) => {
   const getTimestamp = $(() => {

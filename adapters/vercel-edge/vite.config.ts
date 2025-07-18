@@ -8,9 +8,16 @@ export default extendConfig(baseConfig, () => {
       ssr: true,
       rollupOptions: {
         input: ["src/entry.vercel-edge.tsx", "@qwik-city-plan"],
+        // output: {
+        //   format: "es",
+        // },
+        // external: ["@supabase/supabase-js", "@angular/localize/init"],
       },
       outDir: ".vercel/output/functions/_qwik-city.func",
     },
     plugins: [vercelEdgeAdapter()],
+    // define: {
+    //   global: "globalThis",
+    // },
   };
 });

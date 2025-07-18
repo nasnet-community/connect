@@ -9,7 +9,6 @@ export const HStepper = component$((props: HStepperProps) => {
   const { activeStep, steps, handleNext$, handlePrev$ } = useStepper(props);
   const stepperRef = useSignal<Element>();
 
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (stepperRef.value) {
       stepperRef.value.scrollIntoView({ behavior: "smooth" });

@@ -1,5 +1,5 @@
 import { $, component$, useContext } from "@builder.io/qwik";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 import { useWANInterface } from "./useWANInterface";
 import { Header } from "./Header";
 import { InterfaceSelector } from "./InterfaceSelector";
@@ -20,13 +20,22 @@ export const WANInterface = component$<WANInterfaceProps>(
       handlePasswordChange,
     } = useWANInterface(mode);
 
-    const routerModel = starContext.state.Choose.RouterModel.Model[0];
-    const availableInterfaces =
-      starContext.state.Choose.RouterModel.Interfaces[routerModel];
+    const masterRouter = starContext.state.Choose.RouterModels.find(
+      (rm) => rm.isMaster
+    );
+
+    const availableInterfaces = masterRouter
+      ? [
+          ...(masterRouter.Interfaces.ethernet || []),
+          ...(masterRouter.Interfaces.wireless || []),
+          ...(masterRouter.Interfaces.sfp || []),
+          ...(masterRouter.Interfaces.lte || [])
+        ]
+      : [];
 
     const isInterfaceSelectedInOtherMode = $((iface: string) => {
       const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
-      return starContext.state.WAN.Easy[otherMode].interface === iface;
+      return starContext.state.WAN.WANLink[otherMode]?.InterfaceName === iface;
     });
 
     const handleComplete = $(async () => {

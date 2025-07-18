@@ -79,7 +79,7 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                       Password
                     </label>
                     <input
-                      type="password"
+                      type="text"
                       class="focus:ring-primary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
                       focus:border-primary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter current password"
@@ -145,7 +145,7 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                       </span>
                     </div>
                     <input
-                      type="password"
+                      type="text"
                       class="focus:ring-secondary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
                       focus:border-secondary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter new password"

@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import type { StepProps } from "./types";
 
 export const Step = component$((props: StepProps) => {
@@ -25,7 +25,7 @@ export const Step = component$((props: StepProps) => {
         >
           <step.component
             isComplete={step.isComplete}
-            onComplete$={() => props.onComplete$(index)}
+            onComplete$={$(() => props.onComplete$(index))}
           />
         </div>
       )}

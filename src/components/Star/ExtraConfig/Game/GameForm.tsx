@@ -1,5 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import type { StarContextType } from "~/components/Star/StarContext";
+import type { StarContextType } from "~/components/Star/StarContext/StarContext";
 
 export const GameForm = component$<{ context: StarContextType }>(
   ({ context }) => {
@@ -60,11 +60,14 @@ export const GameForm = component$<{ context: StarContextType }>(
                 },
               };
 
-              context.updateExtraConfig$({
-                Games: [...context.state.ExtraConfig.Games, newGame],
-              });
+              if (!context.state.ExtraConfig.Games) {
+                context.updateExtraConfig$({ Games: [newGame] });
+              } else {
+                context.updateExtraConfig$({
+                  Games: [...context.state.ExtraConfig.Games, newGame],
+                });
+              }
 
-              // Reset form
               gameName.value = "";
               tcpPorts.value = "";
               udpPorts.value = "";

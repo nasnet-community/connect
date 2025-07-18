@@ -1,13 +1,61 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useContext, $ } from "@builder.io/qwik";
 import { HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { Signal } from "@builder.io/qwik";
-
+import { StarContext } from "../../StarContext/StarContext";
+import type { WirelessConfig } from "../../StarContext/LANType";
 interface SSIDModeSelectorProps {
   isMultiSSID: Signal<boolean>;
 }
 
 export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
   ({ isMultiSSID }) => {
+    const starContext = useContext(StarContext);
+    
+    const switchToSingleMode = $(() => {
+      isMultiSSID.value = false;
+      
+
+      const singleMode = starContext.state.LAN.Wireless?.SingleMode || {
+        SSID: "",
+        Password: "",
+        isHide: false,
+        isDisabled: false
+      };
+
+      const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
+      
+      starContext.updateLAN$({
+        Wireless: {
+          SingleMode: singleMode as WirelessConfig,
+          MultiMode: multiMode
+        }
+      });
+    });
+    
+    const switchToMultiMode = $(() => {
+      isMultiSSID.value = true;
+      
+
+      const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
+      
+      if (Object.keys(multiMode).length === 0) {
+        const defaultNetwork = {
+          SSID: "",
+          Password: "",
+          isHide: false,
+          isDisabled: false
+        };
+        
+        multiMode.Foreign = defaultNetwork as WirelessConfig;
+      }
+      
+      starContext.updateLAN$({
+        Wireless: {
+          MultiMode: multiMode
+        }
+      });
+    });
+
     return (
       <div class="mb-8 flex space-x-4">
         <label
@@ -22,7 +70,7 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
             type="radio"
             name="ssidMode"
             checked={!isMultiSSID.value}
-            onChange$={() => (isMultiSSID.value = false)}
+            onChange$={switchToSingleMode}
             class="hidden"
           />
           <HiWifiOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
@@ -41,7 +89,7 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
             type="radio"
             name="ssidMode"
             checked={isMultiSSID.value}
-            onChange$={() => (isMultiSSID.value = true)}
+            onChange$={switchToMultiMode}
             class="hidden"
           />
           <HiWifiOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />

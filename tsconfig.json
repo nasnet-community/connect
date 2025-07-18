@@ -28,6 +28,7 @@
     "tailwind.config.js",
     "src/**/*.tsx",
     "src/**/*.ts",
-    "src/components/Star/ExtraConfig/components/**/*.tsx"
+    "src/components/Star/ExtraConfig/components/**/*.tsx",
+    "src/test-utils/global.d.ts"
   ]
 }

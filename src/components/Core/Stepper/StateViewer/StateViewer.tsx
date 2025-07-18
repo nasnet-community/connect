@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
-import { StarContext } from "~/components/Star/StarContext";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { StateHeader } from "./StateHeader";
 import { StateHistory } from "./StateHistory";
 import { ContextPaster } from "./ContextPaster";
@@ -20,6 +20,9 @@ export const StateViewer = component$(() => {
     handlePasteContext$,
     handleGenerateFromPaste$,
     refreshState$,
+    downloadLatest$,
+    downloadPastedConfig$,
+    downloadCurrentConfig$,
   } = useStateViewer(context.state);
 
   return (
@@ -68,6 +71,7 @@ export const StateViewer = component$(() => {
                   }
                   onRefresh$={refreshState$}
                   onGenerateConfig$={generateConfig$}
+                  onDownloadLatest$={downloadLatest$}
                 />
                 <ContextPaster
                   value={pastedContext.value}
@@ -80,6 +84,8 @@ export const StateViewer = component$(() => {
               <ConfigViewer
                 currentConfig={configOutput.value}
                 pastedConfig={pastedContextConfig.value}
+                onDownloadPastedConfig$={downloadPastedConfig$}
+                onDownloadCurrentConfig$={downloadCurrentConfig$}
               />
             </div>
           </div>

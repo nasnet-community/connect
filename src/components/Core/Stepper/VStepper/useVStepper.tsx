@@ -1,9 +1,10 @@
 import { useSignal, $, useTask$ } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
-import type { VStepperProps } from "./types";
+import type { VStepperProps, StepItem } from "./types";
 
 export const useVStepper = (props: VStepperProps) => {
   const activeStep = useSignal(props.activeStep || 0);
+  const steps = useSignal<StepItem[]>(props.steps);
   const isStepsVisible = useSignal(false);
   const location = useLocation();
   const position =
@@ -54,25 +55,104 @@ export const useVStepper = (props: VStepperProps) => {
     });
   });
 
+  // Step management functions
+  const addStep$ = $((newStep: StepItem, position?: number) => {
+    const newSteps = [...steps.value];
+    
+    if (position !== undefined && position >= 0 && position <= newSteps.length) {
+      // Insert at specific position
+      newSteps.splice(position, 0, newStep);
+    } else {
+      // Append to end
+      newSteps.push(newStep);
+    }
+    
+    steps.value = newSteps;
+    return newStep.id;
+  });
+  
+  const removeStep$ = $((stepId: number) => {
+    const stepIndex = steps.value.findIndex(step => step.id === stepId);
+    
+    if (stepIndex >= 0) {
+      const newSteps = [...steps.value];
+      newSteps.splice(stepIndex, 1);
+      
+      // Adjust active step if necessary
+      if (activeStep.value >= newSteps.length) {
+        activeStep.value = Math.max(0, newSteps.length - 1);
+      } else if (activeStep.value >= stepIndex) {
+        // If we removed a step before the active one, adjust active step
+        activeStep.value = Math.max(0, activeStep.value - 1);
+      }
+      
+      steps.value = newSteps;
+      return true;
+    }
+    
+    return false;
+  });
+
+  const swapSteps$ = $((sourceIndex: number, targetIndex: number) => {
+    if (
+      sourceIndex >= 0 && 
+      sourceIndex < steps.value.length && 
+      targetIndex >= 0 && 
+      targetIndex < steps.value.length &&
+      sourceIndex !== targetIndex
+    ) {
+      const newSteps = [...steps.value];
+      
+      // Swap the steps
+      [newSteps[sourceIndex], newSteps[targetIndex]] = 
+      [newSteps[targetIndex], newSteps[sourceIndex]];
+      
+      // Update active step if it was one of the swapped steps
+      if (activeStep.value === sourceIndex) {
+        activeStep.value = targetIndex;
+      } else if (activeStep.value === targetIndex) {
+        activeStep.value = sourceIndex;
+      }
+      
+      steps.value = newSteps;
+      return true;
+    }
+    
+    return false;
+  });
+
+  // Navigation functions
+  const goToStep$ = $((stepIndex: number) => {
+    if (stepIndex >= 0 && stepIndex < steps.value.length) {
+      activeStep.value = stepIndex;
+      scrollToStep(stepIndex);
+      props.onStepChange$?.(steps.value[stepIndex].id);
+    }
+  });
+
   useTask$(({ track }) => {
-    track(() => props.steps[activeStep.value]?.isComplete);
+    track(() => steps.value[activeStep.value]?.isComplete);
 
-    if (props.steps[activeStep.value]?.isComplete) {
-      props.onStepComplete$?.(props.steps[activeStep.value].id);
+    if (steps.value[activeStep.value]?.isComplete) {
+      props.onStepComplete$?.(steps.value[activeStep.value].id);
 
-      if (activeStep.value < props.steps.length - 1) {
+      if (activeStep.value < steps.value.length - 1) {
         activeStep.value++;
-        props.onStepChange$?.(props.steps[activeStep.value].id);
+        props.onStepChange$?.(steps.value[activeStep.value].id);
         scrollToStep(activeStep.value);
       } else {
         scrollToBottom();
+        props.onComplete$?.();
       }
     }
   });
 
   const completeStep = $((index: number) => {
-    props.steps[index].isComplete = true;
-    props.onStepComplete$?.(props.steps[index].id);
+    // Update the step completion status
+    steps.value = steps.value.map((step, i) => 
+      i === index ? { ...step, isComplete: true } : step
+    );
+    props.onStepComplete$?.(steps.value[index].id);
   });
 
   const toggleStepsVisibility = $(() => {
@@ -81,10 +161,16 @@ export const useVStepper = (props: VStepperProps) => {
 
   return {
     activeStep,
+    steps,
     isStepsVisible,
     position,
     completeStep,
     toggleStepsVisibility,
     isComplete,
+    scrollToStep,
+    addStep$,
+    removeStep$,
+    swapSteps$,
+    goToStep$,
   };
 };

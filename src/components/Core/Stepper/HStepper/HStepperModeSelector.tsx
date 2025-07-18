@@ -1,9 +1,9 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type QRL } from "@builder.io/qwik";
 import { LuZap, LuBrain } from "@qwikest/icons/lucide";
 
 interface ModeSelectorProps {
   selectedMode: "easy" | "advance";
-  onModeChange$: PropFunction<(mode: "easy" | "advance") => void>;
+  onModeChange$: QRL<(mode: "easy" | "advance") => void>;
 }
 
 export const ModeSelector = component$((props: ModeSelectorProps) => {

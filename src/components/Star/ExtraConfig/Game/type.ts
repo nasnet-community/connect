@@ -1,5 +1,5 @@
 import type { Signal } from "@builder.io/qwik";
-import type { StarContextType } from "../../StarContext";
+import type { StarContextType } from "../../StarContext/StarContext";
 
 export interface Game {
   name: string;

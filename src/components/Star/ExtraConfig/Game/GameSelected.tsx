@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import type { StarContextType } from "~/components/Star/StarContext";
+import type { StarContextType } from "~/components/Star/StarContext/StarContext";
 
 export const GameSelected = component$<{ context: StarContextType }>(
   ({ context }) => {
@@ -16,7 +16,7 @@ export const GameSelected = component$<{ context: StarContextType }>(
       }
       return parts.join(" | ");
     };
-    return context.state.ExtraConfig.Games.length > 0 ? (
+    return context.state.ExtraConfig.Games?.length ? (
       <div class="space-y-3">
         <h3 class="font-medium text-text dark:text-text-dark-default">
           {$localize`Selected Games`}
@@ -40,7 +40,7 @@ export const GameSelected = component$<{ context: StarContextType }>(
               </div>
               <button
                 onClick$={() => {
-                  const updatedGames = [...context.state.ExtraConfig.Games];
+                  const updatedGames = [...(context.state.ExtraConfig.Games || [])];
                   updatedGames.splice(index, 1);
                   context.updateExtraConfig$({ Games: updatedGames });
                 }}

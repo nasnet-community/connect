@@ -6,6 +6,9 @@ import type { GameTableProps } from "./type";
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
     const { handleGameSelection } = useGameLogic();
+    
+    // Check if DomesticLink is enabled
+    const isDomesticLinkEnabled = context.state.Choose.DomesticLink === true;
 
     return (
       <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">
@@ -30,7 +33,7 @@ export const GameTable = component$<GameTableProps>(
                 currentPage.value * itemsPerPage,
               )
               .map((game) => {
-                const selectedGame = context.state.ExtraConfig.Games.find(
+                const selectedGame = context.state.ExtraConfig.Games?.find(
                   (g) => g.name === game.name,
                 );
 
@@ -61,7 +64,9 @@ export const GameTable = component$<GameTableProps>(
                       >
                         <option value="none">{$localize`Select Route`}</option>
                         <option value="foreign">{$localize`Foreign`}</option>
-                        <option value="domestic">{$localize`Domestic`}</option>
+                        {isDomesticLinkEnabled && (
+                          <option value="domestic">{$localize`Domestic`}</option>
+                        )}
                         <option value="vpn">{$localize`VPN`}</option>
                       </select>
                     </td>

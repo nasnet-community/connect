@@ -1,11 +1,11 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type QRL } from "@builder.io/qwik";
 
 interface NavigationProps {
   activeStep: number;
   totalSteps: number;
   isCurrentStepComplete: boolean;
-  onPrevious$: PropFunction<() => void>;
-  onNext$: PropFunction<() => void>;
+  onPrevious$: QRL<() => void>;
+  onNext$: QRL<() => void>;
 }
 
 export const HStepperNavigation = component$((props: NavigationProps) => {

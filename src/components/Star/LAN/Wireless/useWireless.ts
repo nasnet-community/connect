@@ -1,46 +1,79 @@
 import { $, useContext, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import type { NetworkKey, Networks } from "./type";
 import { generatePasswordFromAPI, generateSSIDFromAPI } from "~/utils/api";
-import { StarContext } from "../../StarContext";
+import { StarContext } from "../../StarContext/StarContext";
 
 export const useWirelessForm = () => {
   const starContext = useContext(StarContext);
+  
+  // Wireless should be enabled by default
+  const wirelessEnabled = useSignal(true);
   const isMultiSSID = useSignal(false);
   const ssid = useSignal("");
   const password = useSignal("");
+  const isHide = useSignal(false);
+  const isDisabled = useSignal(false);
+  const splitBand = useSignal(false);
   const isLoading = useSignal<Record<string, boolean>>({});
   const isFormValid = useSignal(false);
 
   const networks = useStore<Networks>({
-    starlink: { ssid: "", password: "" },
-    domestic: { ssid: "", password: "" },
-    split: { ssid: "", password: "" },
-    vpn: { ssid: "", password: "" },
+    foreign: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    domestic: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    split: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
+    vpn: { ssid: "", password: "", isHide: false, isDisabled: false, splitBand: false },
   });
 
   const checkSamePassword = $(() => {
     if (!isMultiSSID.value) return;
 
-    const passwords = Object.values(networks).map((n) => n.password);
-    const commonPassword = passwords[0];
-    const areAllPasswordsSame = passwords.every(
-      (p) => p === commonPassword && p !== "",
-    );
+    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+    const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
+    
+    if (!networks.foreign.isDisabled) {
+      enabledNetworks.Foreign = {
+        SSID: networks.foreign.ssid,
+        Password: networks.foreign.password,
+        isHide: networks.foreign.isHide,
+        isDisabled: networks.foreign.isDisabled,
+        SplitBand: networks.foreign.splitBand,
+      };
+    }
+    
+    // Only include domestic and split networks if DomesticLink is enabled
+    if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
+      enabledNetworks.Domestic = {
+        SSID: networks.domestic.ssid,
+        Password: networks.domestic.password,
+        isHide: networks.domestic.isHide,
+        isDisabled: networks.domestic.isDisabled,
+        SplitBand: networks.domestic.splitBand,
+      };
+    }
+    
+    if (isDomesticLinkEnabled && !networks.split.isDisabled) {
+      enabledNetworks.Split = {
+        SSID: networks.split.ssid,
+        Password: networks.split.password,
+        isHide: networks.split.isHide,
+        isDisabled: networks.split.isDisabled,
+        SplitBand: networks.split.splitBand,
+      };
+    }
+    
+    if (!networks.vpn.isDisabled) {
+      enabledNetworks.VPN = {
+        SSID: networks.vpn.ssid,
+        Password: networks.vpn.password,
+        isHide: networks.vpn.isHide,
+        isDisabled: networks.vpn.isDisabled,
+        SplitBand: networks.vpn.splitBand,
+      };
+    }
 
     starContext.updateLAN$({
       Wireless: {
-        ...starContext.state.LAN.Wireless,
-        SingleMode: {
-          WirelessCredentials: {
-            SSID: ssid.value,
-            Password: password.value,
-          },
-        },
-        MultiMode: {
-          ...starContext.state.LAN.Wireless.MultiMode,
-          isSamePassword: areAllPasswordsSame,
-          SamePassword: areAllPasswordsSame ? commonPassword : "",
-        },
+        MultiMode: enabledNetworks
       },
     });
   });
@@ -50,24 +83,63 @@ export const useWirelessForm = () => {
       isLoading.value = { ...isLoading.value, allPasswords: true };
       const commonPassword = await generatePasswordFromAPI();
 
-      Object.keys(networks).forEach((network) => {
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      
+      // Only set passwords for available networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+
+      availableNetworks.forEach((network) => {
         networks[network as NetworkKey].password = commonPassword;
       });
 
+      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
+      
+      if (!networks.foreign.isDisabled) {
+        enabledNetworks.Foreign = {
+          SSID: networks.foreign.ssid,
+          Password: networks.foreign.password,
+          isHide: networks.foreign.isHide,
+          isDisabled: networks.foreign.isDisabled,
+          SplitBand: networks.foreign.splitBand,
+        };
+      }
+      
+      // Only include domestic and split networks if DomesticLink is enabled
+      if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
+        enabledNetworks.Domestic = {
+          SSID: networks.domestic.ssid,
+          Password: networks.domestic.password,
+          isHide: networks.domestic.isHide,
+          isDisabled: networks.domestic.isDisabled,
+          SplitBand: networks.domestic.splitBand,
+        };
+      }
+      
+      if (isDomesticLinkEnabled && !networks.split.isDisabled) {
+        enabledNetworks.Split = {
+          SSID: networks.split.ssid,
+          Password: networks.split.password,
+          isHide: networks.split.isHide,
+          isDisabled: networks.split.isDisabled,
+          SplitBand: networks.split.splitBand,
+        };
+      }
+      
+      if (!networks.vpn.isDisabled) {
+        enabledNetworks.VPN = {
+          SSID: networks.vpn.ssid,
+          Password: networks.vpn.password,
+          isHide: networks.vpn.isHide,
+          isDisabled: networks.vpn.isDisabled,
+          SplitBand: networks.vpn.splitBand,
+        };
+      }
+
       starContext.updateLAN$({
         Wireless: {
-          ...starContext.state.LAN.Wireless,
-          SingleMode: {
-            WirelessCredentials: {
-              SSID: ssid.value,
-              Password: password.value,
-            },
-          },
-          MultiMode: {
-            ...starContext.state.LAN.Wireless.MultiMode,
-            isSamePassword: true,
-            SamePassword: commonPassword,
-          },
+          MultiMode: enabledNetworks
         },
       });
     } catch (error) {
@@ -89,57 +161,202 @@ export const useWirelessForm = () => {
     }
   });
 
-  useTask$(({ track }) => {
-    track(() => ({
-      isMulti: isMultiSSID.value,
-      networks: Object.values(networks)
-        .map((n) => n.ssid + n.password)
-        .join(""),
-      single: ssid.value + password.value,
-    }));
+  const toggleNetworkHide = $((network: NetworkKey) => {
+    networks[network].isHide = !networks[network].isHide;
+  });
 
-    starContext.updateLAN$({
-      Wireless: {
-        isWireless: true,
-        isMultiSSID: isMultiSSID.value,
-        SingleMode: {
-          WirelessCredentials: {
-            SSID: ssid.value,
-            Password: password.value,
-          },
-        },
-        MultiMode: {
-          isSamePassword:
-            starContext.state.LAN.Wireless.MultiMode.isSamePassword,
-          SamePassword: starContext.state.LAN.Wireless.MultiMode.SamePassword,
-          Starlink: {
-            SSID: networks.starlink.ssid,
-            Password: networks.starlink.password,
-          },
-          Domestic: {
-            SSID: networks.domestic.ssid,
-            Password: networks.domestic.password,
-          },
-          Split: {
-            SSID: networks.split.ssid,
-            Password: networks.split.password,
-          },
-          VPN: {
-            SSID: networks.vpn.ssid,
-            Password: networks.vpn.password,
-          },
-        },
-      },
-    });
+  const toggleNetworkDisabled = $((network: NetworkKey) => {
+    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+    
+    // Don't allow enabling domestic or split networks when DomesticLink is false
+    if (!isDomesticLinkEnabled && (network === 'domestic' || network === 'split')) {
+      return;
+    }
+    
+    if (!networks[network].isDisabled) {
+      // Count available networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+      
+      const enabledCount = availableNetworks
+        .map(key => networks[key as NetworkKey])
+        .filter(n => !n.isDisabled).length;
+      
+      if (enabledCount > 1) {
+        networks[network].isDisabled = true;
+      }
+    } else {
+      networks[network].isDisabled = false;
+    }
+  });
+
+  const toggleNetworkSplitBand = $((network: NetworkKey) => {
+    networks[network].splitBand = !networks[network].splitBand;
+  });
+
+  const toggleSingleHide = $(() => {
+    isHide.value = !isHide.value;
+  });
+
+  const toggleSingleDisabled = $(() => {
+    isDisabled.value = !isDisabled.value;
+  });
+
+  const toggleSingleSplitBand = $(() => {
+    splitBand.value = !splitBand.value;
+  });
+
+  useTask$(() => {
+    const wirelessConfig = starContext.state.LAN.Wireless;
+    
+    if (wirelessConfig) {
+      isMultiSSID.value = !!wirelessConfig.MultiMode;
+      
+      if (isMultiSSID.value && wirelessConfig.MultiMode) {
+        const multiMode = wirelessConfig.MultiMode;
+        
+        if (multiMode.Foreign) {
+          networks.foreign = {
+            ssid: multiMode.Foreign.SSID,
+            password: multiMode.Foreign.Password,
+            isHide: multiMode.Foreign.isHide,
+            isDisabled: multiMode.Foreign.isDisabled,
+            splitBand: multiMode.Foreign.SplitBand || false,
+          };
+        }
+        
+        if (multiMode.Domestic) {
+          networks.domestic = {
+            ssid: multiMode.Domestic.SSID,
+            password: multiMode.Domestic.Password,
+            isHide: multiMode.Domestic.isHide,
+            isDisabled: multiMode.Domestic.isDisabled,
+            splitBand: multiMode.Domestic.SplitBand || false,
+          };
+        }
+        
+        if (multiMode.Split) {
+          networks.split = {
+            ssid: multiMode.Split.SSID,
+            password: multiMode.Split.Password,
+            isHide: multiMode.Split.isHide,
+            isDisabled: multiMode.Split.isDisabled,
+            splitBand: multiMode.Split.SplitBand || false,
+          };
+        }
+        
+        if (multiMode.VPN) {
+          networks.vpn = {
+            ssid: multiMode.VPN.SSID,
+            password: multiMode.VPN.Password,
+            isHide: multiMode.VPN.isHide,
+            isDisabled: multiMode.VPN.isDisabled,
+            splitBand: multiMode.VPN.SplitBand || false,
+          };
+        }
+      } else if (!isMultiSSID.value && wirelessConfig.SingleMode) {
+        const singleMode = wirelessConfig.SingleMode;
+        ssid.value = singleMode.SSID;
+        password.value = singleMode.Password;
+        isHide.value = singleMode.isHide;
+        isDisabled.value = singleMode.isDisabled;
+        splitBand.value = singleMode.SplitBand || false;
+      }
+    }
+  });
+
+  // Handle DomesticLink changes - disable domestic and split networks when DomesticLink is false
+  useTask$(({ track }) => {
+    const isDomesticLinkEnabled = track(() => starContext.state.Choose.DomesticLink);
+    
+    if (!isDomesticLinkEnabled) {
+      // Disable domestic and split networks when DomesticLink is false
+      networks.domestic.isDisabled = true;
+      networks.split.isDisabled = true;
+    }
   });
 
   useTask$(({ track }) => {
-    track(() =>
-      Object.values(networks)
-        .map((n) => n.password)
+    // Skip updating wireless config if disabled
+    if (!wirelessEnabled.value) {
+      starContext.updateLAN$({
+        Wireless: undefined
+      });
+      return;
+    }
+
+    track(() => ({
+      isMulti: isMultiSSID.value,
+      networks: Object.values(networks)
+        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled + n.splitBand)
         .join(""),
-    );
-    checkSamePassword();
+      single: ssid.value + password.value + isHide.value + isDisabled.value + splitBand.value,
+    }));
+
+    if (isMultiSSID.value) {
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      const enabledNetworks: Record<string, { SSID: string; Password: string; isHide: boolean; isDisabled: boolean; SplitBand: boolean }> = {};
+      
+      if (!networks.foreign.isDisabled) {
+        enabledNetworks.Foreign = {
+          SSID: networks.foreign.ssid,
+          Password: networks.foreign.password,
+          isHide: networks.foreign.isHide,
+          isDisabled: networks.foreign.isDisabled,
+          SplitBand: networks.foreign.splitBand,
+        };
+      }
+      
+      // Only include domestic and split networks if DomesticLink is enabled
+      if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
+        enabledNetworks.Domestic = {
+          SSID: networks.domestic.ssid,
+          Password: networks.domestic.password,
+          isHide: networks.domestic.isHide,
+          isDisabled: networks.domestic.isDisabled,
+          SplitBand: networks.domestic.splitBand,
+        };
+      }
+      
+      if (isDomesticLinkEnabled && !networks.split.isDisabled) {
+        enabledNetworks.Split = {
+          SSID: networks.split.ssid,
+          Password: networks.split.password,
+          isHide: networks.split.isHide,
+          isDisabled: networks.split.isDisabled,
+          SplitBand: networks.split.splitBand,
+        };
+      }
+      
+      if (!networks.vpn.isDisabled) {
+        enabledNetworks.VPN = {
+          SSID: networks.vpn.ssid,
+          Password: networks.vpn.password,
+          isHide: networks.vpn.isHide,
+          isDisabled: networks.vpn.isDisabled,
+          SplitBand: networks.vpn.splitBand,
+        };
+      }
+
+      starContext.updateLAN$({
+        Wireless: {
+          MultiMode: enabledNetworks
+        },
+      });
+    } else {
+      starContext.updateLAN$({
+        Wireless: {
+          SingleMode: {
+            SSID: ssid.value,
+            Password: password.value,
+            isHide: isHide.value,
+            isDisabled: isDisabled.value,
+            SplitBand: splitBand.value,
+          },
+        },
+      });
+    }
   });
 
   const generateSSID = $(async () => {
@@ -176,11 +393,31 @@ export const useWirelessForm = () => {
   });
 
   const validateForm = $(() => {
+    // If wireless is disabled, form is always valid
+    if (!wirelessEnabled.value) {
+      isFormValid.value = true;
+      return;
+    }
+
     if (isMultiSSID.value) {
-      isFormValid.value = Object.values(networks).every(
-        (network) =>
-          network.ssid.trim() !== "" && network.password.trim() !== "",
+      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      
+      // Filter networks based on DomesticLink setting
+      const availableNetworks = isDomesticLinkEnabled 
+        ? ['foreign', 'domestic', 'split', 'vpn'] 
+        : ['foreign', 'vpn'];
+      
+      const enabledNetworks = availableNetworks
+        .map(key => networks[key as NetworkKey])
+        .filter(network => !network.isDisabled);
+      
+      const atLeastOneEnabled = enabledNetworks.length > 0;
+      
+      const allEnabledNetworksFieldsFilled = enabledNetworks.every(
+        (network) => network.ssid.trim() !== "" && network.password.trim() !== ""
       );
+      
+      isFormValid.value = atLeastOneEnabled && allEnabledNetworksFieldsFilled;
     } else {
       isFormValid.value =
         ssid.value.trim() !== "" && password.value.trim() !== "";
@@ -188,11 +425,15 @@ export const useWirelessForm = () => {
   });
 
   useTask$(({ track }) => {
+    track(() => wirelessEnabled.value); // Track wireless enabled state
     track(() => ssid.value);
     track(() => password.value);
+    track(() => isHide.value);
+    track(() => isDisabled.value);
+    track(() => splitBand.value);
     track(() =>
       Object.values(networks)
-        .map((n) => n.ssid + n.password)
+        .map((n) => n.ssid + n.password + n.isHide + n.isDisabled + n.splitBand)
         .join(""),
     );
     track(() => isMultiSSID.value);
@@ -200,9 +441,13 @@ export const useWirelessForm = () => {
   });
 
   return {
+    wirelessEnabled,
     isMultiSSID,
     ssid,
     password,
+    isHide,
+    isDisabled,
+    splitBand,
     networks,
     isLoading,
     generateSSID,
@@ -211,5 +456,11 @@ export const useWirelessForm = () => {
     generateNetworkPassword,
     generateAllPasswords,
     isFormValid,
+    toggleNetworkHide,
+    toggleNetworkDisabled,
+    toggleNetworkSplitBand,
+    toggleSingleHide,
+    toggleSingleDisabled,
+    toggleSingleSplitBand,
   };
 };
