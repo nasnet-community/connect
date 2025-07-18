@@ -58,7 +58,7 @@ export const OWRTPackage = component$(() => {
             <p>{$localize`Run the following command to download and execute the installation script:`}</p>
             <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
               <code class="text-sm">
-                wget -O- https://raw.githubusercontent.com/happynet-why/nclink/main/install.sh | sh
+                wget -O- https://raw.githubusercontent.com/nasnet-community/linkmask/main/install.sh | sh
               </code>
             </div>
           </div>
