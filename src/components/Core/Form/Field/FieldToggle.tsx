@@ -10,29 +10,31 @@ export interface FieldToggleProps {
   class?: string;
 }
 
-export const FieldToggle = component$<FieldToggleProps>(({
-  id,
-  type,
-  checked = false,
-  disabled = false,
-  onChange$,
-  class: className
-}) => {
-  return (
-    <input
-      type={type}
-      id={id}
-      checked={checked}
-      disabled={disabled}
-      onChange$={onChange$}
-      class={`
+export const FieldToggle = component$<FieldToggleProps>(
+  ({
+    id,
+    type,
+    checked = false,
+    disabled = false,
+    onChange$,
+    class: className,
+  }) => {
+    return (
+      <input
+        type={type}
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onChange$={onChange$}
+        class={`
         h-4 w-4 
         ${type === "checkbox" ? "rounded" : "rounded-full"} 
         border-border text-primary-600 focus:ring-primary-500 
         dark:border-border-dark
-        ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
-        ${className || ''}
+        ${disabled ? "cursor-not-allowed opacity-60" : ""}
+        ${className || ""}
       `}
-    />
-  );
-}); 
+      />
+    );
+  },
+);

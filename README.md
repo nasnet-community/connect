@@ -113,7 +113,8 @@ VITE_APP_VERSION=your_app_version
 <div align="center">
 <img src="https://i.imgur.com/XXXXXX.png" alt="NASNET Router Configuration" width="800"/>
 
-*NASNET Smart Router Configuration System*
+_NASNET Smart Router Configuration System_
+
 </div>
 
 ### 🌐 Network Architecture
@@ -144,7 +145,6 @@ VITE_APP_VERSION=your_app_version
    Smart Routing        DOMESTIC Traffic    FOREIGN Traffic    Secure Tunnel
 ```
 
-
 ### 🔀 Traffic Management
 
 - **Split LAN**: Smart routing based on destination
@@ -152,8 +152,8 @@ VITE_APP_VERSION=your_app_version
 - **Foreign LAN**: for only Foreign Link traffic
 - **VPN LAN**: VPN-tunneled traffic
 
-
 ### 🔀 Traffic Flow Management
+
 ```ascii
          +----------------------+
          |    Incoming Packet   |
@@ -164,34 +164,37 @@ VITE_APP_VERSION=your_app_version
           +---------+---------+
                     |
          +----------+---------+
-         |          |         |                  
-    Domestic    Foreign      VPN          
-    Traffic     Traffic    Traffic       
-         |          |         |                  
-   Local DNS    Global DNS  VPN DNS         
-   Servers      Servers     Tunnel       
-   (8.8.8.8)   (1.1.1.1)   (Custom)  
+         |          |         |
+    Domestic    Foreign      VPN
+    Traffic     Traffic    Traffic
+         |          |         |
+   Local DNS    Global DNS  VPN DNS
+   Servers      Servers     Tunnel
+   (8.8.8.8)   (1.1.1.1)   (Custom)
 ```
-
 
 ### 🌟 Key Components
 
 1. **Multi-WAN Setup**
+
    - Domestic connection
    - Foreign connection
    - Automatic failover
 
 2. **VPN Services**
+
    - WireGuard server/client
    - OpenVPN server
    - Multi-client support
 
 3. **Wireless Networks**
+
    - Multi-SSID support
    - Band steering (2.4/5 GHz)
    - Isolated network segments
 
 4. **Gaming Features**
+
 ```ascii
                      ┌─────────────┐
                      │ Game Traffic│
@@ -212,16 +215,17 @@ VITE_APP_VERSION=your_app_version
 
 ### 📊 Network Segments
 
-| Network | IP Range | Purpose |
-|---------|----------|---------|
-| Split LAN | 192.168.10.0/24 | Smart-routed traffic |
-| Domestic LAN | 192.168.20.0/24 | Local traffic only |
-| Foreign LAN | 192.168.30.0/24 | International traffic |
-| VPN LAN | 192.168.40.0/24 | VPN-protected traffic |
+| Network      | IP Range        | Purpose               |
+| ------------ | --------------- | --------------------- |
+| Split LAN    | 192.168.10.0/24 | Smart-routed traffic  |
+| Domestic LAN | 192.168.20.0/24 | Local traffic only    |
+| Foreign LAN  | 192.168.30.0/24 | International traffic |
+| VPN LAN      | 192.168.40.0/24 | VPN-protected traffic |
 
 ### 🔧 Auto-Configuration
 
 1. **Initial Setup**
+
 ```ascii
     ┌─────┐          ┌──────────┐          ┌────────┐
     │User │          │Generator │          │Router  │
@@ -290,6 +294,7 @@ WAN   WAN   WAN
 ```
 
 ### 📊 Network Management Flow
+
 ```ascii
 +---------------+  Auto Updates  +----------------+
 |   System      |<------------->| Package Mgmt   |
@@ -340,11 +345,13 @@ We welcome bug reports, feature requests, and questions! You can submit issues i
 ### Telegram Support
 
 For immediate support or questions:
+
 1. Join our [Telegram channel](https://t.me/joinnasnet)
 2. Send your question or issue description
 3. Our team will respond as soon as possible
 
 When reporting issues, please include:
+
 - Description of the problem
 - Steps to reproduce
 - Expected behavior

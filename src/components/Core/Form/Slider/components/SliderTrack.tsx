@@ -1,10 +1,10 @@
-import { component$ } from '@builder.io/qwik';
-import type { QRL } from '@builder.io/qwik';
+import { component$ } from "@builder.io/qwik";
+import type { QRL } from "@builder.io/qwik";
 
 export interface SliderTrackProps {
   trackRef: { value: HTMLDivElement | undefined };
   trackClasses: string;
-  trackFillClasses: string; 
+  trackFillClasses: string;
   trackFillStyle: { [key: string]: string };
   onTrackClick: QRL<(e: MouseEvent) => void>;
   children?: any;
@@ -17,7 +17,7 @@ export const SliderTrack = component$((props: SliderTrackProps) => {
     trackFillClasses,
     trackFillStyle,
     onTrackClick,
-    children
+    children,
   } = props;
 
   return (
@@ -28,20 +28,13 @@ export const SliderTrack = component$((props: SliderTrackProps) => {
       role="presentation"
     >
       {/* Track background */}
-      <div
-        class="slider-track-bg"
-        aria-hidden="true"
-      />
-      
+      <div class="slider-track-bg" aria-hidden="true" />
+
       {/* Track fill */}
-      <div
-        class={trackFillClasses}
-        style={trackFillStyle}
-        aria-hidden="true"
-      />
-      
+      <div class={trackFillClasses} style={trackFillStyle} aria-hidden="true" />
+
       {/* Render child components (marks, ticks, thumbs) */}
       {children}
     </div>
   );
-}); 
+});

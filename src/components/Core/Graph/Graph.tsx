@@ -1,0 +1,229 @@
+import { $, component$, useComputed$ } from "@builder.io/qwik";
+import type { GraphNode, GraphProps } from "./types";
+import { NodeRenderer } from "./Node/NodeRenderer";
+import { processConnections } from "./Traffic/TrafficUtils";
+import { processConnectionTypes } from "./Connection/ConnectionUtils";
+import { GraphContainer, defaultConfig } from "./Container/GraphContainer";
+import { SingleConnectionRenderer } from "./Connection/SingleConnectionRenderer";
+import { GraphLegend } from "./Container/GraphLegend";
+
+/**
+ * Graph component for visualizing nodes and connections
+ * Supports various network node types and traffic visualization
+ */
+export const Graph = component$<GraphProps>((props) => {
+  const {
+    nodes,
+    connections: rawConnections,
+    title = "Network Graph",
+    config,
+    onNodeClick$,
+    onConnectionClick$,
+  } = props;
+
+  const mergedConfig = { ...defaultConfig, ...config };
+
+  // Make sure we have a valid viewBox that encompasses all nodes
+  const computedViewBox = useComputed$(() => {
+    if (mergedConfig.viewBox && nodes.length > 0) {
+      return mergedConfig.viewBox;
+    }
+
+    // If no viewBox specified or no nodes, calculate responsive default
+    if (nodes.length === 0) {
+      // Responsive default viewBox based on typical mobile/tablet/desktop needs
+      return "0 0 800 400"; // More mobile-friendly default aspect ratio
+    }
+
+    // Find min/max coordinates to encompass all nodes
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+
+    nodes.forEach((node) => {
+      minX = Math.min(minX, node.x);
+      minY = Math.min(minY, node.y);
+      maxX = Math.max(maxX, node.x);
+      maxY = Math.max(maxY, node.y);
+    });
+
+    // Add padding using Tailwind spacing system (24 = 6rem = 96px, closest to 100)
+    const padding = 96; // Equivalent to Tailwind's spacing.24
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = maxX + padding;
+    maxY = maxY + padding;
+
+    return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+  });
+
+  // Process connections to apply traffic and connection type styling
+  const processedConnections = useComputed$(() => {
+    let result = [...rawConnections];
+    // Apply traffic type styling
+    result = processConnections(result);
+    // Apply connection type styling
+    result = processConnectionTypes(result);
+    return result;
+  });
+
+  // Create a map for faster node lookup
+  const nodeMap = useComputed$(() => {
+    const map = new Map<string | number, GraphNode>();
+    nodes.forEach((node) => map.set(node.id, node));
+    return map;
+  });
+
+  return (
+    <GraphContainer
+      title={title}
+      config={mergedConfig}
+      connections={processedConnections.value}
+    >
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={computedViewBox.value}
+        preserveAspectRatio={
+          mergedConfig.preserveAspectRatio || "xMidYMid meet"
+        }
+        class="graph-svg bg-surface dark:bg-surface-dark touch-manipulation"
+        role="img"
+        aria-label={title || "Network Graph Visualization"}
+        aria-describedby="graph-description"
+        tabindex={0}
+        style={{
+          // Optimize for different device types
+          "--svg-node-size": "22px",
+          "--svg-node-size-mobile": "24px",
+          "--svg-connection-width": "2px",
+          "--svg-connection-width-mobile": "3px",
+        }}
+      >
+        {/* Accessibility description */}
+        <desc id="graph-description">
+          Network graph showing {nodes.length} nodes and {processedConnections.value.length} connections.
+          Use arrow keys to navigate between nodes, Enter to select, and Tab to move between interactive elements.
+        </desc>
+        
+        {/* SVG background for light/dark mode */}
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="transparent"
+          class="graph-bg"
+        />
+
+        {/* Draw connections with accessibility support */}
+        {processedConnections.value.map((connection) => {
+          const fromNode = nodeMap.value.get(connection.from);
+          const toNode = nodeMap.value.get(connection.to);
+          if (!fromNode || !toNode) return null;
+
+          const id = connection.id || `${connection.from}-${connection.to}`;
+          const connectionLabel = connection.label || 
+            `Connection from ${fromNode.label} to ${toNode.label}`;
+          
+          return (
+            <g
+              key={`connection-${id}`}
+              onClick$={
+                onConnectionClick$
+                  ? $(async () => {
+                      await onConnectionClick$(connection);
+                    })
+                  : undefined
+              }
+              class={{
+                "cursor-pointer touch:cursor-default": !!onConnectionClick$,
+              }}
+              style={{
+                // Add touch-friendly interaction for connections
+                touchAction: "manipulation",
+              }}
+              role={onConnectionClick$ ? "button" : "img"}
+              aria-label={`${connectionLabel}${connection.trafficType ? `, Traffic type: ${connection.trafficType}` : ""}`}
+              tabindex={onConnectionClick$ ? 0 : -1}
+              onKeyDown$={
+                onConnectionClick$
+                  ? $(async (event: KeyboardEvent) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        await onConnectionClick$(connection);
+                      }
+                    })
+                  : undefined
+              }
+            >
+              <SingleConnectionRenderer
+                connection={connection}
+                fromNode={fromNode}
+                toNode={toNode}
+              />
+            </g>
+          );
+        })}
+
+        {/* Draw nodes with accessibility support */}
+        {nodes.map((node, _index) => (
+          <g
+            key={`node-${node.id}`}
+            onClick$={
+              onNodeClick$
+                ? $(async () => {
+                    await onNodeClick$(node);
+                  })
+                : undefined
+            }
+            class={{
+              "cursor-pointer touch:cursor-default": !!onNodeClick$,
+            }}
+            style={{
+              // Add larger touch target for nodes on touch devices
+              touchAction: "manipulation",
+            }}
+            role={onNodeClick$ ? "button" : "img"}
+            aria-label={`${node.type || "Node"}: ${node.label} at position ${node.x}, ${node.y}`}
+            aria-describedby={`node-desc-${node.id}`}
+            tabindex={onNodeClick$ ? 0 : -1}
+            onKeyDown$={
+              onNodeClick$
+                ? $(async (event: KeyboardEvent) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      await onNodeClick$(node);
+                    }
+                  })
+                : undefined
+            }
+          >
+            <NodeRenderer node={node} />
+          </g>
+        ))}
+      </svg>
+
+      {/* Legend for non-expanded mode */}
+      {mergedConfig.showLegend && (
+        <div class="mt-2">
+          <GraphLegend
+            connections={processedConnections.value}
+            customLegendItems={mergedConfig.legendItems}
+            showLegend={true}
+          />
+        </div>
+      )}
+
+      {/* Debug information in development mode */}
+      {process.env.NODE_ENV === "development" && nodes.length === 0 && (
+        <div class="p-4 text-center text-sm text-red-500 dark:text-red-400">
+          No nodes to display. Add nodes to the graph.
+        </div>
+      )}
+    </GraphContainer>
+  );
+});
+
+export default Graph;

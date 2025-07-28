@@ -6,8 +6,7 @@ import {
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { isDev } from "@builder.io/qwik";
-import { inject } from '@vercel/analytics';
-
+import { inject } from "@vercel/analytics";
 
 import "./global.css";
 
@@ -34,7 +33,7 @@ export default component$(() => {
 
   useVisibleTask$(() => {
     inject({
-      mode: isDev ? 'development' : 'production',
+      mode: isDev ? "development" : "production",
       debug: true,
     });
   });
@@ -51,7 +50,10 @@ export default component$(() => {
         )}
         <RouterHead />
         {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QW43P8FSXT"></script>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-QW43P8FSXT"
+        ></script>
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={`

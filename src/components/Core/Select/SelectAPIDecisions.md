@@ -73,15 +73,15 @@ Most props are optional with carefully chosen defaults to provide a good experie
 
 ```typescript
 // Example default values
-placeholder = "Select an option"
-disabled = false
-required = false
-size = "md"
-validation = "default"
-multiple = false
-searchable = false
-clearable = true
-mode = "custom"
+placeholder = "Select an option";
+disabled = false;
+required = false;
+size = "md";
+validation = "default";
+multiple = false;
+searchable = false;
+clearable = true;
+mode = "custom";
 ```
 
 This allows developers to start with minimal configuration while enabling progressive enhancement as needed.
@@ -112,7 +112,7 @@ Some props only apply in specific modes or states. These are clearly documented 
 
 ```typescript
 /**
- * Whether to enable search functionality 
+ * Whether to enable search functionality
  * Only applies to custom mode
  * @default false
  */
@@ -120,6 +120,7 @@ searchable?: boolean;
 ```
 
 This approach:
+
 1. Keeps the API unified (no separate interfaces)
 2. Provides clarity through documentation
 3. Allows for future mode enhancements without API changes
@@ -157,10 +158,10 @@ The implementation will use semantic tokens rather than direct color values:
 
 ```tsx
 // Instead of this:
-"bg-gray-700 text-white border-gray-600"
+"bg-gray-700 text-white border-gray-600";
 
 // We'll use semantic tokens:
-"bg-surface-dark text-text-dark-default border-border-dark"
+"bg-surface-dark text-text-dark-default border-border-dark";
 ```
 
 This aligns with Connect's design system principles and improves theme consistency.

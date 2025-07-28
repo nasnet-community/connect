@@ -1,10 +1,10 @@
-import type { QRL, NoSerialize } from '@builder.io/qwik';
-import type { QwikIntrinsicElements } from '@builder.io/qwik';
+import type { QRL, NoSerialize } from "@builder.io/qwik";
+import type { QwikIntrinsicElements } from "@builder.io/qwik";
 
-export type FileUploadSize = 'sm' | 'md' | 'lg';
-export type FileUploadVariant = 'default' | 'bordered' | 'filled';
-export type FileUploadState = 'default' | 'error' | 'success' | 'warning';
-export type FileUploadLayout = 'horizontal' | 'vertical';
+export type FileUploadSize = "sm" | "md" | "lg";
+export type FileUploadVariant = "default" | "bordered" | "filled";
+export type FileUploadState = "default" | "error" | "success" | "warning";
+export type FileUploadLayout = "horizontal" | "vertical";
 export type FileTypes = string[] | string;
 
 export interface FileInfo {
@@ -18,7 +18,8 @@ export interface FileInfo {
   previewUrl?: string;
 }
 
-export interface FileUploadProps extends Omit<QwikIntrinsicElements['div'], 'onChange$'> {
+export interface FileUploadProps
+  extends Omit<QwikIntrinsicElements["div"], "onChange$"> {
   id?: string;
   name?: string;
   size?: FileUploadSize;
@@ -63,12 +64,14 @@ export interface FileUploadProps extends Omit<QwikIntrinsicElements['div'], 'onC
   onUploadError$?: QRL<(file: FileInfo, error?: any) => void>;
   onFileRemoved$?: QRL<(file: FileInfo) => void>;
   uploadUrl?: string;
-  uploadMethod?: 'POST' | 'PUT';
+  uploadMethod?: "POST" | "PUT";
   uploadHeaders?: Record<string, string>;
   uploadFieldName?: string;
   uploadFormData?: Record<string, string | Blob>;
   validateFile$?: QRL<(file: File) => boolean | string>;
-  customUploader$?: QRL<(file: File, onProgress: (progress: number) => void) => Promise<any>>;
+  customUploader$?: QRL<
+    (file: File, onProgress: (progress: number) => void) => Promise<any>
+  >;
   onComplete$?: QRL<(files: FileInfo[]) => void>;
   value?: FileInfo[];
   defaultValue?: FileInfo[];

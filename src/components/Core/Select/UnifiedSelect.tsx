@@ -1,9 +1,27 @@
-import { component$, useId, useSignal, $, useVisibleTask$, useComputed$ } from "@builder.io/qwik";
+import {
+  component$,
+  useId,
+  useSignal,
+  $,
+  useVisibleTask$,
+  useComputed$,
+  useOnWindow,
+  useTask$,
+} from "@builder.io/qwik";
 import type { SelectProps, SelectOption } from "./UnifiedSelect.types";
 
 // Re-export the types for use in stories and other components
-export type { SelectProps, SelectOption, SelectSize } from "./UnifiedSelect.types";
-import { styles, getSelectNativeClass, getSelectButtonClass } from "./UnifiedSelect.styles";
+export type {
+  SelectProps,
+  SelectOption,
+  SelectSize,
+} from "./UnifiedSelect.types";
+import {
+  styles,
+  getSelectNativeClass,
+  getSelectButtonClass,
+} from "./UnifiedSelect.styles";
+import { Spinner } from "../DataDisplay/Progress/Spinner";
 
 /**
  * Unified Select component that combines features from both Select and VPNSelect
@@ -28,6 +46,8 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     mode = "custom",
     clearable = true,
     searchable = false,
+    loading = false,
+    loadingText = "Loading options...",
     class: className = "",
     onChange$,
   } = props;
@@ -36,25 +56,292 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
   const isOpen = useSignal(false);
   const containerRef = useSignal<HTMLDivElement>();
   const searchValue = useSignal("");
+  const debouncedSearchValue = useSignal("");
+  const isMobile = useSignal(false);
+  const buttonRef = useSignal<HTMLButtonElement>();
+  const dropdownRef = useSignal<HTMLDivElement>();
   
+  // Viewport positioning state
+  const dropdownPosition = useSignal<{
+    placement: 'above' | 'below';
+    maxHeight: string;
+    width: string;
+    left?: string;
+    right?: string;
+    top?: string;
+    bottom?: string;
+  }>({ 
+    placement: 'below', 
+    maxHeight: '300px', 
+    width: '100%' 
+  });
+  const searchInputRef = useSignal<HTMLInputElement>();
+  const optionsContainerRef = useSignal<HTMLDivElement>();
+  
+  // Keyboard navigation state
+  const focusedOptionIndex = useSignal(-1);
+  const announceText = useSignal("");
+  const lastSearchLength = useSignal(0);
+
+  // Debounce search input with 300ms delay
+  useTask$(({ track, cleanup }) => {
+    track(() => searchValue.value);
+    
+    // Clear any existing timeout when searchValue changes
+    const timeoutId = setTimeout(() => {
+      debouncedSearchValue.value = searchValue.value;
+    }, 300);
+    
+    // Cleanup function to clear timeout if component unmounts or searchValue changes again
+    cleanup(() => clearTimeout(timeoutId));
+  });
+
+  // Keyboard navigation helpers
+  const getSelectableOptions = $(() => {
+    return filteredOptions.value.filter(option => !option.disabled);
+  });
+
+  const announceOption = $((option: SelectOption) => {
+    // Inline the isSelected logic for serialization
+    const isOptionSelected = Array.isArray(value) 
+      ? value.includes(option.value) 
+      : value === option.value;
+    const selectedText = isOptionSelected ? "selected" : "not selected";
+    announceText.value = `${option.label}, ${selectedText}`;
+  });
+
+  const announceSearchResults = $((count: number) => {
+    if (count === 0) {
+      announceText.value = "No options found";
+    } else {
+      announceText.value = `${count} option${count === 1 ? '' : 's'} available`;
+    }
+  });
+
+  const scrollOptionIntoView = $((index: number) => {
+    if (!optionsContainerRef.value) return;
+    
+    const options = optionsContainerRef.value.querySelectorAll('[role="option"]:not([aria-disabled="true"])');
+    const option = options[index] as HTMLElement;
+    
+    if (option) {
+      const container = optionsContainerRef.value;
+      const optionTop = option.offsetTop;
+      const optionBottom = optionTop + option.offsetHeight;
+      const containerScrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+      
+      if (optionTop < containerScrollTop) {
+        container.scrollTop = optionTop;
+      } else if (optionBottom > containerScrollTop + containerHeight) {
+        container.scrollTop = optionBottom - containerHeight;
+      }
+    }
+  });
+
+  const moveFocus = $(async (direction: 'up' | 'down' | 'first' | 'last') => {
+    const selectableOptions = await getSelectableOptions();
+    if (selectableOptions.length === 0) return;
+
+    let newIndex = focusedOptionIndex.value;
+
+    switch (direction) {
+      case 'down':
+        newIndex = newIndex < selectableOptions.length - 1 ? newIndex + 1 : 0;
+        break;
+      case 'up':
+        newIndex = newIndex > 0 ? newIndex - 1 : selectableOptions.length - 1;
+        break;
+      case 'first':
+        newIndex = 0;
+        break;
+      case 'last':
+        newIndex = selectableOptions.length - 1;
+        break;
+    }
+
+    focusedOptionIndex.value = newIndex;
+    await scrollOptionIntoView(newIndex);
+    await announceOption(selectableOptions[newIndex]);
+  });
+
+  const selectFocusedOption = $(async () => {
+    const selectableOptions = await getSelectableOptions();
+    if (focusedOptionIndex.value >= 0 && focusedOptionIndex.value < selectableOptions.length) {
+      const option = selectableOptions[focusedOptionIndex.value];
+      await handleSelectOption(option);
+    }
+  });
+
+  // Focus trap implementation
+  const trapFocus = $((e: KeyboardEvent) => {
+    if (!isOpen.value || !dropdownRef.value) return;
+
+    const focusableElements = dropdownRef.value.querySelectorAll(
+      'input, button, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  });
+
   // Compute selected value(s) label for display
   const displayValue = useComputed$(() => {
     if (!value) return "";
-    
+
     if (Array.isArray(value)) {
       if (value.length === 0) return "";
-      
+
       const selectedLabels = options
-        .filter(opt => value.includes(opt.value))
-        .map(opt => opt.label);
-        
+        .filter((opt) => value.includes(opt.value))
+        .map((opt) => opt.label);
+
       return selectedLabels.join(", ");
     }
-    
-    const selectedOption = options.find(opt => opt.value === value);
+
+    const selectedOption = options.find((opt) => opt.value === value);
     return selectedOption ? selectedOption.label : "";
   });
-  
+
+  // Check if mobile device and handle orientation changes
+  useVisibleTask$(() => {
+    const checkMobile = () => {
+      isMobile.value = window.innerWidth < 768;
+      // Recalculate position on orientation change for mobile
+      if (isOpen.value && !isMobile.value) {
+        setTimeout(calculateDropdownPosition, 100);
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    window.addEventListener("orientationchange", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("orientationchange", checkMobile);
+    };
+  });
+
+  // Viewport positioning utilities
+  const calculateDropdownPosition = $(() => {
+    if (!buttonRef.value || !containerRef.value || isMobile.value) {
+      return;
+    }
+
+    const buttonRect = buttonRef.value.getBoundingClientRect();
+    const _containerRect = containerRef.value.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // Calculate available space with safe area considerations
+    const safeAreaTop = 20; // Account for status bars, etc.
+    const safeAreaBottom = 20;
+    const safeAreaSides = 16;
+    
+    const spaceAbove = buttonRect.top - safeAreaTop;
+    const spaceBelow = viewportHeight - buttonRect.bottom - safeAreaBottom;
+    
+    // Dropdown dimensions with dynamic calculation
+    const baseOptionHeight = 48; // Height per option in pixels
+    const paddingHeight = searchable ? 120 : 80; // Account for search input and padding
+    const maxVisibleOptions = 8; // Maximum options to show before scrolling
+    const actualOptionCount = Math.min(filteredOptions.value.length, maxVisibleOptions);
+    const estimatedDropdownHeight = actualOptionCount * baseOptionHeight + paddingHeight;
+    
+    // Calculate preferred dropdown width
+    const minDropdownWidth = 200;
+    const maxDropdownWidth = Math.min(viewportWidth - 2 * safeAreaSides, 500);
+    const dropdownWidth = Math.max(
+      Math.min(buttonRect.width, maxDropdownWidth), 
+      minDropdownWidth
+    );
+    
+    // Determine placement with improved logic
+    let placement: 'above' | 'below' = 'below';
+    let maxHeight = '300px';
+    
+    // Prefer 'below' unless there's significantly more space above
+    if (spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow + 50) {
+      placement = 'above';
+      maxHeight = `${Math.min(spaceAbove, 500)}px`;
+    } else {
+      placement = 'below';
+      maxHeight = `${Math.min(spaceBelow, 500)}px`;
+    }
+    
+    // Ensure minimum height
+    const minHeight = Math.min(200, baseOptionHeight * 2 + 40);
+    if (parseInt(maxHeight) < minHeight) {
+      maxHeight = `${minHeight}px`;
+    }
+    
+    // Calculate horizontal positioning with better overflow handling
+    let left: string | undefined;
+    let right: string | undefined;
+    let width = `${dropdownWidth}px`;
+    
+    // Check for left overflow
+    if (buttonRect.left < safeAreaSides) {
+      left = `${safeAreaSides}px`;
+      width = `${Math.min(dropdownWidth, viewportWidth - 2 * safeAreaSides)}px`;
+    }
+    // Check for right overflow
+    else if (buttonRect.left + dropdownWidth > viewportWidth - safeAreaSides) {
+      const availableWidth = viewportWidth - 2 * safeAreaSides;
+      
+      if (buttonRect.right >= dropdownWidth + safeAreaSides) {
+        // Align dropdown right edge with button right edge
+        right = `${viewportWidth - buttonRect.right}px`;
+        width = `${Math.min(dropdownWidth, buttonRect.right - safeAreaSides)}px`;
+      } else {
+        // Align dropdown to right edge of viewport with margin
+        right = `${safeAreaSides}px`;
+        width = `${availableWidth}px`;
+      }
+    } else {
+      // Normal left alignment
+      left = `${buttonRect.left}px`;
+    }
+    
+    // Update position state
+    dropdownPosition.value = {
+      placement,
+      maxHeight,
+      width,
+      left,
+      right,
+      top: placement === 'below' ? `${buttonRect.bottom + 4}px` : undefined,
+      bottom: placement === 'above' ? `${viewportHeight - buttonRect.top + 4}px` : undefined,
+    };
+  });
+
+  // Update dropdown position when opened or window resizes
+  useVisibleTask$(({ track }) => {
+    track(() => isOpen.value);
+    track(() => filteredOptions.value.length);
+    
+    if (isOpen.value && !isMobile.value) {
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(calculateDropdownPosition, 0);
+    }
+  });
+
+  // Listen for window resize and scroll events
+  useOnWindow('resize', calculateDropdownPosition);
+  useOnWindow('scroll', calculateDropdownPosition);
+
   // Close dropdown when clicking outside
   useVisibleTask$(({ track }) => {
     track(() => containerRef.value);
@@ -62,49 +349,144 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        containerRef.value && 
-        !containerRef.value.contains(event.target as Node) && 
+        containerRef.value &&
+        !containerRef.value.contains(event.target as Node) &&
         isOpen.value
       ) {
         isOpen.value = false;
+        // Clear search when closing dropdown
+        if (searchable) {
+          searchValue.value = "";
+          debouncedSearchValue.value = "";
+        }
+      }
+    };
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (!isOpen.value) return;
+
+      switch (event.key) {
+        case "Escape":
+          event.preventDefault();
+          isOpen.value = false;
+          focusedOptionIndex.value = -1;
+          buttonRef.value?.focus();
+          break;
+        
+        case "ArrowDown":
+          event.preventDefault();
+          await moveFocus('down');
+          break;
+        
+        case "ArrowUp":
+          event.preventDefault();
+          await moveFocus('up');
+          break;
+        
+        case "Home":
+          event.preventDefault();
+          await moveFocus('first');
+          break;
+        
+        case "End":
+          event.preventDefault();
+          await moveFocus('last');
+          break;
+        
+        case "Enter":
+        case " ": // Space key
+          if (document.activeElement === searchInputRef.value) {
+            // Let search input handle space normally
+            if (event.key === " ") return;
+          }
+          event.preventDefault();
+          await selectFocusedOption();
+          break;
+        
+        case "Tab":
+          await trapFocus(event);
+          break;
       }
     };
 
     document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   });
-  
-  // Filter options based on search value
+
+  // Filter options based on debounced search value
   const filteredOptions = useComputed$(() => {
-    if (!searchable || !searchValue.value) return options;
-    
-    return options.filter(option => 
-      option.label.toLowerCase().includes(searchValue.value.toLowerCase())
+    if (!searchable || !debouncedSearchValue.value) return options;
+
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(debouncedSearchValue.value.toLowerCase()),
     );
   });
-  
+
+  // Handle search results announcements and focus reset
+  useTask$(({ track }) => {
+    track(() => filteredOptions.value);
+    track(() => isOpen.value);
+    
+    if (isOpen.value && searchable) {
+      // Reset focused option when search results change
+      focusedOptionIndex.value = -1;
+      
+      // Announce search results for screen readers
+      if (lastSearchLength.value !== filteredOptions.value.length) {
+        announceSearchResults(filteredOptions.value.length);
+        lastSearchLength.value = filteredOptions.value.length;
+      }
+    }
+  });
+
+  // Handle dropdown open/close focus management
+  useTask$(({ track }) => {
+    track(() => isOpen.value);
+    
+    if (isOpen.value) {
+      // Focus search input if searchable, otherwise prepare for keyboard navigation
+      if (searchable && searchInputRef.value) {
+        setTimeout(() => searchInputRef.value?.focus(), 0);
+      } else {
+        // Initialize focus on first option if no search
+        focusedOptionIndex.value = 0;
+        const selectableOptions = filteredOptions.value.filter(opt => !opt.disabled);
+        if (selectableOptions.length > 0) {
+          announceOption(selectableOptions[0]);
+        }
+      }
+    } else {
+      // Reset state when dropdown closes
+      focusedOptionIndex.value = -1;
+      searchValue.value = "";
+      announceText.value = "";
+    }
+  });
+
   // Helper function to render option content
-  const renderOption = (option: SelectOption, isSelected: boolean) => {
+  const renderOption = (option: SelectOption, isOptionSelected: boolean) => {
     // We'll simplify to use only the default rendering for now
     // Custom renderers can be implemented with proper Qwik patterns later
-    return <span class={isSelected ? "font-medium" : ""}>{option.label}</span>;
+    return <span class={isOptionSelected ? "font-medium" : ""}>{option.label}</span>;
   };
-  
+
   // Handle option selection
   const handleSelectOption = $((option: SelectOption) => {
     if (option.disabled) return;
-    
+
     // Safely capture onChange$ to avoid lexical scope issues
     const safeOnChange$ = onChange$;
-    
+
     if (multiple) {
       const currentValues = Array.isArray(value) ? [...value] : [];
-      
+
       if (currentValues.includes(option.value)) {
         // Remove the value if already selected
-        const newValues = currentValues.filter(v => v !== option.value);
+        const newValues = currentValues.filter((v) => v !== option.value);
         if (safeOnChange$) {
           safeOnChange$(newValues);
         }
@@ -122,7 +504,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
       isOpen.value = false;
     }
   });
-  
+
   // Clear selection
   const handleClear = $((e: MouseEvent) => {
     e.stopPropagation();
@@ -132,17 +514,28 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
       safeOnChange$(multiple ? [] : "");
     }
   });
-  
+
+  // Handle search input with immediate response for clearing
+  const _handleSearchInput = $((inputValue: string) => {
+    searchValue.value = inputValue;
+    
+    // Immediate clear for better UX - if user clears search, show all options immediately
+    if (inputValue === "") {
+      debouncedSearchValue.value = "";
+    }
+  });
+
   // Toggle dropdown
   const toggleDropdown = $(() => {
-    if (!disabled) {
+    if (!disabled && !loading) {
       isOpen.value = !isOpen.value;
       if (isOpen.value && searchable) {
         searchValue.value = "";
+        debouncedSearchValue.value = "";
       }
     }
   });
-  
+
   // Check if a value is selected
   const isSelected = (optionValue: string): boolean => {
     if (Array.isArray(value)) {
@@ -150,7 +543,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     }
     return value === optionValue;
   };
-  
+
   // Render native select mode
   if (mode === "native") {
     return (
@@ -161,7 +554,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             {required && <span class={styles.selectRequired}>*</span>}
           </label>
         )}
-        
+
         <select
           id={id}
           name={name}
@@ -173,7 +566,9 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
           onChange$={(e) => {
             const target = e.target as HTMLSelectElement;
             if (multiple) {
-              const selectedOptions = Array.from(target.selectedOptions).map(opt => opt.value);
+              const selectedOptions = Array.from(target.selectedOptions).map(
+                (opt) => opt.value,
+              );
               onChange$?.(selectedOptions);
             } else {
               onChange$?.(target.value);
@@ -185,10 +580,10 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
               {placeholder}
             </option>
           )}
-          
+
           {options.map((option) => (
-            <option 
-              key={option.value} 
+            <option
+              key={option.value}
               value={option.value}
               disabled={option.disabled}
             >
@@ -196,70 +591,125 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             </option>
           ))}
         </select>
-        
+
         {helperText && !errorMessage && (
           <div class={styles.helperText}>{helperText}</div>
         )}
-        
-        {errorMessage && (
-          <div class={styles.errorMessage}>{errorMessage}</div>
-        )}
+
+        {errorMessage && <div class={styles.errorMessage}>{errorMessage}</div>}
       </div>
     );
   }
-  
+
   // Render custom select mode
   return (
-    <div 
-      class={`${styles.selectContainer} ${className}`} 
-      ref={containerRef}
-    >
+    <div class={`${styles.selectContainer} ${className}`} ref={containerRef}>
       {label && (
         <label for={id} class={styles.selectLabel}>
           {label}
           {required && <span class={styles.selectRequired}>*</span>}
         </label>
       )}
-      
+
       <div class={styles.customSelect}>
         <button
           id={id}
           type="button"
-          class={getSelectButtonClass(size, validation, disabled)}
-          disabled={disabled}
+          ref={buttonRef}
+          class={`${getSelectButtonClass(size, validation, disabled || loading)} ${styles.focusRing}`}
+          disabled={disabled || loading}
           onClick$={toggleDropdown}
+          onKeyDown$={async (e) => {
+            switch (e.key) {
+              case "Enter":
+              case " ": // Space
+                e.preventDefault();
+                if (!isOpen.value) {
+                  isOpen.value = true;
+                  focusedOptionIndex.value = -1;
+                }
+                break;
+              case "ArrowDown":
+                e.preventDefault();
+                if (!isOpen.value) {
+                  isOpen.value = true;
+                  focusedOptionIndex.value = -1;
+                } else {
+                  await moveFocus('down');
+                }
+                break;
+              case "ArrowUp":
+                e.preventDefault();
+                if (!isOpen.value) {
+                  isOpen.value = true;
+                  focusedOptionIndex.value = -1;
+                } else {
+                  await moveFocus('up');
+                }
+                break;
+              case "Home":
+                if (isOpen.value) {
+                  e.preventDefault();
+                  await moveFocus('first');
+                }
+                break;
+              case "End":
+                if (isOpen.value) {
+                  e.preventDefault();
+                  await moveFocus('last');
+                }
+                break;
+            }
+          }}
           aria-haspopup="listbox"
           aria-expanded={isOpen.value}
+          aria-label={`${label || placeholder}${required ? " (required)" : ""}`}
+          aria-owns={isOpen.value ? `${id}-listbox` : undefined}
+          aria-describedby={`${helperText ? `${id}-helper` : ""} ${errorMessage ? `${id}-error` : ""} ${loading ? `${id}-loading` : ""}`}
+          aria-invalid={errorMessage ? "true" : "false"}
+          aria-required={required}
+          aria-activedescendant={
+            isOpen.value && focusedOptionIndex.value >= 0 
+              ? `${id}-option-${focusedOptionIndex.value}` 
+              : undefined
+          }
         >
           <span class={!displayValue.value ? styles.placeholder : ""}>
-            {displayValue.value || placeholder}
+            {loading ? loadingText : (displayValue.value || placeholder)}
           </span>
           
+          {/* Loading indicator for button */}
+          {loading && (
+            <div class="absolute inset-y-0 end-12 flex items-center">
+              <Spinner size="sm" aria-hidden="true" />
+            </div>
+          )}
+
           <div class="flex items-center">
             {clearable && displayValue.value && !disabled && (
               <button
                 type="button"
-                class={styles.clearButton}
+                class={`${styles.clearButton} ${styles.focusRing}`}
                 onClick$={handleClear}
                 aria-label="Clear selection"
               >
-                <svg 
-                  class={styles.clearIcon} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  class={styles.clearIcon}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round" 
-                    stroke-width="2" 
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </button>
             )}
-            
+
             <svg
               class={`${styles.icon} ${isOpen.value ? styles.iconOpen : ""}`}
               fill="none"
@@ -276,10 +726,88 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             </svg>
           </div>
         </button>
-        
+
         {isOpen.value && (
-          <div class={styles.dropdown} role="listbox" aria-label={label}>
-            {searchable && (
+          <>
+            {/* Enhanced mobile backdrop with gesture support */}
+            {isMobile.value && (
+              <div 
+                class={styles.mobileBackdrop}
+                onClick$={() => isOpen.value = false}
+                onTouchStart$={(e) => {
+                  // Allow swipe down to close
+                  const startY = e.touches[0].clientY;
+                  const handleTouchMove = (moveE: TouchEvent) => {
+                    const currentY = moveE.touches[0].clientY;
+                    const diff = currentY - startY;
+                    if (diff > 100) { // Swipe down threshold
+                      isOpen.value = false;
+                      document.removeEventListener('touchmove', handleTouchMove);
+                    }
+                  };
+                  document.addEventListener('touchmove', handleTouchMove, { passive: true });
+                  
+                  // Cleanup on touch end
+                  const handleTouchEnd = () => {
+                    document.removeEventListener('touchmove', handleTouchMove);
+                    document.removeEventListener('touchend', handleTouchEnd);
+                  };
+                  document.addEventListener('touchend', handleTouchEnd, { once: true });
+                }}
+              />
+            )}
+            
+            <div 
+              ref={dropdownRef}
+              id={`${id}-listbox`}
+              class={`${styles.dropdown} ${dropdownPosition.value.placement === 'above' ? styles.dropdownAbove : styles.dropdownBelow}`} 
+              role="listbox" 
+              aria-label={label}
+              aria-multiselectable={multiple ? "true" : "false"}
+              style={isMobile.value ? 
+                { zIndex: "1050" } : 
+                {
+                  position: 'fixed',
+                  top: dropdownPosition.value.top,
+                  bottom: dropdownPosition.value.bottom,
+                  left: dropdownPosition.value.left,
+                  right: dropdownPosition.value.right,
+                  width: dropdownPosition.value.width,
+                  zIndex: '1000'
+                }
+              }
+            >
+              {/* Enhanced mobile header with handle */}
+              {isMobile.value && (
+                <div class={styles.mobileHeader}>
+                  <div class={styles.mobileHandle} />
+                  <div class="flex items-center justify-between w-full">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{label || "Select option"}</h3>
+                    <button
+                      class={`${styles.mobileCloseButton} ${styles.focusRing}`}
+                      onClick$={() => isOpen.value = false}
+                      aria-label="Close selection"
+                    >
+                      <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {searchable && (
               <div class={styles.searchContainer}>
                 <div class="relative">
                   <div class={styles.searchIcon}>
@@ -299,19 +827,70 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                     </svg>
                   </div>
                   <input
+                    ref={searchInputRef}
                     type="text"
-                    class={styles.searchInput}
-                    placeholder="Search..."
+                    class={`${styles.searchInput} ${styles.focusRing}`}
+                    placeholder="Search options..."
                     value={searchValue.value}
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={isOpen.value}
+                    aria-owns={`${id}-listbox`}
+                    aria-describedby={helperText ? `${id}-helper` : undefined}
+                    aria-activedescendant={
+                      focusedOptionIndex.value >= 0 
+                        ? `${id}-option-${focusedOptionIndex.value}` 
+                        : undefined
+                    }
                     onInput$={(e) => {
-                      searchValue.value = (e.target as HTMLInputElement).value;
+                      const value = (e.target as HTMLInputElement).value;
+                      searchValue.value = value;
+                    }}
+                    onKeyDown$={async (e) => {
+                      switch (e.key) {
+                        case "ArrowDown":
+                          e.preventDefault();
+                          await moveFocus('down');
+                          break;
+                        case "ArrowUp":
+                          e.preventDefault();
+                          await moveFocus('up');
+                          break;
+                        case "Home":
+                          if (!e.ctrlKey) {
+                            e.preventDefault();
+                            await moveFocus('first');
+                          }
+                          break;
+                        case "End":
+                          if (!e.ctrlKey) {
+                            e.preventDefault();
+                            await moveFocus('last');
+                          }
+                          break;
+                        case "Enter":
+                          e.preventDefault();
+                          await selectFocusedOption();
+                          break;
+                        case "Escape":
+                          e.preventDefault();
+                          isOpen.value = false;
+                          buttonRef.value?.focus();
+                          break;
+                      }
                     }}
                   />
                 </div>
               </div>
             )}
-            
-            <div class={styles.optionsContainer}>
+
+            <div 
+              class={styles.optionsContainer} 
+              ref={optionsContainerRef}
+              style={{
+                maxHeight: isMobile.value ? '60vh' : dropdownPosition.value.maxHeight
+              }}
+            >
               {filteredOptions.value.length === 0 ? (
                 <div class={styles.noResults}>
                   {props.noResultsText || "No options found"}
@@ -321,20 +900,24 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                   {/* Group options by group property if any options have it */}
                   {(() => {
                     // Check if any options have group property
-                    const hasGroups = filteredOptions.value.some(opt => opt.group);
-                    
+                    const hasGroups = filteredOptions.value.some(
+                      (opt) => opt.group,
+                    );
+
                     if (hasGroups) {
                       // Organize options by groups
                       const groups: Record<string, SelectOption[]> = {};
-                      
+
                       // Add ungrouped options to a special group
-                      const ungroupedOptions = filteredOptions.value.filter(opt => !opt.group);
+                      const ungroupedOptions = filteredOptions.value.filter(
+                        (opt) => !opt.group,
+                      );
                       if (ungroupedOptions.length > 0) {
-                        groups['__ungrouped__'] = ungroupedOptions;
+                        groups["__ungrouped__"] = ungroupedOptions;
                       }
-                      
+
                       // Add grouped options
-                      filteredOptions.value.forEach(opt => {
+                      filteredOptions.value.forEach((opt) => {
                         if (opt.group) {
                           if (!groups[opt.group]) {
                             groups[opt.group] = [];
@@ -342,71 +925,96 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                           groups[opt.group].push(opt);
                         }
                       });
-                      
+
                       // Render groups and their options
-                      return Object.entries(groups).map(([groupName, groupOptions]) => (
-                        <div key={groupName}>
-                          {groupName !== '__ungrouped__' && (
-                            <div class={styles.groupHeader}>{groupName}</div>
-                          )}
-                          {groupOptions.map((option) => (
-                            <div
-                              key={option.value}
-                              class={`
+                      return Object.entries(groups).map(
+                        ([groupName, groupOptions]) => (
+                          <div key={groupName}>
+                            {groupName !== "__ungrouped__" && (
+                              <div class={styles.groupHeader}>{groupName}</div>
+                            )}
+                            {groupOptions.map((option, _optionIndex) => {
+                              const globalIndex = filteredOptions.value.indexOf(option);
+                              return (
+                              <div
+                                key={option.value}
+                                id={`${id}-option-${globalIndex}`}
+                                class={`
                                 ${styles.option}
                                 ${option.disabled ? styles.optionDisabled : ""}
                                 ${isSelected(option.value) ? styles.optionSelected : ""}
+                                ${focusedOptionIndex.value === globalIndex ? "bg-gray-100 dark:bg-gray-600" : ""}
                               `}
-                              role="option"
-                              aria-selected={isSelected(option.value)}
-                              onClick$={() => handleSelectOption(option)}
-                            >
-                              {multiple && props.showCheckboxes !== false && (
-                                <div class={`
+                                role="option"
+                                aria-selected={isSelected(option.value)}
+                                aria-disabled={option.disabled}
+                                onClick$={() => !option.disabled && handleSelectOption(option)}
+                                onMouseEnter$={() => {
+                                  if (!option.disabled) {
+                                    focusedOptionIndex.value = globalIndex;
+                                  }
+                                }}
+                              >
+                                {multiple && props.showCheckboxes !== false && (
+                                  <div
+                                    class={`
                                   ${styles.checkbox}
                                   ${isSelected(option.value) ? styles.checkboxSelected : ""}
-                                `}>
-                                  {isSelected(option.value) && (
-                                    <svg
-                                      class="h-3 w-3"
-                                      fill="currentColor"
-                                      viewBox="0 0 20 20"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd"
-                                      />
-                                    </svg>
-                                  )}
-                                </div>
-                              )}
-                              
-                              {renderOption(option, isSelected(option.value))}
-                            </div>
-                          ))}
-                        </div>
-                      ));
+                                `}
+                                  >
+                                    {isSelected(option.value) && (
+                                      <svg
+                                        class="h-3 w-3"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          fill-rule="evenodd"
+                                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                          clip-rule="evenodd"
+                                        />
+                                      </svg>
+                                    )}
+                                  </div>
+                                )}
+
+                                {renderOption(option, isSelected(option.value))}
+                              </div>
+                              );
+                            })}
+                          </div>
+                        ),
+                      );
                     } else {
                       // If no groups, render options directly
-                      return filteredOptions.value.map((option) => (
+                      return filteredOptions.value.map((option, optionIndex) => (
                         <div
                           key={option.value}
+                          id={`${id}-option-${optionIndex}`}
                           class={`
                             ${styles.option}
                             ${option.disabled ? styles.optionDisabled : ""}
                             ${isSelected(option.value) ? styles.optionSelected : ""}
+                            ${focusedOptionIndex.value === optionIndex ? "bg-gray-100 dark:bg-gray-600" : ""}
                           `}
                           role="option"
                           aria-selected={isSelected(option.value)}
-                          onClick$={() => handleSelectOption(option)}
+                          aria-disabled={option.disabled}
+                          onClick$={() => !option.disabled && handleSelectOption(option)}
+                          onMouseEnter$={() => {
+                            if (!option.disabled) {
+                              focusedOptionIndex.value = optionIndex;
+                            }
+                          }}
                         >
                           {multiple && props.showCheckboxes !== false && (
-                            <div class={`
+                            <div
+                              class={`
                               ${styles.checkbox}
                               ${isSelected(option.value) ? styles.checkboxSelected : ""}
-                            `}>
+                            `}
+                            >
                               {isSelected(option.value) && (
                                 <svg
                                   class="h-3 w-3"
@@ -423,33 +1031,39 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                               )}
                             </div>
                           )}
-                          
+
                           <span>{option.label}</span>
                         </div>
                       ));
                     }
-                  })()} 
+                  })()}
                 </>
               )}
             </div>
-          </div>
+            </div>
+          </>
         )}
       </div>
-      
+
       {helperText && !errorMessage && (
-        <div class={styles.helperText}>{helperText}</div>
+        <div id={`${id}-helper`} class={styles.helperText}>{helperText}</div>
       )}
-      
+
       {errorMessage && (
-        <div class={styles.errorMessage}>{errorMessage}</div>
+        <div id={`${id}-error`} class={styles.errorMessage} role="alert" aria-live="polite">
+          <svg class="inline h-4 w-4 me-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          {errorMessage}
+        </div>
       )}
-      
+
       {/* Hidden input for form submission */}
       {name && (
-        <input 
-          type="hidden" 
-          name={name} 
-          value={Array.isArray(value) ? value.join(",") : value} 
+        <input
+          type="hidden"
+          name={name}
+          value={Array.isArray(value) ? value.join(",") : value}
         />
       )}
     </div>

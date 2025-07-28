@@ -9,7 +9,7 @@ export interface SingleThumbProps {
   positionStyle: { [key: string]: string };
   formatLabel: QRL<(value: number) => string | Promise<string>>;
   onMouseDown: QRL<(e: MouseEvent) => void>;
-  onTouchStart: (e: TouchEvent) => void;
+  onTouchStart: QRL<(e: TouchEvent) => void>;
   onKeyDown: QRL<(e: KeyboardEvent) => void>;
   label?: string;
   min: number;
@@ -29,7 +29,7 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
     label,
     min,
     max,
-    valueText
+    valueText,
   } = props;
 
   return (
@@ -41,7 +41,7 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
       aria-valuenow={value}
       aria-disabled={disabled}
       aria-readonly={readonly}
-      aria-label={label || 'Slider'}
+      aria-label={label || "Slider"}
       aria-valuetext={valueText || value.toString()}
       class={thumbClass}
       style={positionStyle}
@@ -52,8 +52,8 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
           const mouseEvent = {
             preventDefault: () => e.preventDefault(),
             stopPropagation: () => e.stopPropagation(),
-            clientX: e.touches[0]?.clientX || 0,
-            clientY: e.touches[0]?.clientY || 0
+            clientX: e.touches[0].clientX || 0,
+            clientY: e.touches[0].clientY || 0,
           } as MouseEvent;
           onMouseDown(mouseEvent);
         }
@@ -63,4 +63,4 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
       data-thumb="single"
     />
   );
-}); 
+});

@@ -40,7 +40,7 @@ export const Header = component$(() => {
 
           <button
             onClick$={toggleMenu$}
-            class="rounded-lg p-2 hover:bg-primary-100 dark:hover:bg-primary-900/20 lg:hidden"
+            class="rounded-lg p-2 hover:bg-primary-100 lg:hidden dark:hover:bg-primary-900/20"
             aria-label={$localize`Toggle menu`}
           >
             {isMenuOpen.value ? (
@@ -77,7 +77,7 @@ export const Header = component$(() => {
 
         {/* Mobile Menu */}
         <div
-          class={`fixed inset-x-0 top-20 border-t border-primary-100 bg-white/90 p-4 backdrop-blur-xl transition-all duration-300 dark:border-primary-900/20 dark:bg-surface-dark/90 lg:hidden ${isMenuOpen.value ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"}`}
+          class={`fixed inset-x-0 top-20 border-t border-primary-100 bg-white/90 p-4 backdrop-blur-xl transition-all duration-300 lg:hidden dark:border-primary-900/20 dark:bg-surface-dark/90 ${isMenuOpen.value ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"}`}
         >
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-4 border-t border-primary-100 pt-4 dark:border-primary-900/20">

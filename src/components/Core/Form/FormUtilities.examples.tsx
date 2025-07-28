@@ -14,17 +14,17 @@
 //         <h2 class="text-xl font-semibold mb-4">Enhanced Form Labels</h2>
 //         <FormLabelExamples />
 //       </section>
-      
+
 //       <section>
 //         <h2 class="text-xl font-semibold mb-4">Enhanced Helper Text</h2>
 //         <FormHelperTextExamples />
 //       </section>
-      
+
 //       <section>
 //         <h2 class="text-xl font-semibold mb-4">Enhanced Error Messages</h2>
 //         <FormErrorMessageExamples />
 //       </section>
-      
+
 //       <section>
 //         <h2 class="text-xl font-semibold mb-4">Comprehensive Form Example</h2>
 //         <ComprehensiveFormExample />
@@ -54,7 +54,7 @@
 //           <input id="large-label" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md" />
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">State Variants</h3>
 //         <div>
@@ -78,7 +78,7 @@
 //           <input id="warning-label" type="text" class="w-full px-3 py-2 border border-yellow-300 rounded-md" />
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">Accessibility Features</h3>
 //         <div>
@@ -116,7 +116,7 @@
 //       <line x1="12" y1="8" x2="12.01" y2="8"></line>
 //     </svg>
 //   );
-  
+
 //   return (
 //     <div class="grid grid-cols-2 gap-6">
 //       <div class="space-y-4">
@@ -134,7 +134,7 @@
 //           <FormHelperText size="lg">Large helper text</FormHelperText>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">State Variants</h3>
 //         <div>
@@ -158,7 +158,7 @@
 //           <FormHelperText warning>Warning helper text</FormHelperText>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">With Icons</h3>
 //         <div>
@@ -174,7 +174,7 @@
 //           <FormHelperText icon={InfoIcon} success>Success helper text with icon</FormHelperText>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">Spacing Options</h3>
 //         <div>
@@ -212,7 +212,7 @@
 //       <line x1="12" y1="16" x2="12.01" y2="16"></line>
 //     </svg>
 //   );
-  
+
 //   return (
 //     <div class="grid grid-cols-2 gap-6">
 //       <div class="space-y-4">
@@ -230,7 +230,7 @@
 //           <FormErrorMessage size="lg">Large error message</FormErrorMessage>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">With Icons</h3>
 //         <div>
@@ -242,7 +242,7 @@
 //           <FormErrorMessage icon={AlertIcon} animate>Animated error message with icon</FormErrorMessage>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">Animation Options</h3>
 //         <div>
@@ -254,7 +254,7 @@
 //           <FormErrorMessage animate={false}>Non-animated error message</FormErrorMessage>
 //         </div>
 //       </div>
-      
+
 //       <div class="space-y-4">
 //         <h3 class="text-lg font-medium mb-2">Accessibility Features</h3>
 //         <div>
@@ -277,7 +277,7 @@
 //       }, 1000);
 //     });
 //   });
-  
+
 //   // Sample icons
 //   const InfoIcon = (
 //     <svg
@@ -296,7 +296,7 @@
 //       <line x1="12" y1="8" x2="12.01" y2="8"></line>
 //     </svg>
 //   );
-  
+
 //   const AlertIcon = (
 //     <svg
 //       xmlns="http://www.w3.org/2000/svg"
@@ -314,7 +314,7 @@
 //       <line x1="12" y1="16" x2="12.01" y2="16"></line>
 //     </svg>
 //   );
-  
+
 //   return (
 //     <div class="max-w-xl mx-auto">
 //       <Form
@@ -325,9 +325,9 @@
 //       >
 //         {/* Custom form field with enhanced FormLabel */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="username" 
-//             size="md" 
+//           <FormLabel
+//             for="username"
+//             size="md"
 //             required
 //           >
 //             Username
@@ -339,19 +339,19 @@
 //             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 //             required
 //           />
-//           <FormHelperText 
+//           <FormHelperText
 //             icon={InfoIcon}
 //             size="sm"
 //           >
 //             Choose a unique username that will be visible to others
 //           </FormHelperText>
 //         </div>
-        
+
 //         {/* Email field with validation and error message */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="email" 
-//             size="md" 
+//           <FormLabel
+//             for="email"
+//             size="md"
 //             required
 //           >
 //             Email Address
@@ -366,7 +366,7 @@
 //           <FormHelperText>
 //             We'll never share your email with anyone else
 //           </FormHelperText>
-//           <FormErrorMessage 
+//           <FormErrorMessage
 //             id="email-error"
 //             icon={AlertIcon}
 //             animate
@@ -374,12 +374,12 @@
 //             Please enter a valid email address
 //           </FormErrorMessage>
 //         </div>
-        
+
 //         {/* Password field with strength indicator */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="password" 
-//             size="md" 
+//           <FormLabel
+//             for="password"
+//             size="md"
 //             required
 //           >
 //             Password
@@ -397,11 +397,11 @@
 //             Password must be at least 8 characters with uppercase, lowercase, and numbers
 //           </FormHelperText>
 //         </div>
-        
+
 //         {/* Example of a disabled field */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="autoUsername" 
+//           <FormLabel
+//             for="autoUsername"
 //             disabled
 //           >
 //             Auto-generated Username
@@ -418,11 +418,11 @@
 //             This username is automatically generated and cannot be changed
 //           </FormHelperText>
 //         </div>
-        
+
 //         {/* Example of a field with success state */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="referral" 
+//           <FormLabel
+//             for="referral"
 //             success
 //           >
 //             Referral Code
@@ -438,11 +438,11 @@
 //             Valid referral code applied! You'll get 50% off your first month.
 //           </FormHelperText>
 //         </div>
-        
+
 //         {/* Example of a field with warning state */}
 //         <div class="mb-4">
-//           <FormLabel 
-//             for="plan" 
+//           <FormLabel
+//             for="plan"
 //             warning
 //           >
 //             Subscription Plan
@@ -456,14 +456,14 @@
 //             <option value="basic">Basic Plan ($10/month)</option>
 //             <option value="pro">Pro Plan ($20/month)</option>
 //           </select>
-//           <FormHelperText 
+//           <FormHelperText
 //             warning
 //             icon={InfoIcon}
 //           >
 //             Your current plan has limited features. Consider upgrading for full access.
 //           </FormHelperText>
 //         </div>
-        
+
 //         {/* Form submission buttons */}
 //         <div class="flex justify-end gap-3 mt-6">
 //           <button

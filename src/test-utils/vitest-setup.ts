@@ -1,5 +1,5 @@
-import { beforeEach } from 'vitest';
-import * as testHelpers from './test-helpers';
+import { beforeEach } from "vitest";
+import * as testHelpers from "./test-helpers";
 
 // Assign helpers to global scope
 (globalThis as any).testWithOutput = testHelpers.testWithOutput;
@@ -11,4 +11,4 @@ import * as testHelpers from './test-helpers';
 beforeEach(() => {
   // Add any setup that should run before each test
   // For example: reset global state, clear mocks, etc.
-}); 
+});

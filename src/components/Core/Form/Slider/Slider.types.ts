@@ -1,15 +1,16 @@
-import { QwikIntrinsicElements, QRL } from '@builder.io/qwik';
+import type { QwikIntrinsicElements, QRL } from "@builder.io/qwik";
 
-export type SliderSize = 'sm' | 'md' | 'lg';
-export type SliderVariant = 'default' | 'filled';
-export type SliderOrientation = 'horizontal' | 'vertical';
+export type SliderSize = "sm" | "md" | "lg";
+export type SliderVariant = "default" | "filled";
+export type SliderOrientation = "horizontal" | "vertical";
 
 export interface SliderMark {
   value: number;
   label?: string;
 }
 
-export interface BaseSliderProps extends Omit<QwikIntrinsicElements['div'], 'onChange$'> {
+export interface BaseSliderProps
+  extends Omit<QwikIntrinsicElements["div"], "onChange$"> {
   id?: string;
   name?: string;
   size?: SliderSize;
@@ -43,7 +44,7 @@ export interface BaseSliderProps extends Omit<QwikIntrinsicElements['div'], 'onC
 }
 
 export interface SingleSliderProps extends BaseSliderProps {
-  type?: 'single';
+  type?: "single";
   value?: number;
   defaultValue?: number;
   onChange$?: QRL<(value: number) => void>;
@@ -51,7 +52,7 @@ export interface SingleSliderProps extends BaseSliderProps {
 }
 
 export interface RangeSliderProps extends BaseSliderProps {
-  type: 'range';
+  type: "range";
   value?: [number, number];
   defaultValue?: [number, number];
   minRange?: number;
@@ -63,9 +64,9 @@ export interface RangeSliderProps extends BaseSliderProps {
 export type SliderProps = SingleSliderProps | RangeSliderProps;
 
 export function isRangeSlider(props: SliderProps): props is RangeSliderProps {
-  return props.type === 'range';
+  return props.type === "range";
 }
 
 export function isSingleSlider(props: SliderProps): props is SingleSliderProps {
-  return props.type === undefined || props.type === 'single';
+  return props.type === undefined || props.type === "single";
 }

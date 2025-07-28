@@ -11,6 +11,7 @@ export const Logo = component$(() => (
           alt={$localize`NASNET Connect Logo`}
           width={40}
           height={40}
+          loading="lazy"
           class="h-full w-full transform object-cover transition-transform duration-300 group-hover:scale-110"
         />
       </div>

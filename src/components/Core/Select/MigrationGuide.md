@@ -14,7 +14,7 @@ For the fastest migration with minimal changes:
 
 ```tsx
 // BEFORE: Using VPNSelect
-import { VPNSelect } from '~/components/Core/Select/VPNSelect/VPNSelect';
+import { VPNSelect } from "~/components/Core/Select/VPNSelect/VPNSelect";
 
 <VPNSelect
   options={options}
@@ -23,10 +23,10 @@ import { VPNSelect } from '~/components/Core/Select/VPNSelect/VPNSelect';
   onChange$={handleChange}
   required={true}
   error="Please select a protocol"
-/>
+/>;
 
 // AFTER: Using UnifiedSelect in native mode
-import { UnifiedSelect } from '~/components/Core/Select/UnifiedSelect';
+import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 
 <UnifiedSelect
   options={options}
@@ -36,21 +36,23 @@ import { UnifiedSelect } from '~/components/Core/Select/UnifiedSelect';
   required={true}
   errorMessage="Please select a protocol"
   mode="native"
-/>
+/>;
 ```
 
 ### Key Changes
 
-1. **Import Path**: 
+1. **Import Path**:
+
    - Change from `~/components/Core/Select/VPNSelect/VPNSelect` to `~/components/Core/Select/UnifiedSelect`
 
-2. **Component Name**: 
+2. **Component Name**:
+
    - Change from `VPNSelect` to `UnifiedSelect`
 
 3. **New Properties**:
    - Add `mode="native"` to maintain the native HTML select behavior
-   
 4. **Renamed Properties**:
+
    - Change `error` to `errorMessage`
 
 5. **Default Properties**:
@@ -58,22 +60,22 @@ import { UnifiedSelect } from '~/components/Core/Select/UnifiedSelect';
 
 ### Property Mapping
 
-| VPNSelect Property | UnifiedSelect Property | Notes |
-|-------------------|------------------------|-------|
-| `options`         | `options`              | Same format |
-| `value`           | `value`                | Same usage |
-| `name`            | `name`                 | Same usage |
-| `id`              | `id`                   | Same usage |
-| `class`           | `class`                | Same usage |
-| `required`        | `required`             | Same usage |
-| `disabled`        | `disabled`             | Same usage |
-| `placeholder`     | `placeholder`          | Same usage |
-| `label`           | `label`                | Same usage |
-| `onChange$`       | `onChange$`            | Same functionality |
-| `error`           | `errorMessage`         | Renamed for clarity |
-| `helper`          | `helperText`           | Renamed for clarity |
-| N/A               | `mode`                 | New - set to "native" to match VPNSelect behavior |
-| N/A               | `validation`           | New - set to "invalid" when providing errorMessage |
+| VPNSelect Property | UnifiedSelect Property | Notes                                              |
+| ------------------ | ---------------------- | -------------------------------------------------- |
+| `options`          | `options`              | Same format                                        |
+| `value`            | `value`                | Same usage                                         |
+| `name`             | `name`                 | Same usage                                         |
+| `id`               | `id`                   | Same usage                                         |
+| `class`            | `class`                | Same usage                                         |
+| `required`         | `required`             | Same usage                                         |
+| `disabled`         | `disabled`             | Same usage                                         |
+| `placeholder`      | `placeholder`          | Same usage                                         |
+| `label`            | `label`                | Same usage                                         |
+| `onChange$`        | `onChange$`            | Same functionality                                 |
+| `error`            | `errorMessage`         | Renamed for clarity                                |
+| `helper`           | `helperText`           | Renamed for clarity                                |
+| N/A                | `mode`                 | New - set to "native" to match VPNSelect behavior  |
+| N/A                | `validation`           | New - set to "invalid" when providing errorMessage |
 
 ## Enhancing the Migration
 
@@ -114,7 +116,7 @@ If your use case would benefit from enhanced features:
   options={options}
   value={value}
   searchable={true} // Enable search functionality
-  mode="custom"     // Use custom UI
+  mode="custom" // Use custom UI
 />
 ```
 
@@ -146,7 +148,7 @@ const groupedOptions = [
   options={groupedOptions}
   value={value}
   mode="native" // or "custom"
-/>
+/>;
 ```
 
 ## Testing Your Migration

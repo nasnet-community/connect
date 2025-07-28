@@ -1,25 +1,20 @@
 import { type QRL } from "@builder.io/qwik";
 
 export interface VPNSelectOption {
-
   value: string;
-  
 
   label: string;
-  
 
   disabled?: boolean;
 }
 
 export interface VPNSelectProps {
-
   options: VPNSelectOption[];
-  
 
   value: string;
 
   label?: string;
-  
+
   placeholder?: string;
 
   required?: boolean;
@@ -37,9 +32,8 @@ export interface VPNSelectProps {
   onChange$?: QRL<(value: string, element: HTMLSelectElement) => void>;
 }
 
-
 // Re-export the compatibility wrapper component that uses UnifiedSelect under the hood
-import { VPNSelectCompat } from './CompatWrapper';
+import { VPNSelectCompat } from "./CompatWrapper";
 export const VPNSelect = VPNSelectCompat;
 
 // Original implementation is preserved below for reference

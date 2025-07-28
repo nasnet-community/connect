@@ -14,19 +14,19 @@ This document provides a comprehensive inventory of features and capabilities in
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| options | VPNSelectOption[] | required | Array of options to display |
-| value | string | required | Selected value |
-| label | string | - | Label text |
-| placeholder | string | - | Placeholder text |
-| required | boolean | false | Whether selection is required |
-| disabled | boolean | false | Whether the select is disabled |
-| error | string | - | Error message |
-| helperText | string | - | Helper text |
-| id | string | auto-generated | ID for the select element |
-| class | string | - | Additional CSS classes |
-| onChange$ | QRL | - | Change event handler |
+| Prop        | Type              | Default        | Description                    |
+| ----------- | ----------------- | -------------- | ------------------------------ |
+| options     | VPNSelectOption[] | required       | Array of options to display    |
+| value       | string            | required       | Selected value                 |
+| label       | string            | -              | Label text                     |
+| placeholder | string            | -              | Placeholder text               |
+| required    | boolean           | false          | Whether selection is required  |
+| disabled    | boolean           | false          | Whether the select is disabled |
+| error       | string            | -              | Error message                  |
+| helperText  | string            | -              | Helper text                    |
+| id          | string            | auto-generated | ID for the select element      |
+| class       | string            | -              | Additional CSS classes         |
+| onChange$   | QRL               | -              | Change event handler           |
 
 ### VPNSelectOption Interface
 

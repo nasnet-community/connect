@@ -1,0 +1,144 @@
+import { Meta, Title, Controls, Canvas, Story } from "@storybook/blocks";
+import * as TooltipStories from "./Tooltip.stories";
+
+<Meta of={TooltipStories} />
+
+# Tooltip
+
+The Tooltip component displays additional information when users hover over, focus on, or click an element. It provides context to help users understand the feature or content they're interacting with.
+
+## Overview
+
+Tooltips enhance the user interface by providing supplementary information without cluttering the primary view. They appear in context with the element they describe and disappear when the user moves away, creating an unobtrusive experience.
+
+## Features
+
+- Multiple trigger options: hover, focus, click, or manual control
+- Twelve placement options for precise positioning
+- Various size and color variants
+- Configurable show/hide delays
+- Support for plain text or rich HTML content
+- Interactive tooltips for nested interactive elements
+- Configurable arrow display and positioning
+- Accessibility-friendly with proper ARIA attributes
+- Automatic viewport containment
+
+## Basic Usage
+
+<Canvas of={TooltipStories.Default} />
+
+## Placement Options
+
+Tooltips can be positioned in twelve different locations relative to the trigger element.
+
+<Canvas of={TooltipStories.Placements} />
+
+## Sizes
+
+Tooltips come in three sizes: small, medium, and large.
+
+<Canvas of={TooltipStories.Sizes} />
+
+## Colors
+
+Tooltips can be styled with different semantic colors.
+
+<Canvas of={TooltipStories.Colors} />
+
+## Trigger Types
+
+Tooltips can be triggered by different user interactions.
+
+<Canvas of={TooltipStories.Triggers} />
+
+## Arrow Customization
+
+Tooltips can be displayed with or without an arrow pointing to the trigger element.
+
+<Canvas of={TooltipStories.WithoutArrow} />
+
+## Rich Content
+
+Tooltips can contain rich HTML content, not just plain text.
+
+<Canvas of={TooltipStories.RichContentTooltip} />
+
+## Interactive Tooltips
+
+Tooltips can be made interactive to allow users to interact with elements inside them.
+
+<Canvas of={TooltipStories.InteractiveTooltip} />
+
+## Delayed Display
+
+Tooltips can be configured with delays before showing or hiding.
+
+<Canvas of={TooltipStories.DelayedTooltip} />
+
+## Controlled Behavior
+
+Tooltips can be controlled programmatically.
+
+<Canvas of={TooltipStories.ControlledTooltip} />
+
+## Accessibility
+
+Tooltips include proper ARIA attributes for screen readers.
+
+<Canvas of={TooltipStories.AccessibleTooltip} />
+
+## Usage with Different Elements
+
+Tooltips can be attached to any element, not just buttons.
+
+<Canvas of={TooltipStories.DifferentElements} />
+
+## Props
+
+<Controls />
+
+## Accessibility Guidelines
+
+1. **Keyboard Accessibility**: Ensure tooltips can be triggered by keyboard focus for elements that can receive focus.
+
+2. **ARIA Attributes**: Use appropriate ARIA attributes to make tooltips accessible to screen readers.
+
+   - The tooltip container has `role="tooltip"`
+   - The trigger element has `aria-describedby` pointing to the tooltip's ID
+
+3. **Focus Management**: For interactive tooltips, ensure proper focus management.
+
+   - Tooltips shouldn't trap focus unintentionally
+   - Focus should be maintained logically when tooltip appears and disappears
+
+4. **Timing Control**: Users should have enough time to read tooltips before they disappear.
+
+   - Consider longer delays for tooltips with more content
+   - Interactive tooltips should remain visible while the user is interacting with them
+
+5. **Contrast and Readability**: Ensure tooltip content maintains sufficient contrast with the background.
+   - Text should be readable
+   - Important information shouldn't rely solely on color
+
+## Best Practices
+
+1. **Keep Content Brief**: Tooltips should provide just enough information to be helpful without overwhelming.
+
+2. **Consistent Placement**: Maintain consistent tooltip placement throughout your application.
+
+3. **Avoid Essential Information**: Don't use tooltips for information that's essential for the user to complete a task.
+
+4. **Limited Interactive Elements**: If making tooltips interactive, limit the number of interactive elements to avoid complexity.
+
+5. **Debounce Triggers**: For hover-triggered tooltips, implement appropriate delays to prevent accidental triggering.
+
+6. **Sequential Display**: Avoid displaying multiple tooltips simultaneously to prevent confusion.
+
+7. **Clear, Simple Language**: Use plain language and avoid technical jargon unless appropriate for your audience.
+
+## Implementation Notes
+
+- The Tooltip component automatically adjusts its position to stay within the viewport.
+- For interactive tooltips, users can move their cursor to the tooltip content without it disappearing.
+- Tooltips can be appended to the body (default) or positioned within their parent element.
+- The component supports both controlled and uncontrolled usage.

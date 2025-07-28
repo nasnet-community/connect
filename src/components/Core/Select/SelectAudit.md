@@ -13,26 +13,26 @@ The Select component family consists of:
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| options | SelectOption[] | required | Array of options to display |
-| id | string | auto-generated | ID for the select element |
-| name | string | - | Name for form submission |
-| value | string \| string[] | '' | Selected value(s) |
-| placeholder | string | 'Select an option' | Text to display when no option is selected |
-| disabled | boolean | false | Whether the select is disabled |
-| required | boolean | false | Whether selection is required |
-| size | 'sm' \| 'md' \| 'lg' | 'md' | Size of the select element |
-| validation | 'default' \| 'valid' \| 'invalid' | 'default' | Validation state |
-| label | string | - | Label text |
-| helperText | string | - | Helper text below the select |
-| errorMessage | string | - | Error message for invalid state |
-| class | string | - | Additional CSS classes |
-| multiple | boolean | false | Whether multiple selection is allowed |
-| searchable | boolean | false | Whether to show search input |
-| clearable | boolean | true | Whether selection can be cleared |
-| maxHeight | string | - | Maximum height of dropdown |
-| onChange$ | QRL | - | Change event handler |
+| Prop         | Type                              | Default            | Description                                |
+| ------------ | --------------------------------- | ------------------ | ------------------------------------------ |
+| options      | SelectOption[]                    | required           | Array of options to display                |
+| id           | string                            | auto-generated     | ID for the select element                  |
+| name         | string                            | -                  | Name for form submission                   |
+| value        | string \| string[]                | ''                 | Selected value(s)                          |
+| placeholder  | string                            | 'Select an option' | Text to display when no option is selected |
+| disabled     | boolean                           | false              | Whether the select is disabled             |
+| required     | boolean                           | false              | Whether selection is required              |
+| size         | 'sm' \| 'md' \| 'lg'              | 'md'               | Size of the select element                 |
+| validation   | 'default' \| 'valid' \| 'invalid' | 'default'          | Validation state                           |
+| label        | string                            | -                  | Label text                                 |
+| helperText   | string                            | -                  | Helper text below the select               |
+| errorMessage | string                            | -                  | Error message for invalid state            |
+| class        | string                            | -                  | Additional CSS classes                     |
+| multiple     | boolean                           | false              | Whether multiple selection is allowed      |
+| searchable   | boolean                           | false              | Whether to show search input               |
+| clearable    | boolean                           | true               | Whether selection can be cleared           |
+| maxHeight    | string                            | -                  | Maximum height of dropdown                 |
+| onChange$    | QRL                               | -                  | Change event handler                       |
 
 ### Advanced Features
 
@@ -55,6 +55,7 @@ The component uses Tailwind classes for styling with proper dark mode support:
 - Dark mode: `dark:bg-gray-700 dark:text-white dark:border-gray-600`
 
 Different validation states have distinct styling:
+
 - Default: Standard border with primary color focus
 - Valid: Green border and focus ring
 - Invalid: Red border and focus ring
@@ -71,19 +72,19 @@ Different validation states have distinct styling:
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| options | VPNSelectOption[] | required | Array of options to display |
-| value | string | required | Selected value |
-| label | string | - | Label text |
-| placeholder | string | - | Placeholder text |
-| required | boolean | false | Whether selection is required |
-| disabled | boolean | false | Whether the select is disabled |
-| error | string | - | Error message |
-| helperText | string | - | Helper text |
-| id | string | auto-generated | ID for the select element |
-| class | string | - | Additional CSS classes |
-| onChange$ | QRL | - | Change event handler |
+| Prop        | Type              | Default        | Description                    |
+| ----------- | ----------------- | -------------- | ------------------------------ |
+| options     | VPNSelectOption[] | required       | Array of options to display    |
+| value       | string            | required       | Selected value                 |
+| label       | string            | -              | Label text                     |
+| placeholder | string            | -              | Placeholder text               |
+| required    | boolean           | false          | Whether selection is required  |
+| disabled    | boolean           | false          | Whether the select is disabled |
+| error       | string            | -              | Error message                  |
+| helperText  | string            | -              | Helper text                    |
+| id          | string            | auto-generated | ID for the select element      |
+| class       | string            | -              | Additional CSS classes         |
+| onChange$   | QRL               | -              | Change event handler           |
 
 ### Implementation
 
@@ -107,43 +108,43 @@ Error state is indicated with a red border and text message.
 
 ### Feature Comparison
 
-| Feature | Base Select | VPNSelect | Notes |
-|---------|-------------|-----------|-------|
-| Multiple Selection | ✅ Yes | ❌ No | VPNSelect only supports single selection |
-| Search Functionality | ✅ Yes | ❌ No | VPNSelect has no search capability |
-| Option Grouping | ✅ Yes | ❌ No | VPNSelect doesn't support option groups |
-| Custom Styling | ✅ High | ✅ Limited | Base Select has more styling options |
-| Keyboard Navigation | ⚠️ Limited | ✅ Native | VPNSelect inherits native keyboard support |
-| Form Integration | ✅ Hidden Native | ✅ Native | Both work with standard forms |
-| Clearable | ✅ Yes | ❌ No | VPNSelect doesn't have clear functionality |
-| API Complexity | ⚠️ High | ✅ Low | VPNSelect has a simpler API |
+| Feature              | Base Select      | VPNSelect  | Notes                                      |
+| -------------------- | ---------------- | ---------- | ------------------------------------------ |
+| Multiple Selection   | ✅ Yes           | ❌ No      | VPNSelect only supports single selection   |
+| Search Functionality | ✅ Yes           | ❌ No      | VPNSelect has no search capability         |
+| Option Grouping      | ✅ Yes           | ❌ No      | VPNSelect doesn't support option groups    |
+| Custom Styling       | ✅ High          | ✅ Limited | Base Select has more styling options       |
+| Keyboard Navigation  | ⚠️ Limited       | ✅ Native  | VPNSelect inherits native keyboard support |
+| Form Integration     | ✅ Hidden Native | ✅ Native  | Both work with standard forms              |
+| Clearable            | ✅ Yes           | ❌ No      | VPNSelect doesn't have clear functionality |
+| API Complexity       | ⚠️ High          | ✅ Low     | VPNSelect has a simpler API                |
 
 ### Accessibility Testing
 
-| Feature | Base Select | VPNSelect | Notes |
-|---------|-------------|-----------|-------|
-| Keyboard Navigation | ⚠️ Limited | ✅ Full | VPNSelect inherits native keyboard support |
-| Screen Reader | ⚠️ Partial | ✅ Good | VPNSelect uses native semantics |
-| ARIA Attributes | ⚠️ Basic | ✅ Native | Base Select needs more ARIA attributes |
-| Focus Management | ⚠️ Needs Improvement | ✅ Native | VPNSelect has better focus handling |
-| Required Indication | ✅ Visual | ✅ Visual | Both indicate required fields |
+| Feature             | Base Select          | VPNSelect | Notes                                      |
+| ------------------- | -------------------- | --------- | ------------------------------------------ |
+| Keyboard Navigation | ⚠️ Limited           | ✅ Full   | VPNSelect inherits native keyboard support |
+| Screen Reader       | ⚠️ Partial           | ✅ Good   | VPNSelect uses native semantics            |
+| ARIA Attributes     | ⚠️ Basic             | ✅ Native | Base Select needs more ARIA attributes     |
+| Focus Management    | ⚠️ Needs Improvement | ✅ Native | VPNSelect has better focus handling        |
+| Required Indication | ✅ Visual            | ✅ Visual | Both indicate required fields              |
 
 ### Responsiveness Testing
 
-| Feature | Base Select | VPNSelect | Notes |
-|---------|-------------|-----------|-------|
-| Mobile Touch | ⚠️ Custom Handling | ✅ Native | VPNSelect uses native mobile UI on touch devices |
-| Screen Adaptability | ✅ Good | ✅ Good | Both adapt well to different screen sizes |
-| Touch Target Size | ✅ Customizable | ⚠️ Browser Default | Base Select offers more control over sizes |
+| Feature             | Base Select        | VPNSelect          | Notes                                            |
+| ------------------- | ------------------ | ------------------ | ------------------------------------------------ |
+| Mobile Touch        | ⚠️ Custom Handling | ✅ Native          | VPNSelect uses native mobile UI on touch devices |
+| Screen Adaptability | ✅ Good            | ✅ Good            | Both adapt well to different screen sizes        |
+| Touch Target Size   | ✅ Customizable    | ⚠️ Browser Default | Base Select offers more control over sizes       |
 
 ### Dark Mode Support
 
-| Feature | Base Select | VPNSelect | Notes |
-|---------|-------------|-----------|-------|
-| Background | ✅ dark:bg-gray-700/800 | ✅ dark:bg-surface-dark | Both handle dark mode well |
-| Text Color | ✅ dark:text-white | ✅ dark:text-text-dark-default | VPNSelect uses semantic tokens |
-| Border Color | ✅ dark:border-gray-600 | ✅ dark:border-border-dark | VPNSelect uses semantic tokens |
-| UI Elements | ✅ All themed | ✅ Native theming | Both adapt UI elements for dark mode |
+| Feature      | Base Select             | VPNSelect                      | Notes                                |
+| ------------ | ----------------------- | ------------------------------ | ------------------------------------ |
+| Background   | ✅ dark:bg-gray-700/800 | ✅ dark:bg-surface-dark        | Both handle dark mode well           |
+| Text Color   | ✅ dark:text-white      | ✅ dark:text-text-dark-default | VPNSelect uses semantic tokens       |
+| Border Color | ✅ dark:border-gray-600 | ✅ dark:border-border-dark     | VPNSelect uses semantic tokens       |
+| UI Elements  | ✅ All themed           | ✅ Native theming              | Both adapt UI elements for dark mode |
 
 ## Issues and Recommendations
 
@@ -151,7 +152,8 @@ Error state is indicated with a red border and text message.
 
 **Issue**: Base Select uses direct color references rather than semantic tokens.
 
-**Recommendation**: 
+**Recommendation**:
+
 - Replace direct color references with semantic tokens from the design system
 - Example: `bg-white` → `bg-surface-default`, `dark:bg-gray-800` → `dark:bg-surface-dark`
 
@@ -160,6 +162,7 @@ Error state is indicated with a red border and text message.
 **Issue**: The base Select component has limited keyboard accessibility and ARIA support.
 
 **Recommendation**:
+
 - Improve keyboard navigation within the dropdown
 - Add proper aria-activedescendant attribute for focused options
 - Implement arrow key navigation for options
@@ -170,6 +173,7 @@ Error state is indicated with a red border and text message.
 **Issue**: VPNSelect duplicates functionality from the base Select component.
 
 **Recommendation**:
+
 - Consider consolidating into a single component with a "native" mode option
 - Preserve the simpler API of VPNSelect while leveraging the core Select functionality
 - Document migration path for VPNSelect users
@@ -179,6 +183,7 @@ Error state is indicated with a red border and text message.
 **Issue**: The base Select component has limited focus handling when dropdown opens/closes.
 
 **Recommendation**:
+
 - Trap focus within the dropdown when open
 - Return focus to the trigger element when closed
 - Implement proper keyboard focus cycling
@@ -188,6 +193,7 @@ Error state is indicated with a red border and text message.
 **Issue**: The base Select uses a hidden native select for form submission, which may be confusing.
 
 **Recommendation**:
+
 - Improve documentation for form integration
 - Consider alternative approaches that don't require hidden elements
 - Add form examples to stories
@@ -197,6 +203,7 @@ Error state is indicated with a red border and text message.
 **Issue**: The search functionality in base Select doesn't handle keyboard navigation well.
 
 **Recommendation**:
+
 - Improve search interaction with keyboard support
 - Add highlighting of matched text in search results
 - Consider fuzzy search capability
@@ -204,20 +211,24 @@ Error state is indicated with a red border and text message.
 ## Action Items
 
 1. **Improve Base Select Accessibility**:
+
    - Add comprehensive keyboard navigation
    - Enhance ARIA attributes and roles
    - Implement focus trapping within dropdown
 
 2. **Standardize Design Tokens**:
+
    - Replace direct color references with semantic tokens
    - Create consistent styling approach across both components
 
 3. **Component Consolidation**:
+
    - Design unified Select component API
    - Create migration path from VPNSelect to unified component
    - Maintain backward compatibility
 
 4. **Enhanced Features**:
+
    - Add virtualized option rendering for large option sets
    - Implement more flexible grouping capabilities
    - Add better mobile touch support

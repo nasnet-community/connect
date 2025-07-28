@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from "vitest/config";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
@@ -8,20 +8,15 @@ export default defineConfig({
     api: {
       port: 50002,
     },
-    environment: 'node',
+    environment: "node",
     globals: true,
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.git'],
-    reporters: ['default'],
-    setupFiles: ['src/test-utils/vitest-setup.ts'],
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    exclude: ["node_modules", "dist", ".git"],
+    reporters: ["default"],
+    setupFiles: ["src/test-utils/vitest-setup.ts"],
     coverage: {
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'test/',
-        '**/*.test.ts',
-        '**/*.spec.ts',
-      ],
+      reporter: ["text", "json", "html"],
+      exclude: ["node_modules/", "test/", "**/*.test.ts", "**/*.spec.ts"],
     },
   },
 });

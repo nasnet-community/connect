@@ -8,25 +8,21 @@ export interface FieldLabelProps {
   class?: string;
 }
 
-export const FieldLabel = component$<FieldLabelProps>(({
-  id,
-  label,
-  required = false,
-  inline = false,
-  class: className
-}) => {
-  return (
-    <label 
-      for={id} 
-      class={`
+export const FieldLabel = component$<FieldLabelProps>(
+  ({ id, label, required = false, inline = false, class: className }) => {
+    return (
+      <label
+        for={id}
+        class={`
         ${inline ? "" : "block"} 
-        text-sm font-medium text-text-secondary 
-        dark:text-text-dark-secondary
+        text-text-secondary dark:text-text-dark-secondary text-sm 
+        font-medium
         ${className || ""}
       `}
-    >
-      {label}
-      {required && <span class="ml-1 text-error">*</span>}
-    </label>
-  );
-}); 
+      >
+        {label}
+        {required && <span class="ml-1 text-error">*</span>}
+      </label>
+    );
+  },
+);

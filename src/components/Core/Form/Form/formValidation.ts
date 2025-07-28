@@ -1,10 +1,11 @@
-import { $ } from '@builder.io/qwik';
-import type { FormValidationRule } from './Form.types';
+import { $ } from "@builder.io/qwik";
+import type { FormValidationRule } from "./Form.types";
 
-
-export const required = (message = 'This field is required'): FormValidationRule => ({
+export const required = (
+  message = "This field is required",
+): FormValidationRule => ({
   validator: $((value) => {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === "") {
       return message;
     }
     if (Array.isArray(value) && value.length === 0) {
@@ -12,25 +13,28 @@ export const required = (message = 'This field is required'): FormValidationRule
     }
     return undefined;
   }),
-  message
+  message,
 });
 
-
-export const pattern = (pattern: RegExp, message = 'Invalid format'): FormValidationRule => ({
+export const pattern = (
+  pattern: RegExp,
+  message = "Invalid format",
+): FormValidationRule => ({
   validator: $((value) => {
     if (!value || pattern.test(value)) {
       return undefined;
     }
     return message;
   }),
-  message
+  message,
 });
 
-
-export const email = (message = 'Invalid email address'): FormValidationRule => ({
+export const email = (
+  message = "Invalid email address",
+): FormValidationRule => ({
   validator: $((value) => {
     if (!value) return undefined;
-    
+
     // Basic email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
@@ -38,76 +42,79 @@ export const email = (message = 'Invalid email address'): FormValidationRule => 
     }
     return undefined;
   }),
-  message
+  message,
 });
 
-
-export const minLength = (min: number, message?: string): FormValidationRule => ({
+export const minLength = (
+  min: number,
+  message?: string,
+): FormValidationRule => ({
   validator: $((value) => {
     if (!value) return undefined;
-    
+
     if (String(value).length < min) {
       return message || `Must be at least ${min} characters`;
     }
     return undefined;
   }),
-  message
+  message,
 });
 
-
-export const maxLength = (max: number, message?: string): FormValidationRule => ({
+export const maxLength = (
+  max: number,
+  message?: string,
+): FormValidationRule => ({
   validator: $((value) => {
     if (!value) return undefined;
-    
+
     if (String(value).length > max) {
       return message || `Must be at most ${max} characters`;
     }
     return undefined;
   }),
-  message
+  message,
 });
-
 
 export const min = (min: number, message?: string): FormValidationRule => ({
   validator: $((value) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    
+    if (value === undefined || value === null || value === "") return undefined;
+
     const numValue = Number(value);
     if (isNaN(numValue) || numValue < min) {
       return message || `Must be at least ${min}`;
     }
     return undefined;
   }),
-  message
+  message,
 });
-
 
 export const max = (max: number, message?: string): FormValidationRule => ({
   validator: $((value) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    
+    if (value === undefined || value === null || value === "") return undefined;
+
     const numValue = Number(value);
     if (isNaN(numValue) || numValue > max) {
       return message || `Must be at most ${max}`;
     }
     return undefined;
   }),
-  message
+  message,
 });
 
-
-export const matches = (field: string, message?: string): FormValidationRule => ({
+export const matches = (
+  field: string,
+  message?: string,
+): FormValidationRule => ({
   validator: $((value, values) => {
     if (!value) return undefined;
-    
+
     if (value !== values[field]) {
       return message || `Must match ${field}`;
     }
     return undefined;
   }),
-  message
+  message,
 });
-
 
 export const compose = (rules: FormValidationRule[]): FormValidationRule => ({
   validator: $(async (value, values) => {
@@ -118,42 +125,49 @@ export const compose = (rules: FormValidationRule[]): FormValidationRule => ({
       }
     }
     return undefined;
-  })
+  }),
 });
-
 
 /**
  * Creates a custom validator based on predefined validation types.
  * This avoids serialization issues by not capturing external functions.
  */
 export const custom = (
-  validationType: 'email' | 'required' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern' | 'matches',
+  validationType:
+    | "email"
+    | "required"
+    | "minLength"
+    | "maxLength"
+    | "min"
+    | "max"
+    | "pattern"
+    | "matches",
   options: any,
-  message = 'Invalid value'
+  message = "Invalid value",
 ): FormValidationRule => {
   // Use existing validators based on the type
   switch (validationType) {
-    case 'email':
+    case "email":
       return email(message);
-    case 'required':
+    case "required":
       return required(message);
-    case 'minLength':
+    case "minLength":
       return minLength(options, message);
-    case 'maxLength':
+    case "maxLength":
       return maxLength(options, message);
-    case 'min':
+    case "min":
       return min(options, message);
-    case 'max':
+    case "max":
       return max(options, message);
-    case 'pattern':
+    case "pattern":
       return pattern(options, message);
-    case 'matches':
+    case "matches":
       return matches(options, message);
     default:
       // Default empty validator
       return {
         validator: $(() => undefined),
-        message
+        message,
       };
   }
 };
@@ -163,7 +177,9 @@ export const custom = (
  * Each condition is pre-defined and doesn't require passing custom functions.
  */
 export const customValidators = {
-  username: (message = 'Username can only contain letters, numbers, and underscores'): FormValidationRule => ({
+  username: (
+    message = "Username can only contain letters, numbers, and underscores",
+  ): FormValidationRule => ({
     validator: $((value) => {
       if (!value) return undefined;
       if (!/^[a-zA-Z0-9_]+$/.test(value)) {
@@ -171,10 +187,12 @@ export const customValidators = {
       }
       return undefined;
     }),
-    message
+    message,
   }),
-  
-  password: (message = 'Password must include at least one uppercase letter, one lowercase letter, and one number'): FormValidationRule => ({
+
+  password: (
+    message = "Password must include at least one uppercase letter, one lowercase letter, and one number",
+  ): FormValidationRule => ({
     validator: $((value) => {
       if (!value) return undefined;
       // Check for password requirements - at least one uppercase, one lowercase, and one number
@@ -183,10 +201,10 @@ export const customValidators = {
       }
       return undefined;
     }),
-    message
+    message,
   }),
-  
-  url: (message = 'Please enter a valid URL'): FormValidationRule => ({
+
+  url: (message = "Please enter a valid URL"): FormValidationRule => ({
     validator: $((value) => {
       if (!value) return undefined;
       try {
@@ -196,8 +214,8 @@ export const customValidators = {
         return message;
       }
     }),
-    message
+    message,
   }),
-  
+
   // Add more custom validators as needed
 };

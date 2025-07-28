@@ -1,16 +1,16 @@
-import { component$ } from '@builder.io/qwik';
+import { component$ } from "@builder.io/qwik";
 
 interface FilePreviewProps {
   /**
    * URL to the file (object URL)
    */
   url: string;
-  
+
   /**
    * Name of the file
    */
   fileName: string;
-  
+
   /**
    * MIME type of the file
    */
@@ -22,13 +22,13 @@ interface FilePreviewProps {
  */
 export const FilePreview = component$<FilePreviewProps>((props) => {
   const { url, fileName, fileType } = props;
-  
+
   // Determine if file is an image
-  const isImage = fileType.startsWith('image/');
-  
+  const isImage = fileType.startsWith("image/");
+
   // Determine if file is a PDF
-  const isPdf = fileType === 'application/pdf';
-  
+  const isPdf = fileType === "application/pdf";
+
   // Render file preview based on type
   return (
     <div class="file-preview">
@@ -41,7 +41,7 @@ export const FilePreview = component$<FilePreviewProps>((props) => {
           height={64}
         />
       )}
-      
+
       {isPdf && (
         <div class="file-preview-pdf">
           <svg
@@ -61,7 +61,7 @@ export const FilePreview = component$<FilePreviewProps>((props) => {
           <span class="file-preview-pdf-label">PDF</span>
         </div>
       )}
-      
+
       {!isImage && !isPdf && (
         <div class="file-preview-generic">
           <svg
@@ -79,7 +79,7 @@ export const FilePreview = component$<FilePreviewProps>((props) => {
             />
           </svg>
           <span class="file-preview-generic-label">
-            {fileType.split('/')[1]?.toUpperCase() || 'FILE'}
+            {fileType.split("/")[1]?.toUpperCase() || "FILE"}
           </span>
         </div>
       )}
