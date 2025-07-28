@@ -8,28 +8,28 @@
 //   const supabaseUrl = process.env.SUPABASE_URL || '';
 //   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 //   const supabase = createClient(supabaseUrl, supabaseKey);
-  
+
 //   // Get total count
 //   const { count: totalCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true });
-  
+
 //   // Get count of assigned credentials
 //   const { count: assignedCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true })
 //     .eq('is_assigned', true);
-  
+
 //   // Get the usage percentage
 //   const usagePercentage = totalCount ? Math.round((assignedCount || 0 / totalCount) * 100) : 0;
-  
+
 //   // Process platform distribution manually since group() might not be available in this context
 //   const { data: platformDistributionRaw } = await supabase
 //     .from('l2tp_credentials')
 //     .select('platform')
 //     .eq('is_assigned', true)
 //     .not('platform', 'is', null);
-  
+
 //   // Process platform distribution
 //   const platformMap = new Map();
 //   if (platformDistributionRaw) {
@@ -38,19 +38,19 @@
 //       platformMap.set(platform, (platformMap.get(platform) || 0) + 1);
 //     });
 //   }
-  
+
 //   const platformData = Array.from(platformMap).map(([platform, count]) => ({
 //     platform,
 //     count
 //   }));
-  
+
 //   // Get referrer distribution similarly
 //   const { data: referrerDistributionRaw } = await supabase
 //     .from('l2tp_credentials')
 //     .select('referrer')
 //     .eq('is_assigned', true)
 //     .not('referrer', 'is', null);
-  
+
 //   // Process referrer distribution
 //   const referrerMap = new Map();
 //   if (referrerDistributionRaw) {
@@ -59,33 +59,33 @@
 //       referrerMap.set(referrer, (referrerMap.get(referrer) || 0) + 1);
 //     });
 //   }
-  
+
 //   const referrerData = Array.from(referrerMap).map(([referrer, count]) => ({
 //     referrer,
 //     count
 //   }));
-  
+
 //   // Get assignment trend (last 7 days)
 //   const last7Days = new Date();
 //   last7Days.setDate(last7Days.getDate() - 7);
-  
+
 //   const { data: dailyTrend } = await supabase
 //     .from('l2tp_credentials')
 //     .select('created_at')
 //     .eq('is_assigned', true)
 //     .gte('created_at', last7Days.toISOString());
-  
+
 //   // Process daily trend data
 //   const trendMap = new Map();
 //   const today = new Date();
-  
+
 //   for (let i = 0; i < 7; i++) {
 //     const date = new Date();
 //     date.setDate(today.getDate() - i);
 //     const dateStr = date.toISOString().split('T')[0];
 //     trendMap.set(dateStr, 0);
 //   }
-  
+
 //   if (dailyTrend) {
 //     dailyTrend.forEach((item: any) => {
 //       const dateStr = new Date(item.created_at).toISOString().split('T')[0];
@@ -94,21 +94,21 @@
 //       }
 //     });
 //   }
-  
+
 //   const dailyTrendData = Array.from(trendMap)
 //     .map(([date, count]) => ({ date, count }))
 //     .sort((a, b) => a.date.localeCompare(b.date));
-  
+
 //   // Get expiring soon count (next 30 days)
 //   const next30Days = new Date();
 //   next30Days.setDate(next30Days.getDate() + 30);
-  
+
 //   const { count: expiringSoonCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true })
 //     .lt('expiry_date', next30Days.toISOString())
 //     .gt('expiry_date', new Date().toISOString());
-  
+
 //   return {
 //     totalCount: totalCount || 0,
 //     assignedCount: assignedCount || 0,
@@ -123,7 +123,7 @@
 
 // export default component$(() => {
 //   const analyticsData = useAnalyticsData();
-  
+
 //   // Helper function to get platform distribution colors
 //   const getPlatformColor = (platform: string) => {
 //     const colorMap: Record<string, string> = {
@@ -133,25 +133,25 @@
 //       macos: '#000000',
 //       linux: '#FCC624',
 //     };
-    
+
 //     return colorMap[platform?.toLowerCase()] || '#6D28D9';
 //   };
-  
+
 //   // Format date for display
 //   const formatDate = (dateStr: string) => {
 //     const date = new Date(dateStr);
 //     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 //   };
-  
+
 //   return (
 //     <div class="container mx-auto px-4 py-8">
 //       <div class="flex justify-between items-center mb-8">
 //         <h1 class="text-3xl font-bold">VPN Analytics Dashboard</h1>
-        
+
 //         <div class="space-x-3">
-//           <a 
-//             href="/api/rest/credentials-report?action=export&format=csv&filter=all" 
-//             target="_blank" 
+//           <a
+//             href="/api/rest/credentials-report?action=export&format=csv&filter=all"
+//             target="_blank"
 //             class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm"
 //           >
 //             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -159,10 +159,10 @@
 //             </svg>
 //             Export All (CSV)
 //           </a>
-          
-//           <a 
-//             href="/api/rest/credentials-report?action=export&format=csv&filter=assigned" 
-//             target="_blank" 
+
+//           <a
+//             href="/api/rest/credentials-report?action=export&format=csv&filter=assigned"
+//             target="_blank"
 //             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
 //           >
 //             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -172,30 +172,30 @@
 //           </a>
 //         </div>
 //       </div>
-      
+
 //       {/* Key Metrics */}
 //       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Total Credentials</h2>
 //           <p class="text-4xl font-bold text-blue-600 dark:text-blue-400">{analyticsData.value.totalCount}</p>
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Assigned Credentials</h2>
 //           <p class="text-4xl font-bold text-green-600 dark:text-green-400">{analyticsData.value.assignedCount}</p>
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Available Credentials</h2>
 //           <p class="text-4xl font-bold text-purple-600 dark:text-purple-400">{analyticsData.value.availableCount}</p>
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Expiring Soon</h2>
 //           <p class="text-4xl font-bold text-red-600 dark:text-red-400">{analyticsData.value.expiringSoonCount}</p>
 //         </div>
 //       </div>
-      
+
 //       {/* Usage Percentage */}
 //       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -214,14 +214,14 @@
 //               </div>
 //             </div>
 //             <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200 dark:bg-blue-900">
-//               <div 
-//                 style={{ width: `${analyticsData.value.usagePercentage}%` }} 
+//               <div
+//                 style={{ width: `${analyticsData.value.usagePercentage}%` }}
 //                 class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
 //               ></div>
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         {/* Daily Trend */}
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-4">Last 7 Days Trend</h2>
@@ -229,10 +229,10 @@
 //             {analyticsData.value.dailyTrend.map((day) => {
 //               const maxCount = Math.max(...analyticsData.value.dailyTrend.map(d => d.count));
 //               const percentage = maxCount ? (day.count / maxCount) * 100 : 0;
-              
+
 //               return (
 //                 <div key={day.date} class="flex flex-col items-center flex-1">
-//                   <div 
+//                   <div
 //                     class="w-full bg-indigo-500 dark:bg-indigo-600 rounded-t"
 //                     style={{ height: `${percentage}%`, minHeight: '4px' }}
 //                   ></div>
@@ -246,7 +246,7 @@
 //           </div>
 //         </div>
 //       </div>
-      
+
 //       {/* Platform and Referrer Distribution */}
 //       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -258,7 +258,7 @@
 //               {analyticsData.value.platformDistribution.map((platform: any) => {
 //                 const totalAssigned = analyticsData.value.assignedCount;
 //                 const percentage = totalAssigned ? Math.round((platform.count / totalAssigned) * 100) : 0;
-                
+
 //                 return (
 //                   <div key={platform.platform} class="space-y-2">
 //                     <div class="flex justify-between">
@@ -266,11 +266,11 @@
 //                       <span>{platform.count} ({percentage}%)</span>
 //                     </div>
 //                     <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-200 dark:bg-gray-700">
-//                       <div 
-//                         style={{ 
+//                       <div
+//                         style={{
 //                           width: `${percentage}%`,
 //                           backgroundColor: getPlatformColor(platform.platform)
-//                         }} 
+//                         }}
 //                         class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center"
 //                       ></div>
 //                     </div>
@@ -280,7 +280,7 @@
 //             </div>
 //           )}
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-4">Referrer Distribution</h2>
 //           {analyticsData.value.referrerDistribution.length === 0 ? (
@@ -290,7 +290,7 @@
 //               {analyticsData.value.referrerDistribution.map((referrer: any) => {
 //                 const totalAssigned = analyticsData.value.assignedCount;
 //                 const percentage = totalAssigned ? Math.round((referrer.count / totalAssigned) * 100) : 0;
-                
+
 //                 return (
 //                   <div key={referrer.referrer} class="space-y-2">
 //                     <div class="flex justify-between">
@@ -298,8 +298,8 @@
 //                       <span>{referrer.count} ({percentage}%)</span>
 //                     </div>
 //                     <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-200 dark:bg-gray-700">
-//                       <div 
-//                         style={{ width: `${percentage}%` }} 
+//                       <div
+//                         style={{ width: `${percentage}%` }}
 //                         class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
 //                       ></div>
 //                     </div>
@@ -312,4 +312,4 @@
 //       </div>
 //     </div>
 //   );
-// }); 
+// });

@@ -1,0 +1,219 @@
+import { Meta, Controls, Canvas } from "@storybook/blocks";
+import * as SideNavigationStories from "./SideNavigation.stories";
+
+<Meta of={SideNavigationStories} />
+
+# SideNavigation
+
+The SideNavigation component provides a vertical navigation menu with support for nested items, collapsible sections, and different visual styles. It's designed to be flexible, accessible, and work seamlessly in both desktop and mobile contexts.
+
+## Features
+
+- Multiple size variants: small, medium, and large
+- Different style options: default, bordered, and minimal
+- Collapsible navigation for space efficiency
+- Support for nested navigation items
+- Custom header and footer sections
+- Mobile-friendly modal mode
+- Icon and badge support
+- RTL language support
+- Keyboard navigation
+
+## Usage
+
+### Basic Usage
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { SideNavigation } from "@/components/Core/Navigation/SideNavigation";
+
+export default component$(() => {
+  const items = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: <DashboardIcon />,
+      isActive: true,
+    },
+    {
+      label: "Profile",
+      href: "/profile",
+      icon: <ProfileIcon />,
+    },
+    {
+      label: "Settings",
+      icon: <SettingsIcon />,
+      items: [
+        {
+          label: "Account",
+          href: "/settings/account",
+        },
+        {
+          label: "Security",
+          href: "/settings/security",
+        },
+      ],
+    },
+  ];
+
+  return <SideNavigation items={items} title="Admin Panel" />;
+});
+```
+
+### Collapsible Navigation
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { SideNavigation } from "@/components/Core/Navigation/SideNavigation";
+
+export default component$(() => {
+  const isCollapsed = useSignal(false);
+
+  return (
+    <SideNavigation
+      items={navigationItems}
+      title="Navigation"
+      isCollapsed={isCollapsed.value}
+      isCollapsible={true}
+      onToggleCollapse$={() => {
+        isCollapsed.value = !isCollapsed.value;
+      }}
+    />
+  );
+});
+```
+
+### Mobile Modal Navigation
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { SideNavigation } from "@/components/Core/Navigation/SideNavigation";
+
+export default component$(() => {
+  const isMobileOpen = useSignal(false);
+
+  return (
+    <>
+      <button onClick$={() => (isMobileOpen.value = true)}>Open Menu</button>
+
+      <SideNavigation
+        items={navigationItems}
+        title="Mobile Navigation"
+        isMobileModal={true}
+        isMobileOpen={isMobileOpen.value}
+        onCloseMobile$={() => {
+          isMobileOpen.value = false;
+        }}
+      />
+    </>
+  );
+});
+```
+
+## Examples
+
+### Default SideNavigation
+
+<Canvas of={SideNavigationStories.Basic} />
+
+### Size Variants
+
+<Canvas of={SideNavigationStories.SizeVariants} />
+
+### Style Variants
+
+<Canvas of={SideNavigationStories.StyleVariants} />
+
+### Collapsible Navigation
+
+<Canvas of={SideNavigationStories.Collapsible} />
+
+### Nested Navigation
+
+<Canvas of={SideNavigationStories.DeepNestedNavigation} />
+
+### With Header and Footer
+
+<Canvas of={SideNavigationStories.WithHeaderAndFooter} />
+
+### Mobile Modal Navigation
+
+<Canvas of={SideNavigationStories.MobileModal} />
+
+### In a Real Application Context
+
+<Canvas of={SideNavigationStories.InContext} />
+
+### RTL Support
+
+<Canvas of={SideNavigationStories.RTLSupport} />
+
+## Component API
+
+<Controls />
+
+## Navigating the Navigation Item Structure
+
+The SideNavigation component uses a recursive structure for the `items` prop, allowing for deeply nested navigation menus. Each navigation item can have the following properties:
+
+```tsx
+interface SideNavigationItem {
+  // Required text label for the item
+  label: string;
+
+  // Optional URL (make it a link)
+  href?: string;
+
+  // Optional icon element
+  icon?: JSXChildren;
+
+  // Whether this item is currently active
+  isActive?: boolean;
+
+  // Whether this item is disabled
+  isDisabled?: boolean;
+
+  // Optional badge content (e.g., count indicator)
+  badge?: JSXChildren;
+
+  // Tooltip text (also used as title in collapsed mode)
+  tooltip?: string;
+
+  // Optional subitems for nested navigation
+  items?: SideNavigationItem[];
+
+  // Whether nested items are initially expanded
+  isExpanded?: boolean;
+
+  // Optional click handler
+  onClick$?: () => void;
+
+  // Custom CSS class
+  class?: string;
+
+  // Optional ID
+  id?: string;
+}
+```
+
+## Accessibility
+
+The SideNavigation component is built with accessibility in mind:
+
+- Proper ARIA roles and attributes
+- Keyboard navigation support
+- Focus management
+- Proper semantic HTML structure
+- Screen reader announcements for state changes
+
+## Best Practices
+
+- Use clear, concise labels for navigation items
+- Limit the depth of nested navigation to 3 levels for better usability
+- Use icons consistently to aid recognition
+- Highlight the currently active section
+- Consider using the mobile modal approach for responsive designs
+- Use badges sparingly to avoid visual clutter
+- Use meaningful icons that clearly communicate the purpose of each navigation item

@@ -1,8 +1,8 @@
-import { Slot, component$, useSignal, $ } from '@builder.io/qwik';
-import { Form as QwikForm } from '@builder.io/qwik-city';
-import type { FormProps } from './Form.types';
-import { FormProvider } from './FormContext';
-import './Form.css';
+import { Slot, component$, useSignal, $ } from "@builder.io/qwik";
+import { Form as QwikForm } from "@builder.io/qwik-city";
+import type { FormProps } from "./Form.types";
+import { FormProvider } from "./FormContext";
+import "./Form.css";
 
 /**
  * Enhanced form component that wraps Qwik City's Form component
@@ -13,7 +13,7 @@ export const Form = component$<FormProps>((props) => {
     id,
     name,
     action,
-    method = 'post',
+    method = "post",
     encType,
     noValidate = true,
     autocomplete,
@@ -29,21 +29,25 @@ export const Form = component$<FormProps>((props) => {
   } = props;
 
   // Create a unique ID for the form if not provided
-  const uniqueId = useSignal<string>(id || `connect-form-${Math.random().toString(36).substring(2, 11)}`);
-  
+  const uniqueId = useSignal<string>(
+    id || `connect-form-${Math.random().toString(36).substring(2, 11)}`,
+  );
+
   // Form element reference for native form operations
   const formRef = useSignal<HTMLFormElement>();
-  
+
   // Default form options
   const defaultOptions = {
     validateOnMount: false,
     validateOnChange: true,
     validateOnBlur: true,
     validateOnSubmit: true,
-    revalidateOn: ['submit', 'blur', 'change'] as Array<'input' | 'blur' | 'change' | 'submit'>,
+    revalidateOn: ["submit", "blur", "change"] as Array<
+      "input" | "blur" | "change" | "submit"
+    >,
     preventDefaultOnSubmit: true,
   };
-  
+
   // Merged options with defaults
   const formOptions = {
     ...defaultOptions,
@@ -52,9 +56,9 @@ export const Form = component$<FormProps>((props) => {
     onSubmit$,
     onValidate$,
     onError$,
-    onReset$
+    onReset$,
   };
-  
+
   // Handle the native form reset
   const handleReset$ = $((event: Event) => {
     if (onReset$) {
@@ -62,14 +66,12 @@ export const Form = component$<FormProps>((props) => {
     }
   });
 
-  const formClasses = `connect-form ${className || ''}`;
+  const formClasses = `connect-form ${className || ""}`;
 
   // If we have a Qwik action, use the Qwik City Form component
   if (qwikAction) {
     return (
-      <FormProvider
-        {...formOptions}
-      >
+      <FormProvider {...formOptions}>
         <QwikForm
           id={uniqueId.value}
           action={qwikAction}
@@ -82,12 +84,10 @@ export const Form = component$<FormProps>((props) => {
       </FormProvider>
     );
   }
-  
+
   // Standard form without Qwik action integration
   return (
-    <FormProvider
-      {...formOptions}
-    >
+    <FormProvider {...formOptions}>
       <form
         id={uniqueId.value}
         name={name}

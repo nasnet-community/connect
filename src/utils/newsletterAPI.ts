@@ -1,14 +1,18 @@
 /**
  * Newsletter Subscription API
- * 
+ *
  * Handles newsletter subscription functionality with Supabase Edge Functions
  */
 
 // Environment variables
 const SUPABASE_BASE_URL = import.meta.env.VITE_SUPABASE_BASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const NEWSLETTER_FUNCTION_PATH = import.meta.env.VITE_NEWSLETTER_FUNCTION_PATH || "/functions/v1/newsletter";
-const REQUEST_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || "30000", 10);
+const NEWSLETTER_FUNCTION_PATH =
+  import.meta.env.VITE_NEWSLETTER_FUNCTION_PATH || "/functions/v1/newsletter";
+const REQUEST_TIMEOUT = parseInt(
+  import.meta.env.VITE_API_TIMEOUT || "30000",
+  10,
+);
 
 // Newsletter subscription interfaces
 export interface NewsletterSubscriptionRequest {
@@ -25,7 +29,7 @@ export interface NewsletterSubscriptionResponse {
 
 export async function subscribeToNewsletter(
   email: string,
-  userUUID: string
+  userUUID: string,
 ): Promise<NewsletterSubscriptionResponse> {
   try {
     if (!SUPABASE_BASE_URL || !SUPABASE_ANON_KEY) {
@@ -36,7 +40,7 @@ export async function subscribeToNewsletter(
 
     const requestBody: NewsletterSubscriptionRequest = {
       email: email.toLowerCase().trim(),
-      userUUID
+      userUUID,
     };
 
     const controller = new AbortController();
@@ -46,23 +50,23 @@ export async function subscribeToNewsletter(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify(requestBody),
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     const responseText = await response.text();
-    
+
     if (!response.ok) {
       if (response.status === 429) {
         // Rate limited
         return {
           success: false,
           error: "Too many requests",
-          error_detail: "Please wait before trying again"
+          error_detail: "Please wait before trying again",
         };
       }
       if (response.status === 403) {
@@ -70,14 +74,14 @@ export async function subscribeToNewsletter(
         return {
           success: false,
           error: "Request blocked",
-          error_detail: "Request was blocked by security policies"
+          error_detail: "Request was blocked by security policies",
         };
       }
       // All other errors return generic message
       return {
         success: false,
         error: "Subscription failed",
-        error_detail: "Please try again later"
+        error_detail: "Please try again later",
       };
     }
 
@@ -88,16 +92,16 @@ export async function subscribeToNewsletter(
       return {
         success: false,
         error: "Subscription failed",
-        error_detail: "Invalid server response"
+        error_detail: "Invalid server response",
       };
     }
-    
+
     return data;
   } catch (error: unknown) {
     return {
       success: false,
       error: "Subscription failed",
-      error_detail: "Please try again later"
+      error_detail: "Please try again later",
     };
   }
 }
@@ -105,4 +109,4 @@ export async function subscribeToNewsletter(
 export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 254 && email.length >= 5;
-} 
+}

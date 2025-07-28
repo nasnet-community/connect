@@ -1,7 +1,7 @@
-import type { QRL } from '@builder.io/qwik';
-import type { ActionStore } from '@builder.io/qwik-city';
+import type { QRL } from "@builder.io/qwik";
+import type { ActionStore } from "@builder.io/qwik-city";
 
-export type FormValidationStatus = 'valid' | 'invalid' | 'validating';
+export type FormValidationStatus = "valid" | "invalid" | "validating";
 
 export interface FormFieldState {
   value: any;
@@ -9,7 +9,14 @@ export interface FormFieldState {
   dirty: boolean;
   error?: string;
   validating: boolean;
-  validate?: FormValidationRule[] | QRL<(value: any, formValues: Record<string, any>) => string | undefined | Promise<string | undefined>>;
+  validate?:
+    | FormValidationRule[]
+    | QRL<
+        (
+          value: any,
+          formValues: Record<string, any>,
+        ) => string | undefined | Promise<string | undefined>
+      >;
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
 }
@@ -31,14 +38,26 @@ export interface FormState {
 }
 
 export interface FormValidationRule {
-  validator: QRL<(value: any, formValues: Record<string, any>) => string | undefined | Promise<string | undefined>>;
+  validator: QRL<
+    (
+      value: any,
+      formValues: Record<string, any>,
+    ) => string | undefined | Promise<string | undefined>
+  >;
   message?: string;
 }
 
 export interface FormFieldOptions {
   initialValue?: any;
   required?: boolean;
-  validate?: FormValidationRule[] | QRL<(value: any, formValues: Record<string, any>) => string | undefined | Promise<string | undefined>>;
+  validate?:
+    | FormValidationRule[]
+    | QRL<
+        (
+          value: any,
+          formValues: Record<string, any>,
+        ) => string | undefined | Promise<string | undefined>
+      >;
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
 }
@@ -54,7 +73,11 @@ export interface FormOptions {
   children?: any;
   onSubmit$?: QRL<(values: Record<string, any>) => void | Promise<void>>;
   onReset$?: QRL<(values: Record<string, any>) => void | Promise<void>>;
-  onValidate$?: QRL<(values: Record<string, any>) => Record<string, string> | void | Promise<Record<string, string> | void>>;
+  onValidate$?: QRL<
+    (
+      values: Record<string, any>,
+    ) => Record<string, string> | void | Promise<Record<string, string> | void>
+  >;
   onError$?: QRL<(errors: Record<string, string>) => void | Promise<void>>;
 }
 
@@ -62,18 +85,25 @@ export interface FormProps extends FormOptions {
   id?: string;
   name?: string;
   action?: string;
-  method?: 'get' | 'post' | 'put' | 'delete';
-  encType?: 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain';
+  method?: "get" | "post" | "put" | "delete";
+  encType?:
+    | "application/x-www-form-urlencoded"
+    | "multipart/form-data"
+    | "text/plain";
   noValidate?: boolean;
-  autocomplete?: 'on' | 'off';
+  autocomplete?: "on" | "off";
   class?: string;
-  
+
   // Form validation event handlers
-  onValidate$?: QRL<(values: Record<string, any>) => Record<string, string> | void | Promise<Record<string, string> | void>>;
+  onValidate$?: QRL<
+    (
+      values: Record<string, any>,
+    ) => Record<string, string> | void | Promise<Record<string, string> | void>
+  >;
   onError$?: QRL<(errors: Record<string, string>) => void | Promise<void>>;
-  
+
   // Qwik City Form specific props
-  qwikAction?: ActionStore<any, Record<string, any> | undefined>;
+  qwikAction?: ActionStore<any, any, boolean>;
   spaReset?: boolean;
   reloadDocument?: boolean;
 }
@@ -117,5 +147,12 @@ export interface FormControlProps {
   warning?: boolean;
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
-  validate?: FormValidationRule[] | QRL<(value: any, formValues: Record<string, any>) => string | undefined | Promise<string | undefined>>;
+  validate?:
+    | FormValidationRule[]
+    | QRL<
+        (
+          value: any,
+          formValues: Record<string, any>,
+        ) => string | undefined | Promise<string | undefined>
+      >;
 }

@@ -8,33 +8,33 @@
 //   const supabaseUrl = process.env.SUPABASE_URL || '';
 //   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 //   const supabase = createClient(supabaseUrl, supabaseKey);
-  
+
 //   // Get total count
 //   const { count: totalCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true });
-  
+
 //   // Get count of assigned credentials
 //   const { count: assignedCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true })
 //     .eq('is_assigned', true);
-  
+
 //   // Get count of available credentials
 //   const { count: availableCount } = await supabase
 //     .from('l2tp_credentials')
 //     .select('*', { count: 'exact', head: true })
 //     .eq('is_assigned', false);
-  
+
 //   // Get count by platform
 //   const { data: platformData } = await supabase
 //     .from('l2tp_credentials')
 //     .select('platform, count')
 //     .eq('is_assigned', true)
 //     .group('platform');
-  
+
 //   const platformStats = platformData || [];
-  
+
 //   // Get recent assignments (last 10)
 //   const { data: recentAssignments } = await supabase
 //     .from('l2tp_credentials')
@@ -42,7 +42,7 @@
 //     .eq('is_assigned', true)
 //     .order('created_at', { ascending: false })
 //     .limit(10);
-  
+
 //   return {
 //     totalCount: totalCount || 0,
 //     assignedCount: assignedCount || 0,
@@ -54,29 +54,29 @@
 
 // export default component$(() => {
 //   const stats = useCredentialsStats();
-  
+
 //   return (
 //     <div class="container mx-auto px-4 py-8">
 //       <h1 class="text-3xl font-bold mb-8">VPN Credentials Dashboard</h1>
-      
+
 //       {/* Stats Overview Cards */}
 //       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Total Credentials</h2>
 //           <p class="text-4xl font-bold text-blue-600 dark:text-blue-400">{stats.value.totalCount}</p>
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Assigned Credentials</h2>
 //           <p class="text-4xl font-bold text-green-600 dark:text-green-400">{stats.value.assignedCount}</p>
 //         </div>
-        
+
 //         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //           <h2 class="text-xl font-semibold mb-2">Available Credentials</h2>
 //           <p class="text-4xl font-bold text-purple-600 dark:text-purple-400">{stats.value.availableCount}</p>
 //         </div>
 //       </div>
-      
+
 //       {/* Usage by Platform Section */}
 //       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
 //         <h2 class="text-xl font-semibold mb-4">Usage by Platform</h2>
@@ -104,7 +104,7 @@
 //           </table>
 //         </div>
 //       </div>
-      
+
 //       {/* Recent Assignments */}
 //       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
 //         <h2 class="text-xl font-semibold mb-4">Recent Credential Assignments</h2>
@@ -140,4 +140,4 @@
 //       </div>
 //     </div>
 //   );
-// }); 
+// });

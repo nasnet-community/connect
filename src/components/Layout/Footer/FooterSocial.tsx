@@ -10,7 +10,7 @@ export const FooterSocial = component$(() => (
         target="_blank"
         aria-label={label}
         rel="noopener noreferrer"
-        class="text-text-secondary transition-colors hover:text-primary-500 dark:text-text-dark-secondary dark:hover:text-primary-400"
+        class="text-text-secondary dark:text-text-dark-secondary transition-colors hover:text-primary-500 dark:hover:text-primary-400"
       >
         <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
           <path d={path} />

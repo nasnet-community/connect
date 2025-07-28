@@ -1,21 +1,21 @@
-import { component$ } from '@builder.io/qwik';
-import type { TextAreaProps } from './TextArea.types';
-import { FormLabel } from '../FormLabel';
-import { FormHelperText } from '../FormHelperText';
-import { FormErrorMessage } from '../FormErrorMessage';
-import { useTextArea } from './hooks/useTextArea';
+import { component$ } from "@builder.io/qwik";
+import type { TextAreaProps } from "./TextArea.types";
+import { FormLabel } from "../FormLabel";
+import { FormHelperText } from "../FormHelperText";
+import { FormErrorMessage } from "../FormErrorMessage";
+import { useTextArea } from "./hooks/useTextArea";
 
 /**
- * TextArea component for multi-line text input with auto-resize, character counting, 
+ * TextArea component for multi-line text input with auto-resize, character counting,
  * and validation states.
- * 
+ *
  * Integrates with the Form component when used within form context.
  */
 export const TextArea = component$<TextAreaProps>((props) => {
   const {
     label,
-    labelClass = '',
-    messageClass = '',
+    labelClass = "",
+    messageClass = "",
     id,
     name,
     ...restProps
@@ -47,25 +47,25 @@ export const TextArea = component$<TextAreaProps>((props) => {
     autoResize,
     charCountFormatter$,
     maxLength,
-    currentValue
+    currentValue,
   } = useTextArea(props);
-  
+
   // Generate a unique ID if not provided
-  const inputId = id || (name ? `textarea-${name}` : `textarea-${Math.random().toString(36).substring(2, 11)}`);
+  const inputId =
+    id ||
+    (name
+      ? `textarea-${name}`
+      : `textarea-${Math.random().toString(36).substring(2, 11)}`);
 
   return (
     <div class={containerClasses}>
       {/* Label */}
       {label && (
-        <FormLabel
-          for={inputId}
-          class={labelClass}
-          required={required}
-        >
+        <FormLabel for={inputId} class={labelClass} required={required}>
           {label}
         </FormLabel>
       )}
-      
+
       {/* Textarea wrapper */}
       <div class="relative">
         <textarea
@@ -74,13 +74,9 @@ export const TextArea = component$<TextAreaProps>((props) => {
           name={name}
           ref={textareaRef}
           value={currentValue.value}
-          aria-invalid={effectiveState.value === 'error'}
+          aria-invalid={effectiveState.value === "error"}
           aria-required={required}
-          aria-describedby={
-            hasDescribedBy
-              ? `${inputId}-message`
-              : undefined
-          }
+          aria-describedby={hasDescribedBy ? `${inputId}-message` : undefined}
           disabled={disabled}
           required={required}
           placeholder={placeholder}
@@ -93,18 +89,18 @@ export const TextArea = component$<TextAreaProps>((props) => {
           onChange$={handleChange$}
           onBlur$={handleBlur$}
         />
-        
-        {/* Clear button */}
+
+        {/* Clear button - mobile optimized with proper touch target */}
         {showClear && currentValue.value && !disabled && (
           <button
             type="button"
             aria-label="Clear input"
-            class="absolute right-2 top-2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            class="absolute right-1 top-1 touch-manipulation rounded-md p-1.5 text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-primary-400"
             onClick$={handleClear$}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4"
+              class="h-4 w-4 sm:h-3.5 sm:w-3.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -119,25 +115,20 @@ export const TextArea = component$<TextAreaProps>((props) => {
           </button>
         )}
       </div>
-      
-      {/* Character count */}
+
+      {/* Character count - responsive positioning */}
       {showCharCount && (
-        <div class="mt-1 text-right text-sm text-gray-500">
-          {charCountFormatter$ ? (
-            charCountFormatter$(charCount.value, maxLength)
-          ) : (
-            defaultCharCount$(charCount.value, maxLength)
-          )}
+        <div class="mt-1 text-right text-xs text-gray-500 sm:text-sm dark:text-gray-400">
+          {charCountFormatter$
+            ? charCountFormatter$(charCount.value, maxLength)
+            : defaultCharCount$(charCount.value, maxLength)}
         </div>
       )}
-      
+
       {/* Display appropriate message based on state */}
-      {displayedMessage && (
-        messageType === 'helper' ? (
-          <FormHelperText
-            id={`${inputId}-message`}
-            class={messageClass}
-          >
+      {displayedMessage &&
+        (messageType === "helper" ? (
+          <FormHelperText id={`${inputId}-message`} class={messageClass}>
             {helperText}
           </FormHelperText>
         ) : (
@@ -148,8 +139,7 @@ export const TextArea = component$<TextAreaProps>((props) => {
           >
             {displayedMessage}
           </FormErrorMessage>
-        )
-      )}
+        ))}
     </div>
   );
 });

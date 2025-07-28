@@ -1,0 +1,129 @@
+import { Meta, Title, Controls, Canvas, Story } from "@storybook/blocks";
+import * as ProgressBarStories from "./ProgressBar.stories";
+
+<Meta of={ProgressBarStories} />
+
+# ProgressBar
+
+The ProgressBar component visualizes the progression of an operation, process, or task, allowing users to understand the current status.
+
+## Overview
+
+Progress bars provide visual feedback about the completion status of tasks, especially for operations that take time to complete. They help set expectations about how long a process might take and indicate that the system is working.
+
+## Features
+
+- Multiple size options (xs, sm, md, lg)
+- Various color options with semantic meanings
+- Solid and gradient visual variants
+- Different shapes (flat, rounded, pill)
+- Animation options for enhanced visual feedback
+- Support for determinate and indeterminate progress states
+- Buffer state for media playback scenarios
+- Customizable value display
+
+## Basic Usage
+
+<Canvas of={ProgressBarStories.Default} />
+
+## Sizes
+
+The ProgressBar component comes in multiple sizes to fit different UI contexts.
+
+<Canvas of={ProgressBarStories.Sizes} />
+
+## Colors
+
+Choose from various semantic colors to match your interface and communicate meaning.
+
+<Canvas of={ProgressBarStories.Colors} />
+
+## Variants
+
+Different visual styles provide design flexibility.
+
+<Canvas of={ProgressBarStories.Variants} />
+
+## Shapes
+
+Customize the shape of the progress bar to match your UI design.
+
+<Canvas of={ProgressBarStories.Shapes} />
+
+## Animations
+
+Add visual interest and draw attention with animations.
+
+<Canvas of={ProgressBarStories.Animations} />
+
+## Value Labels
+
+Show the current progress value in different positions.
+
+<Canvas of={ProgressBarStories.ValueLabels} />
+
+## Indeterminate State
+
+Use the indeterminate state when progress cannot be determined.
+
+<Canvas of={ProgressBarStories.Indeterminate} />
+
+## Error State
+
+Indicate errors in the process with the error state.
+
+<Canvas of={ProgressBarStories.ErrorState} />
+
+## Buffer State
+
+Show both progress and buffering states, useful for media playback.
+
+<Canvas of={ProgressBarStories.BufferState} />
+
+## Dynamic Progress
+
+Demonstrate real-time progress updates with animated values.
+
+<Canvas of={ProgressBarStories.DynamicProgress} />
+
+## Props
+
+<Controls />
+
+## Accessibility
+
+The ProgressBar component follows accessibility best practices:
+
+- Uses `role="progressbar"` to identify the element as a progress indicator
+- Includes `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` attributes to communicate progress values
+- Provides `aria-valuetext` for more descriptive progress information
+- Uses `aria-busy` for indeterminate states
+- Maintains sufficient color contrast for all variants
+
+## Best Practices
+
+1. **Appropriate Usage**: Use progress bars for processes that take time to complete, not for instant operations.
+
+2. **Determinate vs. Indeterminate**: Use determinate progress when you can calculate the percentage of completion; use indeterminate when progress cannot be measured.
+
+3. **Minimize Movement**: Avoid excessive animations on progress bars to reduce visual distraction, especially on pages with multiple progress indicators.
+
+4. **Accuracy**: Ensure the progress bar accurately reflects the actual progress of the operation.
+
+5. **Context**: Provide appropriate context through labels or surrounding UI to explain what the progress bar represents.
+
+6. **Error Handling**: Use the error state to clearly indicate when an operation has failed.
+
+7. **Color Semantics**: Use semantic colors consistently — success for completed tasks, warning for attention, error for failures.
+
+## Implementation Notes
+
+- The ProgressBar component automatically normalizes values between the specified min and max values.
+- Animation classes should be added to your global CSS to enable the special animation effects like striped-animated.
+- For buffer functionality, the buffer value should always be equal to or greater than the current value.
+
+## Related Components
+
+- Spinner: For indicating loading states without specific progress values
+- Counter: For numerical representation of values
+- LoadingOverlay: For blocking UI interactions during loading states

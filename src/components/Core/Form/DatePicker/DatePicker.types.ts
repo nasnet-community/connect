@@ -1,12 +1,29 @@
-import type { QRL } from '@builder.io/qwik';
+import type { QRL } from "@builder.io/qwik";
 
-export type DatePickerSize = 'sm' | 'md' | 'lg';
-export type DatePickerView = 'days' | 'months' | 'years';
-export type DateFormat = 'yyyy-MM-dd' | 'MM/dd/yyyy' | 'dd/MM/yyyy' | 'dd.MM.yyyy' | string;
-export type DatePickerPlacement = 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end';
-export type DatePickerTrigger = 'click' | 'hover' | 'focus';
+export type DatePickerSize = "sm" | "md" | "lg";
+export type DatePickerView = "days" | "months" | "years";
+export type DateFormat =
+  | "yyyy-MM-dd"
+  | "MM/dd/yyyy"
+  | "dd/MM/yyyy"
+  | "dd.MM.yyyy"
+  | string;
+export type DatePickerPlacement =
+  | "top"
+  | "top-start"
+  | "top-end"
+  | "bottom"
+  | "bottom-start"
+  | "bottom-end"
+  | "right"
+  | "right-start"
+  | "right-end"
+  | "left"
+  | "left-start"
+  | "left-end";
+export type DatePickerTrigger = "click" | "hover" | "focus";
 export type WeekStart = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type MonthNavigationDirection = 'prev' | 'next';
+export type MonthNavigationDirection = "prev" | "next";
 
 export interface DateRange {
   startDate: Date | null;
@@ -14,7 +31,7 @@ export interface DateRange {
 }
 
 export interface DatePickerBaseProps {
-  mode?: 'single' | 'range' | 'datetime';
+  mode?: "single" | "range" | "datetime";
   size?: DatePickerSize;
   disabled?: boolean;
   inline?: boolean;
@@ -50,14 +67,14 @@ export interface DatePickerBaseProps {
 }
 
 export interface SingleDatePickerProps extends DatePickerBaseProps {
-  mode: 'single';
+  mode: "single";
   value?: Date;
   defaultValue?: Date;
   onDateSelect$?: QRL<(date: Date | null) => void>;
 }
 
 export interface RangeDatePickerProps extends DatePickerBaseProps {
-  mode: 'range';
+  mode: "range";
   value?: DateRange;
   defaultValue?: DateRange;
   rangeSeparator?: string;
@@ -70,7 +87,7 @@ export interface RangeDatePickerProps extends DatePickerBaseProps {
 }
 
 export interface DateTimePickerProps extends DatePickerBaseProps {
-  mode: 'datetime';
+  mode: "datetime";
   value?: Date;
   defaultValue?: Date;
   timeFormat?: string;
@@ -82,7 +99,10 @@ export interface DateTimePickerProps extends DatePickerBaseProps {
   onDateSelect$?: QRL<(date: Date | null) => void>;
 }
 
-export type DatePickerProps = SingleDatePickerProps | RangeDatePickerProps | DateTimePickerProps;
+export type DatePickerProps =
+  | SingleDatePickerProps
+  | RangeDatePickerProps
+  | DateTimePickerProps;
 
 export interface CalendarViewProps {
   viewDate: Date;
@@ -108,5 +128,7 @@ export interface TimeSelectorProps {
   showSeconds?: boolean;
   use12HourTime?: boolean;
   disabled?: boolean;
-  onTimeSelect$: QRL<(hours: number, minutes: number, seconds?: number) => void>;
+  onTimeSelect$: QRL<
+    (hours: number, minutes: number, seconds?: number) => void
+  >;
 }

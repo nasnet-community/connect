@@ -1,12 +1,13 @@
 /**
  * External API Services
- * 
+ *
  * Handles calls to external APIs for generating passwords and SSIDs
  */
 
 // Environment variables
 const API_NINJA_KEY = import.meta.env.VITE_API_NINJA_KEY;
-const API_NINJA_BASE_URL = import.meta.env.VITE_API_NINJA_BASE_URL || "https://api.api-ninjas.com/v1";
+const API_NINJA_BASE_URL =
+  import.meta.env.VITE_API_NINJA_BASE_URL || "https://api.api-ninjas.com/v1";
 const PASSWORD_LENGTH = import.meta.env.VITE_PASSWORD_LENGTH || "10";
 
 export async function generatePasswordFromAPI() {
@@ -42,4 +43,4 @@ export async function generateSSIDFromAPI() {
   if (!response.ok) throw new Error("Failed to generate SSID");
   const data = await response.json();
   return `${data.word}`;
-} 
+}

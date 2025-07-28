@@ -8,7 +8,7 @@ interface ThemeToggleProps {
 export const ThemeToggle = component$((props: ThemeToggleProps) => (
   <button
     onClick$={props.onToggle$}
-    class="rounded-lg bg-surface-secondary p-2 transition-colors duration-300 hover:bg-primary-100 dark:bg-surface-dark-secondary dark:hover:bg-primary-900/20"
+    class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-lg p-2 transition-colors duration-300 hover:bg-primary-100 dark:hover:bg-primary-900/20"
     aria-label={$localize`Toggle theme`}
   >
     {props.isDarkMode ? (

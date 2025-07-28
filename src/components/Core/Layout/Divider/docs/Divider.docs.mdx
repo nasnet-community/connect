@@ -1,0 +1,92 @@
+import { Meta, Primary, Controls, Story } from "@storybook/blocks";
+import * as DividerStories from "./Divider.stories";
+
+<Meta of={DividerStories} />
+
+# Divider
+
+The Divider component is a layout primitive that creates a visual separation between content sections.
+
+## Overview
+
+Divider is a flexible layout component that provides a visual separation with options for:
+
+- Horizontal or vertical orientation
+- Different thickness variants
+- Style variants (solid, dashed, dotted)
+- Color options
+- Optional labeled content
+- Customizable spacing
+
+## Usage
+
+```tsx
+import { Divider } from '@connect/Core/Layout/Divider';
+
+// Basic horizontal divider
+<Divider />
+
+// Vertical divider
+<Divider orientation="vertical" />
+
+// Styled divider
+<Divider thickness="medium" variant="dashed" color="primary" />
+
+// Divider with label
+<Divider label="OR" labelPosition="center" />
+```
+
+## Examples
+
+### Basic Divider
+
+<Primary />
+
+The default Divider is a thin, solid, horizontal line that creates a simple visual separation between content.
+
+### Vertical Divider
+
+<Story of={DividerStories.Vertical} />
+
+Vertical dividers are useful for separating content horizontally, such as in navigation menus or form sections.
+
+### Thickness Variants
+
+<Story of={DividerStories.ThicknessVariants} />
+
+Dividers come in three thickness variants: thin (default), medium, and thick.
+
+### Style Variants
+
+<Story of={DividerStories.StyleVariants} />
+
+Dividers support different line styles: solid (default), dashed, and dotted.
+
+### Color Variants
+
+<Story of={DividerStories.ColorVariants} />
+
+Dividers can be styled with different colors to match your design.
+
+### With Label
+
+<Story of={DividerStories.WithLabel} />
+
+Horizontal dividers can include labels to create semantic separation or provide context.
+
+### In Context
+
+<Story of={DividerStories.InContext} />
+
+This example shows how dividers can be used in a real-world context to separate content sections.
+
+## Accessibility
+
+The Divider component includes proper ARIA attributes:
+
+- `role="separator"` is applied by default
+- `aria-orientation` matches the visual orientation
+
+## Props
+
+<Controls />

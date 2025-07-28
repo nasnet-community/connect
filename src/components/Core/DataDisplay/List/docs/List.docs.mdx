@@ -1,0 +1,271 @@
+import { Meta, Primary, Controls, Story } from "@storybook/blocks";
+import * as ListStories from "./List.stories";
+
+<Meta of={ListStories} />
+
+# List
+
+The List component provides a flexible way to display ordered, unordered, and definition lists with customizable styling.
+
+## Features
+
+- Three list variants: unordered, ordered, and definition lists
+- Multiple marker types for ordered and unordered lists
+- Customizable sizing and spacing
+- Support for nested lists
+- Active and disabled states for list items
+- Accessibility built-in with proper ARIA attributes
+- Dark mode compatible
+
+## Usage
+
+### Basic Unordered List
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { List, ListItem } from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <List>
+      <ListItem>Features fully responsive components</ListItem>
+      <ListItem>Supports dark mode out of the box</ListItem>
+      <ListItem>Written in TypeScript for type safety</ListItem>
+    </List>
+  );
+});
+```
+
+### Basic Ordered List
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { List, ListItem } from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <List variant="ordered">
+      <ListItem>Install dependencies</ListItem>
+      <ListItem>Import components</ListItem>
+      <ListItem>Use in your application</ListItem>
+    </List>
+  );
+});
+```
+
+### Definition List
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import {
+  List,
+  ListTerm,
+  ListDescription,
+} from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <List variant="definition">
+      <ListTerm>Connect</ListTerm>
+      <ListDescription>
+        A comprehensive design system built with Qwik.
+      </ListDescription>
+
+      <ListTerm>Components</ListTerm>
+      <ListDescription>
+        Pre-built building blocks for rapid development.
+      </ListDescription>
+    </List>
+  );
+});
+```
+
+### Using Convenience Components
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import {
+  UnorderedList,
+  OrderedList,
+  DefinitionList,
+  ListItem,
+  ListTerm,
+  ListDescription,
+} from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <>
+      <UnorderedList>
+        <ListItem>Features fully responsive components</ListItem>
+        <ListItem>Supports dark mode out of the box</ListItem>
+      </UnorderedList>
+
+      <OrderedList>
+        <ListItem>Install dependencies</ListItem>
+        <ListItem>Import components</ListItem>
+      </OrderedList>
+
+      <DefinitionList>
+        <ListTerm>Connect</ListTerm>
+        <ListDescription>A comprehensive design system</ListDescription>
+      </DefinitionList>
+    </>
+  );
+});
+```
+
+### Customizing List Markers
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { List, ListItem } from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <>
+      <List marker="disc">
+        <ListItem>Disc marker (default for unordered lists)</ListItem>
+      </List>
+
+      <List marker="circle">
+        <ListItem>Circle marker</ListItem>
+      </List>
+
+      <List marker="square">
+        <ListItem>Square marker</ListItem>
+      </List>
+
+      <List variant="ordered" marker="decimal">
+        <ListItem>Decimal marker (default for ordered lists)</ListItem>
+      </List>
+
+      <List variant="ordered" marker="roman">
+        <ListItem>Roman numeral marker</ListItem>
+      </List>
+
+      <List variant="ordered" marker="alpha">
+        <ListItem>Alphabetical marker</ListItem>
+      </List>
+
+      <List marker="none">
+        <ListItem>No marker</ListItem>
+      </List>
+    </>
+  );
+});
+```
+
+### Nested Lists
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { List, ListItem } from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <List>
+      <ListItem>First level item</ListItem>
+      <ListItem>
+        First level item with nested list
+        <List nested>
+          <ListItem>Second level item</ListItem>
+          <ListItem>
+            Second level item with nested list
+            <List nested>
+              <ListItem>Third level item</ListItem>
+              <ListItem>Third level item</ListItem>
+            </List>
+          </ListItem>
+        </List>
+      </ListItem>
+      <ListItem>First level item</ListItem>
+    </List>
+  );
+});
+```
+
+### Active and Disabled Items
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { List, ListItem } from "~/components/Core/DataDisplay/List";
+
+export default component$(() => {
+  return (
+    <List>
+      <ListItem>Regular item</ListItem>
+      <ListItem active>Active item</ListItem>
+      <ListItem disabled>Disabled item</ListItem>
+    </List>
+  );
+});
+```
+
+## Examples
+
+<Primary />
+
+## Props
+
+### List Props
+
+<Controls />
+
+### ListItem Props
+
+| Prop       | Type          | Default | Description                                 |
+| ---------- | ------------- | ------- | ------------------------------------------- |
+| `active`   | `boolean`     | `false` | Whether the list item is active/selected    |
+| `disabled` | `boolean`     | `false` | Whether the list item is disabled           |
+| `value`    | `string`      | -       | Value used for ordered and definition lists |
+| `class`    | `string`      | -       | Custom CSS class for the list item          |
+| `id`       | `string`      | -       | ID for the list item                        |
+| `children` | `JSXChildren` | -       | Content to be rendered inside the list item |
+
+### ListTerm Props
+
+| Prop       | Type          | Default | Description                            |
+| ---------- | ------------- | ------- | -------------------------------------- |
+| `class`    | `string`      | -       | Custom CSS class for the term          |
+| `children` | `JSXChildren` | -       | Content to be rendered inside the term |
+
+### ListDescription Props
+
+| Prop       | Type          | Default | Description                                   |
+| ---------- | ------------- | ------- | --------------------------------------------- |
+| `class`    | `string`      | -       | Custom CSS class for the description          |
+| `children` | `JSXChildren` | -       | Content to be rendered inside the description |
+
+## Accessibility
+
+The List component implements accessibility best practices:
+
+- Uses semantic HTML elements (`ul`, `ol`, `dl`, `li`, `dt`, `dd`)
+- Includes appropriate ARIA attributes for active and disabled states
+- Supports keyboard navigation
+- Ensures proper color contrast in both light and dark modes
+
+## Design Guidelines
+
+- **Use unordered lists** when the order of items doesn't matter
+- **Use ordered lists** when the sequence is important
+- **Use definition lists** when defining terms or concepts
+- Use appropriate marker types based on content hierarchy
+- Consider using custom styling for more complex lists
+- For longer lists, consider using a more compact spacing
+- Use active state to highlight the current/selected item
+
+## CSS Customization
+
+The List component uses Tailwind CSS classes that can be customized:
+
+- Size is controlled via text size classes: `text-sm`, `text-base`, `text-lg`
+- Spacing uses margin and padding utilities: `space-y-1`, `space-y-2`, `space-y-3`
+- List styles use the standard list utilities: `list-disc`, `list-decimal`, etc.
+- Custom styling can be applied through the `class` prop on any component
+
+## Related Components
+
+- [Table](/docs/core-data-display-table--docs) - For tabular data display
+- [Card](/docs/core-data-display-card--docs) - For displaying content in cards

@@ -1,4 +1,4 @@
-import type { RouterConfig } from '../components/Star/ConfigGenerator/ConfigGenerator';
+import type { RouterConfig } from "../components/Star/ConfigGenerator/ConfigGenerator";
 
 declare global {
   /**
@@ -8,7 +8,7 @@ declare global {
     functionName: string,
     testCase: string,
     inputs: Record<string, any>,
-    testFn: () => RouterConfig
+    testFn: () => RouterConfig,
   ): RouterConfig;
 
   /**
@@ -18,7 +18,7 @@ declare global {
     functionName: string,
     testCase: string,
     inputs: Record<string, any>,
-    testFn: () => any
+    testFn: () => any,
   ): any;
 
   /**
@@ -26,7 +26,7 @@ declare global {
    */
   function validateRouterConfig(
     config: RouterConfig,
-    expectedSections?: string[]
+    expectedSections?: string[],
   ): void;
 
   /**
@@ -36,8 +36,8 @@ declare global {
     functionName: string,
     testCase: string,
     inputs: Record<string, any>,
-    result: any
+    result: any,
   ): void;
 }
 
-export {}; 
+export {};

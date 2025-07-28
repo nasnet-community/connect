@@ -1,0 +1,146 @@
+import { Meta, Title, Controls, Canvas, Story } from "@storybook/blocks";
+import * as FileUploadStories from "./FileUpload.stories";
+
+<Meta of={FileUploadStories} />
+
+# FileUpload
+
+The FileUpload component provides a comprehensive solution for handling file uploads with support for drag-and-drop, multi-file selection, validation, and progress tracking.
+
+## Overview
+
+FileUpload offers a user-friendly interface for selecting and uploading files. It supports various features like previewing images, displaying file information, tracking upload progress, and validating files based on type and size.
+
+## Features
+
+- **Interactive Upload Methods**:
+
+  - Click-to-browse file selection
+  - Drag-and-drop file handling
+  - Multiple file selection support
+
+- **File Management**:
+
+  - File preview capabilities for images and PDFs
+  - File list with type and size information
+  - Progress tracking during upload
+  - Remove individual files or clear all files
+
+- **Customization Options**:
+
+  - Three size variants (sm, md, lg)
+  - Three visual variants (default, bordered, filled)
+  - Horizontal or vertical layout options
+  - Customizable UI text and button labels
+
+- **Validation and Constraints**:
+
+  - File type filtering
+  - File size limits (min/max)
+  - Maximum file count
+  - Custom file validation
+
+- **Upload Functionality**:
+  - Built-in upload handling
+  - Custom upload implementation support
+  - Manual or automatic upload options
+  - Upload progress tracking
+
+## Basic Usage
+
+<Canvas of={FileUploadStories.Default} />
+
+## Multiple File Upload
+
+<Canvas of={FileUploadStories.MultipleFiles} />
+
+## Image Upload with Preview
+
+<Canvas of={FileUploadStories.ImageUpload} />
+
+## Document Upload
+
+<Canvas of={FileUploadStories.DocumentUpload} />
+
+## Auto Upload
+
+<Canvas of={FileUploadStories.AutoUpload} />
+
+## Size Variants
+
+<Canvas of={FileUploadStories.Sizes} />
+
+## Visual Variants
+
+<Canvas of={FileUploadStories.Variants} />
+
+## Layout Options
+
+<Canvas of={FileUploadStories.Layouts} />
+
+## States
+
+<Canvas of={FileUploadStories.States} />
+
+## File Validation
+
+<Canvas of={FileUploadStories.FileValidation} />
+
+## Custom UI Text
+
+<Canvas of={FileUploadStories.CustomUIText} />
+
+## Controlled Component
+
+<Canvas of={FileUploadStories.Controlled} />
+
+## Form Integration
+
+<Canvas of={FileUploadStories.FormIntegration} />
+
+## Props
+
+<Controls />
+
+## Accessibility
+
+The FileUpload component follows accessibility best practices:
+
+- Uses semantic HTML with proper ARIA attributes
+- Provides keyboard navigation support for file selection and removal
+- Ensures proper focus management
+- Communicates upload status through ARIA attributes
+- Provides clear visual feedback for different states
+- Includes proper labeling and helper text
+
+## Usage Guidelines
+
+1. **Selecting the Right Mode**: Choose between single or multiple file selection based on your use case. For scenarios where only one file makes sense (like a profile picture), use single selection.
+
+2. **File Type Restrictions**: Use the `accept` prop to restrict file types when appropriate. This improves the user experience by only showing files that are valid for selection in the file browser.
+
+3. **Size Constraints**: Set appropriate minimum and maximum file sizes to prevent issues with very small or excessively large files.
+
+4. **Upload Timing**: Choose between automatic upload (immediately after selection) or manual upload (requiring the user to confirm) based on the context and importance of the upload action.
+
+5. **Visual Feedback**: Always provide clear visual feedback during uploads, especially for larger files. Use the progress indicators and success/error messages to keep users informed.
+
+6. **Validation Messages**: Ensure error messages for rejected files are clear and actionable, explaining exactly why a file was rejected and what the user can do about it.
+
+7. **Preview Support**: Enable previews for images and other compatible file types to help users confirm they've selected the correct files.
+
+## Implementation Notes
+
+- The component uses Qwik's `useSignal` and `useTask$` for state management.
+- File previews use object URLs which are automatically revoked when the component unmounts.
+- Progress tracking is implemented using XMLHttpRequest or a custom uploader function to support progress monitoring.
+- The component supports both real uploads to a server endpoint and simulated uploads for demonstration purposes.
+
+## Related Components
+
+- Input: For text input fields
+- TextArea: For multi-line text input
+- Button: For triggering actions like upload or clear
+- FormLabel: For providing accessible labels
+- FormHelperText: For additional descriptive text
+- FormErrorMessage: For validation error messages

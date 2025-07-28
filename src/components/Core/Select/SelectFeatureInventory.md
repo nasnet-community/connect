@@ -25,26 +25,26 @@ This document provides a comprehensive inventory of features and capabilities in
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| options | SelectOption[] | required | Array of options to display |
-| id | string | auto-generated | ID for the select element |
-| name | string | - | Name for form submission |
-| value | string \| string[] | '' | Selected value(s) |
-| placeholder | string | 'Select an option' | Text to display when no option is selected |
-| disabled | boolean | false | Whether the select is disabled |
-| required | boolean | false | Whether selection is required |
-| size | 'sm' \| 'md' \| 'lg' | 'md' | Size of the select element |
-| validation | 'default' \| 'valid' \| 'invalid' | 'default' | Validation state |
-| label | string | - | Label text |
-| helperText | string | - | Helper text below the select |
-| errorMessage | string | - | Error message for invalid state |
-| class | string | - | Additional CSS classes |
-| multiple | boolean | false | Whether multiple selection is allowed |
-| searchable | boolean | false | Whether to show search input |
-| clearable | boolean | true | Whether selection can be cleared |
-| maxHeight | string | - | Maximum height of dropdown |
-| onChange$ | QRL | - | Change event handler |
+| Prop         | Type                              | Default            | Description                                |
+| ------------ | --------------------------------- | ------------------ | ------------------------------------------ |
+| options      | SelectOption[]                    | required           | Array of options to display                |
+| id           | string                            | auto-generated     | ID for the select element                  |
+| name         | string                            | -                  | Name for form submission                   |
+| value        | string \| string[]                | ''                 | Selected value(s)                          |
+| placeholder  | string                            | 'Select an option' | Text to display when no option is selected |
+| disabled     | boolean                           | false              | Whether the select is disabled             |
+| required     | boolean                           | false              | Whether selection is required              |
+| size         | 'sm' \| 'md' \| 'lg'              | 'md'               | Size of the select element                 |
+| validation   | 'default' \| 'valid' \| 'invalid' | 'default'          | Validation state                           |
+| label        | string                            | -                  | Label text                                 |
+| helperText   | string                            | -                  | Helper text below the select               |
+| errorMessage | string                            | -                  | Error message for invalid state            |
+| class        | string                            | -                  | Additional CSS classes                     |
+| multiple     | boolean                           | false              | Whether multiple selection is allowed      |
+| searchable   | boolean                           | false              | Whether to show search input               |
+| clearable    | boolean                           | true               | Whether selection can be cleared           |
+| maxHeight    | string                            | -                  | Maximum height of dropdown                 |
+| onChange$    | QRL                               | -                  | Change event handler                       |
 
 ### SelectOption Interface
 

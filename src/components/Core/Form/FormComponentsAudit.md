@@ -20,24 +20,25 @@ The Form component family consists of the following main components:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| type | 'text' \| 'password' \| 'checkbox' \| 'radio' | 'text' | Input type |
-| label | string | - | Label text |
-| value | string \| boolean | - | Input value |
-| placeholder | string | - | Placeholder text |
-| required | boolean | false | Whether the field is required |
-| disabled | boolean | false | Whether the field is disabled |
-| id | string | auto-generated | HTML id attribute |
-| class | string | - | Additional CSS classes |
-| error | string | - | Error message |
-| helperText | string | - | Helper text |
-| onInput$ | QRL | - | Input event handler |
-| onChange$ | QRL | - | Change event handler |
+| Prop        | Type                                          | Default        | Description                   |
+| ----------- | --------------------------------------------- | -------------- | ----------------------------- |
+| type        | 'text' \| 'password' \| 'checkbox' \| 'radio' | 'text'         | Input type                    |
+| label       | string                                        | -              | Label text                    |
+| value       | string \| boolean                             | -              | Input value                   |
+| placeholder | string                                        | -              | Placeholder text              |
+| required    | boolean                                       | false          | Whether the field is required |
+| disabled    | boolean                                       | false          | Whether the field is disabled |
+| id          | string                                        | auto-generated | HTML id attribute             |
+| class       | string                                        | -              | Additional CSS classes        |
+| error       | string                                        | -              | Error message                 |
+| helperText  | string                                        | -              | Helper text                   |
+| onInput$    | QRL                                           | -              | Input event handler           |
+| onChange$   | QRL                                           | -              | Change event handler          |
 
 #### Variants
 
 The Field component supports different input types:
+
 - Text inputs
 - Password inputs
 - Checkbox inputs
@@ -46,6 +47,7 @@ The Field component supports different input types:
 #### Styling and Dark Mode Support
 
 The Field component has proper dark mode support with appropriate color adjustments:
+
 - Light mode: `border-border bg-white`
 - Dark mode: `dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default`
 
@@ -61,6 +63,7 @@ The Field component has proper dark mode support with appropriate color adjustme
 #### Slot Support
 
 The Field component supports slots for prefix and suffix content, allowing for:
+
 - Icon prefixes
 - Unit suffixes
 - Custom addon elements
@@ -69,12 +72,12 @@ The Field component supports slots for prefix and suffix content, allowing for:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| children | string | - | Label text |
-| for | string | - | HTML for attribute |
-| required | boolean | false | Whether the field is required |
-| class | string | - | Additional CSS classes |
+| Prop     | Type    | Default | Description                   |
+| -------- | ------- | ------- | ----------------------------- |
+| children | string  | -       | Label text                    |
+| for      | string  | -       | HTML for attribute            |
+| required | boolean | false   | Whether the field is required |
+| class    | string  | -       | Additional CSS classes        |
 
 #### Styling and Dark Mode Support
 
@@ -91,10 +94,10 @@ The Field component supports slots for prefix and suffix content, allowing for:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| children | string | - | Helper text content |
-| class | string | - | Additional CSS classes |
+| Prop     | Type   | Default | Description            |
+| -------- | ------ | ------- | ---------------------- |
+| children | string | -       | Helper text content    |
+| class    | string | -       | Additional CSS classes |
 
 #### Styling and Dark Mode Support
 
@@ -110,11 +113,11 @@ The Field component supports slots for prefix and suffix content, allowing for:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| children | string | - | Error message content |
-| message | string | - | Alternative way to provide error message |
-| class | string | - | Additional CSS classes |
+| Prop     | Type   | Default | Description                              |
+| -------- | ------ | ------- | ---------------------------------------- |
+| children | string | -       | Error message content                    |
+| message  | string | -       | Alternative way to provide error message |
+| class    | string | -       | Additional CSS classes                   |
 
 #### Styling and Dark Mode Support
 
@@ -131,12 +134,12 @@ The Field component supports slots for prefix and suffix content, allowing for:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| title | string | - | Container title |
-| description | string | - | Container description |
-| bordered | boolean | true | Whether to show a border around the container |
-| class | string | - | Additional CSS classes |
+| Prop        | Type    | Default | Description                                   |
+| ----------- | ------- | ------- | --------------------------------------------- |
+| title       | string  | -       | Container title                               |
+| description | string  | -       | Container description                         |
+| bordered    | boolean | true    | Whether to show a border around the container |
+| class       | string  | -       | Additional CSS classes                        |
 
 #### Styling and Dark Mode Support
 
@@ -155,18 +158,18 @@ The Field component supports slots for prefix and suffix content, allowing for:
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| options | RadioOption[] | required | Array of radio options |
-| value | string | required | Currently selected value |
-| name | string | required | HTML name attribute |
-| label | string | - | Group label |
-| required | boolean | false | Whether a selection is required |
-| disabled | boolean | false | Whether the group is disabled |
-| error | string | - | Error message |
-| class | string | - | Additional CSS classes |
-| direction | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction |
-| onChange$ | QRL | - | Change event handler |
+| Prop      | Type                       | Default      | Description                     |
+| --------- | -------------------------- | ------------ | ------------------------------- |
+| options   | RadioOption[]              | required     | Array of radio options          |
+| value     | string                     | required     | Currently selected value        |
+| name      | string                     | required     | HTML name attribute             |
+| label     | string                     | -            | Group label                     |
+| required  | boolean                    | false        | Whether a selection is required |
+| disabled  | boolean                    | false        | Whether the group is disabled   |
+| error     | string                     | -            | Error message                   |
+| class     | string                     | -            | Additional CSS classes          |
+| direction | 'horizontal' \| 'vertical' | 'horizontal' | Layout direction                |
+| onChange$ | QRL                        | -            | Change event handler            |
 
 #### Styling and Dark Mode Support
 
@@ -212,26 +215,26 @@ However, there's limited explicit responsive behavior based on screen size break
 
 All Form components have proper dark mode support:
 
-| Component | Dark Mode Implementation | Status |
-|-----------|--------------------------|--------|
-| Field | ✅ Comprehensive dark mode classes | Good |
-| FormLabel | ✅ Dark text color variant | Good |
-| FormHelperText | ✅ Dark text color variant | Good | 
-| FormErrorMessage | ✅ Adjusted error color for dark mode | Good |
-| Container | ✅ Dark border and text colors | Good |
-| RadioGroup | ✅ Dark text and border colors | Good |
+| Component        | Dark Mode Implementation              | Status |
+| ---------------- | ------------------------------------- | ------ |
+| Field            | ✅ Comprehensive dark mode classes    | Good   |
+| FormLabel        | ✅ Dark text color variant            | Good   |
+| FormHelperText   | ✅ Dark text color variant            | Good   |
+| FormErrorMessage | ✅ Adjusted error color for dark mode | Good   |
+| Container        | ✅ Dark border and text colors        | Good   |
+| RadioGroup       | ✅ Dark text and border colors        | Good   |
 
 ## Accessibility Audit
 
-| Feature | Implementation | Status |
-|---------|----------------|--------|
-| Keyboard Navigation | ✅ Native form controls are keyboard accessible | Good |
-| Focus States | ✅ Clear focus indicators | Good |
-| Error States | ✅ Visually distinct error states | Good |
-| Required Fields | ✅ Visual indicators for required fields | Good |
-| Label Association | ✅ Proper label association with form controls | Good |
-| Color Contrast | ⚠️ Needs verification with specific color values | Needs verification |
-| Screen Reader Support | ⚠️ Missing some aria attributes | Needs improvement |
+| Feature               | Implementation                                   | Status             |
+| --------------------- | ------------------------------------------------ | ------------------ |
+| Keyboard Navigation   | ✅ Native form controls are keyboard accessible  | Good               |
+| Focus States          | ✅ Clear focus indicators                        | Good               |
+| Error States          | ✅ Visually distinct error states                | Good               |
+| Required Fields       | ✅ Visual indicators for required fields         | Good               |
+| Label Association     | ✅ Proper label association with form controls   | Good               |
+| Color Contrast        | ⚠️ Needs verification with specific color values | Needs verification |
+| Screen Reader Support | ⚠️ Missing some aria attributes                  | Needs improvement  |
 
 ## Issues and Recommendations
 
@@ -273,23 +276,28 @@ All Form components have proper dark mode support:
 ## Action Items
 
 1. **Update Color Usage:**
+
    - Replace hardcoded color values with semantic design tokens
    - Example: Replace `bg-gray-50` with `bg-surface-secondary`
 
 2. **Improve Accessibility:**
+
    - Add missing ARIA attributes (aria-describedby, aria-errormessage)
    - Verify color contrast ratios
    - Add screen reader instructions where needed
 
 3. **Enhance Responsiveness:**
+
    - Add explicit responsive variants for different screen sizes
    - Ensure mobile-friendly touch targets
 
 4. **Consolidate Components:**
+
    - Review overlap between core Form components and ServerField components
    - Create migration path for any deprecated components
 
 5. **Improve Documentation:**
+
    - Add comprehensive usage examples
    - Document form validation approaches
    - Create visual component gallery

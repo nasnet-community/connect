@@ -6,25 +6,20 @@ export interface FieldMessageProps {
   id?: string;
 }
 
-export const FieldMessage = component$<FieldMessageProps>(({
-  text,
-  isError = false,
-  id
-}) => {
-  if (!text) return null;
-  
-  return (
-    <p 
-      id={id}
-      class={`
+export const FieldMessage = component$<FieldMessageProps>(
+  ({ text, isError = false, id }) => {
+    if (!text) return null;
+
+    return (
+      <p
+        id={id}
+        class={`
         mt-1 text-sm 
-        ${isError 
-          ? 'text-error' 
-          : 'text-text-muted dark:text-text-dark-muted'
-        }
+        ${isError ? "text-error" : "text-text-muted dark:text-text-dark-muted"}
       `}
-    >
-      {text}
-    </p>
-  );
-}); 
+      >
+        {text}
+      </p>
+    );
+  },
+);

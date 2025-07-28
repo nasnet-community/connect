@@ -1,72 +1,60 @@
-
 /**
  * API Utilities - Main Module
- * 
+ *
  * Re-exports all functionality from specialized modules for backward compatibility
  */
 
-
-
 // ===== EXTERNAL API SERVICES =====
-export { 
-  generatePasswordFromAPI, 
-  generateSSIDFromAPI 
-} from './apiServices';
+export { generatePasswordFromAPI, generateSSIDFromAPI } from "./apiServices";
 
 // ===== NEWSLETTER API =====
-export type { 
-  NewsletterSubscriptionRequest, 
-  NewsletterSubscriptionResponse 
-} from './newsletterAPI';
+export type {
+  NewsletterSubscriptionRequest,
+  NewsletterSubscriptionResponse,
+} from "./newsletterAPI";
 
-export { 
+export {
   subscribeToNewsletter,
-  validateEmail as validateEmailNewsletter
-} from './newsletterAPI';
+  validateEmail as validateEmailNewsletter,
+} from "./newsletterAPI";
 
 // ===== FINGERPRINTING & UUID GENERATION =====
-export { 
+export {
   generateUserUUID,
   clearStoredUUID,
   getStoredUUID,
   getSecurityInfo,
-  forceRegenerateUUID
-} from './fingerprinting';
+  forceRegenerateUUID,
+} from "./fingerprinting";
 
 // ===== SECURITY DETECTION =====
-export { 
+export {
   detectSuspiciousEnvironment,
-  verifyApplicationEnvironment
-} from './securityDetection';
+  verifyApplicationEnvironment,
+} from "./securityDetection";
 
 // ===== VALIDATION UTILITIES =====
-export { 
-  checkClientRateLimit,
-  validateEmail
-} from './validation';
+export { checkClientRateLimit, validateEmail } from "./validation";
 
 // ===== SUPABASE CLIENT UTILITIES =====
-export type { 
-  L2TPCredentials, 
-  L2TPCredentialsResponse 
-} from './supabaseClient';
+export type {
+  L2TPCredentials,
+  L2TPCredentialsResponse,
+} from "./supabaseClient";
 
-export { 
+export {
   getL2TPCredentials,
   getReferrerFromURL,
   getOrCreateSessionId,
-  formatExpiryDate
-} from './supabaseClient';
+  formatExpiryDate,
+} from "./supabaseClient";
 
 // ===== AUTHENTICATION UTILITIES =====
-export type { AuthState } from './auth';
+export type { AuthState } from "./auth";
 
-export { 
+export {
   getSupabaseClient,
   getSupabaseServiceClient,
   checkAuth,
-  requireAuth
-} from './auth';
-
-
-
+  requireAuth,
+} from "./auth";

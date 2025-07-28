@@ -1,10 +1,10 @@
-import { $, useSignal } from '@builder.io/qwik';
-import type { QRL } from '@builder.io/qwik';
-import type { 
+import { $, useSignal } from "@builder.io/qwik";
+import type { QRL } from "@builder.io/qwik";
+import type {
   DatePickerProps,
   MonthNavigationDirection,
-  DatePickerView
-} from '../DatePicker.types';
+  DatePickerView,
+} from "../DatePicker.types";
 
 export interface UseCalendarStateResult {
   currentView: { value: DatePickerView };
@@ -14,41 +14,43 @@ export interface UseCalendarStateResult {
   handleToday$: QRL<() => void>;
 }
 
-export function useCalendarState(props: DatePickerProps): UseCalendarStateResult {
-  const { initialView = 'days' } = props;
-  
+export function useCalendarState(
+  props: DatePickerProps,
+): UseCalendarStateResult {
+  const { initialView = "days" } = props;
+
   // Calendar state signals
   const currentView = useSignal<DatePickerView>(initialView);
   const viewDate = useSignal(new Date());
-  
+
   // Handle month navigation
   const handleNavigate$ = $((direction: MonthNavigationDirection) => {
     const current = new Date(viewDate.value);
-    
-    if (direction === 'prev') {
+
+    if (direction === "prev") {
       current.setMonth(current.getMonth() - 1);
     } else {
       current.setMonth(current.getMonth() + 1);
     }
-    
+
     viewDate.value = current;
   });
-  
+
   // Handle view change (days/months/years)
   const handleViewChange$ = $((view: DatePickerView) => {
     currentView.value = view;
   });
-  
+
   // Set today as the current view date
   const handleToday$ = $(() => {
     viewDate.value = new Date();
   });
-  
+
   return {
     currentView,
     viewDate,
     handleNavigate$,
     handleViewChange$,
-    handleToday$
+    handleToday$,
   };
-} 
+}

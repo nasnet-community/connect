@@ -1,10 +1,10 @@
-import { component$ } from '@builder.io/qwik';
-import type { CalendarViewProps } from './DatePicker.types';
-import { CalendarHeader } from './CalendarHeader';
-import { DaysView } from './DaysView';
-import { MonthsView } from './MonthsView';
-import { YearsView } from './YearsView';
-import { useCalendarView } from './hooks/useCalendarView';
+import { component$ } from "@builder.io/qwik";
+import type { CalendarViewProps } from "./DatePicker.types";
+import { CalendarHeader } from "./CalendarHeader";
+import { DaysView } from "./DaysView";
+import { MonthsView } from "./MonthsView";
+import { YearsView } from "./YearsView";
+import { useCalendarView } from "./hooks/useCalendarView";
 
 /**
  * Calendar view component used by DatePicker for date selection.
@@ -16,8 +16,8 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
     maxDate,
     disabledDates,
     weekStart = 0,
-    locale = 'en',
-    currentView
+    locale = "en",
+    currentView,
   } = props;
 
   // Use the hook to get all functionality and state with serializable functions
@@ -29,16 +29,16 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
     handleMonthSelect$,
     handleYearSelect$,
     getDayNames,
-    getMonthNames
+    getMonthNames,
   } = useCalendarView(props);
-  
+
   // Render the current view
   const renderCurrentView = () => {
     const dayNames = getDayNames();
     const monthNames = getMonthNames();
-    
+
     switch (currentView) {
-      case 'days':
+      case "days":
         return (
           <DaysView
             viewDate={internalViewDate.value}
@@ -54,7 +54,7 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
             onViewChange$={handleViewChange$}
           />
         );
-      case 'months':
+      case "months":
         return (
           <MonthsView
             viewDate={internalViewDate.value}
@@ -65,7 +65,7 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
             onMonthSelect$={handleMonthSelect$}
           />
         );
-      case 'years':
+      case "years":
         return (
           <YearsView
             viewDate={internalViewDate.value}
@@ -92,7 +92,7 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
         );
     }
   };
-  
+
   return (
     <div class="calendar px-1 py-2">
       <CalendarHeader
@@ -102,10 +102,8 @@ export const CalendarView = component$<CalendarViewProps>((props) => {
         onNavigate$={handleNavigate$}
         onViewChange$={handleViewChange$}
       />
-      
-      <div class="calendar-body p-2">
-        {renderCurrentView()}
-      </div>
+
+      <div class="calendar-body p-2">{renderCurrentView()}</div>
     </div>
   );
 });

@@ -1,0 +1,119 @@
+import { Meta, Controls, Canvas } from "@storybook/blocks";
+import * as PaginationStories from "./Pagination.stories";
+
+<Meta of={PaginationStories} />
+
+# Pagination
+
+The Pagination component provides a navigational interface that allows users to browse through pages of content. It supports various styles, sizes, and customization options to fit different UI needs.
+
+## Features
+
+- Multiple size variants: small, medium, and large
+- Different style options: default, outlined, and minimal
+- Customizable page range and visibility
+- Optional page input for direct page navigation
+- Responsive design with item range display
+- Accessible navigation controls
+- Support for RTL languages
+- Controlled and uncontrolled usage
+
+## Usage
+
+### Basic Usage
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { Pagination } from "@/components/Core/Navigation/Pagination";
+
+export default component$(() => {
+  const currentPage = useSignal(1);
+
+  return (
+    <Pagination currentPage={currentPage} totalItems={100} itemsPerPage={10} />
+  );
+});
+```
+
+### Controlled Pagination
+
+For more control over the pagination behavior, you can use the `onPageChange` prop:
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { Pagination } from "@/components/Core/Navigation/Pagination";
+
+export default component$(() => {
+  const currentPage = useSignal(1);
+
+  return (
+    <Pagination
+      currentPage={currentPage}
+      totalItems={100}
+      itemsPerPage={10}
+      onPageChange$={(page) => {
+        currentPage.value = page;
+        // Additional logic like fetching data for the new page
+      }}
+    />
+  );
+});
+```
+
+## Examples
+
+### Default Pagination
+
+<Canvas of={PaginationStories.Basic} />
+
+### Size Variants
+
+<Canvas of={PaginationStories.SizeVariants} />
+
+### Style Variants
+
+<Canvas of={PaginationStories.StyleVariants} />
+
+### With Page Input
+
+<Canvas of={PaginationStories.WithPageInput} />
+
+### Different Page Counts
+
+<Canvas of={PaginationStories.PageCounts} />
+
+### Customized Visible Pages
+
+<Canvas of={PaginationStories.MaxVisiblePages} />
+
+### Custom Labels
+
+<Canvas of={PaginationStories.CustomLabels} />
+
+### RTL Support (for Arabic, Hebrew, etc.)
+
+<Canvas of={PaginationStories.RTLSupport} />
+
+## Component API
+
+<Controls />
+
+## Accessibility
+
+The Pagination component is built with accessibility in mind:
+
+- Proper ARIA labels for navigation controls
+- Keyboard navigation support
+- Screen reader friendly text and announcements
+- Visible focus indicators
+- Semantic HTML structure
+
+## Best Practices
+
+- Use pagination when you have a large collection of items that would benefit from being divided into pages
+- Keep the number of items per page reasonable (10-20 items is common)
+- Use the `showItemRange` prop to provide context about the current position in the dataset
+- For very large datasets, consider using the `showPageInput` prop to allow users to jump directly to specific pages
+- Adapt the size and style to match your UI's density and visual design

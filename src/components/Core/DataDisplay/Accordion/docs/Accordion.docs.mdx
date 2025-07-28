@@ -1,0 +1,147 @@
+import { Meta, Title, Controls, Canvas, Story } from "@storybook/blocks";
+import * as AccordionStories from "./Accordion.stories";
+
+<Meta of={AccordionStories} />
+
+# Accordion
+
+An accordion is a vertically stacked set of interactive headings that each reveal a section of content. Accordions are commonly used to reduce the need to scroll when presenting multiple sections of content on a single page.
+
+## Overview
+
+The Accordion component provides an interactive way to expand and collapse content sections. It supports both single and multiple expanded sections, various visual styles, and animation options, all while maintaining proper accessibility standards.
+
+## Features
+
+- Single or multiple expandable sections
+- Three visual variants: default, bordered, and separated
+- Three size options: small, medium, and large
+- Customizable icon placement and appearance
+- Multiple animation types for expanding/collapsing
+- Controllable via state
+- Full keyboard navigation and screen reader support
+- Support for rich content in both triggers and panels
+
+## Basic Usage
+
+<Canvas of={AccordionStories.Default} />
+
+## Variants
+
+The Accordion component comes in three visual variants.
+
+<Canvas of={AccordionStories.Variants} />
+
+## Sizes
+
+Choose from small, medium, or large sizes to match your design needs.
+
+<Canvas of={AccordionStories.Sizes} />
+
+## Single vs Multiple Expansion
+
+Control whether users can expand multiple items at once or just one item at a time.
+
+<Canvas of={AccordionStories.Types} />
+
+## Icon Positioning
+
+Customize the position and appearance of the expand/collapse icons.
+
+<Canvas of={AccordionStories.IconPositions} />
+
+## Disabled States
+
+Disable the entire accordion or individual items.
+
+<Canvas of={AccordionStories.DisabledStates} />
+
+## Animation Options
+
+Choose from different animation types for expanding and collapsing content.
+
+<Canvas of={AccordionStories.Animations} />
+
+## Controlled Accordion
+
+Control the accordion's state programmatically for more advanced use cases.
+
+<Canvas of={AccordionStories.Controlled} />
+
+## Rich Content
+
+Include complex content in both the trigger and content sections.
+
+<Canvas of={AccordionStories.RichContent} />
+
+## Nested Accordions
+
+Create hierarchical navigation with nested accordions.
+
+<Canvas of={AccordionStories.NestedAccordions} />
+
+## Accordion Props
+
+<Controls />
+
+## Accessibility
+
+The Accordion component follows the [WAI-ARIA Accordion Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) to ensure proper accessibility:
+
+- Each accordion item uses the proper `role` attributes
+- Accordion panels are associated with their headers using `aria-controls` and `aria-labelledby`
+- The expanded/collapsed state is indicated with `aria-expanded`
+- Disabled items use `aria-disabled` and the disabled attribute
+- Focus management follows accessibility best practices
+- Keyboard navigation supports Space and Enter keys to toggle items
+
+### Keyboard Navigation
+
+- <kbd>Tab</kbd>: Move focus between accordion triggers
+- <kbd>Space</kbd> / <kbd>Enter</kbd>: Toggle the currently focused accordion
+  item
+- <kbd>Home</kbd>: Move focus to the first accordion item (when implemented with
+  keyboard handling)
+- <kbd>End</kbd>: Move focus to the last accordion item (when implemented with
+  keyboard handling)
+
+## Component Structure
+
+The Accordion component is composed of four parts:
+
+1. `Accordion`: The main container component
+2. `AccordionItem`: Individual expandable sections
+3. `AccordionTrigger`: The clickable header that toggles the content
+4. `AccordionContent`: The content that is shown/hidden
+
+This composition pattern provides flexibility while maintaining a consistent API.
+
+## Best Practices
+
+1. **Use Clear Labels**: Make sure accordion triggers clearly describe the content they control.
+
+2. **Consider Performance**: When using multiple or nested accordions, be mindful of performance implications, especially with complex content.
+
+3. **Consistent Behavior**: Maintain consistent behavior across your application. If you use single-expansion in one place, consider using it throughout.
+
+4. **Proper Content Hierarchy**: Use accordions for content that users don't need to see all at once, but avoid hiding critical information.
+
+5. **Default States**: Consider which panels should be expanded by default. For important information, it might be better to start with a panel expanded.
+
+6. **Responsive Considerations**: On mobile devices, accordions can be particularly useful to save space, but ensure trigger areas are large enough to be tappable.
+
+7. **Animation Performance**: Be careful with animation duration and complexity, especially on mobile devices.
+
+## Implementation Notes
+
+- The Accordion component uses context providers internally to share state between parent and child components.
+- Both controlled and uncontrolled usage patterns are supported.
+- The component is designed to be flexible while maintaining a consistent API.
+- All animation is handled with CSS transitions for optimal performance.
+
+## Related Components
+
+- Disclosure: A simpler version of an accordion with just a single section.
+- Tabs: Similar to accordions but with horizontal organization and navigation.
+- Menu: For dropdown navigation patterns.
+- Tree: For hierarchical navigation structures.

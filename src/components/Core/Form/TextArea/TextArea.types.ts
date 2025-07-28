@@ -1,11 +1,17 @@
-import type { QRL, QwikIntrinsicElements } from '@builder.io/qwik';
-import { FormValidationRule } from '../Form/Form.types';
+import type { QRL, QwikIntrinsicElements } from "@builder.io/qwik";
+import type { FormValidationRule } from "../Form/Form.types";
 
-export type TextAreaSize = 'sm' | 'md' | 'lg';
-export type TextAreaResize = 'none' | 'vertical' | 'horizontal' | 'both' | 'auto';
-export type TextAreaState = 'default' | 'success' | 'error' | 'warning';
+export type TextAreaSize = "sm" | "md" | "lg";
+export type TextAreaResize =
+  | "none"
+  | "vertical"
+  | "horizontal"
+  | "both"
+  | "auto";
+export type TextAreaState = "default" | "success" | "error" | "warning";
 
-export interface TextAreaProps extends Omit<QwikIntrinsicElements['textarea'], 'size'> {
+export interface TextAreaProps
+  extends Omit<QwikIntrinsicElements["textarea"], "size"> {
   size?: TextAreaSize;
   label?: string;
   disabled?: boolean;
@@ -33,7 +39,7 @@ export interface TextAreaProps extends Omit<QwikIntrinsicElements['textarea'], '
   onInput$?: QRL<(event: InputEvent, element: HTMLTextAreaElement) => any>;
   onChange$?: QRL<(event: Event, element: HTMLTextAreaElement) => any>;
   onBlur$?: QRL<(event: FocusEvent) => any>;
-  
+
   // Form integration properties
   name?: string;
   validate?: FormValidationRule[];

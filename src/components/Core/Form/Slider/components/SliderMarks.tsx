@@ -1,6 +1,6 @@
-import { component$ } from '@builder.io/qwik';
-import type { QRL } from '@builder.io/qwik';
-import type { SliderMark } from '../Slider.types';
+import { component$ } from "@builder.io/qwik";
+import type { QRL } from "@builder.io/qwik";
+import type { SliderMark } from "../Slider.types";
 
 export interface SliderMarksProps {
   marks: SliderMark[];
@@ -11,12 +11,7 @@ export interface SliderMarksProps {
 }
 
 export const SliderMarks = component$((props: SliderMarksProps) => {
-  const {
-    marks,
-    markClasses,
-    getPositionStyle,
-    percentValues
-  } = props;
+  const { marks, markClasses, getPositionStyle, percentValues } = props;
 
   return (
     <div class="slider-marks">
@@ -24,18 +19,16 @@ export const SliderMarks = component$((props: SliderMarksProps) => {
         // Use pre-calculated percent values to avoid async issues
         const percent = percentValues[mark.value] || 0;
         return (
-          <div 
+          <div
             key={mark.value}
             class={markClasses}
             style={getPositionStyle(percent)}
             aria-hidden="true"
           >
-            {mark.label && (
-              <span class="slider-mark-label">{mark.label}</span>
-            )}
+            {mark.label && <span class="slider-mark-label">{mark.label}</span>}
           </div>
         );
       })}
     </div>
   );
-}); 
+});

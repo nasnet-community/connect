@@ -17,7 +17,7 @@ export const FooterBrand = component$(() => (
         {$localize`NASNET Connect`}
       </span>
     </div>
-    <p class="mx-auto max-w-md text-sm text-text-secondary dark:text-text-dark-secondary">
+    <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-md text-sm">
       {$localize`Empowering the future through innovative solutions and cutting-edge technology.`}
     </p>
   </div>

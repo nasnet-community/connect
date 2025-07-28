@@ -1,0 +1,210 @@
+import { Meta, Controls, Canvas } from "@storybook/blocks";
+import * as TopNavigationStories from "./TopNavigation.stories";
+
+<Meta of={TopNavigationStories} />
+
+# TopNavigation
+
+The TopNavigation component provides a header navigation bar that can contain a logo, navigation links, dropdowns, and custom content. It's fully responsive with a mobile menu for small screens and supports various visual styles and positioning options.
+
+## Features
+
+- Multiple size variants: small, medium, and large
+- Different style options: default, minimal, and filled
+- Positioning options: static, sticky, or fixed
+- Support for dropdown menus
+- Mobile-friendly with responsive menu
+- Custom right-side content
+- RTL language support
+- Accessibility features
+
+## Usage
+
+### Basic Usage
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { TopNavigation } from "@/components/Core/Navigation/TopNavigation";
+
+export default component$(() => {
+  const items = [
+    {
+      label: "Home",
+      href: "/",
+      isActive: true,
+    },
+    {
+      label: "About",
+      href: "/about",
+    },
+    {
+      label: "Services",
+      items: [
+        {
+          label: "Consulting",
+          href: "/services/consulting",
+        },
+        {
+          label: "Development",
+          href: "/services/development",
+        },
+      ],
+    },
+    {
+      label: "Contact",
+      href: "/contact",
+    },
+  ];
+
+  return <TopNavigation items={items} logo={<MyLogo />} logoHref="/" />;
+});
+```
+
+### With Custom Right Content
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { TopNavigation } from "@/components/Core/Navigation/TopNavigation";
+
+export default component$(() => {
+  const isDarkMode = useSignal(false);
+
+  return (
+    <TopNavigation
+      items={navigationItems}
+      logo={<MyLogo />}
+      rightContent={
+        <div class="flex items-center space-x-4">
+          <button
+            onClick$={() => {
+              isDarkMode.value = !isDarkMode.value;
+            }}
+            class="rounded-full p-2"
+          >
+            {isDarkMode.value ? "Light" : "Dark"} Mode
+          </button>
+          <div class="avatar">JD</div>
+        </div>
+      }
+    />
+  );
+});
+```
+
+### Mobile Menu Toggle
+
+```tsx
+import { component$ } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+import { TopNavigation } from "@/components/Core/Navigation/TopNavigation";
+
+export default component$(() => {
+  const isMobileMenuOpen = useSignal(false);
+
+  return (
+    <TopNavigation
+      items={navigationItems}
+      logo={<MyLogo />}
+      mobileMenuEnabled={true}
+      isMobileMenuOpen={isMobileMenuOpen.value}
+      onMobileMenuToggle$={(isOpen) => {
+        isMobileMenuOpen.value = isOpen;
+      }}
+    />
+  );
+});
+```
+
+## Examples
+
+### Default TopNavigation
+
+<Canvas of={TopNavigationStories.Basic} />
+
+### Size Variants
+
+<Canvas of={TopNavigationStories.SizeVariants} />
+
+### Style Variants
+
+<Canvas of={TopNavigationStories.StyleVariants} />
+
+### Position Variants
+
+<Canvas of={TopNavigationStories.PositionVariants} />
+
+### With Right Content
+
+<Canvas of={TopNavigationStories.WithRightContent} />
+
+### Mobile Menu
+
+<Canvas of={TopNavigationStories.MobileMenu} />
+
+### In a Real Application Context
+
+<Canvas of={TopNavigationStories.InContext} />
+
+### RTL Support
+
+<Canvas of={TopNavigationStories.RTLSupport} />
+
+## Component API
+
+<Controls />
+
+## Navigation Item Structure
+
+The TopNavigation component uses a flexible structure for the `items` prop, allowing for both simple links and dropdown menus. Each navigation item can have the following properties:
+
+```tsx
+interface TopNavigationItem {
+  // Required text label for the item
+  label: string;
+
+  // Optional URL (make it a link)
+  href?: string;
+
+  // Optional icon element
+  icon?: JSXChildren;
+
+  // Whether this item is currently active
+  isActive?: boolean;
+
+  // Whether this item is disabled
+  isDisabled?: boolean;
+
+  // Optional subitems for dropdown menus
+  items?: TopNavigationItem[];
+
+  // Optional click handler
+  onClick$?: () => void;
+
+  // Custom CSS class
+  class?: string;
+
+  // Optional ID
+  id?: string;
+}
+```
+
+## Accessibility
+
+The TopNavigation component is built with accessibility in mind:
+
+- Proper ARIA attributes for menus and dropdown toggles
+- Keyboard navigation support
+- Screen reader announcements for mobile menu states
+- Semantic HTML structure
+- Focus management
+
+## Best Practices
+
+- Keep navigation labels clear and concise
+- Use consistent icons that clearly communicate purpose
+- Highlight the currently active section
+- Limit dropdown menu depth to one level for better usability
+- Use the fixed or sticky position for persistent navigation in long pages
+- Consider adding a skip-to-content link for accessibility
+- For dense navigation structures, consider using the SideNavigation component instead

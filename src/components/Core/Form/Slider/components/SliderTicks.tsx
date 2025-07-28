@@ -1,5 +1,5 @@
-import { component$ } from '@builder.io/qwik';
-import type { QRL } from '@builder.io/qwik';
+import { component$ } from "@builder.io/qwik";
+import type { QRL } from "@builder.io/qwik";
 
 export interface SliderTicksProps {
   count: number;
@@ -12,20 +12,14 @@ export interface SliderTicksProps {
 }
 
 export const SliderTicks = component$((props: SliderTicksProps) => {
-  const {
-    count,
-    min,
-    max,
-    getPositionStyle,
-    tickPercentages
-  } = props;
+  const { count, min, max, getPositionStyle, tickPercentages } = props;
 
   // If we have pre-calculated percentages, use those
   if (tickPercentages && tickPercentages.length > 0) {
     return (
       <div class="slider-ticks">
         {tickPercentages.map((percent, index) => (
-          <div 
+          <div
             key={index}
             class="slider-tick"
             style={getPositionStyle(percent)}
@@ -47,9 +41,9 @@ export const SliderTicks = component$((props: SliderTicksProps) => {
       {tickValues.map((tickValue, index) => {
         // Use a default percentage calculation since we can't use the async function directly
         const percent = ((tickValue - min) / (max - min)) * 100;
-        
+
         return (
-          <div 
+          <div
             key={index}
             class="slider-tick"
             style={getPositionStyle(percent)}
@@ -59,4 +53,4 @@ export const SliderTicks = component$((props: SliderTicksProps) => {
       })}
     </div>
   );
-}); 
+});
