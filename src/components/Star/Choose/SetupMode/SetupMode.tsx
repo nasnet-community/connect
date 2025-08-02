@@ -21,7 +21,7 @@ export const SetupMode = component$((props: StepProps) => {
   const handleSelectMode = $((mode: Mode, disabled?: boolean) => {
     if (disabled) return;
     starContext.updateChoose$({ Mode: mode });
-    props.onComplete$?.();
+    props.onComplete$();
   });
 
   const modeOptions: ModeOption[] = [
@@ -30,16 +30,16 @@ export const SetupMode = component$((props: StepProps) => {
       title: $localize`Easy Mode`,
       mode: "easy",
       icon: (
-        <svg 
-          class="h-8 w-8" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          class="h-8 w-8"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width={1.5} 
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={1.5}
             d="M13 10V3L4 14h7v7l9-11h-7z"
           />
         </svg>
@@ -50,7 +50,7 @@ export const SetupMode = component$((props: StepProps) => {
         $localize`Basic network configuration`,
         $localize`Automated security settings`,
         $localize`Simple interface management`,
-        $localize`Guided step-by-step setup`
+        $localize`Guided step-by-step setup`,
       ],
       disabled: false,
     },
@@ -59,46 +59,48 @@ export const SetupMode = component$((props: StepProps) => {
       title: $localize`Advanced Mode`,
       mode: "advance",
       icon: (
-        <svg 
-          class="h-8 w-8" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          class="h-8 w-8"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width={1.5} 
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={1.5}
             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
           />
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width={1.5} 
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={1.5}
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
       ),
-      description: $localize`Full access to all router features and configurations. Ideal for network professionals and complex setups.`,
+      description: $localize`Full-featured multi-WAN configuration wizard. Perfect for complex network setups with multiple internet connections.`,
       features: [
-        $localize`Complete control over all settings`,
-        $localize`Advanced networking options`,
-        $localize`Custom firewall configurations`,
-        $localize`Detailed interface management`,
-        $localize`Advanced QoS and routing options`
+        $localize`Multi-WAN link configuration`,
+        $localize`Load balancing & failover`,
+        $localize`VLAN and MAC address control`,
+        $localize`PPPoE, Static IP, DHCP support`,
+        $localize`Advanced routing strategies`,
       ],
       disabled: false,
-    }
+    },
   ];
 
   return (
     <div class="space-y-8 px-4">
       <div class="text-center">
-        <h2 class="mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text 
-                   text-2xl font-bold text-transparent md:text-3xl">
+        <h2
+          class="mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text 
+                   text-2xl font-bold text-transparent md:text-3xl"
+        >
           {$localize`Choose Your Setup Mode`}
         </h2>
-        <p class="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary">
+        <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-2xl">
           {$localize`Select the setup mode that best fits your needs and experience level`}
         </p>
       </div>
@@ -154,7 +156,7 @@ export const SetupMode = component$((props: StepProps) => {
               >
                 {option.title}
               </h3>
-              <p class="mb-6 text-text-secondary dark:text-text-dark-secondary">
+              <p class="text-text-secondary dark:text-text-dark-secondary mb-6">
                 {option.description}
               </p>
 
@@ -162,7 +164,7 @@ export const SetupMode = component$((props: StepProps) => {
                 {option.features.map((feature) => (
                   <div
                     key={feature}
-                    class="flex items-center text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary flex items-center"
                   >
                     <svg
                       class="mr-3 h-5 w-5 text-primary-500"

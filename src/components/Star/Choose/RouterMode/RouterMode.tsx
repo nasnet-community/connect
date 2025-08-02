@@ -25,10 +25,14 @@ export const RouterMode = component$((props: RouterModeProps) => {
 
   const handleModeSelect = $((mode: RouterModeType, disabled?: boolean) => {
     if (disabled) return;
+
+    // Trigger completion BEFORE updating state to avoid double-click issue
+    props.onComplete$?.();
+
+    // Update the selection
     starContext.updateChoose$({
       RouterMode: mode,
     });
-    props.onComplete$?.();
   });
 
   const modeOptions: ModeOption[] = [
@@ -56,7 +60,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
         $localize`Advanced QoS`,
         $localize`Enterprise-grade features`,
       ],
-      disabled: true,
+      disabled: false,
     },
   ];
 
@@ -66,7 +70,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
           {$localize`Select Router Mode`}
         </h2>
-        <p class="mx-auto mt-3 max-w-2xl text-text-secondary/90 dark:text-text-dark-secondary/95">
+        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
           {$localize`Choose how you want your router to operate in your network`}
         </p>
       </div>
@@ -80,8 +84,8 @@ export const RouterMode = component$((props: RouterModeProps) => {
               ${option.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
               ${
                 selectedMode === option.mode && !option.disabled
-                  ? "ring-primary-500 bg-primary-500/10 ring-2 dark:bg-primary-500/15"
-                  : "bg-surface/50 hover:bg-surface-secondary/50 dark:bg-surface-dark/50 dark:hover:bg-surface-dark-secondary/60"
+                  ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
+                  : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
               }
             `}
           >
@@ -126,7 +130,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
                   {option.features.map((feature) => (
                     <div
                       key={feature}
-                      class="flex items-center text-text-secondary/90 dark:text-text-dark-secondary/95"
+                      class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
                     >
                       <svg
                         class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"

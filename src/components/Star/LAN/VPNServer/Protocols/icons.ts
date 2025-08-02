@@ -3,9 +3,9 @@
  * We're exporting the icon components directly instead of serialized QRLs
  * to avoid issues with JSX rendering
  */
-import { 
-  HiServerOutline, 
-  HiLockClosedOutline, 
+import {
+  HiServerOutline,
+  HiLockClosedOutline,
   HiDocumentOutline,
   HiPlusCircleOutline,
   HiUserGroupOutline,
@@ -19,7 +19,7 @@ import {
   HiLockOpenOutline,
   HiKeyOutline,
   HiCubeOutline,
-  HiWifiOutline
+  HiWifiOutline,
 } from "@qwikest/icons/heroicons";
 
 // Export icons directly - use with <ServerIcon class="h-5 w-5" /> pattern
@@ -34,12 +34,12 @@ export {
   HiCheckCircleOutline as CheckCircleIcon,
   HiXCircleOutline as XCircleIcon,
   HiInformationCircleOutline as InfoIcon,
-  
+
   // VPN Protocol specific icons
   HiShieldCheckOutline as WireguardIcon,
   HiGlobeAltOutline as OpenVPNIcon,
   HiLockOpenOutline as PPTPIcon,
   HiKeyOutline as L2TPIcon,
   HiCubeOutline as SSTPIcon,
-  HiWifiOutline as IKEv2Icon
+  HiWifiOutline as IKEv2Icon,
 };

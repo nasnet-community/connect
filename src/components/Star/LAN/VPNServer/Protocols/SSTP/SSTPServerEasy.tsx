@@ -13,4 +13,4 @@ export const SSTPServerEasy = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

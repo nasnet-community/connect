@@ -1,10 +1,16 @@
-import { useContext, $, useSignal, useStore, useComputed$ } from "@builder.io/qwik";
+import {
+  useContext,
+  $,
+  useSignal,
+  useStore,
+  useComputed$,
+} from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-import type { 
-  EoipTunnelConfig, 
-  GreTunnelConfig, 
-  IpipTunnelConfig, 
-  VxlanInterfaceConfig 
+import type {
+  EoipTunnelConfig,
+  GreTunnelConfig,
+  IpipTunnelConfig,
+  VxlanInterfaceConfig,
 } from "../../StarContext/Utils/TunnelType";
 import type { PropFunction } from "@builder.io/qwik";
 import type { TunnelStepperData } from "./types";
@@ -15,32 +21,34 @@ export const useTunnel = () => {
   const tunnelState = starContext.state.LAN.Tunnel || {};
 
   // Check if tunnels are already configured and set default enabled state accordingly
-  const hasTunnelsConfigured = !!(tunnelState.IPIP?.length || 
-                                tunnelState.Eoip?.length || 
-                                tunnelState.Gre?.length || 
-                                tunnelState.Vxlan?.length);
+  const hasTunnelsConfigured = !!(
+    tunnelState.IPIP?.length ||
+    tunnelState.Eoip?.length ||
+    tunnelState.Gre?.length ||
+    tunnelState.Vxlan?.length
+  );
 
   // Tunnel enabled state - default false unless tunnels are already configured
   const tunnelsEnabled = useSignal(hasTunnelsConfigured);
 
   // IPIP tunnels
   const ipipTunnels = useStore<IpipTunnelConfig[]>(
-    tunnelState.IPIP?.length ? [...tunnelState.IPIP] : []
+    tunnelState.IPIP?.length ? [...tunnelState.IPIP] : [],
   );
 
   // EOIP tunnels
   const eoipTunnels = useStore<EoipTunnelConfig[]>(
-    tunnelState.Eoip?.length ? [...tunnelState.Eoip] : []
+    tunnelState.Eoip?.length ? [...tunnelState.Eoip] : [],
   );
 
   // GRE tunnels
   const greTunnels = useStore<GreTunnelConfig[]>(
-    tunnelState.Gre?.length ? [...tunnelState.Gre] : []
+    tunnelState.Gre?.length ? [...tunnelState.Gre] : [],
   );
 
   // VXLAN tunnels
   const vxlanTunnels = useStore<VxlanInterfaceConfig[]>(
-    tunnelState.Vxlan?.length ? [...tunnelState.Vxlan] : []
+    tunnelState.Vxlan?.length ? [...tunnelState.Vxlan] : [],
   );
 
   // Save tunnel settings
@@ -51,8 +59,8 @@ export const useTunnel = () => {
           IPIP: ipipTunnels.length > 0 ? [...ipipTunnels] : undefined,
           Eoip: eoipTunnels.length > 0 ? [...eoipTunnels] : undefined,
           Gre: greTunnels.length > 0 ? [...greTunnels] : undefined,
-          Vxlan: vxlanTunnels.length > 0 ? [...vxlanTunnels] : undefined
-        }
+          Vxlan: vxlanTunnels.length > 0 ? [...vxlanTunnels] : undefined,
+        },
       });
     } else {
       starContext.updateLAN$({
@@ -60,11 +68,11 @@ export const useTunnel = () => {
           IPIP: undefined,
           Eoip: undefined,
           Gre: undefined,
-          Vxlan: undefined
-        }
+          Vxlan: undefined,
+        },
       });
     }
-    
+
     if (onComplete$) {
       onComplete$();
     }
@@ -74,12 +82,12 @@ export const useTunnel = () => {
   const addIpipTunnel = $(() => {
     ipipTunnels.push({
       name: `ipip-tunnel-${ipipTunnels.length + 1}`,
-      type: 'ipip',
+      type: "ipip",
       localAddress: "",
       remoteAddress: "",
       mtu: 1500,
       dscp: 0,
-      keepalive: ""
+      keepalive: "",
     });
   });
 
@@ -89,27 +97,29 @@ export const useTunnel = () => {
     }
   });
 
-  const updateIpipTunnel = $(<K extends keyof IpipTunnelConfig>(
-    index: number, 
-    property: K, 
-    value: IpipTunnelConfig[K]
-  ) => {
-    if (index >= 0 && index < ipipTunnels.length) {
-      ipipTunnels[index][property] = value;
-    }
-  });
+  const updateIpipTunnel = $(
+    <K extends keyof IpipTunnelConfig>(
+      index: number,
+      property: K,
+      value: IpipTunnelConfig[K],
+    ) => {
+      if (index >= 0 && index < ipipTunnels.length) {
+        ipipTunnels[index][property] = value;
+      }
+    },
+  );
 
   // EOIP tunnel functions
   const addEoipTunnel = $(() => {
     eoipTunnels.push({
       name: `eoip-tunnel-${eoipTunnels.length + 1}`,
-      type: 'eoip',
+      type: "eoip",
       localAddress: "",
       remoteAddress: "",
       tunnelId: Math.floor(Math.random() * 1000),
       mtu: 1500,
       arp: "enabled",
-      clampTcpMss: false
+      clampTcpMss: false,
     });
   });
 
@@ -119,26 +129,28 @@ export const useTunnel = () => {
     }
   });
 
-  const updateEoipTunnel = $(<K extends keyof EoipTunnelConfig>(
-    index: number, 
-    property: K, 
-    value: EoipTunnelConfig[K]
-  ) => {
-    if (index >= 0 && index < eoipTunnels.length) {
-      eoipTunnels[index][property] = value;
-    }
-  });
+  const updateEoipTunnel = $(
+    <K extends keyof EoipTunnelConfig>(
+      index: number,
+      property: K,
+      value: EoipTunnelConfig[K],
+    ) => {
+      if (index >= 0 && index < eoipTunnels.length) {
+        eoipTunnels[index][property] = value;
+      }
+    },
+  );
 
   // GRE tunnel functions
   const addGreTunnel = $(() => {
     greTunnels.push({
       name: `gre-tunnel-${greTunnels.length + 1}`,
-      type: 'gre',
+      type: "gre",
       localAddress: "",
       remoteAddress: "",
       mtu: 1476,
       dscp: 0,
-      keepalive: ""
+      keepalive: "",
     });
   });
 
@@ -148,27 +160,29 @@ export const useTunnel = () => {
     }
   });
 
-  const updateGreTunnel = $(<K extends keyof GreTunnelConfig>(
-    index: number, 
-    property: K, 
-    value: GreTunnelConfig[K]
-  ) => {
-    if (index >= 0 && index < greTunnels.length) {
-      greTunnels[index][property] = value;
-    }
-  });
+  const updateGreTunnel = $(
+    <K extends keyof GreTunnelConfig>(
+      index: number,
+      property: K,
+      value: GreTunnelConfig[K],
+    ) => {
+      if (index >= 0 && index < greTunnels.length) {
+        greTunnels[index][property] = value;
+      }
+    },
+  );
 
   // VXLAN tunnel functions
   const addVxlanTunnel = $(() => {
     vxlanTunnels.push({
       name: `vxlan-tunnel-${vxlanTunnels.length + 1}`,
-      type: 'vxlan',
+      type: "vxlan",
       localAddress: "",
       remoteAddress: "",
       vni: Math.floor(Math.random() * 16777215),
       port: 4789,
       mtu: 1450,
-      bumMode: 'unicast'
+      bumMode: "unicast",
     });
   });
 
@@ -177,61 +191,57 @@ export const useTunnel = () => {
       vxlanTunnels.splice(index, 1);
     }
   });
-  
-  const updateVxlanTunnel = $(<K extends keyof VxlanInterfaceConfig>(
-    index: number, 
-    property: K, 
-    value: VxlanInterfaceConfig[K]
-  ) => {
-    if (index >= 0 && index < vxlanTunnels.length) {
-      vxlanTunnels[index][property] = value;
-    }
-  });
+
+  const updateVxlanTunnel = $(
+    <K extends keyof VxlanInterfaceConfig>(
+      index: number,
+      property: K,
+      value: VxlanInterfaceConfig[K],
+    ) => {
+      if (index >= 0 && index < vxlanTunnels.length) {
+        vxlanTunnels[index][property] = value;
+      }
+    },
+  );
 
   // Validation
   const isIPIPTunnelsValid = useComputed$(() => {
     if (!tunnelsEnabled.value || ipipTunnels.length === 0) return true;
-    
+
     return ipipTunnels.every(
-      (tunnel) => 
-        tunnel.name && 
-        tunnel.localAddress && 
-        tunnel.remoteAddress
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
   });
-  
+
   const isEOIPTunnelsValid = useComputed$(() => {
     if (!tunnelsEnabled.value || eoipTunnels.length === 0) return true;
-    
+
     return eoipTunnels.every(
-      (tunnel) => 
-        tunnel.name && 
-        tunnel.localAddress && 
-        tunnel.remoteAddress && 
-        tunnel.tunnelId !== undefined
+      (tunnel) =>
+        tunnel.name &&
+        tunnel.localAddress &&
+        tunnel.remoteAddress &&
+        tunnel.tunnelId !== undefined,
     );
   });
-  
+
   const isGRETunnelsValid = useComputed$(() => {
     if (!tunnelsEnabled.value || greTunnels.length === 0) return true;
-    
+
     return greTunnels.every(
-      (tunnel) => 
-        tunnel.name && 
-        tunnel.localAddress && 
-        tunnel.remoteAddress
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
   });
-  
+
   const isVXLANTunnelsValid = useComputed$(() => {
     if (!tunnelsEnabled.value || vxlanTunnels.length === 0) return true;
-    
+
     return vxlanTunnels.every(
-      (tunnel) => 
-        tunnel.name && 
-        tunnel.localAddress && 
-        tunnel.remoteAddress && 
-        tunnel.vni !== undefined
+      (tunnel) =>
+        tunnel.name &&
+        tunnel.localAddress &&
+        tunnel.remoteAddress &&
+        tunnel.vni !== undefined,
     );
   });
 
@@ -240,41 +250,38 @@ export const useTunnel = () => {
     if (!tunnelsEnabled.value) return true;
 
     // At least one tunnel type should be configured
-    const hasTunnels = (
-      ipipTunnels.length > 0 || 
-      eoipTunnels.length > 0 || 
-      greTunnels.length > 0 || 
-      vxlanTunnels.length > 0
-    );
+    const hasTunnels =
+      ipipTunnels.length > 0 ||
+      eoipTunnels.length > 0 ||
+      greTunnels.length > 0 ||
+      vxlanTunnels.length > 0;
 
     // Check IPIP tunnels validity
-    const validIpip = ipipTunnels.every(tunnel => 
-      tunnel.name && 
-      tunnel.localAddress && 
-      tunnel.remoteAddress
+    const validIpip = ipipTunnels.every(
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
 
     // Check EOIP tunnels validity
-    const validEoip = eoipTunnels.every(tunnel => 
-      tunnel.name && 
-      tunnel.localAddress && 
-      tunnel.remoteAddress && 
-      tunnel.tunnelId !== undefined
+    const validEoip = eoipTunnels.every(
+      (tunnel) =>
+        tunnel.name &&
+        tunnel.localAddress &&
+        tunnel.remoteAddress &&
+        tunnel.tunnelId !== undefined,
     );
 
     // Check GRE tunnels validity
-    const validGre = greTunnels.every(tunnel => 
-      tunnel.name && 
-      tunnel.localAddress && 
-      tunnel.remoteAddress
+    const validGre = greTunnels.every(
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
 
     // Check VXLAN tunnels validity
-    const validVxlan = vxlanTunnels.every(tunnel => 
-      tunnel.name && 
-      tunnel.localAddress && 
-      tunnel.remoteAddress && 
-      tunnel.vni !== undefined
+    const validVxlan = vxlanTunnels.every(
+      (tunnel) =>
+        tunnel.name &&
+        tunnel.localAddress &&
+        tunnel.remoteAddress &&
+        tunnel.vni !== undefined,
     );
 
     return hasTunnels && validIpip && validEoip && validGre && validVxlan;
@@ -334,7 +341,7 @@ export const useTunnel = () => {
         description: "Review your tunnel configuration",
         component: null,
         isComplete: false,
-      }
+      },
     ],
   });
 
@@ -349,21 +356,21 @@ export const useTunnel = () => {
     isEOIPTunnelsValid,
     isGRETunnelsValid,
     isVXLANTunnelsValid,
-    
+
     saveTunnels,
-    
+
     addIpipTunnel,
     removeIpipTunnel,
     updateIpipTunnel,
-    
+
     addEoipTunnel,
     removeEoipTunnel,
     updateEoipTunnel,
-    
+
     addGreTunnel,
     removeGreTunnel,
     updateGreTunnel,
-    
+
     addVxlanTunnel,
     removeVxlanTunnel,
     updateVxlanTunnel,
@@ -371,4 +378,4 @@ export const useTunnel = () => {
     stepper,
     tunnelData,
   };
-}; 
+};

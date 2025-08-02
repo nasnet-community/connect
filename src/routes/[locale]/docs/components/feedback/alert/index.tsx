@@ -16,11 +16,11 @@ export default component$(() => {
     <ComponentPage
       name="Alert"
       description="A component for displaying status messages, notifications, and feedback."
-      Overview={<Overview />}
-      Examples={<Examples />}
-      APIReference={<APIReference />}
-      Usage={<Usage />}
-      Playground={<Playground />}
+      Overview={Overview}
+      Examples={Examples}
+      APIReference={APIReference}
+      Usage={Usage}
+      Playground={Playground}
       ComponentIntegration={componentIntegration}
       Customization={customization}
     />

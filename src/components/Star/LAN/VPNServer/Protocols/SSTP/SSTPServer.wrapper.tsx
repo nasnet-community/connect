@@ -9,9 +9,5 @@ export const SSTPServerWrapper = component$(() => {
   const starContext = useContext(StarContext);
   const mode = starContext.state.Choose.Mode as Mode;
 
-  return (
-    <>
-      {mode === "easy" ? <SSTPServerEasy /> : <SSTPServerAdvanced />}
-    </>
-  );
-}); 
+  return <>{mode === "easy" ? <SSTPServerEasy /> : <SSTPServerAdvanced />}</>;
+});

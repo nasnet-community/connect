@@ -13,4 +13,4 @@ export const WireguardServerEasy = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

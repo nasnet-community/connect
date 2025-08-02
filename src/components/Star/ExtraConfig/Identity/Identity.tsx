@@ -8,8 +8,12 @@ import { StarContext } from "../../StarContext/StarContext";
 
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
-  const routerIdentity = useSignal(ctx.state.ExtraConfig.RouterIdentityRomon?.RouterIdentity);
-  const romonEnabled = useSignal(ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon);
+  const routerIdentity = useSignal(
+    ctx.state.ExtraConfig.RouterIdentityRomon?.RouterIdentity,
+  );
+  const romonEnabled = useSignal(
+    ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon,
+  );
   const isValid = useSignal(false);
 
   const handleIdentityChange = $((value: string) => {
@@ -60,7 +64,7 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
         <div class="space-y-8 p-6">
           {/* Router Identity Input */}
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+            <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
               {$localize`Router Identity`}
             </label>
             <input
@@ -70,8 +74,8 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
                 handleIdentityChange(currentTarget.value)
               }
               placeholder={$localize`Enter router identity`}
-              class="focus:ring-primary-500/50 w-full rounded-lg border border-border bg-surface px-4 py-2.5 focus:border-primary-500
-                     focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+              class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 focus:border-primary-500 focus:ring-2
+                     focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
             />
           </div>
 
@@ -136,7 +140,7 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
                      focus:ring-2 focus:ring-offset-2 active:scale-[0.98] dark:focus:ring-offset-surface-dark
                      ${
                        isValid.value
-                         ? "focus:ring-primary-500/50 bg-primary-500 text-white shadow-primary-500/25 hover:bg-primary-600"
+                         ? "bg-primary-500 text-white shadow-primary-500/25 hover:bg-primary-600 focus:ring-primary-500/50"
                          : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                      }`}
             >

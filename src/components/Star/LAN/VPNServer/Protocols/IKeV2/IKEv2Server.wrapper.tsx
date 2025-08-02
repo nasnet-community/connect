@@ -9,9 +9,5 @@ export const IKEv2ServerWrapper = component$(() => {
   const starContext = useContext(StarContext);
   const mode = starContext.state.Choose.Mode as Mode;
 
-  return (
-    <>
-      {mode === "easy" ? <IKEv2ServerEasy /> : <IKEv2ServerAdvanced />}
-    </>
-  );
-}); 
+  return <>{mode === "easy" ? <IKEv2ServerEasy /> : <IKEv2ServerAdvanced />}</>;
+});

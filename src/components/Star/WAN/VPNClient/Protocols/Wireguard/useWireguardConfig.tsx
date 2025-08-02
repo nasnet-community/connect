@@ -5,28 +5,30 @@ import type { QRL } from "@builder.io/qwik";
 import type { WireguardClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 
 export interface UseWireguardConfigResult {
-  config: {value: string};
-  errorMessage: {value: string};
-  configMethod: {value: "file" | "manual"};
-  privateKey: {value: string};
-  publicKey: {value: string};
-  allowedIPs: {value: string};
-  serverAddress: {value: string};
-  serverPort: {value: string};
-  address: {value: string};
-  dns: {value: string};
-  mtu: {value: string};
-  preSharedKey: {value: string};
-  persistentKeepalive: {value: string};
-  listeningPort: {value: string};
+  config: { value: string };
+  errorMessage: { value: string };
+  configMethod: { value: "file" | "manual" };
+  privateKey: { value: string };
+  publicKey: { value: string };
+  allowedIPs: { value: string };
+  serverAddress: { value: string };
+  serverPort: { value: string };
+  address: { value: string };
+  dns: { value: string };
+  mtu: { value: string };
+  preSharedKey: { value: string };
+  persistentKeepalive: { value: string };
+  listeningPort: { value: string };
   handleConfigChange$: QRL<(value: string) => Promise<void>>;
   handleManualFormSubmit$: QRL<() => Promise<void>>;
   handleFileUpload$: QRL<(event: Event) => Promise<void>>;
   setConfigMethod$: QRL<(method: "file" | "manual") => Promise<void>>;
-  validateWireguardConfig: QRL<(config: WireguardClientConfig) => Promise<{
-    isValid: boolean;
-    emptyFields: string[];
-  }>>;
+  validateWireguardConfig: QRL<
+    (config: WireguardClientConfig) => Promise<{
+      isValid: boolean;
+      emptyFields: string[];
+    }>
+  >;
   parseWireguardConfig: QRL<
     (configText: string) => Promise<WireguardClientConfig | null>
   >;
@@ -36,7 +38,7 @@ export interface UseWireguardConfigResult {
 }
 
 export const useWireguardConfig = (
-  onIsValidChange$?: QRL<(isValid: boolean) => void>
+  onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseWireguardConfigResult => {
   const starContext = useContext(StarContext);
 
@@ -65,22 +67,28 @@ export const useWireguardConfig = (
     dns.value = existingConfig.InterfaceDNS || "";
     publicKey.value = existingConfig.PeerPublicKey || "";
     serverAddress.value = existingConfig.PeerEndpointAddress || "";
-    serverPort.value = existingConfig.PeerEndpointPort?.toString() || "51820";
+    serverPort.value = existingConfig.PeerEndpointPort.toString() || "51820";
     allowedIPs.value = existingConfig.PeerAllowedIPs || "0.0.0.0/0, ::/0";
     preSharedKey.value = existingConfig.PeerPresharedKey || "";
-    persistentKeepalive.value = existingConfig.PeerPersistentKeepalive?.toString() || "25";
-    
-    const isConfigValid = privateKey.value && address.value && publicKey.value && 
-                          serverAddress.value && serverPort.value && allowedIPs.value;
-    
+    persistentKeepalive.value =
+      existingConfig.PeerPersistentKeepalive?.toString() || "25";
+
+    const isConfigValid =
+      privateKey.value &&
+      address.value &&
+      publicKey.value &&
+      serverAddress.value &&
+      serverPort.value &&
+      allowedIPs.value;
+
     if (isConfigValid && onIsValidChange$) {
       setTimeout(() => onIsValidChange$(true), 0);
     }
   }
-  
+
   const validateWireguardConfig = $(
     async (
-      config: WireguardClientConfig
+      config: WireguardClientConfig,
     ): Promise<{ isValid: boolean; emptyFields: string[] }> => {
       const emptyFields: string[] = [];
       if (!config.InterfacePrivateKey) emptyFields.push("InterfacePrivateKey");
@@ -92,7 +100,7 @@ export const useWireguardConfig = (
 
       const isValid = emptyFields.length === 0;
       return { isValid, emptyFields };
-    }
+    },
   );
 
   const updateContextWithConfig$ = $(
@@ -121,7 +129,7 @@ export const useWireguardConfig = (
       if (onIsValidChange$) {
         onIsValidChange$(isValid);
       }
-    }
+    },
   );
 
   const parseWireguardConfig = $(
@@ -135,33 +143,33 @@ export const useWireguardConfig = (
 
         // Helper function to check if an IP address is IPv6
         const isIPv6 = (ip: string): boolean => {
-          return ip.includes(':') && !ip.includes('.');
+          return ip.includes(":") && !ip.includes(".");
         };
 
         // Helper function to filter out IPv6 addresses from comma-separated list
         const filterIPv4Only = (addresses: string): string => {
           return addresses
-            .split(',')
-            .map(addr => addr.trim())
-            .filter(addr => !isIPv6(addr.split('/')[0])) // Remove network suffix for IP check
-            .join(', ');
+            .split(",")
+            .map((addr) => addr.trim())
+            .filter((addr) => !isIPv6(addr.split("/")[0])) // Remove network suffix for IP check
+            .join(", ");
         };
 
         // Helper function to get first IPv4 address from comma-separated list
         const getFirstIPv4 = (addresses: string): string => {
-          const addressList = addresses.split(',').map(addr => addr.trim());
+          const addressList = addresses.split(",").map((addr) => addr.trim());
           for (const addr of addressList) {
-            const ipPart = addr.split('/')[0]; // Remove network suffix
+            const ipPart = addr.split("/")[0]; // Remove network suffix
             if (!isIPv6(ipPart)) {
               return addr;
             }
           }
-          return '';
+          return "";
         };
 
         for (const line of lines) {
           const trimmedLine = line.trim();
-          
+
           // Handle section headers
           if (trimmedLine.startsWith("[") && trimmedLine.endsWith("]")) {
             inInterfaceSection = trimmedLine.toLowerCase() === "[interface]";
@@ -176,7 +184,7 @@ export const useWireguardConfig = (
 
           const equalIndex = trimmedLine.indexOf("=");
           if (equalIndex === -1) continue;
-          
+
           const key = trimmedLine.substring(0, equalIndex).trim();
           const value = trimmedLine.substring(equalIndex + 1).trim();
 
@@ -194,7 +202,11 @@ export const useWireguardConfig = (
                 break;
               case "listenport":
                 const listenPort = parseInt(value, 10);
-                if (!isNaN(listenPort) && listenPort > 0 && listenPort <= 65535) {
+                if (
+                  !isNaN(listenPort) &&
+                  listenPort > 0 &&
+                  listenPort <= 65535
+                ) {
                   config.InterfaceListenPort = listenPort;
                 }
                 break;
@@ -206,7 +218,7 @@ export const useWireguardConfig = (
                 break;
               case "dns":
                 // Handle multiple DNS servers, filter out IPv6, take first IPv4
-                const dnsServers = value.split(',').map(dns => dns.trim());
+                const dnsServers = value.split(",").map((dns) => dns.trim());
                 for (const dns of dnsServers) {
                   if (!isIPv6(dns)) {
                     config.InterfaceDNS = dns;
@@ -243,11 +255,11 @@ export const useWireguardConfig = (
                 } else {
                   const potentialPort = value.substring(lastColonIndex + 1);
                   const portNum = parseInt(potentialPort, 10);
-                  
+
                   if (!isNaN(portNum) && portNum > 0 && portNum <= 65535) {
                     // Valid port found
                     let address = value.substring(0, lastColonIndex);
-                    
+
                     // Handle IPv6 addresses in brackets [::1]:port format
                     if (address.startsWith("[") && address.endsWith("]")) {
                       address = address.slice(1, -1);
@@ -256,7 +268,7 @@ export const useWireguardConfig = (
                         break;
                       }
                     }
-                    
+
                     config.PeerEndpointAddress = address;
                     config.PeerEndpointPort = portNum;
                   } else {
@@ -285,12 +297,12 @@ export const useWireguardConfig = (
         }
 
         const { isValid, emptyFields } = await validateWireguardConfig(
-          config as WireguardClientConfig
+          config as WireguardClientConfig,
         );
 
         if (!isValid) {
           errorMessage.value = `The configuration file is missing one or more mandatory fields: ${emptyFields.join(
-            ", "
+            ", ",
           )}`;
           return null;
         }
@@ -301,7 +313,7 @@ export const useWireguardConfig = (
         console.error("Error parsing Wireguard config:", error);
         return null;
       }
-    }
+    },
   );
 
   const handleConfigChange$ = $(async (value: string) => {
@@ -319,7 +331,7 @@ export const useWireguardConfig = (
     }
 
     const file = input.files[0];
-    
+
     // Track file upload attempt
     track("vpn_config_file_uploaded", {
       vpn_protocol: "Wireguard",
@@ -327,9 +339,9 @@ export const useWireguardConfig = (
       file_size: file.size,
       file_type: file.type || "unknown",
       step: "wan_config",
-      component: "vpn_client"
+      component: "vpn_client",
     });
-    
+
     const readFileAsText = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -342,13 +354,13 @@ export const useWireguardConfig = (
     try {
       const fileContent = await readFileAsText(file);
       await handleConfigChange$(fileContent);
-      
+
       // Track successful file processing
       track("vpn_config_file_processed", {
         vpn_protocol: "Wireguard",
         success: true,
         step: "wan_config",
-        component: "vpn_client"
+        component: "vpn_client",
       });
     } catch (error) {
       // Track file processing error
@@ -357,9 +369,9 @@ export const useWireguardConfig = (
         success: false,
         error: "file_read_error",
         step: "wan_config",
-        component: "vpn_client"
+        component: "vpn_client",
       });
-      
+
       errorMessage.value = `Error reading file: ${error}`;
       console.error("File reading error:", error);
     }
@@ -391,13 +403,13 @@ export const useWireguardConfig = (
       track("vpn_manual_config_validated", {
         vpn_protocol: "Wireguard",
         success: false,
-        missing_fields: emptyFields.join(','),
+        missing_fields: emptyFields.join(","),
         step: "wan_config",
-        component: "vpn_client"
+        component: "vpn_client",
       });
-      
+
       errorMessage.value = `Please fill in all required fields: ${emptyFields.join(
-        ", "
+        ", ",
       )}`;
       if (onIsValidChange$) {
         onIsValidChange$(false);
@@ -410,7 +422,7 @@ export const useWireguardConfig = (
       vpn_protocol: "Wireguard",
       success: true,
       step: "wan_config",
-      component: "vpn_client"
+      component: "vpn_client",
     });
 
     await starContext.updateWAN$({
@@ -433,9 +445,9 @@ export const useWireguardConfig = (
       config_method: method,
       previous_method: configMethod.value,
       step: "wan_config",
-      component: "vpn_client"
+      component: "vpn_client",
     });
-    
+
     configMethod.value = method;
   });
 
@@ -460,6 +472,6 @@ export const useWireguardConfig = (
     setConfigMethod$,
     validateWireguardConfig,
     parseWireguardConfig,
-    updateContextWithConfig$
+    updateContextWithConfig$,
   };
-}; 
+};

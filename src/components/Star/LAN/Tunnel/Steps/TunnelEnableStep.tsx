@@ -6,16 +6,16 @@ import { Card } from "~/components/Core/Card";
 
 export const TunnelEnableStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
-  
+
   // Auto-complete this step on mount and enable tunnels
   $(() => {
     // Set tunnels as enabled
     stepper.data.tunnelEnabled.value = true;
-    
+
     // Complete step (let CStepper handle navigation)
     stepper.completeStep$();
   })();
-  
+
   return (
     <div class="space-y-6">
       <Card>
@@ -30,7 +30,7 @@ export const TunnelEnableStep = component$(() => {
             </p>
           </div>
         </div>
-        
+
         <div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
           <p class="text-sm text-gray-600 dark:text-gray-400">
             {$localize`Please select your desired tunnel protocol in the next step.`}
@@ -39,4 +39,4 @@ export const TunnelEnableStep = component$(() => {
       </Card>
     </div>
   );
-}); 
+});

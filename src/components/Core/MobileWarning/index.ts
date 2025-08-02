@@ -1,1 +1,1 @@
-export { MobileWarning } from './MobileWarning'; 
+export { MobileWarning } from "./MobileWarning";

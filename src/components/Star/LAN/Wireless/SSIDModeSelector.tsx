@@ -10,49 +10,47 @@ interface SSIDModeSelectorProps {
 export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
   ({ isMultiSSID }) => {
     const starContext = useContext(StarContext);
-    
+
     const switchToSingleMode = $(() => {
       isMultiSSID.value = false;
-      
 
       const singleMode = starContext.state.LAN.Wireless?.SingleMode || {
         SSID: "",
         Password: "",
         isHide: false,
-        isDisabled: false
+        isDisabled: false,
       };
 
       const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
-      
+
       starContext.updateLAN$({
         Wireless: {
           SingleMode: singleMode as WirelessConfig,
-          MultiMode: multiMode
-        }
+          MultiMode: multiMode,
+        },
       });
     });
-    
+
     const switchToMultiMode = $(() => {
       isMultiSSID.value = true;
-      
 
       const multiMode = starContext.state.LAN.Wireless?.MultiMode || {};
-      
+
       if (Object.keys(multiMode).length === 0) {
         const defaultNetwork = {
           SSID: "",
           Password: "",
           isHide: false,
-          isDisabled: false
+          isDisabled: false,
         };
-        
+
         multiMode.Foreign = defaultNetwork as WirelessConfig;
       }
-      
+
       starContext.updateLAN$({
         Wireless: {
-          MultiMode: multiMode
-        }
+          MultiMode: multiMode,
+        },
       });
     });
 

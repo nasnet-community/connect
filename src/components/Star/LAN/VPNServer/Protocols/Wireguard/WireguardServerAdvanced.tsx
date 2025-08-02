@@ -1,29 +1,29 @@
 import { component$ } from "@builder.io/qwik";
-import { 
-  HiServerOutline, 
-  HiLockClosedOutline, 
-  HiPlusCircleOutline, 
-  HiTrashOutline
+import {
+  HiServerOutline,
+  HiLockClosedOutline,
+  HiPlusCircleOutline,
+  HiTrashOutline,
 } from "@qwikest/icons/heroicons";
-import { 
-  ServerCard, 
-  ServerFormField, 
+import {
+  ServerCard,
+  ServerFormField,
   ServerButton,
   SectionTitle,
-  Input
+  Input,
 } from "../../../VPNServer/UI";
 import { useWireguardServer } from "./useWireguardServer";
 
 export const WireguardServerAdvanced = component$(() => {
-  const { 
+  const {
     wireguardState,
     advancedFormState,
     showPrivateKey,
-    privateKeyError, 
+    privateKeyError,
     addressError,
     updateServerConfig,
     handleGeneratePrivateKey,
-    togglePrivateKeyVisibility
+    togglePrivateKeyVisibility,
   } = useWireguardServer();
 
   return (
@@ -47,7 +47,7 @@ export const WireguardServerAdvanced = component$(() => {
             </ServerFormField>
 
             {/* Private Key */}
-            <ServerFormField 
+            <ServerFormField
               label={$localize`Private Key`}
               errorMessage={privateKeyError.value}
             >
@@ -56,7 +56,9 @@ export const WireguardServerAdvanced = component$(() => {
                   <Input
                     type={showPrivateKey.value ? "text" : "password"}
                     value={advancedFormState.privateKey}
-                    onChange$={(_, value) => updateServerConfig({ privateKey: value })}
+                    onChange$={(_, value) =>
+                      updateServerConfig({ privateKey: value })
+                    }
                     placeholder={$localize`Enter or generate private key`}
                     validation={privateKeyError.value ? "invalid" : "default"}
                     hasSuffixSlot={true}
@@ -83,14 +85,16 @@ export const WireguardServerAdvanced = component$(() => {
             </ServerFormField>
 
             {/* Interface Address */}
-            <ServerFormField 
+            <ServerFormField
               label={$localize`Interface Address`}
               errorMessage={addressError.value}
             >
               <Input
                 type="text"
                 value={advancedFormState.interfaceAddress}
-                onChange$={(_, value) => updateServerConfig({ interfaceAddress: value })}
+                onChange$={(_, value) =>
+                  updateServerConfig({ interfaceAddress: value })
+                }
                 placeholder={$localize`e.g. 192.168.110.1/24`}
                 validation={addressError.value ? "invalid" : "default"}
               />
@@ -104,7 +108,11 @@ export const WireguardServerAdvanced = component$(() => {
               <Input
                 type="number"
                 value={advancedFormState.listenPort.toString()}
-                onChange$={(_, value) => updateServerConfig({ listenPort: parseInt(value, 10) || 51820 })}
+                onChange$={(_, value) =>
+                  updateServerConfig({
+                    listenPort: parseInt(value, 10) || 51820,
+                  })
+                }
                 placeholder="51820"
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -117,7 +125,9 @@ export const WireguardServerAdvanced = component$(() => {
               <Input
                 type="number"
                 value={advancedFormState.mtu.toString()}
-                onChange$={(_, value) => updateServerConfig({ mtu: parseInt(value, 10) || 1420 })}
+                onChange$={(_, value) =>
+                  updateServerConfig({ mtu: parseInt(value, 10) || 1420 })
+                }
                 placeholder="1420"
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -129,7 +139,7 @@ export const WireguardServerAdvanced = component$(() => {
 
         {/* Peer Configuration */}
         <div>
-          <div class="flex items-center justify-between mb-4">
+          <div class="mb-4 flex items-center justify-between">
             <SectionTitle title={$localize`Peer Configuration`} />
             <ServerButton
               onClick$={() => {
@@ -143,11 +153,14 @@ export const WireguardServerAdvanced = component$(() => {
               {$localize`Add Peer`}
             </ServerButton>
           </div>
-          
+
           {wireguardState.Peers && wireguardState.Peers.length > 0 ? (
             <div class="space-y-3">
               {wireguardState.Peers.map((peer, index) => (
-                <div key={index} class="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                <div
+                  key={index}
+                  class="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                >
                   <div class="flex-1">
                     <p class="text-sm font-medium text-gray-900 dark:text-white">
                       {peer.Comment || $localize`Peer ${index + 1}`}
@@ -181,4 +194,4 @@ export const WireguardServerAdvanced = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

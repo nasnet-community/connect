@@ -55,7 +55,7 @@ export const PortForwarding = component$<StepProps>(() => {
           {/* Form */}
           <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Protocol`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Protocol`}</label>
               <select
                 value={state.protocol}
                 onChange$={(e) =>
@@ -71,7 +71,7 @@ export const PortForwarding = component$<StepProps>(() => {
             </div>
 
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Remote IP`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Remote IP`}</label>
               <input
                 type="text"
                 value={state.remoteIP}
@@ -84,7 +84,7 @@ export const PortForwarding = component$<StepProps>(() => {
             </div>
 
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Remote Port`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Remote Port`}</label>
               <input
                 type="text"
                 value={state.remotePort}
@@ -97,7 +97,7 @@ export const PortForwarding = component$<StepProps>(() => {
             </div>
 
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Target IP`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Target IP`}</label>
               <input
                 type="text"
                 value={state.targetIP}
@@ -110,7 +110,7 @@ export const PortForwarding = component$<StepProps>(() => {
             </div>
 
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Target Port`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Target Port`}</label>
               <input
                 type="text"
                 value={state.targetPort}
@@ -123,7 +123,7 @@ export const PortForwarding = component$<StepProps>(() => {
             </div>
 
             <div class="col-span-1">
-              <label class="mb-1 block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{$localize`Description`}</label>
+              <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Description`}</label>
               <input
                 type="text"
                 value={state.description}
@@ -196,7 +196,7 @@ export const PortForwarding = component$<StepProps>(() => {
           {state.rules.length > 0 && (
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm">
-                <thead class="bg-surface-secondary text-xs uppercase dark:bg-surface-dark-secondary">
+                <thead class="bg-surface-secondary dark:bg-surface-dark-secondary text-xs uppercase">
                   <tr>
                     <th class="px-4 py-3">{$localize`Protocol`}</th>
                     <th class="px-4 py-3">{$localize`Remote IP`}</th>

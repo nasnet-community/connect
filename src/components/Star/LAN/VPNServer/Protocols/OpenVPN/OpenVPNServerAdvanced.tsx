@@ -1,10 +1,21 @@
 import { component$ } from "@builder.io/qwik";
 import { useOpenVPNServer } from "./useOpenVPNServer";
-import { Card, FormField, Input, Button, TabNavigation, Select } from "../../../VPNServer/UI";
-import { HiDocumentOutline, HiLockClosedOutline, HiServerOutline } from "@qwikest/icons/heroicons";
+import {
+  Card,
+  FormField,
+  Input,
+  Button,
+  TabNavigation,
+  Select,
+} from "../../../VPNServer/UI";
+import {
+  HiDocumentOutline,
+  HiLockClosedOutline,
+  HiServerOutline,
+} from "@qwikest/icons/heroicons";
 
 export const OpenVPNServerAdvanced = component$(() => {
-  const { 
+  const {
     advancedFormState,
     isEnabled,
     showPassphrase,
@@ -33,7 +44,7 @@ export const OpenVPNServerAdvanced = component$(() => {
     updateTlsVersion$,
     updateRequireClientCertificate$,
     handleToggle,
-    togglePassphraseVisibility$
+    togglePassphraseVisibility$,
   } = useOpenVPNServer();
 
   return (
@@ -57,11 +68,13 @@ export const OpenVPNServerAdvanced = component$(() => {
           <TabNavigation
             tabs={tabOptions}
             activeTab={activeTab.value}
-            onSelect$={(tabId: string) => (activeTab.value = tabId as 'basic' | 'network' | 'security')}
+            onSelect$={(tabId: string) =>
+              (activeTab.value = tabId as "basic" | "network" | "security")
+            }
           />
 
           {/* Basic Settings */}
-          {activeTab.value === 'basic' && (
+          {activeTab.value === "basic" && (
             <div class="space-y-4">
               {/* Profile Name */}
               <FormField label={$localize`Profile Name`}>
@@ -76,7 +89,7 @@ export const OpenVPNServerAdvanced = component$(() => {
               </FormField>
 
               {/* Certificate */}
-              <FormField 
+              <FormField
                 label={$localize`Server Certificate`}
                 errorMessage={certificateError.value}
               >
@@ -102,7 +115,7 @@ export const OpenVPNServerAdvanced = component$(() => {
               </FormField>
 
               {/* Certificate Key Passphrase */}
-              <FormField 
+              <FormField
                 label={$localize`Certificate Key Passphrase`}
                 errorMessage={passphraseError.value}
               >
@@ -155,7 +168,7 @@ export const OpenVPNServerAdvanced = component$(() => {
           )}
 
           {/* Network Settings */}
-          {activeTab.value === 'network' && (
+          {activeTab.value === "network" && (
             <div class="space-y-4">
               {/* Mode */}
               <FormField label={$localize`Mode`}>
@@ -192,7 +205,7 @@ export const OpenVPNServerAdvanced = component$(() => {
                 />
               </FormField>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField label={$localize`Maximum MTU`}>
                   <Input
                     type="number"
@@ -227,7 +240,7 @@ export const OpenVPNServerAdvanced = component$(() => {
           )}
 
           {/* Security Settings */}
-          {activeTab.value === 'security' && (
+          {activeTab.value === "security" && (
             <div class="space-y-4">
               {/* Auth Method */}
               <FormField label={$localize`Authentication Algorithm`}>
@@ -268,7 +281,9 @@ export const OpenVPNServerAdvanced = component$(() => {
                   type="checkbox"
                   checked={advancedFormState.requireClientCertificate}
                   onChange$={() => {
-                    updateRequireClientCertificate$(!advancedFormState.requireClientCertificate);
+                    updateRequireClientCertificate$(
+                      !advancedFormState.requireClientCertificate,
+                    );
                   }}
                   class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                 />
@@ -279,4 +294,4 @@ export const OpenVPNServerAdvanced = component$(() => {
       )}
     </Card>
   );
-}); 
+});

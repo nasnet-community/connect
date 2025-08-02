@@ -1,18 +1,18 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useSSTPServer } from "./useSSTPServer";
-import { 
-  Card, 
-  FormField, 
+import {
+  Card,
+  FormField,
   Input,
   Select,
   CheckboxGroup,
-  Switch
+  Switch,
 } from "../../../VPNServer/UI";
 
 /**
  * SSTP Server Configuration Component
- * 
+ *
  * Allows users to configure SSTP VPN server settings including:
  * - Enable/disable SSTP server
  * - Configure certificate and TLS settings
@@ -20,7 +20,7 @@ import {
  * - Configure authentication methods
  */
 export const SSTPServerAdvanced = component$(() => {
-  const { 
+  const {
     advancedFormState,
     isEnabled,
     enableSwitchId,
@@ -31,7 +31,7 @@ export const SSTPServerAdvanced = component$(() => {
     tlsVersionOptions,
     cipherOptions,
     applyChanges,
-    toggleAuthMethod
+    toggleAuthMethod,
   } = useSSTPServer();
 
   return (
@@ -57,11 +57,11 @@ export const SSTPServerAdvanced = component$(() => {
           <>
             {/* Basic Configuration */}
             <div class="mb-6">
-              <h3 class="mb-4 text-lg font-medium text-text-default dark:text-text-dark-default">
+              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
                 {$localize`Basic Configuration`}
               </h3>
             </div>
-            
+
             <FormField
               label={$localize`Certificate`}
               helperText={$localize`SSL certificate name`}
@@ -71,9 +71,7 @@ export const SSTPServerAdvanced = component$(() => {
                 type="text"
                 placeholder={$localize`Enter certificate name`}
                 value={advancedFormState.certificate}
-                onChange$={(_, value) =>
-                  applyChanges({ certificate: value })
-                }
+                onChange$={(_, value) => applyChanges({ certificate: value })}
               />
             </FormField>
 
@@ -92,7 +90,7 @@ export const SSTPServerAdvanced = component$(() => {
 
             {/* Security Settings */}
             <div class="mb-6">
-              <h3 class="mb-4 text-lg font-medium text-text-default dark:text-text-dark-default">
+              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
                 {$localize`Security Settings`}
               </h3>
             </div>
@@ -117,9 +115,7 @@ export const SSTPServerAdvanced = component$(() => {
               <Select
                 value={advancedFormState.ciphers}
                 options={cipherOptions}
-                onChange$={(value) =>
-                  applyChanges({ ciphers: value as any })
-                }
+                onChange$={(value) => applyChanges({ ciphers: value as any })}
               />
             </FormField>
 
@@ -128,9 +124,7 @@ export const SSTPServerAdvanced = component$(() => {
                 id={forceAesSwitchId}
                 label={$localize`Enabled`}
                 checked={advancedFormState.forceAes}
-                onChange$={(checked) =>
-                  applyChanges({ forceAes: checked })
-                }
+                onChange$={(checked) => applyChanges({ forceAes: checked })}
               />
             </FormField>
 
@@ -139,9 +133,7 @@ export const SSTPServerAdvanced = component$(() => {
                 id={pfsSwitchId}
                 label={$localize`Enabled`}
                 checked={advancedFormState.pfs}
-                onChange$={(checked) =>
-                  applyChanges({ pfs: checked })
-                }
+                onChange$={(checked) => applyChanges({ pfs: checked })}
               />
             </FormField>
 
@@ -158,7 +150,7 @@ export const SSTPServerAdvanced = component$(() => {
 
             {/* Authentication */}
             <div class="mb-6">
-              <h3 class="mb-4 text-lg font-medium text-text-default dark:text-text-dark-default">
+              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
                 {$localize`Authentication`}
               </h3>
             </div>
@@ -176,7 +168,7 @@ export const SSTPServerAdvanced = component$(() => {
 
             {/* Connection Settings */}
             <div class="mb-6">
-              <h3 class="mb-4 text-lg font-medium text-text-default dark:text-text-dark-default">
+              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
                 {$localize`Connection Settings`}
               </h3>
             </div>
@@ -194,7 +186,7 @@ export const SSTPServerAdvanced = component$(() => {
               />
             </FormField>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 label={$localize`Maximum MTU`}
                 helperText={$localize`Maximum Transmission Unit`}
@@ -239,4 +231,4 @@ export const SSTPServerAdvanced = component$(() => {
       </div>
     </Card>
   );
-}); 
+});

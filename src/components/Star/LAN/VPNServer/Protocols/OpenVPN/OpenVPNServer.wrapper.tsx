@@ -10,8 +10,6 @@ export const OpenVPNServerWrapper = component$(() => {
   const mode = starContext.state.Choose.Mode as Mode;
 
   return (
-    <>
-      {mode === "easy" ? <OpenVPNServerEasy /> : <OpenVPNServerAdvanced />}
-    </>
+    <>{mode === "easy" ? <OpenVPNServerEasy /> : <OpenVPNServerAdvanced />}</>
   );
-}); 
+});

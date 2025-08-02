@@ -2,7 +2,6 @@ import { component$, useSignal, useContext, $ } from "@builder.io/qwik";
 import { StarContext } from "../StarContext/StarContext";
 import { ConfigGenerator } from "../ConfigGenerator/ConfigGenerator";
 
-
 export const MikrotikApplyConfig = component$(() => {
   const ctx = useContext(StarContext);
   const routerIp = useSignal("");
@@ -14,7 +13,7 @@ export const MikrotikApplyConfig = component$(() => {
   const useHttps = useSignal(true);
   const applyMethod = useSignal<"direct" | "script">("script");
   const requiredServices = ["api", "www-ssl", "www"];
-  
+
   const validateInput = $(() => {
     if (!routerIp.value) return "Router IP address is required";
     if (!username.value) return "Username is required";
@@ -37,8 +36,8 @@ export const MikrotikApplyConfig = component$(() => {
       const baseUrl = `${protocol}://${routerIp.value}/rest`;
       const auth = btoa(`${username.value}:${password.value}`);
       const headers = {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json'
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
       };
 
       if (applyMethod.value === "script") {
@@ -54,44 +53,47 @@ export const MikrotikApplyConfig = component$(() => {
     }
   });
 
-
   const applyViaScript = $(async (baseUrl: string, headers: HeadersInit) => {
     const scriptContent = ConfigGenerator(ctx.state);
-    
+
     statusMessage.value = "Creating configuration script on router...";
-    
+
     const createScriptResponse = await fetch(`${baseUrl}/system/script`, {
-      method: 'PUT',
+      method: "PUT",
       headers,
       body: JSON.stringify({
         name: "apply_config",
         source: scriptContent,
-        policy: "ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon"
-      })
+        policy:
+          "ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon",
+      }),
     });
 
     if (!createScriptResponse.ok) {
       const errorData = await createScriptResponse.json();
-      throw new Error(`Failed to create script: ${errorData.message || createScriptResponse.statusText}`);
+      throw new Error(
+        `Failed to create script: ${errorData.message || createScriptResponse.statusText}`,
+      );
     }
 
     statusMessage.value = "Applying configuration...";
     const runScriptResponse = await fetch(`${baseUrl}/system/script/run`, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify({
-        ".id": "apply_config"
-      })
+        ".id": "apply_config",
+      }),
     });
 
     if (!runScriptResponse.ok) {
       const errorData = await runScriptResponse.json();
-      throw new Error(`Failed to run script: ${errorData.message || runScriptResponse.statusText}`);
+      throw new Error(
+        `Failed to run script: ${errorData.message || runScriptResponse.statusText}`,
+      );
     }
 
     statusMessage.value = "Configuration successfully applied to router!";
   });
-
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const applyDirectly = $(async (_baseUrl: string, _headers: HeadersInit) => {
@@ -99,27 +101,27 @@ export const MikrotikApplyConfig = component$(() => {
   });
 
   return (
-    <div class="mt-6 rounded-xl bg-surface-secondary dark:bg-surface-dark-secondary overflow-hidden">
+    <div class="bg-surface-secondary dark:bg-surface-dark-secondary mt-6 overflow-hidden rounded-xl">
       <div class="border-b border-gray-200 bg-surface/50 p-6 dark:border-gray-700 dark:bg-surface-dark/50">
         <h4 class="flex items-center gap-3 text-xl font-semibold text-text dark:text-text-dark-default">
-          <svg 
-            class="h-6 w-6 text-primary" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            class="text-primary h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              d="M5 13l4 4L19 7" 
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
             />
           </svg>
           {$localize`Apply Configuration Directly`}
         </h4>
       </div>
 
-      <div class="p-6 space-y-6">
+      <div class="space-y-6 p-6">
         <div class="max-w-3xl">
           <div class="rounded-lg bg-surface p-6 shadow-sm dark:bg-surface-dark">
             <h5 class="text-primary mb-4 flex items-center gap-2 text-lg font-medium">
@@ -138,96 +140,114 @@ export const MikrotikApplyConfig = component$(() => {
               </svg>
               {$localize`Router Connection Details`}
             </h5>
-            
-            <div class="space-y-4 mb-6">
+
+            <div class="mb-6 space-y-4">
               <div>
-                <label for="router-ip" class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary mb-1">
+                <label
+                  for="router-ip"
+                  class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium"
+                >
                   {$localize`Router IP Address`}
                 </label>
-                <input 
+                <input
                   id="router-ip"
-                  type="text" 
-                  placeholder="192.168.1.1" 
+                  type="text"
+                  placeholder="192.168.1.1"
                   value={routerIp.value}
-                  onInput$={(e) => routerIp.value = (e.target as HTMLInputElement).value}
-                  class="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-surface-dark-secondary dark:focus:border-primary"
+                  onInput$={(e) =>
+                    (routerIp.value = (e.target as HTMLInputElement).value)
+                  }
+                  class="focus:border-primary dark:focus:border-primary focus:ring-primary dark:bg-surface-dark-secondary w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-1 dark:border-gray-600"
                 />
               </div>
-              
+
               <div>
-                <label for="username" class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary mb-1">
+                <label
+                  for="username"
+                  class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium"
+                >
                   {$localize`Username`}
                 </label>
-                <input 
+                <input
                   id="username"
-                  type="text" 
+                  type="text"
                   value={username.value}
-                  onInput$={(e) => username.value = (e.target as HTMLInputElement).value}
-                  class="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-surface-dark-secondary dark:focus:border-primary"
+                  onInput$={(e) =>
+                    (username.value = (e.target as HTMLInputElement).value)
+                  }
+                  class="focus:border-primary dark:focus:border-primary focus:ring-primary dark:bg-surface-dark-secondary w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-1 dark:border-gray-600"
                 />
               </div>
-              
+
               <div>
-                <label for="password" class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary mb-1">
+                <label
+                  for="password"
+                  class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium"
+                >
                   {$localize`Password`}
                 </label>
                 <div class="relative">
-                  <input 
+                  <input
                     id="password"
                     type={showPassword.value ? "text" : "password"}
                     value={password.value}
-                    onInput$={(e) => password.value = (e.target as HTMLInputElement).value}
-                    class="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-surface-dark-secondary dark:focus:border-primary"
+                    onInput$={(e) =>
+                      (password.value = (e.target as HTMLInputElement).value)
+                    }
+                    class="focus:border-primary dark:focus:border-primary focus:ring-primary dark:bg-surface-dark-secondary w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-1 dark:border-gray-600"
                   />
-                  <button 
+                  <button
                     type="button"
-                    onClick$={() => showPassword.value = !showPassword.value}
+                    onClick$={() => (showPassword.value = !showPassword.value)}
                     class="absolute inset-y-0 right-0 flex items-center pr-3"
                   >
-                    <svg 
-                      class="h-5 w-5 text-gray-400" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      class="h-5 w-5 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
                       {showPassword.value ? (
-                        <path 
-                          stroke-linecap="round" 
-                          stroke-linejoin="round" 
-                          stroke-width="2" 
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" 
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
                         />
                       ) : (
-                        <path 
-                          stroke-linecap="round" 
-                          stroke-linejoin="round" 
-                          stroke-width="2" 
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                       )}
                       {!showPassword.value && (
-                        <path 
-                          stroke-linecap="round" 
-                          stroke-linejoin="round" 
-                          stroke-width="2" 
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         />
                       )}
                     </svg>
                   </button>
                 </div>
               </div>
-              
+
               <div class="flex items-center space-x-3">
                 <div class="flex items-center">
                   <input
                     id="https"
                     type="radio"
                     checked={useHttps.value}
-                    onClick$={() => useHttps.value = true}
-                    class="h-4 w-4 text-primary focus:ring-primary"
+                    onClick$={() => (useHttps.value = true)}
+                    class="text-primary focus:ring-primary h-4 w-4"
                   />
-                  <label for="https" class="ml-2 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                  <label
+                    for="https"
+                    class="text-text-secondary dark:text-text-dark-secondary ml-2 text-sm font-medium"
+                  >
                     {$localize`HTTPS`}
                   </label>
                 </div>
@@ -236,10 +256,13 @@ export const MikrotikApplyConfig = component$(() => {
                     id="http"
                     type="radio"
                     checked={!useHttps.value}
-                    onClick$={() => useHttps.value = false}
-                    class="h-4 w-4 text-primary focus:ring-primary"
+                    onClick$={() => (useHttps.value = false)}
+                    class="text-primary focus:ring-primary h-4 w-4"
                   />
-                  <label for="http" class="ml-2 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                  <label
+                    for="http"
+                    class="text-text-secondary dark:text-text-dark-secondary ml-2 text-sm font-medium"
+                  >
                     {$localize`HTTP`}
                   </label>
                 </div>
@@ -251,10 +274,13 @@ export const MikrotikApplyConfig = component$(() => {
                     id="script-method"
                     type="radio"
                     checked={applyMethod.value === "script"}
-                    onClick$={() => applyMethod.value = "script"}
-                    class="h-4 w-4 text-primary focus:ring-primary"
+                    onClick$={() => (applyMethod.value = "script")}
+                    class="text-primary focus:ring-primary h-4 w-4"
                   />
-                  <label for="script-method" class="ml-2 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                  <label
+                    for="script-method"
+                    class="text-text-secondary dark:text-text-dark-secondary ml-2 text-sm font-medium"
+                  >
                     {$localize`Apply via Script`}
                   </label>
                 </div>
@@ -263,10 +289,13 @@ export const MikrotikApplyConfig = component$(() => {
                     id="direct-method"
                     type="radio"
                     checked={applyMethod.value === "direct"}
-                    onClick$={() => applyMethod.value = "direct"}
-                    class="h-4 w-4 text-primary focus:ring-primary"
+                    onClick$={() => (applyMethod.value = "direct")}
+                    class="text-primary focus:ring-primary h-4 w-4"
                   />
-                  <label for="direct-method" class="ml-2 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                  <label
+                    for="direct-method"
+                    class="text-text-secondary dark:text-text-dark-secondary ml-2 text-sm font-medium"
+                  >
                     {$localize`Apply Directly (API)`}
                   </label>
                 </div>
@@ -274,18 +303,28 @@ export const MikrotikApplyConfig = component$(() => {
             </div>
 
             <div class="mt-6 space-y-4">
-              <div class="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4">
+              <div class="border-l-4 border-amber-500 bg-amber-50 p-4 dark:bg-amber-900/30">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <svg
+                      class="h-5 w-5 text-amber-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
                     </svg>
                   </div>
                   <div class="ml-3">
                     <p class="text-sm text-amber-800 dark:text-amber-200">
                       {$localize`Your router must have the following services enabled:`}
                     </p>
-                    <ul class="mt-2 list-disc list-inside text-xs text-amber-700 dark:text-amber-300">
+                    <ul class="mt-2 list-inside list-disc text-xs text-amber-700 dark:text-amber-300">
                       {requiredServices.map((service) => (
                         <li key={service}>{service}</li>
                       ))}
@@ -297,13 +336,29 @@ export const MikrotikApplyConfig = component$(() => {
               <button
                 onClick$={applyConfig}
                 disabled={isApplying.value}
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                class="bg-primary hover:bg-primary-dark focus:ring-primary flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isApplying.value ? (
                   <div class="flex items-center space-x-2">
-                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      class="h-5 w-5 animate-spin text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     <span>{$localize`Applying Configuration...`}</span>
                   </div>
@@ -311,15 +366,18 @@ export const MikrotikApplyConfig = component$(() => {
                   <span>{$localize`Apply Configuration to Router`}</span>
                 )}
               </button>
-              
+
               {statusMessage.value && (
-                <div class={`mt-4 p-3 rounded-md text-sm ${
-                  statusMessage.value.includes("success") 
-                    ? "bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-200" 
-                    : statusMessage.value.includes("Failed") || statusMessage.value.includes("Error")
-                    ? "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200"
-                    : "bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-                }`}>
+                <div
+                  class={`mt-4 rounded-md p-3 text-sm ${
+                    statusMessage.value.includes("success")
+                      ? "bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+                      : statusMessage.value.includes("Failed") ||
+                          statusMessage.value.includes("Error")
+                        ? "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200"
+                        : "bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+                  }`}
+                >
                   {statusMessage.value}
                 </div>
               )}
@@ -329,4 +387,4 @@ export const MikrotikApplyConfig = component$(() => {
       </div>
     </div>
   );
-}); 
+});

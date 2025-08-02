@@ -41,7 +41,7 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
             {/* Current Credentials */}
             <div class="group relative">
               <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-primary-500 to-secondary-500 opacity-30 blur transition duration-200 group-hover:opacity-40"></div>
-              <div class="relative rounded-xl bg-surface p-6 dark:bg-surface-dark-secondary">
+              <div class="dark:bg-surface-dark-secondary relative rounded-xl bg-surface p-6">
                 <div class="mb-6 flex items-center space-x-3">
                   <div class="rounded-lg bg-primary-100 p-2 dark:bg-primary-900/30">
                     <svg
@@ -64,24 +64,24 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                 </div>
                 <div class="space-y-4">
                   <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                    <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
                       Username
                     </label>
                     <input
                       type="text"
-                      class="focus:ring-primary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
-                      focus:border-primary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-primary-500
+                      focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter current username"
                     />
                   </div>
                   <div class="space-y-1.5">
-                    <label class="block text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                    <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
                       Password
                     </label>
                     <input
                       type="text"
-                      class="focus:ring-primary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
-                      focus:border-primary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-primary-500
+                      focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter current password"
                     />
                   </div>
@@ -92,7 +92,7 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
             {/* New Credentials */}
             <div class="group relative">
               <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-secondary-500 to-primary-500 opacity-30 blur transition duration-200 group-hover:opacity-40"></div>
-              <div class="relative rounded-xl bg-surface p-6 dark:bg-surface-dark-secondary">
+              <div class="dark:bg-surface-dark-secondary relative rounded-xl bg-surface p-6">
                 <div class="mb-6 flex items-center justify-between">
                   <div class="flex items-center space-x-3">
                     <div class="rounded-lg bg-secondary-100 p-2 dark:bg-secondary-900/30">
@@ -121,33 +121,33 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                 <div class="space-y-4">
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                      <label class="text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                      <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
                         Username
                       </label>
-                      <span class="text-xs text-text-muted dark:text-text-dark-muted">
+                      <span class="text-text-muted dark:text-text-dark-muted text-xs">
                         Optional
                       </span>
                     </div>
                     <input
                       type="text"
-                      class="focus:ring-secondary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
-                      focus:border-secondary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-secondary-500
+                      focus:ring-2 focus:ring-secondary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter new username"
                     />
                   </div>
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                      <label class="text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                      <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
                         Password
                       </label>
-                      <span class="text-xs text-text-muted dark:text-text-dark-muted">
+                      <span class="text-text-muted dark:text-text-dark-muted text-xs">
                         Optional
                       </span>
                     </div>
                     <input
                       type="text"
-                      class="focus:ring-secondary-500/50 w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all
-                      focus:border-secondary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-secondary-500
+                      focus:ring-2 focus:ring-secondary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter new password"
                     />
                   </div>
@@ -160,9 +160,9 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
           <div class="flex justify-end pt-4">
             <button
               onClick$={onComplete$}
-              class="focus:ring-primary-500/50 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-2.5
-              font-medium text-white shadow-sm shadow-primary-500/25 transition-all
-              duration-200 hover:from-primary-600 hover:to-primary-700 focus:ring-2 focus:ring-offset-2 
+              class="rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-2.5 font-medium
+              text-white shadow-sm shadow-primary-500/25 transition-all duration-200
+              hover:from-primary-600 hover:to-primary-700 focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 
               active:scale-[0.98] dark:focus:ring-offset-surface-dark"
             >
               Update Credentials

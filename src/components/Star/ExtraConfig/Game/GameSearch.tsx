@@ -8,11 +8,11 @@ export const GameSearch = component$<{ searchQuery: Signal<string> }>(
           type="text"
           placeholder="Search games..."
           bind:value={searchQuery}
-          class="focus:ring-primary-500/50 w-full rounded-lg border border-border bg-surface px-4 py-2.5 pl-10
-               focus:border-primary-500 focus:ring-2 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+          class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 pl-10 focus:border-primary-500
+               focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
         />
         <svg
-          class="absolute left-3 top-3 h-5 w-5 text-text-secondary dark:text-text-dark-secondary"
+          class="text-text-secondary dark:text-text-dark-secondary absolute left-3 top-3 h-5 w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

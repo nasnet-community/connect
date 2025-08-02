@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Box"
       description="Fundamental layout container with spacing and styling options"
-      Overview={<BoxOverview />}
-      Examples={<BoxExamples />}
-      APIReference={<BoxAPIReference />}
-      Usage={<BoxUsage />}
-      Playground={<BoxPlayground />}
+      Overview={BoxOverview}
+      Examples={BoxExamples}
+      APIReference={BoxAPIReference}
+      Usage={BoxUsage}
+      Playground={BoxPlayground}
     />
   );
 });

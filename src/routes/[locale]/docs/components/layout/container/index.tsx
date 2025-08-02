@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Container"
       description="A layout component for constraining content width and providing consistent padding"
-      Overview={<ContainerOverview />}
-      Examples={<ContainerExamples />}
-      APIReference={<ContainerAPIReference />}
-      Usage={<ContainerUsage />}
-      Playground={<ContainerPlayground />}
+      Overview={ContainerOverview}
+      Examples={ContainerExamples}
+      APIReference={ContainerAPIReference}
+      Usage={ContainerUsage}
+      Playground={ContainerPlayground}
     />
   );
 });

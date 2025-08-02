@@ -1,71 +1,86 @@
 import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
-import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
+import {
+  HiLockClosedOutline,
+  HiPlusCircleOutline,
+  HiTrashOutline,
+} from "@qwikest/icons/heroicons";
 import type { EoipTunnelConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
+import { Select } from "~/components/Core/Select";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
-import { ServerFormField, Select } from "~/components/Core/Form/ServerField";
+import { Field } from "~/components/Core/Form/Field";
 
 export const EOIPTunnelStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
-  
+
   // Skip this step if a different protocol was selected - moved to useTask$
-  
+
   // Handler to add a new EOIP tunnel
   const addTunnel$ = $(() => {
     const newTunnel: EoipTunnelConfig = {
-      type: 'eoip',
+      type: "eoip",
       name: `eoip-tunnel-${stepper.data.eoip.length + 1}`,
       localAddress: "",
       remoteAddress: "",
       tunnelId: stepper.data.eoip.length + 1,
     };
-    
+
     stepper.data.eoip.push(newTunnel);
   });
-  
+
   // Handler to remove a tunnel
   const removeTunnel$ = $((index: number) => {
     stepper.data.eoip.splice(index, 1);
   });
-  
+
   // Handler to update a tunnel property
-  const updateTunnelField$ = $((index: number, field: keyof EoipTunnelConfig, value: any) => {
-    if (index >= 0 && index < stepper.data.eoip.length) {
-      (stepper.data.eoip[index] as any)[field] = value;
-    }
-  });
-  
+  const updateTunnelField$ = $(
+    (index: number, field: keyof EoipTunnelConfig, value: any) => {
+      if (index >= 0 && index < stepper.data.eoip.length) {
+        (stepper.data.eoip[index] as any)[field] = value;
+      }
+    },
+  );
+
   // Validate all tunnels and update step completion status
   const validateTunnels$ = $(() => {
     let isValid = true;
-    
+
     // If there are no tunnels, the step is still valid
     if (stepper.data.eoip.length === 0) {
       return true;
     }
-    
+
     // Check if all tunnels have required fields
     for (const tunnel of stepper.data.eoip) {
-      if (!tunnel.name || !tunnel.localAddress || !tunnel.remoteAddress || !tunnel.tunnelId) {
+      if (
+        !tunnel.name ||
+        !tunnel.localAddress ||
+        !tunnel.remoteAddress ||
+        !tunnel.tunnelId
+      ) {
         isValid = false;
         break;
       }
     }
-    
+
     return isValid;
   });
-  
+
   // Use useTask$ to handle step completion based on protocol selection
   useTask$(({ track }) => {
     // Skip this step if a different protocol was selected
-    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'eoip') {
+    if (
+      stepper.data.selectedProtocol &&
+      stepper.data.selectedProtocol !== "eoip"
+    ) {
       stepper.completeStep$();
       return;
     }
-    
+
     // Track tunnels to revalidate when they change
     track(() => stepper.data.eoip.length);
     for (let i = 0; i < stepper.data.eoip.length; i++) {
@@ -75,7 +90,7 @@ export const EOIPTunnelStep = component$(() => {
       track(() => tunnel.remoteAddress);
       track(() => tunnel.tunnelId);
     }
-    
+
     // Validate and update step completion
     validateTunnels$().then((isValid) => {
       if (isValid) {
@@ -85,7 +100,10 @@ export const EOIPTunnelStep = component$(() => {
   });
 
   // Skip rendering if a different protocol was selected
-  if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'eoip') {
+  if (
+    stepper.data.selectedProtocol &&
+    stepper.data.selectedProtocol !== "eoip"
+  ) {
     return null;
   }
 
@@ -104,18 +122,14 @@ export const EOIPTunnelStep = component$(() => {
               </p>
             </div>
           </div>
-          
-          <Button
-            onClick$={addTunnel$}
-            variant="outline"
-            leftIcon
-          >
+
+          <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
             {$localize`Add Tunnel`}
           </Button>
         </div>
       </Card>
-      
+
       {stepper.data.eoip.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
@@ -126,7 +140,7 @@ export const EOIPTunnelStep = component$(() => {
         <div class="space-y-4">
           {stepper.data.eoip.map((tunnel, index) => (
             <Card key={index}>
-              <div class="flex items-center justify-between mb-4">
+              <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
                   {$localize`EOIP Tunnel ${index + 1}`}
                 </h4>
@@ -140,115 +154,143 @@ export const EOIPTunnelStep = component$(() => {
                   {$localize`Remove`}
                 </Button>
               </div>
-              
+
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
-                <ServerFormField label={$localize`Name`} required>
+                <Field label={$localize`Name`} required>
                   <Input
                     type="text"
                     value={tunnel.name}
-                    onChange$={(e, value) => updateTunnelField$(index, 'name', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "name", value)
+                    }
                     placeholder={$localize`Enter tunnel name`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Tunnel ID */}
-                <ServerFormField label={$localize`Tunnel ID`} required>
+                <Field label={$localize`Tunnel ID`} required>
                   <Input
                     type="number"
-                    value={tunnel.tunnelId?.toString() || "1"}
-                    onChange$={(e, value) => updateTunnelField$(index, 'tunnelId', parseInt(value) || 1)}
+                    value={tunnel.tunnelId.toString() || "1"}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(
+                        index,
+                        "tunnelId",
+                        parseInt(value) || 1,
+                      )
+                    }
                     placeholder={$localize`Enter tunnel ID`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* MTU */}
-                <ServerFormField label={$localize`MTU`}>
+                <Field label={$localize`MTU`}>
                   <Input
                     type="number"
                     value={tunnel.mtu?.toString() || ""}
                     onChange$={(e, value) => {
-                      updateTunnelField$(index, 'mtu', value ? parseInt(value) : undefined);
+                      updateTunnelField$(
+                        index,
+                        "mtu",
+                        value ? parseInt(value) : undefined,
+                      );
                     }}
                     placeholder={$localize`Enter MTU (optional)`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Local Address */}
-                <ServerFormField label={$localize`Local Address`} required>
+                <Field label={$localize`Local Address`} required>
                   <Input
                     type="text"
                     value={tunnel.localAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'localAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "localAddress", value)
+                    }
                     placeholder={$localize`Enter local address`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Remote Address */}
-                <ServerFormField label={$localize`Remote Address`} required>
+                <Field label={$localize`Remote Address`} required>
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'remoteAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "remoteAddress", value)
+                    }
                     placeholder={$localize`Enter remote address`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* MAC Address */}
-                <ServerFormField label={$localize`MAC Address`}>
+                <Field label={$localize`MAC Address`}>
                   <Input
                     type="text"
                     value={tunnel.macAddress || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'macAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "macAddress", value)
+                    }
                     placeholder={$localize`Enter MAC address (optional)`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* IPsec Secret */}
-                <ServerFormField label={$localize`IPsec Secret`}>
+                <Field label={$localize`IPsec Secret`}>
                   <Input
                     type="text"
                     value={tunnel.ipsecSecret || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'ipsecSecret', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "ipsecSecret", value)
+                    }
                     placeholder={$localize`Enter IPsec secret (optional)`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Keepalive */}
-                <ServerFormField label={$localize`Keepalive`}>
+                <Field label={$localize`Keepalive`}>
                   <Input
                     type="text"
                     value={tunnel.keepalive || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'keepalive', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "keepalive", value)
+                    }
                     placeholder={$localize`Enter keepalive (optional)`}
                   />
-                </ServerFormField>
+                </Field>
               </div>
 
               {/* ARP and Clamp TCP MSS */}
               <div class="mt-4 grid gap-4 md:grid-cols-2">
-                <ServerFormField label={$localize`ARP`}>
+                <Field label={$localize`ARP`}>
                   <Select
-                    value={tunnel.arp || ''}
+                    value={tunnel.arp || ""}
                     onChange$={(value) => {
-                      updateTunnelField$(index, 'arp', value || undefined);
+                      updateTunnelField$(index, "arp", value || undefined);
                     }}
                     options={[
                       { value: "", label: $localize`Default` },
                       { value: "enabled", label: $localize`Enabled` },
                       { value: "disabled", label: $localize`Disabled` },
                       { value: "proxy-arp", label: $localize`Proxy ARP` },
-                      { value: "reply-only", label: $localize`Reply Only` }
+                      { value: "reply-only", label: $localize`Reply Only` },
                     ]}
                   />
-                </ServerFormField>
+                </Field>
 
-                <div class="flex items-center mt-7">
+                <div class="mt-7 flex items-center">
                   <input
                     type="checkbox"
                     id={`clampTcpMss-${index}`}
                     checked={tunnel.clampTcpMss || false}
-                    onChange$={(e) => updateTunnelField$(index, 'clampTcpMss', (e.target as HTMLInputElement).checked)}
+                    onChange$={(e) =>
+                      updateTunnelField$(
+                        index,
+                        "clampTcpMss",
+                        (e.target as HTMLInputElement).checked,
+                      )
+                    }
                     class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                   <label
@@ -263,8 +305,6 @@ export const EOIPTunnelStep = component$(() => {
           ))}
         </div>
       )}
-      
-
     </div>
   );
-}); 
+});

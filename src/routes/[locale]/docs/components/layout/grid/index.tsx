@@ -17,11 +17,11 @@ export default component$(() => {
     <ComponentPage
       name="Grid"
       description="A two-dimensional layout component for creating grid-based layouts with precise control."
-      Overview={<GridOverview />}
-      Examples={<GridExamples />}
-      APIReference={<GridAPIReference />}
-      Usage={<GridUsage />}
-      Playground={<GridPlayground />}
+      Overview={GridOverview}
+      Examples={GridExamples}
+      APIReference={GridAPIReference}
+      Usage={GridUsage}
+      Playground={GridPlayground}
     >
       <Card class="mb-8">
         <div class="mb-4 flex items-center justify-between">

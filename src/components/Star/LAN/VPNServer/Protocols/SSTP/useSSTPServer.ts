@@ -1,7 +1,10 @@
 import { $, useSignal, useStore, useId } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import type { SstpServerConfig } from "../../../../StarContext/Utils/VPNServerType";
-import type { AuthMethod, TLSVersion } from "../../../../StarContext/CommonType";
+import type {
+  AuthMethod,
+  TLSVersion,
+} from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
 
 // Define ViewMode type
@@ -10,14 +13,14 @@ type ViewMode = "easy" | "advanced";
 export const useSSTPServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   const sstpState = vpnServerState.SstpServer || {
     enabled: true,
     DefaultProfile: "sstp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,
-      MaxMru: 1450
+      MaxMru: 1450,
     },
     KeepaliveTimeout: 30,
     Certificate: "",
@@ -26,7 +29,7 @@ export const useSSTPServer = () => {
     Pfs: false,
     Ciphers: "aes256-gcm-sha384",
     VerifyClientCertificate: false,
-    TlsVersion: "only-1.2"
+    TlsVersion: "only-1.2",
   };
 
   // Error signals
@@ -41,18 +44,21 @@ export const useSSTPServer = () => {
     forceAes: sstpState.ForceAes !== undefined ? sstpState.ForceAes : false,
     pfs: sstpState.Pfs !== undefined ? sstpState.Pfs : false,
     ciphers: sstpState.Ciphers || "aes256-gcm-sha384",
-    verifyClientCertificate: sstpState.VerifyClientCertificate !== undefined ? sstpState.VerifyClientCertificate : false,
+    verifyClientCertificate:
+      sstpState.VerifyClientCertificate !== undefined
+        ? sstpState.VerifyClientCertificate
+        : false,
     tlsVersion: sstpState.TlsVersion || "only-1.2",
     maxMtu: sstpState.PacketSize?.MaxMtu || 1450,
     maxMru: sstpState.PacketSize?.MaxMru || 1450,
     keepaliveTimeout: sstpState.KeepaliveTimeout || 30,
-    authentication: sstpState.Authentication || ["mschap2"]
+    authentication: sstpState.Authentication || ["mschap2"],
   });
 
   // UI state
   const isEnabled = useStore({ value: !!sstpState.Certificate });
   const viewMode = useSignal<ViewMode>("advanced");
-  
+
   // Generate unique IDs for form controls
   const enableSwitchId = useId();
   const forceAesSwitchId = useId();
@@ -84,11 +90,11 @@ export const useSSTPServer = () => {
   const updateSSTPServer$ = $((config: Partial<SstpServerConfig>) => {
     const newConfig = {
       ...sstpState,
-      ...config
+      ...config,
     };
-    
+
     let isValid = true;
-    
+
     // Validate certificate
     if (config.Certificate !== undefined) {
       if (!newConfig.Certificate || !newConfig.Certificate.trim()) {
@@ -98,7 +104,7 @@ export const useSSTPServer = () => {
         certificateError.value = "";
       }
     }
-    
+
     // Validate default profile
     if (config.DefaultProfile !== undefined) {
       if (!newConfig.DefaultProfile || !newConfig.DefaultProfile.trim()) {
@@ -108,13 +114,16 @@ export const useSSTPServer = () => {
         defaultProfileError.value = "";
       }
     }
-    
+
     if (isValid || (config.Certificate && config.Certificate === "")) {
-      starContext.updateLAN$({ 
+      starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
-          SstpServer: (config.Certificate && config.Certificate === "") ? undefined : newConfig
-        }
+          SstpServer:
+            config.Certificate && config.Certificate === ""
+              ? undefined
+              : newConfig,
+        },
       });
     }
   });
@@ -152,7 +161,7 @@ export const useSSTPServer = () => {
   const updateAdvancedForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config
     updateSSTPServer$({
       enabled: true,
@@ -169,7 +178,7 @@ export const useSSTPServer = () => {
         MaxMtu: formState.maxMtu,
         MaxMru: formState.maxMru,
       },
-      KeepaliveTimeout: formState.keepaliveTimeout
+      KeepaliveTimeout: formState.keepaliveTimeout,
     });
   });
 
@@ -177,7 +186,7 @@ export const useSSTPServer = () => {
   const updateEasyForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config with default values
     updateSSTPServer$({
       enabled: true,
@@ -194,22 +203,36 @@ export const useSSTPServer = () => {
         MaxMtu: 1450,
         MaxMru: 1450,
       },
-      KeepaliveTimeout: 30
+      KeepaliveTimeout: 30,
     });
   });
 
   // Individual field update functions for advanced mode
-  const updateCertificate$ = $((value: string) => applyChanges({ certificate: value }));
-  const updateDefaultProfile$ = $((value: string) => applyChanges({ defaultProfile: value }));
+  const updateCertificate$ = $((value: string) =>
+    applyChanges({ certificate: value }),
+  );
+  const updateDefaultProfile$ = $((value: string) =>
+    applyChanges({ defaultProfile: value }),
+  );
   const updatePort$ = $((value: number) => applyChanges({ port: value }));
-  const updateForceAes$ = $((value: boolean) => applyChanges({ forceAes: value }));
+  const updateForceAes$ = $((value: boolean) =>
+    applyChanges({ forceAes: value }),
+  );
   const updatePfs$ = $((value: boolean) => applyChanges({ pfs: value }));
-  const updateCiphers$ = $((value: string) => applyChanges({ ciphers: value as any }));
-  const updateVerifyClientCertificate$ = $((value: boolean) => applyChanges({ verifyClientCertificate: value }));
-  const updateTlsVersion$ = $((value: string) => applyChanges({ tlsVersion: value as any }));
+  const updateCiphers$ = $((value: string) =>
+    applyChanges({ ciphers: value as any }),
+  );
+  const updateVerifyClientCertificate$ = $((value: boolean) =>
+    applyChanges({ verifyClientCertificate: value }),
+  );
+  const updateTlsVersion$ = $((value: string) =>
+    applyChanges({ tlsVersion: value as any }),
+  );
   const updateMaxMtu$ = $((value: number) => applyChanges({ maxMtu: value }));
   const updateMaxMru$ = $((value: number) => applyChanges({ maxMru: value }));
-  const updateKeepaliveTimeout$ = $((value: number) => applyChanges({ keepaliveTimeout: value }));
+  const updateKeepaliveTimeout$ = $((value: number) =>
+    applyChanges({ keepaliveTimeout: value }),
+  );
 
   // Authentication methods handling
   const isAuthMethodSelected = $((method: string) => {
@@ -220,13 +243,13 @@ export const useSSTPServer = () => {
     const authMethod = method as AuthMethod;
     const currentAuth = [...formState.authentication];
     const index = currentAuth.indexOf(authMethod);
-    
+
     if (index === -1) {
       currentAuth.push(authMethod);
     } else {
       currentAuth.splice(index, 1);
     }
-    
+
     applyChanges({ authentication: currentAuth });
   });
 
@@ -267,7 +290,7 @@ export const useSSTPServer = () => {
         Pfs: false,
         Ciphers: "aes256-sha",
         VerifyClientCertificate: false,
-        TlsVersion: "only-1.2"
+        TlsVersion: "only-1.2",
       });
     }
   });
@@ -277,34 +300,38 @@ export const useSSTPServer = () => {
     sstpState,
     formState,
     // For backward compatibility with existing components
-    get advancedFormState() { return formState; },
-    get easyFormState() { return formState; },
+    get advancedFormState() {
+      return formState;
+    },
+    get easyFormState() {
+      return formState;
+    },
     isEnabled,
     viewMode,
     setViewMode,
-    
+
     // UI IDs
     enableSwitchId,
     forceAesSwitchId,
     pfsSwitchId,
     verifyCertSwitchId,
-    
+
     // Errors
     certificateError,
     defaultProfileError,
-    
+
     // Options
     authMethodOptions,
     tlsVersionOptions,
     cipherOptions,
-    
+
     // Core functions
     updateSSTPServer$,
     updateAdvancedForm$,
     updateEasyForm$,
     applyChanges,
     ensureDefaultConfig,
-    
+
     // Individual field updates for advanced mode
     updateCertificate$,
     updateDefaultProfile$,
@@ -317,15 +344,15 @@ export const useSSTPServer = () => {
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
-    
+
     // Authentication methods
     isAuthMethodSelected,
     toggleAuthMethod,
-    
+
     // Toggles
     handleToggle,
-    
+
     // Easy mode functions
-    updateEasyCertificate$
+    updateEasyCertificate$,
   };
-}; 
+};

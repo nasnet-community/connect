@@ -10,19 +10,19 @@ type ViewMode = "easy" | "advanced";
 export const useL2TPServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   const l2tpState = vpnServerState.L2tpServer || {
     enabled: true,
     DefaultProfile: "l2tp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,
-      MaxMru: 1450
+      MaxMru: 1450,
     },
     KeepaliveTimeout: 30,
     IPsec: {
       UseIpsec: "no",
-      IpsecSecret: ""
+      IpsecSecret: "",
     },
     allowFastPath: true,
     maxSessions: "unlimited",
@@ -31,10 +31,10 @@ export const useL2TPServer = () => {
       l2tpv3CircuitId: "",
       l2tpv3CookieLength: 0,
       l2tpv3DigestHash: "md5",
-      l2tpv3EtherInterfaceList: ""
+      l2tpv3EtherInterfaceList: "",
     },
     acceptProtoVersion: "all",
-    callerIdType: "ip-address"
+    callerIdType: "ip-address",
   };
 
   // Error signals
@@ -46,12 +46,16 @@ export const useL2TPServer = () => {
     authentication: [...(l2tpState.Authentication || ["mschap2", "mschap1"])],
     maxMru: l2tpState.PacketSize?.MaxMru || 1450,
     maxMtu: l2tpState.PacketSize?.MaxMtu || 1450,
-    useIpsec: l2tpState.IPsec?.UseIpsec || "yes",
-    ipsecSecret: l2tpState.IPsec?.IpsecSecret || "",
+    useIpsec: l2tpState.IPsec.UseIpsec || "yes",
+    ipsecSecret: l2tpState.IPsec.IpsecSecret || "",
     keepaliveTimeout: l2tpState.KeepaliveTimeout || 30,
-    allowFastPath: l2tpState.allowFastPath !== undefined ? l2tpState.allowFastPath : true,
+    allowFastPath:
+      l2tpState.allowFastPath !== undefined ? l2tpState.allowFastPath : true,
     maxSessions: l2tpState.maxSessions || "unlimited",
-    oneSessionPerHost: l2tpState.OneSessionPerHost !== undefined ? l2tpState.OneSessionPerHost : false
+    oneSessionPerHost:
+      l2tpState.OneSessionPerHost !== undefined
+        ? l2tpState.OneSessionPerHost
+        : false,
   });
 
   // UI state
@@ -60,36 +64,38 @@ export const useL2TPServer = () => {
 
   // Authentication method options
   const authMethods: AuthMethod[] = ["pap", "chap", "mschap1", "mschap2"];
-  
-  const authOptions = authMethods.map(method => ({
+
+  const authOptions = authMethods.map((method) => ({
     value: method,
-    label: method.toUpperCase()
+    label: method.toUpperCase(),
   }));
 
   // Core update function
   const updateL2TPServer$ = $((config: Partial<L2tpServerConfig>) => {
     const newConfig = {
       ...l2tpState,
-      ...config
+      ...config,
     };
-    
+
     // Validate IPsec secret if required
     if (config.IPsec?.IpsecSecret !== undefined) {
-      const useIpsec = config.IPsec?.UseIpsec || newConfig.IPsec?.UseIpsec;
-      if ((useIpsec === "yes" || useIpsec === "required") && 
-          (!config.IPsec.IpsecSecret || !config.IPsec.IpsecSecret.trim())) {
+      const useIpsec = config.IPsec.UseIpsec || newConfig.IPsec.UseIpsec;
+      if (
+        (useIpsec === "yes" || useIpsec === "required") &&
+        (!config.IPsec.IpsecSecret || !config.IPsec.IpsecSecret.trim())
+      ) {
         secretError.value = $localize`IPsec secret is required when IPsec is enabled`;
         return;
       } else {
         secretError.value = "";
       }
     }
-    
-    starContext.updateLAN$({ 
+
+    starContext.updateLAN$({
       VPNServer: {
         ...vpnServerState,
-        L2tpServer: config.DefaultProfile === "" ? undefined : newConfig 
-      }
+        L2tpServer: config.DefaultProfile === "" ? undefined : newConfig,
+      },
     });
   });
 
@@ -97,24 +103,24 @@ export const useL2TPServer = () => {
   const updateAdvancedForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config
     updateL2TPServer$({
       DefaultProfile: formState.profile,
       Authentication: [...formState.authentication],
       PacketSize: {
         MaxMtu: formState.maxMtu,
-        MaxMru: formState.maxMru
+        MaxMru: formState.maxMru,
       },
       IPsec: {
         UseIpsec: formState.useIpsec,
-        IpsecSecret: formState.ipsecSecret
+        IpsecSecret: formState.ipsecSecret,
       },
       KeepaliveTimeout: formState.keepaliveTimeout,
       allowFastPath: formState.allowFastPath,
       maxSessions: formState.maxSessions,
       OneSessionPerHost: formState.oneSessionPerHost,
-      enabled: true
+      enabled: true,
     });
   });
 
@@ -122,30 +128,46 @@ export const useL2TPServer = () => {
   const applyIpsecSettings = $((updatedValues: Partial<typeof formState>) => {
     // Update local state
     Object.assign(formState, updatedValues);
-    
+
     if (isEnabled.value) {
       updateL2TPServer$({
         DefaultProfile: "default",
         IPsec: {
           UseIpsec: formState.useIpsec,
-          IpsecSecret: formState.ipsecSecret
+          IpsecSecret: formState.ipsecSecret,
         },
         // Use default authentication methods
         Authentication: ["mschap2", "mschap1"],
-        enabled: true
+        enabled: true,
       });
     }
   });
 
   // Individual field update functions for advanced mode
-  const updateProfile$ = $((value: string) => updateAdvancedForm$({ profile: value }));
-  const updateMaxMtu$ = $((value: number) => updateAdvancedForm$({ maxMtu: value }));
-  const updateMaxMru$ = $((value: number) => updateAdvancedForm$({ maxMru: value }));
-  const updateUseIpsec$ = $((value: "yes" | "no" | "required") => updateAdvancedForm$({ useIpsec: value }));
-  const updateIpsecSecret$ = $((value: string) => updateAdvancedForm$({ ipsecSecret: value }));
-  const updateKeepaliveTimeout$ = $((value: number) => updateAdvancedForm$({ keepaliveTimeout: value }));
-  const updateAllowFastPath$ = $((value: boolean) => updateAdvancedForm$({ allowFastPath: value }));
-  const updateOneSessionPerHost$ = $((value: boolean) => updateAdvancedForm$({ oneSessionPerHost: value }));
+  const updateProfile$ = $((value: string) =>
+    updateAdvancedForm$({ profile: value }),
+  );
+  const updateMaxMtu$ = $((value: number) =>
+    updateAdvancedForm$({ maxMtu: value }),
+  );
+  const updateMaxMru$ = $((value: number) =>
+    updateAdvancedForm$({ maxMru: value }),
+  );
+  const updateUseIpsec$ = $((value: "yes" | "no" | "required") =>
+    updateAdvancedForm$({ useIpsec: value }),
+  );
+  const updateIpsecSecret$ = $((value: string) =>
+    updateAdvancedForm$({ ipsecSecret: value }),
+  );
+  const updateKeepaliveTimeout$ = $((value: number) =>
+    updateAdvancedForm$({ keepaliveTimeout: value }),
+  );
+  const updateAllowFastPath$ = $((value: boolean) =>
+    updateAdvancedForm$({ allowFastPath: value }),
+  );
+  const updateOneSessionPerHost$ = $((value: boolean) =>
+    updateAdvancedForm$({ oneSessionPerHost: value }),
+  );
 
   // Auth method toggle function
   const toggleAuthMethod = $((method: string) => {
@@ -155,7 +177,9 @@ export const useL2TPServer = () => {
       if (index === -1) {
         formState.authentication = [...formState.authentication, authMethod];
       } else {
-        formState.authentication = formState.authentication.filter((m: AuthMethod) => m !== authMethod);
+        formState.authentication = formState.authentication.filter(
+          (m: AuthMethod) => m !== authMethod,
+        );
       }
       // Apply changes immediately
       updateAdvancedForm$({});
@@ -177,7 +201,7 @@ export const useL2TPServer = () => {
       isEnabled.value = !enabled; // Revert the change if there's an error
     }
   });
-  
+
   // // Set view mode (easy or advanced)
   // const setViewMode = $((mode: ViewMode) => {
   //   viewMode.value = mode;
@@ -205,9 +229,14 @@ export const useL2TPServer = () => {
         allowFastPath: true,
         maxSessions: "unlimited",
         OneSessionPerHost: false,
-        L2TPV3: { l2tpv3CircuitId: "", l2tpv3CookieLength: 0, l2tpv3DigestHash: "md5", l2tpv3EtherInterfaceList: "" },
+        L2TPV3: {
+          l2tpv3CircuitId: "",
+          l2tpv3CookieLength: 0,
+          l2tpv3DigestHash: "md5",
+          l2tpv3EtherInterfaceList: "",
+        },
         acceptProtoVersion: "all",
-        callerIdType: "ip-address"
+        callerIdType: "ip-address",
       });
     }
   });
@@ -217,23 +246,27 @@ export const useL2TPServer = () => {
     l2tpState,
     formState,
     // For backward compatibility with existing components
-    get advancedFormState() { return formState; },
-    get easyFormState() { return formState; },
+    get advancedFormState() {
+      return formState;
+    },
+    get easyFormState() {
+      return formState;
+    },
     isEnabled,
     viewMode,
-    
+
     // Errors
     secretError,
-    
+
     // Options
     authOptions,
-    
+
     // Core functions
     updateL2TPServer$,
     updateAdvancedForm$,
     applyIpsecSettings,
     ensureDefaultConfig,
-    
+
     // Individual field updates for advanced mode
     updateProfile$,
     updateMaxMtu$,
@@ -244,12 +277,12 @@ export const useL2TPServer = () => {
     updateAllowFastPath$,
     updateOneSessionPerHost$,
     toggleAuthMethod,
-    
+
     // Main toggle
     handleToggle,
-    
+
     // Easy mode functions
     updateEasyUseIpsec$,
-    updateEasyIpsecSecret$
+    updateEasyIpsecSecret$,
   };
-}; 
+};

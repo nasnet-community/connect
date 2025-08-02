@@ -14,4 +14,4 @@ export const WireguardServerWrapper = component$(() => {
       {mode === "easy" ? <WireguardServerEasy /> : <WireguardServerAdvanced />}
     </>
   );
-}); 
+});

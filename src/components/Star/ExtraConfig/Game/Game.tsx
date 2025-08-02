@@ -31,9 +31,7 @@ export const Game = component$<StepProps>(({ onComplete$ }) => {
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
           />
-          <GameSelected 
-            context={context} 
-          />
+          <GameSelected context={context} />
           <GamePagination
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}

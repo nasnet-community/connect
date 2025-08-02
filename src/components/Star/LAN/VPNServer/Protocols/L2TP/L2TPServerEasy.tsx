@@ -5,12 +5,12 @@ import { ServerCard, ServerFormField, Select } from "../../UI";
 // import { FormField } from "../../../../WAN/VPNClient/components/FormField";
 
 export const L2TPServerEasy = component$(() => {
-  const { 
-    easyFormState, 
-    isEnabled, 
+  const {
+    easyFormState,
+    isEnabled,
     secretError,
     updateEasyUseIpsec$,
-    updateEasyIpsecSecret$
+    updateEasyIpsecSecret$,
   } = useL2TPServer();
 
   return (
@@ -21,7 +21,7 @@ export const L2TPServerEasy = component$(() => {
       {isEnabled.value && (
         <div class="space-y-6">
           {/* IPsec Usage Dropdown */}
-          <ServerFormField 
+          <ServerFormField
             label={$localize`Use IPsec`}
             helperText={$localize`Controls IPsec encryption for L2TP connections`}
           >
@@ -35,7 +35,7 @@ export const L2TPServerEasy = component$(() => {
               options={[
                 { value: "yes", label: $localize`Yes` },
                 { value: "no", label: $localize`No` },
-                { value: "required", label: $localize`Required` }
+                { value: "required", label: $localize`Required` },
               ]}
             />
           </ServerFormField>
@@ -47,7 +47,11 @@ export const L2TPServerEasy = component$(() => {
                 label={$localize`IPsec Secret Key`}
                 errorMessage={secretError.value}
                 required={easyFormState.useIpsec === "required"}
-                helperText={secretError.value ? undefined : $localize`Key used for encrypting L2TP/IPsec connections`}
+                helperText={
+                  secretError.value
+                    ? undefined
+                    : $localize`Key used for encrypting L2TP/IPsec connections`
+                }
               >
                 <div class="relative">
                   <input
@@ -71,4 +75,4 @@ export const L2TPServerEasy = component$(() => {
       )}
     </ServerCard>
   );
-}); 
+});

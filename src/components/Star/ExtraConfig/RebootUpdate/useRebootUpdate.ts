@@ -8,10 +8,11 @@ export const useRebootUpdate = () => {
 
   // Initialize defaults if needed
   useTask$(() => {
-    const needsUpdate = !ctx.state.ExtraConfig.AutoReboot || 
-                       !ctx.state.ExtraConfig.Update || 
-                       !ctx.state.ExtraConfig.Timezone;
-    
+    const needsUpdate =
+      !ctx.state.ExtraConfig.AutoReboot ||
+      !ctx.state.ExtraConfig.Update ||
+      !ctx.state.ExtraConfig.Timezone;
+
     if (needsUpdate) {
       ctx.updateExtraConfig$({
         Timezone: ctx.state.ExtraConfig.Timezone,
@@ -31,17 +32,17 @@ export const useRebootUpdate = () => {
   const autoRebootEnabled = useSignal(
     ctx.state.ExtraConfig.AutoReboot?.isAutoReboot ?? false,
   );
-  
+
   const autoUpdateEnabled = useSignal(
     ctx.state.ExtraConfig.Update?.isAutoReboot ?? false,
   );
-  
+
   const selectedTimezone = useSignal(ctx.state.ExtraConfig.Timezone);
-  
+
   // Track changes to selectedTimezone
   useTask$(({ track }) => {
     const timezone = track(() => selectedTimezone.value);
-    
+
     // Update the context when timezone changes
     if (timezone && timezone !== ctx.state.ExtraConfig.Timezone) {
       ctx.updateExtraConfig$({
@@ -50,19 +51,19 @@ export const useRebootUpdate = () => {
       });
     }
   });
-  
+
   const updateInterval = useSignal<UpdateInterval>(
-    ctx.state.ExtraConfig.Update?.UpdateInterval || "Daily" as UpdateInterval
+    ctx.state.ExtraConfig.Update?.UpdateInterval || ("Daily" as UpdateInterval),
   );
 
   const rebootTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.AutoReboot?.RebootTime?.split(":")[0] || "00",
-    minute: ctx.state.ExtraConfig.AutoReboot?.RebootTime?.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.AutoReboot?.RebootTime.split(":")[0] || "00",
+    minute: ctx.state.ExtraConfig.AutoReboot?.RebootTime.split(":")[1] || "00",
   });
 
   const updateTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.Update?.UpdateTime?.split(":")[0] || "00",
-    minute: ctx.state.ExtraConfig.Update?.UpdateTime?.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.Update?.UpdateTime.split(":")[0] || "00",
+    minute: ctx.state.ExtraConfig.Update?.UpdateTime.split(":")[1] || "00",
   });
 
   return {

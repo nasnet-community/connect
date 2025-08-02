@@ -17,7 +17,6 @@ export interface LoadingState {
   [key: string]: boolean | undefined;
 }
 
-
 export interface WirelessNetworkConfig {
   SSID: string;
   Password: string;
@@ -26,4 +25,6 @@ export interface WirelessNetworkConfig {
   SplitBand: boolean;
 }
 
-export type MultiModeConfig = Partial<Record<'Foreign' | 'Domestic' | 'Split' | 'VPN', WirelessNetworkConfig>>;
+export type MultiModeConfig = Partial<
+  Record<"Foreign" | "Domestic" | "Split" | "VPN", WirelessNetworkConfig>
+>;

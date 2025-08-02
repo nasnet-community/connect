@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Stack"
       description="A layout component for arranging elements vertically or horizontally with consistent spacing."
-      Overview={<StackOverview />}
-      Examples={<StackExamples />}
-      APIReference={<StackAPIReference />}
-      Usage={<StackUsage />}
-      Playground={<StackPlayground />}
+      Overview={StackOverview}
+      Examples={StackExamples}
+      APIReference={StackAPIReference}
+      Usage={StackUsage}
+      Playground={StackPlayground}
     />
   );
 });

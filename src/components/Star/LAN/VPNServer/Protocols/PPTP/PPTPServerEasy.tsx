@@ -1,14 +1,14 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 // import { usePPTPServer } from "./usePPTPServer";
-import { 
-  ServerCard, 
-  // ServerFormField 
+import {
+  ServerCard,
+  // ServerFormField
 } from "../../UI";
 
 export const PPTPServerEasy = component$(() => {
-  // const { 
-  //   easyFormState, 
+  // const {
+  //   easyFormState,
   //   isEnabled,
   //   defaultProfileError,
   //   updateEasyDefaultProfile$
@@ -24,4 +24,4 @@ export const PPTPServerEasy = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

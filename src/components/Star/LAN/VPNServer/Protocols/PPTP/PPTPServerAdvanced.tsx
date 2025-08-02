@@ -1,25 +1,23 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
-import { 
-  ServerCard, 
-  ServerFormField, 
-  CheckboxGroup, 
+import {
+  ServerCard,
+  ServerFormField,
+  CheckboxGroup,
   SectionTitle,
-  Input
+  Input,
 } from "../../UI";
 
-
-
 export const PPTPServerAdvanced = component$(() => {
-  const { 
+  const {
     advancedFormState,
     authOptions,
     toggleAuthMethod,
     updateDefaultProfile$,
     updateMaxMtu$,
     updateMaxMru$,
-    updateKeepaliveTimeout$
+    updateKeepaliveTimeout$,
   } = usePPTPServer();
 
   // Create a wrapper for toggleAuthMethod that matches CheckboxGroup's expected signature
@@ -62,7 +60,9 @@ export const PPTPServerAdvanced = component$(() => {
               <Input
                 type="number"
                 value={advancedFormState.maxMtu.toString()}
-                onChange$={(_, value) => updateMaxMtu$(parseInt(value, 10) || 1450)}
+                onChange$={(_, value) =>
+                  updateMaxMtu$(parseInt(value, 10) || 1450)
+                }
               />
             </ServerFormField>
 
@@ -71,7 +71,9 @@ export const PPTPServerAdvanced = component$(() => {
               <Input
                 type="number"
                 value={advancedFormState.maxMru.toString()}
-                onChange$={(_, value) => updateMaxMru$(parseInt(value, 10) || 1450)}
+                onChange$={(_, value) =>
+                  updateMaxMru$(parseInt(value, 10) || 1450)
+                }
               />
             </ServerFormField>
 
@@ -80,7 +82,9 @@ export const PPTPServerAdvanced = component$(() => {
               <Input
                 type="number"
                 value={advancedFormState.keepaliveTimeout.toString()}
-                onChange$={(_, value) => updateKeepaliveTimeout$(parseInt(value, 10) || 30)}
+                onChange$={(_, value) =>
+                  updateKeepaliveTimeout$(parseInt(value, 10) || 30)
+                }
               />
             </ServerFormField>
           </div>
@@ -88,4 +92,4 @@ export const PPTPServerAdvanced = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

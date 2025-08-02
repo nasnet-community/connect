@@ -30,17 +30,20 @@ export const Frimware = component$((props: FrimwareProps) => {
 
   const handleSelect = $((firmware: FrimwareType, disabled?: boolean) => {
     if (disabled) return;
-    
+
     // Track firmware selection
     track("firmware_selected", {
       firmware_type: firmware,
-      step: "choose"
+      step: "choose",
     });
-    
+
     starContext.updateChoose$({
       Firmware: firmware,
     });
-    props.onComplete$?.();
+
+    if (props.onComplete$) {
+      props.onComplete$();
+    }
   });
 
   const firmwareOptions: FirmwareOption[] = [
@@ -109,7 +112,7 @@ export const Frimware = component$((props: FrimwareProps) => {
         >
           {$localize`Choose Your Firmware`}
         </h2>
-        <p class="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary">
+        <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-2xl">
           {$localize`Select the firmware that best suits your needs`}
         </p>
       </div>
@@ -165,7 +168,7 @@ export const Frimware = component$((props: FrimwareProps) => {
               >
                 {option.title}
               </h3>
-              <p class="mb-6 text-text-secondary dark:text-text-dark-secondary">
+              <p class="text-text-secondary dark:text-text-dark-secondary mb-6">
                 {option.description}
               </p>
 
@@ -173,7 +176,7 @@ export const Frimware = component$((props: FrimwareProps) => {
                 {option.features.map((feature) => (
                   <div
                     key={feature}
-                    class="flex items-center text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary flex items-center"
                   >
                     <svg
                       class="mr-3 h-5 w-5 text-primary-500"

@@ -25,22 +25,24 @@ export const GameSelected = component$<{ context: StarContextType }>(
           {context.state.ExtraConfig.Games.map((game, index) => (
             <div
               key={`${game.name}-${game.link}-${index}`}
-              class="flex items-center justify-between rounded-lg bg-surface-secondary p-3 dark:bg-surface-dark-secondary"
+              class="bg-surface-secondary dark:bg-surface-dark-secondary flex items-center justify-between rounded-lg p-3"
             >
               <div class="flex items-center space-x-3">
                 <span class="font-medium text-text dark:text-text-dark-default">
                   {game.name}
                 </span>
-                <span class="text-sm text-text-secondary dark:text-text-dark-secondary">
+                <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
                   ({game.link})
                 </span>
-                <span class="text-sm text-text-secondary dark:text-text-dark-secondary">
+                <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
                   {formatPorts(game.ports)}
                 </span>
               </div>
               <button
                 onClick$={() => {
-                  const updatedGames = [...(context.state.ExtraConfig.Games || [])];
+                  const updatedGames = [
+                    ...(context.state.ExtraConfig.Games || []),
+                  ];
                   updatedGames.splice(index, 1);
                   context.updateExtraConfig$({ Games: updatedGames });
                 }}

@@ -15,7 +15,7 @@ interface RebootCardProps {
 export const RebootCard = component$<RebootCardProps>(
   ({ autoRebootEnabled, rebootTime }) => {
     return (
-      <div class="rounded-xl bg-surface-secondary p-5 dark:bg-surface-dark-secondary">
+      <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
             <h3 class="font-medium">{$localize`Automatic Reboot`}</h3>
@@ -56,7 +56,9 @@ export const RebootCard = component$<RebootCardProps>(
           <TimePicker
             time={rebootTime}
             onChange$={(type, value) => {
-              rebootTime[type] = value;
+              if (type === 'hour' || type === 'minute') {
+                rebootTime[type] = value;
+              }
             }}
           />
         )}

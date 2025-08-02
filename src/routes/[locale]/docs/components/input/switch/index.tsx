@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Switch"
       description="A toggle switch component for enabling or disabling states"
-      Overview={<SwitchOverview />}
-      Examples={<SwitchExamples />}
-      APIReference={<SwitchAPIReference />}
-      Usage={<SwitchUsage />}
-      Playground={<SwitchPlayground />}
+      Overview={SwitchOverview}
+      Examples={SwitchExamples}
+      APIReference={SwitchAPIReference}
+      Usage={SwitchUsage}
+      Playground={SwitchPlayground}
     />
   );
 });

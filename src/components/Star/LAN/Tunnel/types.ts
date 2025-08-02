@@ -1,9 +1,9 @@
 import type { Signal } from "@builder.io/qwik";
-import type { 
+import type {
   IpipTunnelConfig,
   EoipTunnelConfig,
   GreTunnelConfig,
-  VxlanInterfaceConfig
+  VxlanInterfaceConfig,
 } from "../../StarContext/Utils/TunnelType";
 
 export interface TunnelStepperData {
@@ -15,4 +15,4 @@ export interface TunnelStepperData {
   vxlan: VxlanInterfaceConfig[];
 }
 
-export type TunnelProtocolType = "ipip" | "eoip" | "gre" | "vxlan"; 
+export type TunnelProtocolType = "ipip" | "eoip" | "gre" | "vxlan";

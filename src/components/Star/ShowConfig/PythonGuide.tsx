@@ -2,17 +2,17 @@ import { component$ } from "@builder.io/qwik";
 
 export const PythonGuide = component$(() => {
   return (
-    <div class="mt-4 rounded-lg bg-surface-secondary p-6 dark:bg-surface-dark-secondary">
+    <div class="bg-surface-secondary dark:bg-surface-dark-secondary mt-4 rounded-lg p-6">
       <h4 class="mb-2 font-semibold text-text dark:text-text-dark-default">
         {$localize`Using Python Library`}
       </h4>
-      <p class="mb-4 text-text-secondary dark:text-text-dark-secondary">
+      <p class="text-text-secondary dark:text-text-dark-secondary mb-4">
         {$localize`Follow these steps to apply the configuration using Python:`}
       </p>
-      <ol class="list-inside list-decimal space-y-2 text-text-secondary dark:text-text-dark-secondary">
+      <ol class="text-text-secondary dark:text-text-dark-secondary list-inside list-decimal space-y-2">
         <li>
           {$localize`Install the required library:`}{" "}
-          <code class="rounded bg-surface-tertiary p-1 dark:bg-surface-dark">
+          <code class="bg-surface-tertiary rounded p-1 dark:bg-surface-dark">
             pip install routeros-api
           </code>
         </li>

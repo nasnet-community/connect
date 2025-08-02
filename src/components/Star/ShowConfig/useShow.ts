@@ -1,5 +1,8 @@
 import { $ } from "@builder.io/qwik";
-import { ConfigGenerator } from "~/components/Star/ConfigGenerator/ConfigGenerator";
+import {
+  ConfigGenerator,
+  generateAPConfig,
+} from "~/components/Star/ConfigGenerator/ConfigGenerator";
 import type { StarState } from "~/components/Star/StarContext/StarContext";
 
 export const useConfigGenerator = (state: StarState) => {
@@ -26,11 +29,15 @@ export const useConfigGenerator = (state: StarState) => {
 
   const generateROSScript = $(() => ConfigGenerator(state));
   const generateConfigPreview = $(() => ConfigGenerator(state));
+  const generateAPScript = $(() => generateAPConfig(state));
+  const generateAPConfigPreview = $(() => generateAPConfig(state));
 
   return {
     downloadFile,
     generatePythonScript,
     generateROSScript,
     generateConfigPreview,
+    generateAPScript,
+    generateAPConfigPreview,
   };
 };

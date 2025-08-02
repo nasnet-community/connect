@@ -1,4 +1,10 @@
-import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useSignal,
+  type PropFunction,
+} from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { LuGlobe, LuGlobe2 } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
@@ -26,7 +32,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
     track("domestic_wan_selected", {
       has_domestic_link: hasDomestic,
       configuration_type: hasDomestic ? "with_domestic" : "without_domestic",
-      step: "choose"
+      step: "choose",
     });
 
     starContext.updateChoose$({
@@ -50,7 +56,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
       ],
       trafficGraph: (
         <div class="domestic-option mt-6">
-          <NetworkTopologyGraph 
+          <NetworkTopologyGraph
             nodes={domesticNetworkNodes}
             connections={domesticNetworkConnections}
             title={$localize`Domestic Network Topology`}
@@ -71,7 +77,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
       ],
       trafficGraph: (
         <div class="foreign-option">
-          <NetworkTopologyGraph 
+          <NetworkTopologyGraph
             nodes={foreignNetworkNodes}
             connections={foreignNetworkConnections}
             title={$localize`Foreign Network Topology`}
@@ -89,7 +95,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
           {$localize`Domestic Link Configuration`}
         </h2>
-        <p class="mx-auto mt-3 max-w-2xl text-text-secondary/90 dark:text-text-dark-secondary/95">
+        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
           {$localize`Choose whether you want to use domestic link separation for optimized routing`}
         </p>
       </div>
@@ -100,7 +106,9 @@ export const DomesticWAN = component$((props: DomesticProps) => {
           <OptionCard
             key={String(option.value)}
             value={option.value}
-            isSelected={hasUserSelected.value && hasDomesticLink === option.value}
+            isSelected={
+              hasUserSelected.value && hasDomesticLink === option.value
+            }
             icon={option.icon}
             title={option.title}
             description={option.description}
@@ -110,9 +118,10 @@ export const DomesticWAN = component$((props: DomesticProps) => {
           />
         ))}
       </div>
-      
+
       {/* Custom CSS for stacking z-indexes */}
-      <style dangerouslySetInnerHTML={`
+      <style
+        dangerouslySetInnerHTML={`
         /* Hide the foreign graph when domestic graph is expanded */
         body:has(.domestic-option .topology-container:hover) .foreign-option .network-graph {
           opacity: 0 !important;
@@ -128,7 +137,8 @@ export const DomesticWAN = component$((props: DomesticProps) => {
         .foreign-option {
           z-index: 1;
         }
-      `} />
+      `}
+      />
     </div>
   );
 });

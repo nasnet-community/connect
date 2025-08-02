@@ -18,7 +18,7 @@ import { useUserManagement } from "./UserCredential/useUserCredential";
 export const useVPNServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   // === PROTOCOL HOOKS FOR DEFAULT CONFIGS ===
   const pptpHook = usePPTPServer();
   const l2tpHook = useL2TPServer();
@@ -26,14 +26,14 @@ export const useVPNServer = () => {
   const openVpnHook = useOpenVPNServer();
   const ikev2Hook = useIKEv2Server();
   const wireguardHook = useWireguardServer();
-  
+
   // === USER MANAGEMENT (delegated to useUserManagement hook) ===
   const userManagement = useUserManagement();
-  
+
   // === VPN SERVER STATE ===
   const vpnServerEnabled = useSignal(true);
   const isValid = useSignal(true);
-  
+
   // === PROTOCOL ENABLING/DISABLING ===
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
     Wireguard: (vpnServerState.WireguardServers?.length || 0) > 0,
@@ -41,7 +41,7 @@ export const useVPNServer = () => {
     PPTP: !!vpnServerState.PptpServer?.enabled || false,
     L2TP: !!vpnServerState.L2tpServer?.enabled || false,
     SSTP: !!vpnServerState.SstpServer?.enabled || false,
-    IKeV2: !!vpnServerState.Ikev2Server?.ipPools?.Ranges || false
+    IKeV2: !!vpnServerState.Ikev2Server?.ipPools?.Ranges || false,
   });
 
   // === UI STATE ===
@@ -53,7 +53,7 @@ export const useVPNServer = () => {
     sstp: false,
     ikev2: false,
     openvpn: false,
-    wireguard: false
+    wireguard: false,
   });
 
   // === VALIDATION TASK ===
@@ -67,14 +67,16 @@ export const useVPNServer = () => {
     track(() => enabledProtocols.IKeV2);
     track(() => userManagement.users);
     track(() => userManagement.isValid);
-    
+
     if (!vpnServerEnabled.value) {
       isValid.value = true;
       return;
     }
 
-    const hasEnabledProtocol = Object.values(enabledProtocols).some(value => value);
-    
+    const hasEnabledProtocol = Object.values(enabledProtocols).some(
+      (value) => value,
+    );
+
     // Use user management validation
     const hasValidUsers = userManagement.isValid.value;
 
@@ -88,16 +90,16 @@ export const useVPNServer = () => {
 
   const toggleProtocol = $(async (protocol: VPNType) => {
     const wasEnabled = enabledProtocols[protocol];
-    
+
     // Toggle the protocol state
     enabledProtocols[protocol] = !enabledProtocols[protocol];
-    
+
     // Update expand sections based on new state
     if (!enabledProtocols[protocol]) {
       expandedSections[protocol.toLowerCase()] = false;
     } else {
       expandedSections[protocol.toLowerCase()] = true;
-      
+
       // Ensure default configuration when enabling a protocol
       if (!wasEnabled) {
         switch (protocol) {
@@ -133,9 +135,11 @@ export const useVPNServer = () => {
     if (vpnServerEnabled.value) {
       // Save users first using the user management hook
       userManagement.saveUsers();
-      
+
       // Grab the latest VPN server configuration from StarContext to avoid stale references
-      const latestConfig = { ...(starContext.state.LAN.VPNServer || { Users: [] }) } as any;
+      const latestConfig = {
+        ...(starContext.state.LAN.VPNServer || { Users: [] }),
+      } as any;
 
       // Track which protocols are being enabled
       const enabledProtocolsList = Object.entries(enabledProtocols)
@@ -181,13 +185,13 @@ export const useVPNServer = () => {
       // Track VPN server configuration completion
       track("vpn_server_configured", {
         vpn_server_enabled: true,
-        enabled_protocols: enabledProtocolsList.join(','),
+        enabled_protocols: enabledProtocolsList.join(","),
         protocol_count: enabledProtocolsList.length,
         user_count: userManagement.users.length,
         step: "lan_config",
         component: "vpn_server",
         configuration_completed: true,
-        success: true
+        success: true,
       });
 
       // Finally persist into StarContext
@@ -202,7 +206,7 @@ export const useVPNServer = () => {
         step: "lan_config",
         component: "vpn_server",
         configuration_completed: true,
-        success: true
+        success: true,
       });
 
       // Disable all VPN server configurations
@@ -215,10 +219,10 @@ export const useVPNServer = () => {
           OpenVpnServer: undefined,
           Ikev2Server: undefined,
           WireguardServers: undefined,
-        }
+        },
       });
     }
-    
+
     if (onComplete$) {
       onComplete$();
     }
@@ -232,20 +236,20 @@ export const useVPNServer = () => {
     isValid,
     enabledProtocols,
     expandedSections,
-    
+
     // === USER MANAGEMENT ACTIONS (delegated to useUserManagement hook) ===
     addUser: userManagement.addUser,
     removeUser: userManagement.removeUser,
     handleUsernameChange: userManagement.handleUsernameChange,
     handlePasswordChange: userManagement.handlePasswordChange,
     handleProtocolToggle: userManagement.handleProtocolToggle,
-    
+
     // === UI ACTIONS ===
     toggleSection,
     toggleProtocol,
     toggleVpnServerEnabled,
-    
+
     // === SAVE ===
     saveSettings,
   };
-}; 
+};
