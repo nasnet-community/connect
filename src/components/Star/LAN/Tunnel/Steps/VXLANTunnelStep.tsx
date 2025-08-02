@@ -1,7 +1,11 @@
 import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
-import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
+import {
+  HiLockClosedOutline,
+  HiPlusCircleOutline,
+  HiTrashOutline,
+} from "@qwikest/icons/heroicons";
 import type { VxlanInterfaceConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
@@ -10,67 +14,80 @@ import { ServerFormField } from "~/components/Core/Form/ServerField";
 
 export const VXLANTunnelStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
-  
+
   // Skip this step if a different protocol was selected
-  if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'vxlan') {
+  if (
+    stepper.data.selectedProtocol &&
+    stepper.data.selectedProtocol !== "vxlan"
+  ) {
     // Don't directly call completeStep$ here - move to useTask$
     return null;
   }
-  
+
   // Handler to add a new VXLAN tunnel
   const addTunnel$ = $(() => {
     const newTunnel: VxlanInterfaceConfig = {
-      type: 'vxlan',
+      type: "vxlan",
       name: `vxlan-tunnel-${stepper.data.vxlan.length + 1}`,
       localAddress: "",
       remoteAddress: "",
       vni: stepper.data.vxlan.length + 1,
-      bumMode: 'unicast',
+      bumMode: "unicast",
     };
-    
+
     stepper.data.vxlan.push(newTunnel);
   });
-  
+
   // Handler to remove a tunnel
   const removeTunnel$ = $((index: number) => {
     stepper.data.vxlan.splice(index, 1);
   });
-  
+
   // Handler to update a tunnel property
-  const updateTunnelField$ = $((index: number, field: keyof VxlanInterfaceConfig, value: any) => {
-    if (index >= 0 && index < stepper.data.vxlan.length) {
-      (stepper.data.vxlan[index] as any)[field] = value;
-    }
-  });
-  
+  const updateTunnelField$ = $(
+    (index: number, field: keyof VxlanInterfaceConfig, value: any) => {
+      if (index >= 0 && index < stepper.data.vxlan.length) {
+        (stepper.data.vxlan[index] as any)[field] = value;
+      }
+    },
+  );
+
   // Validate all tunnels and update step completion status
   const validateTunnels$ = $(() => {
     let isValid = true;
-    
+
     // If there are no tunnels, the step is still valid
     if (stepper.data.vxlan.length === 0) {
       return true;
     }
-    
+
     // Check if all tunnels have required fields
     for (const tunnel of stepper.data.vxlan) {
-      if (!tunnel.name || !tunnel.localAddress || !tunnel.remoteAddress || !tunnel.vni) {
+      if (
+        !tunnel.name ||
+        !tunnel.localAddress ||
+        !tunnel.remoteAddress ||
+        !tunnel.vni
+      ) {
         isValid = false;
         break;
       }
     }
-    
+
     return isValid;
   });
-  
+
   // Use useTask$ to handle step completion based on protocol selection
   useTask$(({ track }) => {
     // Skip this step if a different protocol was selected
-    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'vxlan') {
+    if (
+      stepper.data.selectedProtocol &&
+      stepper.data.selectedProtocol !== "vxlan"
+    ) {
       stepper.completeStep$();
       return;
     }
-    
+
     // Track tunnels to revalidate when they change
     track(() => stepper.data.vxlan.length);
     for (let i = 0; i < stepper.data.vxlan.length; i++) {
@@ -80,7 +97,7 @@ export const VXLANTunnelStep = component$(() => {
       track(() => tunnel.remoteAddress);
       track(() => tunnel.vni);
     }
-    
+
     // Validate and update step completion
     validateTunnels$().then((isValid) => {
       if (isValid) {
@@ -104,18 +121,14 @@ export const VXLANTunnelStep = component$(() => {
               </p>
             </div>
           </div>
-          
-          <Button
-            onClick$={addTunnel$}
-            variant="outline"
-            leftIcon
-          >
+
+          <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
             {$localize`Add Tunnel`}
           </Button>
         </div>
       </Card>
-      
+
       {stepper.data.vxlan.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
@@ -126,7 +139,7 @@ export const VXLANTunnelStep = component$(() => {
         <div class="space-y-4">
           {stepper.data.vxlan.map((tunnel, index) => (
             <Card key={index}>
-              <div class="flex items-center justify-between mb-4">
+              <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
                   {$localize`VXLAN Tunnel ${index + 1}`}
                 </h4>
@@ -140,24 +153,31 @@ export const VXLANTunnelStep = component$(() => {
                   {$localize`Remove`}
                 </Button>
               </div>
-              
+
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
                 <ServerFormField label={$localize`Name`} required>
                   <Input
                     type="text"
                     value={tunnel.name}
-                    onChange$={(e, value) => updateTunnelField$(index, 'name', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "name", value)
+                    }
                     placeholder={$localize`Enter tunnel name`}
                   />
                 </ServerFormField>
 
                 {/* VNI */}
-                <ServerFormField label={$localize`VNI (VXLAN Network Identifier)`} required>
+                <ServerFormField
+                  label={$localize`VNI (VXLAN Network Identifier)`}
+                  required
+                >
                   <Input
                     type="number"
-                    value={tunnel.vni?.toString() || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'vni', parseInt(value) || 1)}
+                    value={tunnel.vni.toString() || ""}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "vni", parseInt(value) || 1)
+                    }
                     placeholder={$localize`Enter VNI`}
                   />
                 </ServerFormField>
@@ -168,7 +188,11 @@ export const VXLANTunnelStep = component$(() => {
                     type="number"
                     value={tunnel.port?.toString() || ""}
                     onChange$={(e, value) => {
-                      updateTunnelField$(index, 'port', value ? parseInt(value) : undefined);
+                      updateTunnelField$(
+                        index,
+                        "port",
+                        value ? parseInt(value) : undefined,
+                      );
                     }}
                     placeholder={$localize`Enter port (default: 4789)`}
                   />
@@ -180,7 +204,11 @@ export const VXLANTunnelStep = component$(() => {
                     type="number"
                     value={tunnel.mtu?.toString() || ""}
                     onChange$={(e, value) => {
-                      updateTunnelField$(index, 'mtu', value ? parseInt(value) : undefined);
+                      updateTunnelField$(
+                        index,
+                        "mtu",
+                        value ? parseInt(value) : undefined,
+                      );
                     }}
                     placeholder={$localize`Enter MTU (optional)`}
                   />
@@ -191,7 +219,9 @@ export const VXLANTunnelStep = component$(() => {
                   <Input
                     type="text"
                     value={tunnel.localAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'localAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "localAddress", value)
+                    }
                     placeholder={$localize`Enter local address`}
                   />
                 </ServerFormField>
@@ -201,7 +231,9 @@ export const VXLANTunnelStep = component$(() => {
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'remoteAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "remoteAddress", value)
+                    }
                     placeholder={$localize`Enter remote address`}
                   />
                 </ServerFormField>
@@ -211,7 +243,9 @@ export const VXLANTunnelStep = component$(() => {
                   <Input
                     type="text"
                     value={tunnel.interface || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'interface', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "interface", value)
+                    }
                     placeholder={$localize`Enter interface (optional)`}
                   />
                 </ServerFormField>
@@ -220,8 +254,6 @@ export const VXLANTunnelStep = component$(() => {
           ))}
         </div>
       )}
-      
-
     </div>
   );
-}); 
+});

@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Button"
       description="Interactive button component that provides a consistent user experience for actions"
-      Overview={<ButtonOverview />}
-      Examples={<ButtonExamples />}
-      APIReference={<ButtonAPIReference />}
-      Usage={<ButtonUsage />}
-      Playground={<ButtonPlayground />}
+      Overview={ButtonOverview}
+      Examples={ButtonExamples}
+      APIReference={ButtonAPIReference}
+      Usage={ButtonUsage}
+      Playground={ButtonPlayground}
     />
   );
 });

@@ -1,20 +1,24 @@
 import { component$ } from "@builder.io/qwik";
-import { HiServerOutline, HiLockClosedOutline, HiDocumentOutline } from "@qwikest/icons/heroicons";
+import {
+  HiServerOutline,
+  HiLockClosedOutline,
+  HiDocumentOutline,
+} from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
-import { 
-  ServerCard, 
-  ServerFormField, 
+import {
+  ServerCard,
+  ServerFormField,
   ServerButton,
   Select,
   SectionTitle,
-  Input
+  Input,
 } from "../../UI";
 
 export const IKEv2ServerAdvanced = component$(() => {
-  const { 
+  const {
     advancedFormState,
     showPassword,
-    certificateError, 
+    certificateError,
     presharedKeyError,
     addressPoolError,
     authMethods,
@@ -31,7 +35,7 @@ export const IKEv2ServerAdvanced = component$(() => {
     updatePolicyGroupName$,
     updateModeConfigName$,
     updateStaticDns$,
-    togglePasswordVisibility$
+    togglePasswordVisibility$,
   } = useIKEv2Server();
 
   return (
@@ -45,7 +49,7 @@ export const IKEv2ServerAdvanced = component$(() => {
           <SectionTitle title={$localize`Basic Settings`} />
           <div class="space-y-4">
             {/* Address Pool */}
-            <ServerFormField 
+            <ServerFormField
               label={$localize`Address Pool Range`}
               errorMessage={addressPoolError.value}
             >
@@ -111,7 +115,7 @@ export const IKEv2ServerAdvanced = component$(() => {
 
             {/* Pre-shared Key */}
             {advancedFormState.authMethod === "pre-shared-key" && (
-              <ServerFormField 
+              <ServerFormField
                 label={$localize`Pre-shared Key`}
                 errorMessage={presharedKeyError.value}
               >
@@ -149,8 +153,9 @@ export const IKEv2ServerAdvanced = component$(() => {
             )}
 
             {/* Server Certificate */}
-            {(advancedFormState.authMethod === "digital-signature" || advancedFormState.authMethod === "eap") && (
-              <ServerFormField 
+            {(advancedFormState.authMethod === "digital-signature" ||
+              advancedFormState.authMethod === "eap") && (
+              <ServerFormField
                 label={$localize`Server Certificate`}
                 errorMessage={certificateError.value}
               >

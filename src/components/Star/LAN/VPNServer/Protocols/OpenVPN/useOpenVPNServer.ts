@@ -1,7 +1,15 @@
 import { $, useSignal, useStore } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
-import type { OpenVpnServerConfig, OvpnAuthMethod, OvpnCipher } from "../../../../StarContext/Utils/VPNServerType";
-import type { NetworkProtocol, LayerMode, AuthMethod } from "../../../../StarContext/CommonType";
+import type {
+  OpenVpnServerConfig,
+  OvpnAuthMethod,
+  OvpnCipher,
+} from "../../../../StarContext/Utils/VPNServerType";
+import type {
+  NetworkProtocol,
+  LayerMode,
+  AuthMethod,
+} from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
 
 // Define ViewMode type
@@ -9,11 +17,12 @@ type ViewMode = "easy" | "advanced";
 
 export const useOpenVPNServer = () => {
   const starContext = useContext(StarContext);
-  
+
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   // Get the first OpenVPN server configuration or create a default one
-  const openVpnState = (vpnServerState.OpenVpnServer && vpnServerState.OpenVpnServer[0]) || {
+  const openVpnState = (vpnServerState.OpenVpnServer &&
+    vpnServerState.OpenVpnServer[0]) || {
     name: "default",
     enabled: true,
     Port: 1194,
@@ -23,7 +32,7 @@ export const useOpenVPNServer = () => {
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,
-      MaxMru: 1450
+      MaxMru: 1450,
     },
     KeepaliveTimeout: 30,
     VRF: "",
@@ -34,24 +43,24 @@ export const useOpenVPNServer = () => {
       Auth: ["sha256"],
       UserAuthMethod: "mschap2",
       Cipher: ["aes256-cbc"],
-      TlsVersion: "any"
+      TlsVersion: "any",
     },
     IPV6: {
       EnableTunIPv6: false,
       IPv6PrefixLength: 64,
-      TunServerIPv6: ""
+      TunServerIPv6: "",
     },
     Certificate: {
       Certificate: "default",
       RequireClientCertificate: false,
-      CertificateKeyPassphrase: ""
+      CertificateKeyPassphrase: "",
     },
     Address: {
       Netmask: 24,
       MacAddress: "",
       MaxMtu: 1450,
-      AddressPool: ""
-    }
+      AddressPool: "",
+    },
   };
 
   // Error signals
@@ -61,47 +70,55 @@ export const useOpenVPNServer = () => {
   // Unified form state for both easy and advanced modes
   const formState = useStore({
     name: openVpnState.name || "default",
-    certificate: openVpnState.Certificate?.Certificate || "",
+    certificate: openVpnState.Certificate.Certificate || "",
     enabled: openVpnState.enabled !== undefined ? openVpnState.enabled : true,
     port: openVpnState.Port || 1194,
     protocol: openVpnState.Protocol || "tcp",
     mode: openVpnState.Mode || "ip",
-    addressPool: openVpnState.Address?.AddressPool || "192.168.78.0/24",
-    requireClientCertificate: openVpnState.Certificate?.RequireClientCertificate !== undefined ? openVpnState.Certificate.RequireClientCertificate : false,
-    auth: (openVpnState.Encryption?.Auth && openVpnState.Encryption.Auth[0]) || "sha256",
-    cipher: (openVpnState.Encryption?.Cipher && openVpnState.Encryption.Cipher[0]) || "aes256-gcm",
-    certificateKeyPassphrase: openVpnState.Certificate?.CertificateKeyPassphrase || "",
+    addressPool: openVpnState.Address.AddressPool || "192.168.78.0/24",
+    requireClientCertificate:
+      openVpnState.Certificate.RequireClientCertificate !== undefined
+        ? openVpnState.Certificate.RequireClientCertificate
+        : false,
+    auth:
+      (openVpnState.Encryption.Auth && openVpnState.Encryption.Auth[0]) ||
+      "sha256",
+    cipher:
+      (openVpnState.Encryption.Cipher && openVpnState.Encryption.Cipher[0]) ||
+      "aes256-gcm",
+    certificateKeyPassphrase:
+      openVpnState.Certificate.CertificateKeyPassphrase || "",
     defaultProfile: openVpnState.DefaultProfile || "default",
-    tlsVersion: openVpnState.Encryption?.TlsVersion || "only-1.2",
+    tlsVersion: openVpnState.Encryption.TlsVersion || "only-1.2",
     maxMtu: openVpnState.PacketSize?.MaxMtu || 1450,
     maxMru: openVpnState.PacketSize?.MaxMru || 1450,
     keepaliveTimeout: openVpnState.KeepaliveTimeout || 30,
-    authentication: openVpnState.Authentication || ["mschap2"]
+    authentication: openVpnState.Authentication || ["mschap2"],
   });
 
   // UI state
   const isEnabled = useSignal(!!openVpnState.name);
   const showPassphrase = useSignal(false);
-  const activeTab = useSignal<'basic' | 'network' | 'security'>('basic');
+  const activeTab = useSignal<"basic" | "network" | "security">("basic");
   const viewMode = useSignal<ViewMode>("advanced");
 
   // Tab options
   const tabOptions = [
-    { id: 'basic', label: $localize`Basic Settings` },
-    { id: 'network', label: $localize`Network Settings` },
-    { id: 'security', label: $localize`Security Settings` }
+    { id: "basic", label: $localize`Basic Settings` },
+    { id: "network", label: $localize`Network Settings` },
+    { id: "security", label: $localize`Security Settings` },
   ];
 
   // Protocol options
   const protocolOptions = [
     { value: "tcp", label: "TCP" },
-    { value: "udp", label: "UDP" }
+    { value: "udp", label: "UDP" },
   ];
 
   // Mode options
   const modeOptions = [
     { value: "ip", label: $localize`IP (Layer 3)` },
-    { value: "ethernet", label: $localize`Ethernet (Layer 2)` }
+    { value: "ethernet", label: $localize`Ethernet (Layer 2)` },
   ];
 
   // Auth method options
@@ -110,7 +127,7 @@ export const useOpenVPNServer = () => {
     { value: "sha1", label: "SHA1" },
     { value: "sha256", label: "SHA256" },
     { value: "sha512", label: "SHA512" },
-    { value: "null", label: "None" }
+    { value: "null", label: "None" },
   ];
 
   // Cipher options
@@ -122,90 +139,105 @@ export const useOpenVPNServer = () => {
     { value: "aes128-gcm", label: "AES-128-GCM" },
     { value: "aes192-gcm", label: "AES-192-GCM" },
     { value: "aes256-gcm", label: "AES-256-GCM" },
-    { value: "blowfish128", label: "Blowfish-128" }
+    { value: "blowfish128", label: "Blowfish-128" },
   ];
 
   // TLS version options
   const tlsVersionOptions = [
     { value: "any", label: $localize`Any` },
-    { value: "only-1.2", label: $localize`Only 1.2` }
+    { value: "only-1.2", label: $localize`Only 1.2` },
   ];
 
   // Core update function
-  const updateOpenVPNServer$ = $((configOrConfigs: Partial<OpenVpnServerConfig> | OpenVpnServerConfig[]) => {
-    // Handle both single config and array of configs
-    if (Array.isArray(configOrConfigs)) {
-      // For array of configs (multiple servers)
-      passphraseError.value = "";
-      certificateError.value = "";
-      
-      // Validate all servers
-      for (const config of configOrConfigs) {
-        // Validate certificate
-        if (!config.Certificate?.Certificate || !config.Certificate.Certificate.trim()) {
-          certificateError.value = $localize`Certificate is required`;
+  const updateOpenVPNServer$ = $(
+    (configOrConfigs: Partial<OpenVpnServerConfig> | OpenVpnServerConfig[]) => {
+      // Handle both single config and array of configs
+      if (Array.isArray(configOrConfigs)) {
+        // For array of configs (multiple servers)
+        passphraseError.value = "";
+        certificateError.value = "";
+
+        // Validate all servers
+        for (const config of configOrConfigs) {
+          // Validate certificate
+          if (
+            !config.Certificate.Certificate ||
+            !config.Certificate.Certificate.trim()
+          ) {
+            certificateError.value = $localize`Certificate is required`;
+          }
+
+          // Validate passphrase
+          if (
+            config.Certificate.CertificateKeyPassphrase &&
+            config.Certificate.CertificateKeyPassphrase.length < 10
+          ) {
+            passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
+          }
         }
-        
-        // Validate passphrase
-        if (config.Certificate?.CertificateKeyPassphrase && config.Certificate.CertificateKeyPassphrase.length < 10) {
-          passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-        }
-      }
-      
-      // Update context regardless of validation to preserve user input.
-      // The `isValid` flag can be used later to prevent advancing in a stepper.
-      starContext.updateLAN$({ 
-        VPNServer: {
-          ...vpnServerState,
-          OpenVpnServer: configOrConfigs
-        }
-      });
-    } else {
-      // Handle single config (backward compatibility)
-      const config = configOrConfigs;
-      const newConfig = {
-        ...openVpnState,
-        ...config
-      };
-      
-      let isValid = true;
-      
-      // Validate certificate
-      if (config.Certificate?.Certificate !== undefined) {
-        if (!newConfig.Certificate.Certificate || !newConfig.Certificate.Certificate.trim()) {
-          certificateError.value = $localize`Certificate is required`;
-          isValid = false;
-        } else {
-          certificateError.value = "";
-        }
-      }
-      
-      // Validate passphrase
-      if (config.Certificate?.CertificateKeyPassphrase !== undefined) {
-        if (newConfig.Certificate.CertificateKeyPassphrase && newConfig.Certificate.CertificateKeyPassphrase.length < 10) {
-          passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-          isValid = false;
-        } else {
-          passphraseError.value = "";
-        }
-      }
-      
-      if (isValid || (config.name && config.name === "")) {
-        starContext.updateLAN$({ 
+
+        // Update context regardless of validation to preserve user input.
+        // The `isValid` flag can be used later to prevent advancing in a stepper.
+        starContext.updateLAN$({
           VPNServer: {
             ...vpnServerState,
-            OpenVpnServer: (config.name && config.name === "") ? undefined : [newConfig]
-          }
+            OpenVpnServer: configOrConfigs,
+          },
         });
+      } else {
+        // Handle single config (backward compatibility)
+        const config = configOrConfigs;
+        const newConfig = {
+          ...openVpnState,
+          ...config,
+        };
+
+        let isValid = true;
+
+        // Validate certificate
+        if (config.Certificate?.Certificate !== undefined) {
+          if (
+            !newConfig.Certificate.Certificate ||
+            !newConfig.Certificate.Certificate.trim()
+          ) {
+            certificateError.value = $localize`Certificate is required`;
+            isValid = false;
+          } else {
+            certificateError.value = "";
+          }
+        }
+
+        // Validate passphrase
+        if (config.Certificate?.CertificateKeyPassphrase !== undefined) {
+          if (
+            newConfig.Certificate.CertificateKeyPassphrase &&
+            newConfig.Certificate.CertificateKeyPassphrase.length < 10
+          ) {
+            passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
+            isValid = false;
+          } else {
+            passphraseError.value = "";
+          }
+        }
+
+        if (isValid || (config.name && config.name === "")) {
+          starContext.updateLAN$({
+            VPNServer: {
+              ...vpnServerState,
+              OpenVpnServer:
+                config.name && config.name === "" ? undefined : [newConfig],
+            },
+          });
+        }
       }
-    }
-  });
+    },
+  );
 
   // Advanced mode form update function
   const updateAdvancedForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config
     updateOpenVPNServer$({
       name: formState.name,
@@ -228,12 +260,12 @@ export const useOpenVPNServer = () => {
         Auth: [formState.auth as OvpnAuthMethod],
         Cipher: [formState.cipher as OvpnCipher],
         TlsVersion: formState.tlsVersion as "any" | "only-1.2",
-        UserAuthMethod: "mschap2"
+        UserAuthMethod: "mschap2",
       },
       IPV6: {
         EnableTunIPv6: false,
         IPv6PrefixLength: 64,
-        TunServerIPv6: ""
+        TunServerIPv6: "",
       },
       Certificate: {
         Certificate: formState.certificate,
@@ -244,8 +276,8 @@ export const useOpenVPNServer = () => {
         AddressPool: formState.addressPool,
         Netmask: 24,
         MacAddress: "",
-        MaxMtu: formState.maxMtu
-      }
+        MaxMtu: formState.maxMtu,
+      },
     });
   });
 
@@ -260,72 +292,102 @@ export const useOpenVPNServer = () => {
       Certificate: {
         Certificate: "server-cert",
         CertificateKeyPassphrase: formState.certificateKeyPassphrase,
-        RequireClientCertificate: false
+        RequireClientCertificate: false,
       },
       enabled: true,
-      Mode: 'ip' as const,
-      DefaultProfile: 'ovpn-profile',
-      Authentication: ['mschap2' as AuthMethod],
+      Mode: "ip" as const,
+      DefaultProfile: "ovpn-profile",
+      Authentication: ["mschap2" as AuthMethod],
       PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
       KeepaliveTimeout: 30,
-      VRF: '',
-      RedirectGetway: 'def1' as const,
-      PushRoutes: '',
+      VRF: "",
+      RedirectGetway: "def1" as const,
+      PushRoutes: "",
       RenegSec: 3600,
-      Encryption: { 
-        Auth: ['sha256' as const], 
-        UserAuthMethod: 'mschap2' as const, 
-        Cipher: ['aes256-cbc' as const], 
-        TlsVersion: 'any' as const 
+      Encryption: {
+        Auth: ["sha256" as const],
+        UserAuthMethod: "mschap2" as const,
+        Cipher: ["aes256-cbc" as const],
+        TlsVersion: "any" as const,
       },
-      IPV6: { 
-        EnableTunIPv6: false, 
-        IPv6PrefixLength: 64, 
-        TunServerIPv6: '' 
+      IPV6: {
+        EnableTunIPv6: false,
+        IPv6PrefixLength: 64,
+        TunServerIPv6: "",
       },
       Address: {
         Netmask: 24,
         MacAddress: "",
         MaxMtu: 1450,
-        AddressPool: 'ovpn-pool'
-      }
+        AddressPool: "ovpn-pool",
+      },
     };
 
     // Create two servers - one UDP and one TCP with different ports
     const servers = [
       {
         ...baseConfig,
-        name: 'openvpn-udp',
-        Protocol: 'udp' as const,
+        name: "openvpn-udp",
+        Protocol: "udp" as const,
         Port: 1194, // Standard OpenVPN UDP port
       },
       {
         ...baseConfig,
-        name: 'openvpn-tcp',
-        Protocol: 'tcp' as const,
-        Port: 1195, 
-      }
+        name: "openvpn-tcp",
+        Protocol: "tcp" as const,
+        Port: 1195,
+      },
     ];
 
     updateOpenVPNServer$(servers);
   });
 
   // Individual field update functions for advanced mode
-  const updateName$ = $((value: string) => updateAdvancedForm$({ name: value }));
-  const updateCertificate$ = $((value: string) => updateAdvancedForm$({ certificate: value }));
-  const updatePort$ = $((value: number) => updateAdvancedForm$({ port: value }));
-  const updateProtocol$ = $((value: NetworkProtocol) => updateAdvancedForm$({ protocol: value }));
-  const updateMode$ = $((value: LayerMode) => updateAdvancedForm$({ mode: value }));
-  const updateAddressPool$ = $((value: string) => updateAdvancedForm$({ addressPool: value }));
-  const updateRequireClientCertificate$ = $((value: boolean) => updateAdvancedForm$({ requireClientCertificate: value }));
-  const updateAuth$ = $((value: OvpnAuthMethod) => updateAdvancedForm$({ auth: value }));
-  const updateCipher$ = $((value: OvpnCipher) => updateAdvancedForm$({ cipher: value }));
-  const updateCertificateKeyPassphrase$ = $((value: string) => updateAdvancedForm$({ certificateKeyPassphrase: value }));
-  const updateDefaultProfile$ = $((value: string) => updateAdvancedForm$({ defaultProfile: value }));
-  const updateTlsVersion$ = $((value: "any" | "only-1.2") => updateAdvancedForm$({ tlsVersion: value }));
-  const updateMaxMtu$ = $((value: number) => updateAdvancedForm$({ maxMtu: value }));
-  const updateMaxMru$ = $((value: number) => updateAdvancedForm$({ maxMru: value }));
-  const updateKeepaliveTimeout$ = $((value: number) => updateAdvancedForm$({ keepaliveTimeout: value }));
+  const updateName$ = $((value: string) =>
+    updateAdvancedForm$({ name: value }),
+  );
+  const updateCertificate$ = $((value: string) =>
+    updateAdvancedForm$({ certificate: value }),
+  );
+  const updatePort$ = $((value: number) =>
+    updateAdvancedForm$({ port: value }),
+  );
+  const updateProtocol$ = $((value: NetworkProtocol) =>
+    updateAdvancedForm$({ protocol: value }),
+  );
+  const updateMode$ = $((value: LayerMode) =>
+    updateAdvancedForm$({ mode: value }),
+  );
+  const updateAddressPool$ = $((value: string) =>
+    updateAdvancedForm$({ addressPool: value }),
+  );
+  const updateRequireClientCertificate$ = $((value: boolean) =>
+    updateAdvancedForm$({ requireClientCertificate: value }),
+  );
+  const updateAuth$ = $((value: OvpnAuthMethod) =>
+    updateAdvancedForm$({ auth: value }),
+  );
+  const updateCipher$ = $((value: OvpnCipher) =>
+    updateAdvancedForm$({ cipher: value }),
+  );
+  const updateCertificateKeyPassphrase$ = $((value: string) =>
+    updateAdvancedForm$({ certificateKeyPassphrase: value }),
+  );
+  const updateDefaultProfile$ = $((value: string) =>
+    updateAdvancedForm$({ defaultProfile: value }),
+  );
+  const updateTlsVersion$ = $((value: "any" | "only-1.2") =>
+    updateAdvancedForm$({ tlsVersion: value }),
+  );
+  const updateMaxMtu$ = $((value: number) =>
+    updateAdvancedForm$({ maxMtu: value }),
+  );
+  const updateMaxMru$ = $((value: number) =>
+    updateAdvancedForm$({ maxMru: value }),
+  );
+  const updateKeepaliveTimeout$ = $((value: number) =>
+    updateAdvancedForm$({ keepaliveTimeout: value }),
+  );
 
   // Toggle functions
   const handleToggle = $((enabled: boolean) => {
@@ -353,56 +415,59 @@ export const useOpenVPNServer = () => {
 
   // Function to ensure default configuration when protocol is enabled
   const ensureDefaultConfig = $(() => {
-    if (!vpnServerState.OpenVpnServer || vpnServerState.OpenVpnServer.length === 0) {
+    if (
+      !vpnServerState.OpenVpnServer ||
+      vpnServerState.OpenVpnServer.length === 0
+    ) {
       const baseConfig = {
         Certificate: {
           Certificate: "server-cert",
           CertificateKeyPassphrase: "",
-          RequireClientCertificate: false
+          RequireClientCertificate: false,
         },
         enabled: true,
-        Mode: 'ip' as const,
-        DefaultProfile: 'ovpn-profile',
-        Authentication: ['mschap2' as AuthMethod],
+        Mode: "ip" as const,
+        DefaultProfile: "ovpn-profile",
+        Authentication: ["mschap2" as AuthMethod],
         PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
         KeepaliveTimeout: 30,
-        VRF: '',
-        RedirectGetway: 'def1' as const,
-        PushRoutes: '',
+        VRF: "",
+        RedirectGetway: "def1" as const,
+        PushRoutes: "",
         RenegSec: 3600,
-        Encryption: { 
-          Auth: ['sha256' as const], 
-          UserAuthMethod: 'mschap2' as const, 
-          Cipher: ['aes256-cbc' as const], 
-          TlsVersion: 'any' as const 
+        Encryption: {
+          Auth: ["sha256" as const],
+          UserAuthMethod: "mschap2" as const,
+          Cipher: ["aes256-cbc" as const],
+          TlsVersion: "any" as const,
         },
-        IPV6: { 
-          EnableTunIPv6: false, 
-          IPv6PrefixLength: 64, 
-          TunServerIPv6: '' 
+        IPV6: {
+          EnableTunIPv6: false,
+          IPv6PrefixLength: 64,
+          TunServerIPv6: "",
         },
         Address: {
           Netmask: 24,
           MacAddress: "",
           MaxMtu: 1450,
-          AddressPool: 'ovpn-pool'
-        }
+          AddressPool: "ovpn-pool",
+        },
       };
 
       // Create two servers - one UDP and one TCP with different ports
       const servers = [
         {
           ...baseConfig,
-          name: 'openvpn-udp',
-          Protocol: 'udp' as const,
+          name: "openvpn-udp",
+          Protocol: "udp" as const,
           Port: 1194, // Standard OpenVPN UDP port
         },
         {
           ...baseConfig,
-          name: 'openvpn-tcp',
-          Protocol: 'tcp' as const,
-          Port: 1195, 
-        }
+          name: "openvpn-tcp",
+          Protocol: "tcp" as const,
+          Port: 1195,
+        },
       ];
 
       updateOpenVPNServer$(servers);
@@ -414,17 +479,21 @@ export const useOpenVPNServer = () => {
     openVpnState,
     formState,
     // For backward compatibility with existing components
-    get advancedFormState() { return formState; },
-    get easyFormState() { return formState; },
+    get advancedFormState() {
+      return formState;
+    },
+    get easyFormState() {
+      return formState;
+    },
     isEnabled,
     viewMode,
     showPassphrase,
     activeTab,
-    
+
     // Errors
     certificateError,
     passphraseError,
-    
+
     // Options
     tabOptions,
     protocolOptions,
@@ -432,13 +501,13 @@ export const useOpenVPNServer = () => {
     authMethodOptions,
     cipherOptions,
     tlsVersionOptions,
-    
+
     // Core functions
     updateOpenVPNServer$,
     updateAdvancedForm$,
     updateEasyServerConfig,
     ensureDefaultConfig,
-    
+
     // Individual field updates for advanced mode
     updateName$,
     updateCertificate$,
@@ -455,12 +524,12 @@ export const useOpenVPNServer = () => {
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
-    
+
     // Toggles
     handleToggle,
     togglePassphraseVisibility$,
-    
+
     // Easy mode functions
-    updateEasyPassphrase$
+    updateEasyPassphrase$,
   };
-}; 
+};

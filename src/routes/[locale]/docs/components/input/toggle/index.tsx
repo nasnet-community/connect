@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Toggle"
       description="A binary toggle component for switching between two states, typically on/off or enabled/disabled."
-      Overview={<ToggleOverview />}
-      Examples={<ToggleExamples />}
-      APIReference={<ToggleAPIReference />}
-      Usage={<ToggleUsage />}
-      Playground={<TogglePlayground />}
+      Overview={ToggleOverview}
+      Examples={ToggleExamples}
+      APIReference={ToggleAPIReference}
+      Usage={ToggleUsage}
+      Playground={TogglePlayground}
     />
   );
 });

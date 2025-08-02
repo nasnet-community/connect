@@ -1,7 +1,7 @@
 import { $ } from "@builder.io/qwik";
-import { 
-  HiServerOutline, 
-  HiLockClosedOutline, 
+import {
+  HiServerOutline,
+  HiLockClosedOutline,
   HiDocumentOutline,
   HiPlusCircleOutline,
   HiUserGroupOutline,
@@ -14,7 +14,7 @@ import {
   HiGlobeAltOutline,
   HiKeyOutline,
   HiUserOutline,
-  HiCogOutline
+  HiCogOutline,
 } from "@qwikest/icons/heroicons";
 
 // Create serialized versions of icons for use in VPN client components
@@ -32,4 +32,4 @@ export const UploadIcon = $(HiCloudOutline);
 export const GlobalIcon = $(HiGlobeAltOutline);
 export const KeyIcon = $(HiKeyOutline);
 export const UserIcon = $(HiUserOutline);
-export const SettingsIcon = $(HiCogOutline); 
+export const SettingsIcon = $(HiCogOutline);

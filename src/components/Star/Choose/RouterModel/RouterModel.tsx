@@ -13,7 +13,9 @@ interface RouterModelProps {
 export const RouterModel = component$((props: RouterModelProps) => {
   const starContext = useContext(StarContext);
   const selectedMode = starContext.state.Choose.RouterMode;
-  const selectedModels = starContext.state.Choose.RouterModels.map(rm => rm.Model);
+  const selectedModels = starContext.state.Choose.RouterModels.map(
+    (rm) => rm.Model,
+  );
 
   const getIcon = (iconType: string) => {
     switch (iconType) {
@@ -35,51 +37,54 @@ export const RouterModel = component$((props: RouterModelProps) => {
       router_model: model,
       router_mode: selectedMode,
       step: "choose",
-      is_addition: selectedMode === "Trunk Mode" && !selectedModels.includes(model)
+      is_addition:
+        selectedMode === "Trunk Mode" && !selectedModels.includes(model),
     });
 
     const interfaces: RouterInterfaces = {};
-    
+
     if (selectedRouter.interfaces.ethernet?.length) {
       interfaces.ethernet = selectedRouter.interfaces.ethernet;
     }
-    
+
     if (selectedRouter.interfaces.wireless?.length) {
       interfaces.wireless = selectedRouter.interfaces.wireless;
     }
-    
+
     if (selectedRouter.interfaces.sfp?.length) {
       interfaces.sfp = selectedRouter.interfaces.sfp;
     }
-    
+
     if (selectedRouter.interfaces.lte?.length) {
       interfaces.lte = selectedRouter.interfaces.lte;
     }
 
     if (selectedMode === "AP Mode") {
       starContext.updateChoose$({
-        RouterModels: [{
-          isMaster: true,
-          Model: model,
-          Interfaces: interfaces
-        }]
+        RouterModels: [
+          {
+            isMaster: true,
+            Model: model,
+            Interfaces: interfaces,
+          },
+        ],
       });
     } else if (selectedMode === "Trunk Mode") {
       const existingModels = starContext.state.Choose.RouterModels;
-      
-      if (existingModels.some(rm => rm.Model === model)) {
+
+      if (existingModels.some((rm) => rm.Model === model)) {
         starContext.updateChoose$({
-          RouterModels: existingModels.filter(rm => rm.Model !== model)
+          RouterModels: existingModels.filter((rm) => rm.Model !== model),
         });
       } else if (existingModels.length < 2) {
         const newModelConfig = {
-          isMaster: existingModels.length === 0, 
+          isMaster: existingModels.length === 0,
           Model: model,
-          Interfaces: interfaces
+          Interfaces: interfaces,
         };
-        
+
         starContext.updateChoose$({
-          RouterModels: [...existingModels, newModelConfig]
+          RouterModels: [...existingModels, newModelConfig],
         });
       }
     }
@@ -88,20 +93,24 @@ export const RouterModel = component$((props: RouterModelProps) => {
       starContext.updateLAN$({
         Wireless: {
           ...starContext.state.LAN.Wireless,
-        }
+        },
       });
     }
 
     if (
-      (selectedMode === "AP Mode" && starContext.state.Choose.RouterModels.length === 1) ||
-      (selectedMode === "Trunk Mode" && starContext.state.Choose.RouterModels.length === 2)
+      (selectedMode === "AP Mode" &&
+        starContext.state.Choose.RouterModels.length === 1) ||
+      (selectedMode === "Trunk Mode" &&
+        starContext.state.Choose.RouterModels.length === 2)
     ) {
       props.onComplete$?.();
     }
   });
 
   const getSelectionIndex = (model: string) => {
-    return starContext.state.Choose.RouterModels.findIndex(rm => rm.Model === model);
+    return starContext.state.Choose.RouterModels.findIndex(
+      (rm) => rm.Model === model,
+    );
   };
 
   const pluralize = (num: number, singular: string, plural: string) => {
@@ -115,7 +124,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
           Select Router Model
         </h2>
-        <p class="mt-3 text-text-secondary/90 dark:text-text-dark-secondary">
+        <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-3">
           {selectedMode === "AP Mode"
             ? "Choose a router for your network"
             : `Select ${2 - selectedModels.length} more ${pluralize(2 - selectedModels.length, "router", "routers")} for trunk configuration`}
@@ -131,8 +140,8 @@ export const RouterModel = component$((props: RouterModelProps) => {
             class={`group relative cursor-pointer rounded-2xl transition-all duration-300
               ${
                 selectedModels.includes(router.model)
-                  ? "ring-primary-500 bg-primary-500/5 ring-2 dark:bg-primary-500/10"
-                  : "bg-surface/50 hover:bg-surface-secondary/50 dark:bg-surface-dark/50 dark:hover:bg-surface-dark-secondary/50"
+                  ? "bg-primary-500/5 ring-2 ring-primary-500 dark:bg-primary-500/10"
+                  : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/50 bg-surface/50 dark:bg-surface-dark/50"
               }
               ${
                 selectedMode === "Trunk Mode" &&
@@ -227,8 +236,8 @@ export const RouterModel = component$((props: RouterModelProps) => {
 
       {/* Selection Summary */}
       {selectedModels.length > 0 && (
-        <div class="mt-8 rounded-xl bg-surface-secondary/50 p-4 dark:bg-surface-dark-secondary/50">
-          <p class="text-sm text-text-secondary/90 dark:text-text-dark-secondary">
+        <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 mt-8 rounded-xl p-4">
+          <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm">
             {selectedMode === "AP Mode"
               ? "Selected Router: "
               : "Selected Routers: "}

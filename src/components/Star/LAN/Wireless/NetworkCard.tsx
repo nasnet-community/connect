@@ -2,6 +2,7 @@ import { component$, type QRL } from "@builder.io/qwik";
 import { HiSparklesOutline, HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
 import { NETWORK_DESCRIPTIONS } from "./constants";
+import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
 
 interface NetworkCardProps {
   networkKey: NetworkKey;
@@ -44,7 +45,7 @@ export const NetworkCard = component$<NetworkCardProps>(
       <div
         class={`rounded-xl border border-gray-200 bg-white shadow-sm 
                 transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800
-                ${isDisabled ? 'opacity-60' : ''}`}
+                ${isDisabled ? "opacity-60" : ""}`}
       >
         <div class="p-6">
           <div class="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
@@ -61,7 +62,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                 </p>
               </div>
             </div>
-            
+
             <div class="flex items-center gap-4">
               <div class="flex items-center">
                 <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -75,10 +76,12 @@ export const NetworkCard = component$<NetworkCardProps>(
                     onChange$={onHideToggle}
                     disabled={isDisabled}
                   />
-                  <div class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? 'cursor-not-allowed' : ''}`}></div>
+                  <div
+                    class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? "cursor-not-allowed" : ""}`}
+                  ></div>
                 </label>
               </div>
-              
+
               <div class="flex items-center">
                 <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   {$localize`Split Band`}
@@ -91,10 +94,12 @@ export const NetworkCard = component$<NetworkCardProps>(
                     onChange$={onSplitBandToggle}
                     disabled={isDisabled}
                   />
-                  <div class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? 'cursor-not-allowed' : ''}`}></div>
+                  <div
+                    class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? "cursor-not-allowed" : ""}`}
+                  ></div>
                 </label>
               </div>
-              
+
               <div class="flex items-center">
                 <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   {isDisabled ? $localize`Enable` : $localize`Disable`}
@@ -115,7 +120,8 @@ export const NetworkCard = component$<NetworkCardProps>(
           <div class="mt-6 space-y-6">
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`Network Name (SSID)`}{!isDisabled && <span class="ml-1 text-red-500">*</span>}
+                {$localize`Network Name (SSID)`}
+                {!isDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex flex-col gap-3 sm:flex-row">
                 <input
@@ -127,7 +133,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                   disabled={isDisabled}
                   class={`h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 
                        text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white
-                       ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                       ${isDisabled ? "cursor-not-allowed" : ""}`}
                   placeholder={$localize`Enter ${displayName} network name`}
                   required={!isDisabled}
                 />
@@ -136,10 +142,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                   disabled={isLoading[`${networkKey}SSID`] || isDisabled}
                   class={`flex h-11 min-w-[160px] items-center justify-center gap-2 
                        rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600
-                       ${isDisabled ? 'cursor-not-allowed opacity-75' : ''}`}
+                       ${isDisabled ? "cursor-not-allowed opacity-75" : ""}`}
                 >
                   {isLoading[`${networkKey}SSID`] ? (
-                    <div class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <Spinner size="xs" color="white" variant="circle" />
                   ) : (
                     <HiSparklesOutline class="h-5 w-5" />
                   )}
@@ -150,7 +156,8 @@ export const NetworkCard = component$<NetworkCardProps>(
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`Network Password`}{!isDisabled && <span class="ml-1 text-red-500">*</span>}
+                {$localize`Network Password`}
+                {!isDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex flex-col gap-3 sm:flex-row">
                 <input
@@ -162,7 +169,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                   disabled={isDisabled}
                   class={`h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 
                        text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white
-                       ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                       ${isDisabled ? "cursor-not-allowed" : ""}`}
                   placeholder={$localize`Enter ${displayName} password`}
                   required={!isDisabled}
                 />
@@ -171,10 +178,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                   disabled={isLoading[`${networkKey}Password`] || isDisabled}
                   class={`flex h-11 min-w-[160px] items-center justify-center gap-2 
                        rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600
-                       ${isDisabled ? 'cursor-not-allowed opacity-75' : ''}`}
+                       ${isDisabled ? "cursor-not-allowed opacity-75" : ""}`}
                 >
                   {isLoading[`${networkKey}Password`] ? (
-                    <div class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <Spinner size="xs" color="white" variant="circle" />
                   ) : (
                     <HiSparklesOutline class="h-5 w-5" />
                   )}

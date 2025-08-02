@@ -1,6 +1,6 @@
 import { component$, $, useComputed$ } from "@builder.io/qwik";
 import type { Signal } from "@builder.io/qwik";
-import { Select, type SelectOption } from "~/components/Core/Select/Select";
+import { Select, type SelectOption } from "~/components/Core/Select";
 
 // Organize timezones by continent
 export const TIMEZONES = {
@@ -60,11 +60,7 @@ export const TIMEZONES = {
     "Australia/Brisbane",
     "Australia/Adelaide",
   ],
-  Pacific: [
-    "Pacific/Auckland",
-    "Pacific/Fiji",
-    "Pacific/Honolulu",
-  ],
+  Pacific: ["Pacific/Auckland", "Pacific/Fiji", "Pacific/Honolulu"],
 };
 
 interface TimezoneCardProps {
@@ -76,34 +72,34 @@ export const TimezoneCard = component$<TimezoneCardProps>(
     // Convert the timezone data to SelectOption format
     const timezoneOptions = useComputed$(() => {
       const options: SelectOption[] = [];
-      
+
       Object.entries(TIMEZONES).forEach(([continent, zones]) => {
-        zones.forEach(zone => {
+        zones.forEach((zone) => {
           options.push({
             value: zone,
             label: zone,
-            group: continent
+            group: continent,
           });
         });
       });
-      
+
       return options;
     });
-    
+
     // Handle the timezone change
     const handleTimezoneChange = $((value: string | string[]) => {
       // We only care about string values in this component
-      const newValue = typeof value === 'string' ? value : '';
+      const newValue = typeof value === "string" ? value : "";
       selectedTimezone.value = newValue;
     });
 
     return (
-      <div class="rounded-xl bg-surface-secondary p-5 dark:bg-surface-dark-secondary">
+      <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl p-5">
         <div class="relative z-20">
           <Select
             options={timezoneOptions.value}
             value={selectedTimezone.value}
-            label={$localize`Timezone`} 
+            label={$localize`Timezone`}
             onChange$={handleTimezoneChange}
             placeholder={$localize`Search your city or timezone...`}
             searchable={true}

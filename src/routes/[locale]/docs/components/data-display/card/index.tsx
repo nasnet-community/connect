@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Card"
       description="A flexible container component for grouping and displaying related content."
-      Overview={<CardOverview />}
-      Examples={<CardExamples />}
-      APIReference={<CardAPIReference />}
-      Usage={<CardUsage />}
-      Playground={<CardPlayground />}
+      Overview={CardOverview}
+      Examples={CardExamples}
+      APIReference={CardAPIReference}
+      Usage={CardUsage}
+      Playground={CardPlayground}
     />
   );
 });

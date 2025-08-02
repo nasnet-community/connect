@@ -10,16 +10,16 @@ type ViewMode = "easy" | "advanced";
 export const usePPTPServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   const pptpState = vpnServerState.PptpServer || {
     enabled: true,
     DefaultProfile: "pptp-profile",
     Authentication: ["mschap2"],
     PacketSize: {
       MaxMtu: 1450,
-      MaxMru: 1450
+      MaxMru: 1450,
     },
-    KeepaliveTimeout: 30
+    KeepaliveTimeout: 30,
   };
 
   // Error signals
@@ -31,7 +31,7 @@ export const usePPTPServer = () => {
     maxMtu: pptpState.PacketSize?.MaxMtu || 1450,
     maxMru: pptpState.PacketSize?.MaxMru || 1450,
     keepaliveTimeout: pptpState.KeepaliveTimeout || 30,
-    authentication: pptpState.Authentication || ["mschap2"]
+    authentication: pptpState.Authentication || ["mschap2"],
   });
 
   // UI state
@@ -43,18 +43,18 @@ export const usePPTPServer = () => {
     { value: "mschap1", label: "MS-CHAPv1" },
     { value: "mschap2", label: "MS-CHAPv2" },
     { value: "pap", label: "PAP" },
-    { value: "chap", label: "CHAP" }
+    { value: "chap", label: "CHAP" },
   ];
 
   // Core update function
   const updatePPTPServer$ = $((config: Partial<PptpServerConfig>) => {
     const newConfig = {
       ...pptpState,
-      ...config
+      ...config,
     };
-    
+
     let isValid = true;
-    
+
     // Validate default profile
     if (config.DefaultProfile !== undefined) {
       if (!newConfig.DefaultProfile || !newConfig.DefaultProfile.trim()) {
@@ -64,13 +64,16 @@ export const usePPTPServer = () => {
         defaultProfileError.value = "";
       }
     }
-    
+
     if (isValid || (config.DefaultProfile && config.DefaultProfile === "")) {
-      starContext.updateLAN$({ 
+      starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
-          PptpServer: (config.DefaultProfile && config.DefaultProfile === "") ? undefined : newConfig
-        }
+          PptpServer:
+            config.DefaultProfile && config.DefaultProfile === ""
+              ? undefined
+              : newConfig,
+        },
       });
     }
   });
@@ -79,7 +82,7 @@ export const usePPTPServer = () => {
   const updateAdvancedForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config
     updatePPTPServer$({
       enabled: true,
@@ -89,7 +92,7 @@ export const usePPTPServer = () => {
         MaxMtu: formState.maxMtu,
         MaxMru: formState.maxMru,
       },
-      KeepaliveTimeout: formState.keepaliveTimeout
+      KeepaliveTimeout: formState.keepaliveTimeout,
     });
   });
 
@@ -97,7 +100,7 @@ export const usePPTPServer = () => {
   const updateEasyForm$ = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config with default values
     updatePPTPServer$({
       enabled: true,
@@ -107,15 +110,23 @@ export const usePPTPServer = () => {
         MaxMtu: 1450,
         MaxMru: 1450,
       },
-      KeepaliveTimeout: 30
+      KeepaliveTimeout: 30,
     });
   });
 
   // Individual field update functions for advanced mode
-  const updateDefaultProfile$ = $((value: string) => updateAdvancedForm$({ defaultProfile: value }));
-  const updateMaxMtu$ = $((value: number) => updateAdvancedForm$({ maxMtu: value }));
-  const updateMaxMru$ = $((value: number) => updateAdvancedForm$({ maxMru: value }));
-  const updateKeepaliveTimeout$ = $((value: number) => updateAdvancedForm$({ keepaliveTimeout: value }));
+  const updateDefaultProfile$ = $((value: string) =>
+    updateAdvancedForm$({ defaultProfile: value }),
+  );
+  const updateMaxMtu$ = $((value: number) =>
+    updateAdvancedForm$({ maxMtu: value }),
+  );
+  const updateMaxMru$ = $((value: number) =>
+    updateAdvancedForm$({ maxMru: value }),
+  );
+  const updateKeepaliveTimeout$ = $((value: number) =>
+    updateAdvancedForm$({ keepaliveTimeout: value }),
+  );
 
   // Authentication methods handling
   const isAuthMethodSelected = $((method: string) => {
@@ -124,20 +135,20 @@ export const usePPTPServer = () => {
 
   const toggleAuthMethod = $((method: string, isSelected: boolean) => {
     let newAuthentication = [...formState.authentication];
-    
+
     if (isSelected) {
       if (!newAuthentication.includes(method as AuthMethod)) {
         newAuthentication.push(method as AuthMethod);
       }
     } else {
-      newAuthentication = newAuthentication.filter(auth => auth !== method);
+      newAuthentication = newAuthentication.filter((auth) => auth !== method);
     }
-    
+
     // Ensure at least one method is selected
     if (newAuthentication.length === 0) {
       newAuthentication = ["mschap2"];
     }
-    
+
     updateAdvancedForm$({ authentication: newAuthentication });
   });
 
@@ -148,7 +159,7 @@ export const usePPTPServer = () => {
       if (isEnabled.value && !formState.defaultProfile) {
         formState.defaultProfile = "pptp-profile";
       }
-      
+
       if (enabled) {
         updateAdvancedForm$({});
       } else {
@@ -159,7 +170,7 @@ export const usePPTPServer = () => {
       isEnabled.value = !enabled; // Revert the change if there's an error
     }
   });
-  
+
   // // Set view mode (easy or advanced)
   // const setViewMode = $((mode: ViewMode) => {
   //   viewMode.value = mode;
@@ -176,7 +187,7 @@ export const usePPTPServer = () => {
           MaxMtu: 1450,
           MaxMru: 1450,
         },
-        KeepaliveTimeout: 30
+        KeepaliveTimeout: 30,
       });
     }
   });
@@ -192,37 +203,41 @@ export const usePPTPServer = () => {
     pptpState,
     formState,
     // For backward compatibility with existing components
-    get advancedFormState() { return formState; },
-    get easyFormState() { return formState; },
+    get advancedFormState() {
+      return formState;
+    },
+    get easyFormState() {
+      return formState;
+    },
     isEnabled,
     viewMode,
-    
+
     // Errors
     defaultProfileError,
-    
+
     // Options
     authOptions,
-    
+
     // Core functions
     updatePPTPServer$,
     updateAdvancedForm$,
     updateEasyForm$,
     ensureDefaultConfig,
-    
+
     // Individual field updates for advanced mode
     updateDefaultProfile$,
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
-    
+
     // Authentication methods
     isAuthMethodSelected,
     toggleAuthMethod,
-    
+
     // Toggles
     handleToggle,
-    
+
     // Easy mode functions
-    updateEasyDefaultProfile$
+    updateEasyDefaultProfile$,
   };
-}; 
+};

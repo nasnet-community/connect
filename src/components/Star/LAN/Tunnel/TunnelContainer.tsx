@@ -4,7 +4,6 @@ import { HiCubeTransparentOutline } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
 
 export const TunnelContainer = component$<StepProps>((props) => {
-  
   return (
     <div class="w-full max-w-6xl">
       {/* Page Header */}
@@ -24,11 +23,8 @@ export const TunnelContainer = component$<StepProps>((props) => {
 
       {/* Main Content */}
       <div class="flex flex-col gap-8">
-        <Tunnel 
-          isComplete={props.isComplete} 
-          onComplete$={props.onComplete$} 
-        />
+        <Tunnel isComplete={props.isComplete} onComplete$={props.onComplete$} />
       </div>
     </div>
   );
-}); 
+});

@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Divider"
       description="A layout component that creates visual separation between content sections"
-      Overview={<DividerOverview />}
-      Examples={<DividerExamples />}
-      APIReference={<DividerAPIReference />}
-      Usage={<DividerUsage />}
-      Playground={<DividerPlayground />}
+      Overview={DividerOverview}
+      Examples={DividerExamples}
+      APIReference={DividerAPIReference}
+      Usage={DividerUsage}
+      Playground={DividerPlayground}
     />
   );
 });

@@ -162,6 +162,10 @@ export default component$(() => {
               href: `/${locale}/docs/components/input/switch`,
               label: "Switch",
             },
+            {
+              href: `/${locale}/docs/components/input/toggle`,
+              label: "Toggle",
+            },
           ],
         },
         {
@@ -201,6 +205,10 @@ export default component$(() => {
             {
               href: `/${locale}/docs/components/form/passwordfield`,
               label: "PasswordField",
+            },
+            {
+              href: `/${locale}/docs/components/form/radio`,
+              label: "Radio",
             },
             {
               href: `/${locale}/docs/components/form/radiogroup`,
@@ -276,12 +284,20 @@ export default component$(() => {
               label: "Error Message",
             },
             {
+              href: `/${locale}/docs/components/feedback/modal`,
+              label: "Modal",
+            },
+            {
               href: `/${locale}/docs/components/feedback/popover`,
               label: "Popover",
             },
             {
               href: `/${locale}/docs/components/feedback/promobanner`,
               label: "Promo Banner",
+            },
+            {
+              href: `/${locale}/docs/components/feedback/showcase`,
+              label: "Showcase",
             },
             {
               href: `/${locale}/docs/components/feedback/toast`,
@@ -321,6 +337,7 @@ export default component$(() => {
           label: "Iconography",
         },
         { href: `/${locale}/docs/components/graph`, label: "Graph" },
+        { href: `/${locale}/docs/components/stepper`, label: "Stepper" },
       ],
     },
     {

@@ -8,10 +8,10 @@ export const useVPNConfig = () => {
   const isValid = useSignal(false);
   const vpnType = useSignal<VPNType | "">("");
   const errorMessage = useSignal("");
-  
+
   useTask$(({ track }) => {
     track(() => starContext.state.WAN.VPNClient);
-    
+
     if (starContext.state.WAN.VPNClient) {
       if (starContext.state.WAN.VPNClient.Wireguard) {
         vpnType.value = "Wireguard";
@@ -37,18 +37,18 @@ export const useVPNConfig = () => {
       }
     }
   });
-  
+
   const saveVPNSelection$ = $(async () => {
     if (!vpnType.value) {
       errorMessage.value = "Please select a VPN type";
       return false;
     }
-    
+
     if (!isValid.value) {
       errorMessage.value = "Please complete the VPN configuration";
       return false;
     }
-    
+
     return true;
   });
 
@@ -57,6 +57,6 @@ export const useVPNConfig = () => {
     isValid,
     vpnType,
     errorMessage,
-    saveVPNSelection$
+    saveVPNSelection$,
   };
 };

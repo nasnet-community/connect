@@ -1,51 +1,58 @@
 import { component$, $, useTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper/hooks/useStepperContext";
 import { TunnelContextId } from "../Tunnel";
-import { HiLockClosedOutline, HiPlusCircleOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
+import {
+  HiLockClosedOutline,
+  HiPlusCircleOutline,
+  HiTrashOutline,
+} from "@qwikest/icons/heroicons";
 import type { IpipTunnelConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
+import { Select } from "~/components/Core/Select";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
-import { ServerFormField, Select } from "~/components/Core/Form/ServerField";
+import { Field } from "~/components/Core/Form/Field";
 
 export const IPIPTunnelStep = component$(() => {
   const stepper = useStepperContext(TunnelContextId);
-  
+
   // Auto-complete step if tunnels are disabled - moved to useTask$
-  
+
   // Handler to add a new IPIP tunnel
   const addTunnel$ = $(() => {
     const newTunnel: IpipTunnelConfig = {
-      type: 'ipip',
+      type: "ipip",
       name: `ipip-tunnel-${stepper.data.ipip.length + 1}`,
       localAddress: "",
       remoteAddress: "",
     };
-    
+
     stepper.data.ipip.push(newTunnel);
   });
-  
+
   // Handler to remove a tunnel
   const removeTunnel$ = $((index: number) => {
     stepper.data.ipip.splice(index, 1);
   });
-  
+
   // Handler to update a tunnel property
-  const updateTunnelField$ = $((index: number, field: keyof IpipTunnelConfig, value: any) => {
-    if (index >= 0 && index < stepper.data.ipip.length) {
-      (stepper.data.ipip[index] as any)[field] = value;
-    }
-  });
-  
+  const updateTunnelField$ = $(
+    (index: number, field: keyof IpipTunnelConfig, value: any) => {
+      if (index >= 0 && index < stepper.data.ipip.length) {
+        (stepper.data.ipip[index] as any)[field] = value;
+      }
+    },
+  );
+
   // Validate all tunnels and update step completion status
   const validateTunnels$ = $(() => {
     let isValid = true;
-    
+
     // If there are no tunnels, the step is still valid
     if (stepper.data.ipip.length === 0) {
       return true;
     }
-    
+
     // Check if all tunnels have required fields
     for (const tunnel of stepper.data.ipip) {
       if (!tunnel.name || !tunnel.localAddress || !tunnel.remoteAddress) {
@@ -53,7 +60,7 @@ export const IPIPTunnelStep = component$(() => {
         break;
       }
     }
-    
+
     return isValid;
   });
 
@@ -61,19 +68,22 @@ export const IPIPTunnelStep = component$(() => {
   useTask$(({ track }) => {
     // Track tunnel enabled state
     track(() => stepper.data.tunnelEnabled.value);
-    
+
     // Auto-complete step if tunnels are disabled
     if (!stepper.data.tunnelEnabled.value) {
       stepper.completeStep$();
       return;
     }
-    
+
     // Skip this step if a different protocol was selected
-    if (stepper.data.selectedProtocol && stepper.data.selectedProtocol !== 'ipip') {
+    if (
+      stepper.data.selectedProtocol &&
+      stepper.data.selectedProtocol !== "ipip"
+    ) {
       stepper.completeStep$();
       return;
     }
-    
+
     // Track tunnels to revalidate when they change
     track(() => stepper.data.ipip.length);
     for (let i = 0; i < stepper.data.ipip.length; i++) {
@@ -82,7 +92,7 @@ export const IPIPTunnelStep = component$(() => {
       track(() => tunnel.localAddress);
       track(() => tunnel.remoteAddress);
     }
-    
+
     // Validate and update step completion
     validateTunnels$().then((isValid) => {
       if (isValid) {
@@ -101,7 +111,7 @@ export const IPIPTunnelStep = component$(() => {
       </Card>
     );
   }
-  
+
   return (
     <div class="space-y-6">
       <Card>
@@ -117,18 +127,14 @@ export const IPIPTunnelStep = component$(() => {
               </p>
             </div>
           </div>
-          
-          <Button
-            onClick$={addTunnel$}
-            variant="outline"
-            leftIcon
-          >
+
+          <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
             {$localize`Add Tunnel`}
           </Button>
         </div>
       </Card>
-      
+
       {stepper.data.ipip.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
@@ -139,7 +145,7 @@ export const IPIPTunnelStep = component$(() => {
         <div class="space-y-4">
           {stepper.data.ipip.map((tunnel, index) => (
             <Card key={index}>
-              <div class="flex items-center justify-between mb-4">
+              <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
                   {$localize`IPIP Tunnel ${index + 1}`}
                 </h4>
@@ -153,96 +159,129 @@ export const IPIPTunnelStep = component$(() => {
                   {$localize`Remove`}
                 </Button>
               </div>
-              
+
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
-                <ServerFormField label={$localize`Name`} required>
+                <Field label={$localize`Name`} required>
                   <Input
                     type="text"
                     value={tunnel.name}
-                    onChange$={(e, value) => updateTunnelField$(index, 'name', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "name", value)
+                    }
                     placeholder={$localize`Enter tunnel name`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* MTU */}
-                <ServerFormField label={$localize`MTU`}>
+                <Field label={$localize`MTU`}>
                   <Input
                     type="number"
                     value={tunnel.mtu?.toString() || ""}
                     onChange$={(e, value) => {
-                      updateTunnelField$(index, 'mtu', value ? parseInt(value) : undefined);
+                      updateTunnelField$(
+                        index,
+                        "mtu",
+                        value
+                          ? parseInt(Array.isArray(value) ? value[0] : value)
+                          : undefined,
+                      );
                     }}
                     placeholder={$localize`Enter MTU (optional)`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Local Address */}
-                <ServerFormField label={$localize`Local Address`} required>
+                <Field label={$localize`Local Address`} required>
                   <Input
                     type="text"
                     value={tunnel.localAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'localAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "localAddress", value)
+                    }
                     placeholder={$localize`Enter local address`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Remote Address */}
-                <ServerFormField label={$localize`Remote Address`} required>
+                <Field label={$localize`Remote Address`} required>
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
-                    onChange$={(e, value) => updateTunnelField$(index, 'remoteAddress', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "remoteAddress", value)
+                    }
                     placeholder={$localize`Enter remote address`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* IPsec Secret */}
-                <ServerFormField label={$localize`IPsec Secret`}>
+                <Field label={$localize`IPsec Secret`}>
                   <Input
                     type="text"
                     value={tunnel.ipsecSecret || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'ipsecSecret', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "ipsecSecret", value)
+                    }
                     placeholder={$localize`Enter IPsec secret (optional)`}
                   />
-                </ServerFormField>
+                </Field>
 
                 {/* Keepalive */}
-                <ServerFormField label={$localize`Keepalive`}>
+                <Field label={$localize`Keepalive`}>
                   <Input
                     type="text"
                     value={tunnel.keepalive || ""}
-                    onChange$={(e, value) => updateTunnelField$(index, 'keepalive', value)}
+                    onChange$={(e, value) =>
+                      updateTunnelField$(index, "keepalive", value)
+                    }
                     placeholder={$localize`Enter keepalive (optional)`}
                   />
-                </ServerFormField>
+                </Field>
               </div>
 
               {/* DSCP and Clamp TCP MSS */}
               <div class="mt-4 grid gap-4 md:grid-cols-2">
-                <ServerFormField label={$localize`DSCP`}>
+                <Field label={$localize`DSCP`}>
                   <Select
-                    value={typeof tunnel.dscp === 'number' ? tunnel.dscp.toString() : (tunnel.dscp || '')}
+                    value={
+                      typeof tunnel.dscp === "number"
+                        ? tunnel.dscp.toString()
+                        : tunnel.dscp || ""
+                    }
                     onChange$={(value) => {
-                      updateTunnelField$(index, 'dscp', value === 'inherit' ? 'inherit' : (parseInt(value) || undefined));
+                      updateTunnelField$(
+                        index,
+                        "dscp",
+                        value === "inherit"
+                          ? "inherit"
+                          : parseInt(Array.isArray(value) ? value[0] : value) ||
+                              undefined,
+                      );
                     }}
                     options={[
                       { value: "", label: $localize`Default` },
                       { value: "inherit", label: $localize`Inherit` },
                       ...Array.from({ length: 64 }, (_, i) => ({
                         value: i.toString(),
-                        label: i.toString()
-                      }))
+                        label: i.toString(),
+                      })),
                     ]}
                   />
-                </ServerFormField>
+                </Field>
 
-                <div class="flex items-center mt-7">
+                <div class="mt-7 flex items-center">
                   <input
                     type="checkbox"
                     id={`clampTcpMss-${index}`}
                     checked={tunnel.clampTcpMss || false}
-                    onChange$={(e) => updateTunnelField$(index, 'clampTcpMss', (e.target as HTMLInputElement).checked)}
+                    onChange$={(e) =>
+                      updateTunnelField$(
+                        index,
+                        "clampTcpMss",
+                        (e.target as HTMLInputElement).checked,
+                      )
+                    }
                     class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                   />
                   <label
@@ -259,4 +298,4 @@ export const IPIPTunnelStep = component$(() => {
       )}
     </div>
   );
-}); 
+});

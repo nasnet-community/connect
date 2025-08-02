@@ -16,11 +16,11 @@ export default component$(() => {
     <ComponentPage
       name="Dialog"
       description="A modal dialog component for displaying content that requires user attention or interaction."
-      Overview={<Overview />}
-      Examples={<Examples />}
-      APIReference={<APIReference />}
-      Usage={<Usage />}
-      Playground={<Playground />}
+      Overview={Overview}
+      Examples={Examples}
+      APIReference={APIReference}
+      Usage={Usage}
+      Playground={Playground}
       ComponentIntegration={componentIntegration}
       Customization={customization}
     />

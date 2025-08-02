@@ -1,11 +1,19 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
-import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, Select, SectionTitle, Input } from "../../UI";
+import {
+  ServerCard,
+  ServerFormField,
+  PasswordField,
+  CheckboxGroup,
+  Select,
+  SectionTitle,
+  Input,
+} from "../../UI";
 
 /**
  * L2TP Server Configuration Component
- * 
+ *
  * Allows users to configure L2TP VPN server settings including:
  * - Enable/disable L2TP server
  * - Configure authentication methods
@@ -13,8 +21,8 @@ import { ServerCard, ServerFormField, PasswordField, CheckboxGroup, Select, Sect
  * - Configure MTU/MRU and other connection parameters
  */
 export const L2TPServerAdvanced = component$(() => {
-  const { 
-    advancedFormState, 
+  const {
+    advancedFormState,
     isEnabled,
     authOptions,
     handleToggle,
@@ -26,7 +34,7 @@ export const L2TPServerAdvanced = component$(() => {
     updateIpsecSecret$,
     updateKeepaliveTimeout$,
     updateAllowFastPath$,
-    updateOneSessionPerHost$
+    updateOneSessionPerHost$,
   } = useL2TPServer();
 
   return (
@@ -37,13 +45,11 @@ export const L2TPServerAdvanced = component$(() => {
       onToggle$={handleToggle}
     >
       {/* Basic Configuration */}
-      <div class="space-y-4 mb-6">
+      <div class="mb-6 space-y-4">
         <SectionTitle title={$localize`Basic Configuration`} />
-        
+
         {/* Profile Name Field */}
-        <ServerFormField 
-          label={$localize`Profile Name`}
-        >
+        <ServerFormField label={$localize`Profile Name`}>
           <Input
             type="text"
             value={advancedFormState.profile}
@@ -64,16 +70,14 @@ export const L2TPServerAdvanced = component$(() => {
             options={[
               { value: "yes", label: $localize`Yes` },
               { value: "no", label: $localize`No` },
-              { value: "required", label: $localize`Required` }
+              { value: "required", label: $localize`Required` },
             ]}
           />
         </ServerFormField>
 
         {/* IPsec Secret Key - Only shown when IPsec is enabled */}
         {advancedFormState.useIpsec !== "no" && (
-          <ServerFormField 
-            label={$localize`IPsec Secret Key`}
-          >
+          <ServerFormField label={$localize`IPsec Secret Key`}>
             <PasswordField
               value={advancedFormState.ipsecSecret}
               onChange$={(value) => updateIpsecSecret$(value)}
@@ -93,9 +97,9 @@ export const L2TPServerAdvanced = component$(() => {
       </div>
 
       {/* Advanced Configuration */}
-      <div class="space-y-4 mb-6">
+      <div class="mb-6 space-y-4">
         <SectionTitle title={$localize`Advanced Configuration`} />
-        
+
         {/* Max MTU Field */}
         <ServerFormField label={$localize`Max MTU`}>
           <Input
@@ -119,7 +123,9 @@ export const L2TPServerAdvanced = component$(() => {
           <Input
             type="number"
             value={advancedFormState.keepaliveTimeout.toString()}
-            onChange$={(_, value) => updateKeepaliveTimeout$(parseInt(value, 10) || 30)}
+            onChange$={(_, value) =>
+              updateKeepaliveTimeout$(parseInt(value, 10) || 30)
+            }
           />
         </ServerFormField>
 
@@ -128,7 +134,9 @@ export const L2TPServerAdvanced = component$(() => {
           <input
             type="checkbox"
             checked={advancedFormState.allowFastPath}
-            onChange$={() => updateAllowFastPath$(!advancedFormState.allowFastPath)}
+            onChange$={() =>
+              updateAllowFastPath$(!advancedFormState.allowFastPath)
+            }
             class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
           />
         </ServerFormField>
@@ -138,7 +146,9 @@ export const L2TPServerAdvanced = component$(() => {
           <input
             type="checkbox"
             checked={advancedFormState.oneSessionPerHost}
-            onChange$={() => updateOneSessionPerHost$(!advancedFormState.oneSessionPerHost)}
+            onChange$={() =>
+              updateOneSessionPerHost$(!advancedFormState.oneSessionPerHost)
+            }
             class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
           />
         </ServerFormField>
@@ -153,4 +163,4 @@ export const L2TPServerAdvanced = component$(() => {
       </ServerButton> */}
     </ServerCard>
   );
-}); 
+});

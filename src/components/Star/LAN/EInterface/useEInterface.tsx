@@ -1,22 +1,25 @@
-import { useContext, $, useSignal } from '@builder.io/qwik';
-import { StarContext, type StarContextType } from '../../StarContext/StarContext';
-import type { Ethernet } from '../../StarContext/CommonType';
-import type { EthernetInterfaceConfig } from '../../StarContext/LANType';
-import type { Networks } from '../../StarContext/CommonType';
+import { useContext, $, useSignal } from "@builder.io/qwik";
+import {
+  StarContext,
+  type StarContextType,
+} from "../../StarContext/StarContext";
+import type { Ethernet } from "../../StarContext/CommonType";
+import type { EthernetInterfaceConfig } from "../../StarContext/LANType";
+import type { Networks } from "../../StarContext/CommonType";
 
 export const useEInterface = () => {
   const ctx = useContext<StarContextType>(StarContext);
   const selectedEInterfaces = useSignal<EthernetInterfaceConfig[]>([]);
-  
+
   // Filter available networks based on DomesticLink
   // The DomesticLink property determines whether we need Domestic network options:
   // - When true: We offer Domestic, Foreign, Split, and VPN options
   // - When false: We restrict options to Foreign and VPN only
   const isDomesticLinkEnabled = ctx.state.Choose.DomesticLink === true;
-  const networkOptions: Networks[] = isDomesticLinkEnabled 
-    ? ['Domestic', 'Foreign', 'Split', 'VPN']
-    : ['Foreign', 'VPN'];
-  
+  const networkOptions: Networks[] = isDomesticLinkEnabled
+    ? ["Domestic", "Foreign", "Split", "VPN"]
+    : ["Foreign", "VPN"];
+
   const availableNetworks = useSignal<Networks[]>(networkOptions);
 
   // Set default network based on DomesticLink status
@@ -25,20 +28,20 @@ export const useEInterface = () => {
   // - DomesticLink false: VPN network is default (no domestic network available)
   const getDefaultNetwork = $(() => {
     // Explicitly check if true or false to avoid undefined/null issues
-    return ctx.state.Choose.DomesticLink === true ? 'Split' : 'VPN';
+    return ctx.state.Choose.DomesticLink === true ? "Split" : "VPN";
   });
 
   const getUsedWANInterfaces = $(() => {
     const usedInterfaces: string[] = [];
-    
-    if (ctx.state.WAN.WANLink.Foreign?.InterfaceName) {
+
+    if (ctx.state.WAN.WANLink.Foreign.InterfaceName) {
       usedInterfaces.push(ctx.state.WAN.WANLink.Foreign.InterfaceName);
     }
-    
+
     if (ctx.state.WAN.WANLink.Domestic?.InterfaceName) {
       usedInterfaces.push(ctx.state.WAN.WANLink.Domestic.InterfaceName);
     }
-    
+
     return usedInterfaces;
   });
 
@@ -48,7 +51,7 @@ export const useEInterface = () => {
       return [] as Ethernet[];
     }
 
-    const masterModel = routerModels.find(model => model.isMaster);
+    const masterModel = routerModels.find((model) => model.isMaster);
     if (!masterModel || !masterModel.Interfaces.ethernet) {
       return [] as Ethernet[];
     }
@@ -56,48 +59,52 @@ export const useEInterface = () => {
     const usedWANInterfaces = await getUsedWANInterfaces();
 
     return masterModel.Interfaces.ethernet.filter(
-      (intf) => !usedWANInterfaces.includes(intf)
+      (intf) => !usedWANInterfaces.includes(intf),
     ) as Ethernet[];
   });
 
-  const addEInterface = $(async (EInterfaceName: Ethernet, bridgeNetwork?: Networks) => {
-    // If bridge network not specified, use default based on DomesticLink
-    const network = bridgeNetwork || await getDefaultNetwork();
-    
-    const newEInterface: EthernetInterfaceConfig = {
-      name: EInterfaceName,
-      bridge: network,
-    };
-    
-    selectedEInterfaces.value = [...selectedEInterfaces.value, newEInterface];
-    
-    ctx.updateLAN$({
-      Interface: selectedEInterfaces.value,
-    });
-  });
+  const addEInterface = $(
+    async (EInterfaceName: Ethernet, bridgeNetwork?: Networks) => {
+      // If bridge network not specified, use default based on DomesticLink
+      const network = bridgeNetwork || (await getDefaultNetwork());
+
+      const newEInterface: EthernetInterfaceConfig = {
+        name: EInterfaceName,
+        bridge: network,
+      };
+
+      selectedEInterfaces.value = [...selectedEInterfaces.value, newEInterface];
+
+      ctx.updateLAN$({
+        Interface: selectedEInterfaces.value,
+      });
+    },
+  );
 
   const removeEInterface = $((EInterfaceName: Ethernet) => {
     selectedEInterfaces.value = selectedEInterfaces.value.filter(
-      (intf) => intf.name !== EInterfaceName
+      (intf) => intf.name !== EInterfaceName,
     );
-    
+
     ctx.updateLAN$({
       Interface: selectedEInterfaces.value,
     });
   });
 
-  const updateEInterface = $((EInterfaceName: Ethernet, bridgeNetwork: Networks) => {
-    selectedEInterfaces.value = selectedEInterfaces.value.map((intf) => {
-      if (intf.name === EInterfaceName) {
-        return { ...intf, bridge: bridgeNetwork };
-      }
-      return intf;
-    });
-    
-    ctx.updateLAN$({
-      Interface: selectedEInterfaces.value,
-    });
-  });
+  const updateEInterface = $(
+    (EInterfaceName: Ethernet, bridgeNetwork: Networks) => {
+      selectedEInterfaces.value = selectedEInterfaces.value.map((intf) => {
+        if (intf.name === EInterfaceName) {
+          return { ...intf, bridge: bridgeNetwork };
+        }
+        return intf;
+      });
+
+      ctx.updateLAN$({
+        Interface: selectedEInterfaces.value,
+      });
+    },
+  );
 
   const initializeFromContext = $(() => {
     if (ctx.state.LAN.Interface && ctx.state.LAN.Interface.length > 0) {

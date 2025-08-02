@@ -4,11 +4,8 @@ import { ServerCard, ServerFormField } from "../../UI";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 
 export const OpenVPNServerEasy = component$(() => {
-  const { 
-    easyFormState, 
-    passphraseError,
-    updateEasyPassphrase$
-  } = useOpenVPNServer();
+  const { easyFormState, passphraseError, updateEasyPassphrase$ } =
+    useOpenVPNServer();
 
   return (
     <ServerCard
@@ -20,7 +17,11 @@ export const OpenVPNServerEasy = component$(() => {
         <ServerFormField
           label={$localize`Certificate Key Passphrase`}
           errorMessage={passphraseError.value}
-          helperText={passphraseError.value ? undefined : $localize`Creates both TCP and UDP OpenVPN servers with this passphrase`}
+          helperText={
+            passphraseError.value
+              ? undefined
+              : $localize`Creates both TCP and UDP OpenVPN servers with this passphrase`
+          }
         >
           <div class="relative">
             <input
@@ -47,4 +48,4 @@ export const OpenVPNServerEasy = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

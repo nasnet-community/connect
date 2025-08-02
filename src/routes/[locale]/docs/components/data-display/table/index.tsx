@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Table"
       description="A component for displaying and organizing data in rows and columns"
-      Overview={<Overview />}
-      Examples={<Examples />}
-      APIReference={<APIReference />}
-      Usage={<Usage />}
-      Playground={<Playground />}
+      Overview={Overview}
+      Examples={Examples}
+      APIReference={APIReference}
+      Usage={Usage}
+      Playground={Playground}
     />
   );
 });

@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Spacer"
       description="A layout component that creates consistent whitespace between UI elements."
-      Overview={<SpacerOverview />}
-      Examples={<SpacerExamples />}
-      APIReference={<SpacerAPIReference />}
-      Usage={<SpacerUsage />}
-      Playground={<SpacerPlayground />}
+      Overview={SpacerOverview}
+      Examples={SpacerExamples}
+      APIReference={SpacerAPIReference}
+      Usage={SpacerUsage}
+      Playground={SpacerPlayground}
     />
   );
 });

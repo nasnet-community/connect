@@ -1,7 +1,14 @@
-import { component$, useContext, useStore, $, useTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  useContext,
+  useStore,
+  $,
+  useTask$,
+} from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
 import { Tunnel } from "./Tunnel/Tunnel";
+import { Subnets } from "./Subnets";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import { StarContext } from "../StarContext/StarContext";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
@@ -12,7 +19,7 @@ export const LAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
 
   const hasWirelessEInterface = starContext.state.Choose.RouterModels.some(
-    (routerModel) => !!routerModel.Interfaces.wireless?.length
+    (routerModel) => !!routerModel.Interfaces.wireless?.length,
   );
 
   const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
@@ -27,7 +34,7 @@ export const LAN = component$((props: StepProps) => {
     const stepIndex = stepsStore.steps.findIndex((step) => step.id === id);
     if (stepIndex > -1) {
       stepsStore.steps[stepIndex].isComplete = true;
-      
+
       // Move to the next step if there is one
       if (stepIndex < stepsStore.steps.length - 1) {
         stepsStore.activeStep = stepIndex + 1;
@@ -48,37 +55,41 @@ export const LAN = component$((props: StepProps) => {
   ));
 
   const WirelessStep = component$((props: StepProps) => (
-    <Wireless 
-      isComplete={props.isComplete} 
-      onComplete$={props.onComplete$} 
-      // Don't advance to the next step when disabled - let the Save button handle it
-      onDisabled$={$(() => {})}
-    />
-  ));
-
-  const VPNServerStep = component$((props: StepProps) => (
-    <VPNServer 
-      isComplete={props.isComplete} 
-      onComplete$={props.onComplete$} 
-      // Don't advance to the next step when disabled - let the Save button handle it
-      onDisabled$={$(() => {})}
-    />
-  ));
-
-  const TunnelStep = component$((props: StepProps) => (
-    <Tunnel 
-      isComplete={props.isComplete} 
+    <Wireless
+      isComplete={props.isComplete}
       onComplete$={props.onComplete$}
       // Don't advance to the next step when disabled - let the Save button handle it
       onDisabled$={$(() => {})}
     />
   ));
 
+  const VPNServerStep = component$((props: StepProps) => (
+    <VPNServer
+      isComplete={props.isComplete}
+      onComplete$={props.onComplete$}
+      // Don't advance to the next step when disabled - let the Save button handle it
+      onDisabled$={$(() => {})}
+    />
+  ));
+
+  const TunnelStep = component$((props: StepProps) => (
+    <Tunnel
+      isComplete={props.isComplete}
+      onComplete$={props.onComplete$}
+      // Don't advance to the next step when disabled - let the Save button handle it
+      onDisabled$={$(() => {})}
+    />
+  ));
+
+  const SubnetsStep = component$((props: StepProps) => (
+    <Subnets isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  ));
+
   const isAdvancedMode = starContext.state.Choose.Mode === "advance";
   let nextId = 1;
 
   const baseSteps: StepItem[] = [];
-  
+
   if (hasWirelessEInterface) {
     baseSteps.push({
       id: nextId,
@@ -88,16 +99,16 @@ export const LAN = component$((props: StepProps) => {
     });
     nextId++;
   }
-  
+
   baseSteps.push({
     id: nextId,
     title: $localize`LAN EInterfaces`,
     component: EInterfaceStep,
     isComplete: false,
   });
-  
+
   nextId++;
-  
+
   // Only add VPNServer and Tunnel steps if DomesticLink is enabled
   if (isDomesticLinkEnabled) {
     baseSteps.push({
@@ -106,23 +117,34 @@ export const LAN = component$((props: StepProps) => {
       component: VPNServerStep,
       isComplete: false,
     });
-    
+
     nextId++;
-    
+
     baseSteps.push({
       id: nextId,
       title: $localize`Network Tunnels`,
       component: TunnelStep,
       isComplete: false,
     });
+
+    nextId++;
   }
-  
-  const advancedSteps: StepItem[] = [
-    ...baseSteps,
-  ];
+
+  // Create advanced steps by copying base steps
+  const advancedSteps: StepItem[] = [...baseSteps];
+
+  // Only add Subnets step in advanced mode
+  if (isAdvancedMode) {
+    advancedSteps.push({
+      id: nextId,
+      title: $localize`Network Subnets`,
+      component: SubnetsStep,
+      isComplete: false,
+    });
+  }
 
   const steps = isAdvancedMode ? advancedSteps : baseSteps;
-  
+
   // Initialize steps in the store
   useTask$(() => {
     stepsStore.steps = steps;

@@ -1,1 +1,1 @@
-export { NewsletterModal } from './NewsletterModal'; 
+export { NewsletterModal } from "./NewsletterModal";

@@ -36,8 +36,8 @@ export const OWRT = component$((props: OWRTFISProps) => {
         $localize`Firmware installation guide`,
         $localize`Backup original firmware`,
         $localize`Step-by-step installation`,
-        $localize`Recovery instructions`
-      ]
+        $localize`Recovery instructions`,
+      ],
     },
     {
       id: "already-installed",
@@ -48,9 +48,9 @@ export const OWRT = component$((props: OWRTFISProps) => {
         $localize`Configuration guide`,
         $localize`Network setup`,
         $localize`Package management`,
-        $localize`Advanced settings`
-      ]
-    }
+        $localize`Advanced settings`,
+      ],
+    },
   ];
 
   return (
@@ -59,11 +59,11 @@ export const OWRT = component$((props: OWRTFISProps) => {
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
           {$localize`OpenWRT Configuration`}
         </h2>
-        <p class="mx-auto mt-3 max-w-2xl text-text-secondary/90 dark:text-text-dark-secondary/95">
+        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
           {$localize`Choose your current router situation`}
         </p>
       </div>
-      
+
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {options.map((option) => (
           <div
@@ -72,14 +72,14 @@ export const OWRT = component$((props: OWRTFISProps) => {
             class={`group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-300
               ${
                 selectedOption.value === option.id
-                  ? "ring-primary-500 bg-primary-500/10 ring-2 dark:bg-primary-500/15"
-                  : "bg-surface/50 hover:bg-surface-secondary/50 dark:bg-surface-dark/50 dark:hover:bg-surface-dark-secondary/60"
+                  ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
+                  : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
               }
             `}
           >
             {/* Selected indicator badge */}
             {selectedOption.value === option.id && (
-              <div class="absolute right-4 top-4 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25 z-10">
+              <div class="absolute right-4 top-4 z-10 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
                 <span class="text-xs font-medium text-success dark:text-success-light">
                   {$localize`Selected`}
                 </span>
@@ -116,7 +116,7 @@ export const OWRT = component$((props: OWRTFISProps) => {
                   {option.features.map((feature) => (
                     <div
                       key={feature}
-                      class="flex items-center text-text-secondary/90 dark:text-text-dark-secondary/95"
+                      class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
                     >
                       <svg
                         class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"

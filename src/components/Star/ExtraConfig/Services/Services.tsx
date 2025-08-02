@@ -1,8 +1,14 @@
-import { $, component$, useContext, useTask$, useStylesScoped$ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useTask$,
+  useStylesScoped$,
+} from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import type { ServiceType } from "../../StarContext/ExtraType";
-import { Select } from "~/components/Core/Select/Select";
+import { Select } from "~/components/Core/Select";
 
 // Add scoped styles to fix dropdown positioning
 const dropdownStyles = `
@@ -44,6 +50,7 @@ interface ServiceItem {
   name: ServiceName;
   description: string;
   recommended: boolean;
+  defaultPort: number;
 }
 
 export const Services = component$<StepProps>(({ onComplete$ }) => {
@@ -56,14 +63,14 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   useTask$(() => {
     if (!ctx.state.ExtraConfig.services) {
       const defaultServices = {
-        api: "Disable" as ServiceType,
-        apissl: "Disable" as ServiceType,
-        ftp: "Disable" as ServiceType,
-        ssh: "Enable" as ServiceType,
-        telnet: "Disable" as ServiceType,
-        winbox: "Enable" as ServiceType,
-        web: "Disable" as ServiceType,
-        webssl: "Disable" as ServiceType,
+        api: { type: "Disable" as ServiceType, port: 8728 },
+        apissl: { type: "Disable" as ServiceType, port: 8729 },
+        ftp: { type: "Disable" as ServiceType, port: 21 },
+        ssh: { type: "Enable" as ServiceType, port: 22 },
+        telnet: { type: "Disable" as ServiceType, port: 23 },
+        winbox: { type: "Enable" as ServiceType, port: 8291 },
+        web: { type: "Disable" as ServiceType, port: 80 },
+        webssl: { type: "Disable" as ServiceType, port: 443 },
       };
       ctx.updateExtraConfig$({ services: defaultServices });
     }
@@ -74,64 +81,56 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
       name: "api",
       description: $localize`RouterOS API access`,
       recommended: false,
+      defaultPort: 8728,
     },
     {
       name: "apissl",
       description: $localize`RouterOS API with SSL`,
       recommended: false,
+      defaultPort: 8729,
     },
     {
       name: "ftp",
       description: $localize`File Transfer Protocol`,
       recommended: false,
+      defaultPort: 21,
     },
-    { name: "ssh", description: $localize`Secure Shell`, recommended: true },
+    {
+      name: "ssh",
+      description: $localize`Secure Shell`,
+      recommended: true,
+      defaultPort: 22,
+    },
     {
       name: "telnet",
       description: $localize`Telnet Protocol`,
       recommended: false,
+      defaultPort: 23,
     },
     {
       name: "winbox",
       description: $localize`WinBox Management Tool`,
       recommended: true,
+      defaultPort: 8291,
     },
     {
       name: "web",
       description: $localize`Web Interface Access`,
       recommended: false,
+      defaultPort: 80,
     },
     {
       name: "webssl",
       description: $localize`Secure Web Interface`,
       recommended: false,
+      defaultPort: 443,
     },
   ];
 
   const handleSubmit = $(() => {
     if (!ctx.state.ExtraConfig.services) return;
-    
-    const api = ctx.state.ExtraConfig.services?.api || "Disable";
-    const apissl = ctx.state.ExtraConfig.services?.apissl || "Disable";
-    const ftp = ctx.state.ExtraConfig.services?.ftp || "Disable";
-    const ssh = ctx.state.ExtraConfig.services?.ssh || "Enable";
-    const telnet = ctx.state.ExtraConfig.services?.telnet || "Disable";
-    const winbox = ctx.state.ExtraConfig.services?.winbox || "Enable";
-    const web = ctx.state.ExtraConfig.services?.web || "Disable";
-    const webssl = ctx.state.ExtraConfig.services?.webssl || "Disable";
-    
-    ctx.updateExtraConfig$({
-      services: {
-        api,
-        apissl,
-        ftp,
-        ssh,
-        telnet,
-        winbox,
-        web,
-        webssl,
-      },
-    });
+
+    // Services are already updated via onChange handlers
     onComplete$();
   });
 
@@ -177,35 +176,54 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
           <div class="overflow-visible rounded-xl border border-border dark:border-border-dark">
             <table class="w-full text-left text-sm">
               <thead>
-                <tr class="border-b border-border bg-surface-secondary dark:border-border-dark dark:bg-surface-dark-secondary">
+                <tr class="bg-surface-secondary dark:bg-surface-dark-secondary border-b border-border dark:border-border-dark">
                   <th
                     scope="col"
-                    class="px-6 py-4 font-semibold text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
                     {$localize`Service`}
                   </th>
                   <th
                     scope="col"
-                    class="px-6 py-4 font-semibold text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
                     {$localize`Description`}
                   </th>
                   <th
                     scope="col"
-                    class="px-6 py-4 font-semibold text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
                     {$localize`Link`}
+                  </th>
+                  <th
+                    scope="col"
+                    class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
+                  >
+                    {$localize`Port`}
                   </th>
                 </tr>
               </thead>
 
               <tbody class="divide-y divide-border dark:divide-border-dark">
-              {services.map((service) => {
-                  const currentValue = ctx.state.ExtraConfig.services?.[service.name] || "Disable";
+                {services.map((service) => {
+                  const currentConfig = ctx.state.ExtraConfig.services?.[
+                    service.name
+                  ] || {
+                    type: "Disable" as ServiceType,
+                    port: service.defaultPort,
+                  };
+                  const currentValue =
+                    typeof currentConfig === "string"
+                      ? currentConfig
+                      : currentConfig.type;
+                  const currentPort =
+                    typeof currentConfig === "string"
+                      ? service.defaultPort
+                      : currentConfig.port || service.defaultPort;
                   return (
                     <tr
                       key={service.name}
-                      class="bg-surface transition-colors hover:bg-surface-secondary dark:bg-surface-dark dark:hover:bg-surface-dark-secondary"
+                      class="hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary bg-surface transition-colors dark:bg-surface-dark"
                     >
                       <td class="px-6 py-4">
                         <div class="flex items-center space-x-3">
@@ -221,7 +239,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           </span>
                         </div>
                       </td>
-                      <td class="px-6 py-4 text-text-secondary dark:text-text-dark-secondary">
+                      <td class="text-text-secondary dark:text-text-dark-secondary px-6 py-4">
                         {service.description}
                       </td>
                       <td class="px-6 py-4">
@@ -230,28 +248,61 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                             options={[
                               { value: "Enable", label: $localize`Enable` },
                               { value: "Disable", label: $localize`Disable` },
-                              { value: "Local", label: $localize`Local` }
+                              { value: "Local", label: $localize`Local` },
                             ]}
                             value={currentValue}
-                            onChange$={(value) => {
+                            onChange$={(value: string | string[]) => {
                               if (!ctx.state.ExtraConfig.services) {
                                 ctx.updateExtraConfig$({
                                   services: {
-                                    api: "Disable" as ServiceType,
-                                    apissl: "Disable" as ServiceType,
-                                    ftp: "Disable" as ServiceType,
-                                    ssh: "Enable" as ServiceType,
-                                    telnet: "Disable" as ServiceType,
-                                    winbox: "Enable" as ServiceType,
-                                    web: "Disable" as ServiceType,
-                                    webssl: "Disable" as ServiceType,
-                                  }
+                                    api: {
+                                      type: "Disable" as ServiceType,
+                                      port: 8728,
+                                    },
+                                    apissl: {
+                                      type: "Disable" as ServiceType,
+                                      port: 8729,
+                                    },
+                                    ftp: {
+                                      type: "Disable" as ServiceType,
+                                      port: 21,
+                                    },
+                                    ssh: {
+                                      type: "Enable" as ServiceType,
+                                      port: 22,
+                                    },
+                                    telnet: {
+                                      type: "Disable" as ServiceType,
+                                      port: 23,
+                                    },
+                                    winbox: {
+                                      type: "Enable" as ServiceType,
+                                      port: 8291,
+                                    },
+                                    web: {
+                                      type: "Disable" as ServiceType,
+                                      port: 80,
+                                    },
+                                    webssl: {
+                                      type: "Disable" as ServiceType,
+                                      port: 443,
+                                    },
+                                  },
                                 });
                               }
-                              
+
                               if (ctx.state.ExtraConfig.services) {
-                                ctx.state.ExtraConfig.services[service.name] = 
-                                  value as ServiceType;
+                                const currentService =
+                                  ctx.state.ExtraConfig.services[service.name];
+                                const port =
+                                  typeof currentService === "string"
+                                    ? service.defaultPort
+                                    : currentService.port ||
+                                      service.defaultPort;
+                                ctx.state.ExtraConfig.services[service.name] = {
+                                  type: value as ServiceType,
+                                  port: port,
+                                };
                               }
                             }}
                             clearable={false}
@@ -259,6 +310,71 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                             size="sm"
                           />
                         </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <input
+                          type="number"
+                          min="1"
+                          max="65535"
+                          value={currentPort}
+                          onInput$={(e: any) => {
+                            const port = parseInt(e.target.value);
+                            if (!isNaN(port) && port >= 1 && port <= 65535) {
+                              if (!ctx.state.ExtraConfig.services) {
+                                ctx.updateExtraConfig$({
+                                  services: {
+                                    api: {
+                                      type: "Disable" as ServiceType,
+                                      port: 8728,
+                                    },
+                                    apissl: {
+                                      type: "Disable" as ServiceType,
+                                      port: 8729,
+                                    },
+                                    ftp: {
+                                      type: "Disable" as ServiceType,
+                                      port: 21,
+                                    },
+                                    ssh: {
+                                      type: "Enable" as ServiceType,
+                                      port: 22,
+                                    },
+                                    telnet: {
+                                      type: "Disable" as ServiceType,
+                                      port: 23,
+                                    },
+                                    winbox: {
+                                      type: "Enable" as ServiceType,
+                                      port: 8291,
+                                    },
+                                    web: {
+                                      type: "Disable" as ServiceType,
+                                      port: 80,
+                                    },
+                                    webssl: {
+                                      type: "Disable" as ServiceType,
+                                      port: 443,
+                                    },
+                                  },
+                                });
+                              }
+
+                              if (ctx.state.ExtraConfig.services) {
+                                const currentService =
+                                  ctx.state.ExtraConfig.services[service.name];
+                                const type =
+                                  typeof currentService === "string"
+                                    ? currentService
+                                    : currentService.type;
+                                ctx.state.ExtraConfig.services[service.name] = {
+                                  type: type,
+                                  port: port,
+                                };
+                              }
+                            }
+                          }}
+                          class="w-20 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                        />
                       </td>
                     </tr>
                   );
@@ -271,9 +387,9 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
           <div class="mt-6 flex justify-end">
             <button
               onClick$={handleSubmit}
-              class="focus:ring-primary-500/50 group rounded-lg bg-primary-500 px-6 py-2.5 font-medium text-white 
-                     shadow-md shadow-primary-500/25 transition-all duration-200 
-                     hover:bg-primary-600 focus:ring-2 focus:ring-offset-2 
+              class="group rounded-lg bg-primary-500 px-6 py-2.5 font-medium text-white shadow-md 
+                     shadow-primary-500/25 transition-all duration-200 hover:bg-primary-600 
+                     focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 
                      active:scale-[0.98] dark:focus:ring-offset-surface-dark"
             >
               <span class="flex items-center space-x-2">

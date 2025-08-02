@@ -23,11 +23,11 @@ export const VPNServerContainer = component$<StepProps>((props) => {
 
       {/* Main Content */}
       <div class="flex flex-col gap-8">
-        <VPNServer 
-          isComplete={props.isComplete} 
-          onComplete$={props.onComplete$} 
+        <VPNServer
+          isComplete={props.isComplete}
+          onComplete$={props.onComplete$}
         />
       </div>
     </div>
   );
-}); 
+});

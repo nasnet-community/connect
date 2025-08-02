@@ -4,12 +4,12 @@ import { useIKEv2Server } from "./useIKEv2Server";
 import { ServerCard, ServerFormField } from "../../UI";
 
 export const IKEv2ServerEasy = component$(() => {
-  const { 
-    easyFormState, 
+  const {
+    easyFormState,
     // showPassword,
     presharedKeyError,
     updateEasyForm$,
-    togglePasswordVisibility$
+    togglePasswordVisibility$,
   } = useIKEv2Server();
 
   return (
@@ -21,7 +21,11 @@ export const IKEv2ServerEasy = component$(() => {
         <ServerFormField
           label={$localize`Pre-shared Key`}
           errorMessage={presharedKeyError.value}
-          helperText={presharedKeyError.value ? undefined : $localize`Key must be at least 8 characters long for security`}
+          helperText={
+            presharedKeyError.value
+              ? undefined
+              : $localize`Key must be at least 8 characters long for security`
+          }
           required={true}
         >
           <div class="relative">
@@ -50,4 +54,4 @@ export const IKEv2ServerEasy = component$(() => {
       </div>
     </ServerCard>
   );
-}); 
+});

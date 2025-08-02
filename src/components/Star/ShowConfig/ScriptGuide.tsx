@@ -20,7 +20,7 @@ export const ScriptGuide = component$(() => {
   const isFullScreen = useSignal(false);
 
   return (
-    <div class="mt-6 overflow-hidden rounded-xl bg-surface-secondary dark:bg-surface-dark-secondary">
+    <div class="bg-surface-secondary dark:bg-surface-dark-secondary mt-6 overflow-hidden rounded-xl">
       {/* Header Section */}
       <div class="border-b border-gray-200 bg-surface/50 p-6 dark:border-gray-700 dark:bg-surface-dark/50">
         <h4 class="flex items-center gap-3 text-xl font-semibold text-text dark:text-text-dark-default">
@@ -62,7 +62,7 @@ export const ScriptGuide = component$(() => {
               </svg>
               {$localize`Prerequisites`}
             </h5>
-            <ul class="space-y-4 text-sm text-text-secondary dark:text-text-dark-secondary">
+            <ul class="text-text-secondary dark:text-text-dark-secondary space-y-4 text-sm">
               <li class="flex items-start gap-3">
                 <svg
                   class="text-primary mt-0.5 h-4 w-4 shrink-0"
@@ -99,7 +99,7 @@ export const ScriptGuide = component$(() => {
                       />
                     </svg>
                   </a>
-                  <p class="mt-1 text-sm text-text-secondary dark:text-text-dark-secondary">
+                  <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
                     {$localize`Required for router management and configuration`}
                   </p>
                 </div>
@@ -122,7 +122,7 @@ export const ScriptGuide = component$(() => {
                   <p class="font-medium text-text dark:text-text-dark-default">
                     {$localize`Latest RouterOS Version`}
                   </p>
-                  <p class="mt-1 text-sm text-text-secondary dark:text-text-dark-secondary">
+                  <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
                     <a
                       href="https://www.starlink4iran.com/faqs/mcg/%D8%A8%D9%87%D8%B1%D9%88%D8%B2%D8%B1%D8%B3%D8%A7%D9%86%DB%8C-%D8%B1%D9%88%D8%AA%D8%B1-%D9%85%DB%8C%DA%A9%D8%B1%D9%88%D8%AA%DB%8C%DA%A9/"
                       target="_blank"
@@ -170,7 +170,7 @@ export const ScriptGuide = component$(() => {
                     <h6 class="font-medium text-text dark:text-text-dark-default">
                       {step.title}
                     </h6>
-                    <p class="mt-1 text-sm text-text-secondary dark:text-text-dark-secondary">
+                    <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
                       {step.description}
                     </p>
                   </div>

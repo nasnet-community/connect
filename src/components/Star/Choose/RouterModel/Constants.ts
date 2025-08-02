@@ -35,8 +35,8 @@ export const routers: RouterData[] = [
     isWireless: true,
     interfaces: {
       ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"]
-    }
+      wireless: ["wifi5", "wifi2.4"],
+    },
   },
   {
     model: "hAP AX3",
@@ -59,8 +59,8 @@ export const routers: RouterData[] = [
     isWireless: true,
     interfaces: {
       ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"]
-    }
+      wireless: ["wifi5", "wifi2.4"],
+    },
   },
   {
     model: "RB5009",
@@ -82,8 +82,17 @@ export const routers: RouterData[] = [
     ],
     isWireless: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
-      sfp: ["sfp-sfpplus1"]
-    }
+      ethernet: [
+        "ether1",
+        "ether2",
+        "ether3",
+        "ether4",
+        "ether5",
+        "ether6",
+        "ether7",
+        "ether8",
+      ],
+      sfp: ["sfp-sfpplus1"],
+    },
   },
 ];

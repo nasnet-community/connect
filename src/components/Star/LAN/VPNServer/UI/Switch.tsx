@@ -8,38 +8,36 @@ export interface SwitchProps {
   disabled?: boolean;
 }
 
-export const Switch = component$<SwitchProps>(({
-  id,
-  label,
-  checked,
-  onChange$,
-  disabled = false
-}) => {
-  return (
-    <div class="flex items-center">
-      <label 
-        for={id}
-        class="relative inline-flex cursor-pointer items-center"
-      >
-        <input
-          type="checkbox"
-          id={id}
-          class="peer sr-only"
-          checked={checked}
-          disabled={disabled}
-          onChange$={(_, target) => onChange$(target.checked)}
-        />
-        <div class="peer h-6 w-11 rounded-full bg-surface-lighter after:absolute after:left-[2px] after:top-[2px]
-                    after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-white
-                    after:transition-all after:content-[''] peer-checked:bg-primary-500
-                    peer-checked:after:translate-x-full peer-checked:after:border-white
-                    peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500
-                    peer-disabled:cursor-not-allowed peer-disabled:opacity-60
-                    dark:bg-surface-dark-lighter dark:after:border-border-dark"></div>
-        <span class="ml-3 text-sm font-medium text-text-default dark:text-text-dark-default">
-          {label}
-        </span>
-      </label>
-    </div>
-  );
-}); 
+export const Switch = component$<SwitchProps>(
+  ({ id, label, checked, onChange$, disabled = false }) => {
+    return (
+      <div class="flex items-center">
+        <label
+          for={id}
+          class="relative inline-flex cursor-pointer items-center"
+        >
+          <input
+            type="checkbox"
+            id={id}
+            class="peer sr-only"
+            checked={checked}
+            disabled={disabled}
+            onChange$={(_, target) => onChange$(target.checked)}
+          />
+          <div
+            class="bg-surface-lighter dark:bg-surface-dark-lighter peer h-6 w-11 rounded-full after:absolute after:left-[2px]
+                    after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border
+                    after:bg-white after:transition-all after:content-['']
+                    peer-checked:bg-primary-500 peer-checked:after:translate-x-full
+                    peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2
+                    peer-focus:ring-primary-500 peer-disabled:cursor-not-allowed
+                    peer-disabled:opacity-60 dark:after:border-border-dark"
+          ></div>
+          <span class="text-text-default ml-3 text-sm font-medium dark:text-text-dark-default">
+            {label}
+          </span>
+        </label>
+      </div>
+    );
+  },
+);

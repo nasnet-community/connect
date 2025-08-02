@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$, $ } from '@builder.io/qwik';
+import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 
 export const MobileWarning = component$(() => {
   const showWarning = useSignal(false);
@@ -8,38 +8,43 @@ export const MobileWarning = component$(() => {
   useVisibleTask$(() => {
     const checkDevice = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/.test(userAgent);
-      const isTablet = /ipad|android(?!.*mobile)|kindle|silk|tablet/.test(userAgent);
+      const isMobile =
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/.test(
+          userAgent,
+        );
+      const isTablet = /ipad|android(?!.*mobile)|kindle|silk|tablet/.test(
+        userAgent,
+      );
       const isSmallScreen = window.innerWidth < 1024; // lg breakpoint in Tailwind
-      
+
       if ((isMobile || isTablet || isSmallScreen) && !isChecked.value) {
         showWarning.value = true;
       }
     };
 
     checkDevice();
-    window.addEventListener('resize', checkDevice);
-    
-    return () => window.removeEventListener('resize', checkDevice);
+    window.addEventListener("resize", checkDevice);
+
+    return () => window.removeEventListener("resize", checkDevice);
   });
 
   const handleContinue = $(() => {
     showWarning.value = false;
     isChecked.value = true;
     // Store in localStorage to remember user choice
-    localStorage.setItem('mobile-warning-dismissed', 'true');
+    localStorage.setItem("mobile-warning-dismissed", "true");
   });
 
   const handleClose = $(() => {
     showWarning.value = false;
     isChecked.value = true;
-    localStorage.setItem('mobile-warning-dismissed', 'true');
+    localStorage.setItem("mobile-warning-dismissed", "true");
   });
 
   // Check localStorage on mount
   useVisibleTask$(() => {
-    const dismissed = localStorage.getItem('mobile-warning-dismissed');
-    if (dismissed === 'true') {
+    const dismissed = localStorage.getItem("mobile-warning-dismissed");
+    if (dismissed === "true") {
       isChecked.value = true;
     }
   });
@@ -49,46 +54,66 @@ export const MobileWarning = component$(() => {
   }
 
   return (
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 relative">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="relative mx-4 w-full max-w-md rounded-2xl bg-slate-800 shadow-2xl">
         {/* Close button */}
-        <button 
+        <button
           onClick$={handleClose}
-          class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+          class="absolute right-4 top-4 text-slate-400 transition-colors hover:text-white"
           aria-label={$localize`Close`}
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            class="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         <div class="p-8">
           {/* Icon */}
-          <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center mb-6">
-            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-500/20">
+            <svg
+              class="h-6 w-6 text-yellow-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
             </svg>
           </div>
 
           {/* Title */}
-          <h2 class="text-2xl font-bold text-white mb-4">
+          <h2 class="mb-4 text-2xl font-bold text-white">
             {$localize`Desktop Experience Recommended`}
           </h2>
 
           {/* Description */}
-          <p class="text-slate-300 mb-6 leading-relaxed">
+          <p class="mb-6 leading-relaxed text-slate-300">
             {$localize`This application is optimized for desktop devices. For the best experience, please access NASNET Connect from a computer or laptop.`}
           </p>
 
           {/* Additional info */}
-          <p class="text-slate-400 text-sm mb-8">
+          <p class="mb-8 text-sm text-slate-400">
             {$localize`You can continue on mobile, but some features may not work as expected.`}
           </p>
 
           {/* Continue button */}
-          <button 
+          <button
             onClick$={handleContinue}
-            class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-xl transition-colors"
+            class="w-full rounded-xl bg-yellow-500 px-6 py-3 font-semibold text-black transition-colors hover:bg-yellow-600"
           >
             {$localize`Continue Anyway`}
           </button>
@@ -96,4 +121,4 @@ export const MobileWarning = component$(() => {
       </div>
     </div>
   );
-}); 
+});

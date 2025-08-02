@@ -1,4 +1,10 @@
-import { component$, useSignal, useContext, useTask$, $ } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  useContext,
+  useTask$,
+  $,
+} from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../StarContext/StarContext";
@@ -14,16 +20,24 @@ export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
   const ctx = useContext(StarContext);
   const configPreview = useSignal<string>("");
+  const apConfigPreview = useSignal<string>("");
 
   const {
     downloadFile,
     generatePythonScript,
     generateROSScript,
     generateConfigPreview,
+    generateAPScript,
+    generateAPConfigPreview,
   } = useConfigGenerator(ctx.state);
 
   useTask$(async () => {
     configPreview.value = await generateConfigPreview();
+
+    // Generate AP config if in Trunk Mode
+    if (ctx.state.Choose.RouterMode === "Trunk Mode") {
+      apConfigPreview.value = await generateAPConfigPreview();
+    }
   });
 
   const handlePythonDownload = $(async () => {
@@ -31,7 +45,7 @@ export const ShowConfig = component$<StepProps>(() => {
     track("config_downloaded", {
       file_type: "python",
       format: "py",
-      step: "show_config"
+      step: "show_config",
     });
 
     const content = await generatePythonScript();
@@ -43,10 +57,22 @@ export const ShowConfig = component$<StepProps>(() => {
     track("config_downloaded", {
       file_type: "mikrotik_ros",
       format: "rsc",
-      step: "show_config"
+      step: "show_config",
     });
 
     const content = await generateROSScript();
+    await downloadFile(content, "rsc");
+  });
+
+  const handleAPDownload = $(async () => {
+    // Track AP script download
+    track("config_downloaded", {
+      file_type: "mikrotik_ap",
+      format: "rsc",
+      step: "show_config",
+    });
+
+    const content = await generateAPScript();
     await downloadFile(content, "rsc");
   });
 
@@ -63,8 +89,21 @@ export const ShowConfig = component$<StepProps>(() => {
         />
       </div>
 
+      {ctx.state.Choose.RouterMode === "Trunk Mode" && (
+        <>
+          <Header title={$localize`AP Router Configuration`} />
+          <div class="mb-12">
+            <Code
+              configPreview={apConfigPreview.value}
+              onPythonDownload$={handlePythonDownload}
+              onROSDownload$={handleAPDownload}
+            />
+          </div>
+        </>
+      )}
+
       {/* <MikrotikApplyConfig /> */}
-      
+
       <ScriptGuide />
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">

@@ -133,14 +133,14 @@ export const App = component$<JSX.Element>(() => {
   ];
 
   return (
-    <div class="min-h-screen bg-gradient-to-br from-surface via-surface to-surface-secondary px-4 pb-12 pt-24 dark:from-surface-dark dark:via-surface-dark dark:to-surface-dark-secondary">
+    <div class="to-surface-secondary dark:to-surface-dark-secondary min-h-screen bg-gradient-to-br from-surface via-surface px-4 pb-12 pt-24 dark:from-surface-dark dark:via-surface-dark">
       <div class="mx-auto max-w-7xl">
         {/* Header */}
         <div class="mb-16 text-center">
           <h1 class="mb-4 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
             Choose Your Operation Mode
           </h1>
-          <p class="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary">
+          <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-2xl">
             Select the most suitable operation mode for your network setup. Each
             mode offers unique features and capabilities.
           </p>
@@ -167,7 +167,7 @@ export const App = component$<JSX.Element>(() => {
                   {option.title}
                 </h3>
 
-                <p class="text-sm text-text-secondary dark:text-text-dark-secondary">
+                <p class="text-text-secondary dark:text-text-dark-secondary text-sm">
                   {option.description}
                 </p>
 

@@ -1,4 +1,8 @@
-import { component$, type JSXOutput, type PropFunction } from "@builder.io/qwik";
+import {
+  component$,
+  type JSXOutput,
+  type PropFunction,
+} from "@builder.io/qwik";
 
 export interface OptionCardProps {
   value: boolean;
@@ -12,26 +16,39 @@ export interface OptionCardProps {
 }
 
 export const OptionCard = component$((props: OptionCardProps) => {
-  const { value, isSelected, icon, title, description, features, graph, onSelect$ } = props;
+  const {
+    value,
+    isSelected,
+    icon,
+    title,
+    description,
+    features,
+    graph,
+    onSelect$,
+  } = props;
 
   return (
     <div
       onClick$={(e) => {
         const target = e.target as HTMLElement;
-        if (target.closest('.network-graph') || target.closest('.topology-container')) return;
+        if (
+          target.closest(".network-graph") ||
+          target.closest(".topology-container")
+        )
+          return;
         onSelect$(value);
       }}
-      class={`option-card relative overflow-visible rounded-2xl transition-all duration-500 cursor-pointer
+      class={`option-card relative cursor-pointer overflow-visible rounded-2xl transition-all duration-500
         ${
           isSelected
-            ? "ring-primary-500 bg-primary-500/10 ring-2 dark:bg-primary-500/15"
-            : "bg-surface/50 hover:bg-surface-secondary/50 dark:bg-surface-dark/50 dark:hover:bg-surface-dark-secondary/60"
+            ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
+            : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
         }
       `}
     >
       {/* Selected indicator badge - only shows when option is selected */}
       {isSelected && (
-        <div class="absolute right-4 top-4 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25 z-10">
+        <div class="absolute right-4 top-4 z-10 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
           <span class="text-xs font-medium text-success dark:text-success-light">
             {$localize`Selected`}
           </span>
@@ -41,8 +58,8 @@ export const OptionCard = component$((props: OptionCardProps) => {
       <div class="space-y-6 p-6">
         {/* Option icon container with conditional styling */}
         <div
-          class={`flex h-16 w-16 items-center justify-center rounded-xl
-          transition-all duration-500 option-icon
+          class={`option-icon flex h-16 w-16 items-center justify-center
+          rounded-xl transition-all duration-500
           ${
             isSelected
               ? "bg-primary-500 text-white"
@@ -68,7 +85,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
             {features.map((feature) => (
               <div
                 key={feature}
-                class="flex items-center text-text-secondary/90 dark:text-text-dark-secondary/95"
+                class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
               >
                 <svg
                   class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
@@ -87,9 +104,11 @@ export const OptionCard = component$((props: OptionCardProps) => {
               </div>
             ))}
           </div>
-          
+
           {/* Network topology visualization - graph container with its own hover effect */}
-          <div class={`${value === true ? "pt-6" : "pt-2"} graph-container overflow-visible`}>
+          <div
+            class={`${value === true ? "pt-6" : "pt-2"} graph-container overflow-visible`}
+          >
             {graph}
           </div>
         </div>
@@ -97,13 +116,14 @@ export const OptionCard = component$((props: OptionCardProps) => {
 
       {/* Hover effect gradient overlay */}
       <div
-        class="absolute inset-0 bg-gradient-to-br from-primary-500/10 
-        to-secondary-500/10 opacity-0 transition-opacity duration-500
-        card-overlay dark:from-primary-500/15 dark:to-secondary-500/15"
+        class="card-overlay absolute inset-0 bg-gradient-to-br 
+        from-primary-500/10 to-secondary-500/10 opacity-0 transition-opacity
+        duration-500 dark:from-primary-500/15 dark:to-secondary-500/15"
       />
-      
+
       {/* Add CSS directly inside component */}
-      <style dangerouslySetInnerHTML={`
+      <style
+        dangerouslySetInnerHTML={`
         /* Only apply these effects when NOT hovering over the graph */
         .option-card:hover:not(:has(.topology-container:hover)) {
           transform: scale(1.01);
@@ -122,7 +142,8 @@ export const OptionCard = component$((props: OptionCardProps) => {
           position: relative;
           z-index: auto;
         }
-      `} />
+      `}
+      />
     </div>
   );
-}); 
+});

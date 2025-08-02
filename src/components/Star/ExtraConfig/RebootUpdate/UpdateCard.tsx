@@ -4,7 +4,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { TimePicker } from "~/components/Core/TimePicker/Timepicker";
-import { Select, type SelectOption } from "~/components/Core/Select/Select";
+import { Select, type SelectOption } from "~/components/Core/Select";
 import type { Signal } from "@builder.io/qwik";
 import type { TimeConfig } from "./type";
 
@@ -25,12 +25,14 @@ export const UpdateCard = component$<UpdateCardProps>(
     const handleIntervalChange = $((value: string | string[]) => {
       // Always ensure we have a valid value - default to Daily if empty
       // If it's an array, take the first value or use "Daily"
-      const newValue = Array.isArray(value) ? value[0] || "Daily" : value || "Daily";
+      const newValue = Array.isArray(value)
+        ? value[0] || "Daily"
+        : value || "Daily";
       updateInterval.value = newValue;
     });
 
     return (
-      <div class="rounded-xl bg-surface-secondary p-5 dark:bg-surface-dark-secondary">
+      <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
             <h3 class="font-medium">{$localize`Automatic Updates`}</h3>
@@ -72,10 +74,12 @@ export const UpdateCard = component$<UpdateCardProps>(
             <TimePicker
               time={updateTime}
               onChange$={(type, value) => {
-                updateTime[type] = value;
+                if (type === 'hour' || type === 'minute') {
+                  updateTime[type] = value;
+                }
               }}
             />
-            
+
             <div class="relative z-30 pb-16">
               <Select
                 options={UPDATE_INTERVAL_OPTIONS}

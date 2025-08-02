@@ -9,12 +9,18 @@ interface ConfigInputProps {
 }
 
 export const ConfigInput = component$<ConfigInputProps>(
-  ({ config, onConfigChange$, onFileUpload$, placeholder, vpnType = "Wireguard" }) => {
-    
-    const defaultPlaceholder = vpnType === "OpenVPN"
-      ? $localize`Paste your OpenVPN configuration here. The file should include directives like 'remote', 'proto', 'dev', etc.`
-      : $localize`Paste your Wireguard configuration here. The file should include [Interface] and [Peer] sections.`;
-    
+  ({
+    config,
+    onConfigChange$,
+    onFileUpload$,
+    placeholder,
+    vpnType = "Wireguard",
+  }) => {
+    const defaultPlaceholder =
+      vpnType === "OpenVPN"
+        ? $localize`Paste your OpenVPN configuration here. The file should include directives like 'remote', 'proto', 'dev', etc.`
+        : $localize`Paste your Wireguard configuration here. The file should include [Interface] and [Peer] sections.`;
+
     const handlePaste = $(async () => {
       try {
         const text = await navigator.clipboard.readText();
@@ -22,10 +28,10 @@ export const ConfigInput = component$<ConfigInputProps>(
           onConfigChange$(text);
         }
       } catch (error) {
-        console.error('Failed to read clipboard contents:', error);
+        console.error("Failed to read clipboard contents:", error);
       }
     });
-    
+
     return (
       <div class="space-y-4">
         <div class="flex space-x-4">
@@ -35,16 +41,16 @@ export const ConfigInput = component$<ConfigInputProps>(
               onConfigChange$(currentTarget.value)
             }
             placeholder={placeholder || defaultPlaceholder}
-            class="text-text-default focus:ring-primary-500 h-48 flex-1 rounded-lg border 
+            class="text-text-default placeholder:text-text-muted h-48 flex-1 rounded-lg border 
             border-border bg-white
             px-4 py-2
-            placeholder:text-text-muted focus:ring-2
+            focus:ring-2 focus:ring-primary-500
             dark:border-border-dark dark:bg-surface-dark
             dark:text-text-dark-default"
           />
           <div class="flex flex-col justify-center space-y-2">
             <label
-              class="cursor-pointer rounded-lg bg-primary-500 px-4 py-2 text-white text-center
+              class="cursor-pointer rounded-lg bg-primary-500 px-4 py-2 text-center text-white
                     transition-colors hover:bg-primary-600"
             >
               {$localize`Upload Config`}
@@ -57,7 +63,7 @@ export const ConfigInput = component$<ConfigInputProps>(
             </label>
             <button
               onClick$={handlePaste}
-              class="rounded-lg bg-secondary-500 px-4 py-2 text-white text-center
+              class="rounded-lg bg-secondary-500 px-4 py-2 text-center text-white
                     transition-colors hover:bg-secondary-600"
             >
               {$localize`Paste Config`}

@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Tooltip"
       description="A small informative message that appears when a user hovers over, focuses on, or clicks an element"
-      Overview={<Overview />}
-      Examples={<Examples />}
-      APIReference={<APIReference />}
-      Usage={<Usage />}
-      Playground={<Playground />}
+      Overview={Overview}
+      Examples={Examples}
+      APIReference={APIReference}
+      Usage={Usage}
+      Playground={Playground}
     />
   );
 });

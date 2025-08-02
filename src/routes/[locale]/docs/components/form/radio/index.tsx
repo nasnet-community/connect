@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Radio"
       description="A radio button component for selecting a single option from a set of choices."
-      Overview={<RadioOverview />}
-      Examples={<RadioExamples />}
-      APIReference={<RadioAPIReference />}
-      Usage={<RadioUsage />}
-      Playground={<RadioPlayground />}
+      Overview={RadioOverview}
+      Examples={RadioExamples}
+      APIReference={RadioAPIReference}
+      Usage={RadioUsage}
+      Playground={RadioPlayground}
     />
   );
 });

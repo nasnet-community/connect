@@ -9,7 +9,7 @@ type ViewMode = "easy" | "advanced";
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
-  
+
   const wireguardState = vpnServerState.WireguardServers?.[0] || {
     Interface: {
       Name: "wg-server",
@@ -17,9 +17,9 @@ export const useWireguardServer = () => {
       PublicKey: "",
       InterfaceAddress: "192.168.110.1/24",
       ListenPort: 51820,
-      Mtu: 1420
+      Mtu: 1420,
     },
-    Peers: []
+    Peers: [],
   };
 
   // Error signals
@@ -28,54 +28,64 @@ export const useWireguardServer = () => {
 
   // UI state
   const showPrivateKey = useSignal(false);
-  const isEnabled = useSignal(!!wireguardState.Interface?.PrivateKey);
+  const isEnabled = useSignal(!!wireguardState.Interface.PrivateKey);
   const viewMode = useSignal<ViewMode>("advanced");
 
   // Unified form state for both easy and advanced modes
   const formState = useStore({
-    name: wireguardState.Interface?.Name || "wg-server",
-    privateKey: wireguardState.Interface?.PrivateKey || "",
-    interfaceAddress: wireguardState.Interface?.InterfaceAddress || "192.168.110.1/24",
-    listenPort: wireguardState.Interface?.ListenPort || 51820,
-    mtu: wireguardState.Interface?.Mtu || 1420
+    name: wireguardState.Interface.Name || "wg-server",
+    privateKey: wireguardState.Interface.PrivateKey || "",
+    interfaceAddress:
+      wireguardState.Interface.InterfaceAddress || "192.168.110.1/24",
+    listenPort: wireguardState.Interface.ListenPort || 51820,
+    mtu: wireguardState.Interface.Mtu || 1420,
   });
 
   // Core update function
   const updateWireguardServer$ = $((config: Partial<WireguardServerConfig>) => {
     const newConfig = {
       ...wireguardState,
-      ...config
+      ...config,
     };
-    
+
     let isValid = true;
-    
+
     // Validate private key
     if (config.Interface?.PrivateKey !== undefined) {
-      if (!newConfig.Interface?.PrivateKey || !newConfig.Interface.PrivateKey.trim()) {
+      if (
+        !newConfig.Interface.PrivateKey ||
+        !newConfig.Interface.PrivateKey.trim()
+      ) {
         privateKeyError.value = $localize`Private key is required`;
         isValid = false;
       } else {
         privateKeyError.value = "";
       }
     }
-    
+
     // Validate interface address
     if (config.Interface?.InterfaceAddress !== undefined) {
-      const address = newConfig.Interface?.InterfaceAddress;
-      if (!address || !address.includes('/')) {
+      const address = newConfig.Interface.InterfaceAddress;
+      if (!address || !address.includes("/")) {
         addressError.value = $localize`Valid interface address with subnet is required (e.g., 192.168.110.1/24)`;
         isValid = false;
       } else {
         addressError.value = "";
       }
     }
-    
-    if (isValid || (config.Interface?.PrivateKey && config.Interface.PrivateKey === "")) {
-      starContext.updateLAN$({ 
+
+    if (
+      isValid ||
+      (config.Interface?.PrivateKey && config.Interface.PrivateKey === "")
+    ) {
+      starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
-          WireguardServers: (config.Interface?.PrivateKey && config.Interface.PrivateKey === "") ? undefined : [newConfig]
-        }
+          WireguardServers:
+            config.Interface?.PrivateKey && config.Interface.PrivateKey === ""
+              ? undefined
+              : [newConfig],
+        },
       });
     }
   });
@@ -84,7 +94,7 @@ export const useWireguardServer = () => {
   const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config with proper StarContext structure
     updateWireguardServer$({
       Interface: {
@@ -93,9 +103,9 @@ export const useWireguardServer = () => {
         PublicKey: "", // Public key would be derived from private key
         InterfaceAddress: formState.interfaceAddress,
         ListenPort: formState.listenPort,
-        Mtu: formState.mtu
+        Mtu: formState.mtu,
       },
-      Peers: wireguardState.Peers || []
+      Peers: wireguardState.Peers || [],
     });
   });
 
@@ -103,7 +113,7 @@ export const useWireguardServer = () => {
   const updateEasyConfig = $((updatedValues: Partial<typeof formState>) => {
     // Update local state first
     Object.assign(formState, updatedValues);
-    
+
     // Then update server config with proper StarContext structure
     updateWireguardServer$({
       Interface: {
@@ -112,7 +122,7 @@ export const useWireguardServer = () => {
         PublicKey: "", // Public key would be derived from private key
         InterfaceAddress: formState.interfaceAddress,
         ListenPort: 51820, // Default values for easy mode
-        Mtu: 1420 // Default values for easy mode
+        Mtu: 1420, // Default values for easy mode
       },
     });
   });
@@ -125,7 +135,7 @@ export const useWireguardServer = () => {
       const array = new Uint8Array(32);
       crypto.getRandomValues(array);
       const privateKey = btoa(String.fromCharCode(...array));
-      
+
       return privateKey;
     } catch (error) {
       console.error("Failed to generate private key:", error);
@@ -138,7 +148,7 @@ export const useWireguardServer = () => {
     // Simulate generating a private key
     console.log("Generating private key...");
     const newPrivateKey = "YKZRdzOIFrA9ufcYALAfMZyzkAarXXZ+Va8TnXy4uX8=";
-    
+
     // Update the private key in the unified form state
     updateServerConfig({ privateKey: newPrivateKey });
   });
@@ -152,7 +162,7 @@ export const useWireguardServer = () => {
   const toggleServerEnabled = $(() => {
     const newStatus = !isEnabled.value;
     isEnabled.value = newStatus;
-    
+
     // If disabling, clear the private key
     if (!newStatus) {
       updateServerConfig({ privateKey: "" });
@@ -169,7 +179,7 @@ export const useWireguardServer = () => {
     const newPeers = [...(wireguardState.Peers || []), peer];
     updateWireguardServer$({
       Interface: wireguardState.Interface,
-      Peers: newPeers
+      Peers: newPeers,
     });
   });
 
@@ -178,13 +188,16 @@ export const useWireguardServer = () => {
     newPeers.splice(index, 1);
     updateWireguardServer$({
       Interface: wireguardState.Interface,
-      Peers: newPeers
+      Peers: newPeers,
     });
   });
 
   // Function to ensure default configuration when protocol is enabled
   const ensureDefaultConfig = $(() => {
-    if (!vpnServerState.WireguardServers || vpnServerState.WireguardServers.length === 0) {
+    if (
+      !vpnServerState.WireguardServers ||
+      vpnServerState.WireguardServers.length === 0
+    ) {
       updateWireguardServer$({
         Interface: {
           Name: "wg-server",
@@ -192,9 +205,9 @@ export const useWireguardServer = () => {
           PublicKey: "",
           InterfaceAddress: "192.168.110.1/24",
           ListenPort: 51820,
-          Mtu: 1420
+          Mtu: 1420,
         },
-        Peers: []
+        Peers: [],
       });
     }
   });
@@ -204,50 +217,70 @@ export const useWireguardServer = () => {
     wireguardState,
     formState, // Unified state
     // For backward compatibility with existing components
-    get advancedFormState() { return formState; },
-    get easyFormState() { return formState; },
+    get advancedFormState() {
+      return formState;
+    },
+    get easyFormState() {
+      return formState;
+    },
     viewMode,
-    
+
     // UI state
     showPrivateKey,
-    
+
     // Errors
     privateKeyError,
     addressError,
-    
+
     // Core functions
     updateWireguardServer$,
     updateServerConfig,
     updateEasyConfig,
     ensureDefaultConfig,
     setViewMode,
-    
+
     // Individual field updates (backward compatibility)
-    updateName$: $(function(value: string) { updateServerConfig({ name: value }); }),
-    updatePrivateKey$: $(function(value: string) { updateServerConfig({ privateKey: value }); }),
-    updateInterfaceAddress$: $(function(value: string) { updateServerConfig({ interfaceAddress: value }); }),
-    updateListenPort$: $(function(value: number) { updateServerConfig({ listenPort: value }); }),
-    updateMtu$: $(function(value: number) { updateServerConfig({ mtu: value }); }),
-    
+    updateName$: $(function (value: string) {
+      updateServerConfig({ name: value });
+    }),
+    updatePrivateKey$: $(function (value: string) {
+      updateServerConfig({ privateKey: value });
+    }),
+    updateInterfaceAddress$: $(function (value: string) {
+      updateServerConfig({ interfaceAddress: value });
+    }),
+    updateListenPort$: $(function (value: number) {
+      updateServerConfig({ listenPort: value });
+    }),
+    updateMtu$: $(function (value: number) {
+      updateServerConfig({ mtu: value });
+    }),
+
     // Easy mode field updates (backward compatibility)
-    updateEasyName$: $(function(value: string) { updateEasyConfig({ name: value }); }),
-    updateEasyPrivateKey$: $(function(value: string) { updateEasyConfig({ privateKey: value }); }),
-    updateEasyInterfaceAddress$: $(function(value: string) { updateEasyConfig({ interfaceAddress: value }); }),
-    
+    updateEasyName$: $(function (value: string) {
+      updateEasyConfig({ name: value });
+    }),
+    updateEasyPrivateKey$: $(function (value: string) {
+      updateEasyConfig({ privateKey: value });
+    }),
+    updateEasyInterfaceAddress$: $(function (value: string) {
+      updateEasyConfig({ interfaceAddress: value });
+    }),
+
     // Legacy function aliases for backward compatibility
     updateEasyForm$: updateEasyConfig,
-    
+
     // Key generation
     generatePrivateKey,
     handleGeneratePrivateKey,
-    
+
     // UI controls
     togglePrivateKeyVisibility,
     toggleServerEnabled,
     handleToggle: toggleServerEnabled,
-    
+
     // Peer management
     addPeer,
-    removePeer
+    removePeer,
   };
-}; 
+};

@@ -12,7 +12,7 @@ export const Code = component$<CodeProps>(
     // export const Code = component$<CodeProps>(({ configPreview, onPythonDownload$, onROSDownload$ }) => {
 
     return (
-      <div class="rounded-lg bg-surface-secondary p-6 shadow-md dark:bg-surface-dark-secondary">
+      <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-lg p-6 shadow-md">
         <div class="mb-4 flex items-center justify-between">
           <span class="text-text-secondary dark:text-text-dark-secondary">{$localize`Configuration`}</span>
           <div class="space-x-4">
@@ -30,7 +30,7 @@ export const Code = component$<CodeProps>(
             </button>
           </div>
         </div>
-        <pre class="max-h-[500px] overflow-x-auto overflow-y-auto rounded-md bg-surface-tertiary p-4 scrollbar-thin dark:bg-surface-dark">
+        <pre class="bg-surface-tertiary max-h-[500px] overflow-x-auto overflow-y-auto rounded-md p-4 scrollbar-thin dark:bg-surface-dark">
           <code class="whitespace-pre text-sm text-text dark:text-text-dark-default">
             {configPreview}
           </code>

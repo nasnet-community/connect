@@ -4,6 +4,7 @@ import { NetworkCard } from "./NetworkCard";
 import type { NetworkKey, Networks } from "./type";
 import { NETWORK_KEYS } from "./constants";
 import { StarContext } from "../../StarContext/StarContext";
+import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -28,29 +29,30 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     toggleNetworkSplitBand,
   }) => {
     const starContext = useContext(StarContext);
-    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
+    const isDomesticLinkEnabled =
+      starContext.state.Choose.DomesticLink === true;
 
     // Filter network keys based on DomesticLink value
-    const filteredNetworkKeys = NETWORK_KEYS.filter(key => 
-      isDomesticLinkEnabled || (key !== "domestic" && key !== "split")
+    const filteredNetworkKeys = NETWORK_KEYS.filter(
+      (key) => isDomesticLinkEnabled || (key !== "domestic" && key !== "split"),
     );
 
     return (
       <div class="space-y-8">
         {/* Warning and Actions Header */}
         <div
-          class="from-warning-50 to-warning-100 dark:from-warning-900/20 dark:to-warning-800/20 
-                  border-warning-200 dark:border-warning-800 rounded-xl border bg-gradient-to-r"
+          class="rounded-xl border border-warning-200 bg-gradient-to-r 
+                  from-warning-50 to-warning-100 dark:border-warning-800 dark:from-warning-900/20 dark:to-warning-800/20"
         >
           <div class="p-4 sm:p-6">
             <div class="flex flex-col gap-6 lg:flex-row">
               <div class="flex flex-1 items-start space-x-3">
-                <HiExclamationTriangleOutline class="text-warning-500 mt-1 h-6 w-6 flex-shrink-0" />
+                <HiExclamationTriangleOutline class="mt-1 h-6 w-6 flex-shrink-0 text-warning-500" />
                 <div>
-                  <h3 class="text-warning-700 dark:text-warning-300 font-medium">
+                  <h3 class="font-medium text-warning-700 dark:text-warning-300">
                     {$localize`Multiple Networks`}
                   </h3>
-                  <p class="text-warning-600 dark:text-warning-400 mt-1 text-sm">
+                  <p class="mt-1 text-sm text-warning-600 dark:text-warning-400">
                     {$localize`Setting up multiple SSIDs will create separate networks for different purposes`}
                   </p>
                 </div>
@@ -64,7 +66,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                      duration-200 hover:bg-primary-600 lg:w-auto"
               >
                 {isLoading.allPasswords ? (
-                  <div class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <Spinner size="xs" color="white" variant="circle" />
                 ) : (
                   $localize`Generate Common Password`
                 )}
@@ -101,7 +103,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
             />
           ))}
         </div>
-        
+
         {/* Info Note */}
         <div class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           <p>

@@ -14,11 +14,11 @@ export default component$(() => {
     <ComponentPage
       name="Flex"
       description="A layout component for one-dimensional layouts using Flexbox"
-      Overview={<FlexOverview />}
-      Examples={<FlexExamples />}
-      APIReference={<FlexAPIReference />}
-      Usage={<FlexUsage />}
-      Playground={<FlexPlayground />}
+      Overview={FlexOverview}
+      Examples={FlexExamples}
+      APIReference={FlexAPIReference}
+      Usage={FlexUsage}
+      Playground={FlexPlayground}
     />
   );
 });

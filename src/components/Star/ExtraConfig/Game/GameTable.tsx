@@ -6,7 +6,7 @@ import type { GameTableProps } from "./type";
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
     const { handleGameSelection } = useGameLogic();
-    
+
     // Check if DomesticLink is enabled
     const isDomesticLinkEnabled = context.state.Choose.DomesticLink === true;
 

@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="Modal"
       description="A modal dialog component for displaying content in a layer above the page."
-      Overview={<ModalOverview />}
-      Examples={<ModalExamples />}
-      APIReference={<ModalAPIReference />}
-      Usage={<ModalUsage />}
-      Playground={<ModalPlayground />}
+      Overview={ModalOverview}
+      Examples={ModalExamples}
+      APIReference={ModalAPIReference}
+      Usage={ModalUsage}
+      Playground={ModalPlayground}
     />
   );
 });

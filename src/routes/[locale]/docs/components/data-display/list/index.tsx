@@ -13,11 +13,11 @@ export default component$(() => {
     <ComponentPage
       name="List"
       description="A component for displaying content in ordered, unordered, and definition list formats"
-      Overview={<Overview />}
-      Examples={<Examples />}
-      APIReference={<APIReference />}
-      Usage={<Usage />}
-      Playground={<Playground />}
+      Overview={Overview}
+      Examples={Examples}
+      APIReference={APIReference}
+      Usage={Usage}
+      Playground={Playground}
     />
   );
 });

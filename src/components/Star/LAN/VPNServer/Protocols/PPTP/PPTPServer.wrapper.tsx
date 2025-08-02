@@ -9,9 +9,5 @@ export const PPTPServerWrapper = component$(() => {
   const starContext = useContext(StarContext);
   const mode = starContext.state.Choose.Mode as Mode;
 
-  return (
-    <>
-      {mode === "easy" ? <PPTPServerEasy /> : <PPTPServerAdvanced />}
-    </>
-  );
-}); 
+  return <>{mode === "easy" ? <PPTPServerEasy /> : <PPTPServerAdvanced />}</>;
+});

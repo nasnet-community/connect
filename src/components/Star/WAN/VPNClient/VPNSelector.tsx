@@ -10,7 +10,7 @@ export const VPNSelector = component$<VPNSelectorProps>(
   ({ selectedType, onTypeChange$ }) => {
     return (
       <div class="space-y-2">
-        <label class="text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+        <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
           {$localize`Select VPN Type`}
         </label>
         <select
@@ -18,10 +18,10 @@ export const VPNSelector = component$<VPNSelectorProps>(
           onChange$={(e, currentTarget) =>
             onTypeChange$(currentTarget.value as VPNType)
           }
-          class="text-text-default focus:ring-primary-500 w-full rounded-lg border 
-          border-border bg-white
-          px-4 py-2
-          focus:ring-2 dark:border-border-dark
+          class="text-text-default w-full rounded-lg border border-border 
+          bg-white px-4
+          py-2 focus:ring-2
+          focus:ring-primary-500 dark:border-border-dark
           dark:bg-surface-dark dark:text-text-dark-default"
         >
           <option value="">{$localize`Select VPN type`}</option>

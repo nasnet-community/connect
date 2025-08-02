@@ -9,6 +9,15 @@ import { StarContext } from "../StarContext/StarContext";
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
+  const isAdvancedMode = starContext.state.Choose.Mode === "advance";
+
+  // In advanced mode, WANInterface will show as a single step that contains the full wizard
+  const AdvancedStep = component$((props: StepProps) => (
+    <WANInterface
+      isComplete={props.isComplete}
+      onComplete$={props.onComplete$}
+    />
+  ));
 
   const ForeignStep = component$((props: StepProps) => (
     <WANInterface
@@ -30,32 +39,53 @@ export const WAN = component$((props: StepProps) => {
     <VPNClient isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const steps: StepItem[] = [
-    {
-      id: 1,
-      title: $localize`Foreign`,
-      component: ForeignStep,
-      isComplete: false,
-    },
-  ];
-  
-  // Only add Domestic step if DomesticLink is enabled
-  if (isDomesticLinkEnabled) {
+  let steps: StepItem[] = [];
+
+  if (isAdvancedMode) {
+    // In advanced mode, show a single WAN Configuration step
+    steps = [
+      {
+        id: 1,
+        title: $localize`WAN Configuration`,
+        component: AdvancedStep,
+        isComplete: false,
+      },
+      {
+        id: 2,
+        title: $localize`VPN Client`,
+        component: VPNClientStep,
+        isComplete: false,
+      },
+    ];
+  } else {
+    // In easy mode, show separate Foreign/Domestic steps
+    steps = [
+      {
+        id: 1,
+        title: $localize`Foreign`,
+        component: ForeignStep,
+        isComplete: false,
+      },
+    ];
+
+    // Only add Domestic step if DomesticLink is enabled
+    if (isDomesticLinkEnabled) {
+      steps.push({
+        id: 2,
+        title: $localize`Domestic`,
+        component: DomesticStep,
+        isComplete: false,
+      });
+    }
+
+    // Always add VPN Client step
     steps.push({
-      id: 2,
-      title: $localize`Domestic`,
-      component: DomesticStep,
+      id: steps.length + 1,
+      title: $localize`VPN Client`,
+      component: VPNClientStep,
       isComplete: false,
     });
   }
-  
-  // Always add VPN Client step
-  steps.push({
-    id: steps.length + 1,
-    title: $localize`VPN Client`,
-    component: VPNClientStep,
-    isComplete: false,
-  });
 
   const stepsStore = useStore({
     activeStep: 0,

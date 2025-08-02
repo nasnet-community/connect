@@ -1,25 +1,34 @@
 import { component$, $ } from "@builder.io/qwik";
-import { HiLockClosedOutline, HiChevronDownOutline, HiChevronUpOutline } from "@qwikest/icons/heroicons";
+import {
+  HiLockClosedOutline,
+  HiChevronDownOutline,
+  HiChevronUpOutline,
+} from "@qwikest/icons/heroicons";
 import { useEOIP } from "./useEOIP";
 import type { EoipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 import type { ARPState } from "../../../../StarContext/CommonType";
 
 export const EOIPProtocol = component$(() => {
-  const {
-    eoipTunnels,
-    expandedSections,
-    toggleSection,
-    updateTunnelField,
-  } = useEOIP();
+  const { eoipTunnels, expandedSections, toggleSection, updateTunnelField } =
+    useEOIP();
 
   const toggleSection$ = $((section: string) => toggleSection(section));
-  const updateTunnelField$ = $((index: number, field: keyof EoipTunnelConfig, value: string | boolean | number | undefined) => {
-    updateTunnelField(index, field, value);
-  });
+  const updateTunnelField$ = $(
+    (
+      index: number,
+      field: keyof EoipTunnelConfig,
+      value: string | boolean | number | undefined,
+    ) => {
+      updateTunnelField(index, field, value);
+    },
+  );
 
   return (
     <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div class="flex cursor-pointer items-center justify-between p-6" onClick$={() => toggleSection$('eoip')}>
+      <div
+        class="flex cursor-pointer items-center justify-between p-6"
+        onClick$={() => toggleSection$("eoip")}
+      >
         <div class="flex items-center gap-3">
           <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{$localize`EOIP Tunnels`}</h3>
@@ -35,7 +44,10 @@ export const EOIPProtocol = component$(() => {
         <div class="border-t border-gray-200 p-6 dark:border-gray-700">
           <div class="space-y-8">
             {eoipTunnels.map((tunnel, index) => (
-              <div key={index} class="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+              <div
+                key={index}
+                class="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+              >
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
                   {$localize`EOIP Tunnel ${index + 1}`}
                 </h4>
@@ -49,7 +61,13 @@ export const EOIPProtocol = component$(() => {
                     <input
                       type="text"
                       value={tunnel.name}
-                      onChange$={(e) => updateTunnelField$(index, 'name', (e.target as HTMLInputElement).value)}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "name",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter tunnel name`}
                     />
@@ -63,7 +81,13 @@ export const EOIPProtocol = component$(() => {
                     <input
                       type="number"
                       value={tunnel.tunnelId}
-                      onChange$={(e) => updateTunnelField$(index, 'tunnelId', parseInt((e.target as HTMLInputElement).value) || 1)}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "tunnelId",
+                          parseInt((e.target as HTMLInputElement).value) || 1,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter tunnel ID`}
                       min="1"
@@ -77,10 +101,14 @@ export const EOIPProtocol = component$(() => {
                     </label>
                     <input
                       type="number"
-                      value={tunnel.mtu || ''}
+                      value={tunnel.mtu || ""}
                       onChange$={(e) => {
                         const val = (e.target as HTMLInputElement).value;
-                        updateTunnelField$(index, 'mtu', val ? parseInt(val) : undefined);
+                        updateTunnelField$(
+                          index,
+                          "mtu",
+                          val ? parseInt(val) : undefined,
+                        );
                       }}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter MTU (optional)`}
@@ -95,7 +123,13 @@ export const EOIPProtocol = component$(() => {
                     <input
                       type="text"
                       value={tunnel.localAddress}
-                      onChange$={(e) => updateTunnelField$(index, 'localAddress', (e.target as HTMLInputElement).value)}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "localAddress",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter local address`}
                     />
@@ -109,7 +143,13 @@ export const EOIPProtocol = component$(() => {
                     <input
                       type="text"
                       value={tunnel.remoteAddress}
-                      onChange$={(e) => updateTunnelField$(index, 'remoteAddress', (e.target as HTMLInputElement).value)}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "remoteAddress",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter remote address`}
                     />
@@ -122,8 +162,14 @@ export const EOIPProtocol = component$(() => {
                     </label>
                     <input
                       type="text"
-                      value={tunnel.macAddress || ''}
-                      onChange$={(e) => updateTunnelField$(index, 'macAddress', (e.target as HTMLInputElement).value)}
+                      value={tunnel.macAddress || ""}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "macAddress",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter MAC address (optional)`}
                     />
@@ -136,8 +182,14 @@ export const EOIPProtocol = component$(() => {
                     </label>
                     <input
                       type="text"
-                      value={tunnel.ipsecSecret || ''}
-                      onChange$={(e) => updateTunnelField$(index, 'ipsecSecret', (e.target as HTMLInputElement).value)}
+                      value={tunnel.ipsecSecret || ""}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "ipsecSecret",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter IPsec secret (optional)`}
                     />
@@ -150,8 +202,14 @@ export const EOIPProtocol = component$(() => {
                     </label>
                     <input
                       type="text"
-                      value={tunnel.keepalive || ''}
-                      onChange$={(e) => updateTunnelField$(index, 'keepalive', (e.target as HTMLInputElement).value)}
+                      value={tunnel.keepalive || ""}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "keepalive",
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter keepalive (optional)`}
                     />
@@ -165,10 +223,11 @@ export const EOIPProtocol = component$(() => {
                       {$localize`ARP`}
                     </label>
                     <select
-                      value={tunnel.arp || ''}
+                      value={tunnel.arp || ""}
                       onChange$={(e) => {
-                        const value = (e.target as HTMLSelectElement).value as ARPState;
-                        updateTunnelField$(index, 'arp', value || undefined);
+                        const value = (e.target as HTMLSelectElement)
+                          .value as ARPState;
+                        updateTunnelField$(index, "arp", value || undefined);
                       }}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >
@@ -185,7 +244,13 @@ export const EOIPProtocol = component$(() => {
                       type="checkbox"
                       id={`clampTcpMss-${index}`}
                       checked={tunnel.clampTcpMss || false}
-                      onChange$={(e) => updateTunnelField$(index, 'clampTcpMss', (e.target as HTMLInputElement).checked)}
+                      onChange$={(e) =>
+                        updateTunnelField$(
+                          index,
+                          "clampTcpMss",
+                          (e.target as HTMLInputElement).checked,
+                        )
+                      }
                       class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                     />
                     <label
@@ -203,4 +268,4 @@ export const EOIPProtocol = component$(() => {
       )}
     </div>
   );
-}); 
+});
