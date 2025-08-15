@@ -19,7 +19,6 @@ import {
   Button,
   Alert,
   Checkbox,
-  Select,
 } from "~/components/Core";
 import type { StepProps } from "~/types/step";
 import { LuNetwork, LuInfo, LuSettings2, LuShield } from "@qwikest/icons/lucide";
@@ -32,12 +31,6 @@ interface SubnetInput {
   description?: string;
   category: "base" | "vpn" | "tunnel";
   isRequired?: boolean;
-}
-
-interface SubnetValidation {
-  minPrefix: number;
-  maxPrefix: number;
-  allowOverlap: boolean;
 }
 
 // Helper component to display subnet mask

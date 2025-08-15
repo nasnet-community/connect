@@ -11,6 +11,7 @@ export const useRebootUpdate = () => {
     const needsUpdate =
       !ctx.state.ExtraConfig.AutoReboot ||
       !ctx.state.ExtraConfig.Update ||
+      !ctx.state.ExtraConfig.IPAddressUpdate ||
       !ctx.state.ExtraConfig.Timezone;
 
     if (needsUpdate) {
@@ -25,6 +26,10 @@ export const useRebootUpdate = () => {
           UpdateTime: "00:00",
           UpdateInterval: "Daily" as UpdateInterval,
         },
+        IPAddressUpdate: ctx.state.ExtraConfig.IPAddressUpdate || {
+          isIPAddressUpdate: false,
+          IPAddressUpdateTime: "03:00",
+        },
       });
     }
   });
@@ -35,6 +40,10 @@ export const useRebootUpdate = () => {
 
   const autoUpdateEnabled = useSignal(
     ctx.state.ExtraConfig.Update?.isAutoReboot ?? false,
+  );
+
+  const ipAddressUpdateEnabled = useSignal(
+    ctx.state.ExtraConfig.IPAddressUpdate?.isIPAddressUpdate ?? false,
   );
 
   const selectedTimezone = useSignal(ctx.state.ExtraConfig.Timezone);
@@ -66,13 +75,20 @@ export const useRebootUpdate = () => {
     minute: ctx.state.ExtraConfig.Update?.UpdateTime.split(":")[1] || "00",
   });
 
+  const ipAddressUpdateTime = useStore<TimeConfig>({
+    hour: ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateTime.split(":")[0] || "03",
+    minute: ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateTime.split(":")[1] || "00",
+  });
+
   return {
     ctx,
     autoRebootEnabled,
     autoUpdateEnabled,
+    ipAddressUpdateEnabled,
     selectedTimezone,
     updateInterval,
     rebootTime,
     updateTime,
+    ipAddressUpdateTime,
   };
 };

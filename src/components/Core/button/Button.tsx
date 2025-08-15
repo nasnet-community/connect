@@ -9,9 +9,16 @@ export type ButtonVariant =
   | "success"
   | "error"
   | "warning"
-  | "info";
-export type ButtonSize = "sm" | "md" | "lg";
-export type ButtonIconSize = "auto" | "sm" | "md" | "lg";
+  | "info"
+  | "cta"
+  | "gradient"
+  | "glow"
+  | "glass"
+  | "motion"
+  | "premium";
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type ButtonIconSize = "auto" | "xs" | "sm" | "md" | "lg";
+export type ButtonRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface ButtonProps {
   variant?: ButtonVariant;
@@ -28,6 +35,10 @@ export interface ButtonProps {
   responsive?: boolean;
   ripple?: boolean;
   iconSize?: ButtonIconSize;
+  radius?: ButtonRadius;
+  shadow?: boolean;
+  pulse?: boolean;
+  gradientDirection?: "to-r" | "to-l" | "to-t" | "to-b" | "to-br" | "to-bl" | "to-tr" | "to-tl";
 }
 
 export const Button = component$<ButtonProps>(
@@ -44,6 +55,10 @@ export const Button = component$<ButtonProps>(
     responsive = false,
     ripple = true,
     iconSize = "auto",
+    radius = "md",
+    shadow = false,
+    pulse = false,
+    gradientDirection = "to-r",
     ...props
   }) => {
     const isRippling = useSignal(false);
@@ -53,7 +68,11 @@ export const Button = component$<ButtonProps>(
       if (!ripple || disabled || loading) return;
 
       const button = e.currentTarget as HTMLButtonElement;
+      if (!button) return;
+      
       const rect = button.getBoundingClientRect();
+      if (!rect) return;
+      
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
@@ -65,13 +84,24 @@ export const Button = component$<ButtonProps>(
       }, 600);
     });
 
+    const radiusClasses = {
+      none: "rounded-none",
+      sm: "rounded",
+      md: "rounded-lg",
+      lg: "rounded-xl",
+      full: "rounded-full",
+    };
+
     const baseClasses = [
-      "relative inline-flex items-center justify-center font-medium rounded-lg",
-      "transition-all duration-200",
+      "relative inline-flex items-center justify-center font-medium",
+      radiusClasses[radius],
+      "transition-all duration-300 ease-in-out transform-gpu",
       "focus-visible:ring-4 focus-visible:outline-none",
-      "active:scale-[0.97]",
+      !disabled && !loading ? "active:scale-[0.97]" : "",
       fullWidth ? "w-full" : "",
       responsive ? "max-sm:w-full" : "",
+      shadow && !disabled ? "shadow-lg hover:shadow-xl" : "",
+      pulse && !disabled && !loading ? "animate-pulse" : "",
     ]
       .filter(Boolean)
       .join(" ");
@@ -92,13 +122,24 @@ export const Button = component$<ButtonProps>(
       warning:
         "bg-warning-600 text-warning-900 hover:bg-warning-700 focus-visible:ring-warning-300/50 dark:bg-warning-dark dark:text-warning-100 dark:hover:bg-warning-700 dark:focus-visible:ring-warning-dark/50",
       info: "bg-info-600 text-white hover:bg-info-700 focus-visible:ring-info-300/50 dark:bg-info-dark dark:hover:bg-info-700 dark:focus-visible:ring-info-dark/50",
+      cta: "bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 focus-visible:ring-orange-300/50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5",
+      gradient: "text-white focus-visible:ring-purple-300/50 shadow-lg hover:shadow-xl",
+      glow: "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-300/50 shadow-lg shadow-primary-600/50 hover:shadow-xl hover:shadow-primary-600/50 dark:shadow-primary-dark-500/50 dark:hover:shadow-primary-dark-500/50",
+      glass: "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 focus-visible:ring-white/30 dark:bg-gray-900/10 dark:border-gray-700/20 dark:hover:bg-gray-900/20",
+      motion: "bg-gradient-to-br from-secondary-600 to-secondary-800 text-white hover:from-secondary-700 hover:to-secondary-900 focus-visible:ring-secondary-400/50 shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700 dark:from-secondary-dark-600 dark:to-secondary-dark-800 dark:hover:from-secondary-dark-700 dark:hover:to-secondary-dark-900",
+      premium: "bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 text-gray-900 hover:from-amber-300 hover:via-yellow-500 hover:to-amber-300 focus-visible:ring-yellow-400/50 shadow-lg hover:shadow-xl font-semibold tracking-wide relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:-skew-x-12 before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-1000 dark:from-yellow-600 dark:via-amber-500 dark:to-yellow-600 dark:text-white dark:hover:from-yellow-700 dark:hover:via-amber-600 dark:hover:to-yellow-700",
     };
 
     const sizeClasses = {
+      xs: [
+        "text-xs px-2.5 py-1.5",
+        "sm:text-xs sm:px-2.5 sm:py-1.5",
+        "max-sm:text-xs max-sm:px-3 max-sm:py-2 max-sm:min-h-[36px]",
+      ].join(" "),
       sm: [
         "text-xs px-3 py-2",
         "sm:text-xs sm:px-3 sm:py-2",
-        "max-sm:text-sm max-sm:px-4 max-sm:py-2.5 max-sm:min-h-[44px]",
+        "max-sm:text-sm max-sm:px-4 max-sm:py-2.5 max-sm:min-h-[40px]",
       ].join(" "),
       md: [
         "text-sm px-4 py-2.5",
@@ -110,14 +151,22 @@ export const Button = component$<ButtonProps>(
         "sm:text-base sm:px-5 sm:py-3",
         "max-sm:text-lg max-sm:px-6 max-sm:py-3.5 max-sm:min-h-[48px]",
       ].join(" "),
+      xl: [
+        "text-lg px-6 py-3.5",
+        "sm:text-lg sm:px-6 sm:py-3.5",
+        "max-sm:text-xl max-sm:px-7 max-sm:py-4 max-sm:min-h-[52px]",
+      ].join(" "),
     };
 
     const iconSizeClasses = {
       auto: {
+        xs: "h-3 w-3 max-sm:h-3.5 max-sm:w-3.5",
         sm: "h-3.5 w-3.5 max-sm:h-4 max-sm:w-4",
         md: "h-4 w-4 max-sm:h-5 max-sm:w-5",
         lg: "h-5 w-5 max-sm:h-6 max-sm:w-6",
+        xl: "h-6 w-6 max-sm:h-7 max-sm:w-7",
       },
+      xs: "h-3 w-3",
       sm: "h-3.5 w-3.5",
       md: "h-4 w-4",
       lg: "h-5 w-5",
@@ -134,9 +183,15 @@ export const Button = component$<ButtonProps>(
       return iconSizeClasses[iconSize];
     };
 
+    const gradientClasses =
+      variant === "gradient"
+        ? `bg-gradient-${gradientDirection} from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700`
+        : "";
+
     const classes = [
       baseClasses,
       variantClasses[variant],
+      gradientClasses,
       sizeClasses[size],
       disabled || loading ? disabledClasses : "",
       loadingClasses,
@@ -152,6 +207,7 @@ export const Button = component$<ButtonProps>(
         {...props}
         aria-label={ariaLabel}
         class={classes}
+        onClick$={props.onClick$}
         onMouseDown$={handleRipple}
       >
         {ripple && isRippling.value && (
@@ -183,13 +239,27 @@ export const Button = component$<ButtonProps>(
         {loading && (
           <span class="absolute inset-0 flex items-center justify-center">
             <Spinner
-              size={size === "sm" ? "xs" : size === "lg" ? "md" : "sm"}
+              size={
+                size === "xs"
+                  ? "xs"
+                  : size === "sm"
+                    ? "xs"
+                    : size === "lg"
+                      ? "md"
+                      : size === "xl"
+                        ? "lg"
+                        : "sm"
+              }
               color={
-                ["primary", "success", "error", "info"].includes(variant)
+                ["primary", "success", "error", "info", "cta", "gradient", "glow", "motion", "premium"].includes(
+                  variant,
+                )
                   ? "white"
                   : variant === "warning"
                     ? "warning"
-                    : "primary"
+                    : variant === "glass"
+                      ? "secondary"
+                      : "primary"
               }
               variant="circle"
             />

@@ -61,37 +61,38 @@ export const highlightStyles = `
     font-weight: bold;
   }
 
-  /* Dark theme styles */
+  /* Dark theme styles - Modern slate-based with yellow/blue accents */
   .hljs-dark {
-    color: #abb2bf;
-    background: #282c34;
+    color: #e2e8f0;
+    background: transparent;
   }
   .hljs-dark .hljs-comment,
   .hljs-dark .hljs-quote {
-    color: #5c6370;
+    color: #64748b;
     font-style: italic;
   }
   .hljs-dark .hljs-doctag,
   .hljs-dark .hljs-keyword,
   .hljs-dark .hljs-formula {
-    color: #c678dd;
+    color: #a78bfa;
+    font-weight: 500;
   }
   .hljs-dark .hljs-section,
   .hljs-dark .hljs-name,
   .hljs-dark .hljs-selector-tag,
   .hljs-dark .hljs-deletion,
   .hljs-dark .hljs-subst {
-    color: #e06c75;
+    color: #f87171;
   }
   .hljs-dark .hljs-literal {
-    color: #56b6c2;
+    color: #60a5fa;
   }
   .hljs-dark .hljs-string,
   .hljs-dark .hljs-regexp,
   .hljs-dark .hljs-addition,
   .hljs-dark .hljs-attribute,
   .hljs-dark .hljs-meta .hljs-string {
-    color: #98c379;
+    color: #34d399;
   }
   .hljs-dark .hljs-attr,
   .hljs-dark .hljs-variable,
@@ -101,7 +102,7 @@ export const highlightStyles = `
   .hljs-dark .hljs-selector-attr,
   .hljs-dark .hljs-selector-pseudo,
   .hljs-dark .hljs-number {
-    color: #d19a66;
+    color: #fbbf24;
   }
   .hljs-dark .hljs-symbol,
   .hljs-dark .hljs-bullet,
@@ -109,12 +110,12 @@ export const highlightStyles = `
   .hljs-dark .hljs-meta,
   .hljs-dark .hljs-selector-id,
   .hljs-dark .hljs-title {
-    color: #61aeee;
+    color: #60a5fa;
   }
   .hljs-dark .hljs-built_in,
   .hljs-dark .hljs-class .hljs-title,
   .hljs-dark .hljs-title.class_ {
-    color: #e6c07b;
+    color: #fbbf24;
   }
   .hljs-dark .hljs-emphasis {
     font-style: italic;
@@ -131,7 +132,9 @@ export const highlightStyles = `
     display: block;
   }
   .hljs-dark .hljs-line-highlight {
-    background-color: rgba(255, 255, 100, 0.1);
+    background-color: rgba(250, 204, 21, 0.15);
+    border-left: 3px solid #fbbf24;
+    padding-left: calc(1rem - 3px);
   }
 
   /* Line numbers */
@@ -153,6 +156,9 @@ export const highlightStyles = `
     text-align: right;
     font-size: 0.8rem;
     padding-top: 0.1rem;
+  }
+  .hljs-dark .hljs-line-numbers .hljs-ln::before {
+    color: #475569;
   }
 
   /* Copy button animations */

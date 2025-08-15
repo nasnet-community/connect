@@ -5,15 +5,15 @@ export default component$(() => {
   const buttonProps = [
     {
       name: "variant",
-      type: "'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'error' | 'warning' | 'info'",
+      type: "'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'error' | 'warning' | 'info' | 'cta' | 'gradient' | 'glow' | 'glass' | 'motion' | 'premium'",
       defaultValue: "primary",
-      description: "Controls the visual style of the button.",
+      description: "Controls the visual style of the button, including modern effects like gradients and glassmorphism.",
     },
     {
       name: "size",
-      type: "'sm' | 'md' | 'lg'",
+      type: "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
       defaultValue: "md",
-      description: "Sets the size of the button.",
+      description: "Sets the size of the button from extra small to extra large.",
     },
     {
       name: "type",
@@ -85,10 +85,34 @@ export default component$(() => {
     },
     {
       name: "iconSize",
-      type: "'auto' | 'sm' | 'md' | 'lg'",
+      type: "'auto' | 'xs' | 'sm' | 'md' | 'lg'",
       defaultValue: "auto",
       description:
         "Controls the size of icons in the button. 'auto' adjusts icon size based on button size.",
+    },
+    {
+      name: "radius",
+      type: "'none' | 'sm' | 'md' | 'lg' | 'full'",
+      defaultValue: "md",
+      description: "Controls the border radius of the button.",
+    },
+    {
+      name: "shadow",
+      type: "boolean",
+      defaultValue: "false",
+      description: "When true, adds shadow elevation to the button.",
+    },
+    {
+      name: "pulse",
+      type: "boolean",
+      defaultValue: "false",
+      description: "When true, adds a pulse animation to draw attention.",
+    },
+    {
+      name: "gradientDirection",
+      type: "'to-r' | 'to-l' | 'to-t' | 'to-b' | 'to-br' | 'to-bl' | 'to-tr' | 'to-tl'",
+      defaultValue: "to-r",
+      description: "Controls the gradient direction for the gradient variant.",
     },
   ];
 
@@ -161,6 +185,24 @@ export default component$(() => {
         </li>
         <li>
           <code>info</code> - Informational or neutral actions
+        </li>
+        <li>
+          <code>cta</code> - Eye-catching call-to-action with gradient and hover effects
+        </li>
+        <li>
+          <code>gradient</code> - Customizable gradient background with directional control
+        </li>
+        <li>
+          <code>glow</code> - Glowing shadow effect that intensifies on hover
+        </li>
+        <li>
+          <code>glass</code> - Glassmorphism effect with translucent background
+        </li>
+        <li>
+          <code>motion</code> - Professional animations with secondary color gradients
+        </li>
+        <li>
+          <code>premium</code> - Luxurious gold gradient with shimmer effect
         </li>
       </ul>
 

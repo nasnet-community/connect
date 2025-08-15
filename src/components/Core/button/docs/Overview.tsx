@@ -3,11 +3,14 @@ import { OverviewTemplate } from "~/components/Docs/templates";
 
 export default component$(() => {
   const keyFeatures = [
-    "Multiple variants: primary, secondary, outline, and ghost",
-    "Three size options: small, medium, and large",
-    "Support for disabled and loading states",
-    "Icon integration (left, right, or both sides)",
-    "Fully customizable with additional classes",
+    "12 variants: primary, secondary, outline, ghost, success, error, warning, info, CTA, gradient, glow, glass, and motion",
+    "Five size options: extra small (xs), small, medium, large, and extra large (xl)",
+    "Customizable border radius: none, small, medium, large, or full",
+    "Advanced effects: shadows, pulse animations, and gradient directions",
+    "Support for disabled and loading states with smooth transitions",
+    "Icon integration (left, right, or both sides) with auto-sizing",
+    "Ripple effect on click for better interaction feedback",
+    "Fully responsive with mobile-first design approach",
     "Accessible with proper focus states and ARIA attributes",
   ];
 
@@ -36,24 +39,24 @@ export default component$(() => {
       whenNotToUse={whenNotToUse}
     >
       <p>
-        The Button component is a fundamental interactive element that enables
-        users to trigger actions through clicks or taps. It provides visual
-        feedback about its state and the type of action it will perform, helping
-        users understand what will happen when they interact with it.
+        The Button component is a modern, feature-rich interactive element that enables
+        users to trigger actions through clicks or taps. With 12 distinct variants including
+        eye-catching CTA, gradient, glow, glass, and motion styles, it provides extensive
+        customization options for any design system.
       </p>
 
       <p class="mt-2">
-        With multiple variants and sizes, buttons can be styled to match their
-        importance in the interface hierarchy. Primary buttons draw attention to
-        the main action, while secondary, outline, and ghost variants provide
-        alternatives for less prominent actions.
+        Beyond traditional variants, the button offers advanced styling capabilities like
+        customizable gradients, glassmorphism effects, glowing shadows, and dynamic motion
+        animations. Five size options from extra small to extra large, combined with
+        adjustable border radius, ensure perfect fit in any layout.
       </p>
 
       <p class="mt-2">
-        Buttons support loading states to indicate when an action is being
-        processed, disabled states when an action is unavailable, and can
-        include icons to provide additional context or visual cues about their
-        function.
+        Modern features include ripple effects on click, pulse animations for attention,
+        shadow elevations, and smooth transitions. The component maintains full accessibility
+        with proper ARIA attributes, keyboard navigation, and responsive behavior that
+        adapts seamlessly across all device sizes.
       </p>
     </OverviewTemplate>
   );

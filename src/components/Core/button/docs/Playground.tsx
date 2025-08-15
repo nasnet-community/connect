@@ -19,6 +19,10 @@ export default component$(() => {
         iconSize={props.iconSize}
         leftIcon={props.leftIcon}
         rightIcon={props.rightIcon}
+        radius={props.radius}
+        shadow={props.shadow}
+        pulse={props.pulse}
+        gradientDirection={props.gradientDirection}
         class={props.customClass}
       >
         {props.leftIcon && (
@@ -54,6 +58,12 @@ export default component$(() => {
             { label: "Error", value: "error" },
             { label: "Warning", value: "warning" },
             { label: "Info", value: "info" },
+            { label: "CTA", value: "cta" },
+            { label: "Gradient", value: "gradient" },
+            { label: "Glow", value: "glow" },
+            { label: "Glass", value: "glass" },
+            { label: "Motion", value: "motion" },
+            { label: "Premium", value: "premium" },
           ],
         },
         {
@@ -62,9 +72,11 @@ export default component$(() => {
           label: "Size",
           defaultValue: "md",
           options: [
+            { label: "Extra Small", value: "xs" },
             { label: "Small", value: "sm" },
             { label: "Medium", value: "md" },
             { label: "Large", value: "lg" },
+            { label: "Extra Large", value: "xl" },
           ],
         },
         {
@@ -133,9 +145,51 @@ export default component$(() => {
           defaultValue: "auto",
           options: [
             { label: "Auto", value: "auto" },
+            { label: "Extra Small", value: "xs" },
             { label: "Small", value: "sm" },
             { label: "Medium", value: "md" },
             { label: "Large", value: "lg" },
+          ],
+        },
+        {
+          type: "select",
+          name: "radius",
+          label: "Border Radius",
+          defaultValue: "md",
+          options: [
+            { label: "None", value: "none" },
+            { label: "Small", value: "sm" },
+            { label: "Medium", value: "md" },
+            { label: "Large", value: "lg" },
+            { label: "Full", value: "full" },
+          ],
+        },
+        {
+          type: "boolean",
+          name: "shadow",
+          label: "Shadow",
+          defaultValue: false,
+        },
+        {
+          type: "boolean",
+          name: "pulse",
+          label: "Pulse Animation",
+          defaultValue: false,
+        },
+        {
+          type: "select",
+          name: "gradientDirection",
+          label: "Gradient Direction (for gradient variant)",
+          defaultValue: "to-r",
+          options: [
+            { label: "To Right", value: "to-r" },
+            { label: "To Left", value: "to-l" },
+            { label: "To Top", value: "to-t" },
+            { label: "To Bottom", value: "to-b" },
+            { label: "To Bottom Right", value: "to-br" },
+            { label: "To Bottom Left", value: "to-bl" },
+            { label: "To Top Right", value: "to-tr" },
+            { label: "To Top Left", value: "to-tl" },
           ],
         },
         {

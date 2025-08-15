@@ -1,4 +1,4 @@
-import { component$, useSignal, $, JSXNode } from "@builder.io/qwik";
+import { component$, useSignal } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 import {
   HiChevronLeftOutline,

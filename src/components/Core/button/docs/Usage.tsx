@@ -9,6 +9,21 @@ import type {
 export default component$(() => {
   const guidelines: UsageGuideline[] = [
     {
+      title: "Leverage modern variants for impact",
+      description: "Use CTA and gradient buttons for important conversion actions",
+      type: "do",
+      code: `<Button variant="cta" size="lg" rightIcon shadow>
+  Start Free Trial
+  <span q:slot="rightIcon">
+    <HiArrowRightOutline />
+  </span>
+</Button>
+
+<Button variant="motion" radius="full">
+  Transform Your Business
+</Button>`,
+    },
+    {
       title: "Use clear, action-oriented labels",
       description:
         "Button labels should clearly describe what happens when clicked",
@@ -19,11 +34,12 @@ export default component$(() => {
     },
     {
       title: "Select appropriate variants",
-      description: "Choose button variants based on the action's importance",
+      description: "Choose button variants based on the action's importance and context",
       type: "do",
       code: `<Button variant="primary">Primary Action</Button>
-<Button variant="secondary">Secondary Action</Button>
-<Button variant="outline">Tertiary Action</Button>`,
+<Button variant="cta" shadow pulse>Get Started Now</Button>
+<Button variant="gradient" gradientDirection="to-r">Premium Feature</Button>
+<Button variant="glass">Subtle Action</Button>`,
     },
     {
       title: "Use icons to enhance meaning",
@@ -57,16 +73,16 @@ export default component$(() => {
 <Button>Create Account</Button>`,
     },
     {
-      title: "Don't overuse primary buttons",
-      description: "Too many primary buttons dilute their importance",
+      title: "Don't overuse eye-catching variants",
+      description: "Too many CTA, gradient, or glow buttons reduce their impact",
       type: "dont",
-      code: `// Too many primary buttons
-<Button variant="primary">Save</Button>
-<Button variant="primary">Cancel</Button>
-<Button variant="primary">Reset</Button>
+      code: `// Too many attention-grabbing buttons
+<Button variant="cta">Save</Button>
+<Button variant="gradient">Cancel</Button>
+<Button variant="glow">Reset</Button>
 
 // Better hierarchy
-<Button variant="primary">Save</Button>
+<Button variant="cta">Save</Button>
 <Button variant="outline">Cancel</Button>
 <Button variant="ghost">Reset</Button>`,
     },
@@ -89,9 +105,24 @@ export default component$(() => {
         "Maintain consistent button styling and sizing throughout your application to create a cohesive user experience.",
     },
     {
+      title: "Strategic use of effects",
+      description:
+        "Reserve shadow, pulse, and motion effects for truly important actions. Use them sparingly to maintain their impact.",
+    },
+    {
+      title: "Responsive sizing",
+      description:
+        "Use the extended size options (xs through xl) and responsive prop to ensure buttons work well across all device sizes.",
+    },
+    {
       title: "Button grouping",
       description:
         "When grouping buttons, place the primary action on the right and secondary actions on the left, following common UI patterns.",
+    },
+    {
+      title: "Radius consistency",
+      description:
+        "Maintain consistent border radius across similar button groups. Mix radius styles intentionally for visual hierarchy.",
     },
     {
       title: "Disabled state feedback",
@@ -101,7 +132,7 @@ export default component$(() => {
     {
       title: "Touch target sizes",
       description:
-        "Ensure buttons meet minimum touch target sizes (44x44px) for mobile accessibility.",
+        "Ensure buttons meet minimum touch target sizes (44x44px) for mobile accessibility. The xl size is perfect for mobile-first designs.",
     },
   ];
 
@@ -133,6 +164,8 @@ export default component$(() => {
     "Debounce button clicks for actions that trigger API calls to prevent duplicate requests",
     "Consider using button groups or compound components for related actions to reduce DOM elements",
     "Lazy load icon libraries and only import the icons you need",
+    "The ripple effect uses transform-gpu for hardware acceleration - disable it if you notice performance issues on older devices",
+    "Glass and glow effects use backdrop-filter and box-shadow which can impact performance - use sparingly in lists or repeated elements",
   ];
 
   return (

@@ -11,6 +11,7 @@ export interface UseWANAdvancedReturn {
   removeLink$: QRL<(id: string) => void>;
   updateLink$: QRL<(id: string, updates: Partial<WANLinkConfig>) => void>;
   toggleMode$: QRL<() => void>;
+  setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiLinkStrategy$: QRL<(strategy: MultiLinkConfig) => void>;
   resetAdvanced$: QRL<() => void>;
   generateLinkName$: QRL<(index: number) => string>;
@@ -141,11 +142,8 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
       updatedLink.connectionConfig = undefined;
     }
 
-    state.links = [
-      ...state.links.slice(0, linkIndex),
-      updatedLink,
-      ...state.links.slice(linkIndex + 1),
-    ];
+    // Direct mutation for Qwik reactivity
+    state.links[linkIndex] = updatedLink;
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)
@@ -153,6 +151,11 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     // Mode toggling is disabled in the advanced interface
     // The advanced interface is only used for advanced mode
     console.warn("Mode toggling is disabled in the WAN Advanced interface");
+  });
+
+  // Set view mode for compact/expanded display
+  const setViewMode$ = $((mode: "expanded" | "compact") => {
+    state.viewMode = mode;
   });
 
   // Set multi-link strategy
@@ -205,6 +208,7 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     removeLink$,
     updateLink$,
     toggleMode$,
+    setViewMode$,
     setMultiLinkStrategy$,
     resetAdvanced$,
     generateLinkName$,
