@@ -57,3 +57,16 @@ export {
   FocusManagementExample,
   DescriptiveButtonExample,
 } from "./AccessibilityExample";
+
+// Modern variants examples
+export {
+  CTAButtonExample,
+  GradientButtonExample,
+  GlowButtonExample,
+  GlassButtonExample,
+  MotionButtonExample,
+  PremiumButtonExample,
+  ButtonSizesShowcase,
+  ButtonRadiusShowcase,
+  InteractiveButtonExample,
+} from "./ModernVariantsExample";

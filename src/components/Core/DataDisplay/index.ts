@@ -40,6 +40,12 @@ export * from "./Stat";
 // Kbd exports
 export * from "./Kbd";
 
+// FeatureList exports
+export * from "./FeatureList";
+
+// SelectionCard exports
+export * from "./SelectionCard";
+
 // Mobile Overlay exports
 export { MobileOverlay } from "./MobileOverlay";
 

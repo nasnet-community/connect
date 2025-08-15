@@ -31,7 +31,7 @@ export const Header = component$(() => {
               onToggle$={toggleTheme$}
             />
             <LanguageSelect
-              currentLocale={currentLocale.value}
+              currentLocale={currentLocale}
               locales={locales}
               onLocaleChange$={handleLocaleChange$}
               location="header"
@@ -86,7 +86,7 @@ export const Header = component$(() => {
                 onToggle$={toggleTheme$}
               />
               <LanguageSelect
-                currentLocale={currentLocale.value}
+                currentLocale={currentLocale}
                 locales={locales}
                 onLocaleChange$={handleLocaleChange$}
                 location="mobile"

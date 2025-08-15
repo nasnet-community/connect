@@ -92,11 +92,11 @@ export const CodeBlock = component$<CodeBlockProps>(
         return {
           container: [
             baseContainer,
-            "bg-surface-dark-DEFAULT border-gray-700"
+            "bg-slate-900/95 border-slate-700/50 backdrop-blur-xl shadow-2xl shadow-blue-500/5"
           ].join(" "),
           pre: [
             basePre,
-            "bg-surface-dark-secondary text-gray-100"
+            "bg-slate-800/50 text-slate-100 backdrop-blur-sm"
           ].join(" ")
         };
       }
@@ -118,13 +118,15 @@ export const CodeBlock = component$<CodeBlockProps>(
       return {
         container: [
           baseContainer,
-          "bg-surface-light-DEFAULT dark:bg-surface-dark-DEFAULT",
-          "border-gray-200 dark:border-gray-700"
+          "bg-surface-light-DEFAULT dark:bg-slate-900/95",
+          "border-gray-200 dark:border-slate-700/50",
+          "dark:backdrop-blur-xl dark:shadow-2xl dark:shadow-blue-500/5"
         ].join(" "),
         pre: [
           basePre,
-          "bg-surface-light-secondary dark:bg-surface-dark-secondary",
-          "text-gray-900 dark:text-gray-100"
+          "bg-surface-light-secondary dark:bg-slate-800/50",
+          "text-gray-900 dark:text-slate-100",
+          "dark:backdrop-blur-sm"
         ].join(" ")
       };
     };
@@ -155,7 +157,10 @@ export const CodeBlock = component$<CodeBlockProps>(
       mobileScrolling && "mobile:overflow-x-auto",
       
       // Motion preferences
-      reduceMotion ? "motion-reduce:transition-none" : "transition-all duration-150",
+      reduceMotion ? "motion-reduce:transition-none" : "transition-all duration-300",
+      
+      // Dark mode enhancements
+      "dark:hover:border-yellow-500/30 dark:hover:shadow-yellow-500/10",
       
       className,
     ]
@@ -165,8 +170,8 @@ export const CodeBlock = component$<CodeBlockProps>(
     const preClasses = [
       themeClasses.pre,
       
-      // Syntax highlighting
-      "hljs-" + (theme === "auto" || theme === "system" ? "light dark:hljs-dark" : themeSignal.value),
+      // Syntax highlighting with enhanced dark mode
+      "hljs-" + (theme === "auto" || theme === "system" ? "light dark:hljs-dark dark:selection:bg-yellow-500/20" : themeSignal.value),
       
       // Line numbers
       showLineNumbers ? "hljs-line-numbers" : "",

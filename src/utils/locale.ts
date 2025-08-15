@@ -62,6 +62,9 @@ export const getPathWithoutLocale = (path: string): string => {
 //   return `/${locale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
 // };
 
-export const buildLocalePath = (locale: string): string => {
-  return `/${locale}`;
+export const buildLocalePath = (locale: string, pathWithoutLocale: string = ''): string => {
+  // Ensure path doesn't start with slash since we'll add it
+  const cleanPath = pathWithoutLocale.startsWith('/') ? pathWithoutLocale.slice(1) : pathWithoutLocale;
+  // If path is empty or just '/', return just the locale
+  return cleanPath === '' || cleanPath === '/' ? `/${locale}` : `/${locale}/${cleanPath}`;
 };

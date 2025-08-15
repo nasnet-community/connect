@@ -21,7 +21,7 @@ export interface TimePickerProps {
   minuteStep?: 1 | 5 | 10 | 15 | 30;
   secondStep?: 1 | 5 | 10 | 15 | 30;
   size?: "sm" | "md" | "lg";
-  variant?: "default" | "outline" | "filled";
+  variant?: "default" | "glassmorphic" | "minimal" | "outline" | "filled";
   showClearButton?: boolean;
   onClear$?: QRL<() => void>;
   placeholder?: {
@@ -125,91 +125,128 @@ export const TimePicker = component$<TimePickerProps>(({
     });
   });
 
-  // Enhanced size classes with mobile optimization
+  // Simple, clean size classes
   const sizeClasses = {
     sm: {
-      container: "gap-2 sm:gap-3",
-      select: "h-8 sm:h-9 text-sm px-2 pr-7 sm:px-3 sm:pr-8",
-      label: "text-xs sm:text-sm",
-      icon: "h-3 w-3 sm:h-4 sm:w-4",
-      separator: "text-sm sm:text-base",
-      touchTarget: "min-h-[44px] sm:min-h-[32px]", // 44px minimum for touch
+      wrapper: "",
+      container: "gap-2",
+      select: "h-8 text-sm px-2 pr-7",
+      label: "text-sm",
+      icon: "h-4 w-4",
+      separator: "text-base px-2",
+      fieldLabel: "text-xs",
+      clockIcon: "h-4 w-4",
+      clearButton: "p-1",
     },
     md: {
-      container: "gap-3 sm:gap-4",
-      select: "h-10 sm:h-11 text-sm sm:text-base px-3 pr-8 sm:px-4 sm:pr-10",
-      label: "text-sm sm:text-base",
-      icon: "h-4 w-4 sm:h-5 sm:w-5",
-      separator: "text-base sm:text-lg",
-      touchTarget: "min-h-[48px] sm:min-h-[40px]",
+      wrapper: "",
+      container: "gap-3",
+      select: "h-10 text-sm px-3 pr-8",
+      label: "text-base",
+      icon: "h-5 w-5",
+      separator: "text-lg px-2",
+      fieldLabel: "text-sm",
+      clockIcon: "h-5 w-5",
+      clearButton: "p-1.5",
     },
     lg: {
-      container: "gap-4 sm:gap-5",
-      select: "h-12 sm:h-14 text-base sm:text-lg px-4 pr-10 sm:px-5 sm:pr-12",
-      label: "text-base sm:text-lg",
-      icon: "h-5 w-5 sm:h-6 sm:w-6",
-      separator: "text-lg sm:text-xl",
-      touchTarget: "min-h-[52px] sm:min-h-[48px]",
+      wrapper: "",
+      container: "gap-4",
+      select: "h-12 text-base px-4 pr-10",
+      label: "text-lg",
+      icon: "h-6 w-6",
+      separator: "text-xl px-3",
+      fieldLabel: "text-base",
+      clockIcon: "h-6 w-6",
+      clearButton: "p-2",
     },
   };
 
-  // Enhanced variant classes with better animations and touch states
-  const variantClasses = {
+  // Simple, clean variant classes
+  const variantClasses: Record<string, { wrapper: string; select: string; separator: string }> = {
     default: {
+      wrapper: "",
       select: `
         border border-border-DEFAULT dark:border-border-dark
         bg-surface-DEFAULT dark:bg-surface-dark
         hover:border-primary-400 dark:hover:border-primary-600
         focus:border-primary-500 dark:focus:border-primary-500
-        hover:shadow-sm dark:hover:shadow-dark-sm
-        focus:shadow-primary/20 dark:focus:shadow-primary/30
-        active:shadow-inner
-        transition-all duration-200 ease-out
-        touch:active:scale-[0.98] motion-safe:hover:animate-lift
+        transition-colors duration-200
       `,
+      separator: "text-gray-400 dark:text-gray-500",
     },
     outline: {
+      wrapper: "",
       select: `
         border-2 border-border-DEFAULT dark:border-border-dark
         bg-transparent
         hover:border-primary-400 dark:hover:border-primary-600
         focus:border-primary-500 dark:focus:border-primary-500
-        hover:bg-surface-light-secondary dark:hover:bg-surface-dark-secondary
-        focus:bg-surface-light-tertiary dark:focus:bg-surface-dark-tertiary
-        active:bg-surface-light-quaternary dark:active:bg-surface-dark-quaternary
-        transition-all duration-200 ease-out
-        touch:active:scale-[0.98] motion-safe:hover:animate-lift
+        transition-colors duration-200
       `,
+      separator: "text-gray-400 dark:text-gray-500",
     },
     filled: {
+      wrapper: "",
       select: `
         border border-transparent
         bg-gray-100 dark:bg-gray-800
         hover:bg-gray-200 dark:hover:bg-gray-700
-        focus:bg-surface-DEFAULT dark:focus:bg-surface-dark
+        focus:bg-gray-100 dark:focus:bg-gray-800
         focus:border-primary-500 dark:focus:border-primary-500
-        active:bg-gray-300 dark:active:bg-gray-600
-        transition-all duration-200 ease-out
-        touch:active:scale-[0.98] motion-safe:hover:animate-lift
+        transition-colors duration-200
       `,
+      separator: "text-gray-500 dark:text-gray-400",
+    },
+    // Keep these for backward compatibility but simplify them
+    glassmorphic: {
+      wrapper: "",
+      select: `
+        border-2 border-border-DEFAULT dark:border-border-dark
+        bg-transparent
+        hover:border-primary-400 dark:hover:border-primary-600
+        focus:border-primary-500 dark:focus:border-primary-500
+        transition-colors duration-200
+      `,
+      separator: "text-gray-400 dark:text-gray-500",
+    },
+    minimal: {
+      wrapper: "",
+      select: `
+        border border-transparent
+        bg-gray-100 dark:bg-gray-800
+        hover:bg-gray-200 dark:hover:bg-gray-700
+        focus:bg-gray-100 dark:focus:bg-gray-800
+        focus:border-primary-500 dark:focus:border-primary-500
+        transition-colors duration-200
+      `,
+      separator: "text-gray-500 dark:text-gray-400",
     },
   };
+
+  // Simple dropdown arrow
+  const dropdownArrowLight = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`;
 
   const selectClasses = `
     appearance-none rounded-lg font-medium
     text-text-DEFAULT dark:text-text-dark-default
     focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-500/30
-    focus:outline-none focus:ring-offset-2 focus:ring-offset-surface-DEFAULT dark:focus:ring-offset-surface-dark
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:animate-none
+    focus:outline-none
+    disabled:opacity-50 disabled:cursor-not-allowed
     ${sizeClasses[size].select}
-    ${sizeClasses[size].touchTarget}
     ${variantClasses[variant].select}
-    ${error ? "border-error-500 dark:border-error-400 focus:border-error-500 dark:focus:border-error-400 focus:ring-error-500/20" : ""}
-    ${loading ? "animate-shimmer bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700" : ""}
-    cursor-pointer touch:cursor-none
-    transform-gpu will-change-transform
-    safe-touch-manipulation
+    ${error ? "border-error-500 dark:border-error-400" : ""}
+    ${loading ? "opacity-50" : ""}
+    cursor-pointer
+    bg-no-repeat
+    [background-position:right_0.5rem_center]
+    [background-size:1.25rem]
   `;
+
+  // Apply background image style inline for dynamic theming
+  const selectStyle = {
+    backgroundImage: dropdownArrowLight,
+  };
 
   const handleKeyDown$ = $((e: KeyboardEvent, field: keyof TimeValue) => {
     if (disabled || readOnly) return;
@@ -242,213 +279,167 @@ export const TimePicker = component$<TimePickerProps>(({
   });
 
   return (
-    <div class={`${inline ? "inline-block" : "block"} ${className || ""}`}>
+    <div class={`${inline ? "inline-block" : "block"} ${sizeClasses[size].wrapper} ${className || ""}`}>
       {label && (
         <label
           for={id}
           class={`
-            block mb-2 font-medium
+            flex items-center gap-2 mb-2 font-medium
             text-text-DEFAULT dark:text-text-dark-default
             ${sizeClasses[size].label}
             ${required ? "after:content-['*'] after:ml-0.5 after:text-error-500" : ""}
           `}
         >
+          <svg
+            class={`${sizeClasses[size].clockIcon} text-gray-400 dark:text-gray-500`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           {label}
         </label>
       )}
 
       <div class={`flex items-center ${sizeClasses[size].container}`}>
         {/* Hours */}
-        <div class="flex-1">
+        <div class="flex-1 sm:flex-initial">
           <label
             class={`
-              block mb-1.5 font-medium
+              block mb-1.5 sm:sr-only font-medium
               text-gray-600 dark:text-gray-400
-              ${sizeClasses[size].label}
+              ${sizeClasses[size].fieldLabel}
             `}
           >
             {$localize`Hours`}
           </label>
-          <div class="relative">
-            <select
-              id={id}
-              name={name ? `${name}-hour` : undefined}
-              value={time.hour}
-              disabled={disabled || loading}
-              aria-label={$localize`Select hour`}
-              aria-invalid={error}
-              aria-describedby={errorMessage ? `${id}-error` : undefined}
-              onChange$={(e, currentTarget) => onChange$("hour", currentTarget.value)}
-              onKeyDown$={(e) => handleKeyDown$(e, "hour")}
-              class={selectClasses}
-            >
-              {placeholder?.hour && (
-                <option value="" disabled>{placeholder.hour}</option>
-              )}
-              {hours.value.map((hour) => (
-                <option 
-                  key={hour.value} 
-                  value={hour.value}
-                  disabled={hour.disabled}
-                >
-                  {hour.label}
-                </option>
-              ))}
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-2">
-              <svg
-                class={`
-                  ${sizeClasses[size].icon}
-                  text-gray-400 dark:text-gray-500
-                `}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
+          <select
+            id={id}
+            name={name ? `${name}-hour` : undefined}
+            value={time.hour}
+            disabled={disabled || loading}
+            aria-label={$localize`Select hour`}
+            aria-invalid={error}
+            aria-describedby={errorMessage ? `${id}-error` : undefined}
+            onChange$={(e, currentTarget) => onChange$("hour", currentTarget.value)}
+            onKeyDown$={(e) => handleKeyDown$(e, "hour")}
+            class={`${selectClasses} w-24`}
+            style={selectStyle}
+          >
+            {placeholder?.hour && (
+              <option value="" disabled>{placeholder.hour}</option>
+            )}
+            {hours.value.map((hour) => (
+              <option 
+                key={hour.value} 
+                value={hour.value}
+                disabled={hour.disabled}
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
+                {hour.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Separator */}
         <div class={`
-          flex items-end pb-2
-          text-gray-400 dark:text-gray-500
+          flex items-center
           ${sizeClasses[size].separator}
+          ${variantClasses[variant].separator}
           font-medium
         `}>
           :
         </div>
 
         {/* Minutes */}
-        <div class="flex-1">
+        <div class="flex-1 sm:flex-initial">
           <label
             class={`
-              block mb-1.5 font-medium
+              block mb-1.5 sm:sr-only font-medium
               text-gray-600 dark:text-gray-400
-              ${sizeClasses[size].label}
+              ${sizeClasses[size].fieldLabel}
             `}
           >
             {$localize`Minutes`}
           </label>
-          <div class="relative">
-            <select
-              name={name ? `${name}-minute` : undefined}
-              value={time.minute}
-              disabled={disabled || loading}
-              aria-label={$localize`Select minute`}
-              aria-invalid={error}
-              onChange$={(e, currentTarget) => onChange$("minute", currentTarget.value)}
-              onKeyDown$={(e) => handleKeyDown$(e, "minute")}
-              class={selectClasses}
-            >
-              {placeholder?.minute && (
-                <option value="" disabled>{placeholder.minute}</option>
-              )}
-              {minutes.value.map((minute) => (
-                <option 
-                  key={minute.value} 
-                  value={minute.value}
-                  disabled={minute.disabled}
-                >
-                  {minute.label}
-                </option>
-              ))}
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-2">
-              <svg
-                class={`
-                  ${sizeClasses[size].icon}
-                  text-gray-400 dark:text-gray-500
-                `}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
+          <select
+            name={name ? `${name}-minute` : undefined}
+            value={time.minute}
+            disabled={disabled || loading}
+            aria-label={$localize`Select minute`}
+            aria-invalid={error}
+            onChange$={(e, currentTarget) => onChange$("minute", currentTarget.value)}
+            onKeyDown$={(e) => handleKeyDown$(e, "minute")}
+            class={`${selectClasses} w-24`}
+            style={selectStyle}
+          >
+            {placeholder?.minute && (
+              <option value="" disabled>{placeholder.minute}</option>
+            )}
+            {minutes.value.map((minute) => (
+              <option 
+                key={minute.value} 
+                value={minute.value}
+                disabled={minute.disabled}
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
+                {minute.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Seconds (optional) */}
         {showSeconds && (
           <>
             <div class={`
-              flex items-end pb-2
-              text-gray-400 dark:text-gray-500
+              flex items-center
               ${sizeClasses[size].separator}
+              ${variantClasses[variant].separator}
               font-medium
             `}>
               :
             </div>
-            <div class="flex-1">
+            <div class="flex-1 sm:flex-initial">
               <label
                 class={`
-                  block mb-1.5 font-medium
+                  block mb-1.5 sm:sr-only font-medium
                   text-gray-600 dark:text-gray-400
-                  ${sizeClasses[size].label}
+                  ${sizeClasses[size].fieldLabel}
                 `}
               >
                 {$localize`Seconds`}
               </label>
-              <div class="relative">
-                <select
-                  name={name ? `${name}-second` : undefined}
-                  value={time.second || "00"}
-                  disabled={disabled || loading}
-                  aria-label={$localize`Select second`}
-                  aria-invalid={error}
-                  onChange$={(e, currentTarget) => onChange$("second", currentTarget.value)}
-                  onKeyDown$={(e) => handleKeyDown$(e, "second")}
-                  class={selectClasses}
-                >
-                  {placeholder?.second && (
-                    <option value="" disabled>{placeholder.second}</option>
-                  )}
-                  {seconds.value.map((second) => (
-                    <option 
-                      key={second.value} 
-                      value={second.value}
-                      disabled={second.disabled}
-                    >
-                      {second.label}
-                    </option>
-                  ))}
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-2">
-                  <svg
-                    class={`
-                      ${sizeClasses[size].icon}
-                      text-gray-400 dark:text-gray-500
-                    `}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
+              <select
+                name={name ? `${name}-second` : undefined}
+                value={time.second || "00"}
+                disabled={disabled || loading}
+                aria-label={$localize`Select second`}
+                aria-invalid={error}
+                onChange$={(e, currentTarget) => onChange$("second", currentTarget.value)}
+                onKeyDown$={(e) => handleKeyDown$(e, "second")}
+                class={`${selectClasses} w-24`}
+                style={selectStyle}
+              >
+                {placeholder?.second && (
+                  <option value="" disabled>{placeholder.second}</option>
+                )}
+                {seconds.value.map((second) => (
+                  <option 
+                    key={second.value} 
+                    value={second.value}
+                    disabled={second.disabled}
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </div>
+                    {second.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </>
         )}
@@ -456,83 +447,63 @@ export const TimePicker = component$<TimePickerProps>(({
         {/* AM/PM Selector for 12-hour format */}
         {format === "12" && (
           <>
-            <div class="ms-2"></div>
-            <div class="flex-1">
+            <div class="hidden sm:block sm:w-2"></div>
+            <div class="flex-1 sm:flex-initial">
               <label
                 class={`
-                  block mb-1.5 font-medium
+                  block mb-1.5 sm:sr-only font-medium
                   text-gray-600 dark:text-gray-400
-                  ${sizeClasses[size].label}
+                  ${sizeClasses[size].fieldLabel}
                 `}
               >
                 {$localize`Period`}
               </label>
-              <div class="relative">
-                <select
-                  name={name ? `${name}-period` : undefined}
-                  value={time.period || "AM"}
-                  disabled={disabled || loading}
-                  aria-label={$localize`Select AM or PM`}
-                  aria-invalid={error}
-                  onChange$={(e, currentTarget) => onChange$("period", currentTarget.value)}
-                  class={selectClasses}
-                >
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-2">
-                  <svg
-                    class={`
-                      ${sizeClasses[size].icon}
-                      text-gray-400 dark:text-gray-500
-                    `}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </div>
+              <select
+                name={name ? `${name}-period` : undefined}
+                value={time.period || "AM"}
+                disabled={disabled || loading}
+                aria-label={$localize`Select AM or PM`}
+                aria-invalid={error}
+                onChange$={(e, currentTarget) => onChange$("period", currentTarget.value)}
+                class={`${selectClasses} w-24`}
+                style={selectStyle}
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
           </>
         )}
 
         {/* Clear Button */}
         {showClearButton && onClear$ && (
-          <div class="flex items-end pb-2">
+          <div class="flex items-center ml-2">
             <button
               type="button"
               onClick$={onClear$}
               disabled={disabled || loading}
               aria-label={$localize`Clear time`}
               class={`
-                p-2 rounded-lg transition-all duration-200
+                ${sizeClasses[size].clearButton}
+                rounded-lg transition-colors duration-200
                 text-gray-400 dark:text-gray-500
                 hover:text-gray-600 dark:hover:text-gray-300
                 hover:bg-gray-100 dark:hover:bg-gray-800
                 focus:outline-none focus:ring-2 focus:ring-primary-500/20
                 disabled:opacity-50 disabled:cursor-not-allowed
-                ${sizeClasses[size].icon}
               `}
             >
               <svg
-                class="w-full h-full"
+                class={sizeClasses[size].icon}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                stroke-width="2"
                 aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  stroke-width={2}
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>

@@ -96,6 +96,15 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     cleanup(() => clearTimeout(timeoutId));
   });
 
+  // Filter options based on debounced search value
+  const filteredOptions = useComputed$(() => {
+    if (!searchable || !debouncedSearchValue.value) return options;
+
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(debouncedSearchValue.value.toLowerCase()),
+    );
+  });
+
   // Keyboard navigation helpers
   const getSelectableOptions = $(() => {
     return filteredOptions.value.filter(option => !option.disabled);
@@ -415,15 +424,6 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
       document.removeEventListener("click", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  });
-
-  // Filter options based on debounced search value
-  const filteredOptions = useComputed$(() => {
-    if (!searchable || !debouncedSearchValue.value) return options;
-
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(debouncedSearchValue.value.toLowerCase()),
-    );
   });
 
   // Handle search results announcements and focus reset

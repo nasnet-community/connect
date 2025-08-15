@@ -108,6 +108,12 @@ export const WANAdvanced = component$<WANAdvancedProps>(
 
     // Create step definitions
     const createSteps = $((): CStepMeta[] => {
+      // Check if step 1 is complete
+      const step1Complete = advancedHooks.state.links.every(link => 
+        link.interfaceName && 
+        link.interfaceType
+      );
+      
       const steps: CStepMeta[] = [
         {
           id: 1,
@@ -119,7 +125,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               wizardActions={advancedHooks}
             />
           ),
-          isComplete: false,
+          isComplete: step1Complete,
         },
         {
           id: 2,
@@ -183,13 +189,52 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       steps.value = await createSteps();
     });
 
+    // Auto-update step 1 completion status when links are configured
+    useVisibleTask$(async ({ track }) => {
+      // Track changes to link configuration
+      track(() => advancedHooks.state.links);
+      
+      // Check if step 1 is complete
+      const allLinksConfigured = advancedHooks.state.links.every(link => 
+        link.interfaceName && 
+        link.interfaceType
+      );
+      
+      // Update step 1 completion status
+      if (steps.value.length > 0 && steps.value[0]) {
+        steps.value[0].isComplete = allLinksConfigured;
+      }
+    });
+
     // Handle step change
     const handleStepChange$ = $((step: number) => {
       activeStep.value = step;
     });
 
+    // Check if all links are complete (for Step 1)
+    const isStep1Complete$ = $(() => {
+      // For Step 1, only check if interface is configured
+      // Connection type is configured in Step 2
+      return advancedHooks.state.links.every(link => 
+        link.interfaceName && 
+        link.interfaceType
+      );
+    });
+    
     // Handle step completion
     const handleStepComplete$ = $(async (stepId: number) => {
+      // Special validation for Step 1 - all links must be complete
+      if (stepId === 1) {
+        const allLinksComplete = await isStep1Complete$();
+        if (!allLinksComplete) {
+          // Add error message
+          advancedHooks.state.validationErrors['step1-incomplete'] = [
+            'Please configure all WAN interfaces completely before proceeding'
+          ];
+          return;
+        }
+      }
+      
       const isValid = await validateCurrentStep$();
       if (isValid) {
         const stepIndex = steps.value.findIndex((s) => s.id === stepId);
@@ -200,26 +245,32 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     });
 
     return (
-      <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header */}
           <div class="mb-8">
-            <div class="flex items-center justify-between">
-              <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {$localize`Advanced WAN Configuration`}
-                </h1>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  {$localize`Configure multiple WAN connections with advanced networking features`}
-                </p>
+            <div class="flex items-center justify-between rounded-lg bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+              <div class="flex items-center gap-4">
+                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                  <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                
+                <div>
+                  <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {$localize`Advanced WAN Configuration`}
+                  </h1>
+                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {$localize`Configure multiple WAN connections with advanced networking features`}
+                  </p>
+                </div>
               </div>
 
               {onCancel$ && (
                 <button
                   onClick$={onCancel$}
-                  class="rounded-md border border-gray-300 px-4 py-2 text-sm 
-                       font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600
-                       dark:text-gray-300 dark:hover:bg-gray-700"
+                  class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   {$localize`Cancel`}
                 </button>
@@ -227,8 +278,8 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             </div>
           </div>
 
-          {/* Stepper */}
-          <div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+          {/* Stepper Container */}
+          <div class="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <CStepper
               steps={steps.value}
               activeStep={activeStep.value}
@@ -237,14 +288,8 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               onComplete$={applyConfiguration$}
               persistState={false}
               allowSkipSteps={false}
+              validateBeforeNext={true}
             />
-          </div>
-
-          {/* Footer Info */}
-          <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            {advancedHooks.state.links.length === 1
-              ? $localize`Single WAN configuration`
-              : $localize`Multi-WAN configuration with ${advancedHooks.state.links.length} links`}
           </div>
         </div>
       </div>

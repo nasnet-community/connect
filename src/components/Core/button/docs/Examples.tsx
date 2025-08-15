@@ -4,7 +4,6 @@ import { ExamplesTemplate } from "~/components/Docs/templates";
 // Import examples
 import {
   BasicButtonExample,
-  ButtonSizesExample,
   ButtonStateExample,
   ButtonIconExample,
   ButtonTypeExample,
@@ -29,6 +28,17 @@ import {
   ButtonStateTransitionsExample,
   CompoundButtonExample,
 } from "../Examples/AdvancedStatesExample";
+import {
+  CTAButtonExample,
+  GradientButtonExample,
+  GlowButtonExample,
+  GlassButtonExample,
+  MotionButtonExample,
+  PremiumButtonExample,
+  ButtonSizesShowcase,
+  ButtonRadiusShowcase,
+  InteractiveButtonExample,
+} from "../Examples/ModernVariantsExample";
 
 export default component$(() => {
   const examples = [
@@ -45,10 +55,52 @@ export default component$(() => {
       component: <SemanticVariantsBasicExample />,
     },
     {
-      title: "Button Sizes",
+      title: "CTA Buttons",
       description:
-        "Buttons are available in three sizes: small, medium (default), and large.",
-      component: <ButtonSizesExample />,
+        "Eye-catching call-to-action buttons with gradients, shadows, and hover animations.",
+      component: <CTAButtonExample />,
+    },
+    {
+      title: "Gradient Buttons",
+      description:
+        "Buttons with customizable gradient directions for modern, vibrant designs.",
+      component: <GradientButtonExample />,
+    },
+    {
+      title: "Glow Effect Buttons",
+      description:
+        "Buttons with glowing shadow effects that intensify on hover for emphasis.",
+      component: <GlowButtonExample />,
+    },
+    {
+      title: "Glass Effect Buttons",
+      description:
+        "Glassmorphism buttons with translucent backgrounds and backdrop blur.",
+      component: <GlassButtonExample />,
+    },
+    {
+      title: "Motion Buttons",
+      description:
+        "Professional buttons with subtle animations and secondary color gradients.",
+      component: <MotionButtonExample />,
+    },
+    {
+      title: "Premium Buttons",
+      description:
+        "Luxurious gold-themed buttons with shimmer effects for premium features.",
+      component: <PremiumButtonExample />,
+    },
+    {
+      title: "Extended Button Sizes",
+      description:
+        "Buttons now available in five sizes: extra small (xs), small, medium (default), large, and extra large (xl).",
+      component: <ButtonSizesShowcase />,
+    },
+    {
+      title: "Button Radius Options",
+      description:
+        "Customize button border radius from sharp corners to fully rounded.",
+      component: <ButtonRadiusShowcase />,
     },
     {
       title: "Button States",
@@ -117,6 +169,11 @@ export default component$(() => {
       title: "Interactive Buttons",
       description: "Buttons can trigger actions when clicked.",
       component: <ButtonWithEventExample />,
+    },
+    {
+      title: "Advanced Interactive Features",
+      description: "Buttons with pulse animations, shadows, and full-width responsive behavior.",
+      component: <InteractiveButtonExample />,
     },
   ];
 
