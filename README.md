@@ -1,6 +1,9 @@
 # NASNET Connect 🌟
 
-A powerful and modern mikrotik router configuration management system built with Qwik and TypeScript.
+NasNet Connect is a free, open-source networking tool built for the Iranian Starlink community, designed specifically to run on MikroTik routers. It automates complex configurations to protect user privacy by masking Starlink IPs, intelligently routing and managing traffic, enabling remote access over Iran’s internet, and supporting features like multiple SSIDs, public IP sharing, and gaming traffic optimization. Developed as a community-driven project, it provides a secure, censorship-resistant, and customizable gateway for Starlink users while remaining accessible and constantly improved through open collaboration.
+
+https://connect.starlink4iran.com/
+
 
 <div align="center">
 
