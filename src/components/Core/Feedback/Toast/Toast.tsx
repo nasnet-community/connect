@@ -152,12 +152,23 @@ export const Toast = component$<ToastProps>(
 
       // Apply swipe offset when dragging
       if (isDragging.value && swipeOffset.value) {
-        const { x, y } = swipeOffset.value;
-        const opacity = Math.max(0, 1 - Math.abs(x) / 200);
-        return `translate-x-[${x}px] translate-y-[${y}px] opacity-[${opacity}]`;
+        return "transform-gpu";
       }
 
       return "translate-x-0 translate-y-0 opacity-100";
+    });
+
+    // Dynamic styles for swipe transform
+    const dynamicStyles = useComputed$(() => {
+      if (isDragging.value && swipeOffset.value) {
+        const { x, y } = swipeOffset.value;
+        const opacity = Math.max(0, 1 - Math.abs(x) / 200);
+        return {
+          transform: `translate(${x}px, ${y}px)`,
+          opacity: opacity.toString(),
+        };
+      }
+      return {};
     });
 
     // Position-specific classes for mobile
@@ -207,6 +218,7 @@ export const Toast = component$<ToastProps>(
           swipeable && "touch-pan-y",
           className,
         )}
+        style={dynamicStyles.value}
         onMouseEnter$={handleMouseEnter}
         onMouseLeave$={handleMouseLeave}
         data-testid="toast"
