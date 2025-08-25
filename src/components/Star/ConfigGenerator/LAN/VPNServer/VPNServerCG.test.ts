@@ -476,7 +476,7 @@
 //             // Check that servers are configured but disabled
 //             const pptpCommands = result['/interface pptp-server server'] || [];
 //             const l2tpCommands = result['/interface l2tp-server server'] || [];
-            
+
 //             expect(pptpCommands.some((cmd: string) => cmd.includes('enabled=no'))).toBe(true);
 //             expect(l2tpCommands.some((cmd: string) => cmd.includes('enabled=no'))).toBe(true);
 
@@ -594,10 +594,10 @@
 //             // Check that all user types are properly distributed
 //             const peerCommands = result['/interface wireguard peers'] || [];
 //             const secretCommands = result['/ppp secret'] || [];
-            
+
 //             // Should have appropriate number of WireGuard peers and PPP secrets
 //             expect(peerCommands.filter((cmd: string) => cmd.includes('add')).length).toBeGreaterThan(10);
 //             expect(secretCommands.filter((cmd: string) => cmd.includes('add')).length).toBeGreaterThan(20);
 //         });
 //     });
-// }); 
+// });

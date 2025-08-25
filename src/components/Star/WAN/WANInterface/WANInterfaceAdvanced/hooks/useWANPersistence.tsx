@@ -1,5 +1,6 @@
 import { $, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
+import { generateUniqueId } from "~/components/Core/common/utils";
 
 const STORAGE_KEY = "wan-advanced-state";
 const STORAGE_VERSION = "1.0";
@@ -70,7 +71,7 @@ export function useWANPersistence(): UseWANPersistenceReturn {
       // Ensure all links have required fields
       parsed.state.links = parsed.state.links.map((link) => ({
         ...link,
-        id: link.id || crypto.randomUUID(),
+        id: link.id || generateUniqueId("wan"),
         name: link.name || `WAN Link ${parsed.state.links.indexOf(link) + 1}`,
         interfaceType: link.interfaceType || "Ethernet",
         interfaceName: link.interfaceName || "",

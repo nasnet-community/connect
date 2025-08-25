@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "target": "ES2017",
+    "target": "ES2022",
     "module": "ES2022",
     "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
     "jsx": "react-jsx",
@@ -28,7 +28,7 @@
     "tailwind.config.js",
     "src/**/*.tsx",
     "src/**/*.ts",
-    "src/components/Star/ExtraConfig/components/**/*.tsx",
-    "src/test-utils/global.d.ts"
+    // "src/components/Star/ExtraConfig/components/**/*.tsx",
+    // "src/test-utils/global.d.ts"
   ]
 }

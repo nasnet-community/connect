@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { WirelessCredentials } from "../../../../../StarContext/CommonType";
+import { Input, FormField, PasswordField } from "~/components/Core";
 
 export interface WirelessFieldsProps {
   credentials?: WirelessCredentials;
@@ -18,65 +19,40 @@ export const WirelessFields = component$<WirelessFieldsProps>(
           {$localize`Wireless Settings`}
         </h4>
 
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {$localize`SSID (Network Name)`}
-          </label>
-          <input
+        <FormField
+          label={$localize`SSID (Network Name)`}
+          error={errors?.ssid?.[0]}
+        >
+          <Input
             type="text"
-            class={`w-full rounded-md shadow-sm focus:ring-primary-500 
-                 dark:bg-gray-700 dark:text-white
-                 ${
-                   errors?.ssid
-                     ? "border-error-500 focus:border-error-500"
-                     : "border-gray-300 focus:border-primary-500 dark:border-gray-600"
-                 }`}
             value={credentials?.SSID || ""}
-            onInput$={(e) => {
-              const value = (e.target as HTMLInputElement).value;
+            onInput$={(event: Event, value: string) => {
               onUpdate$({
                 SSID: value,
                 Password: credentials?.Password || "",
               });
             }}
             placeholder="Enter network name"
+            
           />
-          {errors?.ssid && (
-            <p class="mt-1 text-sm text-error-500 dark:text-error-400">
-              {errors.ssid[0]}
-            </p>
-          )}
-        </div>
+        </FormField>
 
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {$localize`Password`}
-          </label>
-          <input
-            type="password"
-            class={`w-full rounded-md shadow-sm focus:ring-primary-500 
-                 dark:bg-gray-700 dark:text-white
-                 ${
-                   errors?.password
-                     ? "border-error-500 focus:border-error-500"
-                     : "border-gray-300 focus:border-primary-500 dark:border-gray-600"
-                 }`}
+        <FormField
+          label={$localize`Password`}
+          error={errors?.password?.[0]}
+        >
+          <PasswordField
             value={credentials?.Password || ""}
-            onInput$={(e) => {
-              const value = (e.target as HTMLInputElement).value;
+            onInput$={(event: Event, element: HTMLInputElement) => {
               onUpdate$({
                 SSID: credentials?.SSID || "",
-                Password: value,
+                Password: element.value,
               });
             }}
             placeholder="Min. 8 characters"
+            
           />
-          {errors?.password && (
-            <p class="mt-1 text-sm text-error-500 dark:text-error-400">
-              {errors.password[0]}
-            </p>
-          )}
-        </div>
+        </FormField>
       </div>
     );
   },

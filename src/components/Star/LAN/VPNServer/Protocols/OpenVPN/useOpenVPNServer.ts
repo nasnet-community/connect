@@ -9,6 +9,7 @@ import type {
   NetworkProtocol,
   LayerMode,
   AuthMethod,
+  Networks,
 } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
 
@@ -28,6 +29,7 @@ export const useOpenVPNServer = () => {
     Port: 1194,
     Protocol: "udp",
     Mode: "ip",
+    Network: "VPN",
     DefaultProfile: "ovpn-profile",
     Authentication: ["mschap2"],
     PacketSize: {
@@ -75,6 +77,7 @@ export const useOpenVPNServer = () => {
     port: openVpnState.Port || 1194,
     protocol: openVpnState.Protocol || "tcp",
     mode: openVpnState.Mode || "ip",
+    network: openVpnState.Network || "VPN",
     addressPool: openVpnState.Address.AddressPool || "192.168.78.0/24",
     requireClientCertificate:
       openVpnState.Certificate.RequireClientCertificate !== undefined
@@ -245,6 +248,7 @@ export const useOpenVPNServer = () => {
       Port: formState.port,
       Protocol: formState.protocol as NetworkProtocol,
       Mode: formState.mode as LayerMode,
+      Network: formState.network as Networks,
       DefaultProfile: formState.defaultProfile,
       Authentication: formState.authentication as AuthMethod[],
       PacketSize: {
@@ -296,6 +300,7 @@ export const useOpenVPNServer = () => {
       },
       enabled: true,
       Mode: "ip" as const,
+      Network: formState.network as Networks,
       DefaultProfile: "ovpn-profile",
       Authentication: ["mschap2" as AuthMethod],
       PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
@@ -357,6 +362,9 @@ export const useOpenVPNServer = () => {
   );
   const updateMode$ = $((value: LayerMode) =>
     updateAdvancedForm$({ mode: value }),
+  );
+  const updateNetwork$ = $((value: Networks | string) =>
+    updateAdvancedForm$({ network: value as any }),
   );
   const updateAddressPool$ = $((value: string) =>
     updateAdvancedForm$({ addressPool: value }),
@@ -427,6 +435,7 @@ export const useOpenVPNServer = () => {
         },
         enabled: true,
         Mode: "ip" as const,
+        Network: "VPN" as Networks,
         DefaultProfile: "ovpn-profile",
         Authentication: ["mschap2" as AuthMethod],
         PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
@@ -514,6 +523,7 @@ export const useOpenVPNServer = () => {
     updatePort$,
     updateProtocol$,
     updateMode$,
+    updateNetwork$,
     updateAddressPool$,
     updateRequireClientCertificate$,
     updateAuth$,

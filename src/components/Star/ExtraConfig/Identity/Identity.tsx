@@ -1,20 +1,30 @@
-import { $, component$, useContext, useSignal } from "@builder.io/qwik";
+import { $, component$, useContext, useSignal, useTask$ } from "@builder.io/qwik";
 import {
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
+import { Input } from "~/components/Core";
 
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
+  const isEasyMode = ctx.state.Choose.Mode === "easy";
+  
   const routerIdentity = useSignal(
     ctx.state.ExtraConfig.RouterIdentityRomon?.RouterIdentity,
   );
   const romonEnabled = useSignal(
-    ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon,
+    ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon ?? true,
   );
   const isValid = useSignal(false);
+  
+  // Set default Romon value to true in easy mode
+  useTask$(() => {
+    if (isEasyMode && ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon === undefined) {
+      romonEnabled.value = true;
+    }
+  });
 
   const handleIdentityChange = $((value: string) => {
     routerIdentity.value = value;
@@ -67,69 +77,69 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
             <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
               {$localize`Router Identity`}
             </label>
-            <input
+            <Input
               type="text"
               value={routerIdentity.value}
-              onChange$={(e, currentTarget) =>
-                handleIdentityChange(currentTarget.value)
+              onInput$={(event: Event, value: string) =>
+                handleIdentityChange(value)
               }
               placeholder={$localize`Enter router identity`}
-              class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 focus:border-primary-500 focus:ring-2
-                     focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
             />
           </div>
 
-          {/* Romon Settings */}
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <div>
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`Romon`}
-                </label>
-                <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
-                  {$localize`Enable or disable Remote Network Monitoring (RoMON) for centralized management`}
-                </p>
-              </div>
-              <div class="flex gap-4 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                <label
-                  class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-          ${
-            !romonEnabled.value
-              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-              : "text-gray-600 dark:text-gray-400"
-          }`}
-                >
-                  <input
-                    type="radio"
-                    name="romon"
-                    checked={!romonEnabled.value}
-                    onChange$={() => (romonEnabled.value = false)}
-                    class="hidden"
-                  />
-                  <HiXCircleOutline class="h-5 w-5" />
-                  <span>{$localize`Disable`}</span>
-                </label>
-                <label
-                  class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-          ${
-            romonEnabled.value
-              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-              : "text-gray-600 dark:text-gray-400"
-          }`}
-                >
-                  <input
-                    type="radio"
-                    name="romon"
-                    checked={romonEnabled.value}
-                    onChange$={() => (romonEnabled.value = true)}
-                    class="hidden"
-                  />
-                  <HiCheckCircleOutline class="h-5 w-5" />
-                  <span>{$localize`Enable`}</span>
-                </label>
+          {/* Romon Settings - Only show in advanced mode */}
+          {!isEasyMode && (
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {$localize`Romon`}
+                  </label>
+                  <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                    {$localize`Enable or disable Remote Network Monitoring (RoMON) for centralized management`}
+                  </p>
+                </div>
+                <div class="flex gap-4 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                  <label
+                    class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
+            ${
+              !romonEnabled.value
+                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-600 dark:text-gray-400"
+            }`}
+                  >
+                    <input
+                      type="radio"
+                      name="romon"
+                      checked={!romonEnabled.value}
+                      onChange$={() => (romonEnabled.value = false)}
+                      class="hidden"
+                    />
+                    <HiXCircleOutline class="h-5 w-5" />
+                    <span>{$localize`Disable`}</span>
+                  </label>
+                  <label
+                    class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
+            ${
+              romonEnabled.value
+                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
+                : "text-gray-600 dark:text-gray-400"
+            }`}
+                  >
+                    <input
+                      type="radio"
+                      name="romon"
+                      checked={romonEnabled.value}
+                      onChange$={() => (romonEnabled.value = true)}
+                      class="hidden"
+                    />
+                    <HiCheckCircleOutline class="h-5 w-5" />
+                    <span>{$localize`Enable`}</span>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Action Button */}
           <div class="flex justify-end pt-4">

@@ -5,7 +5,6 @@ import { processConnections } from "./Traffic/TrafficUtils";
 import { processConnectionTypes } from "./Connection/ConnectionUtils";
 import { GraphContainer, defaultConfig } from "./Container/GraphContainer";
 import { SingleConnectionRenderer } from "./Connection/SingleConnectionRenderer";
-import { GraphLegend } from "./Container/GraphLegend";
 
 /**
  * Graph component for visualizing nodes and connections
@@ -31,8 +30,8 @@ export const Graph = component$<GraphProps>((props) => {
 
     // If no viewBox specified or no nodes, calculate responsive default
     if (nodes.length === 0) {
-      // Responsive default viewBox based on typical mobile/tablet/desktop needs
-      return "0 0 800 400"; // More mobile-friendly default aspect ratio
+      // Responsive default viewBox matching NetworkTopologyGraph
+      return "0 0 400 200"; // Compact aspect ratio for network topology
     }
 
     // Find min/max coordinates to encompass all nodes
@@ -82,24 +81,14 @@ export const Graph = component$<GraphProps>((props) => {
       connections={processedConnections.value}
     >
       <svg
-        width="100%"
-        height="100%"
+        class="h-full w-full"
         viewBox={computedViewBox.value}
         preserveAspectRatio={
           mergedConfig.preserveAspectRatio || "xMidYMid meet"
         }
-        class="graph-svg bg-surface dark:bg-surface-dark touch-manipulation"
         role="img"
-        aria-label={title || "Network Graph Visualization"}
+        aria-label={title || "Network Topology Visualization"}
         aria-describedby="graph-description"
-        tabindex={0}
-        style={{
-          // Optimize for different device types
-          "--svg-node-size": "22px",
-          "--svg-node-size-mobile": "24px",
-          "--svg-connection-width": "2px",
-          "--svg-connection-width-mobile": "3px",
-        }}
       >
         {/* Accessibility description */}
         <desc id="graph-description">
@@ -107,15 +96,7 @@ export const Graph = component$<GraphProps>((props) => {
           Use arrow keys to navigate between nodes, Enter to select, and Tab to move between interactive elements.
         </desc>
         
-        {/* SVG background for light/dark mode */}
-        <rect
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
-          fill="transparent"
-          class="graph-bg"
-        />
+        {/* Background is handled by container, no need for rect here */}
 
         {/* Draw connections with accessibility support */}
         {processedConnections.value.map((connection) => {
@@ -205,16 +186,7 @@ export const Graph = component$<GraphProps>((props) => {
         ))}
       </svg>
 
-      {/* Legend for non-expanded mode */}
-      {mergedConfig.showLegend && (
-        <div class="mt-2">
-          <GraphLegend
-            connections={processedConnections.value}
-            customLegendItems={mergedConfig.legendItems}
-            showLegend={true}
-          />
-        </div>
-      )}
+      {/* Legend is now handled inside GraphContainer */}
 
       {/* Debug information in development mode */}
       {process.env.NODE_ENV === "development" && nodes.length === 0 && (

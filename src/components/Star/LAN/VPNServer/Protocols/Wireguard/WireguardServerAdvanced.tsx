@@ -5,13 +5,10 @@ import {
   HiPlusCircleOutline,
   HiTrashOutline,
 } from "@qwikest/icons/heroicons";
-import {
-  ServerCard,
-  ServerFormField,
-  ServerButton,
-  SectionTitle,
-  Input,
-} from "../../../VPNServer/UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField, ServerButton, SectionTitle } from "~/components/Core/Form/ServerField";
+import { Input } from "~/components/Core/Input";
+import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
 import { useWireguardServer } from "./useWireguardServer";
 
 export const WireguardServerAdvanced = component$(() => {
@@ -36,6 +33,14 @@ export const WireguardServerAdvanced = component$(() => {
         <div>
           <SectionTitle title={$localize`Interface Configuration`} />
           <div class="space-y-4">
+            {/* Network Selection */}
+            <ServerFormField label={$localize`Network`}>
+              <NetworkDropdown
+                selectedNetwork={(advancedFormState.network as ExtendedNetworks) || "Wireguard"}
+                onNetworkChange$={(network) => updateServerConfig({ network: network as any })}
+              />
+            </ServerFormField>
+
             {/* Interface Name */}
             <ServerFormField label={$localize`Interface Name`}>
               <Input

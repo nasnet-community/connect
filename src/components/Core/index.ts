@@ -69,12 +69,8 @@ export * from "./Form/RadioGroup";
 
 // Toggle/Switch Components
 // Primary Toggle component for binary states
-// Note: Toggle exports ResponsiveSize which conflicts with Typography ResponsiveSize
-// Export individual components to avoid naming conflicts
 export { Toggle } from "./Toggle/Toggle";
 export type { ToggleProps, ToggleSize, ToggleColor, LabelPosition } from "./Toggle/Toggle.types";
-// Rename Toggle's ResponsiveSize to avoid conflict with Typography's ResponsiveSize
-export type { ResponsiveSize as ToggleResponsiveSize } from "./Toggle/Toggle.types";
 
 // @deprecated Switch components - use Toggle instead for new code
 export * from "./Switch";
@@ -122,6 +118,9 @@ import { Alert } from "./Feedback/Alert/Alert";
 import { ErrorMessage } from "./Feedback/ErrorMessage/ErrorMessage";
 import { PromoBanner } from "./Feedback/PromoBanner/PromoBanner";
 import { Dialog } from "./Feedback/Dialog/Dialog";
+import { DialogHeader } from "./Feedback/Dialog/DialogHeader";
+import { DialogBody } from "./Feedback/Dialog/DialogBody";
+import { DialogFooter } from "./Feedback/Dialog/DialogFooter";
 import { Drawer } from "./Feedback/Drawer/Drawer";
 
 //-------------------------------
@@ -307,6 +306,21 @@ export {
    * @param onClose - Handler for close events
    */
   Dialog,
+  
+  /**
+   * Dialog header component for modal titles and close button
+   */
+  DialogHeader,
+  
+  /**
+   * Dialog body component for modal content
+   */
+  DialogBody,
+  
+  /**
+   * Dialog footer component for modal actions
+   */
+  DialogFooter,
 
   /**
    * Drawer component for sliding panels

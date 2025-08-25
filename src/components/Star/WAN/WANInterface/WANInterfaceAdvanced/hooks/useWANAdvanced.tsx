@@ -1,9 +1,10 @@
-import { $, useSignal, useStore, useTask$, type QRL } from "@builder.io/qwik";
+import { $, useSignal, useStore, type QRL } from "@builder.io/qwik";
 import type {
   WANLinkConfig,
   WANWizardState,
   MultiLinkConfig,
 } from "../../../../StarContext/WANType";
+import { generateUniqueId } from "~/components/Core/common/utils";
 
 export interface UseWANAdvancedReturn {
   state: WANWizardState;
@@ -13,6 +14,7 @@ export interface UseWANAdvancedReturn {
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiLinkStrategy$: QRL<(strategy: MultiLinkConfig) => void>;
+  updateMultiLink: QRL<(updates: Partial<MultiLinkConfig>) => void>;
   resetAdvanced$: QRL<() => void>;
   generateLinkName$: QRL<(index: number) => string>;
 }
@@ -23,11 +25,12 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     mode: "advanced", // Always use advanced mode
     links: [
       {
-        id: crypto.randomUUID(),
+        id: generateUniqueId("wan"),
         name: "WAN Link 1",
         interfaceType: "Ethernet",
         interfaceName: "",
         connectionType: "DHCP",
+        connectionConfirmed: false, // User must confirm connection settings
         weight: 50,
         priority: 1,
       },
@@ -47,11 +50,12 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
   const addLink$ = $(async () => {
     linkCounter.value++;
     const newLink: WANLinkConfig = {
-      id: crypto.randomUUID(),
+      id: generateUniqueId("wan"),
       name: await generateLinkName$(linkCounter.value),
       interfaceType: "Ethernet",
       interfaceName: "",
       connectionType: state.mode === "easy" ? "DHCP" : "DHCP",
+      connectionConfirmed: false, // User must confirm connection settings
       weight: 50,
       priority: state.links.length + 1,
     };
@@ -112,17 +116,22 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     state.validationErrors = newErrors;
   });
 
-  // Update a specific link
+  // Update a specific link with batching to prevent multiple renders
   const updateLink$ = $((id: string, updates: Partial<WANLinkConfig>) => {
     const linkIndex = state.links.findIndex((link) => link.id === id);
     if (linkIndex === -1) return;
 
-    const updatedLink = { ...state.links[linkIndex], ...updates };
+    // Create a copy to work with
+    const currentLink = state.links[linkIndex];
+    const updatedLink = { ...currentLink };
+
+    // Apply updates
+    Object.assign(updatedLink, updates);
 
     // Clear certain fields when interface type changes
     if (
       updates.interfaceType &&
-      updates.interfaceType !== state.links[linkIndex].interfaceType
+      updates.interfaceType !== currentLink.interfaceType
     ) {
       updatedLink.interfaceName = "";
       updatedLink.wirelessCredentials = undefined;
@@ -137,13 +146,16 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     // Clear connection config when type changes
     if (
       updates.connectionType &&
-      updates.connectionType !== state.links[linkIndex].connectionType
+      updates.connectionType !== currentLink.connectionType
     ) {
       updatedLink.connectionConfig = undefined;
     }
 
-    // Direct mutation for Qwik reactivity
-    state.links[linkIndex] = updatedLink;
+    // Update state in one operation to minimize renders
+    // Create new array to ensure proper change detection
+    const newLinks = [...state.links];
+    newLinks[linkIndex] = updatedLink;
+    state.links = newLinks;
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)
@@ -174,13 +186,25 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     }
   });
 
+  // Update multi-link configuration with proper state management
+  const updateMultiLink = $((updates: Partial<MultiLinkConfig>) => {
+    // Use single assignment to prevent multiple renders
+    if (!state.multiLinkStrategy) {
+      state.multiLinkStrategy = updates as MultiLinkConfig;
+    } else {
+      // Create new object to ensure change detection
+      const newStrategy = { ...state.multiLinkStrategy, ...updates };
+      state.multiLinkStrategy = newStrategy;
+    }
+  });
+
   // Reset advanced configuration to initial state
   const resetAdvanced$ = $(() => {
     linkCounter.value = 1;
     state.mode = "advanced";
     state.links = [
       {
-        id: crypto.randomUUID(),
+        id: generateUniqueId("wan"),
         name: "WAN Link 1",
         interfaceType: "Ethernet",
         interfaceName: "",
@@ -193,14 +217,8 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     state.validationErrors = {};
   });
 
-  // Auto-save to localStorage
-  useTask$(({ track }) => {
-    track(() => state);
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wan-advanced-state", JSON.stringify(state));
-    }
-  });
+  // Note: Removed auto-save to localStorage to prevent infinite loops
+  // State is saved manually when needed only
 
   return {
     state,
@@ -210,6 +228,7 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     toggleMode$,
     setViewMode$,
     setMultiLinkStrategy$,
+    updateMultiLink,
     resetAdvanced$,
     generateLinkName$,
   };

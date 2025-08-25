@@ -50,7 +50,19 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     loadingText = "Loading options...",
     class: className = "",
     onChange$,
+    onOpenChange$,
   } = props;
+  
+  // Use a signal to track the current value for better reactivity
+  const currentValue = useSignal(value);
+  
+  // Update currentValue when props.value changes
+  useTask$(({ track }) => {
+    track(() => props.value);
+    if (props.value !== undefined) {
+      currentValue.value = props.value;
+    }
+  });
 
   // State for custom select mode
   const isOpen = useSignal(false);
@@ -209,19 +221,20 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
 
   // Compute selected value(s) label for display
   const displayValue = useComputed$(() => {
-    if (!value) return "";
+    const val = currentValue.value;
+    if (!val) return "";
 
-    if (Array.isArray(value)) {
-      if (value.length === 0) return "";
+    if (Array.isArray(val)) {
+      if (val.length === 0) return "";
 
       const selectedLabels = options
-        .filter((opt) => value.includes(opt.value))
+        .filter((opt) => val.includes(opt.value))
         .map((opt) => opt.label);
 
       return selectedLabels.join(", ");
     }
 
-    const selectedOption = options.find((opt) => opt.value === value);
+    const selectedOption = options.find((opt) => opt.value === val);
     return selectedOption ? selectedOption.label : "";
   });
 
@@ -231,7 +244,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
       isMobile.value = window.innerWidth < 768;
       // Recalculate position on orientation change for mobile
       if (isOpen.value && !isMobile.value) {
-        setTimeout(calculateDropdownPosition, 100);
+        setTimeout(() => calculateDropdownPosition(), 100);
       }
     };
     checkMobile();
@@ -281,19 +294,24 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     let placement: 'above' | 'below' = 'below';
     let maxHeight = '300px';
     
-    // Prefer 'below' unless there's significantly more space above
-    if (spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow + 50) {
+    // Minimum height to show at least 4 options properly
+    const minRequiredHeight = Math.max(200, baseOptionHeight * 4 + paddingHeight * 0.5);
+    
+    // Improved placement logic: switch to 'above' more readily when space below is insufficient
+    if ((spaceBelow < minRequiredHeight && spaceAbove > spaceBelow) || 
+        (spaceBelow < estimatedDropdownHeight * 0.6 && spaceAbove > estimatedDropdownHeight * 0.6)) {
       placement = 'above';
       maxHeight = `${Math.min(spaceAbove, 500)}px`;
     } else {
       placement = 'below';
-      maxHeight = `${Math.min(spaceBelow, 500)}px`;
+      // Ensure minimum height even if space is limited, but allow expansion to viewport edge if needed
+      maxHeight = `${Math.max(Math.min(spaceBelow, 500), Math.min(minRequiredHeight, spaceBelow + 20))}px`;
     }
     
-    // Ensure minimum height
-    const minHeight = Math.min(200, baseOptionHeight * 2 + 40);
-    if (parseInt(maxHeight) < minHeight) {
-      maxHeight = `${minHeight}px`;
+    // Final minimum height enforcement
+    const absoluteMinHeight = Math.min(180, baseOptionHeight * 3 + 40);
+    if (parseInt(maxHeight) < absoluteMinHeight) {
+      maxHeight = `${absoluteMinHeight}px`;
     }
     
     // Calculate horizontal positioning with better overflow handling
@@ -343,7 +361,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     
     if (isOpen.value && !isMobile.value) {
       // Use setTimeout to ensure DOM is updated
-      setTimeout(calculateDropdownPosition, 0);
+      setTimeout(() => calculateDropdownPosition(), 0);
     }
   });
 
@@ -378,6 +396,9 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
         case "Escape":
           event.preventDefault();
           isOpen.value = false;
+          if (onOpenChange$) {
+            onOpenChange$(false);
+          }
           focusedOptionIndex.value = -1;
           buttonRef.value?.focus();
           break;
@@ -482,26 +503,34 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     const safeOnChange$ = onChange$;
 
     if (multiple) {
-      const currentValues = Array.isArray(value) ? [...value] : [];
+      const val = currentValue.value;
+      const currentValues = Array.isArray(val) ? [...val] : [];
 
       if (currentValues.includes(option.value)) {
         // Remove the value if already selected
         const newValues = currentValues.filter((v) => v !== option.value);
+        currentValue.value = newValues;
         if (safeOnChange$) {
           safeOnChange$(newValues);
         }
       } else {
         // Add the value
         const newValues = [...currentValues, option.value];
+        currentValue.value = newValues;
         if (safeOnChange$) {
           safeOnChange$(newValues);
         }
       }
     } else {
+      currentValue.value = option.value;
       if (safeOnChange$) {
         safeOnChange$(option.value);
       }
       isOpen.value = false;
+      // Call onOpenChange$ callback when closing after selection
+      if (onOpenChange$) {
+        onOpenChange$(false);
+      }
     }
   });
 
@@ -510,8 +539,10 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     e.stopPropagation();
     // Safely capture onChange$ to avoid lexical scope issues
     const safeOnChange$ = onChange$;
+    const newValue = multiple ? [] : "";
+    currentValue.value = newValue;
     if (safeOnChange$) {
-      safeOnChange$(multiple ? [] : "");
+      safeOnChange$(newValue);
     }
   });
 
@@ -528,20 +559,26 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
   // Toggle dropdown
   const toggleDropdown = $(() => {
     if (!disabled && !loading) {
-      isOpen.value = !isOpen.value;
-      if (isOpen.value && searchable) {
+      const newOpenState = !isOpen.value;
+      isOpen.value = newOpenState;
+      if (newOpenState && searchable) {
         searchValue.value = "";
         debouncedSearchValue.value = "";
+      }
+      // Call onOpenChange$ callback if provided
+      if (onOpenChange$) {
+        onOpenChange$(newOpenState);
       }
     }
   });
 
   // Check if a value is selected
   const isSelected = (optionValue: string): boolean => {
-    if (Array.isArray(value)) {
-      return value.includes(optionValue);
+    const val = currentValue.value;
+    if (Array.isArray(val)) {
+      return val.includes(optionValue);
     }
-    return value === optionValue;
+    return val === optionValue;
   };
 
   // Render native select mode
@@ -561,7 +598,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
           required={required}
           disabled={disabled}
           class={getSelectNativeClass(size, validation)}
-          value={Array.isArray(value) ? value[0] : value}
+          value={Array.isArray(currentValue.value) ? currentValue.value[0] : currentValue.value}
           multiple={multiple}
           onChange$={(e) => {
             const target = e.target as HTMLSelectElement;
@@ -569,14 +606,16 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
               const selectedOptions = Array.from(target.selectedOptions).map(
                 (opt) => opt.value,
               );
+              currentValue.value = selectedOptions;
               onChange$?.(selectedOptions);
             } else {
+              currentValue.value = target.value;
               onChange$?.(target.value);
             }
           }}
         >
           {placeholder && !required && (
-            <option value="" disabled={required}>
+            <option value="" disabled>
               {placeholder}
             </option>
           )}
@@ -603,7 +642,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
 
   // Render custom select mode
   return (
-    <div class={`${styles.selectContainer} ${className}`} ref={containerRef}>
+    <div class={`${styles.selectContainer} ${className} ${isOpen.value ? 'relative z-50' : ''}`} ref={containerRef}>
       {label && (
         <label for={id} class={styles.selectLabel}>
           {label}
@@ -733,7 +772,12 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             {isMobile.value && (
               <div 
                 class={styles.mobileBackdrop}
-                onClick$={() => isOpen.value = false}
+                onClick$={() => {
+                  isOpen.value = false;
+                  if (onOpenChange$) {
+                    onOpenChange$(false);
+                  }
+                }}
                 onTouchStart$={(e) => {
                   // Allow swipe down to close
                   const startY = e.touches[0].clientY;
@@ -742,6 +786,9 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                     const diff = currentY - startY;
                     if (diff > 100) { // Swipe down threshold
                       isOpen.value = false;
+                      if (onOpenChange$) {
+                        onOpenChange$(false);
+                      }
                       document.removeEventListener('touchmove', handleTouchMove);
                     }
                   };
@@ -760,19 +807,14 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             <div 
               ref={dropdownRef}
               id={`${id}-listbox`}
-              class={`${styles.dropdown} ${dropdownPosition.value.placement === 'above' ? styles.dropdownAbove : styles.dropdownBelow}`} 
+              class={`${styles.dropdown} ${dropdownPosition.value.placement === 'above' ? styles.dropdownAbove : styles.dropdownBelow} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-lg rounded-md`} 
               role="listbox" 
               aria-label={label}
               aria-multiselectable={multiple ? "true" : "false"}
               style={isMobile.value ? 
                 { zIndex: "1050" } : 
                 {
-                  position: 'fixed',
-                  top: dropdownPosition.value.top,
-                  bottom: dropdownPosition.value.bottom,
-                  left: dropdownPosition.value.left,
-                  right: dropdownPosition.value.right,
-                  width: dropdownPosition.value.width,
+                  maxHeight: dropdownPosition.value.maxHeight,
                   zIndex: '1000'
                 }
               }
@@ -785,7 +827,12 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{label || "Select option"}</h3>
                     <button
                       class={`${styles.mobileCloseButton} ${styles.focusRing}`}
-                      onClick$={() => isOpen.value = false}
+                      onClick$={() => {
+                        isOpen.value = false;
+                        if (onOpenChange$) {
+                          onOpenChange$(false);
+                        }
+                      }}
                       aria-label="Close selection"
                     >
                       <svg
@@ -875,6 +922,9 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                         case "Escape":
                           e.preventDefault();
                           isOpen.value = false;
+                          if (onOpenChange$) {
+                            onOpenChange$(false);
+                          }
                           buttonRef.value?.focus();
                           break;
                       }
@@ -885,7 +935,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
             )}
 
             <div 
-              class={styles.optionsContainer} 
+              class={`${styles.optionsContainer} bg-white dark:bg-gray-800`} 
               ref={optionsContainerRef}
               style={{
                 maxHeight: isMobile.value ? '60vh' : dropdownPosition.value.maxHeight
@@ -1063,7 +1113,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
         <input
           type="hidden"
           name={name}
-          value={Array.isArray(value) ? value.join(",") : value}
+          value={Array.isArray(currentValue.value) ? currentValue.value.join(",") : currentValue.value}
         />
       )}
     </div>

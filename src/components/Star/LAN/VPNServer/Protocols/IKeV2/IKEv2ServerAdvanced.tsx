@@ -5,14 +5,11 @@ import {
   HiDocumentOutline,
 } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
-import {
-  ServerCard,
-  ServerFormField,
-  ServerButton,
-  Select,
-  SectionTitle,
-  Input,
-} from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField, ServerButton, SectionTitle } from "~/components/Core/Form/ServerField";
+import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
+import { Input } from "~/components/Core/Input";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 
 export const IKEv2ServerAdvanced = component$(() => {
   const {
@@ -48,6 +45,16 @@ export const IKEv2ServerAdvanced = component$(() => {
         <div>
           <SectionTitle title={$localize`Basic Settings`} />
           <div class="space-y-4">
+            {/* Network Selection */}
+            <ServerFormField label={$localize`Network`}>
+              <NetworkDropdown
+                selectedNetwork="VPN"
+                onNetworkChange$={(network) => {
+                  console.log("IKEv2 network changed to:", network);
+                }}
+              />
+            </ServerFormField>
+
             {/* Address Pool */}
             <ServerFormField
               label={$localize`Address Pool Range`}
@@ -106,7 +113,7 @@ export const IKEv2ServerAdvanced = component$(() => {
           <div class="space-y-4">
             {/* Client Authentication Method */}
             <ServerFormField label={$localize`Client Authentication Method`}>
-              <Select
+              <UnifiedSelect
                 options={authMethods}
                 value={advancedFormState.authMethod}
                 onChange$={(value) => updateAuthMethod$(value as any)}
@@ -144,7 +151,7 @@ export const IKEv2ServerAdvanced = component$(() => {
             {/* EAP Methods */}
             {advancedFormState.authMethod === "eap" && (
               <ServerFormField label={$localize`EAP Method`}>
-                <Select
+                <UnifiedSelect
                   options={eapMethods}
                   value={advancedFormState.eapMethods}
                   onChange$={(value) => updateEapMethods$(value as any)}
@@ -169,7 +176,6 @@ export const IKEv2ServerAdvanced = component$(() => {
                   />
                   <ServerButton
                     onClick$={() => {}}
-                    primary={false}
                     class="flex items-center gap-1"
                   >
                     <HiDocumentOutline class="h-5 w-5" />

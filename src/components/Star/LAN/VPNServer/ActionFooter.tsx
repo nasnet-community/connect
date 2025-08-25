@@ -1,7 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import type { PropFunction } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "./VPNServer";
+import { VPNServerContextId } from "./VPNServerAdvanced/VPNServerContext";
 
 interface ActionFooterProps {
   /**

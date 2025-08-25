@@ -2,6 +2,7 @@ import { $, useSignal, useStore } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { WireguardServerConfig } from "../../../../StarContext/Utils/VPNServerType";
+import type { Networks } from "../../../../StarContext/CommonType";
 
 // Define ViewMode type if it doesn't exist
 type ViewMode = "easy" | "advanced";
@@ -11,6 +12,7 @@ export const useWireguardServer = () => {
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
 
   const wireguardState = vpnServerState.WireguardServers?.[0] || {
+    Network: "VPN",
     Interface: {
       Name: "wg-server",
       PrivateKey: "",
@@ -34,6 +36,7 @@ export const useWireguardServer = () => {
   // Unified form state for both easy and advanced modes
   const formState = useStore({
     name: wireguardState.Interface.Name || "wg-server",
+    network: wireguardState.Network || "VPN",
     privateKey: wireguardState.Interface.PrivateKey || "",
     interfaceAddress:
       wireguardState.Interface.InterfaceAddress || "192.168.110.1/24",
@@ -97,6 +100,7 @@ export const useWireguardServer = () => {
 
     // Then update server config with proper StarContext structure
     updateWireguardServer$({
+      Network: formState.network as any,
       Interface: {
         Name: formState.name,
         PrivateKey: formState.privateKey,
@@ -116,6 +120,7 @@ export const useWireguardServer = () => {
 
     // Then update server config with proper StarContext structure
     updateWireguardServer$({
+      Network: formState.network as any,
       Interface: {
         Name: formState.name,
         PrivateKey: formState.privateKey,
@@ -199,6 +204,7 @@ export const useWireguardServer = () => {
       vpnServerState.WireguardServers.length === 0
     ) {
       updateWireguardServer$({
+        Network: "VPN" as Networks,
         Interface: {
           Name: "wg-server",
           PrivateKey: "",

@@ -1,5 +1,6 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import type { StarContextType } from "~/components/Star/StarContext/StarContext";
+import { Input, Select } from "~/components/Core";
 
 export const GameForm = component$<{ context: StarContextType }>(
   ({ context }) => {
@@ -14,33 +15,42 @@ export const GameForm = component$<{ context: StarContextType }>(
           {$localize`Add Custom Game`}
         </h3>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <input
+          <Input
             type="text"
             placeholder="Game Name"
-            bind:value={gameName}
-            class="rounded-lg border border-border bg-surface px-4 py-2 dark:border-border-dark dark:bg-surface-dark"
+            value={gameName.value}
+            onInput$={(event: Event, value: string) => {
+              gameName.value = value;
+            }}
           />
-          <input
+          <Input
             type="text"
             placeholder="TCP Ports (comma separated)"
-            bind:value={tcpPorts}
-            class="rounded-lg border border-border bg-surface px-4 py-2 dark:border-border-dark dark:bg-surface-dark"
+            value={tcpPorts.value}
+            onInput$={(event: Event, value: string) => {
+              tcpPorts.value = value;
+            }}
           />
-          <input
+          <Input
             type="text"
             placeholder="UDP Ports (comma separated)"
-            bind:value={udpPorts}
-            class="rounded-lg border border-border bg-surface px-4 py-2 dark:border-border-dark dark:bg-surface-dark"
+            value={udpPorts.value}
+            onInput$={(event: Event, value: string) => {
+              udpPorts.value = value;
+            }}
           />
-          <select
-            bind:value={link}
-            class="rounded-lg border border-border bg-surface px-4 py-2 dark:border-border-dark dark:bg-surface-dark"
-          >
-            <option value="none">{$localize`Select Route`}</option>
-            <option value="foreign">{$localize`Foreign`}</option>
-            <option value="domestic">{$localize`Domestic`}</option>
-            <option value="vpn">{$localize`VPN`}</option>
-          </select>
+          <Select
+            value={link.value}
+            onChange$={(value: string | string[]) => {
+              link.value = value as "none" | "foreign" | "domestic" | "vpn";
+            }}
+            options={[
+              { value: "none", label: $localize`Select Route` },
+              { value: "foreign", label: $localize`Foreign` },
+              { value: "domestic", label: $localize`Domestic` },
+              { value: "vpn", label: $localize`VPN` },
+            ]}
+          />
         </div>
         <div class="flex justify-end">
           <button

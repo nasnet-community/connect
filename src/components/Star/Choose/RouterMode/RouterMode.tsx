@@ -1,4 +1,9 @@
-import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  type PropFunction,
+} from "@builder.io/qwik";
 import type { QwikJSX } from "@builder.io/qwik";
 import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
@@ -22,17 +27,18 @@ interface ModeOption {
 export const RouterMode = component$((props: RouterModeProps) => {
   const starContext = useContext(StarContext);
   const selectedMode = starContext.state.Choose.RouterMode;
+  const selectedRouters = starContext.state.Choose.RouterModels;
 
   const handleModeSelect = $((mode: RouterModeType, disabled?: boolean) => {
     if (disabled) return;
-
-    // Trigger completion BEFORE updating state to avoid double-click issue
-    props.onComplete$?.();
 
     // Update the selection
     starContext.updateChoose$({
       RouterMode: mode,
     });
+
+    // Trigger completion immediately
+    props.onComplete$?.();
   });
 
   const modeOptions: ModeOption[] = [
@@ -149,6 +155,15 @@ export const RouterMode = component$((props: RouterModeProps) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Show requirement notice for Trunk Mode */}
+                {option.mode === "Trunk Mode" && (
+                  <div class="border-t border-border/20 pt-3 dark:border-border-dark/20">
+                    <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-xs">
+                      {$localize`Requires 2 routers (you'll select the second router next)`}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -162,6 +177,23 @@ export const RouterMode = component$((props: RouterModeProps) => {
           </div>
         ))}
       </div>
+
+      {/* Router selection status */}
+      {selectedRouters.length > 0 && (
+        <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 mx-auto max-w-2xl rounded-xl p-4">
+          <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm">
+            {$localize`Current Router Selection:`}
+            <span class="ml-2 font-medium text-text dark:text-text-dark-default">
+              {selectedRouters[0].Model}
+            </span>
+          </p>
+          {selectedMode === "Trunk Mode" && (
+            <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-1 text-xs">
+              {$localize`A second router will be selected in the next step`}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 });

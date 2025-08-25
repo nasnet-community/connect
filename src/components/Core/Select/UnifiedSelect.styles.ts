@@ -65,10 +65,10 @@ export const styles = {
     "absolute z-dropdown mt-1 w-full rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-600 focus:outline-none mobile:fixed mobile:inset-x-0 mobile:bottom-0 mobile:mt-0 mobile:rounded-t-2xl mobile:rounded-b-none mobile:max-h-[85vh] mobile:shadow-2xl tablet:absolute tablet:rounded-md desktop:max-h-[400px] transition-all duration-300 ease-out motion-reduce:transition-none",
 
   dropdownBelow:
-    "origin-top animate-scale-up motion-reduce:animate-none",
+    "top-full origin-top animate-scale-up motion-reduce:animate-none",
 
   dropdownAbove:
-    "origin-bottom mb-1 mt-0 animate-scale-up motion-reduce:animate-none",
+    "bottom-full origin-bottom mb-1 mt-0 animate-scale-up motion-reduce:animate-none",
 
   searchContainer:
     "p-2 sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600 z-10 mobile:p-4 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95",

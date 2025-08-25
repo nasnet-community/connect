@@ -14,6 +14,9 @@ export const StepSummary = component$<StepSummaryProps>(
   ({ wizardState, wizardActions }) => {
     const editingVPN = useSignal<string | null>(null);
     const editedName = useSignal<string>("");
+    
+    // Check if there are validation errors
+    const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
 
     // Sort VPNs by priority
     const sortedVPNs = [...wizardState.vpnConfigs].sort(
@@ -36,17 +39,7 @@ export const StepSummary = component$<StepSummaryProps>(
       editedName.value = "";
     });
 
-    const handleValidate$ = $(() => {
-      if (wizardActions.validateAll$) {
-        wizardActions.validateAll$(wizardState);
-      }
-    });
 
-    const handleApply$ = $(() => {
-      if (wizardActions.applyConfiguration$) {
-        wizardActions.applyConfiguration$();
-      }
-    });
 
     const getConfigSummary = (vpn: (typeof wizardState.vpnConfigs)[0]) => {
       const details: string[] = [];
@@ -111,8 +104,7 @@ export const StepSummary = component$<StepSummaryProps>(
       return details;
     };
 
-    const hasValidationErrors =
-      Object.keys(wizardState.validationErrors).length > 0;
+
 
     return (
       <div class="space-y-6">
@@ -176,14 +168,16 @@ export const StepSummary = component$<StepSummaryProps>(
           {sortedVPNs.map((vpn, index) => (
             <VPNBox
               key={vpn.id}
-              id={vpn.id}
-              name={vpn.name}
-              type={vpn.type}
-              error={Object.keys(wizardState.validationErrors).some((key) =>
-                key.startsWith(`vpn-${vpn.id}`),
-              )}
+              vpn={vpn}
+              index={index}
+              isExpanded={false}
+              canRemove={false}
+              validationErrors={wizardState.validationErrors}
             >
-              <VPNBoxContent>
+              <VPNBoxContent
+                vpn={vpn}
+                validationErrors={wizardState.validationErrors}
+              >
                 <div class="space-y-4">
                   {/* Priority and Name */}
                   <div class="flex items-start justify-between">
@@ -309,35 +303,12 @@ export const StepSummary = component$<StepSummaryProps>(
           ))}
         </div>
 
-        {/* Apply button */}
-        <div class="flex justify-end space-x-3">
-          <button
-            onClick$={handleValidate$}
-            class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            {$localize`Validate Configuration`}
-          </button>
 
-          <button
-            onClick$={handleApply$}
-            disabled={hasValidationErrors}
-            class={{
-              "rounded-md px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2":
-                true,
-              "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500":
-                !hasValidationErrors,
-              "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400":
-                hasValidationErrors,
-            }}
-          >
-            {$localize`Apply Configuration`}
-          </button>
-        </div>
 
         {/* Info message */}
         <div class="mt-4 rounded-lg bg-info-50 p-4 dark:bg-info-900/20">
           <p class="text-sm text-info-700 dark:text-info-300">
-            {$localize`After applying, the VPN configurations will be saved to your router configuration. You can always return to modify these settings later.`}
+            {$localize`Review your configuration above. When ready, click "Save & Complete" to apply the VPN settings to your router configuration.`}
           </p>
         </div>
       </div>

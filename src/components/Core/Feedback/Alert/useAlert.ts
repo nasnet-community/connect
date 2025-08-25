@@ -14,10 +14,8 @@ export interface UseAlertReturn {
   handleDismiss$: QRL<() => void>;
 }
 
-export function useAlert({
-  autoCloseDuration,
-  onDismiss$,
-}: UseAlertParams = {}): UseAlertReturn {
+export function useAlert(params: UseAlertParams = {}): UseAlertReturn {
+  
   const state = useStore({
     isVisible: true,
     isMounted: false,
@@ -32,11 +30,11 @@ export function useAlert({
 
     // Setup auto-close timer if duration is provided
     let timerId: number | undefined;
-    if (autoCloseDuration && autoCloseDuration > 0) {
+    if (params.autoCloseDuration && params.autoCloseDuration > 0) {
       timerId = setTimeout(() => {
         state.isVisible = false;
-        onDismiss$?.();
-      }, autoCloseDuration) as unknown as number;
+        params.onDismiss$?.();
+      }, params.autoCloseDuration) as unknown as number;
     }
 
     // Clean up timer when component unmounts
@@ -51,7 +49,7 @@ export function useAlert({
   // Handle dismiss action
   const handleDismiss$ = $(() => {
     state.isVisible = false;
-    onDismiss$?.();
+    params.onDismiss$?.();
   });
 
   return {

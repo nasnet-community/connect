@@ -30,7 +30,7 @@
 // ): void {
 //   expect(config).toBeDefined();
 //   expect(typeof config).toBe('object');
-  
+
 //   if (expectedSections) {
 //     for (const section of expectedSections) {
 //       expect(config).toHaveProperty(section);
@@ -569,7 +569,7 @@
 
 //       const simpleResult = LANCG(simpleState);
 //       const complexResult = LANCG(complexState);
-      
+
 //       validateRouterConfig(simpleResult);
 //       validateRouterConfig(complexResult);
 
@@ -589,4 +589,4 @@
 //       );
 //     });
 //   });
-// }); 
+// });

@@ -1,8 +1,11 @@
-import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
-import { LuCable, LuWifi } from "@qwikest/icons/lucide";
+import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
+import { LuCable, LuWifi, LuAlertCircle } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterface as TrunkInterfaceType } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
+import { InterfaceSelector } from "./InterfaceSelector";
+import { MultiSlaveInterfaceSelector } from "./MultiSlaveInterfaceSelector";
+import { routers } from "../RouterModel/Constants";
 
 interface TrunkInterfaceProps {
   isComplete?: boolean;
@@ -12,18 +15,52 @@ interface TrunkInterfaceProps {
 export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
   const starContext = useContext(StarContext);
   const selectedInterface = starContext.state.Choose.TrunkInterface;
+  const showInterfaceSelector = useSignal(false);
+  
+  // Check if we have multiple slave routers
+  const slaveRouters = starContext.state.Choose.RouterModels.filter(rm => !rm.isMaster);
+  const hasMultipleSlaves = slaveRouters.length > 1;
 
-  const handleInterfaceSelect = $((interfaceType: TrunkInterfaceType) => {
-    // Track trunk interface selection
-    track("trunk_interface_selected", {
+  // Check wireless capability for all selected routers
+  const checkWirelessCapability = () => {
+    const allRouters = starContext.state.Choose.RouterModels;
+    const routersWithoutWifi = allRouters.filter(routerModel => {
+      const routerData = routers.find(r => r.model === routerModel.Model);
+      return !routerData || !routerData.isWireless || !routerData.interfaces.wireless?.length;
+    });
+    return {
+      hasWirelessCapability: routersWithoutWifi.length === 0,
+      routersWithoutWifi: routersWithoutWifi
+    };
+  };
+
+  const wirelessCheck = checkWirelessCapability();
+
+  const handleInterfaceTypeSelect = $((interfaceType: TrunkInterfaceType) => {
+    // Prevent wireless selection if routers don't have wireless capability
+    if (interfaceType === "wireless" && !wirelessCheck.hasWirelessCapability) {
+      return;
+    }
+
+    // Track trunk interface type selection
+    track("trunk_interface_type_selected", {
       interface_type: interfaceType,
       configuration: "trunk_mode",
       step: "choose",
     });
 
     starContext.updateChoose$({
-      TrunkInterface: interfaceType,
+      TrunkInterface: {
+        ...starContext.state.Choose.TrunkInterface,
+        type: interfaceType,
+      },
     });
+    
+    // Show interface selector after type selection
+    showInterfaceSelector.value = true;
+  });
+
+  const handleInterfaceSelectorComplete = $(() => {
     props.onComplete$?.();
   });
 
@@ -71,36 +108,53 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
 
       {/* Options grid */}
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
-        {interfaceOptions.map((option) => (
-          <div
-            key={option.type}
-            onClick$={() => handleInterfaceSelect(option.type)}
-            class={`trunk-interface-card group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-500
-              ${
-                selectedInterface === option.type
-                  ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
-                  : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
-              }
-            `}
-          >
-            {/* Badges container - positioned at top right */}
-            <div class="absolute right-4 top-4 z-10 flex gap-2">
-              {/* Recommended badge */}
-              {option.badge && (
-                <div class={`rounded-full px-3 py-1 ${option.badgeClass}`}>
-                  <span class="text-xs font-medium">{option.badge}</span>
-                </div>
-              )}
+        {interfaceOptions.map((option) => {
+          const isWirelessDisabled = option.type === "wireless" && !wirelessCheck.hasWirelessCapability;
+          
+          return (
+            <div
+              key={option.type}
+              onClick$={() => handleInterfaceTypeSelect(option.type)}
+              class={`trunk-interface-card group relative overflow-hidden rounded-2xl transition-all duration-500
+                ${isWirelessDisabled 
+                  ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800" 
+                  : "cursor-pointer"
+                }
+                ${
+                  selectedInterface?.type === option.type
+                    ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
+                    : !isWirelessDisabled && "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
+                }
+              `}
+            >
+              {/* Badges container - positioned at top right */}
+              <div class="absolute right-4 top-4 z-10 flex gap-2">
+                {/* Wireless disabled warning */}
+                {isWirelessDisabled && (
+                  <div class="rounded-full bg-orange-500/15 px-3 py-1 dark:bg-orange-500/25 flex items-center gap-1">
+                    <LuAlertCircle class="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                    <span class="text-xs font-medium text-orange-600 dark:text-orange-400">
+                      {$localize`No Wi-Fi`}
+                    </span>
+                  </div>
+                )}
 
-              {/* Selected indicator */}
-              {selectedInterface === option.type && (
-                <div class="rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
-                  <span class="text-xs font-medium text-success dark:text-success-light">
-                    {$localize`Selected`}
-                  </span>
-                </div>
-              )}
-            </div>
+                {/* Recommended badge */}
+                {option.badge && !isWirelessDisabled && (
+                  <div class={`rounded-full px-3 py-1 ${option.badgeClass}`}>
+                    <span class="text-xs font-medium">{option.badge}</span>
+                  </div>
+                )}
+
+                {/* Selected indicator */}
+                {selectedInterface?.type === option.type && (
+                  <div class="rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
+                    <span class="text-xs font-medium text-success dark:text-success-light">
+                      {$localize`Selected`}
+                    </span>
+                  </div>
+                )}
+              </div>
 
             <div class="space-y-6 p-6">
               {/* Icon container */}
@@ -108,7 +162,7 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
                 class={`trunk-icon flex h-16 w-16 items-center justify-center
                 rounded-xl transition-all duration-500
                 ${
-                  selectedInterface === option.type
+                  selectedInterface?.type === option.type
                     ? "bg-primary-500 text-white"
                     : "bg-primary-500/15 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400"
                 }`}
@@ -161,8 +215,34 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
               duration-500 dark:from-primary-500/15 dark:to-secondary-500/15"
             />
           </div>
-        ))}
+        );
+        })}
       </div>
+
+      {/* Wireless capability warning */}
+      {!wirelessCheck.hasWirelessCapability && (
+        <div class="mx-auto max-w-3xl mt-6 p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/30 rounded-xl">
+          <div class="flex items-start gap-3">
+            <LuAlertCircle class="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                {$localize`Wireless Trunk Not Available`}
+              </h4>
+              <p class="text-sm text-orange-700 dark:text-orange-300 mb-2">
+                {$localize`The following router(s) don't have Wi-Fi capability required for wireless trunk:`}
+              </p>
+              <ul class="text-sm text-orange-700 dark:text-orange-300 list-disc list-inside space-y-1">
+                {wirelessCheck.routersWithoutWifi.map((router) => (
+                  <li key={router.Model}>{router.Model}</li>
+                ))}
+              </ul>
+              <p class="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                {$localize`Please select routers with Wi-Fi capability or use wired trunk instead.`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom CSS for hover effects */}
       <style
@@ -181,6 +261,24 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
         }
       `}
       />
+
+      {/* Interface Selector - shown after interface type selection */}
+      {showInterfaceSelector.value && selectedInterface?.type && (
+        <div class="mt-8">
+          {hasMultipleSlaves || slaveRouters.length > 0 ? (
+            // Use MultiSlaveInterfaceSelector for multiple slaves or when we have any slaves
+            <MultiSlaveInterfaceSelector
+              onComplete$={handleInterfaceSelectorComplete}
+            />
+          ) : (
+            // Use original InterfaceSelector for backward compatibility (single interface)
+            <InterfaceSelector
+              interfaceType={selectedInterface.type}
+              onComplete$={handleInterfaceSelectorComplete}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 });

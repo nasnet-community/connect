@@ -1,18 +1,20 @@
-import { component$, $, useSignal, useComputed$ } from "@builder.io/qwik";
+import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
 import { InterfaceSelector } from "../components/fields/InterfaceSelector";
 import { WirelessFields } from "../components/fields/WirelessFields";
 import { LTEFields } from "../components/fields/LTEFields";
 import { VLANMACFields } from "../components/fields/VLANMACFields";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
+import { Input } from "~/components/Core";
 
 export interface Step1Props {
   wizardState: WANWizardState;
   wizardActions: UseWANAdvancedReturn;
+  onRefreshCompletion$?: QRL<() => Promise<void>>;
 }
 
 export const Step1_LinkInterface = component$<Step1Props>(
-  ({ wizardState, wizardActions }) => {
+  ({ wizardState, wizardActions, onRefreshCompletion$ }) => {
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const viewMode = useSignal<"grid" | "list">("grid");
@@ -32,18 +34,31 @@ export const Step1_LinkInterface = component$<Step1Props>(
       .map((l) => l.interfaceName)
       .filter(Boolean);
       
-    const filteredLinks = useComputed$(() => {
+    // Simple non-reactive filtering to prevent loops
+    const getFilteredLinks = () => {
       if (!searchQuery.value) return wizardState.links;
       const query = searchQuery.value.toLowerCase();
       return wizardState.links.filter(link => 
         link.name.toLowerCase().includes(query) ||
-        link.interfaceName?.toLowerCase().includes(query) ||
+        link.interfaceName.toLowerCase().includes(query) ||
         link.interfaceType.toLowerCase().includes(query)
       );
-    });
+    };
     
     const toggleLinkExpanded = $((linkId: string) => {
       expandedLinkId.value = expandedLinkId.value === linkId ? null : linkId;
+    });
+
+    // Helper to refresh step completion after interface changes
+    // Batch updates to prevent multiple renders
+    const handleInterfaceUpdate = $(async (linkId: string, updates: any) => {
+      await wizardActions.updateLink$(linkId, updates);
+      // Defer refresh to prevent rapid updates
+      if (onRefreshCompletion$) {
+        setTimeout(() => {
+          onRefreshCompletion$();
+        }, 50);
+      }
     });
 
     // Get link statistics
@@ -51,23 +66,17 @@ export const Step1_LinkInterface = component$<Step1Props>(
     const configuredLinks = wizardState.links.filter(l => l.connectionType).length;
     const hasErrors = Object.keys(wizardState.validationErrors).length > 0;
     
-    // Get link status
+    // Get link status - for Step 1, only check interface configuration
     const getLinkStatus = (link: typeof wizardState.links[0]) => {
       const errors = getLinkErrors(link.id);
       if (errors.length > 0) return "error";
-      if (link.interfaceName && link.connectionType && link.interfaceType) return "complete";
-      if (link.interfaceName || link.connectionType) return "partial";
+      // For Step 1, complete means interface is fully configured
+      if (Boolean(link.interfaceName) && Boolean(link.interfaceType)) return "complete";
+      // Partial means some interface configuration is done
+      if (Boolean(link.interfaceName) || Boolean(link.interfaceType)) return "partial";
       return "incomplete";
     };
     
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case "complete": return "bg-green-500";
-        case "partial": return "bg-yellow-500";
-        case "error": return "bg-red-500";
-        default: return "bg-gray-400";
-      }
-    };
     
     const getCardStyle = (status: string) => {
       switch (status) {
@@ -113,14 +122,17 @@ export const Step1_LinkInterface = component$<Step1Props>(
               </h2>
               <button
                 onClick$={$(async () => {
+                  // Add link without triggering multiple renders
+                  const prevLength = wizardState.links.length;
                   await wizardActions.addLink$();
                   // After adding, the UI will switch to multi-link view
-                  // and we need to expand the new link
-                  await new Promise(resolve => setTimeout(resolve, 100));
-                  const newLink = wizardState.links[wizardState.links.length - 1];
-                  if (newLink) {
-                    expandedLinkId.value = newLink.id;
-                  }
+                  // Use requestAnimationFrame for smoother transition
+                  requestAnimationFrame(() => {
+                    const newLink = wizardState.links[wizardState.links.length - 1];
+                    if (newLink && wizardState.links.length > prevLength) {
+                      expandedLinkId.value = newLink.id;
+                    }
+                  });
                 })}
                 class="inline-flex items-center gap-2 rounded-lg bg-primary-600 text-white px-4 py-2 text-sm font-medium hover:bg-primary-700 transition-colors"
               >
@@ -133,10 +145,26 @@ export const Step1_LinkInterface = component$<Step1Props>(
             
             {/* Inline Configuration Fields */}
             <div class="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6">
+              {/* Name Input Field */}
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {$localize`Link Name`}
+                </label>
+                <Input
+                  type="text"
+                  value={singleLink.name}
+                  onInput$={(event: Event, value: string) => {
+                    handleInterfaceUpdate(singleLink.id, { name: value });
+                  }}
+                  placeholder={$localize`Enter a custom name for this WAN link`}
+                  class="w-full"
+                />
+              </div>
+              
               <InterfaceSelector
                 link={singleLink}
                 onUpdate$={$((updates) =>
-                  wizardActions.updateLink$(singleLink.id, updates),
+                  handleInterfaceUpdate(singleLink.id, updates)
                 )}
                 usedInterfaces={usedInterfaces}
                 mode={wizardState.mode}
@@ -147,9 +175,9 @@ export const Step1_LinkInterface = component$<Step1Props>(
                   <WirelessFields
                     credentials={singleLink.wirelessCredentials}
                     onUpdate$={$((creds) =>
-                      wizardActions.updateLink$(singleLink.id, {
+                      handleInterfaceUpdate(singleLink.id, {
                         wirelessCredentials: creds,
-                      }),
+                      })
                     )}
                     errors={{
                       ssid: getFieldErrors(singleLink.id, "ssid"),
@@ -164,9 +192,9 @@ export const Step1_LinkInterface = component$<Step1Props>(
                   <LTEFields
                     settings={singleLink.lteSettings}
                     onUpdate$={$((settings) =>
-                      wizardActions.updateLink$(singleLink.id, {
+                      handleInterfaceUpdate(singleLink.id, {
                         lteSettings: settings,
-                      }),
+                      })
                     )}
                     errors={{
                       apn: getFieldErrors(singleLink.id, "apn"),
@@ -181,16 +209,16 @@ export const Step1_LinkInterface = component$<Step1Props>(
                     vlanConfig={wizardState.links[0]?.vlanConfig}
                     macAddress={wizardState.links[0]?.macAddress}
                     onUpdateVLAN$={$((config) =>
-                      wizardActions.updateLink$(singleLink.id, {
+                      handleInterfaceUpdate(singleLink.id, {
                         vlanConfig: config,
-                      }),
+                      })
                     )}
                     onUpdateMAC$={$((config) =>
-                      wizardActions.updateLink$(singleLink.id, {
+                      handleInterfaceUpdate(singleLink.id, {
                         macAddress: config,
-                      }),
+                      })
                     )}
-                    errors={{
+                    _errors={{
                       vlan: getFieldErrors(singleLink.id, "vlan"),
                       mac: getFieldErrors(singleLink.id, "mac"),
                     }}
@@ -199,19 +227,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
               )}
             </div>
             
-            {/* Status Indicator */}
-            {getLinkStatus(singleLink) === "complete" && (
-              <div class="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4">
-                <div class="flex items-center gap-2">
-                  <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="text-sm font-medium text-green-700 dark:text-green-300">
-                    {$localize`Interface configured successfully. You can proceed to the next step.`}
-                  </span>
-                </div>
-              </div>
-            )}
+
           </div>
         ) : (
           // Multiple links - show card grid
@@ -246,20 +262,22 @@ export const Step1_LinkInterface = component$<Step1Props>(
                   {/* Primary Actions */}
                   <button
                     onClick$={$(async () => {
+                      const prevLength = wizardState.links.length;
                       await wizardActions.addLink$();
-                      // Expand the newly added link
-                      await new Promise(resolve => setTimeout(resolve, 100));
-                      const newLink = wizardState.links[wizardState.links.length - 1];
-                      if (newLink) {
-                        expandedLinkId.value = newLink.id;
-                      }
+                      // Expand the newly added link with smoother transition
+                      requestAnimationFrame(() => {
+                        const newLink = wizardState.links[wizardState.links.length - 1];
+                        if (newLink && wizardState.links.length > prevLength) {
+                          expandedLinkId.value = newLink.id;
+                        }
+                      });
                     })}
                     class="inline-flex items-center gap-2 rounded-full bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-all hover:scale-105"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    Add Interface
+                    {wizardState.links.length === 1 ? $localize`Add Another Link` : $localize`Add Interface`}
                   </button>
                 </div>
             
@@ -269,12 +287,12 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 {/* Search */}
                 <div class="flex-1 max-w-md">
                   <div class="relative">
-                    <input
+                    <Input
                       type="text"
                       placeholder="Search interfaces..."
                       value={searchQuery.value}
-                      onInput$={(e) => searchQuery.value = (e.target as HTMLInputElement).value}
-                      class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                      onInput$={(event: Event, value: string) => searchQuery.value = value}
+                      class="pl-10 rounded-full"
                     />
                     <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -312,7 +330,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
 
             {/* Expandable Cards */}
             <div class="space-y-4">
-              {filteredLinks.value.map((link) => {
+              {getFilteredLinks().map((link) => {
             const status = getLinkStatus(link);
             const errors = getLinkErrors(link.id);
             const isExpanded = expandedLinkId.value === link.id;
@@ -415,10 +433,26 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 {/* Expandable Content */}
                 {isExpanded && (
                   <div class="border-t border-gray-200 dark:border-gray-700 p-6 space-y-6">
+                    {/* Name Input Field */}
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {$localize`Link Name`}
+                      </label>
+                      <Input
+                        type="text"
+                        value={link.name}
+                        onInput$={(event: Event, value: string) => {
+                          handleInterfaceUpdate(link.id, { name: value });
+                        }}
+                        placeholder={$localize`Enter a custom name for this WAN link`}
+                        class="w-full"
+                      />
+                    </div>
+                    
                     <InterfaceSelector
                       link={link}
                       onUpdate$={$((updates) =>
-                        wizardActions.updateLink$(link.id, updates),
+                        handleInterfaceUpdate(link.id, updates)
                       )}
                       usedInterfaces={usedInterfaces}
                       mode={wizardState.mode}
@@ -428,9 +462,9 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       <WirelessFields
                         credentials={link.wirelessCredentials}
                         onUpdate$={$((creds) =>
-                          wizardActions.updateLink$(link.id, {
+                          handleInterfaceUpdate(link.id, {
                             wirelessCredentials: creds,
-                          }),
+                          })
                         )}
                         errors={{
                           ssid: getFieldErrors(link.id, "ssid"),
@@ -443,9 +477,9 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       <LTEFields
                         settings={link.lteSettings}
                         onUpdate$={$((settings) =>
-                          wizardActions.updateLink$(link.id, {
+                          handleInterfaceUpdate(link.id, {
                             lteSettings: settings,
-                          }),
+                          })
                         )}
                         errors={{
                           apn: getFieldErrors(link.id, "apn"),
@@ -458,16 +492,16 @@ export const Step1_LinkInterface = component$<Step1Props>(
                         vlanConfig={link.vlanConfig}
                         macAddress={link.macAddress}
                         onUpdateVLAN$={$((config) =>
-                          wizardActions.updateLink$(link.id, {
+                          handleInterfaceUpdate(link.id, {
                             vlanConfig: config,
-                          }),
+                          })
                         )}
                         onUpdateMAC$={$((config) =>
-                          wizardActions.updateLink$(link.id, {
+                          handleInterfaceUpdate(link.id, {
                             macAddress: config,
-                          }),
+                          })
                         )}
-                        errors={{
+                        _errors={{
                           vlan: getFieldErrors(link.id, "vlan"),
                           mac: getFieldErrors(link.id, "mac"),
                         }}
@@ -483,7 +517,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
         )}
 
         {/* Empty State */}
-        {filteredLinks.value.length === 0 && searchQuery.value && (
+        {getFilteredLinks().length === 0 && searchQuery.value && (
           <div class="text-center py-12">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -493,6 +527,8 @@ export const Step1_LinkInterface = component$<Step1Props>(
             </p>
           </div>
         )}
+
+
 
 
         {/* Info message for easy mode */}

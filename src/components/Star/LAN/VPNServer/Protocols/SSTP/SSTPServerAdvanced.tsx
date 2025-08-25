@@ -1,14 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useSSTPServer } from "./useSSTPServer";
-import {
-  Card,
-  FormField,
-  Input,
-  Select,
-  CheckboxGroup,
-  Switch,
-} from "../../../VPNServer/UI";
+import { Card } from "~/components/Core/Card";
+import { Field as FormField } from "~/components/Core/Form/Field";
+import { Input } from "~/components/Core/Input";
+import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
+import { CheckboxGroup } from "~/components/Core/Form/Checkbox";
+import { Switch } from "~/components/Core/Switch";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 
 /**
  * SSTP Server Configuration Component
@@ -35,10 +34,11 @@ export const SSTPServerAdvanced = component$(() => {
   } = useSSTPServer();
 
   return (
-    <Card
-      title={$localize`SSTP Server`}
-      icon={<HiServerOutline class="h-5 w-5" />}
-    >
+    <Card hasHeader>
+      <div q:slot="header" class="flex items-center gap-2">
+        <HiServerOutline class="h-5 w-5" />
+        <span class="font-medium">{$localize`SSTP Server`}</span>
+      </div>
       <div class="space-y-6">
         {/* Enable/Disable Toggle */}
         <FormField label={$localize`Enable SSTP Server`}>
@@ -61,6 +61,15 @@ export const SSTPServerAdvanced = component$(() => {
                 {$localize`Basic Configuration`}
               </h3>
             </div>
+
+            <FormField label={$localize`Network`}>
+              <NetworkDropdown
+                selectedNetwork="VPN"
+                onNetworkChange$={(network) => {
+                  console.log("SSTP network changed to:", network);
+                }}
+              />
+            </FormField>
 
             <FormField
               label={$localize`Certificate`}

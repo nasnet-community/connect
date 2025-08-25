@@ -6,6 +6,7 @@ import {
 } from "@qwikest/icons/heroicons";
 import { useGRE } from "./useGRE";
 import type { GreTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
+import { Input, Select, Checkbox } from "~/components/Core";
 
 export const GREProtocol = component$(() => {
   const { greTunnels, expandedSections, toggleSection, updateTunnelField } =
@@ -57,17 +58,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`Name`} *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={tunnel.name}
-                      onChange$={(e) =>
+                      onInput$={(event: Event, value: string) =>
                         updateTunnelField$(
                           index,
                           "name",
-                          (e.target as HTMLInputElement).value,
+                          value,
                         )
                       }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter tunnel name`}
                     />
                   </div>
@@ -77,18 +77,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`MTU`}
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={tunnel.mtu || ""}
-                      onChange$={(e) => {
-                        const val = (e.target as HTMLInputElement).value;
+                      onInput$={(event: Event, value: string) => {
                         updateTunnelField$(
                           index,
                           "mtu",
-                          val ? parseInt(val) : undefined,
+                          value ? parseInt(value) : undefined,
                         );
                       }}
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter MTU (optional)`}
                     />
                   </div>
@@ -98,17 +96,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`Local Address`} *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={tunnel.localAddress}
-                      onChange$={(e) =>
+                      onInput$={(event: Event, value: string) =>
                         updateTunnelField$(
                           index,
                           "localAddress",
-                          (e.target as HTMLInputElement).value,
+                          value,
                         )
                       }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter local address`}
                     />
                   </div>
@@ -118,17 +115,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`Remote Address`} *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={tunnel.remoteAddress}
-                      onChange$={(e) =>
+                      onInput$={(event: Event, value: string) =>
                         updateTunnelField$(
                           index,
                           "remoteAddress",
-                          (e.target as HTMLInputElement).value,
+                          value,
                         )
                       }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter remote address`}
                     />
                   </div>
@@ -138,17 +134,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`IPsec Secret`}
                     </label>
-                    <input
-                      type="text"
+                    <Input
+                      type="password"
                       value={tunnel.ipsecSecret || ""}
-                      onChange$={(e) =>
+                      onInput$={(event: Event, value: string) =>
                         updateTunnelField$(
                           index,
                           "ipsecSecret",
-                          (e.target as HTMLInputElement).value,
+                          value,
                         )
                       }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter IPsec secret (optional)`}
                     />
                   </div>
@@ -158,17 +153,16 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`Keepalive`}
                     </label>
-                    <input
+                    <Input
                       type="text"
                       value={tunnel.keepalive || ""}
-                      onChange$={(e) =>
+                      onInput$={(event: Event, value: string) =>
                         updateTunnelField$(
                           index,
                           "keepalive",
-                          (e.target as HTMLInputElement).value,
+                          value,
                         )
                       }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={$localize`Enter keepalive (optional)`}
                     />
                   </div>
@@ -180,54 +174,46 @@ export const GREProtocol = component$(() => {
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {$localize`DSCP`}
                     </label>
-                    <select
+                    <Select
                       value={
                         typeof tunnel.dscp === "number"
                           ? tunnel.dscp.toString()
                           : tunnel.dscp || ""
                       }
-                      onChange$={(e) => {
-                        const value = (e.target as HTMLSelectElement).value;
+                      onChange$={(value: string | string[]) => {
+                        const stringValue = Array.isArray(value) ? value[0] : value;
                         updateTunnelField$(
                           index,
                           "dscp",
-                          value === "inherit"
+                          stringValue === "inherit"
                             ? "inherit"
-                            : parseInt(value) || undefined,
+                            : parseInt(stringValue) || undefined,
                         );
                       }}
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="">{$localize`Default`}</option>
-                      <option value="inherit">{$localize`Inherit`}</option>
-                      {Array.from({ length: 64 }, (_, i) => (
-                        <option key={i} value={i.toString()}>
-                          {i.toString()}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: $localize`Default` },
+                        { value: "inherit", label: $localize`Inherit` },
+                        ...Array.from({ length: 64 }, (_, i) => ({
+                          value: i.toString(),
+                          label: i.toString(),
+                        })),
+                      ]}
+                    />
                   </div>
 
                   <div class="flex items-center">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id={`clampTcpMss-${index}`}
                       checked={tunnel.clampTcpMss || false}
-                      onChange$={(e) =>
+                      onChange$={() =>
                         updateTunnelField$(
                           index,
                           "clampTcpMss",
-                          (e.target as HTMLInputElement).checked,
+                          !tunnel.clampTcpMss,
                         )
                       }
-                      class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                      label={$localize`Clamp TCP MSS`}
                     />
-                    <label
-                      for={`clampTcpMss-${index}`}
-                      class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      {$localize`Clamp TCP MSS`}
-                    </label>
                   </div>
                 </div>
               </div>

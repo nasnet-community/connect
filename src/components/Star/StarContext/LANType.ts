@@ -3,7 +3,6 @@ import type { Networks } from "./CommonType";
 import type { Tunnel } from "./Utils/TunnelType";
 import type { VPNServer } from "./Utils/VPNServerType";
 
-
 // Wireless
 
 export type WirelessInterfaceType = "Master" | "Slave";
@@ -27,18 +26,16 @@ export interface Wireless {
   MultiMode?: MultiMode;
 }
 
-
 // Ethernet Interface Bridges
 export interface EthernetInterfaceConfig {
   name: Ethernet;
   bridge: Networks;
 }
 
-
 export interface LANState {
   Wireless?: Wireless;
   VPNServer?: VPNServer;
   Tunnel?: Tunnel;
   Interface?: EthernetInterfaceConfig[];
+  Subnets?: Record<string, string>;
 }
-

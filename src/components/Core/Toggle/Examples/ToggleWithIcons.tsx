@@ -6,7 +6,6 @@ export default component$(() => {
   const wifiEnabled = useSignal(false);
   const locationEnabled = useSignal(true);
   const darkMode = useSignal(false);
-  const syncEnabled = useSignal(true);
   const notificationsEnabled = useSignal(false);
 
   // Icon components
@@ -59,12 +58,6 @@ export default component$(() => {
   const SunIcon = () => (
     <svg viewBox="0 0 20 20" fill="currentColor">
       <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-    </svg>
-  );
-
-  const SyncIcon = () => (
-    <svg viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
     </svg>
   );
 
@@ -146,32 +139,9 @@ export default component$(() => {
           </div>
         </div>
 
-        {/* Advanced Icon Features */}
+        {/* Custom Icon Examples */}
         <div class="space-y-4">
-          <h4 class="text-md font-medium text-gray-800 dark:text-gray-200">Advanced Icon Features</h4>
-          
-          <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-            <h5 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Icons with Indicator Dots
-            </h5>
-            <div class="space-y-3">
-              <Toggle
-                checked={syncEnabled.value}
-                onChange$={$((value) => {
-                  syncEnabled.value = value;
-                })}
-                label="Auto Sync"
-                checkedIcon={<SyncIcon />}
-                uncheckedIcon={<SyncIcon />}
-                showIconsWithIndicator={true}
-                color="success"
-                size="lg"
-              />
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                Shows icon alongside the toggle indicator using <code class="px-1 bg-gray-100 dark:bg-gray-800 rounded">showIconsWithIndicator</code>
-              </p>
-            </div>
-          </div>
+          <h4 class="text-md font-medium text-gray-800 dark:text-gray-200">Custom Icon Examples</h4>
 
           <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h5 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">

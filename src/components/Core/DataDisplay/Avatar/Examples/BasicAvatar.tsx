@@ -5,30 +5,31 @@ export const BasicAvatar = component$(() => {
   return (
     <div class="flex flex-row items-center gap-4">
       {/* Image Avatar */}
-      <Avatar>
-        <img src="https://i.pravatar.cc/300" alt="User profile" />
-      </Avatar>
+      <Avatar src="https://i.pravatar.cc/300" alt="User profile" />
 
       {/* Initial Avatar */}
-      <Avatar>JD</Avatar>
+      <Avatar variant="initials" initials="JD" />
 
       {/* Icon Avatar */}
-      <Avatar>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-          />
-        </svg>
-      </Avatar>
+      <Avatar 
+        variant="icon"
+        icon={
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        }
+      />
     </div>
   );
 });

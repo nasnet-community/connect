@@ -1,10 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
-import { ServerCard, ServerFormField } from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField } from "~/components/Core/Form/ServerField";
 import { useOpenVPNServer } from "./useOpenVPNServer";
+import { Input } from "~/components/Core";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 
 export const OpenVPNServerEasy = component$(() => {
-  const { easyFormState, passphraseError, updateEasyPassphrase$ } =
+  const { easyFormState, passphraseError, updateEasyPassphrase$, updateNetwork$ } =
     useOpenVPNServer();
 
   return (
@@ -13,29 +16,28 @@ export const OpenVPNServerEasy = component$(() => {
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
+        {/* Network Selection */}
+        <ServerFormField label={$localize`Network`}>
+          <NetworkDropdown
+            selectedNetwork={easyFormState.network || "VPN"}
+            onNetworkChange$={updateNetwork$}
+          />
+        </ServerFormField>
+
         {/* Certificate Key Passphrase */}
         <ServerFormField
           label={$localize`Certificate Key Passphrase`}
-          errorMessage={passphraseError.value}
-          helperText={
-            passphraseError.value
-              ? undefined
-              : $localize`Creates both TCP and UDP OpenVPN servers with this passphrase`
-          }
+          errorMessage={passphraseError.value || (!passphraseError.value ? $localize`Creates both TCP and UDP OpenVPN servers with this passphrase` : undefined)}
         >
           <div class="relative">
-            <input
-              type="text"
+            <Input
+              type="password"
               value={easyFormState.certificateKeyPassphrase}
-              onInput$={(e) => {
-                const target = e.target as HTMLInputElement;
-                updateEasyPassphrase$(target.value);
+              onInput$={(event: Event, value: string) => {
+                updateEasyPassphrase$(value);
               }}
               placeholder={$localize`Enter passphrase for both servers`}
-              class="w-full rounded-lg border border-border bg-white px-3 py-2
-                     focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
-                     disabled:cursor-not-allowed disabled:opacity-75
-                     dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+              class="pr-10"
             />
             <button
               type="button"

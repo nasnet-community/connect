@@ -1,14 +1,20 @@
 import type { RouterConfig } from "../ConfigGenerator";
-import type { services, RouterIdentityRomon, AutoReboot, Update, GameConfig, ExtraConfigState } from "~/components/Star/StarContext/ExtraType";
+import type {
+  services,
+  RouterIdentityRomon,
+  AutoReboot,
+  Update,
+  IPAddressUpdate,
+  GameConfig,
+  ExtraConfigState,
+} from "~/components/Star/StarContext/ExtraType";
 import { PublicCert } from "../utils/Certificate";
 import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import { generateDomesticIPScript } from "./DomesticIPS";
 
-
-
-
-
-
-export const IdentityRomon = (RouterIdentityRomon: RouterIdentityRomon): RouterConfig => {
+export const IdentityRomon = (
+  RouterIdentityRomon: RouterIdentityRomon,
+): RouterConfig => {
   const config: RouterConfig = {
     "/system identity": [],
     "/tool romon": [],
@@ -48,15 +54,31 @@ export const AccessServices = (Services: services): RouterConfig => {
       .replace("-ssl", "ssl")
       .replace("www", "web") as keyof services;
 
+    const serviceConfig = Services[serviceKey];
+    const setting =
+      typeof serviceConfig === "string"
+        ? serviceConfig
+        : serviceConfig.type || "Disable";
+    const port =
+      typeof serviceConfig === "object" ? serviceConfig.port : undefined;
 
-    const setting = Services[serviceKey];
+    let command = "";
 
     if (setting === "Disable") {
-      config["/ip service"].push(`set ${service} disabled=yes`);
+      command = `set ${service} disabled=yes`;
     } else if (setting === "Local") {
-      config["/ip service"].push(
-        `set ${service} address=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8`,
-      );
+      command = `set ${service} address=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8`;
+    } else if (setting === "Enable") {
+      command = `set ${service} disabled=no`;
+    }
+
+    // Add port configuration if specified
+    if (port && command) {
+      command += ` port=${port}`;
+    }
+
+    if (command) {
+      config["/ip service"].push(command);
     }
   });
 
@@ -73,7 +95,7 @@ export const Timezone = (Timezone: string): RouterConfig => {
   );
 
   return config;
-}
+};
 
 export const AReboot = (AReboot: AutoReboot): RouterConfig => {
   const config: RouterConfig = {
@@ -89,7 +111,7 @@ export const AReboot = (AReboot: AutoReboot): RouterConfig => {
   );
 
   return config;
-}
+};
 
 export const AUpdate = (Update: Update): RouterConfig => {
   const config: RouterConfig = {
@@ -125,9 +147,33 @@ export const AUpdate = (Update: Update): RouterConfig => {
   }
 
   return config;
-}
+};
 
-export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig => {
+export const IPAddressUpdateFunc = (IPAddressUpdate: IPAddressUpdate): RouterConfig => {
+  const { isIPAddressUpdate, IPAddressUpdateTime } = IPAddressUpdate;
+
+  if (!isIPAddressUpdate || !IPAddressUpdateTime) {
+    return {};
+  }
+
+  // Get the domestic IP script configuration
+  const domesticConfig = generateDomesticIPScript(IPAddressUpdateTime);
+
+  // Add S4I routing rule
+  const s4iConfig: RouterConfig = {
+    "/ip firewall mangle": [
+      `add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-routing-mark=to-FRN passthrough=no`,
+    ],
+  };
+
+  // Merge the configs
+  return mergeMultipleConfigs(domesticConfig, s4iConfig);
+};
+
+export const Game = (
+  Game: GameConfig[],
+  DomesticLink: boolean,
+): RouterConfig => {
   const config: RouterConfig = {
     "/ip firewall raw": [],
     "/ip firewall mangle": [],
@@ -154,7 +200,7 @@ export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig =>
       `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
              new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
       `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
-             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`
+             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
     );
   }
 
@@ -164,7 +210,7 @@ export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig =>
     `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
            new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
     `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
-           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`
+           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
   );
 
   config["/ip firewall mangle"] = mangleRules;
@@ -206,7 +252,6 @@ export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig =>
 //     "/system scheduler": [],
 //   };
 
-
 //   if (!isCertificate) {
 //     return config;
 //   }
@@ -242,7 +287,6 @@ export const Game = (Game: GameConfig[], DomesticLink: boolean): RouterConfig =>
 // };
 
 export const Clock = (): RouterConfig => {
-
   const config: RouterConfig = {
     "/system clock": [
       `set date=${new Date()
@@ -254,13 +298,13 @@ export const Clock = (): RouterConfig => {
         .replace(/,\s|\s/g, "/")
         .replace(/\/\//g, "/")}`,
     ],
-  }
+  };
 
-  return config
-}
+  return config;
+};
 
 export const NTP = (): RouterConfig => {
-  const config: RouterConfig= {
+  const config: RouterConfig = {
     "/system ntp client": ["set enabled=yes"],
     "/system ntp server": [
       "set broadcast=yes enabled=yes manycast=yes multicast=yes",
@@ -270,59 +314,56 @@ export const NTP = (): RouterConfig => {
       "add address=time1.google.com",
       "add address=pool.ntp.org",
     ],
-  }
+  };
 
-
-  return config 
-}
+  return config;
+};
 
 export const Graph = (): RouterConfig => {
   const config: RouterConfig = {
     "/tool graphing interface": ["add"],
     "/tool graphing queue": ["add"],
     "/tool graphing resource": ["add"],
-  }
+  };
 
-  return config
-}
+  return config;
+};
 
 export const update = (): RouterConfig => {
   const config: RouterConfig = {
     "/system package update": ["set channel=stable"],
     "/system routerboard settings": ["set auto-upgrade=yes"],
-  }
+  };
 
-
-  return config
-}
+  return config;
+};
 
 export const UPNP = (): RouterConfig => {
   const config: RouterConfig = {
     "/ip upnp": ["set enabled=yes"],
-  }
+  };
 
-  return config
-}
+  return config;
+};
 
 export const NATPMP = (): RouterConfig => {
   const config: RouterConfig = {
     "/ip nat-pmp": ["set enabled=yes"],
-  }
+  };
 
-  return config
-}
+  return config;
+};
 
 export const Firewall = (): RouterConfig => {
-
   const config: RouterConfig = {
     "/ip firewall filter": [
       `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=udp`,
       `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=tcp`,
     ],
-  }
+  };
 
-  return config
-}
+  return config;
+};
 
 export const DDNS = (DomesticLink: boolean): RouterConfig => {
   const config: RouterConfig = {};
@@ -346,11 +387,12 @@ export const DDNS = (DomesticLink: boolean): RouterConfig => {
   }
 
   return config;
-}
+};
 
-
-
-export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolean): RouterConfig => {
+export const ExtraCG = (
+  ExtraConfigState: ExtraConfigState,
+  DomesticLink: boolean,
+): RouterConfig => {
   const configs: RouterConfig[] = [
     Clock(),
     NTP(),
@@ -381,6 +423,10 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
     configs.push(AUpdate(ExtraConfigState.Update));
   }
 
+  if (ExtraConfigState.IPAddressUpdate) {
+    configs.push(IPAddressUpdateFunc(ExtraConfigState.IPAddressUpdate));
+  }
+
   if (ExtraConfigState.Games) {
     configs.push(Game(ExtraConfigState.Games, DomesticLink));
   }
@@ -390,17 +436,4 @@ export const ExtraCG = (ExtraConfigState: ExtraConfigState, DomesticLink: boolea
   }
 
   return mergeMultipleConfigs(...configs);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+};

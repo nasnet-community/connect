@@ -74,6 +74,8 @@ export const SkeletonWithData = component$(() => {
               <img
                 src={user.value?.avatar}
                 alt={user.value?.name}
+                width={56}
+                height={56}
                 class="h-14 w-14 rounded-full"
               />
               <div class="flex-1">
@@ -115,6 +117,8 @@ export const SkeletonWithData = component$(() => {
                   <img
                     src={`https://i.pravatar.cc/40?u=${i}`}
                     alt={`User ${i + 1}`}
+                    width={32}
+                    height={32}
                     class="h-8 w-8 rounded-full"
                   />
                   <div class="flex-1">

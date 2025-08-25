@@ -5,8 +5,6 @@ import type { LANState } from "./LANType";
 import type { ExtraConfigState } from "./ExtraType";
 import type { VPNType } from "./CommonType";
 
-
-
 export interface StarState {
   Choose: ChooseState;
   WAN: WANState;

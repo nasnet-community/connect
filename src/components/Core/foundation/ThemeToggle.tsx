@@ -28,7 +28,8 @@ export const ThemeToggle = component$<{
       document.documentElement.classList.add("dark");
     } else if (newTheme === "light") {
       document.documentElement.classList.remove("dark");
-    } else if (newTheme === "system") {
+    } else {
+      // newTheme === "system"
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -44,6 +45,7 @@ export const ThemeToggle = component$<{
   });
 
   // Initialize theme state on client
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem("theme") as Theme | null;

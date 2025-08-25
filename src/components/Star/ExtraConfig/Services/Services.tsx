@@ -9,6 +9,7 @@ import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import type { ServiceType } from "../../StarContext/ExtraType";
 import { Select } from "~/components/Core/Select";
+import { Input } from "~/components/Core";
 
 // Add scoped styles to fix dropdown positioning
 const dropdownStyles = `
@@ -312,13 +313,13 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                         </div>
                       </td>
                       <td class="px-6 py-4">
-                        <input
+                        <Input
                           type="number"
-                          min="1"
-                          max="65535"
+                          min={1}
+                          max={65535}
                           value={currentPort}
-                          onInput$={(e: any) => {
-                            const port = parseInt(e.target.value);
+                          onInput$={(event: Event, value: string) => {
+                            const port = parseInt(value);
                             if (!isNaN(port) && port >= 1 && port <= 65535) {
                               if (!ctx.state.ExtraConfig.services) {
                                 ctx.updateExtraConfig$({
@@ -373,7 +374,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                               }
                             }
                           }}
-                          class="w-20 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                          class="w-20"
+                          size="sm"
                         />
                       </td>
                     </tr>

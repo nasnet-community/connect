@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
+import { Input } from "~/components/Core";
 
 export const Credentials = component$<StepProps>(({ onComplete$ }) => {
   return (
@@ -67,10 +68,8 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                     <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
                       Username
                     </label>
-                    <input
+                    <Input
                       type="text"
-                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-primary-500
-                      focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter current username"
                     />
                   </div>
@@ -78,10 +77,8 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                     <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
                       Password
                     </label>
-                    <input
-                      type="text"
-                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-primary-500
-                      focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                    <Input
+                      type="password"
                       placeholder="Enter current password"
                     />
                   </div>
@@ -128,10 +125,8 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                         Optional
                       </span>
                     </div>
-                    <input
+                    <Input
                       type="text"
-                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-secondary-500
-                      focus:ring-2 focus:ring-secondary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       placeholder="Enter new username"
                     />
                   </div>
@@ -144,10 +139,8 @@ export const Credentials = component$<StepProps>(({ onComplete$ }) => {
                         Optional
                       </span>
                     </div>
-                    <input
-                      type="text"
-                      class="w-full rounded-lg border border-border bg-white px-4 py-2.5 transition-all focus:border-secondary-500
-                      focus:ring-2 focus:ring-secondary-500/50 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                    <Input
+                      type="password"
                       placeholder="Enter new password"
                     />
                   </div>

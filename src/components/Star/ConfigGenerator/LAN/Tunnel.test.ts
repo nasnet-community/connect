@@ -1,18 +1,18 @@
 // import { describe, it, expect } from 'vitest';
-// import { 
-//   IPIPInterface, 
-//   EoipInterface, 
-//   GreInterface, 
+// import {
+//   IPIPInterface,
+//   EoipInterface,
+//   GreInterface,
 //   VxlanInterface,
 //   TunnelWrapper,
 //   generateIPAddress,
 //   generateInterfaceList,
 //   generateAddressList
 // } from './TunnelCG';
-// import type { 
-//   IpipTunnelConfig, 
-//   EoipTunnelConfig, 
-//   GreTunnelConfig, 
+// import type {
+//   IpipTunnelConfig,
+//   EoipTunnelConfig,
+//   GreTunnelConfig,
 //   VxlanInterfaceConfig,
 //   Tunnel
 // } from '~/components/Star/StarContext/Utils/TunnelType';
@@ -37,7 +37,7 @@
 // ): void {
 //   expect(config).toBeDefined();
 //   expect(typeof config).toBe('object');
-  
+
 //   if (expectedSections) {
 //     for (const section of expectedSections) {
 //       expect(config).toHaveProperty(section);
@@ -47,7 +47,7 @@
 // }
 
 // describe('Tunnel Module Tests', () => {
-  
+
 //   describe('Utility Functions', () => {
 //     it('should generate IP address configuration', () => {
 //       testWithOutput(
@@ -274,7 +274,7 @@
 
 //       const result = VxlanInterface(vxlanConfig);
 //       validateRouterConfig(result, ['/interface vxlan', '/interface vxlan vteps']);
-      
+
 //       // Verify that a VTEP was automatically created
 //       const vtepCommands = result['/interface vxlan vteps'];
 //       expect(vtepCommands).toHaveLength(1);
@@ -455,12 +455,12 @@
 
 //       const result = VxlanInterface(vxlanConfig);
 //       validateRouterConfig(result, ['/interface vxlan']);
-      
+
 //       // Verify multicast parameters are included
 //       const vxlanCommands = result['/interface vxlan'];
 //       const command = vxlanCommands[0];
 //       console.log('Generated VXLAN command:', command);
-      
+
 //       // Should include group and interface parameters for multicast mode
 //       expect(command).toContain('group=239.1.1.100');
 //       expect(command).toContain('interface=ether1');
@@ -493,7 +493,7 @@
 
 //       const result = VxlanInterface(vxlanConfig);
 //       validateRouterConfig(result, ['/interface vxlan', '/interface vxlan vteps']);
-      
+
 //       // Verify VTEP configuration
 //       const vtepCommands = result['/interface vxlan vteps'];
 //       expect(vtepCommands).toHaveLength(3);
@@ -542,11 +542,11 @@
 
 //       const result = VxlanInterface(vxlanConfig);
 //       validateRouterConfig(result, ['/interface vxlan', '/interface vxlan vteps']);
-      
+
 //       // Verify advanced parameters
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       console.log('Advanced VXLAN command:', vxlanCommand);
-      
+
 //       expect(vxlanCommand).toContain('name=vxlan-advanced');
 //       expect(vxlanCommand).toContain('vni=4095');
 //       expect(vxlanCommand).toContain('local-address=172.16.1.1');
@@ -582,11 +582,11 @@
 //       );
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('local-address=2001:db8::1');
 //       expect(vxlanCommand).toContain('vteps-ip-version=ipv6');
-      
+
 //       const vtepCommand = result['/interface vxlan vteps'][0];
 //       expect(vtepCommand).toContain('remote-ip=2001:db8::2');
 //     });
@@ -614,7 +614,7 @@
 
 //       const result = IPIPInterface(ipipConfig);
 //       validateRouterConfig(result, ['/interface ipip']);
-      
+
 //       const command = result['/interface ipip'][0];
 //       expect(command).toContain('name=ipip-hq');
 //       expect(command).toContain('local-address=192.168.1.1');
@@ -644,7 +644,7 @@
 
 //       const result = EoipInterface(eoipConfig);
 //       validateRouterConfig(result, ['/interface eoip']);
-      
+
 //       const command = result['/interface eoip'][0];
 //       expect(command).toContain('tunnel-id=100');
 //       expect(command).toContain('mac-address=02:00:00:00:01:00');
@@ -670,7 +670,7 @@
 
 //       const result = GreInterface(greConfig);
 //       validateRouterConfig(result, ['/interface gre']);
-      
+
 //       const command = result['/interface gre'][0];
 //       expect(command).toContain('name=gre-site1');
 //       expect(command).toContain('clamp-tcp-mss=yes');
@@ -721,7 +721,7 @@
 
 //       const result = TunnelWrapper(tunnels);
 //       validateRouterConfig(result);
-      
+
 //       // Should contain configurations for all tunnel types
 //       expect(result['/interface ipip']).toBeDefined();
 //       expect(result['/interface vxlan']).toBeDefined();
@@ -740,19 +740,19 @@
 //         bumMode: 'unicast',
 //         comment: 'Test VXLAN with "quotes" and special chars',
 //         vteps: [
-//           { 
-//             remoteAddress: '10.0.0.2', 
-//             comment: 'VTEP with "special" characters & symbols' 
+//           {
+//             remoteAddress: '10.0.0.2',
+//             comment: 'VTEP with "special" characters & symbols'
 //           }
 //         ]
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       // Comments should be properly quoted
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('comment="Test VXLAN with "quotes" and special chars"');
-      
+
 //       const vtepCommand = result['/interface vxlan vteps'][0];
 //       expect(vtepCommand).toContain('comment="VTEP with "special" characters & symbols"');
 //     });
@@ -774,7 +774,7 @@
 
 //       const result = VxlanInterface(vxlanConfig);
 //       const command = result['/interface vxlan'][0];
-      
+
 //       // All boolean values should be 'yes' or 'no'
 //       expect(command).toContain('disabled=no');
 //       expect(command).toContain('hw=yes');
@@ -799,17 +799,17 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       expect(result).toHaveProperty('/interface vxlan');
 //       expect(result).toHaveProperty('/interface vxlan vteps');
 //       expect(result).not.toHaveProperty('/interface vxlan fdb');
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('name=vxlan1');
 //       expect(vxlanCommand).toContain('vni=10');
 //       expect(vxlanCommand).toContain('local-address=192.168.1.1');
 //       expect(vxlanCommand).not.toContain('remote-address');
-      
+
 //       // Verify automatic VTEP creation
 //       const vtepCommands = result['/interface vxlan vteps'];
 //       expect(vtepCommands).toHaveLength(1);
@@ -832,7 +832,7 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('group=239.1.1.1');
 //       expect(vxlanCommand).toContain('interface=ether1');
@@ -856,7 +856,7 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       expect(result['/interface vxlan vteps']).toHaveLength(2);
 //       expect(result['/interface vxlan vteps'][0]).toContain('interface=vxlan-datacenter');
 //       expect(result['/interface vxlan vteps'][0]).toContain('remote-ip=192.168.1.2');
@@ -887,7 +887,7 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('bridge=bridge1');
 //       expect(vxlanCommand).toContain('bridge-pvid=10');
@@ -919,11 +919,11 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('local-address=2001:db8:1::1');
 //       expect(vxlanCommand).toContain('vteps-ip-version=ipv6');
-      
+
 //       expect(result['/interface vxlan vteps'][0]).toContain('remote-ip=2001:db8:1::2');
 //       expect(result['/interface vxlan vteps'][1]).toContain('remote-ip=2001:db8:1::3');
 //     });
@@ -942,10 +942,10 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       // FDB should not be present in the result as it's read-only in RouterOS
 //       expect(result).not.toHaveProperty('/interface vxlan fdb');
-      
+
 //       // But VTEPs should be present
 //       expect(result).toHaveProperty('/interface vxlan vteps');
 //     });
@@ -966,7 +966,7 @@
 //       };
 
 //       const result = VxlanInterface(vxlanConfig);
-      
+
 //       const vxlanCommand = result['/interface vxlan'][0];
 //       expect(vxlanCommand).toContain('disabled=yes');
 //       expect(vxlanCommand).toContain('hw=no');
@@ -1009,16 +1009,16 @@
 //       };
 
 //       const result = processSingleTunnel(tunnel);
-      
+
 //       expect(result).toHaveProperty('/interface ipip');
 //       expect(result).toHaveProperty('/interface eoip');
 //       expect(result).toHaveProperty('/interface gre');
 //       expect(result).toHaveProperty('/interface vxlan');
 //       expect(result).toHaveProperty('/interface vxlan vteps');
-      
+
 //       // Verify VXLAN doesn't include remote-address in interface config
 //       const vxlanCommands = result['/interface vxlan'];
 //       expect(vxlanCommands.some(cmd => cmd.includes('remote-address'))).toBe(false);
 //     });
 //   });
-// }); 
+// });

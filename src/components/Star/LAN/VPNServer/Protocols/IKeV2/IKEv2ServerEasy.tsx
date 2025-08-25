@@ -1,7 +1,9 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
-import { ServerCard, ServerFormField } from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField } from "~/components/Core/Form/ServerField";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 
 export const IKEv2ServerEasy = component$(() => {
   const {
@@ -18,14 +20,19 @@ export const IKEv2ServerEasy = component$(() => {
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
+        {/* Network Selection */}
+        <ServerFormField label={$localize`Network`}>
+          <NetworkDropdown
+            selectedNetwork="VPN"
+            onNetworkChange$={(network) => {
+              console.log("IKEv2 Easy network changed to:", network);
+            }}
+          />
+        </ServerFormField>
+
         <ServerFormField
           label={$localize`Pre-shared Key`}
-          errorMessage={presharedKeyError.value}
-          helperText={
-            presharedKeyError.value
-              ? undefined
-              : $localize`Key must be at least 8 characters long for security`
-          }
+          errorMessage={presharedKeyError.value || (!presharedKeyError.value ? $localize`Key must be at least 8 characters long for security` : undefined)}
           required={true}
         >
           <div class="relative">

@@ -1,13 +1,12 @@
 import { component$ } from "@builder.io/qwik";
 import { useOpenVPNServer } from "./useOpenVPNServer";
-import {
-  Card,
-  FormField,
-  Input,
-  Button,
-  TabNavigation,
-  Select,
-} from "../../../VPNServer/UI";
+import { Card } from "~/components/Core/Card";
+import { Field as FormField } from "~/components/Core/Form/Field";
+import { Input } from "~/components/Core/Input";
+import { Button } from "~/components/Core/button";
+import { TabNavigation } from "~/components/Core/Navigation/TabNavigation";
+import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 import {
   HiDocumentOutline,
   HiLockClosedOutline,
@@ -39,6 +38,7 @@ export const OpenVPNServerAdvanced = component$(() => {
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
+    updateNetwork$,
     updateAuth$,
     updateCipher$,
     updateTlsVersion$,
@@ -48,10 +48,11 @@ export const OpenVPNServerAdvanced = component$(() => {
   } = useOpenVPNServer();
 
   return (
-    <Card
-      title={$localize`OpenVPN Server`}
-      icon={<HiServerOutline class="h-5 w-5" />}
-    >
+    <Card hasHeader>
+      <div q:slot="header" class="flex items-center gap-2">
+        <HiServerOutline class="h-5 w-5" />
+        <span class="font-medium">{$localize`OpenVPN Server`}</span>
+      </div>
       {/* Enable/Disable */}
       <FormField label={$localize`Enable OpenVPN Server`}>
         <input
@@ -91,7 +92,7 @@ export const OpenVPNServerAdvanced = component$(() => {
               {/* Certificate */}
               <FormField
                 label={$localize`Server Certificate`}
-                errorMessage={certificateError.value}
+                error={certificateError.value}
               >
                 <div class="flex items-center gap-2">
                   <Input
@@ -101,11 +102,10 @@ export const OpenVPNServerAdvanced = component$(() => {
                       updateCertificate$(value);
                     }}
                     placeholder={$localize`Enter certificate name`}
-                    validation={certificateError.value ? "invalid" : "default"}
                   />
                   <Button
                     onClick$={() => {}}
-                    primary={false}
+                    variant="secondary"
                     class="flex items-center gap-1"
                   >
                     <HiDocumentOutline class="h-5 w-5" />
@@ -117,7 +117,7 @@ export const OpenVPNServerAdvanced = component$(() => {
               {/* Certificate Key Passphrase */}
               <FormField
                 label={$localize`Certificate Key Passphrase`}
-                errorMessage={passphraseError.value}
+                error={passphraseError.value}
               >
                 <div class="relative">
                   <Input
@@ -127,7 +127,6 @@ export const OpenVPNServerAdvanced = component$(() => {
                       updateCertificateKeyPassphrase$(value);
                     }}
                     placeholder={$localize`Enter passphrase (at least 10 characters)`}
-                    validation={passphraseError.value ? "invalid" : "default"}
                     hasSuffixSlot={true}
                   >
                     <button
@@ -147,8 +146,8 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <Select
                   options={protocolOptions}
                   value={advancedFormState.protocol}
-                  onChange$={(value: string) => {
-                    updateProtocol$(value as any);
+                  onChange$={(value) => {
+                    updateProtocol$(Array.isArray(value) ? value[0] as any : value as any);
                   }}
                 />
               </FormField>
@@ -170,13 +169,20 @@ export const OpenVPNServerAdvanced = component$(() => {
           {/* Network Settings */}
           {activeTab.value === "network" && (
             <div class="space-y-4">
+              {/* Network Selection */}
+              <NetworkDropdown
+                selectedNetwork={advancedFormState.network}
+                onNetworkChange$={updateNetwork$}
+                label={$localize`Network`}
+              />
+
               {/* Mode */}
               <FormField label={$localize`Mode`}>
                 <Select
                   options={modeOptions}
                   value={advancedFormState.mode}
-                  onChange$={(value: string) => {
-                    updateMode$(value as any);
+                  onChange$={(value) => {
+                    updateMode$(Array.isArray(value) ? value[0] as any : value as any);
                   }}
                 />
               </FormField>
@@ -247,8 +253,8 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <Select
                   options={authMethodOptions}
                   value={advancedFormState.auth}
-                  onChange$={(value: string) => {
-                    updateAuth$(value as any);
+                  onChange$={(value) => {
+                    updateAuth$(Array.isArray(value) ? value[0] as any : value as any);
                   }}
                 />
               </FormField>
@@ -258,8 +264,8 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <Select
                   options={cipherOptions}
                   value={advancedFormState.cipher}
-                  onChange$={(value: string) => {
-                    updateCipher$(value as any);
+                  onChange$={(value) => {
+                    updateCipher$(Array.isArray(value) ? value[0] as any : value as any);
                   }}
                 />
               </FormField>
@@ -269,8 +275,8 @@ export const OpenVPNServerAdvanced = component$(() => {
                 <Select
                   options={tlsVersionOptions}
                   value={advancedFormState.tlsVersion}
-                  onChange$={(value: string) => {
-                    updateTlsVersion$(value as any);
+                  onChange$={(value) => {
+                    updateTlsVersion$(Array.isArray(value) ? value[0] as any : value as any);
                   }}
                 />
               </FormField>

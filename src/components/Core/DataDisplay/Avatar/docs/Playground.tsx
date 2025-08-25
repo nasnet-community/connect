@@ -307,6 +307,8 @@ export default component$(() => {
               <img
                 src={`https://i.pravatar.cc/300?img=${imageIndex.value}`}
                 alt="User avatar"
+                width={40}
+                height={40}
               />
             )}
             {variant.value === "icon" && (

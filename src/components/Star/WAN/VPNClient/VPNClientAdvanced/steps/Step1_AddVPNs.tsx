@@ -71,38 +71,56 @@ export const Step1_AddVPNs = component$<Step1Props>(
 
         {/* VPN Boxes */}
         <div class="space-y-4">
-          {wizardState.vpnConfigs.map((vpn: any) => (
-            <VPNBox
-              key={vpn.id}
-              id={vpn.id}
-              name={vpn.name}
-              type={vpn.type}
-              error={getVPNErrors(vpn.id).length > 0}
-            >
-              <VPNBoxHeader
-                id={vpn.id}
-                name={vpn.name}
-                type={vpn.type}
+          {wizardState.vpnConfigs.map((vpn: any, index: number) => {
+            const vpnId = vpn.id;
+            const hasErrors = getVPNErrors(vpnId).length > 0;
+            
+            return (
+              <VPNBox
+                key={vpnId}
+                vpn={vpn}
+                index={index}
+                isExpanded={true}
+                canRemove={canRemoveVPN}
+                validationErrors={{}}
                 onRemove$={
                   canRemoveVPN
-                    ? $(() => wizardActions.removeVPN$(vpn.id))
+                    ? () => wizardActions.removeVPN$(vpnId)
                     : undefined
                 }
-                onNameChange$={$((name: string) =>
-                  wizardActions.updateVPN$(vpn.id, { name }),
-                )}
-              />
-              <VPNBoxContent>
-                {/* VPN Type Selection */}
-                <VPNTypeSelector
-                  selectedType={vpn.type}
-                  onTypeChange$={$((type: any) =>
-                    wizardActions.updateVPN$(vpn.id, { type }),
-                  )}
+                onUpdate$={(id: string, updates: any) =>
+                  wizardActions.updateVPN$(id, updates)
+                }
+              >
+                <VPNBoxHeader
+                  vpn={vpn}
+                  index={index}
+                  isExpanded={true}
+                  hasErrors={hasErrors}
+                  canRemove={canRemoveVPN}
+                  onRemove$={
+                    canRemoveVPN
+                      ? () => wizardActions.removeVPN$(vpnId)
+                      : undefined
+                  }
                 />
-              </VPNBoxContent>
-            </VPNBox>
-          ))}
+                <VPNBoxContent
+                  vpn={vpn}
+                  onUpdate$={(updates: any) =>
+                    wizardActions.updateVPN$(vpnId, updates)
+                  }
+                >
+                  {/* VPN Type Selection */}
+                  <VPNTypeSelector
+                    selectedType={vpn.type}
+                    onTypeChange$={(type: any) =>
+                      wizardActions.updateVPN$(vpnId, { type })
+                    }
+                  />
+                </VPNBoxContent>
+              </VPNBox>
+            );
+          })}
         </div>
 
         {/* Minimum VPNs warning */}

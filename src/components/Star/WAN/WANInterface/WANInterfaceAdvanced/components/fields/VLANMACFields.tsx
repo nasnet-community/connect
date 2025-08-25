@@ -3,20 +3,21 @@ import type {
   VLANConfig,
   MACAddressConfig,
 } from "../../../../../StarContext/WANType";
+import { Input, Toggle, FormField } from "~/components/Core";
 
 export interface VLANMACFieldsProps {
   vlanConfig?: VLANConfig;
   macAddress?: MACAddressConfig;
   onUpdateVLAN$: QRL<(config?: VLANConfig) => void>;
   onUpdateMAC$: QRL<(config?: MACAddressConfig) => void>;
-  errors?: {
+  _errors?: {
     vlan?: string[];
     mac?: string[];
   };
 }
 
 export const VLANMACFields = component$<VLANMACFieldsProps>(
-  ({ vlanConfig, macAddress, onUpdateVLAN$, onUpdateMAC$, errors }) => {
+  ({ vlanConfig, macAddress, onUpdateVLAN$, onUpdateMAC$ }) => {
     return (
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 backdrop-blur-sm border border-indigo-200/50 dark:border-indigo-700/50 p-5">
         {/* Background decoration */}
@@ -60,61 +61,37 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                     </div>
                   </div>
                   
-                  {/* Custom toggle switch */}
-                  <div class="relative">
-                    <input
-                      type="checkbox"
-                      class="sr-only peer"
-                      checked={vlanConfig?.enabled || false}
-                      onInput$={(e) => {
-                        const checked = (e.target as HTMLInputElement).checked;
-                        if (checked) {
-                          onUpdateVLAN$({ enabled: true, id: vlanConfig?.id || 1 });
-                        } else {
-                          onUpdateVLAN$(undefined);
-                        }
-                      }}
-                    />
-                    <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-indigo-600 dark:bg-gray-700 dark:peer-checked:bg-indigo-500 transition-colors"></div>
-                    <div class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white shadow-lg transition-transform peer-checked:translate-x-5"></div>
-                  </div>
+                  <Toggle
+                    checked={vlanConfig?.enabled || false}
+                    onChange$={(checked: boolean) => {
+                      if (checked) {
+                        onUpdateVLAN$({ enabled: true, id: vlanConfig?.id || 1 });
+                      } else {
+                        onUpdateVLAN$(undefined);
+                      }
+                    }}
+                    size="sm"
+                  />
                 </label>
                 
                 {/* VLAN ID Input */}
                 {vlanConfig?.enabled === true && (
-                  <div class="mt-3 space-y-2">
-                    <div class="relative">
-                      <input
-                        type="number"
-                        min="1"
-                        max="4094"
-                        class={`w-full rounded-xl border-2 bg-white/50 dark:bg-gray-900/50 px-4 py-2.5 pr-16 text-sm font-medium transition-all
-                             focus:outline-none focus:ring-2 
-                             ${
-                               vlanConfig.id && vlanConfig.id > 0
-                                 ? "border-green-500 dark:border-green-400 text-gray-900 dark:text-white focus:ring-green-500/20"
-                                 : "border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:border-indigo-300 dark:hover:border-indigo-600 focus:ring-indigo-500/20"
-                             }`}
-                        value={vlanConfig.id}
-                        onInput$={(e) => {
-                          const value =
-                            parseInt((e.target as HTMLInputElement).value) || 1;
-                          onUpdateVLAN$({ enabled: true, id: value });
-                        }}
-                        placeholder="Enter VLAN ID"
-                      />
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
-                        {vlanConfig.id && vlanConfig.id > 0 && (
-                          <svg class="h-5 w-5 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        )}
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                          1-4094
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <FormField
+                    label=""
+                    helperText="VLAN ID (1-4094)"
+                  >
+                    <Input
+                      type="number"
+                      min="1"
+                      max="4094"
+                      value={vlanConfig.id.toString() || "1"}
+                      onInput$={(event: Event, value: string) => {
+                        const numValue = parseInt(value) || 1;
+                        onUpdateVLAN$({ enabled: true, id: numValue });
+                      }}
+                      placeholder="Enter VLAN ID"
+                    />
+                  </FormField>
                 )}
               </div>
             </div>
@@ -142,62 +119,38 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                     </div>
                   </div>
                   
-                  {/* Custom toggle switch */}
-                  <div class="relative">
-                    <input
-                      type="checkbox"
-                      class="sr-only peer"
-                      checked={macAddress?.enabled || false}
-                      onInput$={(e) => {
-                        const checked = (e.target as HTMLInputElement).checked;
-                        if (checked) {
-                          onUpdateMAC$({
-                            enabled: true,
-                            address: macAddress?.address || "",
-                          });
-                        } else {
-                          onUpdateMAC$(undefined);
-                        }
-                      }}
-                    />
-                    <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-purple-600 dark:bg-gray-700 dark:peer-checked:bg-purple-500 transition-colors"></div>
-                    <div class="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white shadow-lg transition-transform peer-checked:translate-x-5"></div>
-                  </div>
+                  <Toggle
+                    checked={macAddress?.enabled || false}
+                    onChange$={(checked: boolean) => {
+                      if (checked) {
+                        onUpdateMAC$({
+                          enabled: true,
+                          address: macAddress?.address || "",
+                        });
+                      } else {
+                        onUpdateMAC$(undefined);
+                      }
+                    }}
+                    size="sm"
+                  />
                 </label>
                 
                 {/* MAC Address Input */}
                 {macAddress?.enabled === true && (
-                  <div class="mt-3 space-y-2">
-                    <div class="relative">
-                      <input
-                        type="text"
-                        class={`w-full rounded-xl border-2 bg-white/50 dark:bg-gray-900/50 px-4 py-2.5 pr-12 text-sm font-mono font-medium transition-all
-                             focus:outline-none focus:ring-2
-                             ${
-                               macAddress.address && macAddress.address.length > 0
-                                 ? "border-green-500 dark:border-green-400 text-gray-900 dark:text-white focus:ring-green-500/20"
-                                 : "border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:border-purple-300 dark:hover:border-purple-600 focus:ring-purple-500/20"
-                             }`}
-                        value={macAddress.address}
-                        onInput$={(e) => {
-                          const value = (e.target as HTMLInputElement).value;
-                          onUpdateMAC$({ enabled: true, address: value });
-                        }}
-                        placeholder="00:00:00:00:00:00"
-                      />
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                        {macAddress.address && macAddress.address.length > 0 ? (
-                          <svg class="h-5 w-5 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <FormField
+                    label=""
+                    helperText="Format: XX:XX:XX:XX:XX:XX"
+                  >
+                    <Input
+                      type="text"
+                      value={macAddress.address}
+                      onInput$={(event: Event, value: string) => {
+                        onUpdateMAC$({ enabled: true, address: value });
+                      }}
+                      placeholder="00:00:00:00:00:00"
+                      class="font-mono"
+                    />
+                  </FormField>
                 )}
               </div>
             </div>

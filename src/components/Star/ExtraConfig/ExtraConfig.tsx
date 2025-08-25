@@ -1,4 +1,4 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
+import { component$, useStore, $, useContext, useTask$ } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { Services } from "./Services/Services";
 import { Game } from "./Game/Game";
@@ -7,68 +7,129 @@ import { RebootUpdate } from "./RebootUpdate/RebootUpdate";
 import { UsefulServices } from "./UsefulServices/UsefulServices";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
+import { StarContext } from "../StarContext/StarContext";
+import type { ServiceType } from "../StarContext/ExtraType";
 
 export const ExtraConfig = component$<StepProps>((props) => {
-  const IdentityStep = component$((props: StepProps) => (
+  const ctx = useContext(StarContext);
+  const isEasyMode = ctx.state.Choose.Mode === "easy";
+
+  // Set default values for hidden components in easy mode
+  useTask$(() => {
+    if (isEasyMode) {
+      // Set default values for Services if not already set
+      if (!ctx.state.ExtraConfig.services) {
+        const defaultServices = {
+          api: { type: "Local" as ServiceType, port: 8728 },
+          apissl: { type: "Local" as ServiceType, port: 8729 },
+          ftp: { type: "Local" as ServiceType, port: 21 },
+          ssh: { type: "Local" as ServiceType, port: 22 },
+          telnet: { type: "Local" as ServiceType, port: 23 },
+          winbox: { type: "Enable" as ServiceType, port: 8291 },
+          web: { type: "Local" as ServiceType, port: 80 },
+          webssl: { type: "Local" as ServiceType, port: 443 },
+        };
+        ctx.updateExtraConfig$({ services: defaultServices });
+      }
+
+      // Set default values for UsefulServices if not already set
+      const usefulServicesDefaults = {
+        isCertificate: ctx.state.ExtraConfig.isCertificate ?? true,
+        isNTP: ctx.state.ExtraConfig.isNTP ?? true,
+        isGraphing: ctx.state.ExtraConfig.isGraphing ?? true,
+        isDDNS: ctx.state.ExtraConfig.isDDNS ?? true,
+        isLetsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? true,
+      };
+      
+      // Only update if any values were undefined
+      if (
+        ctx.state.ExtraConfig.isCertificate === undefined ||
+        ctx.state.ExtraConfig.isNTP === undefined ||
+        ctx.state.ExtraConfig.isGraphing === undefined ||
+        ctx.state.ExtraConfig.isDDNS === undefined ||
+        ctx.state.ExtraConfig.isLetsEncrypt === undefined
+      ) {
+        ctx.updateExtraConfig$(usefulServicesDefaults);
+      }
+    }
+  });
+
+  const IdentityStep$ = $((props: StepProps) => (
     <Identity isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const ServicesStep = component$((props: StepProps) => (
+  const ServicesStep$ = $((props: StepProps) => (
     <Services isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const RebootUpdateStep = component$((props: StepProps) => (
+  const RebootUpdateStep$ = $((props: StepProps) => (
     <RebootUpdate
       isComplete={props.isComplete}
       onComplete$={props.onComplete$}
     />
   ));
 
-  const UsefulServicesStep = component$((props: StepProps) => (
+  const UsefulServicesStep$ = $((props: StepProps) => (
     <UsefulServices
       isComplete={props.isComplete}
       onComplete$={props.onComplete$}
     />
   ));
 
-  const GameStep = component$((props: StepProps) => (
+  const GameStep$ = $((props: StepProps) => (
     <Game isComplete={props.isComplete} onComplete$={props.onComplete$} />
   ));
 
-  const stepsStore = useStore({
-    activeStep: 0,
-    steps: [
+  // Build steps array conditionally based on mode
+  const buildSteps = (): StepItem[] => {
+    const allSteps: StepItem[] = [
       {
         id: 1,
         title: $localize`Identity`,
-        component: IdentityStep,
+        component: IdentityStep$,
         isComplete: false,
       },
-      {
+    ];
+
+    // Only add Services and UsefulServices in advanced mode
+    if (!isEasyMode) {
+      allSteps.push({
         id: 2,
         title: $localize`Services`,
-        component: ServicesStep,
+        component: ServicesStep$,
         isComplete: false,
-      },
-      {
-        id: 3,
-        title: $localize`Reboot & Update`,
-        component: RebootUpdateStep,
-        isComplete: false,
-      },
-      {
-        id: 4,
+      });
+    }
+
+    allSteps.push({
+      id: allSteps.length + 1,
+      title: $localize`Reboot & Update`,
+      component: RebootUpdateStep$,
+      isComplete: false,
+    });
+
+    if (!isEasyMode) {
+      allSteps.push({
+        id: allSteps.length + 1,
         title: $localize`Useful Services`,
-        component: UsefulServicesStep,
+        component: UsefulServicesStep$,
         isComplete: false,
-      },
-      {
-        id: 5,
-        title: $localize`Game`,
-        component: GameStep,
-        isComplete: false,
-      },
-    ] as StepItem[],
+      });
+    }
+
+    allSteps.push({
+      id: allSteps.length + 1,
+      title: $localize`Game`,
+      component: GameStep$,
+      isComplete: false,
+    });
+
+    return allSteps;
+  };
+
+  const stepsStore = useStore({
+    activeStep: 0,
+    steps: buildSteps(),
   });
 
   const handleStepComplete = $((id: number) => {
