@@ -8,10 +8,56 @@ export interface UseIntersectionObserverOptions {
   root?: Element | null;
 }
 
+/**
+ * Serializable representation of IntersectionObserverEntry
+ * Converts browser API objects to plain objects for Qwik serialization
+ */
+export interface SerializableIntersectionEntry {
+  /** The bounds of the target element */
+  boundingClientRect: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  /** The intersection ratio (0.0 to 1.0) */
+  intersectionRatio: number;
+  /** The bounds of the intersection */
+  intersectionRect: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  /** Whether the element is intersecting */
+  isIntersecting: boolean;
+  /** The bounds of the root element */
+  rootBounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  } | null;
+  /** Timestamp when the intersection was observed */
+  time: number;
+}
+
 export interface UseIntersectionObserverReturn {
   elementRef: (element: Element) => void;
   isIntersecting: Signal<boolean>;
-  entry: Signal<IntersectionObserverEntry | null>;
+  entry: Signal<SerializableIntersectionEntry | null>;
 }
 
 /**
@@ -30,7 +76,32 @@ export function useIntersectionObserver(
 
   const elementRef = useSignal<Element | null>(null);
   const isIntersecting = useSignal(false);
-  const entry = useSignal<IntersectionObserverEntry | null>(null);
+  const entry = useSignal<SerializableIntersectionEntry | null>(null);
+
+  // Helper function to convert DOMRectReadOnly to a serializable object
+  const serializeRect = $((rect: DOMRectReadOnly | null) => {
+    if (!rect) return null;
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      left: rect.left,
+    };
+  });
+
+  // Convert IntersectionObserverEntry to serializable format
+  const serializeEntry = $(async (observerEntry: IntersectionObserverEntry): Promise<SerializableIntersectionEntry> => ({
+    boundingClientRect: (await serializeRect(observerEntry.boundingClientRect))!,
+    intersectionRatio: observerEntry.intersectionRatio,
+    intersectionRect: (await serializeRect(observerEntry.intersectionRect))!,
+    isIntersecting: observerEntry.isIntersecting,
+    rootBounds: await serializeRect(observerEntry.rootBounds),
+    time: observerEntry.time,
+  }));
 
   // Set up the intersection observer
   useVisibleTask$(({ cleanup }) => {
@@ -50,13 +121,13 @@ export function useIntersectionObserver(
     };
 
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((observerEntry) => {
+      entries.forEach(async (observerEntry) => {
         isIntersecting.value = observerEntry.isIntersecting;
-        entry.value = observerEntry;
+        entry.value = await serializeEntry(observerEntry);
 
         // Once the element is visible, we can disconnect the observer
         // This is especially useful for lazy loading where we only need to know once
-        if (observerEntry.isIntersecting && enabled) {
+        if (observerEntry.isIntersecting) {
           observer.disconnect();
         }
       });
