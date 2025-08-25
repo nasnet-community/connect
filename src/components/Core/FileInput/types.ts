@@ -31,7 +31,7 @@ export type FileUploadErrorType =
 export interface FileUploadError {
   type: FileUploadErrorType;
   message: string;
-  details?: unknown;
+  details?: string;
   retryable?: boolean;
 }
 

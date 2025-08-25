@@ -34,7 +34,7 @@ export const TouchGesture = component$<TouchGestureProps>((props) => {
   const touchStart = useSignal<{ x: number; y: number; time: number } | null>(
     null,
   );
-  const longPressTimer = useSignal<NodeJS.Timeout | null>(null);
+  const longPressTimer = useSignal<number | null>(null);
   const initialPinchDistance = useSignal<number | null>(null);
 
   // Calculate distance between two touches
@@ -61,7 +61,7 @@ export const TouchGesture = component$<TouchGestureProps>((props) => {
 
       // Start long press timer
       if (onLongPress$) {
-        longPressTimer.value = setTimeout(async () => {
+        longPressTimer.value = window.setTimeout(async () => {
           if (onLongPress$) {
             await onLongPress$();
           }
@@ -74,7 +74,7 @@ export const TouchGesture = component$<TouchGestureProps>((props) => {
 
       // Clear long press timer for multi-touch
       if (longPressTimer.value) {
-        clearTimeout(longPressTimer.value);
+        window.clearTimeout(longPressTimer.value);
         longPressTimer.value = null;
       }
     }
@@ -83,7 +83,7 @@ export const TouchGesture = component$<TouchGestureProps>((props) => {
   const handleTouchMove$ = $(async (event: TouchEvent) => {
     // Clear long press timer on move
     if (longPressTimer.value) {
-      clearTimeout(longPressTimer.value);
+      window.clearTimeout(longPressTimer.value);
       longPressTimer.value = null;
     }
 
@@ -101,7 +101,7 @@ export const TouchGesture = component$<TouchGestureProps>((props) => {
   const handleTouchEnd$ = $(async (event: TouchEvent) => {
     // Clear long press timer
     if (longPressTimer.value) {
-      clearTimeout(longPressTimer.value);
+      window.clearTimeout(longPressTimer.value);
       longPressTimer.value = null;
     }
 
