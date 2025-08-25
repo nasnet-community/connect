@@ -50,8 +50,8 @@
 // // Mock the sub-generators
 // vi.mock('./Choose/ChooseCG', () => ({
 //   ChooseCG: vi.fn((domesticLink) => ({
-//     '/routing table': domesticLink ? 
-//       ['add name=to-DOM fib', 'add name=to-FRN fib', 'add name=to-VPN fib'] : 
+//     '/routing table': domesticLink ?
+//       ['add name=to-DOM fib', 'add name=to-FRN fib', 'add name=to-VPN fib'] :
 //       ['add name=to-FRN fib', 'add name=to-VPN fib'],
 //     '/ip firewall address-list': ['add address=192.168.0.0/16 list=LOCAL-IP']
 //   }))
@@ -76,7 +76,7 @@
 
 // vi.mock('./Extra/ExtraCG', () => ({
 //   ExtraCG: vi.fn((extraConfig) => ({
-//     '/system identity': extraConfig.RouterIdentityRomon ? 
+//     '/system identity': extraConfig.RouterIdentityRomon ?
 //       [`set name="${extraConfig.RouterIdentityRomon.RouterIdentity}"`] : [],
 //     '/system clock': [`set date=${new Date().toLocaleDateString()}`],
 //     '/system ntp client': ['set enabled=yes']
@@ -145,19 +145,19 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (complete) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should contain the reboot command at the end
 //       expect(result).toContain(':delay 60');
 //       expect(result).toContain('/system reboot');
-      
+
 //       // Should contain sections from all modules
 //       expect(result).toContain('/routing table');
 //       expect(result).toContain('/interface ethernet');
@@ -205,19 +205,19 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (no domestic) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should still contain the reboot command
 //       expect(result).toContain(':delay 60');
 //       expect(result).toContain('/system reboot');
-      
+
 //       // Should contain basic sections
 //       expect(result).toContain('/routing table');
 //       expect(result).toContain('/interface ethernet');
@@ -281,15 +281,15 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (with VPN) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should contain VPN-related sections
 //       expect(result).toContain('/interface ethernet');
 //       expect(result).toContain('/routing table');
@@ -324,15 +324,15 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (minimal) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should still have basic structure and reboot
 //       expect(result).toContain(':delay 60');
 //       expect(result).toContain('/system reboot');
@@ -391,15 +391,15 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (wireless) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should contain wireless-related configurations
 //       expect(result).toContain('/interface ethernet');
 //       expect(result).toContain('/system identity');
@@ -440,11 +440,11 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (error handling) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       // Should return empty string on error
 //       expect(result).toBe('');
 //     });
@@ -512,21 +512,21 @@
 //       };
 
 //       const result = ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (formatted) Output:');
 //       console.log(result);
 //       console.log('---');
-      
+
 //       expect(result).toBeDefined();
 //       expect(typeof result).toBe('string');
 //       expect(result.length).toBeGreaterThan(0);
-      
+
 //       // Should end with reboot sequence
 //       expect(result).toMatch(/:delay 60\s*\/system reboot$/);
-      
+
 //       // Should not have excessive empty lines
 //       expect(result).not.toMatch(/\n\s*\n\s*\n/);
-      
+
 //       // Should contain properly formatted sections
 //       expect(result).toContain('/routing table');
 //       expect(result).toContain('/interface ethernet');
@@ -567,9 +567,9 @@
 //       };
 
 //       ConfigGenerator(mockState);
-      
+
 //       console.log('ConfigGenerator (sub-generator calls) - verifying function calls');
-      
+
 //       // Verify all sub-generators were called with correct parameters
 //       expect(ChooseCG).toHaveBeenCalledWith(true); // DomesticLink
 //       expect(WANCG).toHaveBeenCalledWith(mockState.WAN, true); // WAN state and DomesticLink
@@ -577,5 +577,5 @@
 //       expect(ExtraCG).toHaveBeenCalledWith(mockState.ExtraConfig); // ExtraConfig state
 //     });
 //   });
-// }); 
+// });
 // sssas

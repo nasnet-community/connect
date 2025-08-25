@@ -16,8 +16,8 @@ import type { Ethernet } from "./CommonType";
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
-      Mode: "easy" as Mode,
-      Firmware:"" as FrimwareType,
+      Mode: "" as Mode,
+      Firmware: "" as FrimwareType,
       RouterMode: "" as RouterModeType,
       DomesticLink: false,
       RouterModels: [],
@@ -39,23 +39,33 @@ export const StarContextProvider = component$(() => {
     ShowConfig: {},
   });
 
+  const updateChoose$ = $((data: Partial<typeof state.Choose>) => {
+    Object.assign(state.Choose, data);
+  });
+
+  const updateWAN$ = $((data: Partial<typeof state.WAN>) => {
+    Object.assign(state.WAN, data);
+  });
+
+  const updateLAN$ = $((data: Partial<typeof state.LAN>) => {
+    Object.assign(state.LAN, data);
+  });
+
+  const updateExtraConfig$ = $((data: Partial<typeof state.ExtraConfig>) => {
+    Object.assign(state.ExtraConfig, data);
+  });
+
+  const updateShowConfig$ = $((data: Partial<typeof state.ShowConfig>) => {
+    Object.assign(state.ShowConfig, data);
+  });
+
   const contextValue: StarContextType = {
     state,
-    updateChoose$: $((data) => {
-      Object.assign(state.Choose, data);
-    }),
-    updateWAN$: $((data) => {
-      Object.assign(state.WAN, data);
-    }),
-    updateLAN$: $((data) => {
-      Object.assign(state.LAN, data);
-    }),
-    updateExtraConfig$: $((data) => {
-      Object.assign(state.ExtraConfig, data);
-    }),
-    updateShowConfig$: $((data) => {
-      Object.assign(state.ShowConfig, data);
-    }),
+    updateChoose$,
+    updateWAN$,
+    updateLAN$,
+    updateExtraConfig$,
+    updateShowConfig$,
   };
 
   useContextProvider(StarContext, contextValue);

@@ -1,5 +1,6 @@
 import { component$, useStore } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
+import { Input, Select } from "~/components/Core";
 
 interface PortForwardingRule {
   protocol: string;
@@ -56,81 +57,76 @@ export const PortForwarding = component$<StepProps>(() => {
           <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Protocol`}</label>
-              <select
+              <Select
                 value={state.protocol}
-                onChange$={(e) =>
-                  (state.protocol = (e.target as HTMLSelectElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-              >
-                <option value="">{$localize`Select Protocol`}</option>
-                <option value="TCP">{$localize`TCP`}</option>
-                <option value="UDP">{$localize`UDP`}</option>
-                <option value="BOTH">{$localize`Both`}</option>
-              </select>
+                onChange$={(value: string | string[]) => {
+                  state.protocol = value as string;
+                }}
+                options={[
+                  { value: "", label: $localize`Select Protocol` },
+                  { value: "TCP", label: $localize`TCP` },
+                  { value: "UDP", label: $localize`UDP` },
+                  { value: "BOTH", label: $localize`Both` },
+                ]}
+              />
             </div>
 
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Remote IP`}</label>
-              <input
+              <Input
                 type="text"
                 value={state.remoteIP}
-                onChange$={(e) =>
-                  (state.remoteIP = (e.target as HTMLInputElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                onInput$={(event: Event, value: string) => {
+                  state.remoteIP = value;
+                }}
                 placeholder={$localize`Enter Remote IP`}
               />
             </div>
 
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Remote Port`}</label>
-              <input
+              <Input
                 type="text"
                 value={state.remotePort}
-                onChange$={(e) =>
-                  (state.remotePort = (e.target as HTMLInputElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                onInput$={(event: Event, value: string) => {
+                  state.remotePort = value;
+                }}
                 placeholder={$localize`Enter Remote Port`}
               />
             </div>
 
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Target IP`}</label>
-              <input
+              <Input
                 type="text"
                 value={state.targetIP}
-                onChange$={(e) =>
-                  (state.targetIP = (e.target as HTMLInputElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                onInput$={(event: Event, value: string) => {
+                  state.targetIP = value;
+                }}
                 placeholder={$localize`Enter Target IP`}
               />
             </div>
 
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Target Port`}</label>
-              <input
+              <Input
                 type="text"
                 value={state.targetPort}
-                onChange$={(e) =>
-                  (state.targetPort = (e.target as HTMLInputElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                onInput$={(event: Event, value: string) => {
+                  state.targetPort = value;
+                }}
                 placeholder={$localize`Enter Target Port`}
               />
             </div>
 
             <div class="col-span-1">
               <label class="text-text-secondary dark:text-text-dark-secondary mb-1 block text-sm font-medium">{$localize`Description`}</label>
-              <input
+              <Input
                 type="text"
                 value={state.description}
-                onChange$={(e) =>
-                  (state.description = (e.target as HTMLInputElement).value)
-                }
-                class="w-full rounded-md border-border bg-surface px-3 py-2 text-text dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
+                onInput$={(event: Event, value: string) => {
+                  state.description = value;
+                }}
                 placeholder={$localize`Enter Description`}
               />
             </div>

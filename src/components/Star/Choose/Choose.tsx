@@ -9,6 +9,7 @@ import {
 import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
+import { SlaveRouterModel } from "./RouterModel/SlaveRouterModel";
 import { DomesticWAN } from "./DomesticWAN/DomesticWAN";
 import { OWRT } from "./OWRT/OWRT";
 import { OWRTInstall } from "./OWRT/Install";
@@ -34,6 +35,10 @@ const RouterModelStep = component$((props: StepProps) => (
   <RouterModel isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
 
+const SlaveRouterModelStep = component$((props: StepProps) => (
+  <SlaveRouterModel isComplete={props.isComplete} onComplete$={props.onComplete$} />
+));
+
 const DomesticStep = component$((props: StepProps) => (
   <DomesticWAN isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
@@ -54,11 +59,18 @@ const OWRTInstallStep = component$((props: StepProps) => (
 ));
 
 const OWRTPackageStep = component$(() => (
-  <OWRTPackage
-  // isComplete={props.isComplete}
-  // onComplete$={props.onComplete$}
+  <OWRTPackage />
+));
+
+// Create OWRT configuration component for OpenWRT steps
+// Note: This will use the OWRT component directly with minimal props to avoid serialization issues
+const OWRTConfigStep = component$((props: StepProps) => (
+  <OWRT
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
   />
 ));
+
 
 export const Choose = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
@@ -69,7 +81,7 @@ export const Choose = component$((props: StepProps) => {
   const newsletterModalShown = useSignal(false);
 
   // Handle OpenWRT option selection
-  const handleOpenWRTOptionSelect = $(
+  const _handleOpenWRTOptionSelect = $(
     (option: "stock" | "already-installed") => {
       openWRTOption.value = option;
     },
@@ -86,38 +98,50 @@ export const Choose = component$((props: StepProps) => {
       },
       {
         id: 3,
-        title: $localize`Router Mode`,
-        component: RouterModeStep,
-        isComplete: routerModeComplete,
-      },
-    ];
-
-    // Add Trunk Interface step only if Trunk Mode is selected
-    if (starContext.state.Choose.RouterMode === "Trunk Mode") {
-      baseSteps.push({
-        id: 4,
-        title: $localize`Trunk Interface`,
-        component: TrunkInterfaceStep,
-        isComplete: false,
-      });
-    }
-
-    // Add remaining steps with dynamic IDs
-    const nextId = starContext.state.Choose.RouterMode === "Trunk Mode" ? 5 : 4;
-    baseSteps.push(
-      {
-        id: nextId,
         title: $localize`Domestic Link`,
         component: DomesticStep,
         isComplete: false,
       },
       {
-        id: nextId + 1,
+        id: 4,
         title: $localize`Router Model`,
         component: RouterModelStep,
         isComplete: false,
       },
-    );
+    ];
+
+    let nextId = 5;
+
+    // Only add Router Mode step if user selected Advance mode
+    if (starContext.state.Choose.Mode === "advance") {
+      baseSteps.push({
+        id: nextId,
+        title: $localize`Router Mode`,
+        component: RouterModeStep,
+        isComplete: routerModeComplete,
+      });
+      nextId++;
+    }
+
+    // Add Slave Router Model step if Trunk Mode is selected (only in advance mode)
+    if (starContext.state.Choose.Mode === "advance" && starContext.state.Choose.RouterMode === "Trunk Mode") {
+      baseSteps.push({
+        id: nextId,
+        title: $localize`Slave Router`,
+        component: SlaveRouterModelStep,
+        isComplete: false,
+      });
+      nextId++;
+
+      // Add Trunk Interface step after slave router selection
+      baseSteps.push({
+        id: nextId,
+        title: $localize`Trunk Interface`,
+        component: TrunkInterfaceStep,
+        isComplete: false,
+      });
+      nextId++;
+    }
 
     return baseSteps;
   });
@@ -133,13 +157,7 @@ export const Choose = component$((props: StepProps) => {
       {
         id: 3,
         title: $localize`Configuration`,
-        component: component$((stepProps: StepProps) => (
-          <OWRT
-            isComplete={stepProps.isComplete}
-            onComplete$={stepProps.onComplete$}
-            onOptionSelect$={handleOpenWRTOptionSelect}
-          />
-        )),
+        component: OWRTConfigStep,
         isComplete: false,
       },
     ];
@@ -181,18 +199,12 @@ export const Choose = component$((props: StepProps) => {
     },
     {
       id: 3,
-      title: $localize`Router Mode`,
-      component: RouterModeStep,
-      isComplete: false,
-    },
-    {
-      id: 4,
       title: $localize`Domestic Link`,
       component: DomesticStep,
       isComplete: false,
     },
     {
-      id: 5,
+      id: 4,
       title: $localize`Router Model`,
       component: RouterModelStep,
       isComplete: false,
@@ -237,11 +249,17 @@ export const Choose = component$((props: StepProps) => {
   // Handle firmware and router mode changes
   useTask$(async ({ track }) => {
     const selectedFirmware = track(() => starContext.state.Choose.Firmware);
+    const selectedMode = track(() => starContext.state.Choose.Mode);
     const selectedRouterMode = track(() => starContext.state.Choose.RouterMode);
 
     // console.log('=== FIRMWARE/ROUTER MODE CHANGE DETECTED ==='); // Debug log
     // console.log('Previous steps count:', steps.value.length); // Debug log
     // console.log('Firmware:', selectedFirmware, 'RouterMode:', selectedRouterMode); // Debug log
+
+    // Set default RouterMode to "AP Mode" when in Easy mode
+    if (selectedMode === "easy" && !starContext.state.Choose.RouterMode) {
+      starContext.updateChoose$({ RouterMode: "AP Mode" });
+    }
 
     // Clear TrunkInterface when switching from Trunk Mode to AP Mode
     if (
@@ -304,17 +322,37 @@ export const Choose = component$((props: StepProps) => {
       const setupModeStepComplete =
         steps.value.find((step) => step.title === $localize`Setup Mode`)
           ?.isComplete || false;
+      const domesticLinkStepComplete =
+        steps.value.find((step) => step.title === $localize`Domestic Link`)
+          ?.isComplete || false;
+      const routerModelStepComplete =
+        steps.value.find((step) => step.title === $localize`Router Model`)
+          ?.isComplete || false;
 
       // Restore MikroTik steps if user switches back from OpenWRT
       const mikrotikSteps = await createMikroTikSteps(routerModeStepComplete);
       // console.log('Adding MikroTik steps:', mikrotikSteps); // Debug log
 
-      // Update setup mode completion status
+      // Update completion statuses for preserved steps
       const setupModeStep = mikrotikSteps.find(
         (step) => step.title === $localize`Setup Mode`,
       );
       if (setupModeStep) {
         setupModeStep.isComplete = setupModeStepComplete;
+      }
+      
+      const domesticLinkStep = mikrotikSteps.find(
+        (step) => step.title === $localize`Domestic Link`,
+      );
+      if (domesticLinkStep) {
+        domesticLinkStep.isComplete = domesticLinkStepComplete;
+      }
+      
+      const routerModelStep = mikrotikSteps.find(
+        (step) => step.title === $localize`Router Model`,
+      );
+      if (routerModelStep) {
+        routerModelStep.isComplete = routerModelStepComplete;
       }
 
       // Create new array with firmware and MikroTik steps
@@ -340,21 +378,13 @@ export const Choose = component$((props: StepProps) => {
         steps.value = newSteps;
       }
 
-      // If RouterMode was just completed with Trunk Mode, navigate to TrunkInterface
-      if (routerModeStepComplete && selectedRouterMode === "Trunk Mode") {
+      // If RouterMode was just completed with Trunk Mode, navigate to TrunkInterface (only in advance mode)
+      if (selectedMode === "advance" && routerModeStepComplete && selectedRouterMode === "Trunk Mode") {
         const trunkInterfaceIndex = newSteps.findIndex(
           (step) => step.title === $localize`Trunk Interface`,
         );
         if (trunkInterfaceIndex !== -1) {
           activeStep.value = trunkInterfaceIndex;
-        }
-      } else if (routerModeStepComplete && selectedRouterMode === "AP Mode") {
-        // When Router Mode is completed in AP Mode, jump directly to the next step (Domestic Link)
-        const domesticIndex = newSteps.findIndex(
-          (step) => step.title === $localize`Domestic Link`,
-        );
-        if (domesticIndex !== -1) {
-          activeStep.value = domesticIndex;
         }
       } else if (activeStep.value >= newSteps.length) {
         // Reset active step if we're beyond the new step count

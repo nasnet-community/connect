@@ -8,79 +8,45 @@ export const GraphLegend = component$<{
   connections: GraphConnection[];
   customLegendItems?: LegendItem[];
   showLegend: boolean;
+  showDomesticLegend?: boolean;
 }>((props) => {
-  const { connections, customLegendItems, showLegend } = props;
+  const { customLegendItems, showLegend, showDomesticLegend = true } = props;
 
   if (!showLegend) {
     return null;
   }
 
-  // If custom legend items are provided, use those
-  if (customLegendItems && customLegendItems.length > 0) {
-    return (
-      <div class="graph-legend mt-2 flex flex-wrap gap-2">
-        {customLegendItems.map((item, index) => (
-          <div key={`legend-${index}`} class="flex items-center gap-2 text-start rtl:text-end">
-            <div
-              class="h-3 w-3 rounded-full me-2 rtl:me-0 rtl:ms-2"
-              style={{ backgroundColor: item.color }}
-            ></div>
-            <span class="text-text-secondary dark:text-text-dark-secondary text-xs">
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Default legend items for NetworkTopologyGraph style
+  const defaultLegendItems = [
+    { color: "rgb(251 191 36)", label: $localize`Traffic Path` }, // amber-500
+    ...(showDomesticLegend ? [{ color: "rgb(16, 185, 129)", label: $localize`Domestic` }] : []), // emerald-500
+    { color: "rgb(168, 85, 247)", label: $localize`Foreign` }, // purple-500
+  ];
 
-  // Otherwise, automatically generate legend from connections
-  const uniqueColors = new Map<string, string>();
-  const uniqueConnectionTypes = new Map<string, string>();
-
-  connections.forEach((conn) => {
-    if (conn.color && conn.connectionType) {
-      uniqueConnectionTypes.set(conn.connectionType, conn.color);
-    } else if (conn.color && conn.trafficType) {
-      uniqueColors.set(conn.trafficType, conn.color);
-    } else if (conn.color) {
-      uniqueColors.set(conn.label || "Connection", conn.color);
-    }
-  });
-
-  // Convert Maps to arrays for rendering
-  const connectionTypeEntries = Array.from(uniqueConnectionTypes.entries());
-  const colorEntries = Array.from(uniqueColors.entries());
+  // Use custom legend items if provided, otherwise use defaults
+  const legendItems = customLegendItems && customLegendItems.length > 0 
+    ? customLegendItems 
+    : defaultLegendItems;
 
   return (
-    <div class="graph-legend mt-2 flex flex-wrap gap-2">
-      {/* Render connection types */}
-      {connectionTypeEntries.map(([type, color]) => (
-        <div key={`legend-conn-${type}`} class="flex items-center gap-2 text-start rtl:text-end">
+    <div class="flex items-center space-x-3">
+      {legendItems.map((item, index) => (
+        <div key={`legend-${index}`} class="flex items-center">
           <div
-            class="h-3 w-3 rounded-full me-2 rtl:me-0 rtl:ms-2"
-            style={{ backgroundColor: color }}
+            class="mr-1.5 h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: item.color }}
           ></div>
-          <span class="text-text-secondary dark:text-text-dark-secondary text-xs">
-            {type}
-          </span>
-        </div>
-      ))}
-
-      {/* Render traffic types */}
-      {colorEntries.map(([type, color]) => (
-        <div key={`legend-traffic-${type}`} class="flex items-center gap-2 text-start rtl:text-end">
-          <div
-            class="h-3 w-3 rounded-full me-2 rtl:me-0 rtl:ms-2"
-            style={{ backgroundColor: color }}
-          ></div>
-          <span class="text-text-secondary dark:text-text-dark-secondary text-xs">
-            {type}
+          <span class="text-xs text-amber-800 dark:text-secondary-300">
+            {item.label}
           </span>
         </div>
       ))}
     </div>
   );
+
+  // This code path is now handled above
+  // Return null as fallback (shouldn't reach here)
+  return null;
 });
 
 export default GraphLegend;

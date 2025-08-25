@@ -1,21 +1,22 @@
 import { $, useSignal, useStore, useContext, type QRL } from "@builder.io/qwik";
 import type {
-  AdvancedVPNState,
+  VPNClientAdvancedState,
   VPNConfig,
-  VPNClientType,
+  VPNType,
   NewVPNConfig,
-} from "../types/AdvancedVPNState";
+} from "../types/VPNClientAdvancedTypes";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { generateUniqueId } from "~/components/Core/common/utils";
 
 export interface UseAdvancedVPNReturn {
-  state: AdvancedVPNState;
+  state: VPNClientAdvancedState;
   addVPN$: QRL<(config: NewVPNConfig) => void>;
   removeVPN$: QRL<(id: string) => void>;
   updateVPN$: QRL<(id: string, updates: Partial<VPNConfig>) => Promise<void>>;
   setPriorities$: QRL<(priorities: string[]) => void>;
   resetVPNs$: QRL<() => void>;
   moveVPNPriority$: QRL<(id: string, direction: "up" | "down") => void>;
-  generateVPNName$: QRL<(type: VPNClientType, index: number) => string>;
+  generateVPNName$: QRL<(type: VPNType, index: number) => string>;
   minVPNCount: number;
 }
 
@@ -38,23 +39,24 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
   const minVPNCount = calculateMinVPNCount();
 
   // Initialize state
-  const state = useStore<AdvancedVPNState>({
+  const state = useStore<VPNClientAdvancedState>({
     vpnConfigs: [],
     priorities: [],
     validationErrors: {},
     minVPNCount,
+    mode: "advanced",
   });
 
   // Track VPN counter for naming
   const vpnCounter = useSignal(0);
 
   // Generate consistent VPN names
-  const generateVPNName$ = $((type: VPNClientType, index: number) => {
+  const generateVPNName$ = $((type: VPNType, index: number) => {
     return `${type} VPN ${index}`;
   });
 
   // Create default config based on VPN type
-  const createDefaultConfig$ = $((type: VPNClientType): any => {
+  const createDefaultConfig$ = $((type: VPNType): any => {
     switch (type) {
       case "Wireguard":
         return {
@@ -117,7 +119,7 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
   const addVPN$ = $(async (newConfig: NewVPNConfig) => {
     vpnCounter.value++;
 
-    const id = crypto.randomUUID();
+    const id = generateUniqueId("vpn");
     const name =
       newConfig.name ||
       (await generateVPNName$(newConfig.type, vpnCounter.value));

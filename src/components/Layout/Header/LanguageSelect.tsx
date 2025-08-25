@@ -77,7 +77,7 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
                  dark:hover:border-gray-600
                  dark:shadow-lg dark:shadow-black/20
                  dark:hover:shadow-xl dark:hover:shadow-black/30"
-          dir={currentLang?.dir || "ltr"}
+          dir={currentLang.dir || "ltr"}
           aria-label={$localize`Select language`}
         >
           {props.locales.map((locale) => (
@@ -85,16 +85,16 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
               key={locale}
               value={locale}
               class="py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
-              dir={LANGUAGES[locale]?.dir || "ltr"}
+              dir={LANGUAGES[locale].dir || "ltr"}
             >
-              {`${LANGUAGES[locale]?.flag || ""} ${LANGUAGES[locale]?.name || locale.toUpperCase()}`}
+              {`${LANGUAGES[locale].flag || ""} ${LANGUAGES[locale].name || locale.toUpperCase()}`}
             </option>
           ))}
         </select>
         
         {/* Flag icon display */}
         <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
-          {currentLang?.flag || ""}
+          {currentLang.flag || ""}
         </div>
         
         {/* Dropdown chevron icon */}

@@ -4,9 +4,7 @@
 //     // VPNServer
 // } from "../../../StarContext/Utils/VPNServerType"
 
-// 
-
-
+//
 
 // OpenVPN Server
 
@@ -80,16 +78,3 @@
 
 //     return config;
 // };
-
-
-
-
-
-
-
-
-
-
-
-
-

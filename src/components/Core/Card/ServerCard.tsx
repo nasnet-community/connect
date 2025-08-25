@@ -32,9 +32,8 @@ export const ServerCard = component$<ServerCardProps>(
     class: className = "",
     titleClass = "",
   }) => {
-    // For icon handling, we support both direct component references and
-    // serialized QRL icons from the $() function
-    const IconComponent = icon;
+    // Check if icon is already a JSX element or a component/QRL
+    const isJSXElement = icon && typeof icon === "object" && "type" in icon;
 
     return (
       <div
@@ -43,7 +42,10 @@ export const ServerCard = component$<ServerCardProps>(
         {/* Card Header with Title and Icon */}
         <div class={`mb-4 flex items-center gap-2 ${titleClass}`}>
           <div class="h-5 w-5 text-primary-500 dark:text-primary-400">
-            <IconComponent />
+            {isJSXElement ? icon : (() => {
+              const IconComponent = icon;
+              return <IconComponent />;
+            })()}
           </div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">
             {title}

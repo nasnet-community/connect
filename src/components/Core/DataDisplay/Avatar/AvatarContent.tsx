@@ -36,6 +36,21 @@ export const AvatarContent = component$<AvatarContentProps>((props) => {
     icon,
   } = avatarProps;
 
+  // Get dimensions based on size for accessibility and performance
+  const getDimensions = (size: string) => {
+    const dimensionMap = {
+      xs: { width: 24, height: 24 },
+      sm: { width: 32, height: 32 },
+      md: { width: 40, height: 40 },
+      lg: { width: 48, height: 48 },
+      xl: { width: 64, height: 64 },
+      "2xl": { width: 80, height: 80 },
+    };
+    return dimensionMap[size as keyof typeof dimensionMap];
+  };
+
+  const { width, height } = getDimensions(size);
+
   // Get display content based on variant and loading state
   if (loading) {
     return null;
@@ -47,6 +62,8 @@ export const AvatarContent = component$<AvatarContentProps>((props) => {
         <img
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           class={`h-full w-full object-cover ${!imageLoaded.value ? "hidden" : ""}`}
           onLoad$={handleImageLoad$}
           onError$={handleImageError$}
@@ -100,8 +117,7 @@ export const AvatarContent = component$<AvatarContentProps>((props) => {
       {variant === "image" &&
         src &&
         !imageLoaded.value &&
-        !imageError.value &&
-        !loading && (
+        !imageError.value && (
           <div class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
             <div class="h-1/2 w-1/2 animate-pulse">
               <svg

@@ -13,16 +13,6 @@ export type ToggleSize = "sm" | "md" | "lg";
  */
 export type ToggleColor = "primary" | "secondary" | "success" | "error" | "warning" | "info";
 
-/**
- * Responsive size configuration
- */
-export type ResponsiveSize = {
-  base?: ToggleSize;
-  sm?: ToggleSize;
-  md?: ToggleSize;
-  lg?: ToggleSize;
-  xl?: ToggleSize;
-};
 
 /**
  * Position of the label relative to the toggle
@@ -59,7 +49,7 @@ export interface ToggleProps {
    * The size variant of the toggle
    * @default "md"
    */
-  size?: ToggleSize | ResponsiveSize;
+  size?: ToggleSize;
 
   /**
    * Color variant of the toggle
@@ -91,11 +81,6 @@ export interface ToggleProps {
    */
   uncheckedIcon?: any;
 
-  /**
-   * Whether to show icons alongside the default toggle indicator
-   * @default false
-   */
-  showIconsWithIndicator?: boolean;
 
   /**
    * Name attribute for the input element

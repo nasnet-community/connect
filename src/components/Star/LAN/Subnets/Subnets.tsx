@@ -4,7 +4,6 @@ import {
   useSignal,
   $,
   useComputed$,
-  useStore,
   useTask$,
   type QRL,
 } from "@builder.io/qwik";
@@ -17,11 +16,10 @@ import {
   FormField,
   Input,
   Button,
-  Alert,
-  Checkbox,
 } from "~/components/Core";
 import type { StepProps } from "~/types/step";
-import { LuNetwork, LuInfo, LuSettings2, LuShield } from "@qwikest/icons/lucide";
+import { LuShield } from "@qwikest/icons/lucide";
+import { SubnetsHeader } from "./SubnetsHeader";
 
 interface SubnetInput {
   key: string;
@@ -57,19 +55,17 @@ const SubnetMaskDisplay = component$<{
   );
 });
 
-export const Subnets = component$<StepProps>(({ onComplete$ }) => {
+export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const starContext = useContext(StarContext);
   const isDomesticLink = starContext.state.Choose.DomesticLink;
   const tempSubnets = useSignal<Record<string, string>>({});
   const validationErrors = useSignal<Record<string, string>>({});
   
-  // Advanced mode settings
-  const advancedSettings = useStore({
-    enableOverlapCheck: true,
-    customPrefixSize: false,
-    autoSuggest: true,
-    showAdvancedOptions: false,
-  });
+  // Check if subnets are already configured
+  const hasSubnetsConfigured = !!(starContext.state.LAN.Subnets && Object.keys(starContext.state.LAN.Subnets).length > 0);
+  
+  // Enable/disable state - default true if subnets are configured, otherwise true (enabled by default)
+  const subnetsEnabled = useSignal(hasSubnetsConfigured || true);
 
   // Initialize temp subnets from context
   useComputed$(() => {
@@ -256,34 +252,8 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
     ].join(".");
   });
 
-  // Check if two subnets overlap
-  const checkOverlap = $((subnet1: string, subnet2: string): boolean => {
-    if (!subnet1 || !subnet2) return false;
-    
-    const [ip1, prefix1Str] = subnet1.split("/");
-    const [ip2, prefix2Str] = subnet2.split("/");
-    const prefix1 = parseInt(prefix1Str);
-    const prefix2 = parseInt(prefix2Str);
-    
-    const parts1 = ip1.split(".").map(Number);
-    const parts2 = ip2.split(".").map(Number);
-    
-    const ip1Int = (parts1[0] << 24) | (parts1[1] << 16) | (parts1[2] << 8) | parts1[3];
-    const ip2Int = (parts2[0] << 24) | (parts2[1] << 16) | (parts2[2] << 8) | parts2[3];
-    
-    const mask1 = (0xffffffff << (32 - prefix1)) >>> 0;
-    const mask2 = (0xffffffff << (32 - prefix2)) >>> 0;
-    
-    const network1 = (ip1Int & mask1) >>> 0;
-    const network2 = (ip2Int & mask2) >>> 0;
-    
-    const commonMask = Math.min(prefix1, prefix2);
-    const checkMask = (0xffffffff << (32 - commonMask)) >>> 0;
-    
-    return (network1 & checkMask) === (network2 & checkMask);
-  });
 
-  // Validate CIDR format with advanced checks
+  // Validate CIDR format
   const validateCIDR = $(async (value: string, isRequired: boolean = true): Promise<string | null> => {
     if (!value) {
       return isRequired ? $localize`Subnet is required` : null;
@@ -309,16 +279,6 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
       return $localize`Invalid subnet mask (8-32)`;
     }
 
-    // Advanced checks for prefix size
-    if (advancedSettings.customPrefixSize) {
-      if (maskNum < 16) {
-        return $localize`Subnet mask too large (minimum /16)`;
-      }
-      if (maskNum > 30) {
-        return $localize`Subnet mask too small (maximum /30)`;
-      }
-    }
-
     // Check if IP is the network address
     const networkAddr = await getNetworkAddress(ip, maskNum);
     if (networkAddr !== ip) {
@@ -342,32 +302,14 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
         [key]: "",
       };
     }
-
-    // Auto-suggest network address if enabled
-    if (advancedSettings.autoSuggest && value && value.includes("/")) {
-      const [ip, prefix] = value.split("/");
-      if (ip && prefix) {
-        const prefixNum = parseInt(prefix);
-        if (!isNaN(prefixNum) && prefixNum >= 8 && prefixNum <= 32) {
-          const networkAddr = await getNetworkAddress(ip, prefixNum);
-          if (networkAddr !== ip) {
-            tempSubnets.value = {
-              ...tempSubnets.value,
-              [key]: `${networkAddr}/${prefix}`,
-            };
-          }
-        }
-      }
-    }
   });
 
   // Validate all inputs
   const validateAll$ = $(async (): Promise<boolean> => {
     const errors: Record<string, string> = {};
     let isValid = true;
-    const allSubnets: { key: string; value: string }[] = [];
 
-    // First pass: validate format
+    // Validate format for each input
     for (const input of subnetInputs.value) {
       const value = tempSubnets.value[input.key] || (input.isRequired ? input.placeholder : "");
       if (value) {
@@ -375,24 +317,10 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
         if (error) {
           errors[input.key] = error;
           isValid = false;
-        } else {
-          allSubnets.push({ key: input.key, value });
         }
       } else if (input.isRequired) {
         errors[input.key] = $localize`This subnet is required`;
         isValid = false;
-      }
-    }
-
-    // Second pass: check for overlaps if enabled
-    if (advancedSettings.enableOverlapCheck && isValid) {
-      for (let i = 0; i < allSubnets.length; i++) {
-        for (let j = i + 1; j < allSubnets.length; j++) {
-          if (await checkOverlap(allSubnets[i].value, allSubnets[j].value)) {
-            errors[allSubnets[j].key] = $localize`Overlaps with ${allSubnets[i].key} network`;
-            isValid = false;
-          }
-        }
       }
     }
 
@@ -402,6 +330,15 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
 
   // Handle save
   const handleSave$ = $(async () => {
+    if (!subnetsEnabled.value) {
+      // Clear subnets when disabled
+      await starContext.updateLAN$({ Subnets: {} });
+      if (onComplete$) {
+        onComplete$();
+      }
+      return;
+    }
+
     const isValid = await validateAll$();
     if (!isValid) {
       return;
@@ -445,77 +382,42 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="container mx-auto w-full max-w-6xl p-4">
       <div class="space-y-6">
-        {/* Header Card */}
-        <Card>
-          <CardHeader>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <LuNetwork class="h-6 w-6 text-primary-500" />
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {$localize`Advanced Network Subnets Configuration`}
-                </h2>
-              </div>
-              <div class="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick$={() => {
-                    advancedSettings.showAdvancedOptions = !advancedSettings.showAdvancedOptions;
-                  }}
-                >
-                  <LuSettings2 class="h-4 w-4 mr-2" />
-                  {$localize`Advanced Options`}
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <Alert
-              status="info"
-              size="sm"
-              icon={<LuInfo class="h-4 w-4" />}
-            >
-              <p class="text-sm">
-                {$localize`Configure subnet addresses for each network segment. Subnets are automatically validated for proper CIDR notation and checked for overlaps.`}
+        {/* Header with enable/disable toggle */}
+        <SubnetsHeader
+          subnetsEnabled={subnetsEnabled}
+          onToggle$={$(async (enabled: boolean) => {
+            if (!enabled && onDisabled$) {
+              await onDisabled$();
+            }
+          })}
+        />
+
+        {/* Message when subnets are disabled */}
+        {!subnetsEnabled.value ? (
+          <div class="space-y-4">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+              <p class="text-gray-700 dark:text-gray-300">
+                {$localize`Network subnets configuration is currently disabled. Enable it using the toggle above to configure subnet settings.`}
               </p>
-            </Alert>
-
-            {/* Advanced Options */}
-            {advancedSettings.showAdvancedOptions && (
-              <div class="mt-4 space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {$localize`Advanced Settings`}
-                </h3>
-                <div class="space-y-3">
-                  <Checkbox
-                    checked={advancedSettings.enableOverlapCheck}
-                    onChange$={(checked: boolean) => {
-                      advancedSettings.enableOverlapCheck = checked;
-                    }}
-                    label={$localize`Enable subnet overlap detection`}
-                  />
-                  <Checkbox
-                    checked={advancedSettings.customPrefixSize}
-                    onChange$={(checked: boolean) => {
-                      advancedSettings.customPrefixSize = checked;
-                    }}
-                    label={$localize`Enforce prefix size limits (/16 to /30)`}
-                  />
-                  <Checkbox
-                    checked={advancedSettings.autoSuggest}
-                    onChange$={(checked: boolean) => {
-                      advancedSettings.autoSuggest = checked;
-                    }}
-                    label={$localize`Auto-correct to network address`}
-                  />
+            </div>
+            <Card>
+              <CardFooter>
+                <div class="flex items-center justify-end w-full">
+                  <Button
+                    onClick$={handleSave$}
+                    size="lg"
+                  >
+                    {$localize`Save & Continue`}
+                  </Button>
                 </div>
-              </div>
-            )}
-          </CardBody>
-        </Card>
+              </CardFooter>
+            </Card>
+          </div>
+        ) : (
 
-        {/* Base Networks */}
-        {groupedSubnets.value.base.length > 0 && (
+          <>
+            {/* Base Networks */}
+            {groupedSubnets.value.base.length > 0 && (
           <Card>
             <CardHeader>
               <div class="flex items-center gap-2">
@@ -564,8 +466,8 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
           </Card>
         )}
 
-        {/* VPN Networks */}
-        {groupedSubnets.value.vpn.length > 0 && (
+            {/* VPN Networks */}
+            {groupedSubnets.value.vpn.length > 0 && (
           <Card>
             <CardHeader>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -603,8 +505,8 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
           </Card>
         )}
 
-        {/* Tunnel Networks */}
-        {groupedSubnets.value.tunnel.length > 0 && (
+            {/* Tunnel Networks */}
+            {groupedSubnets.value.tunnel.length > 0 && (
           <Card>
             <CardHeader>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -642,27 +544,29 @@ export const Subnets = component$<StepProps>(({ onComplete$ }) => {
           </Card>
         )}
 
-        {/* Action Footer */}
-        <Card>
-          <CardFooter>
-            <div class="flex items-center justify-between w-full">
-              <div class="text-sm text-gray-500 dark:text-gray-400">
-                {Object.keys(validationErrors.value).length > 0 && (
-                  <span class="text-red-500">
-                    {$localize`Please fix ${Object.keys(validationErrors.value).length} error(s) before continuing`}
-                  </span>
-                )}
-              </div>
-              <Button
-                onClick$={handleSave$}
-                size="lg"
-                disabled={Object.keys(validationErrors.value).length > 0}
-              >
-                {$localize`Save & Continue`}
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
+            {/* Action Footer */}
+            <Card>
+              <CardFooter>
+                <div class="flex items-center justify-between w-full">
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {Object.keys(validationErrors.value).length > 0 && (
+                      <span class="text-red-500">
+                        {$localize`Please fix ${Object.keys(validationErrors.value).length} error(s) before continuing`}
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    onClick$={handleSave$}
+                    size="lg"
+                    disabled={Object.keys(validationErrors.value).length > 0}
+                  >
+                    {$localize`Save & Continue`}
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

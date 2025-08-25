@@ -1,13 +1,11 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
-import {
-  ServerCard,
-  ServerFormField,
-  CheckboxGroup,
-  SectionTitle,
-  Input,
-} from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField, SectionTitle } from "~/components/Core/Form/ServerField";
+import { CheckboxGroup } from "~/components/Core/Form/Checkbox";
+import { Input } from "~/components/Core/Input";
+import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
 
 export const PPTPServerAdvanced = component$(() => {
   const {
@@ -18,6 +16,7 @@ export const PPTPServerAdvanced = component$(() => {
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
+    updateNetwork$,
   } = usePPTPServer();
 
   // Create a wrapper for toggleAuthMethod that matches CheckboxGroup's expected signature
@@ -32,6 +31,19 @@ export const PPTPServerAdvanced = component$(() => {
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
+        {/* Network Selection */}
+        <div>
+          <SectionTitle title={$localize`Network Configuration`} />
+          <NetworkDropdown
+            selectedNetwork={(advancedFormState.network as ExtendedNetworks) || "PPTP"}
+            onNetworkChange$={(network) => {
+              updateNetwork$(network);
+            }}
+            _vpnType="PPTP"
+            label={$localize`Network`}
+          />
+        </div>
+
         {/* Authentication Methods */}
         <div>
           <SectionTitle title={$localize`Authentication Methods`} />

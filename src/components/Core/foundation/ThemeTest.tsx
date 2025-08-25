@@ -17,6 +17,7 @@ const ThemeTestCard = component$<ThemeTestCardProps>(
     const currentTheme = useSignal<string>("unknown");
 
     // Check if the dark mode is currently applied
+    // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ track }) => {
       // Re-run when theme changes
       track(() => theme);
@@ -126,7 +127,8 @@ export const ThemeTest = component$(() => {
       document.documentElement.classList.remove("dark");
     } else if (theme === "dark") {
       document.documentElement.classList.add("dark");
-    } else if (theme === "system") {
+    } else {
+      // theme === "system"
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -135,6 +137,7 @@ export const ThemeTest = component$(() => {
   });
 
   // Check system preference
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     systemPreference.value = mediaQuery.matches ? "dark" : "light";

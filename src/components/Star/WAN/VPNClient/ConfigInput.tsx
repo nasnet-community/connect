@@ -1,4 +1,5 @@
 import { $, component$, type QRL } from "@builder.io/qwik";
+import { TextArea } from "~/components/Core";
 
 interface ConfigInputProps {
   config: string;
@@ -35,18 +36,14 @@ export const ConfigInput = component$<ConfigInputProps>(
     return (
       <div class="space-y-4">
         <div class="flex space-x-4">
-          <textarea
+          <TextArea
             value={config}
-            onChange$={(e, currentTarget) =>
-              onConfigChange$(currentTarget.value)
+            onInput$={(event: InputEvent, element: HTMLTextAreaElement) =>
+              onConfigChange$(element.value)
             }
             placeholder={placeholder || defaultPlaceholder}
-            class="text-text-default placeholder:text-text-muted h-48 flex-1 rounded-lg border 
-            border-border bg-white
-            px-4 py-2
-            focus:ring-2 focus:ring-primary-500
-            dark:border-border-dark dark:bg-surface-dark
-            dark:text-text-dark-default"
+            rows={12}
+            class="h-48 flex-1"
           />
           <div class="flex flex-col justify-center space-y-2">
             <label

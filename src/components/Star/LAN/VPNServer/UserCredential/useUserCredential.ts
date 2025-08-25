@@ -11,7 +11,7 @@ import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { StarContext } from "../../../StarContext/StarContext";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "../VPNServer";
+import { VPNServerContextId } from "../VPNServerAdvanced/VPNServerContext";
 
 interface UseUserCredentialProps {
   user: Credentials;
@@ -32,13 +32,16 @@ export const useUserCredential = ({
   onDelete$,
 }: UseUserCredentialProps) => {
   const stepper = useStepperContext(VPNServerContextId);
+  const starContext = useContext(StarContext);
+  const isEasyMode = starContext.state.Choose.Mode === "easy";
 
   // Determine if this user is valid
   const isUserValid =
     user.Username.trim() !== "" &&
     user.Password.trim() !== "" &&
     Array.isArray(user.VPNType) &&
-    user.VPNType.length > 0;
+    // In Easy mode, protocols are auto-assigned, so consider them valid
+    (isEasyMode || user.VPNType.length > 0);
 
   // Use useVisibleTask$ to validate and update step completion
   // This runs on the client and doesn't have serialization issues
@@ -51,13 +54,15 @@ export const useUserCredential = ({
     const isFormValid = stepper.data.users.every((u) => {
       const hasCredentials =
         u.Username.trim() !== "" && u.Password.trim() !== "";
-      const hasProtocols = Array.isArray(u.VPNType) && u.VPNType.length > 0;
-      const hasValidProtocols =
+      // In Easy mode, protocols are auto-assigned, so consider them valid
+      const hasProtocols = isEasyMode || (Array.isArray(u.VPNType) && u.VPNType.length > 0);
+      const hasValidProtocols = isEasyMode || (
         Array.isArray(u.VPNType) &&
         u.VPNType.every(
           (protocol: VPNType) =>
             stepper.data.enabledProtocols[protocol] === true,
-        );
+        )
+      );
       return hasCredentials && hasProtocols && hasValidProtocols;
     });
 
@@ -118,6 +123,7 @@ export const useUserCredential = ({
 export const useUserManagement = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const isEasyMode = starContext.state.Choose.Mode === "easy";
 
   // === USER MANAGEMENT STATE ===
   const users = useStore<Credentials[]>(
@@ -173,7 +179,8 @@ export const useUserManagement = () => {
     const hasValidUsers = users.every((user) => {
       const hasCredentials =
         user.Username.trim() !== "" && user.Password.trim() !== "";
-      const hasProtocols = (user.VPNType.length || 0) > 0;
+      // In Easy mode, protocols are auto-assigned, so consider them valid
+      const hasProtocols = isEasyMode || (user.VPNType.length || 0) > 0;
       return hasCredentials && hasProtocols;
     });
 
@@ -197,7 +204,10 @@ export const useUserManagement = () => {
       suggestedUsername = `user${newUserIndex}`;
     }
 
-    users.push({ Username: suggestedUsername, Password: "", VPNType: [] });
+    // Auto-assign protocols for Easy mode, empty array for Advanced mode
+    const defaultProtocols = isEasyMode ? ["OpenVPN", "Wireguard"] as VPNType[] : [];
+    
+    users.push({ Username: suggestedUsername, Password: "", VPNType: defaultProtocols });
   });
 
   const removeUser = $((index: number) => {

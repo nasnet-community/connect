@@ -38,13 +38,6 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
       );
     }
 
-    const getVPNErrors = () => {
-      return Object.entries(wizardState.validationErrors)
-        .filter(([key]) => key.startsWith(`vpn-${vpnId}`))
-        .map(([, errors]) => errors)
-        .flat();
-    };
-
     // Removed unused getFieldErrors function
 
     const handleValidChange = $((isValid: boolean) => {
@@ -164,12 +157,17 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
 
         {/* VPN Box with configuration */}
         <VPNBox
-          id={vpn.id}
-          name={vpn.name}
-          type={vpn.type}
-          error={getVPNErrors().length > 0}
+          vpn={vpn}
+          index={0}
+          isExpanded={true}
+          canRemove={false}
+          validationErrors={{}}
         >
-          <VPNBoxContent>
+          <VPNBoxContent
+            vpn={vpn}
+            validationErrors={{}}
+            onUpdate$={$((updates: any) => wizardActions.updateVPN$(vpnId, updates))}
+          >
             {/* VPN Name (read-only in this step) */}
             <div class="mb-4 rounded-md bg-gray-50 p-3 dark:bg-gray-800">
               <div class="flex items-center justify-between">

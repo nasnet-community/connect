@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import { HiSparklesOutline } from "@qwikest/icons/heroicons";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
+import { Input, Toggle } from "~/components/Core";
 
 interface SingleSSIDFormProps {
   ssid: Signal<string>;
@@ -40,30 +41,20 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
             <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               {$localize`Hide`}
             </span>
-            <label class="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={isHide.value}
-                class="peer sr-only"
-                onChange$={toggleHide}
-              />
-              <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
-            </label>
+            <Toggle
+              checked={isHide.value}
+              onChange$={toggleHide}
+            />
           </div>
 
           <div class="flex items-center">
             <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               {$localize`Split Band`}
             </span>
-            <label class="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={splitBand.value}
-                class="peer sr-only"
-                onChange$={toggleSplitBand}
-              />
-              <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
-            </label>
+            <Toggle
+              checked={splitBand.value}
+              onChange$={toggleSplitBand}
+            />
           </div>
         </div>
 
@@ -77,16 +68,16 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
               <span class="ml-1 text-red-500">*</span>
             </label>
             <div class="flex flex-col gap-3 sm:flex-row">
-              <input
+              <Input
                 id="ssid"
                 type="text"
                 value={ssid.value}
-                onChange$={(e) =>
-                  (ssid.value = (e.target as HTMLInputElement).value)
-                }
-                class="h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                onInput$={(event: Event, value: string) => {
+                  ssid.value = value;
+                }}
                 placeholder={$localize`Enter network name`}
                 required
+                class="h-11 flex-1"
               />
               <button
                 onClick$={generateSSID}
@@ -112,16 +103,16 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
               <span class="ml-1 text-red-500">*</span>
             </label>
             <div class="flex flex-col gap-3 sm:flex-row">
-              <input
+              <Input
                 id="password"
-                type="text"
+                type="password"
                 value={password.value}
-                onChange$={(e) =>
-                  (password.value = (e.target as HTMLInputElement).value)
-                }
-                class="h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                onInput$={(event: Event, value: string) => {
+                  password.value = value;
+                }}
                 placeholder={$localize`Enter network password`}
                 required
+                class="h-11 flex-1"
               />
               <button
                 onClick$={generatePassword}

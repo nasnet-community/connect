@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { PPPoEConfig } from "../../../../../StarContext/WANType";
+import { Input, FormField, PasswordField } from "~/components/Core";
 
 export interface PPPoEFieldsProps {
   config?: PPPoEConfig;
@@ -18,65 +19,42 @@ export const PPPoEFields = component$<PPPoEFieldsProps>(
           {$localize`PPPoE Settings`}
         </h4>
 
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {$localize`Username`} <span class="text-error-500">*</span>
-          </label>
-          <input
+        <FormField
+          label={$localize`Username`}
+          required
+          error={errors?.username?.[0]}
+        >
+          <Input
             type="text"
-            class={`w-full rounded-md shadow-sm focus:ring-primary-500 
-                 dark:bg-gray-700 dark:text-white
-                 ${
-                   errors?.username
-                     ? "border-error-500 focus:border-error-500"
-                     : "border-gray-300 focus:border-primary-500 dark:border-gray-600"
-                 }`}
             value={config?.username || ""}
-            onInput$={(e) => {
-              const value = (e.target as HTMLInputElement).value;
+            onInput$={(event: Event, value: string) => {
               onUpdate$({
                 username: value,
                 password: config?.password || "",
               });
             }}
             placeholder="PPPoE username"
+            
           />
-          {errors?.username && (
-            <p class="mt-1 text-sm text-error-500 dark:text-error-400">
-              {errors.username[0]}
-            </p>
-          )}
-        </div>
+        </FormField>
 
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {$localize`Password`} <span class="text-error-500">*</span>
-          </label>
-          <input
-            type="password"
-            class={`w-full rounded-md shadow-sm focus:ring-primary-500 
-                 dark:bg-gray-700 dark:text-white
-                 ${
-                   errors?.password
-                     ? "border-error-500 focus:border-error-500"
-                     : "border-gray-300 focus:border-primary-500 dark:border-gray-600"
-                 }`}
+        <FormField
+          label={$localize`Password`}
+          required
+          error={errors?.password?.[0]}
+        >
+          <PasswordField
             value={config?.password || ""}
-            onInput$={(e) => {
-              const value = (e.target as HTMLInputElement).value;
+            onInput$={(event: Event, element: HTMLInputElement) => {
               onUpdate$({
                 username: config?.username || "",
-                password: value,
+                password: element.value,
               });
             }}
             placeholder="PPPoE password"
+            
           />
-          {errors?.password && (
-            <p class="mt-1 text-sm text-error-500 dark:text-error-400">
-              {errors.password[0]}
-            </p>
-          )}
-        </div>
+        </FormField>
       </div>
     );
   },

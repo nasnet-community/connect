@@ -20,11 +20,6 @@ export const LinkBoxHeader = component$<LinkBoxHeaderProps>(
     onToggleExpanded$,
     hasErrors,
   }) => {
-    // Format interface display
-    const getInterfaceDisplay = () => {
-      if (!link.interfaceName) return "";
-      return `(${link.interfaceName})`;
-    };
 
     // Get connection type display
     const getConnectionDisplay = () => {

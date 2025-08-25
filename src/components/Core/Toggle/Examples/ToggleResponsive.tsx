@@ -2,71 +2,67 @@ import { component$, useSignal, $ } from "@builder.io/qwik";
 import { Toggle } from "../Toggle";
 
 export default component$(() => {
-  const responsiveToggle = useSignal(false);
-  const mobileOptimized = useSignal(true);
-  const tabletOptimized = useSignal(false);
+  const smallToggle = useSignal(false);
+  const mediumToggle = useSignal(true);
+  const largeToggle = useSignal(false);
 
   return (
     <div class="flex flex-col gap-6">
       <div class="space-y-4">
-        <h3 class="text-lg font-medium">Responsive Toggles</h3>
+        <h3 class="text-lg font-medium">Toggle Sizes</h3>
         
         <div class="space-y-6">
           <div class="space-y-2">
             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Responsive Size (Small on mobile, Medium on tablet, Large on desktop)
+              Small Size - Compact for Dense Layouts
             </h4>
             <Toggle
-              checked={responsiveToggle.value}
+              checked={smallToggle.value}
               onChange$={$((value) => {
-                responsiveToggle.value = value;
+                smallToggle.value = value;
               })}
-              label="Responsive toggle"
-              size={{
-                base: "sm",
-                md: "md",
-                lg: "lg"
-              }}
+              label="Small toggle"
+              size="sm"
               color="primary"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Resize your browser window to see the size change at different breakpoints.
+              Ideal for compact interfaces and forms with limited space.
             </p>
           </div>
 
           <div class="space-y-2">
             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Mobile-Optimized (Always Large for Touch)
+              Medium Size - Default Balanced Size
             </h4>
             <Toggle
-              checked={mobileOptimized.value}
+              checked={mediumToggle.value}
               onChange$={$((value) => {
-                mobileOptimized.value = value;
+                mediumToggle.value = value;
               })}
-              label="Mobile-friendly toggle"
-              size="lg"
+              label="Medium toggle (default)"
+              size="md"
               color="success"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Large size provides better touch targets on mobile devices.
+              Perfect balance between size and usability for most interfaces.
             </p>
           </div>
 
           <div class="space-y-2">
             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Compact for Desktop
+              Large Size - Better Touch Targets
             </h4>
             <Toggle
-              checked={tabletOptimized.value}
+              checked={largeToggle.value}
               onChange$={$((value) => {
-                tabletOptimized.value = value;
+                largeToggle.value = value;
               })}
-              label="Compact toggle"
-              size="sm"
+              label="Large toggle"
+              size="lg"
               color="secondary"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Small size works well in dense desktop layouts.
+              Larger size provides better touch targets for mobile and accessibility.
             </p>
           </div>
         </div>
@@ -74,43 +70,43 @@ export default component$(() => {
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h5 class="mb-2 text-sm font-medium">Mobile (sm)</h5>
+          <h5 class="mb-2 text-sm font-medium">Small (sm)</h5>
           <p class="mb-3 text-xs text-gray-600 dark:text-gray-400">
-            Large touch targets, clear visual feedback
+            20px track height - Compact design
           </p>
           <Toggle
             checked={true}
             onChange$={$(() => {})}
-            label="Mobile toggle"
-            size="lg"
+            label="Small example"
+            size="sm"
             color="primary"
           />
         </div>
 
         <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h5 class="mb-2 text-sm font-medium">Tablet (md)</h5>
+          <h5 class="mb-2 text-sm font-medium">Medium (md)</h5>
           <p class="mb-3 text-xs text-gray-600 dark:text-gray-400">
-            Medium size for mixed input methods
+            24px track height - Default size
           </p>
           <Toggle
             checked={false}
             onChange$={$(() => {})}
-            label="Tablet toggle"
+            label="Medium example"
             size="md"
             color="secondary"
           />
         </div>
 
         <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h5 class="mb-2 text-sm font-medium">Desktop (lg+)</h5>
+          <h5 class="mb-2 text-sm font-medium">Large (lg)</h5>
           <p class="mb-3 text-xs text-gray-600 dark:text-gray-400">
-            Compact for dense interfaces
+            28px track height - Touch-friendly
           </p>
           <Toggle
             checked={true}
             onChange$={$(() => {})}
-            label="Desktop toggle"
-            size="sm"
+            label="Large example"
+            size="lg"
             color="info"
           />
         </div>
@@ -119,26 +115,20 @@ export default component$(() => {
       <div class="space-y-4">
         <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
           <p class="text-sm text-blue-700 dark:text-blue-300">
-            <strong>Responsive Design:</strong> The toggle component automatically detects screen size and 
-            adjusts accordingly. All sizes maintain a minimum 44px touch target on touch devices for optimal accessibility.
+            <strong>Accessibility:</strong> All toggle sizes maintain minimum 44px touch targets 
+            through adequate padding to ensure optimal usability on touch devices.
           </p>
         </div>
 
         <div class="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
           <h4 class="mb-2 text-sm font-semibold text-green-800 dark:text-green-200">
-            Current Breakpoint Detection
+            Size Guidelines
           </h4>
-          <p class="text-sm text-green-700 dark:text-green-300">
-            The responsive toggle above automatically detects your current screen size:
-          </p>
-          <ul class="mt-2 text-xs text-green-600 dark:text-green-400 space-y-1">
-            <li>• <strong>Small (base):</strong> &lt; 640px - Uses small size for compact mobile layouts</li>
-            <li>• <strong>Medium (md):</strong> 768px+ - Uses medium size for tablets</li>
-            <li>• <strong>Large (lg):</strong> 1024px+ - Uses large size for desktop interfaces</li>
+          <ul class="mt-2 text-sm text-green-700 dark:text-green-300 space-y-2">
+            <li>• <strong>Small:</strong> Use in dense layouts, secondary settings, or when space is limited</li>
+            <li>• <strong>Medium:</strong> Default size for most use cases, balanced appearance</li>
+            <li>• <strong>Large:</strong> Primary actions, mobile interfaces, or accessibility requirements</li>
           </ul>
-          <p class="mt-2 text-xs text-green-600 dark:text-green-400">
-            Try resizing your browser window to see the toggle size change in real-time!
-          </p>
         </div>
       </div>
     </div>

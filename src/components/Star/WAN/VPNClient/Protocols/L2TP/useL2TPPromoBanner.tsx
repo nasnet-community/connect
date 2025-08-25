@@ -6,6 +6,7 @@ import {
   getOrCreateSessionId,
   type L2TPCredentials,
 } from "~/utils/supabaseClient";
+import { generateUniqueId } from "~/components/Core/common/utils";
 
 declare global {
   interface Window {
@@ -156,7 +157,7 @@ export const useL2TPPromoBanner = (
       }
 
       const completeCredentials: L2TPCredentials = {
-        id: response.request_id || crypto.randomUUID(),
+        id: response.request_id || generateUniqueId("l2tp"),
         username: response.credentials.username,
         password: response.credentials.password,
         server: response.credentials.server,

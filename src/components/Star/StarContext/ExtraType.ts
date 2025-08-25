@@ -1,27 +1,30 @@
 export type ServiceType = "Enable" | "Disable" | "Local";
 export type UpdateInterval = "Daily" | "Weekly" | "Monthly" | "";
 
-
+export interface ServiceConfig {
+  type: ServiceType;
+  port?: number;
+}
 
 export interface services {
-    api: ServiceType;
-    apissl: ServiceType;
-    ftp: ServiceType;
-    ssh: ServiceType;
-    telnet: ServiceType;
-    winbox: ServiceType;
-    web: ServiceType;
-    webssl: ServiceType;
-  }
-  
-  export interface GameConfig {
-    name: string;
-    link: "foreign" | "domestic" | "vpn";
-    ports: {
-      tcp?: string[];
-      udp?: string[];
-    };
-  }
+  api: ServiceConfig;
+  apissl: ServiceConfig;
+  ftp: ServiceConfig;
+  ssh: ServiceConfig;
+  telnet: ServiceConfig;
+  winbox: ServiceConfig;
+  web: ServiceConfig;
+  webssl: ServiceConfig;
+}
+
+export interface GameConfig {
+  name: string;
+  link: "foreign" | "domestic" | "vpn";
+  ports: {
+    tcp?: string[];
+    udp?: string[];
+  };
+}
 
 export interface RouterIdentityRomon {
   RouterIdentity: string;
@@ -39,16 +42,22 @@ export interface Update {
   UpdateInterval: UpdateInterval;
 }
 
+export interface IPAddressUpdate {
+  isIPAddressUpdate: boolean;
+  IPAddressUpdateTime: string;
+}
+
 export interface ExtraConfigState {
-    RouterIdentityRomon?: RouterIdentityRomon;
-    services?: services;
-    Timezone?: string;
-    AutoReboot?: AutoReboot;
-    Update?: Update;
-    isCertificate?: boolean;
-    isNTP?: boolean;
-    isGraphing?: boolean;
-    isDDNS?: boolean;
-    isLetsEncrypt?: boolean;
-    Games?: GameConfig[];
-  }
+  RouterIdentityRomon?: RouterIdentityRomon;
+  services?: services;
+  Timezone?: string;
+  AutoReboot?: AutoReboot;
+  Update?: Update;
+  IPAddressUpdate?: IPAddressUpdate;
+  isCertificate?: boolean;
+  isNTP?: boolean;
+  isGraphing?: boolean;
+  isDDNS?: boolean;
+  isLetsEncrypt?: boolean;
+  Games?: GameConfig[];
+}

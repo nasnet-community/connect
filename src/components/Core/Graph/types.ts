@@ -23,7 +23,7 @@ export interface CSSProperties {
 
 export interface GraphNode {
   id: string | number;
-  type?: string;
+  type?: "laptop" | "wifi" | "globe" | "globe2" | "server" | string;
   x: number;
   y: number;
   label: string;
@@ -47,6 +47,7 @@ export interface GraphConnection {
   type?: string;
   trafficType?: GraphTrafficType;
   connectionType?: ConnectionType;
+  isDomestic?: boolean;
 }
 
 export interface GraphConfig {
@@ -55,12 +56,14 @@ export interface GraphConfig {
   backgroundColor?: string;
   darkBackgroundColor?: string;
   expandOnHover?: boolean;
+  expandOnClick?: boolean;
   maxExpandedWidth?: string;
   maxExpandedHeight?: string;
   animationDuration?: number;
   zoomable?: boolean;
   draggable?: boolean;
   showLegend?: boolean;
+  showDomesticLegend?: boolean;
   legendItems?: LegendItem[];
   viewBox?: string;
   preserveAspectRatio?: string;

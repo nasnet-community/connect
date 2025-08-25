@@ -7,6 +7,7 @@ import {
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import LogoImage from "/images/logo.jpg?jsx";
 import {
   subscribeToNewsletter,
   generateUserUUID,
@@ -156,8 +157,7 @@ export const NewsletterModal = component$<NewsletterModalProps>(
                 <div class="mb-8 text-center">
                   <div class="mb-6 flex justify-center">
                     <div class="animate-in zoom-in relative rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 p-2 transition-all delay-200 duration-1000 duration-300 hover:scale-105 hover:shadow-lg dark:border-primary-500/30 dark:from-primary-500/20 dark:to-secondary-500/20">
-                      <img
-                        src="/images/logo.jpg"
+                      <LogoImage
                         alt="Connect Logo"
                         class="h-16 w-16 rounded-xl object-cover shadow-lg transition-all duration-300"
                       />

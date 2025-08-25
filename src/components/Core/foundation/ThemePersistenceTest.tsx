@@ -40,7 +40,8 @@ export const ThemePersistenceTest = component$(() => {
       document.documentElement.classList.add("dark");
     } else if (theme === "light") {
       document.documentElement.classList.remove("dark");
-    } else if (theme === "system") {
+    } else {
+      // theme === "system"
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)",
       ).matches;
@@ -65,6 +66,7 @@ export const ThemePersistenceTest = component$(() => {
   });
 
   // Load theme on initial render
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     getStoredTheme();
   });

@@ -1,7 +1,11 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
-import { ServerCard, ServerFormField, Select } from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField } from "~/components/Core/Form/ServerField";
+import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
+import { Input } from "~/components/Core";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 // import { FormField } from "../../../../WAN/VPNClient/components/FormField";
 
 export const L2TPServerEasy = component$(() => {
@@ -20,16 +24,26 @@ export const L2TPServerEasy = component$(() => {
     >
       {isEnabled.value && (
         <div class="space-y-6">
+          {/* Network Selection */}
+          <ServerFormField label={$localize`Network`}>
+            <NetworkDropdown
+              selectedNetwork="VPN"
+              onNetworkChange$={(network) => {
+                console.log("L2TP Easy network changed to:", network);
+              }}
+            />
+          </ServerFormField>
+
           {/* IPsec Usage Dropdown */}
           <ServerFormField
             label={$localize`Use IPsec`}
-            helperText={$localize`Controls IPsec encryption for L2TP connections`}
           >
-            <Select
+            <UnifiedSelect
               value={easyFormState.useIpsec.toString()}
               onChange$={(value) => {
-                if (value === "yes" || value === "no" || value === "required") {
-                  updateEasyUseIpsec$(value);
+                const stringValue = Array.isArray(value) ? value[0] : value;
+                if (stringValue === "yes" || stringValue === "no" || stringValue === "required") {
+                  updateEasyUseIpsec$(stringValue);
                 }
               }}
               options={[
@@ -45,29 +59,17 @@ export const L2TPServerEasy = component$(() => {
             <div class="relative">
               <ServerFormField
                 label={$localize`IPsec Secret Key`}
-                errorMessage={secretError.value}
+                errorMessage={secretError.value || (!secretError.value ? $localize`Key used for encrypting L2TP/IPsec connections` : undefined)}
                 required={easyFormState.useIpsec === "required"}
-                helperText={
-                  secretError.value
-                    ? undefined
-                    : $localize`Key used for encrypting L2TP/IPsec connections`
-                }
               >
-                <div class="relative">
-                  <input
-                    type="text"
-                    value={easyFormState.ipsecSecret}
-                    onInput$={(e) => {
-                      const target = e.target as HTMLInputElement;
-                      updateEasyIpsecSecret$(target.value);
-                    }}
-                    placeholder={$localize`Enter IPsec secret key`}
-                    class="w-full rounded-lg border border-border bg-white px-3 py-2
-                      focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
-                      disabled:cursor-not-allowed disabled:opacity-75
-                      dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  value={easyFormState.ipsecSecret}
+                  onInput$={(event: Event, value: string) => {
+                    updateEasyIpsecSecret$(value);
+                  }}
+                  placeholder={$localize`Enter IPsec secret key`}
+                />
               </ServerFormField>
             </div>
           )}

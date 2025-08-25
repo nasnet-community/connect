@@ -1,18 +1,21 @@
-import { $, component$, useSignal } from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { CSSProperties, GraphConfig } from "../types";
 import { GraphLegend } from "./GraphLegend";
+import { LuX } from "@qwikest/icons/lucide";
 
 // Default config values
 export const defaultConfig = {
   width: "100%",
-  height: "20rem", // Using Tailwind rem units (320px) instead of hardcoded px
-  expandOnHover: true,
+  height: "11rem", // 176px to match h-44
+  expandOnHover: false,
+  expandOnClick: true,
   maxExpandedWidth: "90vw",
   maxExpandedHeight: "80vh",
-  animationDuration: 300,
+  animationDuration: 500,
   showLegend: true,
+  showDomesticLegend: true,
   legendItems: [],
-  viewBox: "0 0 800 400", // More mobile-friendly aspect ratio
+  viewBox: "0 0 400 200", // Match NetworkTopologyGraph viewBox
   preserveAspectRatio: "xMidYMid meet",
 };
 
@@ -28,18 +31,27 @@ export const GraphContainer = component$<{
   const { title, config, children, connections } = props;
   const mergedConfig = { ...defaultConfig, ...config };
 
-  // State for expanded mode
+  // State for expanded mode and touch detection
   const isExpanded = useSignal(false);
+  const isTouch = useSignal(false);
 
-  // Toggle expanded state
-  const toggleExpand = $(() => {
-    isExpanded.value = !isExpanded.value;
+  // Detect touch device for better UX
+  useVisibleTask$(() => {
+    isTouch.value = window.matchMedia(
+      "(hover: none) and (pointer: coarse)",
+    ).matches;
+  });
 
-    if (isExpanded.value) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+  // Handle expand
+  const handleExpand = $(() => {
+    isExpanded.value = true;
+    document.body.style.overflow = "hidden";
+  });
+
+  // Handle collapse
+  const handleCollapse = $(() => {
+    isExpanded.value = false;
+    document.body.style.overflow = "";
   });
 
   // Calculate dynamic styling using CSS custom properties for better Tailwind integration
@@ -58,120 +70,188 @@ export const GraphContainer = component$<{
   return (
     <div
       class={{
-        "graph-container relative overflow-hidden rounded-xl bg-background transition-all ease-in-out dark:bg-background-dark": true,
+        "topology-container relative h-44 transition-all duration-500 ease-in-out": true,
         expanded: isExpanded.value,
       }}
       style={graphContainerStyle as any}
+      tabIndex={0}
+      onClick$={() => {
+        if (!isExpanded.value && mergedConfig.expandOnClick) handleExpand();
+      }}
+      onKeyDown$={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && !isExpanded.value && mergedConfig.expandOnClick) {
+          handleExpand();
+        }
+        if ((e.key === "Escape" || e.key === "Esc") && isExpanded.value) {
+          handleCollapse();
+        }
+      }}
+      aria-expanded={isExpanded.value}
+      role="region"
+      aria-label={title || "Network Graph"}
     >
-      {/* Graph title */}
-      {title && (
-        <div class="graph-title p-3 font-medium text-text dark:text-text-dark-default">
-          {title}
-          {isExpanded.value && (
-            <GraphLegend
-              connections={connections}
-              customLegendItems={mergedConfig.legendItems}
-              showLegend={mergedConfig.showLegend}
-            />
-          )}
+      <div class="network-graph relative h-full w-full rounded-xl bg-amber-50/50 p-5 shadow-sm transition-all duration-500 ease-in-out dark:border dark:border-gray-800 dark:bg-gray-900/95">
+      {/* Graph header with title, legend, and close icon button (when expanded) */}
+      <div
+        class={`graph-header mb-4 ${isExpanded.value ? "expanded-header" : "relative items-center justify-between hidden"}`}
+      >
+        {/* Centered legend and title */}
+        <div
+          class={`legend-center flex w-full flex-col items-center ${isExpanded.value ? "absolute left-1/2 top-6 z-10 -translate-x-1/2" : ""}`}
+          style={isExpanded.value ? "pointer-events: auto;" : ""}
+        >
+          <span class="mb-1 text-sm font-medium text-amber-800 dark:text-secondary-300">
+            {title || "Network Graph"}
+          </span>
+          <GraphLegend
+            connections={connections}
+            customLegendItems={mergedConfig.legendItems}
+            showLegend={mergedConfig.showLegend}
+            showDomesticLegend={mergedConfig.showDomesticLegend}
+          />
         </div>
-      )}
+        {/* Close icon button - visible when expanded, top right of expanded graph */}
+        {isExpanded.value && (
+          <button
+            class="close-graph-btn absolute right-4 top-4 z-20 rounded-full bg-amber-100 p-2 text-amber-800 shadow-md hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            onClick$={$((e) => {
+              e.stopPropagation();
+              handleCollapse();
+            })}
+            aria-label="Close expanded network graph"
+            tabIndex={0}
+            type="button"
+          >
+            <LuX class="h-6 w-6" />
+          </button>
+        )}
+      </div>
 
-      {/* SVG Graph */}
-      <div style={{ height: title ? "calc(100% - 3rem)" : "100%" }}>
+      {/* Network topology visualization with expandable height */}
+      <div class="topology-content relative flex h-24 items-center justify-center transition-all duration-500 ease-in-out">
         {children}
       </div>
 
-      {/* Expand/collapse button with accessibility and touch-friendly sizing */}
-      <button
-        class="absolute bottom-3 mobile:bottom-safe right-3 mobile:right-safe-right rounded-full bg-surface-light/90 p-2 touch:p-3 text-gray-700 shadow-sm dark:bg-surface-dark/90 dark:text-gray-200 min-h-[44px] min-w-[44px] touch:min-h-[48px] touch:min-w-[48px] touch-manipulation"
-        onClick$={toggleExpand}
-        aria-label={isExpanded.value ? "Collapse graph to normal size" : "Expand graph to full screen"}
-        aria-expanded={isExpanded.value}
-        type="button"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          class="h-5 w-5"
-        >
-          {isExpanded.value ? (
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 12H4M12 4v16"
-            />
-          ) : (
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"
-            />
-          )}
-        </svg>
-      </button>
+      </div>
 
-      {/* Graph component styles using CSS custom properties and Tailwind-compatible classes */}
-      <style>
-        {`
-          .graph-container {
-            transition-duration: var(--animation-duration, ${mergedConfig.animationDuration}ms);
-          }
-          
-          .graph-container.expanded {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 90vw !important;
-            max-width: 1200px !important;
-            height: 80vh !important;
-            max-height: 800px !important;
-            z-index: 50 !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-          }
-          
-          .graph-container.expanded::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-          }
-          
-          .node-highlight {
-            transition: r 200ms ease-in-out;
-          }
-          
-          .graph-container:hover .node-highlight {
-            r: calc(var(--node-size, 20) * 1.1);
-          }
-          
-          .connection-path {
-            transition: stroke-width 200ms ease-in-out;
-          }
-          
-          .connection-path:hover {
-            stroke-width: calc(var(--connection-width, 2) * 1.5);
-          }
+      {/* Add CSS directly inside component */}
+      <style
+        dangerouslySetInnerHTML={`
+        .topology-container {
+          z-index: 1;
+          overflow: visible;
+        }
+        .graph-header.expanded-header {
+          position: static !important;
+          display: block !important;
+          min-height: 60px;
+        }
+        .graph-header .legend-center {
+          position: static;
+          left: unset;
+          top: unset;
+          transform: none;
+        }
+        .topology-container.expanded .graph-header.expanded-header .legend-center {
+          position: absolute;
+          left: 50%;
+          top: 24px;
+          transform: translateX(-50%);
+          z-index: 10;
+          width: auto;
+          background: rgba(255,251,235,0.95);
+          border-radius: 0.75rem;
+          padding: 0.5rem 1.5rem;
+          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+        }
+        .dark .topology-container.expanded .graph-header.expanded-header .legend-center {
+          background: rgba(31, 41, 55, 0.95);
+          border: 1px solid rgba(75, 85, 99, 0.4);
+          box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+        }
+        .topology-container.expanded .graph-header.expanded-header .close-graph-btn {
+          z-index: 20;
+        }
+        .graph-header { position: relative; }
+        .graph-header button[type="button"] {
+          z-index: 1;
+        }
 
-          /* Add touch-friendly interactions from Tailwind config */
-          @media (hover: none) and (pointer: coarse) {
-            .graph-container:hover .node-highlight,
-            .connection-path:hover {
-              /* Disable hover effects on touch devices */
-              transition: none;
-            }
-          }
-        `}
-      </style>
+        /* Use .expanded instead of :hover for expanded state */
+        .topology-container.expanded .network-graph {
+          position: fixed;
+          transform: translate(-50%, -50%);
+          left: 50%;
+          top: 50%;
+          width: 90vw;
+          max-width: 800px;
+          height: 80vh;
+          max-height: 600px;
+          z-index: 9000 !important;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          background-color: rgb(255 251 235 / 0.98);
+        }
+        
+        /* Show the graph header when the graph is expanded */
+        .topology-container.expanded .graph-header {
+          display: flex;
+        }
+        
+        /* Apply a higher z-index to the backdrop overlay */
+        .topology-container.expanded::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.4);
+          z-index: 8900 !important;
+        }
+        
+        .dark .topology-container.expanded .network-graph {
+          background-color: rgb(17, 24, 39, 0.98);
+          border: 1px solid rgb(55, 65, 81);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .topology-container.expanded .topology-content {
+          height: calc(80vh - 150px);
+          max-height: 450px;
+        }
+        
+        /* Node highlight pulse animation */
+        .node-highlight {
+          animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+          0% { opacity: 0.3; r: 20; }
+          50% { opacity: 0.6; r: 22; }
+          100% { opacity: 0.3; r: 20; }
+        }
+        
+        /* Adjust animation speed when expanded */
+        .topology-container.expanded .node-highlight {
+          animation-duration: 3s;
+        }
+        
+        .topology-container.expanded circle {
+          animation-duration: 3s;
+        }
+        
+        /* Apply secondary color to traffic paths in dark mode */
+        .dark .traffic-path {
+          stroke: #4972ba !important;
+          stroke-opacity: 1 !important;
+          stroke-width: 3px !important;
+        }
+        
+        .dark .traffic-path-arrow {
+          fill: #4972ba !important;
+        }
+      `}
+      />
     </div>
   );
 });

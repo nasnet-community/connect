@@ -1,12 +1,13 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { VPN_PROTOCOLS } from "../Protocols/constants";
-import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { VPNServerContextId } from "../VPNServer";
-import { Card, FormField } from "../UI";
+import { Card } from "~/components/Core/Card";
+import { Field } from "~/components/Core/Form/Field";
+import { Input, Checkbox } from "~/components/Core";
 import { useUserCredential } from "./useUserCredential";
+import { StarContext } from "../../../StarContext/StarContext";
 import {
   HiUserOutline,
   HiLockClosedOutline,
@@ -20,10 +21,13 @@ interface UserCredentialProps {
   index: number;
   canDelete: boolean;
   usernameError?: string;
+  passwordError?: string;
   onUsernameChange$: QRL<(value: string, index: number) => void>;
   onPasswordChange$: QRL<(value: string, index: number) => void>;
   onProtocolToggle$: QRL<(protocol: VPNType, index: number) => void>;
   onDelete$: QRL<(index: number) => void>;
+  easyMode?: boolean;
+  enabledProtocols?: Record<VPNType, boolean>;
 }
 
 export const UserCredential = component$<UserCredentialProps>(
@@ -32,16 +36,20 @@ export const UserCredential = component$<UserCredentialProps>(
     index,
     canDelete,
     usernameError,
+    passwordError,
     onUsernameChange$,
     onPasswordChange$,
     onProtocolToggle$,
     onDelete$,
+    easyMode = false,
+    enabledProtocols,
   }) => {
-    const stepper = useStepperContext(VPNServerContextId);
+    // Get mode from StarContext
+    const starContext = useContext(StarContext);
+    const isEasyMode = easyMode || starContext.state.Choose.Mode === "easy";
 
     const {
       isUserValid,
-      cardTitle,
       handleUsernameChange,
       handlePasswordChange,
       handleProtocolToggle,
@@ -58,7 +66,6 @@ export const UserCredential = component$<UserCredentialProps>(
     return (
       <Card
         variant="default"
-        title={cardTitle}
         class="mb-3 overflow-hidden transition-all"
         loading={false}
       >
@@ -92,94 +99,82 @@ export const UserCredential = component$<UserCredentialProps>(
         <div class="space-y-4">
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Username Field */}
-            <FormField
+            <Field
               label={$localize`Username`}
               id={`username-${index}`}
               required={true}
               size="sm"
-              validation={
-                usernameError
-                  ? "invalid"
-                  : user.Username.trim() !== ""
-                    ? "valid"
-                    : "invalid"
-              }
-              errorMessage={
+              error={
                 usernameError ||
                 (user.Username.trim() === "" ? $localize`Required` : undefined)
               }
             >
               <div class="relative">
-                <input
+                <Input
                   id={`username-${index}`}
                   type="text"
                   value={user.Username}
-                  onInput$={async (e) => {
-                    const target = e.target as HTMLInputElement;
-                    await handleUsernameChange(target.value);
+                  onInput$={async (event: Event, value: string) => {
+                    await handleUsernameChange(value);
                   }}
-                  class="w-full rounded-lg border border-border bg-white py-1.5 pl-8 text-sm
-                    focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
-                    dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                   placeholder={$localize`Enter username`}
+                  size="sm"
+                  class="pl-8"
                 />
                 <div class="text-text-muted dark:text-text-dark-muted absolute left-2.5 top-1/2 -translate-y-1/2">
                   <HiUserOutline class="h-4 w-4" />
                 </div>
               </div>
-            </FormField>
+            </Field>
 
             {/* Password Field */}
-            <FormField
+            <Field
               label={$localize`Password`}
               id={`password-${index}`}
               required={true}
               size="sm"
-              validation={user.Password.trim() !== "" ? "valid" : "invalid"}
-              errorMessage={
-                user.Password.trim() === "" ? $localize`Required` : undefined
+              error={
+                passwordError ||
+                (user.Password.trim() === "" ? $localize`Required` : undefined)
               }
             >
               <div class="relative">
-                <input
+                <Input
                   id={`password-${index}`}
                   type="text"
                   value={user.Password}
-                  onInput$={async (e) => {
-                    const target = e.target as HTMLInputElement;
-                    await handlePasswordChange(target.value);
+                  onInput$={async (event: Event, value: string) => {
+                    await handlePasswordChange(value);
                   }}
-                  class="w-full rounded-lg border border-border bg-white py-1.5 pl-8 text-sm
-                    focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
-                    dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                   placeholder={$localize`Enter password`}
+                  size="sm"
+                  class="pl-8"
                 />
                 <div class="text-text-muted dark:text-text-dark-muted absolute left-2.5 top-1/2 -translate-y-1/2">
                   <HiLockClosedOutline class="h-4 w-4" />
                 </div>
               </div>
-            </FormField>
+            </Field>
           </div>
 
-          {/* Allowed VPN Protocols - Redesigned */}
-          <FormField
-            label={$localize`Allowed Protocols`}
-            size="sm"
-            validation={
-              Array.isArray(user.VPNType) && user.VPNType.length > 0
-                ? "valid"
-                : "invalid"
-            }
-            errorMessage={
-              Array.isArray(user.VPNType) && user.VPNType.length === 0
-                ? $localize`Select at least one protocol`
-                : undefined
-            }
-          >
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
-              {VPN_PROTOCOLS.map((protocol) => {
-                // Only show enabled protocols
-                if (!stepper.data.enabledProtocols[protocol.id]) return null;
+
+          {/* Allowed VPN Protocols - Only show in Advanced mode */}
+          {!isEasyMode && (
+            <Field
+              label={$localize`Allowed Protocols`}
+              size="sm"
+              error={
+                Array.isArray(user.VPNType) && user.VPNType.length === 0
+                  ? $localize`Select at least one protocol`
+                  : undefined
+              }
+            >
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+                {VPN_PROTOCOLS.map((protocol) => {
+                  // Only show enabled protocols
+                  if (enabledProtocols && !enabledProtocols[protocol.id]) {
+                    return null;
+                  }
 
                 const isSelected = (user.VPNType || []).includes(protocol.id);
 
@@ -234,8 +229,7 @@ export const UserCredential = component$<UserCredentialProps>(
                     </div>
 
                     {/* Hidden checkbox for accessibility */}
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       class="sr-only"
                       checked={isSelected}
                       onChange$={async () => {
@@ -244,9 +238,10 @@ export const UserCredential = component$<UserCredentialProps>(
                     />
                   </div>
                 );
-              })}
-            </div>
-          </FormField>
+                })}
+              </div>
+            </Field>
+          )}
 
           {/* Invalid User Warning - Compact Version */}
           {!isUserValid && (

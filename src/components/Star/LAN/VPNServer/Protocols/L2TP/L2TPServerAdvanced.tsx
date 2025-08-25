@@ -1,15 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
-import {
-  ServerCard,
-  ServerFormField,
-  PasswordField,
-  CheckboxGroup,
-  Select,
-  SectionTitle,
-  Input,
-} from "../../UI";
+import { ServerCard } from "~/components/Core/Card/ServerCard";
+import { ServerFormField, SectionTitle } from "~/components/Core/Form/ServerField";
+import { PasswordField } from "~/components/Core/Form/PasswordField";
+import { CheckboxGroup } from "~/components/Core/Form/Checkbox";
+import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
+import { Input } from "~/components/Core/Input";
+import { NetworkDropdown } from "../../components/NetworkSelection";
 
 /**
  * L2TP Server Configuration Component
@@ -48,6 +46,16 @@ export const L2TPServerAdvanced = component$(() => {
       <div class="mb-6 space-y-4">
         <SectionTitle title={$localize`Basic Configuration`} />
 
+        {/* Network Selection */}
+        <ServerFormField label={$localize`Network`}>
+          <NetworkDropdown
+            selectedNetwork="VPN"
+            onNetworkChange$={(network) => {
+              console.log("L2TP network changed to:", network);
+            }}
+          />
+        </ServerFormField>
+
         {/* Profile Name Field */}
         <ServerFormField label={$localize`Profile Name`}>
           <Input
@@ -60,7 +68,7 @@ export const L2TPServerAdvanced = component$(() => {
 
         {/* IPsec Usage Dropdown */}
         <ServerFormField label={$localize`Use IPsec`}>
-          <Select
+          <UnifiedSelect
             value={advancedFormState.useIpsec.toString()}
             onChange$={(value) => {
               if (value === "yes" || value === "no" || value === "required") {
@@ -80,7 +88,7 @@ export const L2TPServerAdvanced = component$(() => {
           <ServerFormField label={$localize`IPsec Secret Key`}>
             <PasswordField
               value={advancedFormState.ipsecSecret}
-              onChange$={(value) => updateIpsecSecret$(value)}
+              onValueChange$={(value) => updateIpsecSecret$(value)}
               placeholder={$localize`Enter IPsec secret key`}
             />
           </ServerFormField>

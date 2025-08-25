@@ -12,4 +12,9 @@ export type {
   VPNClientAdvancedState as AdvancedVPNState,
   NewVPNConfig,
   VPNValidationKey,
+  // New types
+  VPNClientConfig,
+  VPNClientWizardState,
+  MultiVPNStrategy,
+  MultiVPNConfig,
 } from "./VPNClientAdvancedTypes";

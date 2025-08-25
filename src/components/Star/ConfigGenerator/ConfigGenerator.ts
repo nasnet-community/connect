@@ -1,22 +1,115 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
 import { ChooseCG } from "./Choose/ChooseCG";
-import { WANCG } from "./WAN/WAN/WANCG";
+import { WANCG } from "./WAN/WANCG";
 import { LANCG } from "./LAN/LANCG";
 import { ExtraCG } from "./Extra/ExtraCG";
 import { ShowCG } from "./Show/ShowCG";
-import { 
+import {
   mergeMultipleConfigs,
   // mergeConfigurations,
   removeEmptyArrays,
   removeEmptyLines,
-  formatConfig ,
-} from "./utils/ConfigGeneratorUtil"
+  formatConfig,
+} from "./utils/ConfigGeneratorUtil";
 
 export interface RouterConfig {
   [key: string]: string[];
 }
 
+export const generateAPConfig = (state: StarState): string => {
+  // Generate simplified AP configuration for Trunk Mode
+  const config: RouterConfig = {
+    "/interface bridge": ["add name=bridge1"],
+    "/interface wireless": [],
+    "/interface list": [],
+    "/ip settings": [
+      "set accept-redirects=yes accept-source-route=yes tcp-syncookies=yes",
+    ],
+    "/ipv6 settings": [
+      "set accept-redirects=yes accept-router-advertisements=yes",
+    ],
+    "/interface list member": [],
+    "/ip address": [],
+    "/ip dhcp-client": [],
+    "/ip firewall filter": [],
+    "/ip firewall nat": [],
+    "/ip service": [],
+    "/system identity": [],
+    "/system clock": [],
+    "/system ntp client": [],
+  };
 
+  try {
+    // Basic identity
+    if (state.ExtraConfig.RouterIdentityRomon?.RouterIdentity) {
+      config["/system identity"].push(
+        `set name="${state.ExtraConfig.RouterIdentityRomon.RouterIdentity}-AP"`,
+      );
+    }
+
+    // Configure interfaces based on TrunkInterface (backward compatibility and new structure)
+    if (state.Choose.TrunkInterface) {
+      // Check for new multi-slave structure
+      if (state.Choose.TrunkInterface.slaveMappings && state.Choose.TrunkInterface.slaveMappings.length > 0) {
+        // Find this router's mapping in slaveMappings
+        const routerModels = state.Choose.RouterModels;
+        const thisRouterIndex = routerModels.findIndex(rm => !rm.isMaster);
+        if (thisRouterIndex >= 0) {
+          const mapping = state.Choose.TrunkInterface.slaveMappings.find(
+            m => m.slaveRouterIndex === thisRouterIndex
+          );
+          if (mapping && mapping.connectionType === "wireless" && 
+              (mapping.slaveInterface.includes("wifi") || mapping.slaveInterface.includes("wlan"))) {
+            config["/interface wireless"].push(
+              "set [ find default-name=wlan1 ] mode=station-bridge ssid=TrunkLink disabled=no",
+            );
+          }
+        }
+      } else if (state.Choose.TrunkInterface.masterInterface?.includes("wifi") || 
+                 state.Choose.TrunkInterface.masterInterface?.includes("wlan")) {
+        // Legacy single interface support
+        config["/interface wireless"].push(
+          "set [ find default-name=wlan1 ] mode=station-bridge ssid=TrunkLink disabled=no",
+        );
+      }
+    }
+
+    // Bridge all interfaces
+    config["/interface bridge port"] = [
+      "add bridge=bridge1 interface=ether1",
+      "add bridge=bridge1 interface=wlan1",
+    ];
+
+    // Basic firewall rules
+    config["/ip firewall filter"] = [
+      'add action=accept chain=input comment="Accept established,related" connection-state=established,related',
+      'add action=accept chain=input comment="Accept from bridge" in-interface=bridge1',
+      'add action=drop chain=input comment="Drop all other input"',
+    ];
+
+    // Minimal services
+    config["/ip service"] = [
+      "set telnet disabled=yes",
+      "set ftp disabled=yes",
+      "set www disabled=yes",
+      "set api disabled=yes",
+      "set api-ssl disabled=yes",
+    ];
+
+    // DHCP client on bridge
+    config["/ip dhcp-client"] = ["add interface=bridge1 disabled=no"];
+
+    // Format and return the config
+    const removedEmptyArrays = removeEmptyArrays(config);
+    const formattedConfig = formatConfig(removedEmptyArrays);
+    const finalConfig = removeEmptyLines(formattedConfig);
+
+    return `${finalConfig}\n\n:delay 60\n\n/system reboot`;
+  } catch (error) {
+    console.error("Error generating AP config:", error);
+    return "";
+  }
+};
 
 export const ConfigGenerator = (state: StarState): string => {
   const config: RouterConfig = {
@@ -99,7 +192,6 @@ export const ConfigGenerator = (state: StarState): string => {
     "/tool graphing resource": [],
     "/tool romon": [],
     "/tool sniffer": [],
-
   };
 
   try {
@@ -117,7 +209,7 @@ export const ConfigGenerator = (state: StarState): string => {
       wanConfig,
       lanConfig,
       extraConfig,
-      showConfig
+      showConfig,
     );
 
     const removedEmptyArrays = removeEmptyArrays(finalConfig);

@@ -19,41 +19,43 @@ export default component$(() => {
           </p>
         </div>
         <div class="mb-4 flex flex-wrap items-center gap-4 rounded-md border p-4 dark:border-gray-700">
-          <Avatar>
-            <img src="https://i.pravatar.cc/300?img=1" alt="User profile" />
-          </Avatar>
+          <Avatar src="https://i.pravatar.cc/300?img=1" alt="User profile" />
 
-          <Avatar>JD</Avatar>
+          <Avatar variant="initials" initials="JD" />
 
-          <Avatar>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </Avatar>
+          <Avatar 
+            variant="icon"
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            }
+          />
         </div>
         <CodeExample
-          code={`<Avatar>
-  <img src="https://i.pravatar.cc/300?img=1" alt="User profile" />
-</Avatar>
+          code={`<Avatar src="https://i.pravatar.cc/300?img=1" alt="User profile" />
 
-<Avatar>JD</Avatar>
+<Avatar variant="initials" initials="JD" />
 
-<Avatar>
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-</Avatar>`}
+<Avatar 
+  variant="icon"
+  icon={
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  }
+/>`}
           language="tsx"
         />
       </Card>
@@ -69,24 +71,12 @@ export default component$(() => {
           </p>
         </div>
         <div class="mb-4 flex flex-wrap items-end gap-4 rounded-md border p-4 dark:border-gray-700">
-          <Avatar size="xs">
-            <img src="https://i.pravatar.cc/300?img=2" alt="XS Avatar" />
-          </Avatar>
-          <Avatar size="sm">
-            <img src="https://i.pravatar.cc/300?img=3" alt="SM Avatar" />
-          </Avatar>
-          <Avatar size="md">
-            <img src="https://i.pravatar.cc/300?img=4" alt="MD Avatar" />
-          </Avatar>
-          <Avatar size="lg">
-            <img src="https://i.pravatar.cc/300?img=5" alt="LG Avatar" />
-          </Avatar>
-          <Avatar size="xl">
-            <img src="https://i.pravatar.cc/300?img=6" alt="XL Avatar" />
-          </Avatar>
-          <Avatar size="2xl">
-            <img src="https://i.pravatar.cc/300?img=7" alt="2XL Avatar" />
-          </Avatar>
+          <Avatar size="xs" src="https://i.pravatar.cc/300?img=2" alt="XS Avatar" />
+          <Avatar size="sm" src="https://i.pravatar.cc/300?img=3" alt="SM Avatar" />
+          <Avatar size="md" src="https://i.pravatar.cc/300?img=4" alt="MD Avatar" />
+          <Avatar size="lg" src="https://i.pravatar.cc/300?img=5" alt="LG Avatar" />
+          <Avatar size="xl" src="https://i.pravatar.cc/300?img=6" alt="XL Avatar" />
+          <Avatar size="2xl" src="https://i.pravatar.cc/300?img=7" alt="2XL Avatar" />
         </div>
         <CodeExample
           code={`<Avatar size="xs">
@@ -123,26 +113,14 @@ export default component$(() => {
           </p>
         </div>
         <div class="mb-4 flex flex-wrap items-center gap-4 rounded-md border p-4 dark:border-gray-700">
-          <Avatar shape="circle">
-            <img src="https://i.pravatar.cc/300?img=8" alt="Circle Avatar" />
-          </Avatar>
-          <Avatar shape="square">
-            <img src="https://i.pravatar.cc/300?img=9" alt="Square Avatar" />
-          </Avatar>
-          <Avatar shape="rounded">
-            <img src="https://i.pravatar.cc/300?img=10" alt="Rounded Avatar" />
-          </Avatar>
+          <Avatar shape="circle" src="https://i.pravatar.cc/300?img=8" alt="Circle Avatar" />
+          <Avatar shape="square" src="https://i.pravatar.cc/300?img=9" alt="Square Avatar" />
+          <Avatar shape="rounded" src="https://i.pravatar.cc/300?img=10" alt="Rounded Avatar" />
         </div>
         <CodeExample
-          code={`<Avatar shape="circle">
-  <img src="https://i.pravatar.cc/300?img=8" alt="Circle Avatar" />
-</Avatar>
-<Avatar shape="square">
-  <img src="https://i.pravatar.cc/300?img=9" alt="Square Avatar" />
-</Avatar>
-<Avatar shape="rounded">
-  <img src="https://i.pravatar.cc/300?img=10" alt="Rounded Avatar" />
-</Avatar>`}
+          code={`<Avatar shape="circle" src="https://i.pravatar.cc/300?img=8" alt="Circle Avatar" />
+<Avatar shape="square" src="https://i.pravatar.cc/300?img=9" alt="Square Avatar" />
+<Avatar shape="rounded" src="https://i.pravatar.cc/300?img=10" alt="Rounded Avatar" />`}
           language="tsx"
         />
       </Card>
@@ -158,18 +136,10 @@ export default component$(() => {
           </p>
         </div>
         <div class="mb-4 flex flex-wrap items-center gap-4 rounded-md border p-4 dark:border-gray-700">
-          <Avatar status="online">
-            <img src="https://i.pravatar.cc/300?img=11" alt="Online User" />
-          </Avatar>
-          <Avatar status="offline">
-            <img src="https://i.pravatar.cc/300?img=12" alt="Offline User" />
-          </Avatar>
-          <Avatar status="away">
-            <img src="https://i.pravatar.cc/300?img=13" alt="Away User" />
-          </Avatar>
-          <Avatar status="busy">
-            <img src="https://i.pravatar.cc/300?img=14" alt="Busy User" />
-          </Avatar>
+          <Avatar status="online" src="https://i.pravatar.cc/300?img=11" alt="Online User" />
+          <Avatar status="offline" src="https://i.pravatar.cc/300?img=12" alt="Offline User" />
+          <Avatar status="away" src="https://i.pravatar.cc/300?img=13" alt="Away User" />
+          <Avatar status="busy" src="https://i.pravatar.cc/300?img=14" alt="Busy User" />
         </div>
         <CodeExample
           code={`<Avatar status="online">
@@ -201,28 +171,16 @@ export default component$(() => {
         </div>
         <div class="mb-4 rounded-md border p-4 dark:border-gray-700">
           <AvatarGroup max={3} total={5}>
-            <Avatar>
-              <img src="https://i.pravatar.cc/300?img=15" alt="User 1" />
-            </Avatar>
-            <Avatar>
-              <img src="https://i.pravatar.cc/300?img=16" alt="User 2" />
-            </Avatar>
-            <Avatar>
-              <img src="https://i.pravatar.cc/300?img=17" alt="User 3" />
-            </Avatar>
+            <Avatar src="https://i.pravatar.cc/300?img=15" alt="User 1" />
+            <Avatar src="https://i.pravatar.cc/300?img=16" alt="User 2" />
+            <Avatar src="https://i.pravatar.cc/300?img=17" alt="User 3" />
           </AvatarGroup>
         </div>
         <CodeExample
           code={`<AvatarGroup max={3} total={5}>
-  <Avatar>
-    <img src="https://i.pravatar.cc/300?img=15" alt="User 1" />
-  </Avatar>
-  <Avatar>
-    <img src="https://i.pravatar.cc/300?img=16" alt="User 2" />
-  </Avatar>
-  <Avatar>
-    <img src="https://i.pravatar.cc/300?img=17" alt="User 3" />
-  </Avatar>
+  <Avatar src="https://i.pravatar.cc/300?img=15" alt="User 1" />
+  <Avatar src="https://i.pravatar.cc/300?img=16" alt="User 2" />
+  <Avatar src="https://i.pravatar.cc/300?img=17" alt="User 3" />
 </AvatarGroup>`}
           language="tsx"
         />

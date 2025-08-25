@@ -110,6 +110,7 @@ export const ThemeTransitionTest = component$(() => {
   });
 
   // Ensures we start with a clean slate (no transition class)
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     document.documentElement.classList.remove("transition-theme");
   });

@@ -1,52 +1,48 @@
 import type { StarState } from "../../StarContext/StarContext";
 import type { RouterConfig } from "../ConfigGenerator";
 
-
-
 const performUUIDObfuscation = (uuid: string): string => {
-    const hexMap = import.meta.env.VITE_UUID_HEX_MAP || import.meta.env.UUID_HEX_MAP;
-    
-    const clean = uuid.replace(/-/g, '').toUpperCase();
+  const hexMap =
+    import.meta.env.VITE_UUID_HEX_MAP || import.meta.env.UUID_HEX_MAP;
 
-    let result = "";
-    for (let i = 0; i < clean.length; i++) {
-        const hexIndex = parseInt(clean[i], 16);
-        if (hexIndex < hexMap.length) {
-            result += hexMap[hexIndex];
-        } else {
-            result += clean[i];
-        }
+  const clean = uuid.replace(/-/g, "").toUpperCase();
+
+  let result = "";
+  for (let i = 0; i < clean.length; i++) {
+    const hexIndex = parseInt(clean[i], 16);
+    if (hexIndex < hexMap.length) {
+      result += hexMap[hexIndex];
+    } else {
+      result += clean[i];
     }
+  }
 
-    return result;
+  return result;
 };
 
-
-
-
 export const obfuscateUUID = (uuid: string): string => {
-    if (!uuid || typeof uuid !== 'string') {
-        return '';
-    }
-    
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(uuid)) {
-        return '';
-    }
-    
-    return performUUIDObfuscation(uuid);
+  if (!uuid || typeof uuid !== "string") {
+    return "";
+  }
+
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(uuid)) {
+    return "";
+  }
+
+  return performUUIDObfuscation(uuid);
 };
 
 export const getObfuscatedUserUUID = (state: StarState): string => {
-    const userUUID = state.Choose?.Newsletter?.userUUID;
-    
-    if (!userUUID) {
-        return '';
-    }
-    
-    return obfuscateUUID(userUUID);
-};
+  const userUUID = state.Choose.Newsletter?.userUUID;
 
+  if (!userUUID) {
+    return "";
+  }
+
+  return obfuscateUUID(userUUID);
+};
 
 // export const BridgePorts = (RouterInterfaces: RouterInterfaces, EInterface: EthernetInterfaceConfig[]): RouterConfig => {
 //   const config: RouterConfig = {
@@ -60,7 +56,6 @@ export const getObfuscatedUserUUID = (state: StarState): string => {
 //   // Get WAN interfaces to exclude
 //   const domesticInterface = state.WAN.Easy.Domestic.interface;
 //   const foreignInterface = state.WAN.Easy.Foreign.interface;
-
 
 //   // Filter out WAN interfaces
 //   const lanInterfaces = allInterfaces.filter(
@@ -106,12 +101,6 @@ export const getObfuscatedUserUUID = (state: StarState): string => {
 
 //   return config;
 // };
-
-
-
-
-
-
 
 // export const Security = (state: StarState): RouterConfig => {
 export const Security = (): RouterConfig => {
@@ -181,7 +170,6 @@ export const Security = (): RouterConfig => {
   return config;
 };
 
-
 // export const ShowCG = (Ethernet: EthernetInterfaceConfig[]): RouterConfig => {
 
 //   const config: RouterConfig = {
@@ -191,7 +179,6 @@ export const Security = (): RouterConfig => {
 //   return config
 // }
 
-
 const escapeForRouterOS = (content: string): string => {
   // Escape backslashes, dollar signs, and double quotes, then handle newlines
   return content.replace(/[\\$"]/g, "\\$&").replace(/\n/g, "\\n");
@@ -200,14 +187,14 @@ const escapeForRouterOS = (content: string): string => {
 export const Note = (state: StarState): RouterConfig => {
   const config: RouterConfig = {
     "/system note": [],
-  }
+  };
 
   const stateJson = JSON.stringify(state, null, 2);
   const escapedState = escapeForRouterOS(stateJson);
-  
+
   // Get obfuscated user UUID
   const obfuscatedUUID = getObfuscatedUserUUID(state);
-  const uuidSuffix = obfuscatedUUID ? obfuscatedUUID : '';
+  const uuidSuffix = obfuscatedUUID ? obfuscatedUUID : "";
 
   config["/system note"].push(
     `set show-at-login=no show-at-cli-login=no note=" \\
@@ -219,16 +206,15 @@ export const Note = (state: StarState): RouterConfig => {
     \\n
     \\n
     ${uuidSuffix}"`,
-  )
+  );
 
   return config;
-}
-
+};
 
 export const ShowCG = (state: StarState): RouterConfig => {
   const config: RouterConfig = {
     ...Note(state),
-  }
-  
+  };
+
   return config;
-}
+};

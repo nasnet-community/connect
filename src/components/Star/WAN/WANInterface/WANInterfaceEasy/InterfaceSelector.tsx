@@ -1,5 +1,6 @@
 import type { InterfaceSelectorProps } from "./types";
 import { component$, useResource$, Resource } from "@builder.io/qwik";
+import { Select } from "~/components/Core";
 
 const interfaceDisplayNames: Record<string, string> = {
   ether1: "Ethernet 1",
@@ -46,50 +47,37 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
         <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
           {$localize`Select ${mode} Interface`}
         </label>
-        <select
-          value={selectedInterface}
-          onChange$={(_, el) => onSelect(el.value)}
-          class="text-text-default w-full rounded-lg border border-border 
-                    bg-white px-4
-                    py-2 focus:border-transparent
-                    focus:ring-2 focus:ring-primary-500
-                    dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default
-                    dark:focus:ring-primary-400"
-        >
-          <option
-            value=""
-            class="dark:bg-surface-dark dark:text-text-dark-default"
-          >
-            {$localize`Select interface`}
-          </option>
-          <Resource
-            value={disabledStates}
-            onPending={() =>
-              availableInterfaces.map((iface) => (
-                <option
-                  key={iface}
-                  value={iface}
-                  disabled
-                  class="dark:bg-surface-dark dark:text-text-dark-default"
-                >
-                  {getDisplayName(iface)}
-                </option>
-              ))
-            }
-            onResolved={(states) =>
-              availableInterfaces.map((iface, index) => (
-                <option
-                  key={iface}
-                  value={iface}
-                  disabled={states[index]}
-                  class="dark:bg-surface-dark dark:text-text-dark-default"
-                >
-                  {getDisplayName(iface)}
-                </option>
-              ))
-            }
-          />
-        </select>
+        <Resource
+          value={disabledStates}
+          onPending={() => (
+            <Select
+              value={selectedInterface}
+              onChange$={(value: string | string[]) => onSelect(value as string)}
+              options={[
+                { value: "", label: $localize`Select interface` },
+                ...availableInterfaces.map((iface) => ({
+                  value: iface,
+                  label: getDisplayName(iface),
+                  disabled: true,
+                })),
+              ]}
+            />
+          )}
+          onResolved={(states) => (
+            <Select
+              value={selectedInterface}
+              onChange$={(value: string | string[]) => onSelect(value as string)}
+              options={[
+                { value: "", label: $localize`Select interface` },
+                ...availableInterfaces.map((iface, index) => ({
+                  value: iface,
+                  label: getDisplayName(iface),
+                  disabled: states[index],
+                })),
+              ]}
+            />
+          )}
+        />
       </div>
     );
   },

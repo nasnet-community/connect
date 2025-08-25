@@ -1,20 +1,21 @@
 import { $, useTask$, useContext, type QRL } from "@builder.io/qwik";
-import type { AdvancedVPNState, VPNConfig } from "../types/AdvancedVPNState";
+import type { VPNClientAdvancedState, VPNConfig } from "../types/VPNClientAdvancedTypes";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { VPNClient } from "~/components/Star/StarContext/Utils/VPNClientType";
+import { generateUniqueId } from "~/components/Core/common/utils";
 
 export interface UseVPNPersistenceReturn {
-  saveToLocalStorage$: QRL<(state: AdvancedVPNState) => void>;
-  loadFromLocalStorage$: QRL<() => AdvancedVPNState | null>;
-  syncToStarContext$: QRL<(state: AdvancedVPNState) => Promise<void>>;
-  loadFromStarContext$: QRL<() => Promise<AdvancedVPNState | null>>;
+  saveToLocalStorage$: QRL<(state: VPNClientAdvancedState) => void>;
+  loadFromLocalStorage$: QRL<() => VPNClientAdvancedState | null>;
+  syncToStarContext$: QRL<(state: VPNClientAdvancedState) => Promise<void>>;
+  loadFromStarContext$: QRL<() => Promise<VPNClientAdvancedState | null>>;
   clearLocalStorage$: QRL<() => void>;
 }
 
 const STORAGE_KEY = "vpn-client-advanced-state";
 const STORAGE_VERSION = "1.0";
 
-interface StoredState extends AdvancedVPNState {
+interface StoredState extends VPNClientAdvancedState {
   version: string;
   timestamp: number;
 }
@@ -23,7 +24,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
   const starContext = useContext(StarContext);
 
   // Save state to localStorage
-  const saveToLocalStorage$ = $((state: AdvancedVPNState) => {
+  const saveToLocalStorage$ = $((state: VPNClientAdvancedState) => {
     if (typeof window === "undefined") return;
 
     try {
@@ -40,7 +41,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
   });
 
   // Load state from localStorage
-  const loadFromLocalStorage$ = $((): AdvancedVPNState | null => {
+  const loadFromLocalStorage$ = $((): VPNClientAdvancedState | null => {
     if (typeof window === "undefined") return null;
 
     try {
@@ -137,7 +138,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
       // Convert each VPN type if present
       if (vpnClient.Wireguard) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-wg"),
           name: "Wireguard VPN",
           type: "Wireguard",
           priority: priority++,
@@ -148,7 +149,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
 
       if (vpnClient.OpenVPN) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-ovpn"),
           name: "OpenVPN",
           type: "OpenVPN",
           priority: priority++,
@@ -159,7 +160,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
 
       if (vpnClient.PPTP) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-pptp"),
           name: "PPTP VPN",
           type: "PPTP",
           priority: priority++,
@@ -170,7 +171,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
 
       if (vpnClient.L2TP) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-l2tp"),
           name: "L2TP VPN",
           type: "L2TP",
           priority: priority++,
@@ -181,7 +182,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
 
       if (vpnClient.SSTP) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-sstp"),
           name: "SSTP VPN",
           type: "SSTP",
           priority: priority++,
@@ -192,7 +193,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
 
       if (vpnClient.IKeV2) {
         configs.push({
-          id: crypto.randomUUID(),
+          id: generateUniqueId("vpn-ikev2"),
           name: "IKEv2 VPN",
           type: "IKeV2",
           priority: priority++,
@@ -206,7 +207,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
   );
 
   // Sync advanced VPN state to StarContext
-  const syncToStarContext$ = $(async (state: AdvancedVPNState) => {
+  const syncToStarContext$ = $(async (state: VPNClientAdvancedState) => {
     const vpnClient = await convertToVPNClient$(state.vpnConfigs);
 
     // Update StarContext WAN state with VPN client configuration
@@ -217,7 +218,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
   });
 
   // Load VPN configuration from StarContext
-  const loadFromStarContext$ = $(async (): Promise<AdvancedVPNState | null> => {
+  const loadFromStarContext$ = $(async (): Promise<VPNClientAdvancedState | null> => {
     const vpnClient = starContext.state.WAN.VPNClient;
     if (!vpnClient) return null;
 
@@ -238,6 +239,7 @@ export function useVPNPersistence(): UseVPNPersistenceReturn {
       priorities: configs.map((c) => c.id),
       validationErrors: {},
       minVPNCount,
+      mode: "advanced",
     };
   });
 

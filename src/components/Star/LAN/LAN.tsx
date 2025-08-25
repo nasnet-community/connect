@@ -15,6 +15,43 @@ import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import EInterface from "./EInterface/EInterface";
 
+// Define step components outside the main component to avoid serialization issues
+const EInterfaceStep = component$((props: StepProps) => (
+  <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />
+));
+
+const WirelessStep = component$((props: StepProps) => (
+  <Wireless
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
+    // Don't advance to the next step when disabled - let the Save button handle it
+    onDisabled$={$(() => {})}
+  />
+));
+
+const VPNServerStep = component$((props: StepProps) => (
+  <VPNServer
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
+    // Don't advance to the next step when disabled - let the Save button handle it
+    onDisabled$={$(() => {})}
+  />
+));
+
+const TunnelStep = component$((props: StepProps) => (
+  <Tunnel
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
+    // Don't advance to the next step when disabled - let the Save button handle it
+    onDisabled$={$(() => {})}
+  />
+));
+
+const SubnetsStep = component$((props: StepProps) => (
+  <Subnets isComplete={props.isComplete} onComplete$={props.onComplete$} />
+));
+
+
 export const LAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
 
@@ -50,41 +87,6 @@ export const LAN = component$((props: StepProps) => {
     }
   });
 
-  const EInterfaceStep = component$((props: StepProps) => (
-    <EInterface isComplete={props.isComplete} onComplete$={props.onComplete$} />
-  ));
-
-  const WirelessStep = component$((props: StepProps) => (
-    <Wireless
-      isComplete={props.isComplete}
-      onComplete$={props.onComplete$}
-      // Don't advance to the next step when disabled - let the Save button handle it
-      onDisabled$={$(() => {})}
-    />
-  ));
-
-  const VPNServerStep = component$((props: StepProps) => (
-    <VPNServer
-      isComplete={props.isComplete}
-      onComplete$={props.onComplete$}
-      // Don't advance to the next step when disabled - let the Save button handle it
-      onDisabled$={$(() => {})}
-    />
-  ));
-
-  const TunnelStep = component$((props: StepProps) => (
-    <Tunnel
-      isComplete={props.isComplete}
-      onComplete$={props.onComplete$}
-      // Don't advance to the next step when disabled - let the Save button handle it
-      onDisabled$={$(() => {})}
-    />
-  ));
-
-  const SubnetsStep = component$((props: StepProps) => (
-    <Subnets isComplete={props.isComplete} onComplete$={props.onComplete$} />
-  ));
-
   const isAdvancedMode = starContext.state.Choose.Mode === "advance";
   let nextId = 1;
 
@@ -100,14 +102,16 @@ export const LAN = component$((props: StepProps) => {
     nextId++;
   }
 
-  baseSteps.push({
-    id: nextId,
-    title: $localize`LAN EInterfaces`,
-    component: EInterfaceStep,
-    isComplete: false,
-  });
+  if (isAdvancedMode) {
+    baseSteps.push({
+      id: nextId,
+      title: $localize`LAN EInterfaces`,
+      component: EInterfaceStep,
+      isComplete: false,
+    });
 
-  nextId++;
+    nextId++;
+  }
 
   // Only add VPNServer and Tunnel steps if DomesticLink is enabled
   if (isDomesticLinkEnabled) {
@@ -120,14 +124,17 @@ export const LAN = component$((props: StepProps) => {
 
     nextId++;
 
-    baseSteps.push({
-      id: nextId,
-      title: $localize`Network Tunnels`,
-      component: TunnelStep,
-      isComplete: false,
-    });
+    // Only add Tunnel step if in Advanced mode (not Easy mode)
+    if (isAdvancedMode) {
+      baseSteps.push({
+        id: nextId,
+        title: $localize`Network Tunnels`,
+        component: TunnelStep,
+        isComplete: false,
+      });
 
-    nextId++;
+      nextId++;
+    }
   }
 
   // Create advanced steps by copying base steps

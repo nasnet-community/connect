@@ -55,3 +55,5 @@ package-lock.json
 /.claude
 /.kiro
 CLAUDE.md
+
+/.playwright-mcp

@@ -9,6 +9,7 @@ import { isDev } from "@builder.io/qwik";
 import { inject } from "@vercel/analytics";
 
 import "./global.css";
+import "./routes/i18n-utils";
 
 export default component$(() => {
   /**
