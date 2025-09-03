@@ -2,6 +2,7 @@ import type { Ethernet, Wireless, Sfp, LTE } from "./CommonType";
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 export type FrimwareType = "MikroTik" | "OpenWRT";
+export type WANLinkType = "domestic-only" | "foreign-only" | "both";
 export type RouterModel = 
   // Master Routers
   | "Chateau 5G R17 ax"
@@ -76,9 +77,14 @@ export interface TrunkInterface {
 export interface ChooseState {
   Mode: Mode;
   Firmware: FrimwareType;
-  DomesticLink: boolean;
+  WANLinkType: WANLinkType;
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
   Newsletter?: NewsletterState;
   TrunkInterface?: TrunkInterface;
 }
+
+// Helper function to convert WANLinkType to boolean for backwards compatibility
+export const hasDomesticLink = (wanLinkType: WANLinkType): boolean => {
+  return wanLinkType === "domestic-only" || wanLinkType === "both";
+};

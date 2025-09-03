@@ -1,4 +1,6 @@
 import type { QRL, Signal, ContextId } from "@builder.io/qwik";
+import type { StepHelpContent } from "../shared/types/base";
+import type { UseStepperHelpOptions } from "../shared/hooks/useStepperHelp";
 
 export interface UseVStepperProps {
   initialStep?: number;
@@ -20,6 +22,12 @@ export interface StepItem {
   isDisabled?: boolean;
   isOptional?: boolean;
   skippable?: boolean;
+  
+  // Help system properties
+  helpTitle?: string;
+  helpContent?: string | JSX.Element;
+  helpData?: StepHelpContent;
+  hasHelp?: boolean;
 }
 
 export interface VStepperProps {
@@ -36,6 +44,21 @@ export interface VStepperProps {
   allowStepNavigation?: boolean;
   isEditMode?: boolean;
   dynamicStepComponent?: any;
+  
+  // Enhanced features (opt-in for backward compatibility)
+  enableEnhancedFeatures?: boolean;
+  allowNonLinearNavigation?: boolean;
+  allowSkipSteps?: boolean;
+  
+  // Help system properties
+  enableHelp?: boolean;
+  helpOptions?: UseStepperHelpOptions;
+  helpButton?: {
+    position?: "top" | "bottom";
+    variant?: "primary" | "secondary" | "ghost";
+    size?: "sm" | "md" | "lg";
+    showKeyboardHint?: boolean;
+  };
 }
 
 export interface StepProps {
@@ -54,6 +77,10 @@ export interface DesktopProps {
   isComplete?: boolean;
   onStepClick$?: QRL<(index: number) => void>;
   allowStepNavigation?: boolean;
+  
+  // Help system integration
+  helpButton?: VStepperProps['helpButton'];
+  onHelpClick$?: QRL<() => void>;
 }
 
 export interface MobileProps {
@@ -64,6 +91,10 @@ export interface MobileProps {
   isComplete?: boolean;
   onStepClick$?: QRL<(index: number) => void>;
   allowStepNavigation?: boolean;
+  
+  // Help system integration
+  helpButton?: VStepperProps['helpButton'];
+  onHelpClick$?: QRL<() => void>;
 }
 
 export interface PreloadState {

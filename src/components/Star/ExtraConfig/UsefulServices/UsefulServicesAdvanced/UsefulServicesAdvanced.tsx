@@ -10,7 +10,8 @@ import { CertificateStep } from "./steps/CertificateStep";
 import { NTPStep } from "./steps/NTPStep";
 import { GraphingStep } from "./steps/GraphingStep";
 import { CloudDDNSStep } from "./steps/CloudDDNSStep";
-import { LetsEncryptStep } from "./steps/LetsEncryptStep";
+import { UPNPStep } from "./steps/UPNPStep";
+import { NATPMPStep } from "./steps/NATPMPStep";
 
 // Create context with services data type
 export const UsefulServicesStepperContextId = createStepperContext<{
@@ -22,66 +23,41 @@ export const UsefulServicesAdvanced = component$<StepProps>(
     // Initialize services data with defaults
     const servicesData = useStore<AdvancedServicesData>({
       certificate: {
+        enableSelfSigned: false,
+        enableLetsEncrypt: false,
+        enableWWWSSL: false,
+        enableAPISSL: false,
         name: "",
-        type: "self-signed",
         keySize: "2048",
         countryCode: "",
         organization: "",
         commonName: "",
       },
       ntp: {
-        enableClient: false,
-        primaryServer: "pool.ntp.org",
-        secondaryServer: "time.google.com",
-        enableServer: false,
-        allowedNetworks: "",
+        servers: ["pool.ntp.org"],
         timeZone: "UTC",
         updateInterval: "1h",
       },
       graphing: {
-        enabled: false,
-        dataRetentionDays: 30,
-        updateInterval: "15m",
-        monitoredInterfaces: {
-          wan1: false,
-          wan2: false,
-          lan: false,
-          wireless: false,
-        },
-        enableCPU: false,
-        enableMemory: false,
-        enableDisk: false,
-        enableNetworkTraffic: false,
-        graphResolution: "medium",
-        storageLocation: "internal",
+        enableInterface: false,
+        enableQueue: false,
+        enableResources: false,
       },
       cloudDDNS: {
         enableDDNS: false,
-        provider: "no-ip",
-        hostname: "",
-        username: "",
-        password: "",
-        updateInterval: "30m",
-        enableSSL: true,
-        customServerURL: "",
-        enableCloudBackup: false,
-        backupInterval: "weekly",
+        ddnsEntries: [],
       },
-      letsEncrypt: {
+      upnp: {
         enabled: false,
-        domainName: "",
-        emailAddress: "",
-        certificateType: "single",
-        autoRenewal: true,
-        renewalDaysBeforeExpiry: 30,
-        challengeType: "http-01",
-        webServerPort: 80,
-        enableHTTPSRedirect: true,
-        certificateStoragePath: "/certificates/",
+        linkType: "domestic",
+      },
+      natpmp: {
+        enabled: false,
+        linkType: "domestic",
       },
     });
 
-    // Define the 5 steps
+    // Define the 6 steps
     const steps: CStepMeta[] = [
       {
         id: 1,
@@ -92,7 +68,7 @@ export const UsefulServicesAdvanced = component$<StepProps>(
       },
       {
         id: 2,
-        title: $localize`NTP Client/Server`,
+        title: $localize`NTP Time Sync`,
         description: $localize`Setup time synchronization`,
         component: <NTPStep />,
         isComplete: false,
@@ -106,16 +82,23 @@ export const UsefulServicesAdvanced = component$<StepProps>(
       },
       {
         id: 4,
-        title: $localize`Cloud/DDNS`,
-        description: $localize`Setup cloud services and dynamic DNS`,
+        title: $localize`Dynamic DNS`,
+        description: $localize`Configure dynamic DNS providers`,
         component: <CloudDDNSStep />,
         isComplete: false,
       },
       {
         id: 5,
-        title: $localize`Let's Encrypt`,
-        description: $localize`Configure automatic SSL certificate renewal`,
-        component: <LetsEncryptStep />,
+        title: $localize`UPnP`,
+        description: $localize`Universal Plug and Play configuration`,
+        component: <UPNPStep />,
+        isComplete: false,
+      },
+      {
+        id: 6,
+        title: $localize`NAT-PMP`,
+        description: $localize`NAT Port Mapping Protocol setup`,
+        component: <NATPMPStep />,
         isComplete: false,
       },
     ];
@@ -143,47 +126,96 @@ export const UsefulServicesAdvanced = component$<StepProps>(
 
     return (
       <div class="mx-auto w-full max-w-6xl p-4">
-        <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
-          {/* Header section */}
-          <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
-            <div class="flex items-center space-x-5">
-              <div class="rounded-xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-sm">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-7 w-7 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+        {/* Background decorative elements */}
+        <div class="fixed inset-0 -z-10 overflow-hidden">
+          <div class="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/20 to-secondary-500/20 blur-3xl"></div>
+          <div class="absolute right-1/4 top-1/4 h-64 w-64 animate-float rounded-full bg-gradient-to-br from-secondary-500/15 to-primary-500/15 blur-2xl"></div>
+        </div>
+
+        <div class="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/80 shadow-2xl shadow-primary-500/10 backdrop-blur-xl transition-all duration-700 hover:shadow-3xl hover:shadow-primary-500/20 dark:border-white/10 dark:bg-surface-dark/80 dark:shadow-primary-500/5">
+          {/* Gradient border effect */}
+          <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 p-px">
+            <div class="h-full w-full rounded-3xl bg-white/90 dark:bg-surface-dark/90"></div>
+          </div>
+          
+          {/* Content container */}
+          <div class="relative z-10">
+            {/* Modern header section */}
+            <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-12">
+              {/* Header background pattern */}
+              <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+              <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/10 blur-3xl"></div>
+              
+              <div class="relative flex items-center space-x-6">
+                <div class="group/icon flex h-20 w-20 items-center justify-center rounded-2xl border border-white/30 bg-white/15 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/25">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 text-white transition-all duration-300 group-hover/icon:scale-110"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <div class="space-y-2">
+                  <h2 class="text-4xl font-bold text-white">{$localize`Useful Services`}</h2>
+                  <p class="text-lg text-white/90">{$localize`Advanced Mode`}</p>
+                  <p class="text-primary-100 max-w-md">{$localize`Configure advanced network services with detailed settings and modern interface`}</p>
+                </div>
               </div>
-              <div class="space-y-1">
-                <h2 class="text-2xl font-bold text-white">{$localize`Useful Services - Advanced Mode`}</h2>
-                <p class="text-primary-50">{$localize`Configure advanced network services with detailed settings`}</p>
+              
+              {/* Animated progress indicator */}
+              <div class="mt-8 flex items-center space-x-2">
+                <div class="h-1 flex-1 rounded-full bg-white/20">
+                  <div class="h-full w-1/6 animate-shimmer rounded-full bg-gradient-to-r from-white/60 to-white/80"></div>
+                </div>
+                <span class="text-sm text-white/80">{$localize`Step 1 of 6`}</span>
               </div>
             </div>
-          </div>
 
-          {/* Stepper Content */}
-          <div class="p-6">
-            <CStepper
-              steps={steps}
-              activeStep={0}
-              contextId={UsefulServicesStepperContextId}
-              contextValue={{ servicesData }}
-              onStepComplete$={handleStepComplete$}
-              onStepChange$={handleStepChange$}
-              onComplete$={handleComplete$}
-              allowSkipSteps={true} // Allow skipping optional services
-              useNumbers={true} // Use numbers for step indicators
-            />
+            {/* Modern stepper content */}
+            <div class="relative p-8">
+              {/* Floating step indicators */}
+              <div class="absolute left-8 top-4 flex space-x-2">
+                {steps.map((step, index) => (
+                  <div 
+                    key={step.id}
+                    class={`h-2 w-8 rounded-full transition-all duration-300 ${
+                      index === 0 
+                        ? "bg-primary-500 scale-110" 
+                        : "bg-gray-300 dark:bg-gray-600"
+                    }`}
+                  ></div>
+                ))}
+              </div>
+              
+              <CStepper
+                steps={steps}
+                activeStep={0}
+                contextId={UsefulServicesStepperContextId}
+                contextValue={{ servicesData }}
+                onStepComplete$={handleStepComplete$}
+                onStepChange$={handleStepChange$}
+                onComplete$={handleComplete$}
+                allowSkipSteps={true}
+                useNumbers={true}
+                hideStepHeader={true}
+              />
+            </div>
           </div>
+        </div>
+        
+        {/* Floating action hint */}
+        <div class="mt-4 text-center">
+          <p class="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
+            {$localize`Scroll down to explore each service configuration`}
+          </p>
         </div>
       </div>
     );

@@ -9,12 +9,11 @@ import {
 import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
 import { useVPNClientAdvanced } from "./hooks/useVPNClientAdvanced";
 import { useVPNClientValidation } from "./hooks/useVPNClientValidation";
-import { useVPNClientPersistence } from "./hooks/useVPNClientPersistence";
 import { Step1_VPNProtocols } from "./steps/Step1_VPNProtocols";
 import { StepPriorities } from "./steps/StepPriorities";
 import { Step2_VPNConfiguration } from "./steps/Step2_VPNConfiguration";
 import { Step3_Summary } from "./steps/Step3_Summary";
-import type { VPNClientAdvancedState } from "./types/VPNClientAdvancedTypes";
+// Removed unused VPNClientAdvancedState import
 
 export interface VPNClientAdvancedProps {
   onComplete$?: QRL<() => Promise<void>>;
@@ -29,7 +28,6 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // Initialize hooks
     const advancedHooks = useVPNClientAdvanced();
     const validation = useVPNClientValidation();
-    const persistence = useVPNClientPersistence();
 
     // Initialize steps signal early
     const steps = useSignal<CStepMeta[]>([]);
@@ -41,37 +39,32 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
     // Initialize state on client after first paint to avoid blocking render
     useVisibleTask$(async () => {
-      // Check if we have existing state in StarContext
-      const existingState: VPNClientAdvancedState | null = await persistence.loadFromStarContext$();
+      console.log('[AdvancedVPNClient] Initializing VPN Client Advanced component');
+      console.log('[AdvancedVPNClient] Initial foreignWANCount:', advancedHooks.foreignWANCount);
+      console.log('[AdvancedVPNClient] Initial vpnConfigs length:', advancedHooks.state.vpnConfigs.length);
       
-      if (existingState && existingState.vpnConfigs && existingState.vpnConfigs.length > 0) {
-        // Load existing VPN configs (using new property name)
-        advancedHooks.state.vpnConfigs = existingState.vpnConfigs;
-        advancedHooks.state.validationErrors = existingState.validationErrors || {};
+      // Refresh foreign WAN count first to get latest from StarContext
+      console.log('[AdvancedVPNClient] Refreshing foreign WAN count...');
+      await advancedHooks.refreshForeignWANCount$();
+      
+      // Initialize with minimum required VPN clients if none exist
+      const minCount = advancedHooks.foreignWANCount;
+      console.log('[AdvancedVPNClient] After refresh - minCount:', minCount);
+      console.log('[AdvancedVPNClient] Current vpnConfigs length:', advancedHooks.state.vpnConfigs.length);
+      
+      if (advancedHooks.state.vpnConfigs.length === 0) {
+        console.log('[AdvancedVPNClient] Adding', minCount, 'VPN clients');
+        for (let i = 0; i < minCount; i++) {
+          console.log('[AdvancedVPNClient] Adding VPN client', i + 1);
+          await advancedHooks.addVPN$({
+            type: "Wireguard",
+            name: `VPN ${i + 1}`
+          });
+        }
+        console.log('[AdvancedVPNClient] Final vpnConfigs length:', advancedHooks.state.vpnConfigs.length);
       } else {
-        // Initialize with minimum required VPN clients if none exist
-        const minCount = advancedHooks.foreignWANCount;
-        if (advancedHooks.state.vpnConfigs.length === 0) {
-          for (let i = 0; i < minCount; i++) {
-            await advancedHooks.addVPN$({
-              type: "Wireguard",
-              name: `VPN ${i + 1}`
-            });
-          }
-        }
+        console.log('[AdvancedVPNClient] VPN configs already exist, skipping initialization');
       }
-      
-      // Defer localStorage merge to next tick to keep UI responsive
-      setTimeout(async () => {
-        const hasStored = await persistence.hasStoredState$();
-        if (hasStored) {
-          const stored = await persistence.loadState$();
-          if (stored) {
-            // Merge stored state with current state
-            Object.assign(advancedHooks.state, stored);
-          }
-        }
-      }, 0);
     });
 
     // Note: Removed automatic state saving to prevent render loops
@@ -120,18 +113,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         return;
       }
 
-      // Save VPN client state to StarContext
-      try {
-        await persistence.syncToStarContext$(advancedHooks.state);
-        console.log('[VPNClientAdvanced] State synced to StarContext');
-      } catch (error) {
-        console.error("[VPNClientAdvanced] Failed to sync state:", error);
-        return;
-      }
-
-      // Clear persisted state
-      await persistence.clearState$();
-      console.log('[VPNClientAdvanced] Persisted state cleared');
+      console.log('[VPNClientAdvanced] Configuration ready for application');
 
       // Call completion handler
       if (onComplete$) {
@@ -159,14 +141,20 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       const step2Complete = step1Complete && advancedHooks.state.vpnConfigs.length > 0 &&
                            advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.config));
       
-      // Check if step 3 (priorities) is complete - VPNs have proper priorities
-      const step3Complete = step2Complete && advancedHooks.state.vpnConfigs.length > 0 &&
-                           advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority));
+      // Check if we have multiple VPN clients to determine if Strategy & Priority step is needed
+      const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
+      
+      // Check if step 3 (priorities) is complete - VPNs have proper priorities (only for multiple VPNs)
+      const step3Complete = hasMultipleVPNs ? 
+        (step2Complete && advancedHooks.state.vpnConfigs.length > 0 &&
+         advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority))) :
+        true; // Always complete if single VPN (no priority needed)
       
       console.log('[VPNClientAdvanced] createSteps - Step completion calculated:', {
         step1Complete,
         step2Complete,
         step3Complete,
+        hasMultipleVPNs,
         vpnConfigsCount: advancedHooks.state.vpnConfigs.length,
         minVPNCount: advancedHooks.foreignWANCount
       });
@@ -199,7 +187,11 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
           ),
           isComplete: step2Complete,
         },
-        {
+      ];
+
+      // Only add Strategy & Priority step when there are multiple VPNs
+      if (hasMultipleVPNs) {
+        steps.push({
           id: 3,
           title: $localize`Strategy & Priority`,
           description: $localize`Configure VPN strategy and set connection priorities`,
@@ -210,14 +202,16 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
             />
           ),
           isComplete: step3Complete,
-        },
-      ];
+        });
+      }
 
       // Add Review step - mark as complete when all previous steps are complete
-      const step4Complete = step1Complete && step2Complete && step3Complete;
+      // Use appropriate step ID based on whether priority step exists
+      const reviewStepId = hasMultipleVPNs ? 4 : 3;
+      const reviewStepComplete = step1Complete && step2Complete && step3Complete;
       
       steps.push({
-        id: 4,
+        id: reviewStepId,
         title: $localize`Review & Summary`,
         description: $localize`Review and confirm your VPN configuration`,
         component: (
@@ -228,7 +222,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
             onValidate$={validateAdvanced$}
           />
         ),
-        isComplete: step4Complete,
+        isComplete: reviewStepComplete,
       });
 
       return steps;
@@ -322,7 +316,6 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               onStepChange$={handleStepChange$}
               onStepComplete$={handleStepComplete$}
               onComplete$={applyConfiguration$}
-              persistState={false}
               allowSkipSteps={false}
               key={`stepper-${steps.value.map(s => (s.isComplete ? 1 : 0)).join('')}`}
             />

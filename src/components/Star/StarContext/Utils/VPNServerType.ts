@@ -69,6 +69,8 @@ export interface SstpServerConfig extends BaseVPNServerConfig {
 
 // OpenVpn
 
+export type OpenVpnProtocol = NetworkProtocol | "both";
+
 export type OvpnAuthMethod =
   | "md5"
   | "sha1"
@@ -115,7 +117,7 @@ export interface OVPNServerAddress {
 export interface OpenVpnServerConfig extends BaseVPNServerConfig {
   name: string;
   Port?: number;
-  Protocol?: NetworkProtocol;
+  Protocol?: OpenVpnProtocol;
   Mode?: LayerMode;
   Network?: Networks;
   VRF?: string;

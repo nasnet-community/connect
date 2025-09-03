@@ -1,10 +1,13 @@
 import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
+import { LuUsers, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { getSlaveRouters, type RouterData } from "./Constants";
 import { type RouterInterfaces } from "../../StarContext/ChooseType";
-import { RouterCard } from "./RouterCard";
+import { ClassyRouterCard } from "./ClassyRouterCard";
+import { ClassyTabs } from "./ClassyTabs";
 import { RouterDetailsModal } from "./RouterDetailsModal";
+import { categorizeRouters } from "./RouterCategories";
 
 interface SlaveRouterModelProps {
   isComplete?: boolean;
@@ -24,10 +27,15 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
   const slaveModels = slaveRouters.map(rm => rm.Model);
   const availableSlaveRouters = getSlaveRouters();
   
+  // Categorize routers by family
+  const routerCategories = categorizeRouters(availableSlaveRouters);
+  
+  // Tab state
+  const activeTab = useSignal<string>(routerCategories[0]?.id || "hAP");
+  
   // Modal state
   const isModalOpen = useSignal(false);
   const selectedRouter = useSignal<RouterData | null>(null);
-
 
   const handleSelect = $((model: string) => {
     const selectedRouter = availableSlaveRouters.find((r) => r.model === model);
@@ -98,91 +106,99 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
     }
   });
 
+  // Get routers for active tab
+  const activeCategory = routerCategories.find(cat => cat.id === activeTab.value);
+  const activeRouters = activeCategory?.routers || [];
+
   return (
-    <div class="space-y-8">
-      {/* Header */}
-      <div class="mb-8 text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Select Slave Router(s)`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-3">
-          {$localize`Choose one or more routers for trunk configuration`}
-        </p>
-        {masterRouter && (
-          <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-2 text-sm">
-            {$localize`Master Router:`}{" "}
-            <span class="font-medium text-text dark:text-text-dark-default">
-              {masterRouter.Model}
+    <div class="w-full p-4">
+      <div class="rounded-lg bg-surface p-6 shadow-md transition-all dark:bg-surface-dark">
+        <div class="container mx-auto space-y-12">
+        {/* Elegant Header */}
+        <div class="text-center space-y-8">
+          <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/20 dark:bg-black/30 backdrop-blur-sm border border-warning-200/40 dark:border-warning-700/40 shadow-lg">
+            <LuUsers class="h-5 w-5 text-warning-600 dark:text-warning-400" />
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {$localize`Multi-Router Setup`}
             </span>
-          </p>
-        )}
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-2 text-xs">
-          {$localize`You can select multiple slave routers, including the same model as the master`}
-        </p>
-      </div>
-
-      {/* Router Cards */}
-      <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {availableSlaveRouters.map((router) => {
-          const isSelected = slaveModels.includes(router.model as any);
-          const isMasterRouter = router.model === masterRouter?.Model;
-
-          return (
-            <RouterCard
-              key={router.model}
-              router={router}
-              isSelected={isSelected}
-              badge={isMasterRouter ? $localize`Also Master` : isSelected ? $localize`Slave Router` : undefined}
-              badgeVariant={isMasterRouter ? "info" : isSelected ? "success" : "default"}
-              onSelect$={$((model: string) => {
-                handleSelect(model);
-              })}
-              onViewDetails$={$((router: RouterData) => {
-                selectedRouter.value = router;
-                isModalOpen.value = true;
-              })}
-            />
-          );
-        })}
-      </div>
-
-      {/* Selection Summary */}
-      {(slaveRouters.length > 0 || masterRouter) && (
-        <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 mt-8 rounded-xl p-4">
-          <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm mb-2">
-            {$localize`Trunk Configuration:`}
-          </p>
-          <div class="space-y-1">
-            <p class="font-medium text-text dark:text-text-dark-default">
-              {$localize`Master:`} {masterRouter?.Model || $localize`Not selected`}
-            </p>
-            {slaveRouters.length > 0 ? (
-              <p class="font-medium text-text dark:text-text-dark-default">
-                {$localize`Slave(s):`} {slaveModels.join(", ")}
-              </p>
-            ) : (
-              <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm italic">
-                {$localize`No slave routers selected yet`}
-              </p>
-            )}
           </div>
-          {slaveRouters.length === 0 && (
-            <p class="text-warning/90 dark:text-warning-light/90 mt-2 text-xs">
-              {$localize`Please select at least one slave router to continue`}
+          
+          <div class="space-y-6">
+            <h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-warning-600 via-primary-600 to-secondary-600 bg-clip-text text-transparent">
+              {$localize`Choose Slave Routers`}
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              {$localize`Build a powerful trunk configuration with multiple router nodes`}
             </p>
-          )}
+            
+            {/* Master Router Info */}
+            {masterRouter && (
+              <div class="inline-flex items-center gap-4 px-8 py-4 rounded-2xl bg-white/20 dark:bg-black/30 backdrop-blur-sm border border-secondary-200/40 dark:border-secondary-700/40 shadow-md">
+                <LuLink class="h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+                <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {$localize`Master Router:`}
+                </span>
+                <span class="font-bold text-gray-900 dark:text-white">
+                  {masterRouter.Model}
+                </span>
+              </div>
+            )}
+            
+            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
+              {$localize`You can select multiple slave routers to expand your network capacity`}
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Router Details Modal */}
-      <RouterDetailsModal
-        router={selectedRouter.value}
-        isOpen={isModalOpen}
-        onClose$={() => {
-          isModalOpen.value = false;
-          selectedRouter.value = null;
-        }}
-      />
+        {/* Elegant Tab Navigation */}
+        <ClassyTabs
+          categories={routerCategories}
+          activeCategory={activeTab.value}
+          onSelect$={(categoryId) => {
+            activeTab.value = categoryId;
+          }}
+        />
+
+        {/* Elegant Router Cards Grid */}
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 place-items-center max-w-full mx-auto">
+            {activeRouters.map((router, _index) => {
+              const isSelected = slaveModels.includes(router.model as any);
+              const isMasterRouter = router.model === masterRouter?.Model;
+
+              return (
+                <div key={router.model} class="w-full">
+                  <ClassyRouterCard
+                    router={router}
+                    isSelected={isSelected}
+                    badge={isMasterRouter ? $localize`Also Master` : isSelected ? $localize`Slave Router` : undefined}
+                    badgeVariant={isMasterRouter ? "info" : isSelected ? "success" : "default"}
+                    onSelect$={$((model: string) => {
+                      handleSelect(model);
+                    })}
+                    onViewDetails$={$((router: RouterData) => {
+                      selectedRouter.value = router;
+                      isModalOpen.value = true;
+                    })}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+
+        {/* Router Details Modal */}
+        <RouterDetailsModal
+          router={selectedRouter.value}
+          isOpen={isModalOpen}
+          onClose$={() => {
+            isModalOpen.value = false;
+            selectedRouter.value = null;
+          }}
+        />
+        </div>
+      </div>
     </div>
   );
 });

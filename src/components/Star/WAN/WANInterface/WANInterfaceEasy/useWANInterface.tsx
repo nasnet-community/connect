@@ -10,20 +10,31 @@ import type {
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
+  const selectedInterfaceType = useSignal("");
   const selectedInterface = useSignal("");
   const ssid = useSignal("");
   const password = useSignal("");
+  const apn = useSignal("");
+  const lteUsername = useSignal("");
+  const ltePassword = useSignal("");
   const isValid = useSignal(false);
 
   // Define validateForm first before using it in useTask$
   const validateForm = $(() => {
-    if (!selectedInterface.value) {
+    if (!selectedInterfaceType.value || !selectedInterface.value) {
       isValid.value = false;
       return false;
     }
 
-    if (selectedInterface.value.startsWith("wifi")) {
+    if (selectedInterfaceType.value === "Wireless") {
       if (!ssid.value || !password.value || password.value.length < 8) {
+        isValid.value = false;
+        return false;
+      }
+    }
+
+    if (selectedInterfaceType.value === "LTE") {
+      if (!apn.value) {
         isValid.value = false;
         return false;
       }
@@ -43,6 +54,17 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     if (interfaceData) {
       if (interfaceData.InterfaceName && selectedInterface.value === "") {
         selectedInterface.value = interfaceData.InterfaceName;
+        
+        // Determine interface type from interface name
+        if (interfaceData.InterfaceName.includes("wifi") || interfaceData.InterfaceName.includes("wlan")) {
+          selectedInterfaceType.value = "Wireless";
+        } else if (interfaceData.InterfaceName.includes("lte")) {
+          selectedInterfaceType.value = "LTE";
+        } else if (interfaceData.InterfaceName.includes("sfp")) {
+          selectedInterfaceType.value = "SFP";
+        } else {
+          selectedInterfaceType.value = "Ethernet";
+        }
       }
 
       if (interfaceData.WirelessCredentials) {
@@ -55,6 +77,18 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
           password.value === ""
         ) {
           password.value = interfaceData.WirelessCredentials.Password;
+        }
+      }
+
+      if (interfaceData.lteSettings) {
+        if (interfaceData.lteSettings.apn && apn.value === "") {
+          apn.value = interfaceData.lteSettings.apn;
+        }
+        if (interfaceData.lteSettings.username && lteUsername.value === "") {
+          lteUsername.value = interfaceData.lteSettings.username;
+        }
+        if (interfaceData.lteSettings.password && ltePassword.value === "") {
+          ltePassword.value = interfaceData.lteSettings.password;
         }
       }
     }
@@ -91,10 +125,18 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       InterfaceName: selectedInterface.value as Ethernet | Wireless | Sfp | LTE,
     };
 
-    if (selectedInterface.value.startsWith("wifi")) {
+    if (selectedInterfaceType.value === "Wireless") {
       modeConfig.WirelessCredentials = {
         SSID: ssid.value,
         Password: password.value,
+      };
+    }
+
+    if (selectedInterfaceType.value === "LTE") {
+      modeConfig.lteSettings = {
+        apn: apn.value,
+        username: lteUsername.value || undefined,
+        password: ltePassword.value || undefined,
       };
     }
 
@@ -106,14 +148,26 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     starContext.updateWAN$(updateData);
   });
 
-  const handleInterfaceSelect = $((value: string) => {
-    selectedInterface.value = value;
-
-    if (!value.startsWith("wifi")) {
+  const handleInterfaceTypeSelect = $((type: string) => {
+    selectedInterfaceType.value = type;
+    selectedInterface.value = ""; // Reset interface when type changes
+    
+    // Clear type-specific fields when type changes
+    if (type !== "Wireless") {
       ssid.value = "";
       password.value = "";
     }
+    if (type !== "LTE") {
+      apn.value = "";
+      lteUsername.value = "";
+      ltePassword.value = "";
+    }
+    
+    validateForm();
+  });
 
+  const handleInterfaceSelect = $((value: string) => {
+    selectedInterface.value = value;
     updateStarContext();
     validateForm();
   });
@@ -130,14 +184,40 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     validateForm();
   });
 
+  const handleAPNChange = $((value: string) => {
+    apn.value = value;
+    updateStarContext();
+    validateForm();
+  });
+
+  const handleLTEUsernameChange = $((value: string) => {
+    lteUsername.value = value;
+    updateStarContext();
+    validateForm();
+  });
+
+  const handleLTEPasswordChange = $((value: string) => {
+    ltePassword.value = value;
+    updateStarContext();
+    validateForm();
+  });
+
   return {
+    selectedInterfaceType,
     selectedInterface,
     ssid,
     password,
+    apn,
+    lteUsername,
+    ltePassword,
     isValid,
     validateForm,
+    handleInterfaceTypeSelect,
     handleInterfaceSelect,
     handleSSIDChange,
     handlePasswordChange,
+    handleAPNChange,
+    handleLTEUsernameChange,
+    handleLTEPasswordChange,
   };
 };

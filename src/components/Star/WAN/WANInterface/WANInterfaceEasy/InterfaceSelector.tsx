@@ -21,18 +21,37 @@ const interfaceDisplayNames: Record<string, string> = {
 export const InterfaceSelector = component$<InterfaceSelectorProps>(
   ({
     selectedInterface,
+    selectedInterfaceType,
     availableInterfaces,
     onSelect,
     isInterfaceSelectedInOtherMode,
     mode,
   }) => {
+    const getInterfacesForType = () => {
+      switch (selectedInterfaceType.toLowerCase()) {
+        case "ethernet":
+          return availableInterfaces.ethernet;
+        case "wireless":
+          return availableInterfaces.wireless;
+        case "sfp":
+          return availableInterfaces.sfp;
+        case "lte":
+          return availableInterfaces.lte;
+        default:
+          return [];
+      }
+    };
+
+    const currentInterfaces = getInterfacesForType();
+
     const disabledStates = useResource$<boolean[]>(async ({ track }) => {
+      track(() => selectedInterfaceType);
       track(() => availableInterfaces);
 
-      if (!availableInterfaces) return [];
+      if (!currentInterfaces.length) return [];
 
       return Promise.all(
-        availableInterfaces.map((iface) =>
+        currentInterfaces.map((iface) =>
           isInterfaceSelectedInOtherMode(iface),
         ),
       );
@@ -42,10 +61,26 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       return interfaceDisplayNames[iface] || iface;
     };
 
+    if (!selectedInterfaceType || !currentInterfaces.length) {
+      return (
+        <div class="space-y-2">
+          <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
+            {$localize`Select ${mode} Interface`}
+          </label>
+          <div class="rounded-lg bg-gray-100 p-4 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            {!selectedInterfaceType 
+              ? $localize`Please select an interface type first`
+              : $localize`No ${selectedInterfaceType} interfaces available`
+            }
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div class="space-y-2">
         <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
-          {$localize`Select ${mode} Interface`}
+          {$localize`Select ${selectedInterfaceType} Interface`}
         </label>
         <Resource
           value={disabledStates}
@@ -55,7 +90,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
               onChange$={(value: string | string[]) => onSelect(value as string)}
               options={[
                 { value: "", label: $localize`Select interface` },
-                ...availableInterfaces.map((iface) => ({
+                ...currentInterfaces.map((iface) => ({
                   value: iface,
                   label: getDisplayName(iface),
                   disabled: true,
@@ -69,7 +104,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
               onChange$={(value: string | string[]) => onSelect(value as string)}
               options={[
                 { value: "", label: $localize`Select interface` },
-                ...availableInterfaces.map((iface, index) => ({
+                ...currentInterfaces.map((iface, index) => ({
                   value: iface,
                   label: getDisplayName(iface),
                   disabled: states[index],

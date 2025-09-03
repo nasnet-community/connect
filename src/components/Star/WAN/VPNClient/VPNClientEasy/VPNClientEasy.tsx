@@ -132,7 +132,6 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
             {vpnType.value === "Wireguard" && (
               <WireguardConfig
                 onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
               />
             )}
 

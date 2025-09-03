@@ -71,17 +71,6 @@ export const VPNLinkHeader = component$<VPNLinkHeaderProps>(
               `}>
                 {vpn.type}
               </span>
-              {vpn.enabled ? (
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                  <div class="h-1.5 w-1.5 rounded-full bg-green-400"></div>
-                  {$localize`Enabled`}
-                </span>
-              ) : (
-                <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                  <div class="h-1.5 w-1.5 rounded-full bg-gray-400"></div>
-                  {$localize`Disabled`}
-                </span>
-              )}
             </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
               {$localize`Priority`}: {vpn.priority} 

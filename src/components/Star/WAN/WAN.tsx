@@ -37,7 +37,8 @@ const DNSStep = component$((props: StepProps) => (
 
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
-  const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink === true;
+  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+  const isAdvancedMode = starContext.state.Choose.Mode === "advance";
 
   let steps: StepItem[] = [];
 
@@ -47,7 +48,7 @@ export const WAN = component$((props: StepProps) => {
       id: 1,
       title: $localize`Foreign WAN`,
       component: ForeignStep,
-      isComplete: true,
+      isComplete: false,
     },
   ];
 
@@ -57,7 +58,7 @@ export const WAN = component$((props: StepProps) => {
       id: 2,
       title: $localize`Domestic WAN`,
       component: DomesticStep,
-      isComplete: true,
+      isComplete: false,
     });
   }
 
@@ -66,16 +67,18 @@ export const WAN = component$((props: StepProps) => {
     id: steps.length + 1,
     title: $localize`VPN Client`,
     component: VPNClientStep,
-    isComplete: true,
+    isComplete: false,
   });
 
-  // Always add DNS Configuration step
-  steps.push({
-    id: steps.length + 1,
-    title: $localize`DNS Configuration`,
-    component: DNSStep,
-    isComplete: true,
-  });
+  // Only add DNS Configuration step in advanced mode
+  if (isAdvancedMode) {
+    steps.push({
+      id: steps.length + 1,
+      title: $localize`DNS Configuration`,
+      component: DNSStep,
+      isComplete: false,
+    });
+  }
 
   const stepsStore = useStore({
     activeStep: 0,

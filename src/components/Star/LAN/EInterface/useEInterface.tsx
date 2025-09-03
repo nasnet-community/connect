@@ -15,7 +15,7 @@ export const useEInterface = () => {
   // The DomesticLink property determines whether we need Domestic network options:
   // - When true: We offer Domestic, Foreign, Split, and VPN options
   // - When false: We restrict options to Foreign and VPN only
-  const isDomesticLinkEnabled = ctx.state.Choose.DomesticLink === true;
+  const isDomesticLinkEnabled = (ctx.state.Choose.WANLinkType === "domestic-only" || ctx.state.Choose.WANLinkType === "both");
   const networkOptions: Networks[] = isDomesticLinkEnabled
     ? ["Domestic", "Foreign", "Split", "VPN"]
     : ["Foreign", "VPN"];
@@ -28,7 +28,7 @@ export const useEInterface = () => {
   // - DomesticLink false: VPN network is default (no domestic network available)
   const getDefaultNetwork = $(() => {
     // Explicitly check if true or false to avoid undefined/null issues
-    return ctx.state.Choose.DomesticLink === true ? "Split" : "VPN";
+    return (ctx.state.Choose.WANLinkType === "domestic-only" || ctx.state.Choose.WANLinkType === "both") ? "Split" : "VPN";
   });
 
   const getUsedWANInterfaces = $(() => {

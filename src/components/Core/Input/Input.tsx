@@ -88,7 +88,7 @@ export const Input = component$<InputProps>(
       "block",
       fluid ? "w-full" : "w-full",
       "border focus:outline-none focus:ring-2",
-      animate ? "transition-all duration-200 ease-out" : "transition-colors duration-150",
+      animate ? "transition-all duration-300 ease-out" : "transition-all duration-200",
       "touch-manipulation", // Better touch support
     ].join(" ");
 
@@ -103,9 +103,11 @@ export const Input = component$<InputProps>(
       default: [
         "border-gray-300 bg-surface-light-DEFAULT text-gray-900",
         "focus:border-primary-500 focus:ring-primary-500/20",
-        "hover:border-gray-400",
-        "dark:border-gray-600 dark:bg-surface-dark-DEFAULT dark:text-white",
-        "dark:placeholder-gray-400 dark:focus:border-primary-400 dark:focus:ring-primary-400/20",
+        "hover:border-gray-400 hover:shadow-sm",
+        // Clean dark mode matching project design system
+        "dark:border-gray-600 dark:bg-gray-800",
+        "dark:text-gray-100 dark:placeholder-gray-400",
+        "dark:focus:border-primary-400 dark:focus:ring-primary-400/20",
         "dark:hover:border-gray-500",
         // RTL support
         "rtl:text-end ltr:text-start",
@@ -113,29 +115,41 @@ export const Input = component$<InputProps>(
       valid: [
         "border-success-500 bg-success-surface text-gray-900",
         "focus:border-success-600 focus:ring-success-500/20",
-        "dark:border-success-400 dark:bg-surface-dark-DEFAULT dark:text-white",
+        "hover:shadow-sm hover:shadow-success-500/20",
+        // Clean dark mode for valid state
+        "dark:border-success-400 dark:bg-gray-800",
+        "dark:text-gray-100",
         "dark:focus:border-success-400 dark:focus:ring-success-400/20",
+        "dark:hover:border-gray-500",
         "rtl:text-end ltr:text-start",
       ].join(" "),
       invalid: [
         "border-error-500 bg-error-surface text-gray-900",
         "focus:border-error-600 focus:ring-error-500/20",
-        "dark:border-error-400 dark:bg-surface-dark-DEFAULT dark:text-white",
+        "hover:shadow-sm hover:shadow-error-500/20",
+        // Clean dark mode for invalid state
+        "dark:border-error-400 dark:bg-gray-800",
+        "dark:text-gray-100",
         "dark:focus:border-error-400 dark:focus:ring-error-400/20",
+        "dark:hover:border-gray-500",
         "rtl:text-end ltr:text-start",
       ].join(" "),
       warning: [
         "border-warning-500 bg-warning-surface text-gray-900",
         "focus:border-warning-600 focus:ring-warning-500/20",
-        "dark:border-warning-400 dark:bg-surface-dark-DEFAULT dark:text-white",
+        "hover:shadow-sm hover:shadow-warning-500/20",
+        // Clean dark mode for warning state
+        "dark:border-warning-400 dark:bg-gray-800",
+        "dark:text-gray-100",
         "dark:focus:border-warning-400 dark:focus:ring-warning-400/20",
+        "dark:hover:border-gray-500",
         "rtl:text-end ltr:text-start",
       ].join(" "),
     };
 
     const disabledClasses = disabled
-      ? "cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800 pointer-events-none"
-      : "hover:shadow-sm focus:shadow-md";
+      ? "cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 pointer-events-none select-none"
+      : "hover:shadow-sm focus:shadow-md dark:hover:shadow-lg dark:focus:shadow-xl";
 
 
     const prefixSuffixClasses = {
@@ -145,12 +159,12 @@ export const Input = component$<InputProps>(
       slotPrefix: [
         "absolute inset-y-0 start-0 flex items-center",
         size === "sm" ? "ps-2.5" : size === "md" ? "ps-3" : size === "lg" ? "ps-4" : "ps-5",
-        "text-gray-500 dark:text-gray-400"
+        "text-gray-500 dark:text-gray-400 transition-colors duration-200"
       ].join(" "),
       slotSuffix: [
         "absolute inset-y-0 end-0 flex items-center",
         size === "sm" ? "pe-2.5" : size === "md" ? "pe-3" : size === "lg" ? "pe-4" : "pe-5",
-        "text-gray-500 dark:text-gray-400"
+        "text-gray-500 dark:text-gray-400 transition-colors duration-200"
       ].join(" "),
     };
 
@@ -193,19 +207,19 @@ export const Input = component$<InputProps>(
     });
 
     return (
-      <div class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""}`}>
+      <div class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""} group`}>
         {label && (
           <label
             for={inputId}
             class={[
-              "mb-2 block font-medium text-gray-900 dark:text-white",
+              "mb-2 block font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200",
               size === "sm" ? "text-xs" : size === "md" ? "text-sm" : size === "lg" ? "text-base" : "text-lg",
               "rtl:text-end ltr:text-start",
             ].join(" ")}
           >
             {label}
             {required && (
-              <span class="ms-1 text-error-500 dark:text-error-400" aria-label="required">
+              <span class="ms-1 text-error-500 dark:text-error-400 animate-pulse" aria-label="required">
                 *
               </span>
             )}
@@ -265,7 +279,7 @@ export const Input = component$<InputProps>(
           <p 
             id={`${inputId}-error`}
             class={[
-              "mt-2 text-error-600 dark:text-error-400",
+              "mt-2 text-error-600 dark:text-error-400 transition-colors duration-200",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
               "rtl:text-end ltr:text-start",
@@ -280,7 +294,7 @@ export const Input = component$<InputProps>(
           <p 
             id={`${inputId}-warning`}
             class={[
-              "mt-2 text-warning-600 dark:text-warning-400",
+              "mt-2 text-warning-600 dark:text-warning-400 transition-colors duration-200",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
               "rtl:text-end ltr:text-start",
@@ -295,7 +309,7 @@ export const Input = component$<InputProps>(
           <p 
             id={`${inputId}-helper`}
             class={[
-              "mt-2 text-gray-500 dark:text-gray-400",
+              "mt-2 text-gray-500 dark:text-gray-400 transition-colors duration-200",
               size === "sm" ? "text-xs" : "text-sm",
               "rtl:text-end ltr:text-start",
             ].join(" ")}

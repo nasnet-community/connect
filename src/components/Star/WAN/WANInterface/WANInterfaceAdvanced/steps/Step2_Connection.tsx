@@ -1,4 +1,4 @@
-import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
+import { component$, $, useSignal } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
 import { ConnectionTypeSelector } from "../components/fields/ConnectionTypeSelector";
 import { PPPoEFields } from "../components/fields/PPPoEFields";
@@ -8,11 +8,10 @@ import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
 export interface Step2Props {
   wizardState: WANWizardState;
   wizardActions: UseWANAdvancedReturn;
-  onRefreshCompletion$?: QRL<() => Promise<void>>;
 }
 
 export const Step2_Connection = component$<Step2Props>(
-  ({ wizardState, wizardActions, onRefreshCompletion$ }) => {
+  ({ wizardState, wizardActions }) => {
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     
@@ -42,7 +41,7 @@ export const Step2_Connection = component$<Step2Props>(
       expandedLinkId.value = expandedLinkId.value === linkId ? null : linkId;
     });
 
-    // Helper to refresh step completion after connection changes
+    // Helper to handle connection changes
     const handleConnectionUpdate = $(async (linkId: string, updates: any) => {
       // For DHCP and LTE, automatically confirm when selected
       const updatesWithConfirmation = {
@@ -50,10 +49,6 @@ export const Step2_Connection = component$<Step2Props>(
         connectionConfirmed: (updates.connectionType === "DHCP" || updates.connectionType === "LTE") ? true : updates.connectionConfirmed,
       };
       await wizardActions.updateLink$(linkId, updatesWithConfirmation);
-      // Refresh step completion after update
-      if (onRefreshCompletion$) {
-        await onRefreshCompletion$();
-      }
     });
 
     // Get link statistics

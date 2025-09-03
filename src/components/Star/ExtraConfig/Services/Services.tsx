@@ -64,14 +64,14 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   useTask$(() => {
     if (!ctx.state.ExtraConfig.services) {
       const defaultServices = {
-        api: { type: "Disable" as ServiceType, port: 8728 },
-        apissl: { type: "Disable" as ServiceType, port: 8729 },
-        ftp: { type: "Disable" as ServiceType, port: 21 },
-        ssh: { type: "Enable" as ServiceType, port: 22 },
-        telnet: { type: "Disable" as ServiceType, port: 23 },
+        api: { type: "Local" as ServiceType, port: 8728 },
+        apissl: { type: "Local" as ServiceType, port: 8729 },
+        ftp: { type: "Local" as ServiceType, port: 21 },
+        ssh: { type: "Local" as ServiceType, port: 22 },
+        telnet: { type: "Local" as ServiceType, port: 23 },
         winbox: { type: "Enable" as ServiceType, port: 8291 },
-        web: { type: "Disable" as ServiceType, port: 80 },
-        webssl: { type: "Disable" as ServiceType, port: 443 },
+        web: { type: "Local" as ServiceType, port: 80 },
+        webssl: { type: "Local" as ServiceType, port: 443 },
       };
       ctx.updateExtraConfig$({ services: defaultServices });
     }
@@ -210,7 +210,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                   const currentConfig = ctx.state.ExtraConfig.services?.[
                     service.name
                   ] || {
-                    type: "Disable" as ServiceType,
+                    type: "Local" as ServiceType,
                     port: service.defaultPort,
                   };
                   const currentValue =
@@ -257,15 +257,15 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                 ctx.updateExtraConfig$({
                                   services: {
                                     api: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 8728,
                                     },
                                     apissl: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 8729,
                                     },
                                     ftp: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 21,
                                     },
                                     ssh: {
@@ -273,7 +273,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                       port: 22,
                                     },
                                     telnet: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 23,
                                     },
                                     winbox: {
@@ -281,11 +281,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                       port: 8291,
                                     },
                                     web: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 80,
                                     },
                                     webssl: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 443,
                                     },
                                   },
@@ -325,15 +325,15 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                 ctx.updateExtraConfig$({
                                   services: {
                                     api: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 8728,
                                     },
                                     apissl: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 8729,
                                     },
                                     ftp: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 21,
                                     },
                                     ssh: {
@@ -341,7 +341,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                       port: 22,
                                     },
                                     telnet: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 23,
                                     },
                                     winbox: {
@@ -349,11 +349,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                       port: 8291,
                                     },
                                     web: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 80,
                                     },
                                     webssl: {
-                                      type: "Disable" as ServiceType,
+                                      type: "Local" as ServiceType,
                                       port: 443,
                                     },
                                   },

@@ -29,7 +29,6 @@ export const VXLANTunnelStep = component$(() => {
     const newTunnel: VxlanInterfaceConfig = {
       type: "vxlan",
       name: `vxlan-tunnel-${stepper.data.vxlan.length + 1}`,
-      localAddress: "",
       remoteAddress: "",
       vni: stepper.data.vxlan.length + 1,
       bumMode: "unicast",
@@ -65,7 +64,6 @@ export const VXLANTunnelStep = component$(() => {
     for (const tunnel of stepper.data.vxlan) {
       if (
         !tunnel.name ||
-        !tunnel.localAddress ||
         !tunnel.remoteAddress ||
         !tunnel.vni
       ) {
@@ -93,7 +91,6 @@ export const VXLANTunnelStep = component$(() => {
     for (let i = 0; i < stepper.data.vxlan.length; i++) {
       const tunnel = stepper.data.vxlan[i];
       track(() => tunnel.name);
-      track(() => tunnel.localAddress);
       track(() => tunnel.remoteAddress);
       track(() => tunnel.vni);
     }
@@ -198,33 +195,6 @@ export const VXLANTunnelStep = component$(() => {
                   />
                 </ServerFormField>
 
-                {/* MTU */}
-                <ServerFormField label={$localize`MTU`}>
-                  <Input
-                    type="number"
-                    value={tunnel.mtu?.toString() || ""}
-                    onChange$={(e, value) => {
-                      updateTunnelField$(
-                        index,
-                        "mtu",
-                        value ? parseInt(value) : undefined,
-                      );
-                    }}
-                    placeholder={$localize`Enter MTU (optional)`}
-                  />
-                </ServerFormField>
-
-                {/* Local Address */}
-                <ServerFormField label={$localize`Local Address`} required>
-                  <Input
-                    type="text"
-                    value={tunnel.localAddress}
-                    onChange$={(e, value) =>
-                      updateTunnelField$(index, "localAddress", value)
-                    }
-                    placeholder={$localize`Enter local address`}
-                  />
-                </ServerFormField>
 
                 {/* Remote Address */}
                 <ServerFormField label={$localize`Remote Address`} required>
@@ -238,17 +208,6 @@ export const VXLANTunnelStep = component$(() => {
                   />
                 </ServerFormField>
 
-                {/* Interface */}
-                <ServerFormField label={$localize`Interface`}>
-                  <Input
-                    type="text"
-                    value={tunnel.interface || ""}
-                    onChange$={(e, value) =>
-                      updateTunnelField$(index, "interface", value)
-                    }
-                    placeholder={$localize`Enter interface (optional)`}
-                  />
-                </ServerFormField>
               </div>
             </Card>
           ))}

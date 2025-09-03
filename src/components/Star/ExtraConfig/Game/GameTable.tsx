@@ -8,7 +8,7 @@ export const GameTable = component$<GameTableProps>(
     const { handleGameSelection } = useGameLogic();
 
     // Check if DomesticLink is enabled
-    const isDomesticLinkEnabled = context.state.Choose.DomesticLink === true;
+    const isDomesticLinkEnabled = (context.state.Choose.WANLinkType === "domestic-only" || context.state.Choose.WANLinkType === "both");
 
     return (
       <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">

@@ -2,11 +2,11 @@ import { $, useSignal, useStore } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import type {
   OpenVpnServerConfig,
+  OpenVpnProtocol,
   OvpnAuthMethod,
   OvpnCipher,
 } from "../../../../StarContext/Utils/VPNServerType";
 import type {
-  NetworkProtocol,
   LayerMode,
   AuthMethod,
   Networks,
@@ -75,7 +75,9 @@ export const useOpenVPNServer = () => {
     certificate: openVpnState.Certificate.Certificate || "",
     enabled: openVpnState.enabled !== undefined ? openVpnState.enabled : true,
     port: openVpnState.Port || 1194,
-    protocol: openVpnState.Protocol || "tcp",
+    tcpPort: 1194, // Default TCP port
+    udpPort: 1195, // Default UDP port
+    protocol: openVpnState.Protocol || "udp",
     mode: openVpnState.Mode || "ip",
     network: openVpnState.Network || "VPN",
     addressPool: openVpnState.Address.AddressPool || "192.168.78.0/24",
@@ -114,6 +116,7 @@ export const useOpenVPNServer = () => {
 
   // Protocol options
   const protocolOptions = [
+    { value: "both", label: "Both (TCP & UDP)" },
     { value: "tcp", label: "TCP" },
     { value: "udp", label: "UDP" },
   ];
@@ -241,48 +244,109 @@ export const useOpenVPNServer = () => {
     // Update local state first
     Object.assign(formState, updatedValues);
 
-    // Then update server config
-    updateOpenVPNServer$({
-      name: formState.name,
-      enabled: formState.enabled,
-      Port: formState.port,
-      Protocol: formState.protocol as NetworkProtocol,
-      Mode: formState.mode as LayerMode,
-      Network: formState.network as Networks,
-      DefaultProfile: formState.defaultProfile,
-      Authentication: formState.authentication as AuthMethod[],
-      PacketSize: {
-        MaxMtu: formState.maxMtu,
-        MaxMru: formState.maxMru,
-      },
-      KeepaliveTimeout: formState.keepaliveTimeout,
-      VRF: "",
-      RedirectGetway: "disabled",
-      PushRoutes: "",
-      RenegSec: 3600,
-      Encryption: {
-        Auth: [formState.auth as OvpnAuthMethod],
-        Cipher: [formState.cipher as OvpnCipher],
-        TlsVersion: formState.tlsVersion as "any" | "only-1.2",
-        UserAuthMethod: "mschap2",
-      },
-      IPV6: {
-        EnableTunIPv6: false,
-        IPv6PrefixLength: 64,
-        TunServerIPv6: "",
-      },
-      Certificate: {
-        Certificate: formState.certificate,
-        RequireClientCertificate: formState.requireClientCertificate,
-        CertificateKeyPassphrase: formState.certificateKeyPassphrase,
-      },
-      Address: {
-        AddressPool: formState.addressPool,
-        Netmask: 24,
-        MacAddress: "",
-        MaxMtu: formState.maxMtu,
-      },
-    });
+    // Handle "Both" protocol case - create two servers
+    if (formState.protocol === "both") {
+      const baseConfig = {
+        name: formState.name,
+        enabled: formState.enabled,
+        Mode: formState.mode as LayerMode,
+        Network: formState.network as Networks,
+        DefaultProfile: formState.defaultProfile,
+        Authentication: formState.authentication as AuthMethod[],
+        PacketSize: {
+          MaxMtu: formState.maxMtu,
+          MaxMru: formState.maxMru,
+        },
+        KeepaliveTimeout: formState.keepaliveTimeout,
+        VRF: "",
+        RedirectGetway: "disabled" as const,
+        PushRoutes: "",
+        RenegSec: 3600,
+        Encryption: {
+          Auth: [formState.auth as OvpnAuthMethod],
+          Cipher: [formState.cipher as OvpnCipher],
+          TlsVersion: formState.tlsVersion as "any" | "only-1.2",
+          UserAuthMethod: "mschap2" as const,
+        },
+        IPV6: {
+          EnableTunIPv6: false,
+          IPv6PrefixLength: 64,
+          TunServerIPv6: "",
+        },
+        Certificate: {
+          Certificate: formState.certificate,
+          RequireClientCertificate: formState.requireClientCertificate,
+          CertificateKeyPassphrase: formState.certificateKeyPassphrase,
+        },
+        Address: {
+          AddressPool: formState.addressPool,
+          Netmask: 24,
+          MacAddress: "",
+          MaxMtu: formState.maxMtu,
+        },
+      };
+
+      // Create two servers - one TCP and one UDP
+      const servers = [
+        {
+          ...baseConfig,
+          name: `${formState.name}-tcp`,
+          Protocol: "tcp" as const,
+          Port: formState.tcpPort || 1194,
+        },
+        {
+          ...baseConfig,
+          name: `${formState.name}-udp`,
+          Protocol: "udp" as const,
+          Port: formState.udpPort || 1195,
+        },
+      ];
+
+      updateOpenVPNServer$(servers);
+    } else {
+      // Single protocol case
+      updateOpenVPNServer$({
+        name: formState.name,
+        enabled: formState.enabled,
+        Port: formState.port,
+        Protocol: formState.protocol as OpenVpnProtocol,
+        Mode: formState.mode as LayerMode,
+        Network: formState.network as Networks,
+        DefaultProfile: formState.defaultProfile,
+        Authentication: formState.authentication as AuthMethod[],
+        PacketSize: {
+          MaxMtu: formState.maxMtu,
+          MaxMru: formState.maxMru,
+        },
+        KeepaliveTimeout: formState.keepaliveTimeout,
+        VRF: "",
+        RedirectGetway: "disabled",
+        PushRoutes: "",
+        RenegSec: 3600,
+        Encryption: {
+          Auth: [formState.auth as OvpnAuthMethod],
+          Cipher: [formState.cipher as OvpnCipher],
+          TlsVersion: formState.tlsVersion as "any" | "only-1.2",
+          UserAuthMethod: "mschap2",
+        },
+        IPV6: {
+          EnableTunIPv6: false,
+          IPv6PrefixLength: 64,
+          TunServerIPv6: "",
+        },
+        Certificate: {
+          Certificate: formState.certificate,
+          RequireClientCertificate: formState.requireClientCertificate,
+          CertificateKeyPassphrase: formState.certificateKeyPassphrase,
+        },
+        Address: {
+          AddressPool: formState.addressPool,
+          Netmask: 24,
+          MacAddress: "",
+          MaxMtu: formState.maxMtu,
+        },
+      });
+    }
   });
 
   // Easy mode form update function
@@ -357,7 +421,13 @@ export const useOpenVPNServer = () => {
   const updatePort$ = $((value: number) =>
     updateAdvancedForm$({ port: value }),
   );
-  const updateProtocol$ = $((value: NetworkProtocol) =>
+  const updateTcpPort$ = $((value: number) =>
+    updateAdvancedForm$({ tcpPort: value }),
+  );
+  const updateUdpPort$ = $((value: number) =>
+    updateAdvancedForm$({ udpPort: value }),
+  );
+  const updateProtocol$ = $((value: OpenVpnProtocol) =>
     updateAdvancedForm$({ protocol: value }),
   );
   const updateMode$ = $((value: LayerMode) =>
@@ -521,6 +591,8 @@ export const useOpenVPNServer = () => {
     updateName$,
     updateCertificate$,
     updatePort$,
+    updateTcpPort$,
+    updateUdpPort$,
     updateProtocol$,
     updateMode$,
     updateNetwork$,

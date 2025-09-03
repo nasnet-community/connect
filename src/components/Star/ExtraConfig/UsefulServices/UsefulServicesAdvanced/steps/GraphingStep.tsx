@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { Select } from "~/components/Core/Select";
+import { SelectionCard, Card, CardHeader, CardBody } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const GraphingStep = component$(() => {
@@ -11,92 +11,89 @@ export const GraphingStep = component$(() => {
   const { servicesData } = context.data;
 
   // Create local signals for form state
-  const enableGraphing = useSignal(servicesData.graphing.enabled || false);
-  const dataRetentionDays = useSignal(
-    servicesData.graphing.dataRetentionDays || 30,
-  );
-  const updateInterval = useSignal(
-    servicesData.graphing.updateInterval || "15m",
-  );
-  const monitoredInterfaces = useSignal(
-    servicesData.graphing.monitoredInterfaces || {
-      wan1: false,
-      wan2: false,
-      lan: false,
-      wireless: false,
+  const enableInterface = useSignal(servicesData.graphing.enableInterface || false);
+  const enableQueue = useSignal(servicesData.graphing.enableQueue || false);
+  const enableResources = useSignal(servicesData.graphing.enableResources || false);
+
+  // Graph configuration data
+  const graphingOptions = [
+    {
+      id: "interface",
+      title: $localize`Interface Monitoring`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      colorTheme: "blue",
+      signal: enableInterface
     },
-  );
-  const enableCPUMonitoring = useSignal(
-    servicesData.graphing.enableCPU || false,
-  );
-  const enableMemoryMonitoring = useSignal(
-    servicesData.graphing.enableMemory || false,
-  );
-  const enableDiskMonitoring = useSignal(
-    servicesData.graphing.enableDisk || false,
-  );
-  const enableNetworkTrafficGraphs = useSignal(
-    servicesData.graphing.enableNetworkTraffic || false,
-  );
-  const graphResolution = useSignal(
-    servicesData.graphing.graphResolution || "medium",
-  );
-  const storageLocation = useSignal(
-    servicesData.graphing.storageLocation || "internal",
-  );
-
-  // Update interval options
-  const updateIntervalOptions = [
-    { value: "5m", label: $localize`5 minutes` },
-    { value: "15m", label: $localize`15 minutes` },
-    { value: "30m", label: $localize`30 minutes` },
-    { value: "1h", label: $localize`1 hour` },
+    {
+      id: "queue",
+      title: $localize`Queue Management`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      colorTheme: "green",
+      signal: enableQueue
+    },
+    {
+      id: "resources",
+      title: $localize`System Resources`,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        </svg>
+      ),
+      colorTheme: "purple",
+      signal: enableResources
+    }
   ];
 
-  // Graph resolution options
-  const graphResolutionOptions = [
-    { value: "high", label: $localize`High` },
-    { value: "medium", label: $localize`Medium` },
-    { value: "low", label: $localize`Low` },
-  ];
+  // Color theme mappings
+  const colorThemes = {
+    blue: {
+      bg: "from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20",
+      border: "border-blue-200/50 dark:border-blue-700/50",
+      icon: "bg-gradient-to-br from-blue-500 to-indigo-600",
+      badge: "success"
+    },
+    green: {
+      bg: "from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20",
+      border: "border-green-200/50 dark:border-green-700/50",
+      icon: "bg-gradient-to-br from-green-500 to-emerald-600",
+      badge: "success"
+    },
+    purple: {
+      bg: "from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20",
+      border: "border-purple-200/50 dark:border-purple-700/50",
+      icon: "bg-gradient-to-br from-purple-500 to-violet-600",
+      badge: "info"
+    }
+  };
 
-  // Storage location options
-  const storageLocationOptions = [
-    { value: "internal", label: $localize`Internal` },
-    { value: "external", label: $localize`External USB` },
-  ];
+  // Handler for graph type selection
+  const handleGraphToggle$ = $((optionId: string) => {
+    const option = graphingOptions.find(opt => opt.id === optionId);
+    if (option) {
+      option.signal.value = !option.signal.value;
+      validateAndUpdate$();
+    }
+  });
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
     // Update context data
     servicesData.graphing = {
-      enabled: enableGraphing.value,
-      dataRetentionDays: dataRetentionDays.value,
-      updateInterval: updateInterval.value,
-      monitoredInterfaces: monitoredInterfaces.value,
-      enableCPU: enableCPUMonitoring.value,
-      enableMemory: enableMemoryMonitoring.value,
-      enableDisk: enableDiskMonitoring.value,
-      enableNetworkTraffic: enableNetworkTrafficGraphs.value,
-      graphResolution: graphResolution.value,
-      storageLocation: storageLocation.value,
+      enableInterface: enableInterface.value,
+      enableQueue: enableQueue.value,
+      enableResources: enableResources.value,
     };
 
-    // Validate: Graphing enabled and at least one monitoring option selected
-    const hasInterfaceMonitoring = Object.values(
-      monitoredInterfaces.value,
-    ).some((enabled) => enabled);
-    const hasSystemMonitoring =
-      enableCPUMonitoring.value ||
-      enableMemoryMonitoring.value ||
-      enableDiskMonitoring.value;
-    const hasNetworkTrafficGraphs = enableNetworkTrafficGraphs.value;
-
-    const isComplete =
-      enableGraphing.value &&
-      (hasInterfaceMonitoring ||
-        hasSystemMonitoring ||
-        hasNetworkTrafficGraphs);
+    // Validate: At least one graphing option must be selected
+    const isComplete = enableInterface.value || enableQueue.value || enableResources.value;
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -110,385 +107,125 @@ export const GraphingStep = component$(() => {
     }
   });
 
-  // Handle interface monitoring change
-  const handleInterfaceChange$ = $(
-    (
-      interfaceKey: keyof typeof monitoredInterfaces.value,
-      checked: boolean,
-    ) => {
-      monitoredInterfaces.value = {
-        ...monitoredInterfaces.value,
-        [interfaceKey]: checked,
-      };
-      validateAndUpdate$();
-    },
-  );
-
   // Run validation on component mount and when values change
   useVisibleTask$(() => {
     validateAndUpdate$();
   });
 
+  const selectedCount = [enableInterface.value, enableQueue.value, enableResources.value].filter(Boolean).length;
+  const selectedOptions = graphingOptions.filter(opt => opt.signal.value);
+
   return (
-    <div class="mx-auto w-full max-w-5xl p-4">
-      <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
-        {/* Header */}
-        <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
-          <div class="flex items-center space-x-5">
-            <div class="rounded-xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-7 w-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"
-                />
-              </svg>
-            </div>
-            <div class="space-y-1">
-              <h2 class="text-2xl font-bold text-white">
-                {$localize`Graphing Configuration`}
-              </h2>
-              <div class="flex items-center space-x-2">
-                <p class="text-sm font-medium text-primary-50">
-                  {$localize`Configure monitoring and graphing for network performance analysis`}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div class="space-y-8 animate-fade-in-up">
+      {/* Modern header */}
+      <div class="text-center space-y-4">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 text-white mb-6 shadow-xl shadow-emerald-500/25 transition-transform hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
         </div>
+        <h3 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+          {$localize`Network Graphing`}
+        </h3>
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          {$localize`Enable comprehensive network monitoring with real-time graphs and performance analytics`}
+        </p>
+      </div>
 
-        {/* Form Content */}
-        <div class="p-6">
-          <div class="space-y-6">
-            {/* Enable Graphing */}
-            <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-              <div class="mb-4">
-                <label class="flex items-center">
-                  <input
-                    type="checkbox"
-                    class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                    checked={enableGraphing.value}
-                    onChange$={(e: any) => {
-                      enableGraphing.value = e.target.checked;
-                      validateAndUpdate$();
-                    }}
-                  />
-                  <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                    {$localize`Enable Graphing`}
-                  </span>
-                </label>
-                <p class="text-text-secondary dark:text-text-dark-secondary ml-7 mt-1 text-xs">
-                  {$localize`Enable network monitoring and performance graphing`}
+      {/* Graph Type Selection */}
+      <div class="space-y-6">
+        <div class="text-center">
+          <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {$localize`Choose Monitoring Types`}
+          </h4>
+          <p class="text-gray-600 dark:text-gray-400">
+            {$localize`Select the types of network data you want to monitor and visualize`}
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {graphingOptions.map((option) => {
+            const theme = colorThemes[option.colorTheme as keyof typeof colorThemes];
+            return (
+              <SelectionCard
+                key={option.id}
+                isSelected={option.signal.value}
+                title={option.title}
+                icon={
+                  <div class={`flex h-16 w-16 items-center justify-center rounded-2xl ${theme.icon} text-white shadow-lg transition-transform group-hover:scale-110`}>
+                    {option.icon}
+                  </div>
+                }
+                onClick$={() => handleGraphToggle$(option.id)}
+                class={`transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br ${theme.bg} border-2 ${theme.border}`}
+                badge={option.signal.value ? $localize`Active` : undefined}
+                badgeVariant={option.signal.value ? theme.badge as any : undefined}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selection Summary */}
+      {selectedCount > 0 && (
+        <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-xl animate-fade-in-up">
+          <CardHeader>
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xl font-bold text-green-800 dark:text-green-200">
+                  {$localize`Active Monitoring`}
+                </h4>
+                <p class="text-green-600 dark:text-green-400">
+                  {selectedCount === 1 
+                    ? $localize`1 graph type selected`
+                    : $localize`${selectedCount} graph types selected`
+                  }
                 </p>
               </div>
-
-              {/* Graphing configuration fields - shown only when enabled */}
-              {enableGraphing.value && (
-                <div class="space-y-6">
-                  {/* Basic Settings */}
-                  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {/* Data Retention Days */}
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div class="space-y-4">
+              <p class="text-sm text-green-800 dark:text-green-300 font-medium">
+                {$localize`The following monitoring graphs will be enabled:`}
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedOptions.map((option) => (
+                  <div key={option.id} class="flex items-center gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                    <div class="text-green-600 dark:text-green-400">
+                      {option.icon}
+                    </div>
                     <div>
-                      <label
-                        class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default"
-                        for="retention-days"
-                      >
-                        {$localize`Data Retention Days`}
-                      </label>
-                      <input
-                        id="retention-days"
-                        type="number"
-                        min="1"
-                        max="365"
-                        class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text transition-colors 
-                               focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 
-                               dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                        value={dataRetentionDays.value}
-                        onInput$={(e: any) => {
-                          const value = Math.max(
-                            1,
-                            Math.min(365, parseInt(e.target.value) || 30),
-                          );
-                          dataRetentionDays.value = value;
-                          validateAndUpdate$();
-                        }}
-                      />
-                      <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-xs">
-                        {$localize`Number of days to retain monitoring data (1-365)`}
+                      <p class="font-medium text-green-900 dark:text-green-200 text-sm">
+                        {option.title}
                       </p>
                     </div>
-
-                    {/* Update Interval */}
-                    <div>
-                      <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                        {$localize`Update Interval`}
-                      </label>
-                      <Select
-                        options={updateIntervalOptions}
-                        value={updateInterval.value}
-                        onChange$={(value) => {
-                          updateInterval.value = value;
-                          validateAndUpdate$();
-                        }}
-                        clearable={false}
-                        class="w-full"
-                      />
-                    </div>
                   </div>
-
-                  {/* Interface Monitoring */}
-                  <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-                    <h3 class="mb-4 text-lg font-semibold text-text dark:text-text-dark-default">
-                      {$localize`Interface Monitoring`}
-                    </h3>
-
-                    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-                      {/* WAN1 */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={monitoredInterfaces.value.wan1}
-                            onChange$={(e: any) => {
-                              handleInterfaceChange$("wan1", e.target.checked);
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`WAN1`}
-                          </span>
-                        </label>
-                      </div>
-
-                      {/* WAN2 */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={monitoredInterfaces.value.wan2}
-                            onChange$={(e: any) => {
-                              handleInterfaceChange$("wan2", e.target.checked);
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`WAN2`}
-                          </span>
-                        </label>
-                      </div>
-
-                      {/* LAN */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={monitoredInterfaces.value.lan}
-                            onChange$={(e: any) => {
-                              handleInterfaceChange$("lan", e.target.checked);
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`LAN`}
-                          </span>
-                        </label>
-                      </div>
-
-                      {/* Wireless */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={monitoredInterfaces.value.wireless}
-                            onChange$={(e: any) => {
-                              handleInterfaceChange$(
-                                "wireless",
-                                e.target.checked,
-                              );
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Wireless`}
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* System Monitoring */}
-                  <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-                    <h3 class="mb-4 text-lg font-semibold text-text dark:text-text-dark-default">
-                      {$localize`System Monitoring`}
-                    </h3>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      {/* CPU Monitoring */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={enableCPUMonitoring.value}
-                            onChange$={(e: any) => {
-                              enableCPUMonitoring.value = e.target.checked;
-                              validateAndUpdate$();
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Enable CPU Monitoring`}
-                          </span>
-                        </label>
-                      </div>
-
-                      {/* Memory Monitoring */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={enableMemoryMonitoring.value}
-                            onChange$={(e: any) => {
-                              enableMemoryMonitoring.value = e.target.checked;
-                              validateAndUpdate$();
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Enable Memory Monitoring`}
-                          </span>
-                        </label>
-                      </div>
-
-                      {/* Disk Monitoring */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={enableDiskMonitoring.value}
-                            onChange$={(e: any) => {
-                              enableDiskMonitoring.value = e.target.checked;
-                              validateAndUpdate$();
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Enable Disk Monitoring`}
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Graph Settings */}
-                  <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-                    <h3 class="mb-4 text-lg font-semibold text-text dark:text-text-dark-default">
-                      {$localize`Graph Settings`}
-                    </h3>
-
-                    <div class="space-y-4">
-                      {/* Network Traffic Graphs */}
-                      <div>
-                        <label class="flex items-center">
-                          <input
-                            type="checkbox"
-                            class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                            checked={enableNetworkTrafficGraphs.value}
-                            onChange$={(e: any) => {
-                              enableNetworkTrafficGraphs.value =
-                                e.target.checked;
-                              validateAndUpdate$();
-                            }}
-                          />
-                          <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Enable Network Traffic Graphs`}
-                          </span>
-                        </label>
-                        <p class="text-text-secondary dark:text-text-dark-secondary ml-7 mt-1 text-xs">
-                          {$localize`Generate detailed network traffic graphs and statistics`}
-                        </p>
-                      </div>
-
-                      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        {/* Graph Resolution */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Graph Resolution`}
-                          </label>
-                          <Select
-                            options={graphResolutionOptions}
-                            value={graphResolution.value}
-                            onChange$={(value) => {
-                              graphResolution.value = value;
-                              validateAndUpdate$();
-                            }}
-                            clearable={false}
-                            class="w-full"
-                          />
-                          <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-xs">
-                            {$localize`Higher resolution provides more detailed graphs but uses more resources`}
-                          </p>
-                        </div>
-
-                        {/* Storage Location */}
-                        <div>
-                          <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                            {$localize`Storage Location`}
-                          </label>
-                          <Select
-                            options={storageLocationOptions}
-                            value={storageLocation.value}
-                            onChange$={(value) => {
-                              storageLocation.value = value;
-                              validateAndUpdate$();
-                            }}
-                            clearable={false}
-                            class="w-full"
-                          />
-                          <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-xs">
-                            {$localize`Choose where to store monitoring data and graphs`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Configuration Required Notice */}
-          <div class="mt-6 rounded-lg bg-primary-50 p-4 dark:bg-primary-900/20">
-            <div class="flex items-start">
-              <svg
-                class="mr-3 mt-0.5 h-5 w-5 text-primary-600 dark:text-primary-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <h3 class="text-sm font-medium text-primary-800 dark:text-primary-200">
-                  {$localize`Configuration Required`}
-                </h3>
-                <p class="mt-1 text-sm text-primary-700 dark:text-primary-300">
-                  {$localize`Enable graphing and select at least one monitoring option to proceed to the next step.`}
-                </p>
+                ))}
               </div>
             </div>
-          </div>
+          </CardBody>
+        </Card>
+      )}
+
+
+      {/* Bottom status indicator */}
+      <div class="text-center">
+        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-700/50">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d={selectedCount > 0 ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"} />
+          </svg>
+          <span class="font-medium text-emerald-700 dark:text-emerald-300">
+            {selectedCount > 0 
+              ? `${$localize`Monitoring enabled for`} ${selectedCount} ${selectedCount === 1 ? $localize`graph type` : $localize`graph types`}`
+              : $localize`Select monitoring types to enable network graphing`
+            }
+          </span>
         </div>
       </div>
     </div>

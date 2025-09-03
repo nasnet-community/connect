@@ -1,5 +1,6 @@
 import type { JSX } from "@builder.io/qwik";
 import type { Signal, QRL, ContextId } from "@builder.io/qwik";
+import type { StepHelpContent } from "../shared/types/base";
 
 export interface CStepMeta {
   id: number;
@@ -12,6 +13,12 @@ export interface CStepMeta {
   isOptional?: boolean;
   skippable?: boolean;
   validationErrors?: string[];
+  
+  // Help system properties
+  helpTitle?: string;
+  helpContent?: string | JSX.Element;
+  helpData?: StepHelpContent;
+  hasHelp?: boolean;
 }
 
 export interface CStepperProps {
@@ -25,12 +32,24 @@ export interface CStepperProps {
   contextValue?: any;
   allowNonLinearNavigation?: boolean;
   allowSkipSteps?: boolean;
-  persistState?: boolean;
   validationMode?: 'onBlur' | 'onChange' | 'onSubmit';
   customIcons?: Record<number, JSX.Element>;
   useNumbers?: boolean;
   isEditMode?: boolean;
   dynamicStepComponent?: any;
+  
+  // Help system options
+  enableHelp?: boolean;
+  helpOptions?: {
+    enableKeyboardShortcuts?: boolean;
+    autoShowHelpOnFirstStep?: boolean;
+    helpKey?: string;
+    onHelpOpen$?: QRL<(stepId: number) => void>;
+    onHelpClose$?: QRL<(stepId: number) => void>;
+  };
+  
+  // UI customization
+  hideStepHeader?: boolean;
 }
 
 export interface CStepperContext<T = any> {
@@ -47,8 +66,6 @@ export interface CStepperContext<T = any> {
   swapSteps$: QRL<(sourceIndex: number, targetIndex: number) => boolean>;
   validateStep$?: QRL<(stepId?: number) => Promise<boolean>>;
   setStepErrors$?: QRL<(stepId: number, errors: string[]) => void>;
-  restoreSavedState$?: QRL<() => boolean>;
-  clearSavedState$?: QRL<() => void>;
   allowSkipSteps?: boolean;
   data: T;
 } 

@@ -1,51 +1,71 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 import { Card } from "~/components/Core/Card";
 import { Field as FormField } from "~/components/Core/Form/Field";
+import { InterfaceNameInput } from "~/components/Core/Form/PrefixedInput";
 import { Input } from "~/components/Core/Input";
 import { Button } from "~/components/Core/button";
 import { TabNavigation } from "~/components/Core/Navigation/TabNavigation";
 import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 import {
-  HiDocumentOutline,
-  HiLockClosedOutline,
   HiServerOutline,
+  HiPlusCircleOutline,
+  HiTrashOutline,
 } from "@qwikest/icons/heroicons";
 
 export const OpenVPNServerAdvanced = component$(() => {
   const {
     advancedFormState,
-    isEnabled,
-    showPassphrase,
-    activeTab,
-    certificateError,
-    passphraseError,
-    tabOptions,
     protocolOptions,
-    modeOptions,
-    authMethodOptions,
-    cipherOptions,
-    tlsVersionOptions,
-    updateName$,
-    updateCertificate$,
-    updateCertificateKeyPassphrase$,
     updateProtocol$,
     updatePort$,
-    updateMode$,
-    updateAddressPool$,
-    updateDefaultProfile$,
-    updateMaxMtu$,
-    updateMaxMru$,
-    updateKeepaliveTimeout$,
+    updateTcpPort$,
+    updateUdpPort$,
     updateNetwork$,
-    updateAuth$,
-    updateCipher$,
-    updateTlsVersion$,
-    updateRequireClientCertificate$,
-    handleToggle,
-    togglePassphraseVisibility$,
   } = useOpenVPNServer();
+
+  // Tab management for multiple interfaces
+  const activeTab = useSignal("interface-1");
+  const interfaces = useSignal([
+    { id: "interface-1", suffix: "1" },
+  ]);
+
+  // Add new interface
+  const addInterface$ = $(() => {
+    const newId = `interface-${interfaces.value.length + 1}`;
+    interfaces.value = [
+      ...interfaces.value,
+      { id: newId, suffix: (interfaces.value.length + 1).toString() },
+    ];
+    activeTab.value = newId;
+  });
+
+  // Update interface suffix
+  const updateInterfaceSuffix$ = $((interfaceId: string, newSuffix: string) => {
+    interfaces.value = interfaces.value.map(iface => 
+      iface.id === interfaceId 
+        ? { ...iface, suffix: newSuffix || "1" }
+        : iface
+    );
+  });
+
+  // Remove interface
+  const removeInterface$ = $((interfaceId: string) => {
+    if (interfaces.value.length > 1) {
+      interfaces.value = interfaces.value.filter(iface => iface.id !== interfaceId);
+      if (activeTab.value === interfaceId) {
+        activeTab.value = interfaces.value[0].id;
+      }
+    }
+  });
+
+  // Generate tab options for TabNavigation
+  const tabOptions = interfaces.value.map(iface => ({
+    id: iface.id,
+    label: `ovpn-server-${iface.suffix}`,
+    icon: <HiServerOutline class="h-4 w-4" />,
+  }));
 
   return (
     <Card hasHeader>
@@ -53,106 +73,104 @@ export const OpenVPNServerAdvanced = component$(() => {
         <HiServerOutline class="h-5 w-5" />
         <span class="font-medium">{$localize`OpenVPN Server`}</span>
       </div>
-      {/* Enable/Disable */}
-      <FormField label={$localize`Enable OpenVPN Server`}>
-        <input
-          type="checkbox"
-          checked={isEnabled.value}
-          onChange$={() => handleToggle(!isEnabled.value)}
-          class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-        />
-      </FormField>
+      
+      <div class="space-y-6">
+          {/* Interface Management */}
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              {$localize`OpenVPN Interfaces`}
+            </h3>
+            <div class="flex items-center gap-2">
+              <Button
+                onClick$={addInterface$}
+                variant="secondary"
+                class="flex items-center gap-1"
+              >
+                <HiPlusCircleOutline class="h-4 w-4" />
+                {$localize`Add Interface`}
+              </Button>
+              {interfaces.value.length > 1 && (
+                <Button
+                  onClick$={() => removeInterface$(activeTab.value)}
+                  variant="secondary"
+                  class="flex items-center gap-1 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/10"
+                >
+                  <HiTrashOutline class="h-4 w-4" />
+                  {$localize`Remove`}
+                </Button>
+              )}
+            </div>
+          </div>
 
-      {isEnabled.value && (
-        <>
-          {/* Tab Navigation */}
+          {/* Tab Navigation for Interfaces */}
           <TabNavigation
             tabs={tabOptions}
             activeTab={activeTab.value}
-            onSelect$={(tabId: string) =>
-              (activeTab.value = tabId as "basic" | "network" | "security")
-            }
+            onSelect$={(tabId: string) => {
+              activeTab.value = tabId;
+            }}
+            variant="underline"
+            size="sm"
           />
 
-          {/* Basic Settings */}
-          {activeTab.value === "basic" && (
-            <div class="space-y-4">
-              {/* Profile Name */}
-              <FormField label={$localize`Profile Name`}>
-                <Input
-                  type="text"
-                  value={advancedFormState.name}
-                  onChange$={(event: Event, value: string) => {
-                    updateName$(value);
-                  }}
-                  placeholder={$localize`Enter profile name`}
-                />
-              </FormField>
+          {/* Interface Settings */}
+          <div class="space-y-4">
+            {/* Interface Name */}
+            <InterfaceNameInput
+              type="openvpn"
+              value={interfaces.value.find(iface => iface.id === activeTab.value)?.suffix || ""}
+              onChange$={(event: Event, value: string) => updateInterfaceSuffix$(activeTab.value, value)}
+              label={$localize`Interface Name`}
+              placeholder="1"
+            />
 
-              {/* Certificate */}
-              <FormField
-                label={$localize`Server Certificate`}
-                error={certificateError.value}
-              >
-                <div class="flex items-center gap-2">
+            {/* Network Selection */}
+            <NetworkDropdown
+              selectedNetwork={advancedFormState.network}
+              onNetworkChange$={updateNetwork$}
+              label={$localize`Network`}
+            />
+
+            {/* Protocol */}
+            <FormField label={$localize`Protocol`}>
+              <Select
+                options={protocolOptions}
+                value={advancedFormState.protocol}
+                onChange$={(value) => {
+                  updateProtocol$(Array.isArray(value) ? value[0] as any : value as any);
+                }}
+              />
+            </FormField>
+
+            {/* Port Configuration - Conditional rendering based on protocol */}
+            {advancedFormState.protocol === "both" ? (
+              <>
+                {/* TCP Port */}
+                <FormField label={$localize`TCP Port`}>
                   <Input
-                    type="text"
-                    value={advancedFormState.certificate}
+                    type="number"
+                    value={advancedFormState.tcpPort.toString()}
                     onChange$={(event: Event, value: string) => {
-                      updateCertificate$(value);
+                      updateTcpPort$(parseInt(value, 10) || 1194);
                     }}
-                    placeholder={$localize`Enter certificate name`}
+                    placeholder="1194"
                   />
-                  <Button
-                    onClick$={() => {}}
-                    variant="secondary"
-                    class="flex items-center gap-1"
-                  >
-                    <HiDocumentOutline class="h-5 w-5" />
-                    {$localize`Select`}
-                  </Button>
-                </div>
-              </FormField>
-
-              {/* Certificate Key Passphrase */}
-              <FormField
-                label={$localize`Certificate Key Passphrase`}
-                error={passphraseError.value}
-              >
-                <div class="relative">
+                </FormField>
+                
+                {/* UDP Port */}
+                <FormField label={$localize`UDP Port`}>
                   <Input
-                    type={showPassphrase.value ? "text" : "password"}
-                    value={advancedFormState.certificateKeyPassphrase}
+                    type="number"
+                    value={advancedFormState.udpPort.toString()}
                     onChange$={(event: Event, value: string) => {
-                      updateCertificateKeyPassphrase$(value);
+                      updateUdpPort$(parseInt(value, 10) || 1195);
                     }}
-                    placeholder={$localize`Enter passphrase (at least 10 characters)`}
-                    hasSuffixSlot={true}
-                  >
-                    <button
-                      q:slot="suffix"
-                      type="button"
-                      onClick$={togglePassphraseVisibility$}
-                      class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    >
-                      <HiLockClosedOutline class="h-5 w-5" />
-                    </button>
-                  </Input>
-                </div>
-              </FormField>
-
-              {/* Protocol */}
-              <FormField label={$localize`Protocol`}>
-                <Select
-                  options={protocolOptions}
-                  value={advancedFormState.protocol}
-                  onChange$={(value) => {
-                    updateProtocol$(Array.isArray(value) ? value[0] as any : value as any);
-                  }}
-                />
-              </FormField>
-
-              {/* Port */}
+                    placeholder="1195"
+                  />
+                </FormField>
+              </>
+            ) : (
+              /* Single Port for TCP or UDP */
               <FormField label={$localize`Port`}>
                 <Input
                   type="number"
@@ -163,141 +181,19 @@ export const OpenVPNServerAdvanced = component$(() => {
                   placeholder="1-65535"
                 />
               </FormField>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Network Settings */}
-          {activeTab.value === "network" && (
-            <div class="space-y-4">
-              {/* Network Selection */}
-              <NetworkDropdown
-                selectedNetwork={advancedFormState.network}
-                onNetworkChange$={updateNetwork$}
-                label={$localize`Network`}
-              />
-
-              {/* Mode */}
-              <FormField label={$localize`Mode`}>
-                <Select
-                  options={modeOptions}
-                  value={advancedFormState.mode}
-                  onChange$={(value) => {
-                    updateMode$(Array.isArray(value) ? value[0] as any : value as any);
-                  }}
-                />
-              </FormField>
-
-              {/* Address Pool */}
-              <FormField label={$localize`Address Pool`}>
-                <Input
-                  type="text"
-                  value={advancedFormState.addressPool}
-                  onChange$={(event: Event, value: string) => {
-                    updateAddressPool$(value);
-                  }}
-                  placeholder={$localize`e.g., 192.168.78.0/24`}
-                />
-              </FormField>
-
-              {/* Default Profile */}
-              <FormField label={$localize`Default Profile`}>
-                <Input
-                  type="text"
-                  value={advancedFormState.defaultProfile}
-                  onChange$={(event: Event, value: string) => {
-                    updateDefaultProfile$(value);
-                  }}
-                  placeholder={$localize`Enter PPP profile name`}
-                />
-              </FormField>
-
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField label={$localize`Maximum MTU`}>
-                  <Input
-                    type="number"
-                    value={String(advancedFormState.maxMtu)}
-                    onChange$={(event: Event, value: string) => {
-                      updateMaxMtu$(parseInt(value) || 1450);
-                    }}
-                  />
-                </FormField>
-
-                <FormField label={$localize`Maximum MRU`}>
-                  <Input
-                    type="number"
-                    value={String(advancedFormState.maxMru)}
-                    onChange$={(event: Event, value: string) => {
-                      updateMaxMru$(parseInt(value) || 1450);
-                    }}
-                  />
-                </FormField>
-              </div>
-
-              <FormField label={$localize`Keepalive Timeout`}>
-                <Input
-                  type="number"
-                  value={String(advancedFormState.keepaliveTimeout)}
-                  onChange$={(event: Event, value: string) => {
-                    updateKeepaliveTimeout$(parseInt(value) || 30);
-                  }}
-                />
-              </FormField>
-            </div>
-          )}
-
-          {/* Security Settings */}
-          {activeTab.value === "security" && (
-            <div class="space-y-4">
-              {/* Auth Method */}
-              <FormField label={$localize`Authentication Algorithm`}>
-                <Select
-                  options={authMethodOptions}
-                  value={advancedFormState.auth}
-                  onChange$={(value) => {
-                    updateAuth$(Array.isArray(value) ? value[0] as any : value as any);
-                  }}
-                />
-              </FormField>
-
-              {/* Cipher */}
-              <FormField label={$localize`Encryption Cipher`}>
-                <Select
-                  options={cipherOptions}
-                  value={advancedFormState.cipher}
-                  onChange$={(value) => {
-                    updateCipher$(Array.isArray(value) ? value[0] as any : value as any);
-                  }}
-                />
-              </FormField>
-
-              {/* TLS Version */}
-              <FormField label={$localize`TLS Version`}>
-                <Select
-                  options={tlsVersionOptions}
-                  value={advancedFormState.tlsVersion}
-                  onChange$={(value) => {
-                    updateTlsVersion$(Array.isArray(value) ? value[0] as any : value as any);
-                  }}
-                />
-              </FormField>
-
-              {/* Require Client Certificate */}
-              <FormField label={$localize`Require Client Certificate`}>
-                <input
-                  type="checkbox"
-                  checked={advancedFormState.requireClientCertificate}
-                  onChange$={() => {
-                    updateRequireClientCertificate$(
-                      !advancedFormState.requireClientCertificate,
-                    );
-                  }}
-                  class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                />
-              </FormField>
-            </div>
-          )}
-        </>
-      )}
+          {/* Certificate Configuration Note */}
+          <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+            <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+              {$localize`Certificate Configuration`}
+            </h4>
+            <p class="text-sm text-blue-700 dark:text-blue-300">
+              {$localize`Server certificates and security settings are configured in the Certificate step. This ensures consistent certificate management across all protocols that require them.`}
+            </p>
+          </div>
+      </div>
     </Card>
   );
 });

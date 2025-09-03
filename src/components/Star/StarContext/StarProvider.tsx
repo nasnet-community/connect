@@ -10,7 +10,7 @@ import {
   type StarState,
   type StarContextType,
 } from "./StarContext";
-import type { Mode, FrimwareType, RouterModeType } from "./ChooseType";
+import type { Mode, FrimwareType, RouterModeType, WANLinkType } from "./ChooseType";
 import type { Ethernet } from "./CommonType";
 
 export const StarContextProvider = component$(() => {
@@ -19,7 +19,7 @@ export const StarContextProvider = component$(() => {
       Mode: "" as Mode,
       Firmware: "" as FrimwareType,
       RouterMode: "" as RouterModeType,
-      DomesticLink: false,
+      WANLinkType: "both" as WANLinkType,
       RouterModels: [],
       Newsletter: {
         isSubscribed: false,

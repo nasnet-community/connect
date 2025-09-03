@@ -46,38 +46,9 @@ export function useCStepper(props: CStepperProps) {
     }
   });
 
-  // Handle browser history integration
-  useVisibleTask$(({ cleanup }) => {
+  // Initialize stepper
+  useVisibleTask$(() => {
     isStepperMounted.value = true;
-    
-    // Function to handle popstate (browser back/forward buttons)
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      if (state && typeof state.stepperActiveStep === 'number') {
-        // Restore active step from history state
-        activeStep.value = state.stepperActiveStep;
-        
-        // Notify step change
-        props.onStepChange$?.(steps.value[activeStep.value].id);
-      }
-    };
-    
-    // Add popstate listener
-    window.addEventListener('popstate', handlePopState);
-    
-    // Initial history state
-    if (history.state === null) {
-      history.replaceState(
-        { stepperActiveStep: activeStep.value },
-        '',
-        window.location.href
-      );
-    }
-    
-    // Cleanup
-    cleanup(() => {
-      window.removeEventListener('popstate', handlePopState);
-    });
   });
 
   const handleNext$ = $(() => {
@@ -92,13 +63,6 @@ export function useCStepper(props: CStepperProps) {
       
       // Navigate to next step
       activeStep.value++;
-      
-      // Update browser history
-      history.pushState(
-        { stepperActiveStep: activeStep.value },
-        '',
-        window.location.href
-      );
       
       props.onStepChange$?.(steps.value[activeStep.value].id);
     } else if (
@@ -124,13 +88,6 @@ export function useCStepper(props: CStepperProps) {
       } else {
         activeStep.value--;
       }
-      
-      // Update browser history
-      history.pushState(
-        { stepperActiveStep: activeStep.value },
-        '',
-        window.location.href
-      );
       
       props.onStepChange$?.(steps.value[activeStep.value].id);
     }
@@ -166,13 +123,6 @@ export function useCStepper(props: CStepperProps) {
       }
       
       activeStep.value = step;
-      
-      // Update browser history
-      history.pushState(
-        { stepperActiveStep: activeStep.value },
-        '',
-        window.location.href
-      );
       
       props.onStepChange$?.(steps.value[step].id);
     }

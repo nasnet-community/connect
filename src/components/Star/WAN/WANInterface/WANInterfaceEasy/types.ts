@@ -20,7 +20,13 @@ export interface FooterProps {
 
 export interface InterfaceSelectorProps {
   selectedInterface: string;
-  availableInterfaces: string[];
+  selectedInterfaceType: string;
+  availableInterfaces: {
+    ethernet: string[];
+    wireless: string[];
+    sfp: string[];
+    lte: string[];
+  };
   onSelect: QRL<(value: string) => void>;
   isInterfaceSelectedInOtherMode: QRL<(iface: string) => boolean>;
   mode: "Foreign" | "Domestic";

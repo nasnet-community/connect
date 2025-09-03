@@ -1,9 +1,7 @@
 import { component$, $, useSignal } from "@builder.io/qwik";
 import type { VPNClientAdvancedState, MultiVPNStrategy } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
-import { VPNBox } from "../components/VPNBox/VPNBox";
-import { VPNBoxContent } from "../components/VPNBox/VPNBoxContent";
-import { Card, Input } from "~/components/Core";
+import { Input } from "~/components/Core";
 
 export interface StepPrioritiesProps {
   wizardState: VPNClientAdvancedState;
@@ -12,9 +10,8 @@ export interface StepPrioritiesProps {
 
 export const StepPriorities = component$<StepPrioritiesProps>(
   ({ wizardState, wizardActions }) => {
-    const draggedIndex = useSignal<number | null>(null);
-    const dragOverIndex = useSignal<number | null>(null);
-    const isDragging = useSignal(false);
+    const draggedItem = useSignal<string | null>(null);
+    const draggedOverItem = useSignal<string | null>(null);
     
     // Strategy state
     const strategy = useSignal<MultiVPNStrategy>(wizardState.multiVPNStrategy?.strategy || "Failover");
@@ -24,44 +21,56 @@ export const StepPriorities = component$<StepPrioritiesProps>(
       (a, b) => (a.priority || 0) - (b.priority || 0),
     );
 
-    const handleDragStart = $((index: number) => {
-      draggedIndex.value = index;
-      isDragging.value = true;
+    const handleDragStart = $((vpnId: string) => {
+      draggedItem.value = vpnId;
     });
-
-    const handleDragEnd = $(() => {
-      draggedIndex.value = null;
-      dragOverIndex.value = null;
-      isDragging.value = false;
+    
+    const handleDragOver = $((vpnId: string) => {
+      draggedOverItem.value = vpnId;
     });
-
-    const handleDragOver = $((e: DragEvent, index: number) => {
-      e.preventDefault();
-      dragOverIndex.value = index;
-    });
-
-    const handleDrop = $((e: DragEvent, dropIndex: number) => {
-      e.preventDefault();
-
-      if (draggedIndex.value === null || draggedIndex.value === dropIndex) {
-        return;
+    
+    const handleDragEnd = $(async () => {
+      if (draggedItem.value && draggedOverItem.value && draggedItem.value !== draggedOverItem.value) {
+        const draggedVPN = wizardState.vpnConfigs.find(vpn => vpn.id === draggedItem.value);
+        const targetVPN = wizardState.vpnConfigs.find(vpn => vpn.id === draggedOverItem.value);
+        
+        if (draggedVPN && targetVPN) {
+          const draggedPriority = draggedVPN.priority || 0;
+          const targetPriority = targetVPN.priority || 0;
+          
+          // First swap the two items
+          const initialUpdates = [
+            { id: draggedItem.value, updates: { priority: targetPriority } },
+            { id: draggedOverItem.value, updates: { priority: draggedPriority } }
+          ];
+          
+          // Apply initial swap
+          await wizardActions.batchUpdateVPNs$(initialUpdates);
+          
+          // Then reorder all priorities to ensure they're sequential
+          const tempVPNs = wizardState.vpnConfigs.map(vpn => ({
+            ...vpn,
+            priority: vpn.id === draggedItem.value ? targetPriority :
+                     vpn.id === draggedOverItem.value ? draggedPriority :
+                     vpn.priority || 0
+          }));
+          
+          const sortedVPNs = tempVPNs.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+          const reorderUpdates = sortedVPNs.map((vpn, index) => ({
+            id: vpn.id,
+            updates: { priority: index + 1 }
+          }));
+          
+          // Apply sequential reordering
+          await wizardActions.batchUpdateVPNs$(reorderUpdates);
+        }
       }
-
-      const newVPNs = [...sortedVPNs];
-      const [draggedVPN] = newVPNs.splice(draggedIndex.value, 1);
-      newVPNs.splice(dropIndex, 0, draggedVPN);
-
-      // Update priorities based on new order
-      newVPNs.forEach((vpn, index) => {
-        wizardActions.updateVPN$(vpn.id, { priority: index + 1 });
-      });
-
-      draggedIndex.value = null;
-      dragOverIndex.value = null;
-      isDragging.value = false;
+      
+      draggedItem.value = null;
+      draggedOverItem.value = null;
     });
 
-    const moveUp = $((index: number) => {
+    const moveUp = $(async (index: number) => {
       if (index === 0) return;
 
       const newVPNs = [...sortedVPNs];
@@ -70,12 +79,17 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         newVPNs[index],
       ];
 
-      newVPNs.forEach((vpn, idx) => {
-        wizardActions.updateVPN$(vpn.id, { priority: idx + 1 });
-      });
+      // Prepare batch updates
+      const updates = newVPNs.map((vpn, idx) => ({
+        id: vpn.id,
+        updates: { priority: idx + 1 }
+      }));
+
+      // Update all priorities at once
+      await wizardActions.batchUpdateVPNs$(updates);
     });
 
-    const moveDown = $((index: number) => {
+    const moveDown = $(async (index: number) => {
       if (index === sortedVPNs.length - 1) return;
 
       const newVPNs = [...sortedVPNs];
@@ -84,9 +98,14 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         newVPNs[index],
       ];
 
-      newVPNs.forEach((vpn, idx) => {
-        wizardActions.updateVPN$(vpn.id, { priority: idx + 1 });
-      });
+      // Prepare batch updates
+      const updates = newVPNs.map((vpn, idx) => ({
+        id: vpn.id,
+        updates: { priority: idx + 1 }
+      }));
+
+      // Update all priorities at once
+      await wizardActions.batchUpdateVPNs$(updates);
     });
 
     // Strategy change handler
@@ -128,7 +147,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
     return (
       <div class="space-y-6">
         {/* Strategy Selection */}
-        <Card class="p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
             {$localize`Multi-VPN Strategy`}
           </h3>
@@ -138,28 +157,28 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               { 
                 value: "Failover" as MultiVPNStrategy, 
                 label: $localize`Failover`, 
-                description: $localize`Primary with backup`,
-                icon: "M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                description: $localize`Backup Connection`,
+                icon: "M13 10V3L4 14h7v7l9-11h-7z"
               },
               { 
                 value: "RoundRobin" as MultiVPNStrategy, 
                 label: $localize`Round Robin`, 
-                description: $localize`Rotate connections`,
+                description: $localize`Rotating Usage`,
                 icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               },
               { 
                 value: "LoadBalance" as MultiVPNStrategy, 
                 label: $localize`Load Balance`, 
-                description: $localize`Distribute traffic`,
-                icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+                description: $localize`Distributed Traffic`,
+                icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"
               },
               { 
                 value: "Both" as MultiVPNStrategy, 
-                label: $localize`LoadBalance & Failover`, 
-                description: $localize`Balance + Backup`,
+                label: $localize`Both`, 
+                description: $localize`Balance + Failover`,
                 icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
               }
-            ].map((option) => (
+            ].map(option => (
               <button
                 key={option.value}
                 onClick$={() => handleStrategyChange(option.value)}
@@ -172,7 +191,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   }
                 `}
               >
-                <div class="flex flex-col items-center">
+                <div class="flex flex-col items-center text-center">
                   <svg class={`w-6 h-6 mb-2 ${
                     strategy.value === option.value
                       ? "text-primary-600 dark:text-primary-400"
@@ -201,14 +220,13 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               </button>
             ))}
           </div>
-          
-          {/* Strategy Configuration */}
+
           {strategy.value === "Failover" && (
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
               <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">
                 {$localize`Failover Settings`}
               </h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label class="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
                     {$localize`Check Interval (seconds)`}
@@ -254,11 +272,21 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   />
                 </div>
               </div>
+              <div class="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div class="flex items-start gap-2">
+                  <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p class="text-sm text-blue-700 dark:text-blue-300">
+                    If the primary VPN fails, traffic automatically switches to the next available VPN
+                  </p>
+                </div>
+              </div>
             </div>
           )}
           
           {strategy.value === "RoundRobin" && (
-            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
               <h4 class="text-sm font-medium text-green-800 dark:text-green-200 mb-3">
                 {$localize`Round Robin Settings`}
               </h4>
@@ -291,7 +319,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           )}
           
           {strategy.value === "LoadBalance" && (
-            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+            <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
               <h4 class="text-sm font-medium text-orange-800 dark:text-orange-200 mb-3">
                 {$localize`Load Balance Settings`}
               </h4>
@@ -303,7 +331,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           )}
           
           {strategy.value === "Both" && (
-            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
               <h4 class="text-sm font-medium text-purple-800 dark:text-purple-200 mb-3">
                 {$localize`Load Balance & Failover Settings`}
               </h4>
@@ -358,171 +386,167 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               </div>
             </div>
           )}
-        </Card>
+        </div>
 
         {/* Priority Management */}
-        <Card class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
             {$localize`VPN Priority Order`}
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
             {$localize`Drag and drop VPNs to set their priority order. Higher priority VPNs will be preferred.`}
           </p>
 
         {/* Priority List */}
         <div class="space-y-3">
-          {sortedVPNs.map((vpn, index) => (
-            <div
-              key={vpn.id}
-              draggable
-              onDragStart$={() => handleDragStart(index)}
-              onDragEnd$={handleDragEnd}
-              onDragOver$={(e) => handleDragOver(e, index)}
-              onDrop$={(e) => handleDrop(e, index)}
-              class={{
-                "transition-all duration-200": true,
-                "opacity-50": draggedIndex.value === index,
-                "scale-105 transform":
-                  dragOverIndex.value === index && draggedIndex.value !== index,
-                "cursor-move": true,
-              }}
-            >
-              <div class="flex items-center space-x-3">
-                {/* Priority number */}
-                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
-                  <span class="text-sm font-semibold text-primary-700 dark:text-primary-300">
-                    {index + 1}
-                  </span>
-                </div>
-
-                {/* VPN Box */}
-                <div class="flex-1">
-                  <VPNBox
-                    vpn={vpn}
-                    index={index}
-                    isExpanded={false}
-                    canRemove={false}
-                  >
-                    <VPNBoxContent
-                      vpn={vpn}
-                    >
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="font-medium text-gray-900 dark:text-gray-100">
-                            {vpn.name}
-                          </p>
-                          <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {vpn.type} Protocol
-                          </p>
-                        </div>
-
-                        {/* Move buttons for non-touch devices */}
-                        <div class="flex items-center space-x-2">
-                          <button
-                            onClick$={() => moveUp(index)}
-                            disabled={index === 0}
-                            class={{
-                              "rounded-md p-2 transition-colors": true,
-                              "cursor-not-allowed text-gray-400": index === 0,
-                              "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700":
-                                index > 0,
-                            }}
-                            title={$localize`Move up`}
-                          >
-                            <svg
-                              class="h-5 w-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 15l7-7 7 7"
-                              />
-                            </svg>
-                          </button>
-
-                          <button
-                            onClick$={() => moveDown(index)}
-                            disabled={index === sortedVPNs.length - 1}
-                            class={{
-                              "rounded-md p-2 transition-colors": true,
-                              "cursor-not-allowed text-gray-400":
-                                index === sortedVPNs.length - 1,
-                              "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700":
-                                index < sortedVPNs.length - 1,
-                            }}
-                            title={$localize`Move down`}
-                          >
-                            <svg
-                              class="h-5 w-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 9l-7 7-7-7"
-                              />
-                            </svg>
-                          </button>
-
-                          {/* Drag handle */}
-                          <div class="cursor-move p-2 text-gray-400">
-                            <svg
-                              class="h-5 w-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 8h16M4 16h16"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </VPNBoxContent>
-                  </VPNBox>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-          {/* Instructions */}
-          <div class="mt-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-            <div class="flex">
-              <svg
-                class="mr-2 h-5 w-5 text-blue-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+          {sortedVPNs.map((vpn, index) => {
+            const isDragging = draggedItem.value === vpn.id;
+            const isDraggedOver = draggedOverItem.value === vpn.id && draggedItem.value !== vpn.id;
+            
+            return (
+              <div
+                key={vpn.id}
+                draggable
+                onDragStart$={() => handleDragStart(vpn.id)}
+                onDragEnd$={handleDragEnd}
+                onDragOver$={(e) => {
+                  e.preventDefault();
+                  handleDragOver(vpn.id);
+                }}
+                class={`
+                  flex items-center gap-3 p-4 rounded-lg cursor-move transition-all
+                  ${
+                    isDragging
+                      ? "opacity-50 scale-95"
+                      : isDraggedOver
+                      ? "shadow-lg border-primary-500 bg-primary-50 dark:bg-primary-900/10"
+                      : index === 0
+                      ? "bg-white dark:bg-gray-700 border border-green-200 dark:border-green-700"
+                      : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600"
+                  }
+                  hover:shadow-md
+                `}
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <div class="text-sm text-blue-700 dark:text-blue-300">
-                <p>{$localize`Priority Tips:`}</p>
-                <ul class="mt-1 list-inside list-disc space-y-1">
-                  <li>{$localize`Drag and drop VPN boxes to reorder them`}</li>
-                  <li>{$localize`Use arrow buttons for precise positioning`}</li>
-                  <li>{$localize`Priority 1 VPN will be tried first, then 2, and so on`}</li>
-                  <li>{$localize`VPNs with the same strategy will use this priority order`}</li>
-                </ul>
+                {/* Priority number */}
+                <div class={`
+                  flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold
+                  ${
+                    index === 0
+                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }
+                `}>
+                  {index + 1}
+                </div>
+
+                {/* VPN Protocol Icon */}
+                <div class={`
+                  flex h-10 w-10 items-center justify-center rounded-lg transition-colors
+                  ${
+                    index === 0
+                      ? "bg-green-100 dark:bg-green-900/30"
+                      : "bg-gray-100 dark:bg-gray-700"
+                  }
+                `}>
+                  <svg 
+                    class={`h-6 w-6 ${
+                      index === 0 
+                        ? "text-green-600 dark:text-green-400" 
+                        : "text-gray-600 dark:text-gray-400"
+                    }`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={{
+                      "Wireguard": "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
+                      "OpenVPN": "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+                      "L2TP": "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 919-9",
+                      "PPTP": "M13 10V3L4 14h7v7l9-11h-7z",
+                      "SSTP": "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
+                      "IKeV2": "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    }[vpn.type] || "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
+                  </svg>
+                </div>
+
+                {/* VPN Info */}
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class={`font-medium ${
+                      index === 0
+                        ? "text-green-900 dark:text-green-100"
+                        : "text-gray-900 dark:text-white"
+                    }`}>
+                      {vpn.name}
+                    </span>
+                    {index === 0 && (
+                      <span class="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
+                        Primary
+                      </span>
+                    )}
+                  </div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {vpn.type} Protocol
+                    {vpn.assignedLink && ` • Assigned to WAN Link`}
+                  </div>
+                </div>
+
+                {/* Move Buttons */}
+                <div class="flex items-center space-x-1">
+                  <button
+                    onClick$={(e) => {
+                      e.stopPropagation();
+                      moveUp(index);
+                    }}
+                    disabled={index === 0}
+                    class={`
+                      rounded p-2 transition-colors
+                      ${
+                        index === 0
+                          ? "cursor-not-allowed text-gray-400"
+                          : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600"
+                      }
+                    `}
+                    title={$localize`Move up`}
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  
+                  <button
+                    onClick$={(e) => {
+                      e.stopPropagation();
+                      moveDown(index);
+                    }}
+                    disabled={index === sortedVPNs.length - 1}
+                    class={`
+                      rounded p-2 transition-colors
+                      ${
+                        index === sortedVPNs.length - 1
+                          ? "cursor-not-allowed text-gray-400"
+                          : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600"
+                      }
+                    `}
+                    title={$localize`Move down`}
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Drag Handle */}
+                  <div class="cursor-move p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                    </svg>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </Card>
+            );
+          })}
+        </div>
+        </div>
       </div>
     );
   },

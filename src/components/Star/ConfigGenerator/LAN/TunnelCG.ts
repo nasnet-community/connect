@@ -90,23 +90,16 @@ export const IPIPInterface = (ipip: IpipTunnelConfig): RouterConfig => {
   // Build IPIP tunnel command parameters
   const interfaceParams: string[] = [
     `name=${ipip.name}`,
-    `local-address=${ipip.localAddress}`,
     `remote-address=${ipip.remoteAddress}`,
   ];
 
   // Add optional parameters
-  if (ipip.mtu !== undefined) interfaceParams.push(`mtu=${ipip.mtu}`);
   if (ipip.disabled !== undefined)
     interfaceParams.push(`disabled=${ipip.disabled ? "yes" : "no"}`);
   if (ipip.comment !== undefined)
     interfaceParams.push(`comment="${ipip.comment}"`);
   if (ipip.ipsecSecret !== undefined)
     interfaceParams.push(`ipsec-secret="${ipip.ipsecSecret}"`);
-  if (ipip.keepalive !== undefined)
-    interfaceParams.push(`keepalive=${ipip.keepalive}`);
-  if (ipip.clampTcpMss !== undefined)
-    interfaceParams.push(`clamp-tcp-mss=${ipip.clampTcpMss ? "yes" : "no"}`);
-  if (ipip.dscp !== undefined) interfaceParams.push(`dscp=${ipip.dscp}`);
   if (ipip.dontFragment !== undefined)
     interfaceParams.push(`dont-fragment=${ipip.dontFragment}`);
 
@@ -132,28 +125,17 @@ export const EoipInterface = (eoip: EoipTunnelConfig): RouterConfig => {
   // Build EoIP tunnel command parameters
   const interfaceParams: string[] = [
     `name=${eoip.name}`,
-    `local-address=${eoip.localAddress}`,
     `remote-address=${eoip.remoteAddress}`,
     `tunnel-id=${eoip.tunnelId}`,
   ];
 
   // Add optional parameters
-  if (eoip.mtu !== undefined) interfaceParams.push(`mtu=${eoip.mtu}`);
   if (eoip.disabled !== undefined)
     interfaceParams.push(`disabled=${eoip.disabled ? "yes" : "no"}`);
   if (eoip.comment !== undefined)
     interfaceParams.push(`comment="${eoip.comment}"`);
-  if (eoip.macAddress !== undefined)
-    interfaceParams.push(`mac-address=${eoip.macAddress}`);
   if (eoip.ipsecSecret !== undefined)
     interfaceParams.push(`ipsec-secret="${eoip.ipsecSecret}"`);
-  if (eoip.keepalive !== undefined)
-    interfaceParams.push(`keepalive=${eoip.keepalive}`);
-  if (eoip.arp !== undefined) interfaceParams.push(`arp=${eoip.arp}`);
-  if (eoip.arpTimeout !== undefined)
-    interfaceParams.push(`arp-timeout=${eoip.arpTimeout}`);
-  if (eoip.clampTcpMss !== undefined)
-    interfaceParams.push(`clamp-tcp-mss=${eoip.clampTcpMss ? "yes" : "no"}`);
 
   // Business logic: if ipsecSecret is used, allowFastPath must be false
   if (eoip.ipsecSecret && eoip.allowFastPath !== false) {
@@ -166,7 +148,6 @@ export const EoipInterface = (eoip: EoipTunnelConfig): RouterConfig => {
 
   if (eoip.dontFragment !== undefined)
     interfaceParams.push(`dont-fragment=${eoip.dontFragment}`);
-  if (eoip.dscp !== undefined) interfaceParams.push(`dscp=${eoip.dscp}`);
   if (eoip.loopProtect !== undefined)
     interfaceParams.push(`loop-protect=${eoip.loopProtect ? "on" : "off"}`);
   if (eoip.loopProtectDisableTime !== undefined)
@@ -191,23 +172,16 @@ export const GreInterface = (gre: GreTunnelConfig): RouterConfig => {
   // Build GRE tunnel command parameters
   const interfaceParams: string[] = [
     `name=${gre.name}`,
-    `local-address=${gre.localAddress}`,
     `remote-address=${gre.remoteAddress}`,
   ];
 
   // Add optional parameters
-  if (gre.mtu !== undefined) interfaceParams.push(`mtu=${gre.mtu}`);
   if (gre.disabled !== undefined)
     interfaceParams.push(`disabled=${gre.disabled ? "yes" : "no"}`);
   if (gre.comment !== undefined)
     interfaceParams.push(`comment="${gre.comment}"`);
   if (gre.ipsecSecret !== undefined)
     interfaceParams.push(`ipsec-secret="${gre.ipsecSecret}"`);
-  if (gre.keepalive !== undefined)
-    interfaceParams.push(`keepalive=${gre.keepalive}`);
-  if (gre.clampTcpMss !== undefined)
-    interfaceParams.push(`clamp-tcp-mss=${gre.clampTcpMss ? "yes" : "no"}`);
-  if (gre.dscp !== undefined) interfaceParams.push(`dscp=${gre.dscp}`);
   if (gre.dontFragment !== undefined)
     interfaceParams.push(`dont-fragment=${gre.dontFragment}`);
 
@@ -233,16 +207,11 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
   // Build main VXLAN interface command parameters
   const interfaceParams: string[] = [`name=${vxlan.name}`, `vni=${vxlan.vni}`];
 
-  // Add local-address if specified (available since RouterOS 7.7)
-  if (vxlan.localAddress) {
-    interfaceParams.push(`local-address=${vxlan.localAddress}`);
-  }
 
   // Note: remote-address is not used in RouterOS VXLAN interface configuration
   // Remote VTEPs are configured separately via /interface vxlan vteps
 
   // Add optional parameters following RouterOS documentation syntax
-  if (vxlan.mtu !== undefined) interfaceParams.push(`mtu=${vxlan.mtu}`);
   if (vxlan.disabled !== undefined)
     interfaceParams.push(`disabled=${vxlan.disabled ? "yes" : "no"}`);
   if (vxlan.comment !== undefined)
@@ -256,9 +225,6 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
     interfaceParams.push(
       `allow-fast-path=${vxlan.allowFastPath ? "yes" : "no"}`,
     );
-  if (vxlan.arp !== undefined) interfaceParams.push(`arp=${vxlan.arp}`);
-  if (vxlan.arpTimeout !== undefined)
-    interfaceParams.push(`arp-timeout=${vxlan.arpTimeout}`);
 
   // Bridge parameter: name of bridge interface, not boolean
   if (vxlan.bridge !== undefined && typeof vxlan.bridge === "string") {
@@ -271,8 +237,6 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
     interfaceParams.push(`checksum=${vxlan.checkSum ? "yes" : "no"}`);
   if (vxlan.dontFragment !== undefined)
     interfaceParams.push(`dont-fragment=${vxlan.dontFragment}`);
-  if (vxlan.macAddress !== undefined)
-    interfaceParams.push(`mac-address=${vxlan.macAddress}`);
   if (vxlan.maxFdbSize !== undefined)
     interfaceParams.push(`max-fdb-size=${vxlan.maxFdbSize}`);
   if (vxlan.ttl !== undefined) interfaceParams.push(`ttl=${vxlan.ttl}`);
@@ -418,35 +382,6 @@ export const TunnelWrapper = (tunnel: Tunnel): RouterConfig => {
       const ipipConfig = IPIPInterface(ipip);
       configs.push(ipipConfig);
 
-      // Generate additional configurations for IPIP tunnel
-      if (ipip.localAddress && ipip.remoteAddress) {
-        // Generate IP address for tunnel interface (point-to-point /30 network)
-        const tunnelIpAddress = `${ipip.localAddress}/30`;
-        const ipAddressConfig = generateIPAddress(
-          tunnelIpAddress,
-          ipip.name,
-          `IP address for ${ipip.name} tunnel`,
-        );
-        configs.push(ipAddressConfig);
-
-        // Generate interface list membership (commonly used for LAN and VPN grouping)
-        const interfaceListConfig = generateInterfaceList(ipip.name, [
-          "LAN",
-          "TUNNEL",
-        ]);
-        configs.push(interfaceListConfig);
-
-        // Generate address list for tunnel network (if network range is derivable)
-        // Using /30 network for point-to-point tunnels as common practice
-        const networkPrefix =
-          ipip.localAddress.split(".").slice(0, 3).join(".") + ".0/30";
-        const addressListConfig = generateAddressList(
-          networkPrefix,
-          "TUNNEL-NETWORKS",
-          `Network for ${ipip.name}`,
-        );
-        configs.push(addressListConfig);
-      }
     });
   }
 
@@ -456,34 +391,6 @@ export const TunnelWrapper = (tunnel: Tunnel): RouterConfig => {
       const eoipConfig = EoipInterface(eoip);
       configs.push(eoipConfig);
 
-      // Generate additional configurations for EoIP tunnel
-      if (eoip.localAddress && eoip.remoteAddress) {
-        // Generate IP address for tunnel interface (point-to-point /30 network)
-        const tunnelIpAddress = `${eoip.localAddress}/30`;
-        const ipAddressConfig = generateIPAddress(
-          tunnelIpAddress,
-          eoip.name,
-          `IP address for ${eoip.name} tunnel`,
-        );
-        configs.push(ipAddressConfig);
-
-        // Generate interface list membership (EoIP is typically used for L2 extension)
-        const interfaceListConfig = generateInterfaceList(eoip.name, [
-          "LAN",
-          "L2-TUNNEL",
-        ]);
-        configs.push(interfaceListConfig);
-
-        // Generate address list for tunnel endpoints
-        const networkPrefix =
-          eoip.localAddress.split(".").slice(0, 3).join(".") + ".0/30";
-        const addressListConfig = generateAddressList(
-          networkPrefix,
-          "L2-TUNNEL-NETWORKS",
-          `Network for ${eoip.name}`,
-        );
-        configs.push(addressListConfig);
-      }
     });
   }
 
@@ -493,34 +400,6 @@ export const TunnelWrapper = (tunnel: Tunnel): RouterConfig => {
       const greConfig = GreInterface(gre);
       configs.push(greConfig);
 
-      // Generate additional configurations for GRE tunnel
-      if (gre.localAddress && gre.remoteAddress) {
-        // Generate IP address for tunnel interface (point-to-point /30 network)
-        const tunnelIpAddress = `${gre.localAddress}/30`;
-        const ipAddressConfig = generateIPAddress(
-          tunnelIpAddress,
-          gre.name,
-          `IP address for ${gre.name} tunnel`,
-        );
-        configs.push(ipAddressConfig);
-
-        // Generate interface list membership (GRE commonly used for routing)
-        const interfaceListConfig = generateInterfaceList(gre.name, [
-          "LAN",
-          "GRE-TUNNEL",
-        ]);
-        configs.push(interfaceListConfig);
-
-        // Generate address list for tunnel network
-        const networkPrefix =
-          gre.localAddress.split(".").slice(0, 3).join(".") + ".0/30";
-        const addressListConfig = generateAddressList(
-          networkPrefix,
-          "GRE-TUNNEL-NETWORKS",
-          `Network for ${gre.name}`,
-        );
-        configs.push(addressListConfig);
-      }
     });
   }
 
@@ -530,49 +409,6 @@ export const TunnelWrapper = (tunnel: Tunnel): RouterConfig => {
       const vxlanConfig = VxlanInterface(vxlan);
       configs.push(vxlanConfig);
 
-      // Generate additional configurations for VXLAN tunnel
-      if (vxlan.localAddress) {
-        // Generate IP address for VXLAN interface (typically used when VXLAN needs L3 connectivity)
-        // VXLAN interfaces often get IP addresses when used as gateways for the overlay network
-        const vxlanIpAddress = `172.16.${Math.floor(vxlan.vni / 256)}.1/24`;
-        const ipAddressConfig = generateIPAddress(
-          vxlanIpAddress,
-          vxlan.name,
-          `Gateway IP for VXLAN ${vxlan.name} (VNI ${vxlan.vni})`,
-        );
-        configs.push(ipAddressConfig);
-
-        // Generate interface list membership (VXLAN for L2 overlay networks)
-        const interfaceListConfig = generateInterfaceList(vxlan.name, [
-          "LAN",
-          "VXLAN-OVERLAY",
-        ]);
-        configs.push(interfaceListConfig);
-
-        // Generate address list for VXLAN VNI networks
-        // Using VNI to create a logical network identifier
-        const vniNetwork = `172.16.${Math.floor(vxlan.vni / 256)}.0/24`;
-        const addressListConfig = generateAddressList(
-          vniNetwork,
-          "VXLAN-NETWORKS",
-          `VNI ${vxlan.vni} network for ${vxlan.name}`,
-        );
-        configs.push(addressListConfig);
-
-        // If VTEP peers are defined, add them to address lists for firewall rules
-        if (vxlan.vteps && vxlan.vteps.length > 0) {
-          vxlan.vteps.forEach((vtep) => {
-            if (vtep.remoteAddress) {
-              const vtepAddressConfig = generateAddressList(
-                vtep.remoteAddress,
-                "VXLAN-VTEPS",
-                `VTEP peer for ${vxlan.name}`,
-              );
-              configs.push(vtepAddressConfig);
-            }
-          });
-        }
-      }
     });
   }
 

@@ -17,8 +17,8 @@ export const DNS = component$<DNSStepProps>(({ onComplete$ }) => {
     validationErrors,
     isValidating,
     isDomestic,
-    dnsPresets,
     dohPresets,
+    getAvailablePresetsForNetwork,
     getNetworkConfigs,
     getDOHNetworkInfo,
     updateDNS,
@@ -55,6 +55,19 @@ export const DNS = component$<DNSStepProps>(({ onComplete$ }) => {
 
   const networkConfigs = useComputed$(() => getNetworkConfigs());
   const dohNetworkInfo = useComputed$(() => getDOHNetworkInfo());
+  
+  // Pre-compute available presets for each network to avoid serialization issues
+  const availablePresetsMap = useComputed$(async () => {
+    const configs = networkConfigs.value;
+    const presetsMap: Record<string, any[]> = {};
+    
+    for (const config of configs) {
+      presetsMap[config.type] = await getAvailablePresetsForNetwork(config.type);
+    }
+    
+    return presetsMap;
+  });
+  
   const hasErrors = Object.keys(validationErrors).length > 0;
   const isConfigurationValid = !hasErrors && networkConfigs.value.every(config => config.dns.trim());
 
@@ -89,7 +102,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$ }) => {
                   key={config.type}
                   config={config}
                   error={validationErrors[config.type]}
-                  dnsPresets={dnsPresets}
+                  availablePresets={availablePresetsMap.value?.[config.type] || []}
                   onDNSChange$={updateDNS}
                   onCopyDNS$={copyDNSConfig}
                   onApplyPreset$={applyDNSPreset}

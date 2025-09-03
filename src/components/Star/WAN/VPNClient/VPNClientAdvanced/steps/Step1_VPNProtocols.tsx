@@ -1,5 +1,5 @@
 import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
-import { Card, Alert, Input } from "~/components/Core";
+import { Alert, Input } from "~/components/Core";
 import type { VPNClientAdvancedState, VPNType } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNProtocolSelector } from "../components/fields/VPNProtocolSelector";
@@ -18,7 +18,12 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   onRefreshCompletion$
 }) => {
   const isAdding = useSignal(false);
-  const expandedVPNs = useSignal<Set<string>>(new Set());
+  // Initialize with the first VPN expanded if any exist
+  const expandedVPNs = useSignal<Set<string>>(
+    wizardState.vpnConfigs.length > 0 
+      ? new Set([wizardState.vpnConfigs[0].id]) 
+      : new Set()
+  );
 
   const canRemoveVPN = wizardState.vpnConfigs.length > foreignWANCount;
   const needsMoreVPNs = wizardState.vpnConfigs.length < foreignWANCount;
@@ -32,6 +37,14 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
         type: "Wireguard", // Default protocol
         name: name,
       });
+      
+      // If no cards are expanded, expand the newly added VPN (get the last one added)
+      if (expandedVPNs.value.size === 0 && wizardState.vpnConfigs.length > 0) {
+        const lastVPN = wizardState.vpnConfigs[wizardState.vpnConfigs.length - 1];
+        if (lastVPN?.id) {
+          expandedVPNs.value = new Set([lastVPN.id]);
+        }
+      }
       
       if (onRefreshCompletion$) {
         await onRefreshCompletion$();
@@ -47,6 +60,20 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
     
     try {
       await wizardActions.removeVPN$(vpnId);
+      
+      // Handle expansion after removal
+      const newExpanded = new Set(expandedVPNs.value);
+      newExpanded.delete(vpnId);
+      
+      // If no cards are expanded and VPNs remain, expand the first one
+      if (newExpanded.size === 0 && wizardState.vpnConfigs.length > 1) {
+        const remainingVPNs = wizardState.vpnConfigs.filter(vpn => vpn.id !== vpnId);
+        if (remainingVPNs.length > 0) {
+          newExpanded.add(remainingVPNs[0].id);
+        }
+      }
+      
+      expandedVPNs.value = newExpanded;
       
       if (onRefreshCompletion$) {
         await onRefreshCompletion$();
@@ -71,7 +98,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   const handleToggleVPNExpansion = $((vpnId: string) => {
     const newExpanded = new Set(expandedVPNs.value);
     if (newExpanded.has(vpnId)) {
-      newExpanded.delete(vpnId);
+      // Don't allow closing if this is the only expanded card
+      if (newExpanded.size > 1) {
+        newExpanded.delete(vpnId);
+      }
     } else {
       newExpanded.add(vpnId);
     }
@@ -124,22 +154,40 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
               const hasType = Boolean(vpn.type);
               const status = (hasName && hasType) ? "complete" : (hasName || hasType) ? "partial" : "incomplete";
               const isExpanded = expandedVPNs.value.has(vpn.id);
-              const cardStyle = status === "complete" 
-                ? "bg-white dark:bg-gray-800 border-green-300 dark:border-green-700 hover:border-green-400 dark:hover:border-green-600"
-                : status === "partial"
-                ? "bg-white dark:bg-gray-800 border-yellow-300 dark:border-yellow-700 hover:border-yellow-400 dark:hover:border-yellow-600"
-                : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600";
+              const getCardStyle = () => {
+                if (status === "complete") return "bg-white dark:bg-gray-800 border-green-200 dark:border-green-700";
+                if (status === "partial") return "bg-white dark:bg-gray-800 border-yellow-200 dark:border-yellow-700";
+                return "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700";
+              };
               
               return (
-                <Card key={vpn.id} class={`transition-all ${cardStyle}`}>
-                  {/* Header */}
-                  <div class="p-4">
+                <div 
+                  key={vpn.id} 
+                  class={`relative transition-all duration-200 rounded-xl border ${getCardStyle()}`}
+                >
+                  {/* Card Header - Always visible, clickable to expand */}
+                  <div 
+                    class="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    onClick$={() => handleToggleVPNExpansion(vpn.id)}
+                  >
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-3">
-                        {/* Protocol Icon */}
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                          <svg class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={{
+                        {/* Icon */}
+                        <div class={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                          status === 'complete' 
+                            ? 'bg-green-100 dark:bg-green-900/30' 
+                            : status === 'partial'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                            : 'bg-gray-100 dark:bg-gray-700'
+                        }`}>
+                          <svg class={`h-5 w-5 ${
+                            status === 'complete' 
+                              ? 'text-green-600 dark:text-green-400' 
+                              : status === 'partial'
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-gray-600 dark:text-gray-400'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={{
                               "Wireguard": "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
                               "OpenVPN": "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
                               "L2TP": "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9",
@@ -149,61 +197,43 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
                             }[vpn.type] || "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
                           </svg>
                         </div>
-
+                        
+                        {/* Name and Info */}
                         <div>
-                          <div class="flex items-center gap-2">
-                            <h4 class="font-medium text-gray-900 dark:text-white">
-                              {vpn.name}
-                            </h4>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                              ({vpn.type})
-                            </span>
-                            {status === "complete" && (
-                              <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
-                          <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {vpn.enabled ? $localize`Enabled` : $localize`Disabled`}
+                          <h3 class={`font-medium ${
+                            status === 'complete' 
+                              ? 'text-green-900 dark:text-green-100' 
+                              : status === 'incomplete'
+                              ? 'text-gray-600 dark:text-gray-400'
+                              : 'text-gray-900 dark:text-white'
+                          }`}>
+                            {vpn.name || `VPN ${_index + 1}`}
+                          </h3>
+                          <p class={`text-sm ${
+                            status === 'incomplete'
+                              ? 'text-gray-400 dark:text-gray-500'
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {vpn.type || 'Not configured'}
+                            {status === 'complete' && ` • ${$localize`Configured`}`}
+                            {status === 'partial' && ` • ${$localize`Partially configured`}`}
                           </p>
                         </div>
                       </div>
-
-                      <div class="flex items-center gap-2">
-                        {/* Expand/Collapse Button */}
-                        <button
-                          onClick$={() => handleToggleVPNExpansion(vpn.id)}
-                          class="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-600"
-                          title={isExpanded ? $localize`Collapse` : $localize`Expand to edit`}
-                        >
-                          <svg
-                            class={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      
+                      {/* Right side */}
+                      <div class="flex items-center gap-3">
+                        {status === 'complete' && (
+                          <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                           </svg>
-                        </button>
-
-                        {/* Enable/Disable Toggle */}
-                        <button
-                          onClick$={() => handleUpdateVPN(vpn.id, { enabled: !vpn.enabled })}
-                          class={`
-                            px-3 py-1 rounded-full text-xs font-medium transition-colors
-                            ${vpn.enabled 
-                              ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50" 
-                              : "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"}
-                          `}
-                        >
-                          {vpn.enabled ? $localize`Enabled` : $localize`Disabled`}
-                        </button>
-
-                        {/* Remove Button */}
+                        )}
                         {canRemoveVPN && (
                           <button
-                            onClick$={() => handleRemoveVPN(vpn.id)}
+                            onClick$={(e) => {
+                              e.stopPropagation();
+                              handleRemoveVPN(vpn.id);
+                            }}
                             class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                             title={$localize`Remove VPN`}
                           >
@@ -212,6 +242,16 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
                             </svg>
                           </button>
                         )}
+                        <svg
+                          class={`h-5 w-5 transition-transform ${
+                            isExpanded ? "rotate-180" : ""
+                          } text-gray-600 dark:text-gray-400`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
                       </div>
                     </div>
                   </div>
@@ -252,7 +292,7 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
                       </div>
                     </div>
                   )}
-                </Card>
+                </div>
               );
             })}
           </div>

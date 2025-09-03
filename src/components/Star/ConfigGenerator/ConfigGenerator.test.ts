@@ -94,7 +94,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -170,7 +170,7 @@
 //         Choose: {
 //           Mode: 'easy',
 //           Firmware: 'MikroTik',
-//           DomesticLink: false,
+//           WANLinkType: "foreign-only",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -229,7 +229,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -300,7 +300,7 @@
 //         Choose: {
 //           Mode: 'easy',
 //           Firmware: 'MikroTik',
-//           DomesticLink: false,
+//           WANLinkType: "foreign-only",
 //           RouterMode: 'Trunk Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -343,7 +343,7 @@
 //         Choose: {
 //           Mode: 'easy',
 //           Firmware: 'MikroTik',
-//           DomesticLink: false,
+//           WANLinkType: "foreign-only",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -416,7 +416,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -454,7 +454,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,
@@ -543,7 +543,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: [{
 //             isMaster: true,

@@ -1,4 +1,4 @@
-import { $, useSignal, useStore, useContext } from "@builder.io/qwik";
+import { $, useSignal, useStore, useContext, useComputed$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { 
   NetworkType, 
@@ -11,7 +11,7 @@ import type { DNSConfig } from "../../StarContext/WANType";
 
 export const useDNS = () => {
   const starContext = useContext(StarContext);
-  const isDomestic = starContext.state.Choose.DomesticLink;
+  const isDomestic = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
 
   // Initialize DNS configuration with existing state or defaults
   const dnsConfig = useStore<DNSConfig>({
@@ -28,6 +28,14 @@ export const useDNS = () => {
 
   const validationErrors = useStore<ValidationErrors>({});
   const isValidating = useSignal(false);
+
+  // Track which preset is selected for each network
+  const selectedPresets = useStore<Record<NetworkType, string | null>>({
+    Foreign: null,
+    VPN: null,
+    Split: null,
+    Domestic: null,
+  });
 
   // IPv4 validation regex
   const IPv4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -215,6 +223,36 @@ export const useDNS = () => {
     }
   ];
 
+  // Get currently used DNS IPs from presets to prevent duplicates
+  const getUsedDNSPresets = useComputed$(() => {
+    const usedDNS: string[] = [];
+    
+    // Check each network type for preset usage
+    Object.keys(selectedPresets).forEach((networkType) => {
+      const preset = selectedPresets[networkType as NetworkType];
+      if (preset) {
+        usedDNS.push(preset);
+      }
+    });
+    
+    return usedDNS;
+  });
+
+  // Get available presets for a specific network (excluding already used ones)
+  const getAvailablePresetsForNetwork = $((networkType: NetworkType) => {
+    const usedDNS = getUsedDNSPresets.value;
+    const currentNetworkPreset = selectedPresets[networkType];
+    
+    return dnsPresets.filter(preset => {
+      // Allow current network's preset to remain available
+      if (preset.primary === currentNetworkPreset) {
+        return true;
+      }
+      // Exclude presets used by other networks
+      return !usedDNS.includes(preset.primary);
+    });
+  });
+
   // Get DOH network information based on isDomestic flag
   const getDOHNetworkInfo = $(() => {
     const dohInfo: DOHNetworkInfo = isDomestic
@@ -309,6 +347,12 @@ export const useDNS = () => {
       case "Domestic":
         dnsConfig.DomesticDNS = value;
         break;
+    }
+    
+    // Clear preset selection if user manually types (not from preset)
+    const matchingPreset = dnsPresets.find(preset => preset.primary === value);
+    if (!matchingPreset) {
+      selectedPresets[networkType] = null;
     }
     
     // Clear validation error when user types
@@ -412,7 +456,14 @@ export const useDNS = () => {
 
   // Apply DNS preset to a specific network
   const applyDNSPreset = $((networkType: NetworkType, preset: DNSPreset) => {
+    // Clear any previous preset selection for this network
+    selectedPresets[networkType] = null;
+    
+    // Update the DNS value
     updateDNS(networkType, preset.primary);
+    
+    // Track the new preset selection
+    selectedPresets[networkType] = preset.primary;
   });
 
   // Apply DOH preset
@@ -460,6 +511,9 @@ export const useDNS = () => {
     isDomestic,
     dnsPresets,
     dohPresets,
+    selectedPresets,
+    getUsedDNSPresets,
+    getAvailablePresetsForNetwork,
     getNetworkConfigs,
     getDOHNetworkInfo,
     updateDNS,

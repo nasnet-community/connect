@@ -8,7 +8,6 @@ import {
 } from "@qwikest/icons/heroicons";
 import type { EoipTunnelConfig } from "../../../StarContext/Utils/TunnelType";
 import { Card } from "~/components/Core/Card";
-import { Select } from "~/components/Core/Select";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
 import { Field } from "~/components/Core/Form/Field";
@@ -23,7 +22,6 @@ export const EOIPTunnelStep = component$(() => {
     const newTunnel: EoipTunnelConfig = {
       type: "eoip",
       name: `eoip-tunnel-${stepper.data.eoip.length + 1}`,
-      localAddress: "",
       remoteAddress: "",
       tunnelId: stepper.data.eoip.length + 1,
     };
@@ -58,7 +56,6 @@ export const EOIPTunnelStep = component$(() => {
     for (const tunnel of stepper.data.eoip) {
       if (
         !tunnel.name ||
-        !tunnel.localAddress ||
         !tunnel.remoteAddress ||
         !tunnel.tunnelId
       ) {
@@ -86,7 +83,6 @@ export const EOIPTunnelStep = component$(() => {
     for (let i = 0; i < stepper.data.eoip.length; i++) {
       const tunnel = stepper.data.eoip[i];
       track(() => tunnel.name);
-      track(() => tunnel.localAddress);
       track(() => tunnel.remoteAddress);
       track(() => tunnel.tunnelId);
     }
@@ -184,33 +180,6 @@ export const EOIPTunnelStep = component$(() => {
                   />
                 </Field>
 
-                {/* MTU */}
-                <Field label={$localize`MTU`}>
-                  <Input
-                    type="number"
-                    value={tunnel.mtu?.toString() || ""}
-                    onChange$={(e, value) => {
-                      updateTunnelField$(
-                        index,
-                        "mtu",
-                        value ? parseInt(value) : undefined,
-                      );
-                    }}
-                    placeholder={$localize`Enter MTU (optional)`}
-                  />
-                </Field>
-
-                {/* Local Address */}
-                <Field label={$localize`Local Address`} required>
-                  <Input
-                    type="text"
-                    value={tunnel.localAddress}
-                    onChange$={(e, value) =>
-                      updateTunnelField$(index, "localAddress", value)
-                    }
-                    placeholder={$localize`Enter local address`}
-                  />
-                </Field>
 
                 {/* Remote Address */}
                 <Field label={$localize`Remote Address`} required>
@@ -224,17 +193,6 @@ export const EOIPTunnelStep = component$(() => {
                   />
                 </Field>
 
-                {/* MAC Address */}
-                <Field label={$localize`MAC Address`}>
-                  <Input
-                    type="text"
-                    value={tunnel.macAddress || ""}
-                    onChange$={(e, value) =>
-                      updateTunnelField$(index, "macAddress", value)
-                    }
-                    placeholder={$localize`Enter MAC address (optional)`}
-                  />
-                </Field>
 
                 {/* IPsec Secret */}
                 <Field label={$localize`IPsec Secret`}>
@@ -248,59 +206,8 @@ export const EOIPTunnelStep = component$(() => {
                   />
                 </Field>
 
-                {/* Keepalive */}
-                <Field label={$localize`Keepalive`}>
-                  <Input
-                    type="text"
-                    value={tunnel.keepalive || ""}
-                    onChange$={(e, value) =>
-                      updateTunnelField$(index, "keepalive", value)
-                    }
-                    placeholder={$localize`Enter keepalive (optional)`}
-                  />
-                </Field>
               </div>
 
-              {/* ARP and Clamp TCP MSS */}
-              <div class="mt-4 grid gap-4 md:grid-cols-2">
-                <Field label={$localize`ARP`}>
-                  <Select
-                    value={tunnel.arp || ""}
-                    onChange$={(value) => {
-                      updateTunnelField$(index, "arp", value || undefined);
-                    }}
-                    options={[
-                      { value: "", label: $localize`Default` },
-                      { value: "enabled", label: $localize`Enabled` },
-                      { value: "disabled", label: $localize`Disabled` },
-                      { value: "proxy-arp", label: $localize`Proxy ARP` },
-                      { value: "reply-only", label: $localize`Reply Only` },
-                    ]}
-                  />
-                </Field>
-
-                <div class="mt-7 flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`clampTcpMss-${index}`}
-                    checked={tunnel.clampTcpMss || false}
-                    onChange$={(e) =>
-                      updateTunnelField$(
-                        index,
-                        "clampTcpMss",
-                        (e.target as HTMLInputElement).checked,
-                      )
-                    }
-                    class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <label
-                    for={`clampTcpMss-${index}`}
-                    class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    {$localize`Clamp TCP MSS`}
-                  </label>
-                </div>
-              </div>
             </Card>
           ))}
         </div>

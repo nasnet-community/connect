@@ -1,5 +1,6 @@
 import type { RouterConfig } from "../ConfigGenerator";
 import { ScriptAndScheduler } from "../utils/ScriptSchedule";
+import type { FrequencyValue } from "~/components/Core/DataDisplay/FrequencySelector/FrequencySelector.types";
 
 /**
  * Generates a simple UUID v4
@@ -17,9 +18,10 @@ const generateUUID = (): string => {
  * Generates a MikroTik script for updating domestic IP address lists
  * A unique UUID is generated for each script instance for user tracking purposes
  * @param time - The time to run the script in "HH:MM" format
+ * @param interval - The frequency of script execution (Daily, Weekly, Monthly)
  * @returns RouterConfig containing the script and scheduler configuration
  */
-export const generateDomesticIPScript = (time: string): RouterConfig => {
+export const generateDomesticIPScript = (time: string, interval: FrequencyValue = "Daily"): RouterConfig => {
   // Generate a unique UUID for this script instance
   const generatedUserId = generateUUID();
   
@@ -504,6 +506,20 @@ export const generateDomesticIPScript = (time: string): RouterConfig => {
     "": scriptCommands,
   };
 
+  // Convert FrequencyValue to interval format
+  const getIntervalValue = (frequency: FrequencyValue): string => {
+    switch (frequency) {
+      case "Daily":
+        return "1d";
+      case "Weekly":
+        return "7d";
+      case "Monthly":
+        return "30d";
+      default:
+        return "1d";
+    }
+  };
+
   // Convert time from "HH:MM" to appropriate format and create scheduled script
   const [hour, minute] = time.split(":");
   const startTime = `${hour}:${minute}:00`;
@@ -511,7 +527,7 @@ export const generateDomesticIPScript = (time: string): RouterConfig => {
   return ScriptAndScheduler({
     ScriptContent: scriptContent,
     Name: "DomesticIPUpdate",
-    interval: "1d", // Run daily
+    interval: getIntervalValue(interval),
     startTime: startTime,
   });
 };

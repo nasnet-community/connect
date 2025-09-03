@@ -1,4 +1,4 @@
-import { component$, $ } from "@builder.io/qwik";
+import { component$, $, useSignal } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { Alert } from "~/components/Core";
 import { RebootHeader } from "./RebootHeader";
@@ -16,26 +16,66 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
     ipAddressUpdateEnabled,
     selectedTimezone,
     updateInterval,
+    rebootInterval,
     rebootTime,
     updateTime,
     ipAddressUpdateTime,
+    ipAddressUpdateInterval,
   } = useRebootUpdate();
 
+  const validationError = useSignal<string>("");
+
   const handleSubmit = $(() => {
+    // Clear previous validation error
+    validationError.value = "";
+    
+    // Helper function to convert time to minutes
+    const timeToMinutes = (time: { hour: string; minute: string }): number => {
+      const hour = parseInt(time.hour);
+      const minute = parseInt(time.minute);
+      return hour * 60 + minute;
+    };
+
+    // Validate time gaps - inline validation logic
+    const times: { name: string; minutes: number; enabled: boolean }[] = [
+      { name: "Reboot", minutes: timeToMinutes(rebootTime), enabled: autoRebootEnabled.value },
+      { name: "Update", minutes: timeToMinutes(updateTime), enabled: autoUpdateEnabled.value },
+      { name: "IP Address Update", minutes: timeToMinutes(ipAddressUpdateTime), enabled: true },
+    ];
+
+    const enabledTimes = times.filter(t => t.enabled);
+    
+    // Check for time conflicts
+    for (let i = 0; i < enabledTimes.length; i++) {
+      for (let j = i + 1; j < enabledTimes.length; j++) {
+        const time1 = enabledTimes[i];
+        const time2 = enabledTimes[j];
+        const diff = Math.abs(time1.minutes - time2.minutes);
+        const minDiff = Math.min(diff, 1440 - diff); // Account for day wrap-around
+        
+        if (minDiff < 15) {
+          validationError.value = `${time1.name} and ${time2.name} must be at least 15 minutes apart.`;
+          return; // Don't proceed with saving
+        }
+      }
+    }
+
     ctx.updateExtraConfig$({
       Timezone: selectedTimezone.value,
       AutoReboot: {
         isAutoReboot: autoRebootEnabled.value,
         RebootTime: `${rebootTime.hour}:${rebootTime.minute}`,
+        RebootInterval: rebootInterval.value || "Daily",
       },
       Update: {
         isAutoReboot: autoUpdateEnabled.value,
         UpdateTime: `${updateTime.hour}:${updateTime.minute}`,
-        UpdateInterval: updateInterval.value,
+        UpdateInterval: updateInterval.value || "Weekly",
       },
       IPAddressUpdate: {
-        isIPAddressUpdate: ipAddressUpdateEnabled.value,
+        isIPAddressUpdate: true,
         IPAddressUpdateTime: `${ipAddressUpdateTime.hour}:${ipAddressUpdateTime.minute}`,
+        IPAddressUpdateInterval: ipAddressUpdateInterval.value || "Daily",
       },
     });
     onComplete$();
@@ -52,10 +92,19 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
           >
             {$localize`Internet connectivity may be temporarily interrupted during scheduled reboot, update, and IP address list synchronization times. Please plan accordingly.`}
           </Alert>
+          {validationError.value && (
+            <Alert 
+              status="error" 
+              title={$localize`Validation Error`}
+            >
+              {validationError.value}
+            </Alert>
+          )}
           <TimezoneCard selectedTimezone={selectedTimezone} />
           <RebootCard
             autoRebootEnabled={autoRebootEnabled}
             rebootTime={rebootTime}
+            rebootInterval={rebootInterval}
           />
           <UpdateCard
             autoUpdateEnabled={autoUpdateEnabled}
@@ -63,7 +112,9 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
             updateInterval={updateInterval}
           />
           <IPAddressUpdateCard
+            ipAddressUpdateEnabled={ipAddressUpdateEnabled}
             ipAddressUpdateTime={ipAddressUpdateTime}
+            ipAddressUpdateInterval={ipAddressUpdateInterval}
           />
           <div class="flex justify-end">
             <button

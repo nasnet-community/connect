@@ -16,6 +16,7 @@ import { IKEv2ServerWrapper } from "../../Protocols/IKeV2/IKEv2Server.wrapper";
 import { OpenVPNServerWrapper } from "../../Protocols/OpenVPN/OpenVPNServer.wrapper";
 import { WireguardServerWrapper } from "../../Protocols/Wireguard/WireguardServer.wrapper";
 import { HiCogOutline } from "@qwikest/icons/heroicons";
+import { CertificateStep } from "./CertificateStep";
 
 interface ConfigStepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -31,6 +32,8 @@ export const ConfigStep = component$<ConfigStepProps>(
       stepsByProtocol: new Map<string, number>(),
       processedProtocols: new Set<string>(),
       lastProtocolState: JSON.stringify({}),
+      certificateStepId: -1,
+      hasCertificateStep: false,
     });
 
     // Create protocol component map for easier lookup using exact VPNType enum values
@@ -42,6 +45,78 @@ export const ConfigStep = component$<ConfigStepProps>(
       SSTP: <SSTPServerWrapper />,
       IKeV2: <IKEv2ServerWrapper />,
     };
+
+    // Check if any protocols requiring certificates are enabled
+    const requiresCertificateStep = $(() => {
+      const certificateProtocols: VPNType[] = ["OpenVPN", "SSTP", "IKeV2"];
+      return certificateProtocols.some(protocol => enabledProtocols[protocol]);
+    });
+
+    // Find existing Certificate step in stepper
+    const findExistingCertificateStep = $(() => {
+      const stepIndex = context.steps.value.findIndex(
+        (step) => step.title === $localize`Certificate Configuration`
+      );
+      return stepIndex >= 0 ? context.steps.value[stepIndex].id : -1;
+    });
+
+    // Add Certificate step if needed
+    const addCertificateStep = $(async () => {
+      // Skip if already has certificate step
+      if (state.hasCertificateStep) {
+        return state.certificateStepId;
+      }
+
+      // Check if step already exists
+      const existingStepId = await findExistingCertificateStep();
+      if (existingStepId >= 0) {
+        state.certificateStepId = existingStepId;
+        state.hasCertificateStep = true;
+        return existingStepId;
+      }
+
+      // Find the protocols step position
+      const protocolsStepIndex = context.steps.value.findIndex((step) =>
+        step.title.includes("Protocols")
+      );
+
+      if (protocolsStepIndex < 0) return -1;
+
+      // Position certificate step after protocols step but before configuration step
+      const insertPosition = protocolsStepIndex + 1;
+
+      // Create Certificate step component
+      const CertificateStepWrapper$ = $(() => (
+        <CertificateStep enabledProtocols={enabledProtocols} />
+      ));
+
+      // Add the step
+      const stepId = await context.addStep$(
+        {
+          id: Date.now() + 1000, // Unique ID
+          title: $localize`Certificate Configuration`,
+          description: $localize`Configure certificates for VPN protocols that require them`,
+          component: CertificateStepWrapper$,
+          isComplete: true, // Mark as complete by default
+        },
+        insertPosition,
+      );
+
+      state.certificateStepId = stepId;
+      state.hasCertificateStep = true;
+      return stepId;
+    });
+
+    // Remove Certificate step
+    const removeCertificateStep = $(async () => {
+      if (state.hasCertificateStep && state.certificateStepId >= 0) {
+        await context.removeStep$(state.certificateStepId);
+        state.certificateStepId = -1;
+        state.hasCertificateStep = false;
+        return true;
+      }
+      return false;
+    });
 
     // Check if a protocol already has an existing step in the stepper
     const findExistingStepByProtocol = $((protocol: VPNType) => {
@@ -151,6 +226,15 @@ export const ConfigStep = component$<ConfigStepProps>(
           }
         }
 
+        // Also check for existing certificate step
+        if (!state.hasCertificateStep && await requiresCertificateStep()) {
+          const existingCertStepId = await findExistingCertificateStep();
+          if (existingCertStepId >= 0) {
+            state.certificateStepId = existingCertStepId;
+            state.hasCertificateStep = true;
+          }
+        }
+
         // Get current enabled protocols
         const currentEnabledProtocols = Object.entries(enabledProtocols)
           .filter(([, enabled]) => enabled)
@@ -171,6 +255,16 @@ export const ConfigStep = component$<ConfigStepProps>(
         // Add steps for newly enabled protocols
         for (const protocol of currentEnabledProtocols) {
           await addProtocolStep(protocol);
+        }
+
+        // Handle Certificate step based on enabled protocols
+        const needsCertificateStep = await requiresCertificateStep();
+        if (needsCertificateStep && !state.hasCertificateStep) {
+          // Add certificate step if protocols requiring certificates are enabled
+          await addCertificateStep();
+        } else if (!needsCertificateStep && state.hasCertificateStep) {
+          // Remove certificate step if no protocols requiring certificates are enabled
+          await removeCertificateStep();
         }
 
         // Store current config for comparison next time

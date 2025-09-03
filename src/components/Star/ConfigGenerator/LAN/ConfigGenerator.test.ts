@@ -77,7 +77,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: []
 //         },
@@ -181,7 +181,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: []
 //         },
@@ -423,7 +423,7 @@
 //         Choose: {
 //           Mode: 'advance',
 //           Firmware: 'MikroTik',
-//           DomesticLink: true,
+//           WANLinkType: "both",
 //           RouterMode: 'AP Mode',
 //           RouterModels: []
 //         },
@@ -511,7 +511,7 @@
 //     it('should display configuration comparison between simple and complex setups', () => {
 //       // Simple setup
 //       const simpleState: StarState = {
-//         Choose: { Mode: 'easy', Firmware: 'MikroTik', DomesticLink: false, RouterMode: 'AP Mode', RouterModels: [] },
+//         Choose: { Mode: 'easy', Firmware: 'MikroTik', WANLinkType: "foreign-only", RouterMode: 'AP Mode', RouterModels: [] },
 //         WAN: { WANLink: { Foreign: { InterfaceName: 'ether1' } }, VPNClient: {} },
 //         LAN: {
 //           Wireless: {
@@ -530,7 +530,7 @@
 
 //       // Complex setup
 //       const complexState: StarState = {
-//         Choose: { Mode: 'advance', Firmware: 'MikroTik', DomesticLink: true, RouterMode: 'AP Mode', RouterModels: [] },
+//         Choose: { Mode: 'advance', Firmware: 'MikroTik', WANLinkType: "both", RouterMode: 'AP Mode', RouterModels: [] },
 //         WAN: { WANLink: { Foreign: { InterfaceName: 'ether1' }, Domestic: { InterfaceName: 'ether2' } }, VPNClient: {} },
 //         LAN: {
 //           Wireless: {

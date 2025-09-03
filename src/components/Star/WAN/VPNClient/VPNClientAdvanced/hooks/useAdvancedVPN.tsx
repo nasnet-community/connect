@@ -33,7 +33,7 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
         link.name.toLowerCase().includes("foreign") ||
         link.id.includes("foreign"),
     );
-    return Math.max(foreignLinks.length, 1); // At least 1 VPN required
+    return foreignLinks.length; // Minimum VPNs should match Foreign WAN Links count
   };
 
   const minVPNCount = calculateMinVPNCount();

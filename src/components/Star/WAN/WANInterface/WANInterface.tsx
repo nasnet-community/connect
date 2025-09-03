@@ -1,6 +1,6 @@
 import { component$, useContext } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-import { WANInterface as WANInterfaceEasy } from "./WANInterfaceEasy/WANInterface";
+import { WANInterfaceEasy } from "./WANInterfaceEasy/WANInterfaceEasy";
 import { WANAdvanced } from "./WANInterfaceAdvanced/WANAdvanced";
 import type { StepProps } from "~/types/step";
 

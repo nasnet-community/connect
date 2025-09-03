@@ -1,8 +1,15 @@
 import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
+import { Card } from "~/components/Core/Card";
 import { Field } from "~/components/Core/Form/Field";
 import { Input } from "~/components/Core/Input";
-import { HiLockClosedOutline, HiEyeOutline, HiEyeSlashOutline } from "@qwikest/icons/heroicons";
+import { 
+  HiLockClosedOutline, 
+  HiEyeOutline, 
+  HiEyeSlashOutline,
+  HiCheckCircleOutline,
+  HiXCircleOutline
+} from "@qwikest/icons/heroicons";
 
 interface CertificateStepProps {
   certificatePassphrase: { value: string };
@@ -20,115 +27,134 @@ export const CertificateStep = component$<CertificateStepProps>(
     updatePassphrase$,
     togglePassphraseVisibility$,
   }) => {
-    return (
-      <div class="space-y-8">
-        {/* Certificate Section */}
-        <div class="space-y-6">
-          <div class="flex items-center gap-3">
-            <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              {$localize`Certificate Configuration`}
-            </h2>
-          </div>
+    // Calculate passphrase strength and requirements
+    const passphrase = certificatePassphrase.value;
+    const hasMinLength = passphrase.length >= 10;
+    const hasGoodLength = passphrase.length >= 12;
+    const hasExcellentLength = passphrase.length >= 16;
+    const hasNumbers = /\d/.test(passphrase);
+    const hasSpecialChars = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>?]/.test(passphrase);
+    
+    const strengthScore = [hasMinLength, hasGoodLength, hasExcellentLength, hasNumbers, hasSpecialChars]
+      .filter(Boolean).length;
 
+    const getStrengthInfo = () => {
+      if (strengthScore >= 4) return { level: $localize`Strong`, color: "green", width: "100%" };
+      if (strengthScore >= 3) return { level: $localize`Good`, color: "blue", width: "75%" };
+      if (strengthScore >= 2) return { level: $localize`Fair`, color: "yellow", width: "50%" };
+      return { level: $localize`Weak`, color: "orange", width: "25%" };
+    };
+
+    const strength = getStrengthInfo();
+
+    return (
+      <Card hasHeader>
+        <div q:slot="header" class="flex items-center gap-3">
+          <HiLockClosedOutline class="h-5 w-5" />
+          <span class="font-semibold">{$localize`Certificate Security`}</span>
+        </div>
+
+        <div class="space-y-6">
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Set up a secure passphrase for your VPN server certificate. This passphrase will be used to protect the certificate private key.`}
+            {$localize`Create a secure passphrase to protect your VPN server certificate's private key.`}
           </p>
 
           <Field
             label={$localize`Certificate Passphrase`}
-            helperText={$localize`Enter a secure passphrase (minimum 10 characters)`}
             error={passphraseError.value}
             required
           >
-            <div class="relative">
-              <Input
-                type={showPassphrase.value ? "text" : "password"}
-                value={certificatePassphrase.value}
-                onChange$={(_, value) => updatePassphrase$(value)}
-                placeholder={$localize`Enter certificate passphrase`}
-                hasSuffixSlot={true}
+            <Input
+              type={showPassphrase.value ? "text" : "password"}
+              value={passphrase}
+              onChange$={(_, value) => updatePassphrase$(value)}
+              placeholder={$localize`Enter a secure passphrase`}
+              hasSuffixSlot={true}
+            >
+              <button
+                q:slot="suffix"
+                type="button"
+                onClick$={togglePassphraseVisibility$}
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+                aria-label={showPassphrase.value ? $localize`Hide passphrase` : $localize`Show passphrase`}
               >
-                <button
-                  q:slot="suffix"
-                  type="button"
-                  onClick$={togglePassphraseVisibility$}
-                  class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  aria-label={showPassphrase.value ? $localize`Hide passphrase` : $localize`Show passphrase`}
-                >
-                  {showPassphrase.value ? (
-                    <HiEyeSlashOutline class="h-5 w-5" />
-                  ) : (
-                    <HiEyeOutline class="h-5 w-5" />
-                  )}
-                </button>
-              </Input>
-            </div>
+                {showPassphrase.value ? (
+                  <HiEyeSlashOutline class="h-4 w-4" />
+                ) : (
+                  <HiEyeOutline class="h-4 w-4" />
+                )}
+              </button>
+            </Input>
+            
+            {/* Inline Strength Indicator */}
+            {passphrase.length > 0 && (
+              <div class="mt-3 space-y-2">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">
+                    {$localize`Strength:`}
+                  </span>
+                  <span class={`font-medium text-${strength.color}-600 dark:text-${strength.color}-400`}>
+                    {strength.level}
+                  </span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                  <div
+                    class={`h-full rounded-full transition-all duration-300 bg-${strength.color}-500`}
+                    style={`width: ${strength.width}`}
+                  />
+                </div>
+              </div>
+            )}
           </Field>
 
-          {/* Passphrase strength indicator */}
-          {certificatePassphrase.value.length > 0 && (
-            <div class="space-y-2">
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">
-                  {$localize`Passphrase strength`}
-                </span>
-                <span
-                  class={
-                    certificatePassphrase.value.length >= 16
-                      ? "text-green-600 dark:text-green-400"
-                      : certificatePassphrase.value.length >= 12
-                      ? "text-yellow-600 dark:text-yellow-400"
-                      : "text-orange-600 dark:text-orange-400"
-                  }
-                >
-                  {certificatePassphrase.value.length >= 16
-                    ? $localize`Strong`
-                    : certificatePassphrase.value.length >= 12
-                    ? $localize`Medium`
-                    : $localize`Weak`}
-                </span>
-              </div>
-              <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div
-                  class={`h-2 rounded-full transition-all ${
-                    certificatePassphrase.value.length >= 16
-                      ? "w-full bg-green-500"
-                      : certificatePassphrase.value.length >= 12
-                      ? "w-2/3 bg-yellow-500"
-                      : "w-1/3 bg-orange-500"
-                  }`}
+          {/* Requirements Checklist */}
+          {passphrase.length > 0 && (
+            <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <h4 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
+                {$localize`Security Requirements`}
+              </h4>
+              <div class="space-y-2">
+                <RequirementItem
+                  met={hasMinLength}
+                  text={$localize`At least 10 characters`}
+                />
+                <RequirementItem
+                  met={hasGoodLength}
+                  text={$localize`12+ characters for better security`}
+                  optional
+                />
+                <RequirementItem
+                  met={hasNumbers}
+                  text={$localize`Contains numbers`}
+                  optional
+                />
+                <RequirementItem
+                  met={hasSpecialChars}
+                  text={$localize`Contains special characters (!@#$%^&*)`}
+                  optional
                 />
               </div>
             </div>
           )}
         </div>
-
-        {/* Info Box */}
-        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg
-                class="h-5 w-5 text-blue-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-blue-800 dark:text-blue-200">
-                {$localize`In easy mode, OpenVPN and WireGuard protocols are automatically enabled with optimized settings. The certificate passphrase will be used to secure the OpenVPN server certificate.`}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </Card>
     );
   }
+);
+
+// Helper component for requirement items
+const RequirementItem = component$<{ met: boolean; text: string; optional?: boolean }>(
+  ({ met, text, optional }) => (
+    <div class="flex items-center gap-2 text-sm">
+      {met ? (
+        <HiCheckCircleOutline class="h-4 w-4 text-green-500 flex-shrink-0" />
+      ) : (
+        <HiXCircleOutline class={`h-4 w-4 flex-shrink-0 ${optional ? 'text-gray-400' : 'text-orange-500'}`} />
+      )}
+      <span class={met ? "text-green-700 dark:text-green-400" : optional ? "text-gray-600 dark:text-gray-400" : "text-gray-700 dark:text-gray-300"}>
+        {text}
+        {optional && <span class="ml-1 text-gray-500">({$localize`optional`})</span>}
+      </span>
+    </div>
+  )
 );

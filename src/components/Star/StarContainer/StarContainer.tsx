@@ -23,6 +23,7 @@ import {
 } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import type { Mode } from "../StarContext/ChooseType";
+import { useProvideGlobalHelpSettings } from "~/components/Core/Stepper/shared/hooks/useGlobalHelpSettings";
 
 export const StarContainer = component$(() => {
   const activeStep = useSignal(0);
@@ -32,6 +33,9 @@ export const StarContainer = component$(() => {
   const stepsStore = useStore({
     steps: [] as any[],
   });
+
+  // Initialize global help settings provider for all steppers
+  useProvideGlobalHelpSettings(false); // Start with auto-show disabled
 
   // Track session start when component mounts
   useVisibleTask$(() => {
@@ -80,6 +84,10 @@ export const StarContainer = component$(() => {
       };
 
       // Step-specific tracking events
+      const isEasyMode = state.Choose.Mode === "easy";
+      const isShowConfigStep = (isEasyMode && stepId === 4) || (!isEasyMode && stepId === 5);
+      const isExtraConfigStep = !isEasyMode && stepId === 4;
+
       switch (stepId) {
         case 1:
           track("step_choose_completed", {
@@ -89,7 +97,7 @@ export const StarContainer = component$(() => {
             router_models: state.Choose.RouterModels.map((rm) => rm.Model).join(
               ",",
             ),
-            has_domestic_link: state.Choose.DomesticLink,
+            has_domestic_link: (state.Choose.WANLinkType === "domestic-only" || state.Choose.WANLinkType === "both"),
           });
           break;
         case 2:
@@ -145,56 +153,60 @@ export const StarContainer = component$(() => {
             ),
           });
           break;
-        case 4:
-          track("step_extra_config_completed", {
-            ...baseEventData,
-            gaming_rules_enabled: !!state.ExtraConfig.Games?.length,
-            ddns_enabled: !!state.ExtraConfig.isDDNS,
-            auto_update_enabled: !!state.ExtraConfig.Update,
-            auto_reboot_enabled: !!state.ExtraConfig.AutoReboot,
-          });
-          break;
-        case 5:
-          track("step_show_config_completed", {
-            ...baseEventData,
-            config_generated: true,
-          });
-          // Track overall flow completion
-          track("router_config_flow_completed", {
-            user_mode: state.Choose.Mode,
-            total_steps_completed: stepsStore.steps.filter(
-              (step) => step.isComplete,
-            ).length,
-            completion_time: new Date().toISOString(),
-            firmware: state.Choose.Firmware,
-            router_models: state.Choose.RouterModels.map((rm) => rm.Model).join(
-              ",",
-            ),
-            vpn_client_type: state.WAN.VPNClient?.Wireguard
-              ? "Wireguard"
-              : state.WAN.VPNClient?.OpenVPN
-                ? "OpenVPN"
-                : state.WAN.VPNClient?.L2TP
-                  ? "L2TP"
-                  : state.WAN.VPNClient?.PPTP
-                    ? "PPTP"
-                    : state.WAN.VPNClient?.SSTP
-                      ? "SSTP"
-                      : state.WAN.VPNClient?.IKeV2
-                        ? "IKeV2"
-                        : "none",
-            vpn_server_enabled: !!(
-              state.LAN.VPNServer?.PptpServer ||
-              state.LAN.VPNServer?.L2tpServer ||
-              state.LAN.VPNServer?.SstpServer ||
-              state.LAN.VPNServer?.OpenVpnServer ||
-              state.LAN.VPNServer?.Ikev2Server ||
-              state.LAN.VPNServer?.WireguardServers
-            ),
-          });
-          break;
         default:
-          track("step_generic_completed", baseEventData);
+          // Handle ExtraConfig step (only in advanced mode)
+          if (isExtraConfigStep) {
+            track("step_extra_config_completed", {
+              ...baseEventData,
+              gaming_rules_enabled: !!state.ExtraConfig.Games?.length,
+              ddns_enabled: !!state.ExtraConfig.isDDNS,
+              auto_update_enabled: !!state.ExtraConfig.Update,
+              auto_reboot_enabled: !!state.ExtraConfig.AutoReboot,
+            });
+          }
+          // Handle ShowConfig step (step 4 in easy mode, step 5 in advanced mode)
+          else if (isShowConfigStep) {
+            track("step_show_config_completed", {
+              ...baseEventData,
+              config_generated: true,
+            });
+            // Track overall flow completion
+            track("router_config_flow_completed", {
+              user_mode: state.Choose.Mode,
+              total_steps_completed: stepsStore.steps.filter(
+                (step) => step.isComplete,
+              ).length,
+              completion_time: new Date().toISOString(),
+              firmware: state.Choose.Firmware,
+              router_models: state.Choose.RouterModels.map((rm) => rm.Model).join(
+                ",",
+              ),
+              vpn_client_type: state.WAN.VPNClient?.Wireguard
+                ? "Wireguard"
+                : state.WAN.VPNClient?.OpenVPN
+                  ? "OpenVPN"
+                  : state.WAN.VPNClient?.L2TP
+                    ? "L2TP"
+                    : state.WAN.VPNClient?.PPTP
+                      ? "PPTP"
+                      : state.WAN.VPNClient?.SSTP
+                        ? "SSTP"
+                        : state.WAN.VPNClient?.IKeV2
+                          ? "IKeV2"
+                          : "none",
+              vpn_server_enabled: !!(
+                state.LAN.VPNServer?.PptpServer ||
+                state.LAN.VPNServer?.L2tpServer ||
+                state.LAN.VPNServer?.SstpServer ||
+                state.LAN.VPNServer?.OpenVpnServer ||
+                state.LAN.VPNServer?.Ikev2Server ||
+                state.LAN.VPNServer?.WireguardServers
+              ),
+            });
+          } else {
+            track("step_generic_completed", baseEventData);
+          }
+          break;
       }
     }
   });
@@ -219,6 +231,10 @@ export const StarContainer = component$(() => {
     });
 
     // Track specific step entry events
+    const isEasyMode = state.Choose.Mode === "easy";
+    const isShowConfigStep = (isEasyMode && stepId === 4) || (!isEasyMode && stepId === 5);
+    const isExtraConfigStep = !isEasyMode && stepId === 4;
+
     switch (stepId) {
       case 1:
         track("step_choose_entered", {
@@ -248,43 +264,49 @@ export const StarContainer = component$(() => {
             ) || !!state.WAN.WANLink.Foreign,
         });
         break;
-      case 4:
-        track("step_extra_config_entered", {
-          entry_method: "navigation",
-          previous_step: fromStepName,
-          lan_configured:
-            !!(
-              state.LAN.VPNServer?.PptpServer ||
-              state.LAN.VPNServer?.L2tpServer ||
-              state.LAN.VPNServer?.SstpServer ||
-              state.LAN.VPNServer?.OpenVpnServer ||
-              state.LAN.VPNServer?.Ikev2Server ||
-              state.LAN.VPNServer?.WireguardServers
-            ) ||
-            !!(state.LAN.Wireless?.SingleMode || state.LAN.Wireless?.MultiMode),
-        });
-        break;
-      case 5:
-        track("step_show_config_entered", {
-          entry_method: "navigation",
-          previous_step: fromStepName,
-          ready_for_generation: true,
-        });
+      default:
+        // Handle ExtraConfig step entry (only in advanced mode)
+        if (isExtraConfigStep) {
+          track("step_extra_config_entered", {
+            entry_method: "navigation",
+            previous_step: fromStepName,
+            lan_configured:
+              !!(
+                state.LAN.VPNServer?.PptpServer ||
+                state.LAN.VPNServer?.L2tpServer ||
+                state.LAN.VPNServer?.SstpServer ||
+                state.LAN.VPNServer?.OpenVpnServer ||
+                state.LAN.VPNServer?.Ikev2Server ||
+                state.LAN.VPNServer?.WireguardServers
+              ) ||
+              !!(state.LAN.Wireless?.SingleMode || state.LAN.Wireless?.MultiMode),
+          });
+        }
+        // Handle ShowConfig step entry (step 4 in easy mode, step 5 in advanced mode)
+        else if (isShowConfigStep) {
+          track("step_show_config_entered", {
+            entry_method: "navigation",
+            previous_step: fromStepName,
+            ready_for_generation: true,
+          });
+        }
         break;
     }
 
     activeStep.value = newStep;
   });
 
-  useTask$(() => {
-    stepsStore.steps = [
+  useTask$(({ track }) => {
+    const currentMode = track(() => state.Choose.Mode);
+    const isEasyMode = currentMode === "easy";
+    const baseSteps = [
       {
         id: 1,
         title: $localize`Choose`,
         icon: $(LuSettings2),
         component: component$(() => (
           <Choose
-            isComplete={stepsStore.steps[0].isComplete}
+            isComplete={stepsStore.steps[0]?.isComplete || false}
             onComplete$={() => {
               handleStepComplete(1);
               activeStep.value = 1;
@@ -292,6 +314,27 @@ export const StarContainer = component$(() => {
           />
         )),
         isComplete: true,
+        helpData: {
+          title: "Router Selection & Configuration Mode",
+          description: "Choose your MikroTik router model and select the configuration approach that best fits your needs.",
+          sections: [
+            {
+              title: "Getting Started",
+              content: "Select your MikroTik router model from our supported device list. This ensures the generated configuration is optimized for your specific hardware capabilities and features.",
+              type: 'info' as const
+            },
+            {
+              title: "Configuration Modes",
+              content: "Easy Mode provides simplified setup with essential features for home users. Advanced Mode offers full control over all router capabilities for professional deployments.",
+              type: 'tip' as const
+            },
+            {
+              title: "Router Model Selection",
+              content: "Choose the exact model of your MikroTik device. Different models have varying capabilities like port counts, wireless features, and processing power that affect the generated configuration.",
+              type: 'example' as const
+            }
+          ]
+        }
       },
       {
         id: 2,
@@ -299,7 +342,7 @@ export const StarContainer = component$(() => {
         icon: $(LuGlobe),
         component: component$(() => (
           <WAN
-            isComplete={stepsStore.steps[1].isComplete}
+            isComplete={stepsStore.steps[1]?.isComplete || false}
             onComplete$={() => {
               handleStepComplete(2);
               activeStep.value = 2;
@@ -307,6 +350,32 @@ export const StarContainer = component$(() => {
           />
         )),
         isComplete: true,
+        helpData: {
+          title: "WAN Configuration Guide",
+          description: "Configure your internet connection, multi-WAN setup, and VPN client settings for optimal connectivity and redundancy.",
+          sections: [
+            {
+              title: "Internet Connection Setup",
+              content: "Configure your primary internet connection settings including DHCP, static IP, or PPPoE. Ensure your ISP settings are correctly configured for reliable internet access.",
+              type: 'info' as const
+            },
+            {
+              title: "Multi-WAN Configuration",
+              content: "Set up multiple internet connections for load balancing and failover. Configure domestic and foreign links with appropriate routing policies and traffic distribution.",
+              type: 'tip' as const
+            },
+            {
+              title: "VPN Client Setup",
+              content: "Configure VPN client connections for routing traffic through VPN providers. Supports WireGuard, OpenVPN, L2TP, PPTP, SSTP, and IKEv2 protocols with automatic failover.",
+              type: 'example' as const
+            },
+            {
+              title: "Connection Prioritization",
+              content: "Set connection priorities and weights to control how traffic is distributed across multiple WAN connections. Higher priority connections are preferred for critical traffic.",
+              type: 'warning' as const
+            }
+          ]
+        }
       },
       {
         id: 3,
@@ -314,22 +383,55 @@ export const StarContainer = component$(() => {
         icon: $(LuNetwork),
         component: component$(() => (
           <LAN
-            isComplete={stepsStore.steps[2].isComplete}
+            isComplete={stepsStore.steps[2]?.isComplete || false}
             onComplete$={() => {
               handleStepComplete(3);
-              activeStep.value = 3;
+              const nextStepIndex = isEasyMode ? 3 : 4;
+              activeStep.value = nextStepIndex;
             }}
           />
         )),
         isComplete: true,
+        helpData: {
+          title: "LAN & Network Configuration",
+          description: "Configure your local network segments, wireless settings, VPN servers, and security policies for optimal performance and security.",
+          sections: [
+            {
+              title: "Network Segmentation",
+              content: "Set up multiple network segments including Split (192.168.10.0/24), Domestic (192.168.20.0/24), Foreign (192.168.30.0/24), and VPN (192.168.40.0/24) networks with appropriate routing rules.",
+              type: 'info' as const
+            },
+            {
+              title: "Wireless Configuration",
+              content: "Configure WiFi networks with proper security settings, guest networks, and bandwidth limitations. Set up multiple SSIDs for different user groups with appropriate access policies.",
+              type: 'tip' as const
+            },
+            {
+              title: "VPN Server Setup",
+              content: "Configure VPN servers for remote access including WireGuard, OpenVPN, L2TP/IPSec, PPTP, SSTP, and IKEv2. Set up user authentication and access policies for secure remote connectivity.",
+              type: 'example' as const
+            },
+            {
+              title: "Network Tunneling",
+              content: "Set up network tunnels (GRE, VXLAN, EoIP, IPIP) for connecting remote sites or creating overlay networks. Configure tunnel parameters and routing for seamless connectivity.",
+              type: 'warning' as const
+            }
+          ]
+        }
       },
-      {
+    ];
+
+    const steps = [...baseSteps];
+
+    // Only add ExtraConfig step if not in easy mode
+    if (!isEasyMode) {
+      steps.push({
         id: 4,
         title: $localize`Extra Config`,
         icon: $(LuWrench),
         component: component$(() => (
           <ExtraConfig
-            isComplete={stepsStore.steps[3].isComplete}
+            isComplete={stepsStore.steps[3]?.isComplete || false}
             onComplete$={() => {
               handleStepComplete(4);
               activeStep.value = 4;
@@ -337,22 +439,81 @@ export const StarContainer = component$(() => {
           />
         )),
         isComplete: true,
-      },
-      {
-        id: 5,
-        title: $localize`Show Config`,
-        icon: $(LuClipboardList),
-        component: component$(() => (
-          <ShowConfig
-            isComplete={stepsStore.steps[4].isComplete}
-            onComplete$={() => {
-              handleStepComplete(5);
-            }}
-          />
-        )),
-        isComplete: false,
-      },
-    ];
+        helpData: {
+          title: "Advanced Features & Gaming",
+          description: "Configure advanced features including gaming optimization, DDNS, system maintenance, and other professional-grade networking features.",
+          sections: [
+            {
+              title: "Gaming Optimization",
+              content: "Set up game-specific routing rules and port forwarding for popular games. Configure QoS policies to prioritize gaming traffic and reduce latency for optimal gaming performance.",
+              type: 'info' as const
+            },
+            {
+              title: "Dynamic DNS (DDNS)",
+              content: "Configure DDNS services to maintain access to your router even with changing IP addresses. Supports multiple DDNS providers for reliable remote access and services.",
+              type: 'tip' as const
+            },
+            {
+              title: "System Maintenance",
+              content: "Set up automatic system updates, scheduled reboots, and maintenance tasks. Configure backup schedules and system monitoring for reliable operation.",
+              type: 'example' as const
+            },
+            {
+              title: "Advanced Services",
+              content: "Configure additional services like NTP servers, certificate management, and cloud integrations. These features are available in Advanced mode for professional deployments.",
+              type: 'warning' as const
+            }
+          ]
+        }
+      });
+    }
+
+    // Add ShowConfig step with correct ID (4 for easy mode, 5 for advanced mode)
+    const showConfigId = isEasyMode ? 4 : 5;
+    const showConfigIndex = isEasyMode ? 3 : 4;
+    
+    steps.push({
+      id: showConfigId,
+      title: $localize`Show Config`,
+      icon: $(LuClipboardList),
+      component: component$(() => (
+        <ShowConfig
+          isComplete={stepsStore.steps[showConfigIndex]?.isComplete || false}
+          onComplete$={() => {
+            handleStepComplete(showConfigId);
+          }}
+        />
+      )),
+      isComplete: false,
+      helpData: {
+        title: "Configuration Review & Deployment",
+        description: "Review, download, and deploy your generated MikroTik router configuration. Verify all settings before applying to your router.",
+        sections: [
+          {
+            title: "Configuration Review",
+            content: "Review the generated configuration script to ensure all settings match your requirements. Check network segments, routing rules, firewall policies, and service configurations.",
+            type: 'info' as const
+          },
+          {
+            title: "Deployment Options",
+            content: "Download the configuration as a .rsc file for manual application, or copy the commands for direct RouterOS terminal use. Always backup your current configuration before applying changes.",
+            type: 'tip' as const
+          },
+          {
+            title: "Applying Configuration",
+            content: "Connect to your MikroTik router via WinBox, WebFig, or SSH. Import the configuration file or paste commands into the terminal. Verify connectivity after applying changes.",
+            type: 'example' as const
+          },
+          {
+            title: "Safety Precautions",
+            content: "Always backup your current configuration before applying changes. Test the configuration on a non-production device first. Keep physical access to reset the router if needed.",
+            type: 'warning' as const
+          }
+        ]
+      }
+    });
+
+    stepsStore.steps = steps;
   });
 
   return (
@@ -362,6 +523,12 @@ export const StarContainer = component$(() => {
         mode={state.Choose.Mode}
         onModeChange$={handleModeChange}
         activeStep={activeStep.value}
+        enableEnhancedFeatures={true}
+        enableHelp={true}
+        helpOptions={{
+          enableKeyboardShortcuts: true,
+          helpKey: '?'
+        }}
         onStepComplete$={(id) => {
           const stepIndex = stepsStore.steps.findIndex(
             (step) => step.id === id,

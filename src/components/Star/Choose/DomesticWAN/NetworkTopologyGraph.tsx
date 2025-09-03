@@ -205,6 +205,13 @@ export const NetworkTopologyGraph = component$(
               {connections.map((conn, index) => {
                 const fromNode = nodes[conn.from];
                 const toNode = nodes[conn.to];
+                
+                // Safety check: skip rendering if nodes don't exist
+                if (!fromNode || !toNode) {
+                  console.warn(`NetworkTopologyGraph: Missing node for connection ${conn.from} -> ${conn.to}`);
+                  return null;
+                }
+                
                 const x1 = fromNode.x + 16;
                 const y1 = fromNode.y;
                 const x2 = toNode.x - 16;

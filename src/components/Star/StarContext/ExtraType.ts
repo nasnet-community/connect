@@ -1,5 +1,6 @@
 export type ServiceType = "Enable" | "Disable" | "Local";
 export type UpdateInterval = "Daily" | "Weekly" | "Monthly" | "";
+export type RebootInterval = "Daily" | "Weekly" | "Monthly" | "";
 
 export interface ServiceConfig {
   type: ServiceType;
@@ -34,6 +35,7 @@ export interface RouterIdentityRomon {
 export interface AutoReboot {
   isAutoReboot: boolean;
   RebootTime: string;
+  RebootInterval: RebootInterval;
 }
 
 export interface Update {
@@ -45,6 +47,7 @@ export interface Update {
 export interface IPAddressUpdate {
   isIPAddressUpdate: boolean;
   IPAddressUpdateTime: string;
+  IPAddressUpdateInterval: UpdateInterval;
 }
 
 export interface ExtraConfigState {

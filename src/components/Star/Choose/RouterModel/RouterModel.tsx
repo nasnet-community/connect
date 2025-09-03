@@ -1,10 +1,13 @@
 import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
+// Removed unused icon imports
 import { StarContext } from "../../StarContext/StarContext";
 import { getMasterRouters, type RouterData } from "./Constants";
 import { type RouterInterfaces } from "../../StarContext/ChooseType";
-import { RouterCard } from "./RouterCard";
+import { ClassyRouterCard } from "./ClassyRouterCard";
+import { ClassyTabs } from "./ClassyTabs";
 import { RouterDetailsModal } from "./RouterDetailsModal";
+import { categorizeRouters } from "./RouterCategories";
 
 interface RouterModelProps {
   isComplete?: boolean;
@@ -18,10 +21,15 @@ export const RouterModel = component$((props: RouterModelProps) => {
   );
   const masterRouters = getMasterRouters();
   
+  // Categorize routers by family
+  const routerCategories = categorizeRouters(masterRouters);
+  
+  // Tab state
+  const activeTab = useSignal<string>(routerCategories[0]?.id || "hAP");
+  
   // Modal state
   const isModalOpen = useSignal(false);
   const selectedRouter = useSignal<RouterData | null>(null);
-
 
   const handleSelect = $((model: string) => {
     const selectedRouter = masterRouters.find((r) => r.model === model);
@@ -86,104 +94,74 @@ export const RouterModel = component$((props: RouterModelProps) => {
     props.onComplete$?.();
   });
 
+  // Get routers for active tab
+  const activeCategory = routerCategories.find(cat => cat.id === activeTab.value);
+  const activeRouters = activeCategory?.routers || [];
+
   return (
-    <div class="space-y-8">
-      {/* Enhanced Header with gradient animation */}
-      <div class="mb-8 text-center relative">
-        {/* Background decoration */}
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div class="w-96 h-96 bg-gradient-to-r from-primary-500/10 to-secondary-500/10 rounded-full blur-3xl animate-pulse-slow" />
-        </div>
-        
-        <div class="relative">
-          <h2 class="bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-3xl font-bold text-transparent md:text-4xl animate-gradient bg-300%">
-            {$localize`Select Router Model`}
-          </h2>
-          <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-3 text-lg">
-            {selectedModels.length === 0
-              ? $localize`Choose your router model to get started`
-              : $localize`✓ Router selected. Continue to next step`}
-          </p>
-        </div>
-      </div>
-
-      {/* Router Cards Grid with staggered animation */}
-      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr">
-        {masterRouters.map((router, index) => {
-          const isSelected = selectedModels.includes(router.model as any);
-
-          return (
-            <div
-              key={router.model}
-              class="opacity-0 animate-fade-in-up"
-              style={`animation-delay: ${index * 50}ms; animation-fill-mode: forwards;`}
-            >
-              <RouterCard
-                router={router}
-                isSelected={isSelected}
-                onSelect$={$((model: string) => {
-                  handleSelect(model);
-                })}
-                onViewDetails$={$((router: RouterData) => {
-                  selectedRouter.value = router;
-                  isModalOpen.value = true;
-                })}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Enhanced Selection Summary */}
-      {selectedModels.length > 0 && (
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500/10 via-secondary-500/10 to-primary-500/10 backdrop-blur-sm border border-primary-500/20 p-6 animate-fade-in">
-          {/* Animated background pattern */}
-          <div class="absolute inset-0 bg-grid-pattern opacity-5" />
-          
-          <div class="relative flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="flex items-center justify-center w-10 h-10 rounded-full bg-success/20 animate-pulse">
-                <svg class="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm font-medium">
-                  {$localize`Selected Router Model`}
-                </p>
-                <p class="text-text dark:text-text-dark-default text-lg font-bold">
-                  {selectedModels[0]}
-                </p>
-              </div>
-            </div>
-            
-            <div class="text-right">
-              <p class="text-xs text-text-secondary/70 dark:text-text-dark-secondary/70">
-                {$localize`Ready to continue`}
-              </p>
-              <div class="flex items-center gap-1 mt-1">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    class="w-2 h-2 rounded-full bg-success animate-pulse"
-                    style={`animation-delay: ${i * 200}ms`}
-                  />
-                ))}
-              </div>
-            </div>
+    <div class="w-full p-4">
+      <div class="rounded-lg bg-surface p-6 shadow-md transition-all dark:bg-surface-dark">
+        <div class="container mx-auto space-y-12">
+        {/* Elegant Header */}
+        <div class="text-center space-y-8">
+          <div class="space-y-6">
+            <h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-700 bg-clip-text text-transparent">
+              {$localize`Choose Your Router`}
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              {selectedModels.length === 0
+                ? $localize`Discover the perfect MikroTik router for your network needs`
+                : $localize`✓ Router selected successfully. Ready to continue to the next step.`}
+            </p>
           </div>
         </div>
-      )}
 
-      {/* Router Details Modal */}
-      <RouterDetailsModal
-        router={selectedRouter.value}
-        isOpen={isModalOpen}
-        onClose$={() => {
-          isModalOpen.value = false;
-          selectedRouter.value = null;
-        }}
-      />
+        {/* Elegant Tab Navigation */}
+        <ClassyTabs
+          categories={routerCategories}
+          activeCategory={activeTab.value}
+          onSelect$={(categoryId) => {
+            activeTab.value = categoryId;
+          }}
+        />
+
+        {/* Elegant Router Cards Grid */}
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 place-items-center max-w-full mx-auto">
+            {activeRouters.map((router, _index) => {
+              const isSelected = selectedModels.includes(router.model as any);
+
+              return (
+                <div key={router.model} class="w-full">
+                  <ClassyRouterCard
+                    router={router}
+                    isSelected={isSelected}
+                    onSelect$={$((model: string) => {
+                      handleSelect(model);
+                    })}
+                    onViewDetails$={$((router: RouterData) => {
+                      selectedRouter.value = router;
+                      isModalOpen.value = true;
+                    })}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+
+        {/* Router Details Modal */}
+        <RouterDetailsModal
+          router={selectedRouter.value}
+          isOpen={isModalOpen}
+          onClose$={() => {
+            isModalOpen.value = false;
+            selectedRouter.value = null;
+          }}
+        />
+        </div>
+      </div>
     </div>
   );
 });

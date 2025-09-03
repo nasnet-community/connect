@@ -75,7 +75,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "advance",
           Firmware: "MikroTik",
-          DomesticLink: true,
+          WANLinkType: "both",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
@@ -137,7 +137,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          DomesticLink: false,
+          WANLinkType: "foreign-only",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
@@ -175,7 +175,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          DomesticLink: false,
+          WANLinkType: "foreign-only",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
@@ -206,7 +206,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "advance",
           Firmware: "MikroTik",
-          DomesticLink: true,
+          WANLinkType: "both",
           RouterMode: "AP Mode" as RouterModeType,
           RouterModels: [],
         },
@@ -283,7 +283,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "advance",
           Firmware: "MikroTik",
-          DomesticLink: true,
+          WANLinkType: "both",
           RouterMode: "AP Mode" as RouterModeType,
           RouterModels: [],
         },
@@ -323,7 +323,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          DomesticLink: false,
+          WANLinkType: "foreign-only",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
@@ -373,7 +373,7 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "advance",
           Firmware: "MikroTik",
-          DomesticLink: true,
+          WANLinkType: "both",
           RouterMode: "AP Mode" as RouterModeType,
           RouterModels: [],
         },
