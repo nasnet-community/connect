@@ -126,12 +126,12 @@ export const RadioGroup = component$<RadioGroupProps>(
                     ? "cursor-not-allowed opacity-60"
                     : [
                         // Hover states with better contrast
-                        "hover:bg-gray-50 dark:hover:bg-gray-800",
+                        "hover:bg-primary-50 dark:hover:bg-primary-950",
                         // Active states for touch feedback
-                        "active:bg-gray-100 dark:active:bg-gray-700",
+                        "active:bg-primary-100 dark:active:bg-primary-900",
                         "active:scale-[0.99]",
                         // Focus states for accessibility
-                        "focus-within:bg-gray-50 dark:focus-within:bg-gray-800",
+                        "focus-within:bg-primary-50 dark:focus-within:bg-primary-950",
                         "focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2",
                         "dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-gray-900",
                       ].join(" "),
@@ -174,19 +174,19 @@ export const RadioGroup = component$<RadioGroupProps>(
                       ? [
                           hasError
                             ? "border-error-500 bg-error-500 dark:border-error-400 dark:bg-error-400"
-                            : "border-primary-600 bg-primary-600 dark:border-primary-500 dark:bg-primary-500",
-                          "shadow-sm ring-1 ring-inset",
+                            : "border-primary-500 bg-primary-500 dark:border-primary-400 dark:bg-primary-400",
+                          "shadow-md ring-2 ring-inset",
                           hasError
-                            ? "ring-error-600/20 dark:ring-error-400/20"
-                            : "ring-primary-600/20 dark:ring-primary-500/20",
+                            ? "ring-error-600/30 dark:ring-error-400/30"
+                            : "ring-primary-600/30 dark:ring-primary-500/30",
+                          "text-white dark:text-gray-900",
                         ].join(" ")
                       : "bg-white dark:bg-gray-900",
                     // Enhanced hover states for better UX
                     !isDisabled && !isSelected && [
                       hasError
                         ? "hover:border-error-400 dark:hover:border-error-500"
-                        : "hover:border-primary-400 dark:hover:border-primary-500",
-                      "hover:bg-gray-50 dark:hover:bg-gray-800",
+                        : "hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950",
                     ].join(" "),
                     // Disabled state with better visual feedback
                     isDisabled && "cursor-not-allowed opacity-50",

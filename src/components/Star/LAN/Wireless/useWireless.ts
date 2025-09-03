@@ -51,7 +51,7 @@ export const useWirelessForm = () => {
   const checkSamePassword = $(() => {
     if (!isMultiSSID.value) return;
 
-    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+    const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
     const enabledNetworks: Record<
       string,
       {
@@ -116,7 +116,7 @@ export const useWirelessForm = () => {
       isLoading.value = { ...isLoading.value, allPasswords: true };
       const commonPassword = await generatePasswordFromAPI();
 
-      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
 
       // Only set passwords for available networks based on DomesticLink setting
       const availableNetworks = isDomesticLinkEnabled
@@ -208,7 +208,7 @@ export const useWirelessForm = () => {
   });
 
   const toggleNetworkDisabled = $((network: NetworkKey) => {
-    const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+    const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
 
     // Don't allow enabling domestic or split networks when DomesticLink is false
     if (
@@ -314,7 +314,7 @@ export const useWirelessForm = () => {
   // Handle DomesticLink changes - disable domestic and split networks when DomesticLink is false
   useTask$(({ track }) => {
     const isDomesticLinkEnabled = track(
-      () => starContext.state.Choose.DomesticLink,
+      () => (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both"),
     );
 
     if (!isDomesticLinkEnabled) {
@@ -347,7 +347,7 @@ export const useWirelessForm = () => {
     }));
 
     if (isMultiSSID.value) {
-      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
       const enabledNetworks: Record<
         string,
         {
@@ -461,7 +461,7 @@ export const useWirelessForm = () => {
     }
 
     if (isMultiSSID.value) {
-      const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+      const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
 
       // Filter networks based on DomesticLink setting
       const availableNetworks = isDomesticLinkEnabled

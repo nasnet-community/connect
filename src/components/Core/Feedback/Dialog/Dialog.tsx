@@ -85,7 +85,8 @@ export const Dialog = component$<DialogProps>((props) => {
     <>
       {isOpenSignal.value && (
         <div
-          class={`fixed inset-0 z-[${zIndex}] overflow-y-auto`}
+          style={{ zIndex: zIndex }}
+          class="fixed inset-0 overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-labelledby={title || props.ariaLabel ? ariaLabelId : undefined}

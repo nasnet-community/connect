@@ -51,17 +51,13 @@ export const Step3_MultiLink = component$<Step3Props>(
         });
       }
       
-      // Apply all updates at once using setTimeout to break out of reactive context
+      // Apply all updates at once using batch update to prevent multiple renders
       if (updates.length > 0) {
-        setTimeout(() => {
-          updates.forEach(({ id, updates }) => {
-            wizardActions.updateLink$(id, updates);
-          });
-        }, 0);
+        wizardActions.batchUpdateLinks$(updates);
       }
     });
     
-    const handleStrategyChange = $((value: string) => {
+    const handleStrategyChange = $(async (value: string) => {
       strategy.value = value as "LoadBalance" | "Failover" | "Both";
       
       // Initialize default values when strategy changes
@@ -92,8 +88,11 @@ export const Step3_MultiLink = component$<Step3Props>(
       const oldWeight = targetLink.weight || 0;
       const diff = newWeight - oldWeight;
       
-      // Update target weight
-      wizardActions.updateLink$(linkId, { weight: newWeight });
+      // Prepare batch updates
+      const updates: Array<{ id: string; updates: Partial<typeof targetLink> }> = [];
+      
+      // Add target weight update
+      updates.push({ id: linkId, updates: { weight: newWeight } });
       
       // Distribute the difference among other links
       const otherLinks = wizardState.links.filter(l => l.id !== linkId);
@@ -103,20 +102,22 @@ export const Step3_MultiLink = component$<Step3Props>(
         otherLinks.forEach((link) => {
           const proportion = (link.weight || 0) / totalOtherWeight;
           const newLinkWeight = Math.max(1, Math.round((link.weight || 0) - (diff * proportion)));
-          wizardActions.updateLink$(link.id, { weight: newLinkWeight });
+          updates.push({ id: link.id, updates: { weight: newLinkWeight } });
         });
       }
       
-      // Ensure sum is exactly 100
-      const currentSum = wizardState.links.reduce((sum, l) => sum + (l.weight || 0), 0);
-      if (currentSum !== 100) {
-        const adjustment = 100 - currentSum;
+      // Apply batch update first
+      wizardActions.batchUpdateLinks$(updates);
+      
+      // Check if adjustment is needed after batch update
+      const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
+      if (newSum !== 100 && otherLinks.length > 0) {
+        const adjustment = 100 - newSum;
         const firstOther = otherLinks[0];
-        if (firstOther) {
-          wizardActions.updateLink$(firstOther.id, { 
-            weight: (firstOther.weight || 0) + adjustment 
-          });
-        }
+        const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
+        wizardActions.updateLink$(firstOther.id, { 
+          weight: currentWeight + adjustment 
+        });
       }
     });
     
@@ -137,15 +138,33 @@ export const Step3_MultiLink = component$<Step3Props>(
           const draggedPriority = draggedLink.priority || 0;
           const targetPriority = targetLink.priority || 0;
           
-          // Swap priorities
-          wizardActions.updateLink$(draggedItem.value, { priority: targetPriority });
-          wizardActions.updateLink$(draggedOverItem.value, { priority: draggedPriority });
+          // Prepare batch updates for priority swap and reordering
+          const updates: Array<{ id: string; updates: { priority: number } }> = [];
           
-          // Reorder all priorities to ensure they're sequential
-          const sortedLinks = [...wizardState.links].sort((a, b) => (a.priority || 0) - (b.priority || 0));
-          sortedLinks.forEach((link, index) => {
-            wizardActions.updateLink$(link.id, { priority: index + 1 });
-          });
+          // First swap the two items
+          updates.push({ id: draggedItem.value, updates: { priority: targetPriority } });
+          updates.push({ id: draggedOverItem.value, updates: { priority: draggedPriority } });
+          
+          // Apply initial swap
+          wizardActions.batchUpdateLinks$(updates);
+          
+          // Then reorder all priorities to ensure they're sequential
+          // Create a new sorted list with swapped priorities
+          const tempLinks = wizardState.links.map(link => ({
+            ...link,
+            priority: link.id === draggedItem.value ? targetPriority :
+                     link.id === draggedOverItem.value ? draggedPriority :
+                     link.priority || 0
+          }));
+          
+          const sortedLinks = tempLinks.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+          const reorderUpdates = sortedLinks.map((link, index) => ({
+            id: link.id,
+            updates: { priority: index + 1 }
+          }));
+          
+          // Apply reordering in a single batch
+          wizardActions.batchUpdateLinks$(reorderUpdates);
         }
       }
       
@@ -272,11 +291,13 @@ export const Step3_MultiLink = component$<Step3Props>(
                 onClick$={() => {
                   const equalWeight = Math.floor(100 / wizardState.links.length);
                   const remainder = 100 - (equalWeight * wizardState.links.length);
-                  wizardState.links.forEach((link, index) => {
-                    wizardActions.updateLink$(link.id, {
+                  const updates = wizardState.links.map((link, index) => ({
+                    id: link.id,
+                    updates: {
                       weight: equalWeight + (index === 0 ? remainder : 0),
-                    });
-                  });
+                    }
+                  }));
+                  wizardActions.batchUpdateLinks$(updates);
                 }}
                 class="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
               >

@@ -11,6 +11,7 @@ export interface UseWANAdvancedReturn {
   addLink$: QRL<() => void>;
   removeLink$: QRL<(id: string) => void>;
   updateLink$: QRL<(id: string, updates: Partial<WANLinkConfig>) => void>;
+  batchUpdateLinks$: QRL<(updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => void>;
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiLinkStrategy$: QRL<(strategy: MultiLinkConfig) => void>;
@@ -19,14 +20,14 @@ export interface UseWANAdvancedReturn {
   generateLinkName$: QRL<(index: number) => string>;
 }
 
-export function useWANAdvanced(): UseWANAdvancedReturn {
+export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
   // Initialize state with at least one link
   const state = useStore<WANWizardState>({
     mode: "advanced", // Always use advanced mode
     links: [
       {
         id: generateUniqueId("wan"),
-        name: "WAN Link 1",
+        name: `${mode} Link 1`,
         interfaceType: "Ethernet",
         interfaceName: "",
         connectionType: "DHCP",
@@ -41,9 +42,9 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
   // Track link count for naming
   const linkCounter = useSignal(1);
 
-  // Generate consistent link names
+  // Generate consistent link names based on mode
   const generateLinkName$ = $((index: number) => {
-    return `WAN Link ${index}`;
+    return `${mode} Link ${index}`;
   });
 
   // Add a new link
@@ -158,6 +159,54 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     state.links = newLinks;
   });
 
+  // Batch update multiple links in a single operation to prevent multiple renders
+  const batchUpdateLinks$ = $((updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => {
+    if (!updates || updates.length === 0) return;
+
+    // Create a copy of all links
+    const newLinks = [...state.links];
+    
+    // Apply all updates
+    updates.forEach(({ id, updates: linkUpdates }) => {
+      const linkIndex = newLinks.findIndex((link) => link.id === id);
+      if (linkIndex === -1) return;
+
+      const currentLink = newLinks[linkIndex];
+      const updatedLink = { ...currentLink };
+
+      // Apply updates
+      Object.assign(updatedLink, linkUpdates);
+
+      // Clear certain fields when interface type changes
+      if (
+        linkUpdates.interfaceType &&
+        linkUpdates.interfaceType !== currentLink.interfaceType
+      ) {
+        updatedLink.interfaceName = "";
+        updatedLink.wirelessCredentials = undefined;
+        updatedLink.lteSettings = undefined;
+
+        // Reset connection type for LTE
+        if (linkUpdates.interfaceType === "LTE") {
+          updatedLink.connectionType = "LTE";
+        }
+      }
+
+      // Clear connection config when type changes
+      if (
+        linkUpdates.connectionType &&
+        linkUpdates.connectionType !== currentLink.connectionType
+      ) {
+        updatedLink.connectionConfig = undefined;
+      }
+
+      newLinks[linkIndex] = updatedLink;
+    });
+
+    // Update state once with all changes
+    state.links = newLinks;
+  });
+
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)
   const toggleMode$ = $(() => {
     // Mode toggling is disabled in the advanced interface
@@ -205,7 +254,7 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     state.links = [
       {
         id: generateUniqueId("wan"),
-        name: "WAN Link 1",
+        name: `${mode} Link 1`,
         interfaceType: "Ethernet",
         interfaceName: "",
         connectionType: "DHCP",
@@ -225,6 +274,7 @@ export function useWANAdvanced(): UseWANAdvancedReturn {
     addLink$,
     removeLink$,
     updateLink$,
+    batchUpdateLinks$,
     toggleMode$,
     setViewMode$,
     setMultiLinkStrategy$,

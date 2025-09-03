@@ -155,7 +155,6 @@ export const Toggle = component$<ToggleProps>(
     // Static classes for better performance
     const containerClass = [
       "inline-flex items-center gap-3 select-none",
-      sizeCfg.container,
       disabled || loading ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
       className,
     ].filter(Boolean).join(" ");
@@ -198,7 +197,7 @@ export const Toggle = component$<ToggleProps>(
         {labelPosition === "left" && labelElement}
 
         {/* Toggle control */}
-        <div class={`relative ${sizeCfg.container}`}>
+        <div class="relative">
           {/* Hidden input for accessibility */}
           <input
             type="checkbox"

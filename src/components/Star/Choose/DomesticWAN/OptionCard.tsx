@@ -5,14 +5,15 @@ import {
 } from "@builder.io/qwik";
 
 export interface OptionCardProps {
-  value: boolean;
+  value: any;
   isSelected: boolean;
   icon: JSXOutput;
   title: string;
   description: string;
   features: string[];
   graph: JSXOutput;
-  onSelect$: PropFunction<(value: boolean) => void>;
+  onSelect$: PropFunction<(value: any) => void>;
+  isHorizontal?: boolean;
 }
 
 export const OptionCard = component$((props: OptionCardProps) => {
@@ -25,6 +26,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
     features,
     graph,
     onSelect$,
+    isHorizontal = false,
   } = props;
 
   return (
@@ -55,64 +57,130 @@ export const OptionCard = component$((props: OptionCardProps) => {
         </div>
       )}
 
-      <div class="space-y-6 p-6">
-        {/* Option icon container with conditional styling */}
-        <div
-          class={`option-icon flex h-16 w-16 items-center justify-center
-          rounded-xl transition-all duration-500
-          ${
-            isSelected
-              ? "bg-primary-500 text-white"
-              : "bg-primary-500/15 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400"
-          }`}
-        >
-          {icon}
-        </div>
+{isHorizontal ? (
+        /* Horizontal layout for "both" option */
+        <div class="flex flex-col md:flex-row md:items-start md:gap-8 p-6">
+          {/* Left side - Content */}
+          <div class="flex-1 space-y-6">
+            {/* Option icon container with conditional styling */}
+            <div
+              class={`option-icon flex h-16 w-16 items-center justify-center
+              rounded-xl transition-all duration-500
+              ${
+                isSelected
+                  ? "bg-primary-500 text-white"
+                  : "bg-primary-500/15 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400"
+              }`}
+            >
+              {icon}
+            </div>
 
-        <div class="space-y-4">
-          {/* Option title and description */}
-          <div>
-            <h3 class="mb-2 text-xl font-semibold text-text dark:text-text-dark-default">
-              {title}
-            </h3>
-            <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
-              {description}
-            </p>
-          </div>
-
-          {/* Option features list with checkmarks */}
-          <div class="space-y-3">
-            {features.map((feature) => (
-              <div
-                key={feature}
-                class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
-              >
-                <svg
-                  class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span class="text-sm">{feature}</span>
+            <div class="space-y-4">
+              {/* Option title and description */}
+              <div>
+                <h3 class="mb-2 text-xl font-semibold text-text dark:text-text-dark-default">
+                  {title}
+                </h3>
+                <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
+                  {description}
+                </p>
               </div>
-            ))}
+
+              {/* Option features list with checkmarks */}
+              <div class="space-y-3">
+                {features.map((feature) => (
+                  <div
+                    key={feature}
+                    class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
+                  >
+                    <svg
+                      class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span class="text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Network topology visualization - graph container with its own hover effect */}
-          <div
-            class={`${value === true ? "pt-6" : "pt-2"} graph-container overflow-visible`}
-          >
-            {graph}
+          {/* Right side - Graph */}
+          <div class="flex-1 mt-6 md:mt-0">
+            <div class="graph-container overflow-visible">
+              {graph}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Vertical layout for regular options */
+        <div class="space-y-6 p-6">
+          {/* Option icon container with conditional styling */}
+          <div
+            class={`option-icon flex h-16 w-16 items-center justify-center
+            rounded-xl transition-all duration-500
+            ${
+              isSelected
+                ? "bg-primary-500 text-white"
+                : "bg-primary-500/15 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400"
+            }`}
+          >
+            {icon}
+          </div>
+
+          <div class="space-y-4">
+            {/* Option title and description */}
+            <div>
+              <h3 class="mb-2 text-xl font-semibold text-text dark:text-text-dark-default">
+                {title}
+              </h3>
+              <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
+                {description}
+              </p>
+            </div>
+
+            {/* Option features list with checkmarks */}
+            <div class="space-y-3">
+              {features.map((feature) => (
+                <div
+                  key={feature}
+                  class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
+                >
+                  <svg
+                    class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span class="text-sm">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Network topology visualization - graph container with its own hover effect */}
+            <div
+              class={`pt-6 graph-container overflow-visible`}
+            >
+              {graph}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hover effect gradient overlay */}
       <div

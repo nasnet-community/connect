@@ -2,22 +2,32 @@ import { $, component$, useContext } from "@builder.io/qwik";
 import { StarContext } from "../../../StarContext/StarContext";
 import { useWANInterface } from "./useWANInterface";
 import { Header } from "./Header";
+import { InterfaceTypeSelector } from "./InterfaceTypeSelector";
 import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessSettings } from "./WirelessSettings";
+import { LTESettings } from "./LTESettings";
 import type { WANInterfaceProps } from "./types";
 
-export const WANInterface = component$<WANInterfaceProps>(
+export const WANInterfaceEasy = component$<WANInterfaceProps>(
   ({ mode, isComplete, onComplete$ }) => {
     const starContext = useContext(StarContext);
     const {
+      selectedInterfaceType,
       selectedInterface,
       ssid,
       password,
+      apn,
+      lteUsername,
+      ltePassword,
       isValid,
       validateForm,
+      handleInterfaceTypeSelect,
       handleInterfaceSelect,
       handleSSIDChange,
       handlePasswordChange,
+      handleAPNChange,
+      handleLTEUsernameChange,
+      handleLTEPasswordChange,
     } = useWANInterface(mode);
 
     const masterRouter = starContext.state.Choose.RouterModels.find(
@@ -25,13 +35,18 @@ export const WANInterface = component$<WANInterfaceProps>(
     );
 
     const availableInterfaces = masterRouter
-      ? [
-          ...(masterRouter.Interfaces.ethernet || []),
-          ...(masterRouter.Interfaces.wireless || []),
-          ...(masterRouter.Interfaces.sfp || []),
-          ...(masterRouter.Interfaces.lte || []),
-        ]
-      : [];
+      ? {
+          ethernet: masterRouter.Interfaces.ethernet || [],
+          wireless: masterRouter.Interfaces.wireless || [],
+          sfp: masterRouter.Interfaces.sfp || [],
+          lte: masterRouter.Interfaces.lte || [],
+        }
+      : {
+          ethernet: [],
+          wireless: [],
+          sfp: [],
+          lte: [],
+        };
 
     const isInterfaceSelectedInOtherMode = $((iface: string) => {
       const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
@@ -50,20 +65,39 @@ export const WANInterface = component$<WANInterfaceProps>(
           <div class="space-y-6">
             <Header mode={mode} />
 
-            <InterfaceSelector
-              selectedInterface={selectedInterface.value}
-              availableInterfaces={availableInterfaces}
-              onSelect={handleInterfaceSelect}
-              isInterfaceSelectedInOtherMode={isInterfaceSelectedInOtherMode}
-              mode={mode}
+            <InterfaceTypeSelector
+              selectedType={selectedInterfaceType.value}
+              onSelect$={handleInterfaceTypeSelect}
             />
 
-            {selectedInterface.value.startsWith("wifi") && (
+            {selectedInterfaceType.value && (
+              <InterfaceSelector
+                selectedInterface={selectedInterface.value}
+                selectedInterfaceType={selectedInterfaceType.value}
+                availableInterfaces={availableInterfaces}
+                onSelect={handleInterfaceSelect}
+                isInterfaceSelectedInOtherMode={isInterfaceSelectedInOtherMode}
+                mode={mode}
+              />
+            )}
+
+            {selectedInterfaceType.value === "Wireless" && (
               <WirelessSettings
                 ssid={ssid.value}
                 password={password.value}
                 onSSIDChange={handleSSIDChange}
                 onPasswordChange={handlePasswordChange}
+              />
+            )}
+
+            {selectedInterfaceType.value === "LTE" && (
+              <LTESettings
+                apn={apn.value}
+                username={lteUsername.value}
+                password={ltePassword.value}
+                onAPNChange$={handleAPNChange}
+                onUsernameChange$={handleLTEUsernameChange}
+                onPasswordChange$={handleLTEPasswordChange}
               />
             )}
 

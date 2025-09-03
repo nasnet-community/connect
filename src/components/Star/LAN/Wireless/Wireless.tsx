@@ -54,7 +54,7 @@ export const Wireless = component$<StepProps>(
           },
         });
       } else {
-        const isDomesticLinkEnabled = starContext.state.Choose.DomesticLink;
+        const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
         const enabledNetworks: Record<
           string,
           {
@@ -142,7 +142,9 @@ export const Wireless = component$<StepProps>(
           {/* Only show wireless configuration when enabled */}
           {wirelessEnabled.value && (
             <>
-              <SSIDModeSelector isMultiSSID={isMultiSSID} />
+              {starContext.state.Choose.Mode === "advance" && (
+                <SSIDModeSelector isMultiSSID={isMultiSSID} />
+              )}
 
               {!isMultiSSID.value ? (
                 <SingleSSIDForm

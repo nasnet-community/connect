@@ -1,49 +1,50 @@
-import type { ARPState } from "../CommonType";
+// Removed unused ARPState import
 
 export type TunnelType = "ipip" | "eoip" | "gre" | "vxlan";
 
 export interface BaseTunnelConfig {
   name: string;
   type: TunnelType;
-  localAddress: string;
   remoteAddress: string;
-  mtu?: number;
   disabled?: boolean;
   comment?: string;
 }
 
 export interface IpipTunnelConfig extends BaseTunnelConfig {
   ipsecSecret?: string;
-  keepalive?: string;
-  clampTcpMss?: boolean;
-  dscp?: number | "inherit";
   dontFragment?: "inherit" | "no";
   allowFastPath?: boolean;
+  localAddress?: string;
+  mtu?: number;
+  dscp?: number;
+  keepalive?: string;
+  clampTcpMss?: boolean;
 }
 
 export interface EoipTunnelConfig extends BaseTunnelConfig {
   tunnelId: number;
-  macAddress?: string;
   ipsecSecret?: string;
-  keepalive?: string;
-  arp?: ARPState;
-  arpTimeout?: number;
-  clampTcpMss?: boolean;
   allowFastPath?: boolean;
   dontFragment?: "inherit" | "no";
-  dscp?: number | "inherit";
   loopProtect?: "default" | "off" | "on";
   loopProtectDisableTime?: number;
   loopProtectSendInterval?: number;
+  localAddress?: string;
+  mtu?: number;
+  arp?: string;
+  macAddress?: string;
+  keepalive?: string;
+  clampTcpMss?: boolean;
 }
 
 export interface GreTunnelConfig extends BaseTunnelConfig {
   ipsecSecret?: string;
-  keepalive?: string;
   allowFastPath?: boolean;
-  clampTcpMss?: boolean;
-  dscp?: number | "inherit";
   dontFragment?: "inherit" | "no";
+  localAddress?: string;
+  mtu?: number;
+  dscp?: number;
+  keepalive?: string;
 }
 
 export interface VTeps {
@@ -60,26 +61,24 @@ export interface FDB {
 export interface VxlanInterfaceConfig extends BaseTunnelConfig {
   vni: number;
   port?: number;
-  interface?: string;
   bumMode: "unicast" | "multicast";
   group?: string;
   multicastInterface?: string;
   hw?: boolean;
   learning?: boolean;
   allowFastPath?: boolean;
-  arp?: ARPState;
-  arpTimeout?: number;
   bridge?: string;
   bridgePVID?: number;
   checkSum?: boolean;
   dontFragment?: "auto" | "disabled" | "enabled" | "inherit";
-  macAddress?: string;
   maxFdbSize?: number;
   ttl?: "auto" | number;
   vrf?: string;
   vtepsIpVersion?: "ipv4" | "ipv6";
   vteps?: VTeps[];
   fdb?: FDB[];
+  localAddress?: string;
+  mtu?: number;
 }
 
 export interface Tunnel {

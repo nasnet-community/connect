@@ -72,15 +72,6 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               ]}>
                 {vpn.type}
               </span>
-              {vpn.enabled ? (
-                <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                  {$localize`Enabled`}
-                </span>
-              ) : (
-                <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                  {$localize`Disabled`}
-                </span>
-              )}
             </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
               {$localize`Priority`}: {vpn.priority} • {vpn.assignedWANLink ? $localize`Assigned to WAN Link` : $localize`No WAN Link assigned`}

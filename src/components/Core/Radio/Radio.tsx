@@ -148,23 +148,6 @@ export const Radio = component$<RadioProps>(
       return classes.join(" ");
     });
 
-    // Generate variant-specific styling with enhanced semantic colors
-    const variantClasses = useComputed$(() => {
-      const baseClasses =
-        "flex items-center justify-center rounded-full border-2";
-
-      switch (variant) {
-        case "outlined":
-          return `${baseClasses} bg-transparent`;
-        case "filled":
-          return `${baseClasses} ${colorClasses.value.background}`;
-        case "minimal":
-          return `${baseClasses} border-0 bg-transparent`;
-        default:
-          return `${baseClasses} ${colorClasses.value.background}`;
-      }
-    });
-
     // Generate theme-aware color classes with enhanced semantic tokens
     const colorClasses = useComputed$(() => {
       if (disabled) {
@@ -207,6 +190,23 @@ export const Radio = component$<RadioProps>(
             label: "text-gray-700 dark:text-gray-300",
             background: "bg-surface-light-default dark:bg-surface-dark-default hover:bg-surface-light-secondary dark:hover:bg-surface-dark-secondary",
           };
+    });
+
+    // Generate variant-specific styling with enhanced semantic colors
+    const variantClasses = useComputed$(() => {
+      const baseClasses =
+        "flex items-center justify-center rounded-full border-2";
+
+      switch (variant) {
+        case "outlined":
+          return `${baseClasses} bg-transparent`;
+        case "filled":
+          return `${baseClasses} ${colorClasses.value.background}`;
+        case "minimal":
+          return `${baseClasses} border-0 bg-transparent`;
+        default:
+          return `${baseClasses} ${colorClasses.value.background}`;
+      }
     });
 
     // Generate animation classes with enhanced tailwind config animations

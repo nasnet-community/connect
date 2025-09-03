@@ -67,6 +67,7 @@ export interface WANConfig {
   name?: string;
   InterfaceName: Ethernet | Wireless | Sfp | LTE;
   WirelessCredentials?: WirelessCredentials;
+  lteSettings?: LTESettings;
 }
 
 export interface WANLink {

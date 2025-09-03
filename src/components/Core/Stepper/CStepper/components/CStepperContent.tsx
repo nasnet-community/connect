@@ -10,6 +10,7 @@ export interface CStepperContentProps {
   totalSteps: number;
   stepHeaderText: string;
   handleStepError: QRL<(error: Error) => void>;
+  hideStepHeader?: boolean;
 }
 
 export const CStepperContent = component$((props: CStepperContentProps) => {
@@ -18,7 +19,8 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
     isLoading, 
     activeStep, 
     stepHeaderText,
-    handleStepError
+    handleStepError,
+    hideStepHeader = false
   } = props;
   
   const currentStepHasErrors = currentStep.validationErrors && 
@@ -57,18 +59,22 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
       id={`cstepper-step-${activeStep}`}
       aria-labelledby={`step-tab-${activeStep}`}
     >
-      <h2 
-        class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
-        id={`step-heading-${activeStep}`}
-      >
-        {stepHeaderText}
-      </h2>
-      <p 
-        class="mb-6 text-gray-600 dark:text-gray-400"
-        id={`step-description-${activeStep}`}
-      >
-        {currentStep.description}
-      </p>
+      {!hideStepHeader && (
+        <>
+          <h2 
+            class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
+            id={`step-heading-${activeStep}`}
+          >
+            {stepHeaderText}
+          </h2>
+          <p 
+            class="mb-6 text-gray-600 dark:text-gray-400"
+            id={`step-description-${activeStep}`}
+          >
+            {currentStep.description}
+          </p>
+        </>
+      )}
       
       {/* Display validation errors if any */}
       {currentStepHasErrors && currentStep.validationErrors && (

@@ -54,12 +54,6 @@ export const TunnelList = component$<TunnelListProps>(
                       scope="col"
                       class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
                     >
-                      {$localize`Local Address`}
-                    </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-                    >
                       {$localize`Remote Address`}
                     </th>
                     <th
@@ -81,9 +75,6 @@ export const TunnelList = component$<TunnelListProps>(
                       </td>
                       <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {tunnel.name}
-                      </td>
-                      <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {tunnel.localAddress}
                       </td>
                       <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {tunnel.remoteAddress}

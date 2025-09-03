@@ -1,8 +1,7 @@
 import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
-import { Card, Alert } from "~/components/Core";
-import type { VPNClientAdvancedState, MultiVPNStrategy } from "../types/VPNClientAdvancedTypes";
+import { Card } from "~/components/Core";
+import type { VPNClientAdvancedState } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
-import { StrategySelector } from "../components/StrategySelector";
 
 export interface Step3StrategyReviewProps {
   wizardState: VPNClientAdvancedState;
@@ -18,7 +17,6 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
   const draggedIndex = useSignal<number | null>(null);
   const dragOverIndex = useSignal<number | null>(null);
   const isDragging = useSignal(false);
-  const selectedStrategy = useSignal<MultiVPNStrategy>("Failover");
   const editingVPN = useSignal<string | null>(null);
   const editedName = useSignal<string>("");
 
@@ -27,19 +25,6 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
     (a, b) => (a.priority || 0) - (b.priority || 0)
   );
 
-  // Check if there are validation errors
-  const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
-  const allVPNsConfigured = wizardState.vpnConfigs.every(vpn => vpn.name && vpn.type && vpn.config);
-
-  const handleStrategyChange = $((strategy: MultiVPNStrategy) => {
-    selectedStrategy.value = strategy;
-    // Update the wizard state if needed
-    wizardActions.setMultiVPNStrategy$({
-      strategy,
-      failoverCheckInterval: 30,
-      failoverTimeout: 10
-    });
-  });
 
   // Drag and drop handlers
   const handleDragStart = $((index: number) => {
@@ -69,10 +54,14 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
     const [draggedVPN] = newVPNs.splice(draggedIndex.value, 1);
     newVPNs.splice(dropIndex, 0, draggedVPN);
 
-    // Update priorities based on new order
-    for (let i = 0; i < newVPNs.length; i++) {
-      await wizardActions.updateVPN$(newVPNs[i].id, { priority: i + 1 });
-    }
+    // Prepare batch updates for priority
+    const updates = newVPNs.map((vpn, index) => ({
+      id: vpn.id,
+      updates: { priority: index + 1 }
+    }));
+
+    // Update all priorities at once
+    await wizardActions.batchUpdateVPNs$(updates);
 
     draggedIndex.value = null;
     dragOverIndex.value = null;
@@ -92,9 +81,14 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
       newVPNs[index],
     ];
 
-    for (let i = 0; i < newVPNs.length; i++) {
-      await wizardActions.updateVPN$(newVPNs[i].id, { priority: i + 1 });
-    }
+    // Prepare batch updates
+    const updates = newVPNs.map((vpn, idx) => ({
+      id: vpn.id,
+      updates: { priority: idx + 1 }
+    }));
+
+    // Update all priorities at once
+    await wizardActions.batchUpdateVPNs$(updates);
 
     if (onRefreshCompletion$) {
       await onRefreshCompletion$();
@@ -110,9 +104,14 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
       newVPNs[index],
     ];
 
-    for (let i = 0; i < newVPNs.length; i++) {
-      await wizardActions.updateVPN$(newVPNs[i].id, { priority: i + 1 });
-    }
+    // Prepare batch updates
+    const updates = newVPNs.map((vpn, idx) => ({
+      id: vpn.id,
+      updates: { priority: idx + 1 }
+    }));
+
+    // Update all priorities at once
+    await wizardActions.batchUpdateVPNs$(updates);
 
     if (onRefreshCompletion$) {
       await onRefreshCompletion$();
@@ -202,105 +201,17 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
     return details;
   };
 
-  if (wizardState.vpnConfigs.length === 0) {
-    return (
-      <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-          {$localize`No VPN clients to review`}
-        </h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {$localize`Please complete Steps 1 and 2 before reviewing your configuration.`}
-        </p>
-      </div>
-    );
-  }
 
-  return (
-    <div class="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-          {$localize`Strategy & Review`}
-        </h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {$localize`Configure multi-VPN strategy and review your configuration`}
-        </p>
-      </div>
-
-      {/* Validation Status */}
-      {hasValidationErrors ? (
-        <Alert status="error">
-          <div class="flex">
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                {$localize`Configuration Issues Found`}
-              </h3>
-              <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                <p>{$localize`Please fix validation errors in previous steps before applying configuration.`}</p>
-              </div>
-            </div>
-          </div>
-        </Alert>
-      ) : allVPNsConfigured ? (
-        <Alert status="success">
-          <div class="flex">
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
-                {$localize`Configuration Ready`}
-              </h3>
-              <div class="mt-2 text-sm text-green-700 dark:text-green-300">
-                <p>{$localize`All VPN configurations are valid and ready to deploy.`}</p>
-              </div>
-            </div>
-          </div>
-        </Alert>
-      ) : (
-        <Alert status="warning">
-          <div class="flex">
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                {$localize`Incomplete Configuration`}
-              </h3>
-              <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                <p>{$localize`Some VPNs are not fully configured. Complete Step 2 to configure all connections.`}</p>
-              </div>
-            </div>
-          </div>
-        </Alert>
-      )}
-
-      {/* Strategy Selection */}
-      {wizardState.vpnConfigs.length > 1 && (
-        <Card>
-          <div class="p-6">
-            <StrategySelector
-              selectedStrategy={selectedStrategy.value}
-              onStrategyChange$={handleStrategyChange}
-              vpnCount={wizardState.vpnConfigs.length}
-            />
-          </div>
-        </Card>
-      )}
-
-      {/* Priority Management */}
-      {wizardState.vpnConfigs.length > 0 && (
-        <Card>
+  return wizardState.vpnConfigs.length > 0 ? (
+    <Card>
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
             <div>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {$localize`VPN Priority Order`}
+                {$localize`VPN Clients Detail`}
               </h3>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {selectedStrategy.value === "Failover" 
-                  ? $localize`VPNs will be used in this order when others fail`
-                  : selectedStrategy.value === "RoundRobin"
-                  ? $localize`Traffic will be distributed across VPNs based on weights`
-                  : $localize`Manual priority control - higher priority VPNs will be preferred`
-                }
+                {$localize`Manage your VPN client configurations and their priority order`}
               </p>
             </div>
           </div>
@@ -433,79 +344,18 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(({
             ))}
           </div>
         </div>
-        </Card>
-      )}
-
-      {/* Final Review Summary */}
-      <Card>
-        <div class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {$localize`Configuration Summary`}
-          </h3>
-          
-          <div class="grid gap-6 md:grid-cols-2">
-            {/* VPN Count */}
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-              <div class="flex items-center">
-                <svg class="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-blue-600 dark:text-blue-400">VPN Clients</p>
-                  <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{wizardState.vpnConfigs.length}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Strategy */}
-            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-              <div class="flex items-center">
-                <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-green-600 dark:text-green-400">Strategy</p>
-                  <p class="text-lg font-semibold text-green-900 dark:text-green-100">{selectedStrategy.value}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Ready to Deploy */}
-          {allVPNsConfigured && !hasValidationErrors && (
-            <div class="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div class="flex items-center">
-                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div class="ml-3">
-                  <h4 class="text-sm font-medium text-green-800 dark:text-green-200">
-                    {$localize`Ready to Deploy`}
-                  </h4>
-                  <p class="text-sm text-green-700 dark:text-green-300">
-                    {$localize`Your VPN configuration is complete and ready to be applied to your router.`}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Tips */}
-      <Card class="bg-gray-50 dark:bg-gray-800/50">
-        <div class="p-4">
-          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            {$localize`💡 Final Steps`}
-          </h4>
-          <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-            <li>• {$localize`Review the priority order - higher priority VPNs will be tried first`}</li>
-            <li>• {$localize`Ensure all VPN connections have been tested`}</li>
-            <li>• {$localize`Click "Save & Complete" when ready to apply the configuration`}</li>
-            <li>• {$localize`You can export the configuration for backup before applying`}</li>
-          </ul>
-        </div>
-      </Card>
+    </Card>
+  ) : (
+    <div class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+        {$localize`No VPN clients to review`}
+      </h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {$localize`Please complete Steps 1 and 2 before reviewing your configuration.`}
+      </p>
     </div>
   );
 });

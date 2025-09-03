@@ -5,8 +5,11 @@ import { StarContext } from "../../StarContext/StarContext";
 export type UsefulServicesMode = "easy" | "advanced";
 
 export interface CertificateData {
+  enableSelfSigned: boolean;
+  enableLetsEncrypt: boolean;
+  enableWWWSSL: boolean;
+  enableAPISSL: boolean;
   name: string;
-  type: "self-signed" | "lets-encrypt" | "custom";
   keySize: "2048" | "4096";
   countryCode: string;
   organization: string;
@@ -14,57 +17,40 @@ export interface CertificateData {
 }
 
 export interface NTPData {
-  enableClient: boolean;
-  primaryServer: string;
-  secondaryServer: string;
-  enableServer: boolean;
-  allowedNetworks: string;
+  servers: string[];
   timeZone: string;
   updateInterval: "1h" | "6h" | "12h" | "24h";
 }
 
 export interface GraphingData {
-  enabled: boolean;
-  dataRetentionDays: number;
-  updateInterval: "5m" | "15m" | "30m" | "1h";
-  monitoredInterfaces: {
-    wan1: boolean;
-    wan2: boolean;
-    lan: boolean;
-    wireless: boolean;
-  };
-  enableCPU: boolean;
-  enableMemory: boolean;
-  enableDisk: boolean;
-  enableNetworkTraffic: boolean;
-  graphResolution: "high" | "medium" | "low";
-  storageLocation: "internal" | "external";
+  enableInterface: boolean;
+  enableQueue: boolean;
+  enableResources: boolean;
 }
 
-export interface CloudDDNSData {
-  enableDDNS: boolean;
+export interface DDNSEntry {
+  id: string;
   provider: "no-ip" | "dyndns" | "duckdns" | "cloudflare" | "custom";
   hostname: string;
   username: string;
   password: string;
   updateInterval: "5m" | "10m" | "30m" | "1h";
-  enableSSL: boolean;
-  customServerURL: string;
-  enableCloudBackup: boolean;
-  backupInterval: "daily" | "weekly" | "monthly";
+  customServerURL?: string;
 }
 
-export interface LetsEncryptData {
+export interface CloudDDNSData {
+  enableDDNS: boolean;
+  ddnsEntries: DDNSEntry[];
+}
+
+export interface UPNPData {
   enabled: boolean;
-  domainName: string;
-  emailAddress: string;
-  certificateType: "single" | "wildcard" | "multi";
-  autoRenewal: boolean;
-  renewalDaysBeforeExpiry: number;
-  challengeType: "http-01" | "dns-01";
-  webServerPort: number;
-  enableHTTPSRedirect: boolean;
-  certificateStoragePath: string;
+  linkType: "domestic" | "foreign" | "vpn";
+}
+
+export interface NATPMPData {
+  enabled: boolean;
+  linkType: "domestic" | "foreign" | "vpn";
 }
 
 export interface AdvancedServicesData {
@@ -72,7 +58,8 @@ export interface AdvancedServicesData {
   ntp: NTPData;
   graphing: GraphingData;
   cloudDDNS: CloudDDNSData;
-  letsEncrypt: LetsEncryptData;
+  upnp: UPNPData;
+  natpmp: NATPMPData;
 }
 
 export interface UseUsefulServicesReturn {
@@ -83,7 +70,6 @@ export interface UseUsefulServicesReturn {
     ntp: boolean;
     graphing: boolean;
     DDNS: boolean;
-    letsEncrypt: boolean;
   }) => void;
   saveAdvancedMode: () => void;
   isAdvancedModeComplete: Signal<boolean>;
@@ -95,62 +81,37 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
   // Initialize advanced data with defaults
   const advancedData = useSignal<AdvancedServicesData>({
     certificate: {
+      enableSelfSigned: false,
+      enableLetsEncrypt: false,
+      enableWWWSSL: false,
+      enableAPISSL: false,
       name: "",
-      type: "self-signed",
       keySize: "2048",
       countryCode: "",
       organization: "",
       commonName: "",
     },
     ntp: {
-      enableClient: false,
-      primaryServer: "pool.ntp.org",
-      secondaryServer: "time.google.com",
-      enableServer: false,
-      allowedNetworks: "",
+      servers: ["pool.ntp.org"],
       timeZone: "UTC",
       updateInterval: "1h",
     },
     graphing: {
-      enabled: false,
-      dataRetentionDays: 30,
-      updateInterval: "15m",
-      monitoredInterfaces: {
-        wan1: false,
-        wan2: false,
-        lan: false,
-        wireless: false,
-      },
-      enableCPU: false,
-      enableMemory: false,
-      enableDisk: false,
-      enableNetworkTraffic: false,
-      graphResolution: "medium",
-      storageLocation: "internal",
+      enableInterface: false,
+      enableQueue: false,
+      enableResources: false,
     },
     cloudDDNS: {
       enableDDNS: false,
-      provider: "no-ip",
-      hostname: "",
-      username: "",
-      password: "",
-      updateInterval: "30m",
-      enableSSL: true,
-      customServerURL: "",
-      enableCloudBackup: false,
-      backupInterval: "weekly",
+      ddnsEntries: [],
     },
-    letsEncrypt: {
+    upnp: {
       enabled: false,
-      domainName: "",
-      emailAddress: "",
-      certificateType: "single",
-      autoRenewal: true,
-      renewalDaysBeforeExpiry: 30,
-      challengeType: "http-01",
-      webServerPort: 80,
-      enableHTTPSRedirect: true,
-      certificateStoragePath: "/certificates/",
+      linkType: "domestic",
+    },
+    natpmp: {
+      enabled: false,
+      linkType: "domestic",
     },
   });
 
@@ -166,12 +127,12 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
     // Update completion status based on configured services
     const services = advancedData.value;
     const hasEnabledService =
-      services.certificate.name.length > 0 ||
-      services.ntp.enableClient ||
-      services.ntp.enableServer ||
-      services.graphing.enabled ||
+      (services.certificate.enableSelfSigned || services.certificate.enableLetsEncrypt) ||
+      services.ntp.servers.length > 0 ||
+      (services.graphing.enableInterface || services.graphing.enableQueue || services.graphing.enableResources) ||
       services.cloudDDNS.enableDDNS ||
-      services.letsEncrypt.enabled;
+      services.upnp.enabled ||
+      services.natpmp.enabled;
 
     isAdvancedModeComplete.value = hasEnabledService;
   });
@@ -182,7 +143,6 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
       ntp: boolean;
       graphing: boolean;
       DDNS: boolean;
-      letsEncrypt: boolean;
     }) => {
       // Map easy mode selections to global state
       ctx.updateExtraConfig$({
@@ -190,7 +150,6 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
         isNTP: services.ntp,
         isGraphing: services.graphing,
         isDDNS: services.DDNS,
-        isLetsEncrypt: services.letsEncrypt,
       });
     },
   );
@@ -200,11 +159,10 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
 
     // Convert advanced configuration to boolean flags for the global state
     ctx.updateExtraConfig$({
-      isCertificate: services.certificate.name.length > 0,
-      isNTP: services.ntp.enableClient || services.ntp.enableServer,
-      isGraphing: services.graphing.enabled,
+      isCertificate: services.certificate.enableSelfSigned || services.certificate.enableLetsEncrypt,
+      isNTP: services.ntp.servers.length > 0,
+      isGraphing: services.graphing.enableInterface || services.graphing.enableQueue || services.graphing.enableResources,
       isDDNS: services.cloudDDNS.enableDDNS,
-      isLetsEncrypt: services.letsEncrypt.enabled,
 
       // Note: Store the detailed advanced configuration if needed
       // servicesAdvancedConfig can be added to ExtraConfigState if needed

@@ -8,6 +8,8 @@ import { CStepperContent } from "./components/CStepperContent";
 import { CStepperProgress } from "./components/CStepperProgress";
 import { CStepperNavigation } from "./components/CStepperNavigation";
 import { CStepperManagement } from "./components/CStepperManagement";
+import { StepperHelpModal } from "../shared/components/StepperHelpModal";
+import { useStepperHelp } from "../shared/hooks/useStepperHelp";
 
 /**
  * Content-focused stepper component with top navigation
@@ -32,6 +34,13 @@ export const CStepper = component$((props: CStepperProps) => {
     swapSteps$
   } = useCStepper(props);
 
+  // Initialize help system (always call hook, but use enableHelp flag)
+  const helpSystem = useStepperHelp(
+    steps,
+    activeStep,
+    props.helpOptions
+  );
+
   // Use the useProvideStepperContext hook to create and provide the context
   useProvideStepperContext({
     contextId: props.contextId || CStepperContextId,
@@ -42,7 +51,6 @@ export const CStepper = component$((props: CStepperProps) => {
     handlePrev$,
     data: props.contextValue || {},
     onStepComplete$: props.onStepComplete$,
-    persistState: props.persistState,
     addStep$,
     removeStep$,
     swapSteps$,
@@ -107,6 +115,9 @@ export const CStepper = component$((props: CStepperProps) => {
   const currentStepHasErrors = Boolean(currentStep.validationErrors && currentStep.validationErrors.length > 0);
   const isOptional = Boolean(currentStep.isOptional);
   const isStepSkippable = Boolean(currentStep.skippable);
+  
+  // Help system properties
+  const hasHelp = helpSystem?.currentStepHasHelp.value || false;
 
   return (
     <div class="w-full" role="application" aria-label="Multi-step form">
@@ -141,6 +152,7 @@ export const CStepper = component$((props: CStepperProps) => {
           totalSteps={totalSteps}
           stepHeaderText={stepHeaderText}
           handleStepError={handleStepError}
+          hideStepHeader={props.hideStepHeader}
         />
         
         {/* Navigation Buttons */}
@@ -156,6 +168,12 @@ export const CStepper = component$((props: CStepperProps) => {
           onPrevious$={handlePrev$}
           onNext$={handleNext$}
           onComplete$={props.onComplete$ || $(() => {})}
+          
+          // Help system props
+          hasHelp={hasHelp}
+          onShowHelp$={helpSystem?.openHelp$}
+          helpButtonLabel={`Get help for ${stepTitle}`}
+          isHelpOpen={helpSystem?.isHelpOpen.value || false}
         />
         
         {/* Accessible progress indicator */}
@@ -165,6 +183,18 @@ export const CStepper = component$((props: CStepperProps) => {
           {currentStepHasErrors ? $localize`Step has validation errors` : ''}
         </div>
       </div>
+
+      {/* Help Modal */}
+      {props.enableHelp && helpSystem && (
+        <StepperHelpModal
+          isOpen={helpSystem.isHelpOpen}
+          onClose$={helpSystem.closeHelp$}
+          currentStep={currentStep}
+          stepTitle={stepTitle}
+          stepNumber={stepNumber}
+          totalSteps={totalSteps}
+        />
+      )}
     </div>
   );
 }); 

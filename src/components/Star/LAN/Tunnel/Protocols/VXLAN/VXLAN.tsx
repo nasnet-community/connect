@@ -178,25 +178,6 @@ export const VXLANProtocol = component$(() => {
                     />
                   </div>
 
-                  {/* Interface */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Interface`}
-                    </label>
-                    <input
-                      type="text"
-                      value={tunnel.interface || ""}
-                      onChange$={(e) =>
-                        updateTunnelField$(
-                          index,
-                          "interface",
-                          (e.target as HTMLInputElement).value,
-                        )
-                      }
-                      class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter interface (optional)`}
-                    />
-                  </div>
                 </div>
               </div>
             ))}

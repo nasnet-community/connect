@@ -4,31 +4,21 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { TimePicker } from "~/components/Core/TimePicker/Timepicker";
-import { Select, type SelectOption } from "~/components/Core/Select";
+import { FrequencySelector, type FrequencyValue } from "~/components/Core";
 import type { Signal } from "@builder.io/qwik";
 import type { TimeConfig } from "./type";
 
 interface UpdateCardProps {
   autoUpdateEnabled: Signal<boolean>;
   updateTime: TimeConfig;
-  updateInterval: Signal<string | undefined>;
+  updateInterval: Signal<FrequencyValue | undefined>;
 }
 
-const UPDATE_INTERVAL_OPTIONS: SelectOption[] = [
-  { value: "Daily", label: "Daily" },
-  { value: "Weekly", label: "Weekly" },
-  { value: "Monthly", label: "Monthly" },
-];
 
 export const UpdateCard = component$<UpdateCardProps>(
   ({ autoUpdateEnabled, updateTime, updateInterval }) => {
-    const handleIntervalChange = $((value: string | string[]) => {
-      // Always ensure we have a valid value - default to Daily if empty
-      // If it's an array, take the first value or use "Daily"
-      const newValue = Array.isArray(value)
-        ? value[0] || "Daily"
-        : value || "Daily";
-      updateInterval.value = newValue;
+    const handleIntervalChange = $((value: FrequencyValue) => {
+      updateInterval.value = value;
     });
 
     return (
@@ -80,17 +70,12 @@ export const UpdateCard = component$<UpdateCardProps>(
               }}
             />
 
-            <div class="relative z-30 pb-16">
-              <Select
-                options={UPDATE_INTERVAL_OPTIONS}
-                value={updateInterval.value || ""}
-                onChange$={handleIntervalChange}
-                placeholder={$localize`Select interval`}
-                clearable={false}
-                label={$localize`Update frequency`}
-                maxHeight="250px"
-              />
-            </div>
+            <FrequencySelector
+              value={updateInterval.value || "Weekly"}
+              onChange$={handleIntervalChange}
+              label={$localize`Update frequency`}
+              recommendedOption="Weekly"
+            />
           </div>
         )}
       </div>

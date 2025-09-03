@@ -135,26 +135,6 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
           ))}
         </div>
 
-        {/* Protocol Info */}
-        {selectedProtocol && (
-          <div class="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-            <div class="flex">
-              <svg class="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-              </svg>
-              <div class="ml-3">
-                <p class="text-sm text-blue-800 dark:text-blue-200">
-                  {selectedProtocol === "Wireguard" && $localize`WireGuard is the recommended choice for new VPN setups. It's fast, secure, and has low overhead.`}
-                  {selectedProtocol === "OpenVPN" && $localize`OpenVPN is highly configurable and works well in restrictive network environments.`}
-                  {selectedProtocol === "L2TP" && $localize`L2TP/IPSec is widely supported and works on most devices without additional software.`}
-                  {selectedProtocol === "PPTP" && $localize`PPTP is fast but less secure. Use only when other protocols are not available.`}
-                  {selectedProtocol === "SSTP" && $localize`SSTP works well in environments where other VPN protocols are blocked.`}
-                  {selectedProtocol === "IKeV2" && $localize`IKEv2/IPSec is excellent for mobile devices with automatic reconnection capabilities.`}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }

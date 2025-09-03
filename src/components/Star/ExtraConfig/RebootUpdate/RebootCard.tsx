@@ -1,19 +1,25 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import {
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { TimePicker } from "~/components/Core/TimePicker/Timepicker";
+import { FrequencySelector, type FrequencyValue } from "~/components/Core";
 import type { Signal } from "@builder.io/qwik";
 import type { TimeConfig } from "./type";
 
 interface RebootCardProps {
   autoRebootEnabled: Signal<boolean>;
   rebootTime: TimeConfig;
+  rebootInterval: Signal<FrequencyValue | undefined>;
 }
 
+
 export const RebootCard = component$<RebootCardProps>(
-  ({ autoRebootEnabled, rebootTime }) => {
+  ({ autoRebootEnabled, rebootTime, rebootInterval }) => {
+    const handleIntervalChange = $((value: FrequencyValue) => {
+      rebootInterval.value = value;
+    });
     return (
       <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl p-5">
         <div class="mb-4 flex items-center justify-between">
@@ -53,14 +59,23 @@ export const RebootCard = component$<RebootCardProps>(
           </div>
         </div>
         {autoRebootEnabled.value && (
-          <TimePicker
-            time={rebootTime}
-            onChange$={(type, value) => {
-              if (type === 'hour' || type === 'minute') {
-                rebootTime[type] = value;
-              }
-            }}
-          />
+          <div class="space-y-4">
+            <TimePicker
+              time={rebootTime}
+              onChange$={(type, value) => {
+                if (type === 'hour' || type === 'minute') {
+                  rebootTime[type] = value;
+                }
+              }}
+            />
+
+            <FrequencySelector
+              value={rebootInterval.value || "Daily"}
+              onChange$={handleIntervalChange}
+              label={$localize`Reboot frequency`}
+              recommendedOption="Daily"
+            />
+          </div>
         )}
       </div>
     );

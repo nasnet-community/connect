@@ -1,4 +1,4 @@
-import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
+import { component$, $, useSignal } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
 import { InterfaceSelector } from "../components/fields/InterfaceSelector";
 import { WirelessFields } from "../components/fields/WirelessFields";
@@ -10,11 +10,10 @@ import { Input } from "~/components/Core";
 export interface Step1Props {
   wizardState: WANWizardState;
   wizardActions: UseWANAdvancedReturn;
-  onRefreshCompletion$?: QRL<() => Promise<void>>;
 }
 
 export const Step1_LinkInterface = component$<Step1Props>(
-  ({ wizardState, wizardActions, onRefreshCompletion$ }) => {
+  ({ wizardState, wizardActions }) => {
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const viewMode = useSignal<"grid" | "list">("grid");
@@ -49,16 +48,9 @@ export const Step1_LinkInterface = component$<Step1Props>(
       expandedLinkId.value = expandedLinkId.value === linkId ? null : linkId;
     });
 
-    // Helper to refresh step completion after interface changes
-    // Batch updates to prevent multiple renders
+    // Helper to handle interface changes
     const handleInterfaceUpdate = $(async (linkId: string, updates: any) => {
       await wizardActions.updateLink$(linkId, updates);
-      // Defer refresh to prevent rapid updates
-      if (onRefreshCompletion$) {
-        setTimeout(() => {
-          onRefreshCompletion$();
-        }, 50);
-      }
     });
 
     // Get link statistics
@@ -272,7 +264,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                         }
                       });
                     })}
-                    class="inline-flex items-center gap-2 rounded-full bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-all hover:scale-105"
+                    class="inline-flex items-center gap-2 rounded-lg bg-primary-600 text-white px-4 py-2 text-sm font-medium hover:bg-primary-700 transition-colors"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

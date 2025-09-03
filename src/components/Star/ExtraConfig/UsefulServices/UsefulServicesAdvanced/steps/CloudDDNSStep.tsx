@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { Select } from "~/components/Core/Select";
+import { Select, Card, CardHeader, CardBody, Input, FormField, Toggle, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const CloudDDNSStep = component$(() => {
@@ -12,34 +12,26 @@ export const CloudDDNSStep = component$(() => {
 
   // Create local signals for form state
   const enableDDNS = useSignal(servicesData.cloudDDNS.enableDDNS || false);
-  const ddnsProvider = useSignal(servicesData.cloudDDNS.provider || "no-ip");
-  const hostname = useSignal(servicesData.cloudDDNS.hostname || "");
-  const username = useSignal(servicesData.cloudDDNS.username || "");
-  const password = useSignal(servicesData.cloudDDNS.password || "");
-  const updateInterval = useSignal(
-    servicesData.cloudDDNS.updateInterval || "30m",
-  );
-  const enableSSL = useSignal(servicesData.cloudDDNS.enableSSL !== false);
-  const customServerURL = useSignal(
-    servicesData.cloudDDNS.customServerURL || "",
-  );
-  const enableCloudBackup = useSignal(
-    servicesData.cloudDDNS.enableCloudBackup || false,
-  );
-  const backupInterval = useSignal(
-    servicesData.cloudDDNS.backupInterval || "weekly",
-  );
+  const ddnsEntries = useSignal(servicesData.cloudDDNS.ddnsEntries || []);
+
+  // New DDNS entry form state
+  const newEntryProvider = useSignal("no-ip");
+  const newEntryHostname = useSignal("");
+  const newEntryUsername = useSignal("");
+  const newEntryPassword = useSignal("");
+  const newEntryUpdateInterval = useSignal("30m");
+  const newEntryCustomURL = useSignal("");
 
   // DDNS Provider options
-  const ddnsProviderOptions = [
-    { value: "no-ip", label: $localize`No-IP` },
-    { value: "dyndns", label: $localize`DynDNS` },
-    { value: "duck-dns", label: $localize`Duck DNS` },
-    { value: "cloudflare", label: $localize`CloudFlare` },
-    { value: "custom", label: $localize`Custom` },
+  const providerOptions = [
+    { value: "no-ip", label: "No-IP" },
+    { value: "dyndns", label: "DynDNS" },
+    { value: "duckdns", label: "Duck DNS" },
+    { value: "cloudflare", label: "Cloudflare" },
+    { value: "custom", label: $localize`Custom Provider` },
   ];
 
-  // Update interval options
+  // Update interval options  
   const updateIntervalOptions = [
     { value: "5m", label: $localize`5 minutes` },
     { value: "10m", label: $localize`10 minutes` },
@@ -47,36 +39,48 @@ export const CloudDDNSStep = component$(() => {
     { value: "1h", label: $localize`1 hour` },
   ];
 
-  // Backup interval options
-  const backupIntervalOptions = [
-    { value: "daily", label: $localize`Daily` },
-    { value: "weekly", label: $localize`Weekly` },
-    { value: "monthly", label: $localize`Monthly` },
-  ];
+
+  // Add new DDNS entry
+  const addDDNSEntry$ = $(() => {
+    if (newEntryHostname.value.trim() && newEntryUsername.value.trim() && newEntryPassword.value.trim()) {
+      const newEntry = {
+        id: `ddns-${Date.now()}`,
+        provider: newEntryProvider.value,
+        hostname: newEntryHostname.value.trim(),
+        username: newEntryUsername.value.trim(),
+        password: newEntryPassword.value.trim(),
+        updateInterval: newEntryUpdateInterval.value,
+        customServerURL: newEntryProvider.value === "custom" ? newEntryCustomURL.value.trim() : undefined,
+      };
+      
+      ddnsEntries.value = [...ddnsEntries.value, newEntry];
+      
+      // Clear form
+      newEntryHostname.value = "";
+      newEntryUsername.value = "";
+      newEntryPassword.value = "";
+      newEntryCustomURL.value = "";
+      
+      validateAndUpdate$();
+    }
+  });
+
+  // Remove DDNS entry
+  const removeDDNSEntry$ = $((id: string) => {
+    ddnsEntries.value = ddnsEntries.value.filter((entry: any) => entry.id !== id);
+    validateAndUpdate$();
+  });
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
     // Update context data
     servicesData.cloudDDNS = {
       enableDDNS: enableDDNS.value,
-      provider: ddnsProvider.value,
-      hostname: hostname.value,
-      username: username.value,
-      password: password.value,
-      updateInterval: updateInterval.value,
-      enableSSL: enableSSL.value,
-      customServerURL: customServerURL.value,
-      enableCloudBackup: enableCloudBackup.value,
-      backupInterval: backupInterval.value,
+      ddnsEntries: ddnsEntries.value,
     };
 
-    // Validate: DDNS is enabled and all required fields are filled
-    const isComplete =
-      enableDDNS.value &&
-      ddnsProvider.value.trim() !== "" &&
-      hostname.value.trim() !== "" &&
-      username.value.trim() !== "" &&
-      password.value.trim() !== "";
+    // Validate: DDNS is disabled or at least one valid entry exists
+    const isComplete = !enableDDNS.value || ddnsEntries.value.length > 0;
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -96,303 +100,250 @@ export const CloudDDNSStep = component$(() => {
   });
 
   return (
-    <div class="mx-auto w-full max-w-5xl p-4">
-      <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
-        {/* Header */}
-        <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
-          <div class="flex items-center space-x-5">
-            <div class="rounded-xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-7 w-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                />
-              </svg>
-            </div>
-            <div class="space-y-1">
-              <h2 class="text-2xl font-bold text-white">
-                {$localize`Cloud/DDNS Configuration`}
-              </h2>
-              <div class="flex items-center space-x-2">
-                <p class="text-sm font-medium text-primary-50">
-                  {$localize`Configure Dynamic DNS and cloud services for remote access`}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div class="space-y-8 animate-fade-in-up">
+      {/* Modern header */}
+      <div class="text-center space-y-4">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 text-white mb-6 shadow-xl shadow-cyan-500/25 transition-transform hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+          </svg>
         </div>
+        <h3 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+          {$localize`Dynamic DNS`}
+        </h3>
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          {$localize`Configure multiple DDNS providers to maintain consistent domain access`}
+        </p>
+      </div>
 
-        {/* Form Content */}
-        <div class="p-6">
-          <div class="space-y-6">
-            {/* DDNS Configuration Section */}
-            <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-              <h3 class="mb-4 text-lg font-semibold text-text dark:text-text-dark-default">
-                {$localize`DDNS Configuration`}
-              </h3>
 
-              {/* Enable DDNS */}
-              <div class="mb-4">
-                <label class="flex items-center">
-                  <input
-                    type="checkbox"
-                    class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                    checked={enableDDNS.value}
-                    onChange$={(e: any) => {
-                      enableDDNS.value = e.target.checked;
-                      validateAndUpdate$();
-                    }}
-                  />
-                  <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                    {$localize`Enable DDNS`}
-                  </span>
-                </label>
-                <p class="text-text-secondary dark:text-text-dark-secondary ml-7 mt-1 text-xs">
-                  {$localize`Enable Dynamic DNS to maintain a consistent domain name for your router`}
-                </p>
-              </div>
+      {/* Dynamic DNS Section */}
+      <div class="space-y-6">
 
-              {/* DDNS fields - shown only when enabled */}
-              {enableDDNS.value && (
-                <div class="space-y-4">
-                  {/* DDNS Provider */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                      {$localize`DDNS Provider`}
-                      <span class="ml-1 text-red-500">*</span>
-                    </label>
-                    <Select
-                      options={ddnsProviderOptions}
-                      value={ddnsProvider.value}
-                      onChange$={(value) => {
-                        ddnsProvider.value = value;
-                        validateAndUpdate$();
-                      }}
-                      clearable={false}
-                      class="w-full"
-                    />
-                  </div>
-
-                  {/* Custom Server URL - shown only for Custom provider */}
-                  {ddnsProvider.value === "custom" && (
-                    <div>
-                      <label
-                        class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default"
-                        for="custom-server"
-                      >
-                        {$localize`Custom Server URL`}
-                      </label>
-                      <input
-                        id="custom-server"
-                        type="text"
-                        class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text transition-colors 
-                               focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 
-                               dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                        placeholder={$localize`https://your-ddns-server.com/update`}
-                        value={customServerURL.value}
-                        onInput$={(e: any) => {
-                          customServerURL.value = e.target.value;
-                          validateAndUpdate$();
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Hostname */}
-                  <div>
-                    <label
-                      class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default"
-                      for="hostname"
-                    >
-                      {$localize`Hostname`}
-                      <span class="ml-1 text-red-500">*</span>
-                    </label>
-                    <input
-                      id="hostname"
-                      type="text"
-                      class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text transition-colors 
-                             focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 
-                             dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                      placeholder={$localize`yourhost.ddns.net`}
-                      value={hostname.value}
-                      onInput$={(e: any) => {
-                        hostname.value = e.target.value;
-                        validateAndUpdate$();
-                      }}
-                    />
-                  </div>
-
-                  {/* Username/Email */}
-                  <div>
-                    <label
-                      class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default"
-                      for="username"
-                    >
-                      {$localize`Username/Email`}
-                      <span class="ml-1 text-red-500">*</span>
-                    </label>
-                    <input
-                      id="username"
-                      type="text"
-                      class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text transition-colors 
-                             focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 
-                             dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                      placeholder={$localize`Enter username or email`}
-                      value={username.value}
-                      onInput$={(e: any) => {
-                        username.value = e.target.value;
-                        validateAndUpdate$();
-                      }}
-                    />
-                  </div>
-
-                  {/* Password/API Key */}
-                  <div>
-                    <label
-                      class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default"
-                      for="password"
-                    >
-                      {$localize`Password/API Key`}
-                      <span class="ml-1 text-red-500">*</span>
-                    </label>
-                    <input
-                      id="password"
-                      type="password"
-                      class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text transition-colors 
-                             focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 
-                             dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
-                      placeholder={$localize`Enter password or API key`}
-                      value={password.value}
-                      onInput$={(e: any) => {
-                        password.value = e.target.value;
-                        validateAndUpdate$();
-                      }}
-                    />
-                  </div>
-
-                  {/* Update Interval */}
-                  <div>
-                    <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                      {$localize`Update Interval`}
-                    </label>
-                    <Select
-                      options={updateIntervalOptions}
-                      value={updateInterval.value}
-                      onChange$={(value) => {
-                        updateInterval.value = value;
-                        validateAndUpdate$();
-                      }}
-                      clearable={false}
-                      class="w-full"
-                    />
-                  </div>
-
-                  {/* Enable SSL/HTTPS */}
-                  <div>
-                    <label class="flex items-center">
-                      <input
-                        type="checkbox"
-                        class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                        checked={enableSSL.value}
-                        onChange$={(e: any) => {
-                          enableSSL.value = e.target.checked;
-                          validateAndUpdate$();
-                        }}
-                      />
-                      <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                        {$localize`Enable SSL/HTTPS`}
-                      </span>
-                    </label>
-                    <p class="text-text-secondary dark:text-text-dark-secondary ml-7 mt-1 text-xs">
-                      {$localize`Use secure HTTPS connection for DDNS updates`}
-                    </p>
-                  </div>
+        {/* DDNS Enable Toggle */}
+        <Card class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg">
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                  </svg>
                 </div>
-              )}
-            </div>
-
-            {/* Cloud Services Section */}
-            <div class="dark:bg-surface-secondary-dark bg-surface-secondary rounded-lg border border-border p-4 dark:border-border-dark">
-              <h3 class="mb-4 text-lg font-semibold text-text dark:text-text-dark-default">
-                {$localize`Cloud Services`}
-              </h3>
-
-              {/* Enable Cloud Backup */}
-              <div class="mb-4">
-                <label class="flex items-center">
-                  <input
-                    type="checkbox"
-                    class="mr-3 h-4 w-4 rounded border-border text-primary-500 focus:ring-primary-500 dark:border-border-dark"
-                    checked={enableCloudBackup.value}
-                    onChange$={(e: any) => {
-                      enableCloudBackup.value = e.target.checked;
-                      validateAndUpdate$();
-                    }}
-                  />
-                  <span class="text-sm font-medium text-text dark:text-text-dark-default">
-                    {$localize`Enable Cloud Backup`}
-                  </span>
-                </label>
-                <p class="text-text-secondary dark:text-text-dark-secondary ml-7 mt-1 text-xs">
-                  {$localize`Automatically backup router configuration to cloud storage`}
-                </p>
-              </div>
-
-              {/* Backup Interval - shown only when Cloud Backup is enabled */}
-              {enableCloudBackup.value && (
                 <div>
-                  <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                    {$localize`Backup Interval`}
-                  </label>
+                  <h4 class="text-xl font-bold text-gray-900 dark:text-white">
+                    {$localize`Enable Dynamic DNS`}
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    {$localize`Maintain a consistent domain name despite IP changes`}
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={enableDDNS.value}
+                onChange$={(checked) => {
+                  enableDDNS.value = checked;
+                  validateAndUpdate$();
+                }}
+                size="lg"
+                color="secondary"
+              />
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Current DDNS Entries List */}
+        {enableDDNS.value && ddnsEntries.value.length > 0 && (
+          <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-lg animate-fade-in-up">
+            <CardHeader>
+              <h4 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {$localize`Configured DDNS Entries`} ({ddnsEntries.value.length})
+              </h4>
+            </CardHeader>
+            <CardBody>
+              <div class="space-y-4">
+                {ddnsEntries.value.map((entry: any) => {
+                  const provider = providerOptions.find(p => p.value === entry.provider);
+                  return (
+                    <div
+                      key={entry.id}
+                      class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p class="font-medium text-gray-900 dark:text-white">{entry.hostname}</p>
+                          <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {provider?.label} • {$localize`Updates every`} {entry.updateInterval}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick$={() => removeDDNSEntry$(entry.id)}
+                        class="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* Add New DDNS Entry Form - shown only when enabled */}
+        {enableDDNS.value && (
+          <Card class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg animate-fade-in-up">
+            <CardHeader>
+              <h4 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                {$localize`Add DDNS Entry`}
+              </h4>
+              <p class="text-gray-600 dark:text-gray-400">
+                {$localize`Configure a new Dynamic DNS provider`}
+              </p>
+            </CardHeader>
+            <CardBody class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  label={$localize`Provider`}
+                  helperText={$localize`Select DDNS service provider`}
+                >
                   <Select
-                    options={backupIntervalOptions}
-                    value={backupInterval.value}
+                    options={providerOptions}
+                    value={newEntryProvider.value}
                     onChange$={(value) => {
-                      backupInterval.value = value;
-                      validateAndUpdate$();
+                      newEntryProvider.value = Array.isArray(value) ? value[0] : value;
                     }}
                     clearable={false}
-                    class="w-full"
                   />
-                </div>
-              )}
-            </div>
-          </div>
+                </FormField>
 
-          {/* Required Configuration Notice */}
-          <div class="mt-6 rounded-lg bg-primary-50 p-4 dark:bg-primary-900/20">
-            <div class="flex items-start">
-              <svg
-                class="mr-3 mt-0.5 h-5 w-5 text-primary-600 dark:text-primary-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <h3 class="text-sm font-medium text-primary-800 dark:text-primary-200">
-                  {$localize`Configuration Required`}
-                </h3>
-                <p class="mt-1 text-sm text-primary-700 dark:text-primary-300">
-                  {$localize`Enable DDNS and fill all required fields (Provider, Hostname, Username, Password) to proceed to the next step.`}
-                </p>
+                <FormField
+                  label={$localize`Update Interval`}
+                  helperText={$localize`How often to check for IP changes`}
+                >
+                  <Select
+                    options={updateIntervalOptions}
+                    value={newEntryUpdateInterval.value}
+                    onChange$={(value) => {
+                      newEntryUpdateInterval.value = Array.isArray(value) ? value[0] : value;
+                    }}
+                    clearable={false}
+                  />
+                </FormField>
               </div>
-            </div>
-          </div>
+
+              {/* Custom Server URL for custom provider */}
+              {newEntryProvider.value === "custom" && (
+                <FormField
+                  label={$localize`Custom Server URL`}
+                  required
+                  helperText={$localize`Enter the full URL for your DDNS update endpoint`}
+                >
+                  <Input
+                    type="text"
+                    placeholder={$localize`https://your-ddns-server.com/update`}
+                    value={newEntryCustomURL.value}
+                    onInput$={(e: any) => {
+                      newEntryCustomURL.value = e.target.value;
+                    }}
+                  />
+                </FormField>
+              )}
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField
+                  label={$localize`Hostname`}
+                  required
+                  helperText={$localize`Your dynamic DNS hostname`}
+                >
+                  <Input
+                    type="text"
+                    placeholder={$localize`yourhost.ddns.net`}
+                    value={newEntryHostname.value}
+                    onInput$={(e: any) => {
+                      newEntryHostname.value = e.target.value;
+                    }}
+                  />
+                </FormField>
+
+                <FormField
+                  label={$localize`Username/Email`}
+                  required
+                  helperText={$localize`Your DDNS service account`}
+                >
+                  <Input
+                    type="text"
+                    placeholder={$localize`Enter username or email`}
+                    value={newEntryUsername.value}
+                    onInput$={(e: any) => {
+                      newEntryUsername.value = e.target.value;
+                    }}
+                  />
+                </FormField>
+
+                <FormField
+                  label={$localize`Password/API Key`}
+                  required
+                  helperText={$localize`Your service password or API token`}
+                >
+                  <Input
+                    type="password"
+                    placeholder={$localize`Enter password or API key`}
+                    value={newEntryPassword.value}
+                    onInput$={(e: any) => {
+                      newEntryPassword.value = e.target.value;
+                    }}
+                  />
+                </FormField>
+              </div>
+
+              <div class="flex justify-end">
+                <Button
+                  onClick$={addDDNSEntry$}
+                  disabled={!newEntryHostname.value.trim() || !newEntryUsername.value.trim() || !newEntryPassword.value.trim()}
+                  class="px-6"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  {$localize`Add DDNS Entry`}
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        )}
+      </div>
+
+
+
+      {/* Bottom status indicator */}
+      <div class="text-center">
+        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-cyan-200/50 dark:border-cyan-700/50">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13a3 3 0 00-6 0l3 3 3-3z" />
+          </svg>
+          <span class="font-medium text-cyan-700 dark:text-cyan-300">
+            {enableDDNS.value && ddnsEntries.value.length > 0
+              ? `${ddnsEntries.value.length} ${ddnsEntries.value.length === 1 ? $localize`DDNS entry configured` : $localize`DDNS entries configured`}`
+              : $localize`Configure Dynamic DNS for consistent domain access`
+            }
+          </span>
         </div>
       </div>
     </div>

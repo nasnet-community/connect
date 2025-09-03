@@ -139,6 +139,7 @@ describe("ExtraCG Module", () => {
       const autoReboot: AutoReboot = {
         isAutoReboot: true,
         RebootTime: "03:00",
+        RebootInterval: "Daily",
       };
 
       const result = testWithOutput(
@@ -246,7 +247,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "Game",
         "Configure game traffic splitting with Steam, Fortnite and PUBG with DomesticLink enabled",
-        { games, DomesticLink: true },
+        { games, WANLinkType: "both" },
         () => Game(games, true),
       );
 
@@ -302,7 +303,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "Game",
         "Configure game traffic splitting with Steam and Fortnite with DomesticLink disabled",
-        { games, DomesticLink: false },
+        { games, WANLinkType: "foreign-only" },
         () => Game(games, false),
       );
 
@@ -336,7 +337,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "Game",
         "Handle empty games array with DomesticLink enabled",
-        { games, DomesticLink: true },
+        { games, WANLinkType: "both" },
         () => Game(games, true),
       );
 
@@ -360,7 +361,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "Game",
         "Handle games with empty ports configuration",
-        { games, DomesticLink: true },
+        { games, WANLinkType: "both" },
         () => Game(games, true),
       );
 
@@ -554,6 +555,7 @@ describe("ExtraCG Module", () => {
         AutoReboot: {
           isAutoReboot: true,
           RebootTime: "03:00",
+          RebootInterval: "Daily",
         },
         Update: {
           isAutoReboot: true,
@@ -576,7 +578,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "ExtraCG",
         "Merge all extra configurations into complete config with DomesticLink enabled",
-        { extraConfigState, DomesticLink: true },
+        { extraConfigState, WANLinkType: "both" },
         () => ExtraCG(extraConfigState, true),
       );
 
@@ -620,7 +622,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "ExtraCG",
         "Merge extra configurations with DomesticLink disabled",
-        { extraConfigState, DomesticLink: false },
+        { extraConfigState, WANLinkType: "foreign-only" },
         () => ExtraCG(extraConfigState, false),
       );
 
@@ -651,7 +653,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "ExtraCG",
         "Handle empty extra configuration with base settings only and DomesticLink enabled",
-        { extraConfigState, DomesticLink: true },
+        { extraConfigState, WANLinkType: "both" },
         () => ExtraCG(extraConfigState, true),
       );
 
@@ -669,7 +671,7 @@ describe("ExtraCG Module", () => {
       const result = testWithOutput(
         "ExtraCG",
         "Handle empty extra configuration with base settings only and DomesticLink disabled",
-        { extraConfigState, DomesticLink: false },
+        { extraConfigState, WANLinkType: "foreign-only" },
         () => ExtraCG(extraConfigState, false),
       );
 

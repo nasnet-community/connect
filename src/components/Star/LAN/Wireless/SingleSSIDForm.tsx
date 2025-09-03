@@ -37,25 +37,23 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
         </p>
 
         <div class="flex flex-wrap items-center justify-end gap-4 border-b border-gray-200 pb-4 dark:border-gray-700">
-          <div class="flex items-center">
-            <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Hide`}
-            </span>
-            <Toggle
-              checked={isHide.value}
-              onChange$={toggleHide}
-            />
-          </div>
+          <Toggle
+            label={$localize`Hide`}
+            labelPosition="left"
+            checked={isHide.value}
+            onChange$={toggleHide}
+            size="md"
+            color="primary"
+          />
 
-          <div class="flex items-center">
-            <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Split Band`}
-            </span>
-            <Toggle
-              checked={splitBand.value}
-              onChange$={toggleSplitBand}
-            />
-          </div>
+          <Toggle
+            label={$localize`Split Band`}
+            labelPosition="left"
+            checked={splitBand.value}
+            onChange$={toggleSplitBand}
+            size="md"
+            color="primary"
+          />
         </div>
 
         <div class="mt-4 space-y-6">

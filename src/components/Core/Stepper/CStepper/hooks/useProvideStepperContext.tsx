@@ -1,8 +1,7 @@
-import { useContextProvider, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
+import { useContextProvider, $, useSignal } from "@builder.io/qwik";
 import type { CStepperContext, CStepMeta } from "../types";
 import type { ContextId, Signal, QRL } from "@builder.io/qwik";
 
-const STORAGE_KEY_PREFIX = 'qwik-stepper-';
 
 /**
  * A hook to create and provide a CStepper context
@@ -21,7 +20,6 @@ export function useProvideStepperContext<T = any>({
   handlePrev$,
   data = {} as T,
   onStepComplete$,
-  persistState = false,
   previousSteps,
   addStep$,
   removeStep$,
@@ -36,7 +34,6 @@ export function useProvideStepperContext<T = any>({
   handlePrev$: QRL<() => void>;
   data?: T;
   onStepComplete$?: QRL<(id: number) => void>;
-  persistState?: boolean;
   previousSteps?: Signal<number[]>;
   addStep$: QRL<(newStep: CStepMeta, position?: number) => number>;
   removeStep$: QRL<(stepId: number) => boolean>;
@@ -52,93 +49,8 @@ export function useProvideStepperContext<T = any>({
   // Use the provided previousSteps or the default one
   const internalPreviousSteps = previousSteps || defaultPreviousSteps;
   
-  // Storage key for this specific stepper
-  const storageKey = `${STORAGE_KEY_PREFIX}${contextId.id}`;
   
-  // Handle persistence and resuming from saved state
-  useVisibleTask$(({ track, cleanup }) => {
-    if (persistState) {
-      // Create deep clones for tracking
-      const trackableSteps = track(() => JSON.parse(JSON.stringify(steps.value)));
-      const trackableData = track(() => JSON.parse(JSON.stringify(data)));
-      const trackableActiveStep = track(() => activeStep.value);
-      
-      // Save current state to localStorage
-      const saveState = () => {
-        try {
-          const stateToSave = {
-            steps: trackableSteps,
-            data: trackableData,
-            activeStep: trackableActiveStep,
-            timestamp: new Date().toISOString()
-          };
-          localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-        } catch (err) {
-          console.warn('Failed to save stepper state:', err);
-        }
-      };
-      
-      // Save state on changes
-      saveState();
-      
-      // Setup window unload handler for final save
-      const handleUnload = () => saveState();
-      window.addEventListener('beforeunload', handleUnload);
-      
-      // Cleanup
-      cleanup(() => {
-        window.removeEventListener('beforeunload', handleUnload);
-      });
-    }
-  });
   
-  // Function to restore saved state (if available)
-  const restoreSavedState$ = $(() => {
-    if (!persistState) return false;
-    
-    try {
-      const savedStateJson = localStorage.getItem(storageKey);
-      if (!savedStateJson) return false;
-      
-      const savedState = JSON.parse(savedStateJson);
-      
-      // Validate saved state
-      if (!savedState || !savedState.steps || !savedState.data) {
-        return false;
-      }
-      
-      // Restore data
-      if (typeof data === 'object' && data !== null && typeof savedState.data === 'object') {
-        Object.assign(data as Record<string, any>, savedState.data);
-      }
-      
-      // Restore step completion states
-      const savedSteps = savedState.steps as CStepMeta[];
-      steps.value = steps.value.map((step) => {
-        const savedStep = savedSteps.find(s => s.id === step.id);
-        return savedStep ? { ...step, isComplete: savedStep.isComplete } : step;
-      });
-      
-      // Restore active step safely
-      if (typeof savedState.activeStep === 'number' && 
-          savedState.activeStep >= 0 && 
-          savedState.activeStep < steps.value.length) {
-        activeStep.value = savedState.activeStep;
-      }
-      
-      return true;
-    } catch (err) {
-      console.warn('Failed to restore stepper state:', err);
-      return false;
-    }
-  });
-  
-  // Clear saved state
-  const clearSavedState$ = $(() => {
-    if (persistState) {
-      localStorage.removeItem(storageKey);
-    }
-  });
 
   // Safely call onStepComplete$ without returning the Promise
   const safelyCallOnStepComplete = $((stepId: number) => {
@@ -158,20 +70,6 @@ export function useProvideStepperContext<T = any>({
       step.id === stepId ? { ...step, isComplete } : step
     );
     
-    // Save state if persistence is enabled
-    if (persistState) {
-      const stateToSave = {
-        steps: steps.value,
-        data,
-        activeStep: activeStep.value,
-        timestamp: new Date().toISOString()
-      };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-      } catch (e) {
-        console.warn('Failed to save state:', e);
-      }
-    }
     
     // Explicitly return null instead of undefined to ensure it's not a promise
     return null;
@@ -198,20 +96,6 @@ export function useProvideStepperContext<T = any>({
       safelyCallOnStepComplete(idToComplete);
     }
     
-    // Save state if persistence is enabled
-    if (persistState) {
-      const stateToSave = {
-        steps: steps.value,
-        data,
-        activeStep: activeStep.value,
-        timestamp: new Date().toISOString()
-      };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-      } catch (e) {
-        console.warn('Failed to save state:', e);
-      }
-    }
     
     // Explicitly return null to prevent promise leakage
     return null;
@@ -289,8 +173,6 @@ export function useProvideStepperContext<T = any>({
     completeStep$,
     validateStep$,
     setStepErrors$,
-    restoreSavedState$,
-    clearSavedState$,
     data,
     addStep$,
     removeStep$,

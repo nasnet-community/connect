@@ -13,11 +13,13 @@ export interface UseVPNClientAdvancedReturn {
   addVPNClient$: QRL<() => void>;
   removeVPNClient$: QRL<(id: string) => void>;
   updateVPNClient$: QRL<(id: string, updates: Partial<VPNConfig>) => void>;
+  batchUpdateVPNs$: QRL<(updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => void>;
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiVPNStrategy$: QRL<(strategy: MultiVPNConfig) => void>;
   updateMultiVPN: QRL<(updates: Partial<MultiVPNConfig>) => void>;
   resetAdvanced$: QRL<() => void>;
+  refreshForeignWANCount$: QRL<() => Promise<void>>;
   generateVPNClientName$: QRL<(index: number, type?: VPNType) => string>;
   moveVPNPriority$: QRL<(id: string, direction: "up" | "down") => void>;
   foreignWANCount: number;
@@ -35,18 +37,28 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   // Calculate Foreign WAN count from StarContext (non-reactive to prevent loops)
   const getForeignWANCount = $(() => {
     const wanLinks = starContext.state.WAN.WANLinks || [];
+    console.log('[useVPNClientAdvanced] getForeignWANCount - WANLinks:', wanLinks);
+    console.log('[useVPNClientAdvanced] getForeignWANCount - WANLinks length:', wanLinks.length);
+    
     const foreignLinks = wanLinks.filter(
-      (link) =>
-        link.name.toLowerCase().includes("foreign") ||
-        link.id.includes("foreign")
+      (link) => {
+        const isForeign = link.name.toLowerCase().includes("foreign") || link.id.includes("foreign");
+        console.log('[useVPNClientAdvanced] Checking link:', { name: link.name, id: link.id, isForeign });
+        return isForeign;
+      }
     );
+    
+    console.log('[useVPNClientAdvanced] Found foreign links:', foreignLinks);
+    console.log('[useVPNClientAdvanced] Foreign links count:', foreignLinks.length);
     
     // If no WANLinks available, check if Foreign WAN is configured in WANLink
     if (wanLinks.length === 0 && starContext.state.WAN.WANLink.Foreign) {
+      console.log('[useVPNClientAdvanced] No WANLinks but Foreign WAN exists, returning 1');
       return 1; // At least 1 VPN required for Foreign WAN
     }
     
-    return Math.max(foreignLinks.length, 1); // At least 1 VPN required
+    console.log('[useVPNClientAdvanced] Final foreign count:', foreignLinks.length);
+    return foreignLinks.length; // Minimum VPNs should match Foreign WAN Links count
   });
 
   // Initialize state with minimum required VPN clients
@@ -256,6 +268,34 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     Object.assign(state.vpnConfigs[vpnIndex], updatedVPN);
   });
 
+  // Batch update multiple VPN clients at once
+  const batchUpdateVPNs$ = $((updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => {
+    // Create a new array with all updates applied
+    const newVPNs = [...state.vpnConfigs];
+    
+    updates.forEach(({ id, updates: vpnUpdates }) => {
+      const vpnIndex = newVPNs.findIndex((vpn) => vpn.id === id);
+      if (vpnIndex === -1) return;
+
+      const currentVPN = newVPNs[vpnIndex];
+      const updatedVPN = { ...currentVPN, ...vpnUpdates };
+
+      // Clear connection config when type changes
+      if (
+        vpnUpdates.type &&
+        vpnUpdates.type !== currentVPN.type
+      ) {
+        // Create default config for new type (sync)
+        updatedVPN.config = createDefaultConfig$(vpnUpdates.type) as any;
+      }
+
+      newVPNs[vpnIndex] = updatedVPN as VPNConfig;
+    });
+
+    // Update state once with all changes
+    state.vpnConfigs = newVPNs;
+  });
+
   // Toggle between easy and advanced mode (disabled in advanced interface)
   const toggleMode$ = $(() => {
     console.warn("Mode toggling is disabled in the VPN Client Advanced interface");
@@ -310,6 +350,16 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     state.vpnConfigs = vpns;
   });
 
+  // Refresh foreign WAN count from StarContext
+  const refreshForeignWANCount$ = $(async () => {
+    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ called');
+    const newCount = await getForeignWANCount();
+    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - old minVPNCount:', state.minVPNCount);
+    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - new minVPNCount:', newCount);
+    state.minVPNCount = newCount;
+    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - updated state.minVPNCount:', state.minVPNCount);
+  });
+
   // Reset advanced configuration to initial state
   const resetAdvanced$ = $(async () => {
     vpnCounter.value = 1;
@@ -355,11 +405,13 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     addVPNClient$,
     removeVPNClient$,
     updateVPNClient$,
+    batchUpdateVPNs$,
     toggleMode$,
     setViewMode$,
     setMultiVPNStrategy$,
     updateMultiVPN,
     resetAdvanced$,
+    refreshForeignWANCount$,
     generateVPNClientName$,
     moveVPNPriority$,
     foreignWANCount: state.minVPNCount || 1, // Use the stored minVPNCount with fallback

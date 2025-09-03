@@ -97,7 +97,6 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
           return (
             <WireguardConfig
               onIsValidChange$={handleValidChange}
-              isSaving={false}
             />
           );
 

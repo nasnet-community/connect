@@ -74,11 +74,12 @@ export function useDialog(params: UseDialogParams): UseDialogReturn {
 
   // Track external isOpen prop changes
   useTask$(({ track }) => {
-    const externalIsOpen = track(() => propIsOpen);
-    if (typeof externalIsOpen === "boolean") {
+    if (typeof propIsOpen === "boolean") {
+      const externalIsOpen = track(() => propIsOpen);
       isOpenSignal.value = externalIsOpen;
-    } else if (externalIsOpen && typeof externalIsOpen.value === "boolean") {
-      isOpenSignal.value = externalIsOpen.value;
+    } else if (propIsOpen) {
+      const externalIsOpen = track(() => propIsOpen.value);
+      isOpenSignal.value = externalIsOpen;
     }
   });
 

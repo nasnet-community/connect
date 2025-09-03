@@ -2,11 +2,10 @@ import { component$ } from "@builder.io/qwik";
 import {
   HiServerOutline,
   HiLockClosedOutline,
-  HiDocumentOutline,
 } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
-import { ServerFormField, ServerButton, SectionTitle } from "~/components/Core/Form/ServerField";
+import { ServerFormField, SectionTitle } from "~/components/Core/Form/ServerField";
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { Input } from "~/components/Core/Input";
 import { NetworkDropdown } from "../../components/NetworkSelection";
@@ -15,23 +14,10 @@ export const IKEv2ServerAdvanced = component$(() => {
   const {
     advancedFormState,
     showPassword,
-    certificateError,
     presharedKeyError,
-    addressPoolError,
     authMethods,
-    eapMethods,
-    updateAddressPoolRanges$,
-    updateAddressPoolName$,
     updateAuthMethod$,
     updatePresharedKey$,
-    updateEapMethods$,
-    updateServerCertificate$,
-    updatePeerName$,
-    updateProfileName$,
-    updateProposalName$,
-    updatePolicyGroupName$,
-    updateModeConfigName$,
-    updateStaticDns$,
     togglePasswordVisibility$,
   } = useIKEv2Server();
 
@@ -55,55 +41,6 @@ export const IKEv2ServerAdvanced = component$(() => {
               />
             </ServerFormField>
 
-            {/* Address Pool */}
-            <ServerFormField
-              label={$localize`Address Pool Range`}
-              errorMessage={addressPoolError.value}
-            >
-              <Input
-                type="text"
-                value={advancedFormState.addressPoolRanges}
-                onChange$={(_, value) => updateAddressPoolRanges$(value)}
-                placeholder={$localize`e.g. 192.168.77.2-192.168.77.254`}
-                validation={addressPoolError.value ? "invalid" : "default"}
-              />
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {$localize`IP range for client address assignment`}
-              </p>
-            </ServerFormField>
-
-            {/* Address Pool Name */}
-            <ServerFormField label={$localize`Address Pool Name`}>
-              <Input
-                type="text"
-                value={advancedFormState.addressPoolName}
-                onChange$={(_, value) => updateAddressPoolName$(value)}
-                placeholder={$localize`e.g. ike2-pool`}
-              />
-            </ServerFormField>
-
-            {/* DNS Servers */}
-            <ServerFormField label={$localize`DNS Servers`}>
-              <Input
-                type="text"
-                value={advancedFormState.staticDns}
-                onChange$={(_, value) => updateStaticDns$(value)}
-                placeholder={$localize`e.g. 8.8.8.8,1.1.1.1`}
-              />
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {$localize`Comma-separated list of DNS servers to push to clients`}
-              </p>
-            </ServerFormField>
-
-            {/* Peer Name */}
-            <ServerFormField label={$localize`Peer Name`}>
-              <Input
-                type="text"
-                value={advancedFormState.peerName}
-                onChange$={(_, value) => updatePeerName$(value)}
-                placeholder={$localize`Enter peer name`}
-              />
-            </ServerFormField>
           </div>
         </div>
 
@@ -148,89 +85,18 @@ export const IKEv2ServerAdvanced = component$(() => {
               </ServerFormField>
             )}
 
-            {/* EAP Methods */}
-            {advancedFormState.authMethod === "eap" && (
-              <ServerFormField label={$localize`EAP Method`}>
-                <UnifiedSelect
-                  options={eapMethods}
-                  value={advancedFormState.eapMethods}
-                  onChange$={(value) => updateEapMethods$(value as any)}
-                />
-              </ServerFormField>
-            )}
 
-            {/* Server Certificate */}
-            {(advancedFormState.authMethod === "digital-signature" ||
-              advancedFormState.authMethod === "eap") && (
-              <ServerFormField
-                label={$localize`Server Certificate`}
-                errorMessage={certificateError.value}
-              >
-                <div class="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={advancedFormState.serverCertificate}
-                    onChange$={(_, value) => updateServerCertificate$(value)}
-                    placeholder={$localize`Enter certificate name`}
-                    validation={certificateError.value ? "invalid" : "default"}
-                  />
-                  <ServerButton
-                    onClick$={() => {}}
-                    class="flex items-center gap-1"
-                  >
-                    <HiDocumentOutline class="h-5 w-5" />
-                    {$localize`Select`}
-                  </ServerButton>
-                </div>
-              </ServerFormField>
-            )}
           </div>
         </div>
 
-        {/* IPsec Settings */}
-        <div>
-          <SectionTitle title={$localize`IPsec Settings`} />
-          <div class="space-y-4">
-            {/* IPsec Profile */}
-            <ServerFormField label={$localize`IPsec Profile Name`}>
-              <Input
-                type="text"
-                value={advancedFormState.profileName}
-                onChange$={(_, value) => updateProfileName$(value)}
-                placeholder={$localize`Enter IPsec profile name`}
-              />
-            </ServerFormField>
-
-            {/* IPsec Proposal */}
-            <ServerFormField label={$localize`IPsec Proposal Name`}>
-              <Input
-                type="text"
-                value={advancedFormState.proposalName}
-                onChange$={(_, value) => updateProposalName$(value)}
-                placeholder={$localize`Enter IPsec proposal name`}
-              />
-            </ServerFormField>
-
-            {/* Policy Template Group */}
-            <ServerFormField label={$localize`Policy Template Group`}>
-              <Input
-                type="text"
-                value={advancedFormState.policyGroupName}
-                onChange$={(_, value) => updatePolicyGroupName$(value)}
-                placeholder={$localize`Enter policy template group name`}
-              />
-            </ServerFormField>
-
-            {/* Mode Config Name */}
-            <ServerFormField label={$localize`Mode Config Name`}>
-              <Input
-                type="text"
-                value={advancedFormState.modeConfigName}
-                onChange$={(_, value) => updateModeConfigName$(value)}
-                placeholder={$localize`Enter mode config name`}
-              />
-            </ServerFormField>
-          </div>
+        {/* Certificate Configuration Note */}
+        <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+          <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+            {$localize`Certificate Configuration`}
+          </h4>
+          <p class="text-sm text-blue-700 dark:text-blue-300">
+            {$localize`IKEv2 server certificates are configured in the Certificate step when using digital signature authentication. This ensures consistent certificate management across all protocols.`}
+          </p>
         </div>
       </div>
     </ServerCard>

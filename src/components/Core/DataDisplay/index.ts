@@ -46,6 +46,9 @@ export * from "./FeatureList";
 // SelectionCard exports
 export * from "./SelectionCard";
 
+// FrequencySelector exports
+export * from "./FrequencySelector";
+
 // Mobile Overlay exports
 export { MobileOverlay } from "./MobileOverlay";
 

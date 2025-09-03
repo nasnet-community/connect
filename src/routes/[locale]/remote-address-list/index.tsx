@@ -4,8 +4,10 @@ import {
   AspectRatio,
   Button,
   TimePicker,
-  Alert
+  Alert,
+  FrequencySelector
 } from "~/components/Core";
+import type { FrequencyValue } from "~/components/Core/DataDisplay/FrequencySelector/FrequencySelector.types";
 import type { TimeValue } from "~/components/Core/TimePicker/Timepicker";
 import { 
   LuGlobe, 
@@ -27,6 +29,7 @@ import { formatRouterConfig } from "~/components/Star/ConfigGenerator/utils/Scri
 export default component$(() => {
   // State management
   const scheduledTime = useSignal({ hour: "00", minute: "00" });
+  const scheduledInterval = useSignal<FrequencyValue>("Daily");
   const showDisconnectionAlert = useSignal(true);
   const showScript = useSignal(false);
   
@@ -36,14 +39,18 @@ export default component$(() => {
     }
   });
 
-  // Generate MikroTik script based on scheduled time
+  const handleIntervalChange$ = $((value: FrequencyValue) => {
+    scheduledInterval.value = value;
+  });
+
+  // Generate MikroTik script based on scheduled time and interval
   const mikrotikScript = useComputed$(() => {
     const time = `${scheduledTime.value.hour.padStart(2, '0')}:${scheduledTime.value.minute.padStart(2, '0')}`;
-    const scriptConfig = generateDomesticIPScript(time);
+    const scriptConfig = generateDomesticIPScript(time, scheduledInterval.value);
     
     // Add firewall mangle commands before the main script
     const mangleCommands = `/ip firewall mangle
-add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-routing-mark=to-FRN passthrough=no
+add action=mark-routing chain=output comment="S4I Route" dst-address-list=!LOCAL-IP dst-port=443,80 new-routing-mark=to-SL passthrough=no protocol=tcp src-address=192.168.30.1
 
 `;
     
@@ -218,7 +225,19 @@ add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-rout
                         }}
                       />
                       <p class="mt-3 text-sm text-gray-600 dark:text-slate-400">
-                        {$localize`The script will run automatically every day at`} <span class="font-medium text-primary-500 dark:text-yellow-400">{scheduledTime.value.hour.padStart(2, '0')}:{scheduledTime.value.minute.padStart(2, '0')}</span>
+                        {$localize`The script will run automatically`} <span class="font-medium text-primary-500 dark:text-yellow-400">{scheduledInterval.value.toLowerCase()}</span> {$localize`at`} <span class="font-medium text-primary-500 dark:text-yellow-400">{scheduledTime.value.hour.padStart(2, '0')}:{scheduledTime.value.minute.padStart(2, '0')}</span>
+                      </p>
+                    </div>
+
+                    <div class="p-6 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50">
+                      <FrequencySelector
+                        value={scheduledInterval.value}
+                        onChange$={handleIntervalChange$}
+                        label={$localize`Update Frequency`}
+                        recommendedOption="Daily"
+                      />
+                      <p class="mt-3 text-sm text-gray-600 dark:text-slate-400">
+                        {$localize`The script will run`} <span class="font-medium text-primary-500 dark:text-yellow-400">{scheduledInterval.value.toLowerCase()}</span> {$localize`at the specified time`}
                       </p>
                     </div>
                     
@@ -240,7 +259,7 @@ add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-rout
                       <div class="flex items-center gap-2">
                         <LuCheckCircle class="w-5 h-5 text-success-500 dark:text-emerald-400" />
                         <span class="text-sm font-medium text-success-600 dark:text-emerald-300">
-                          {$localize`Script generated for daily execution at`} {scheduledTime.value.hour.padStart(2, '0')}:{scheduledTime.value.minute.padStart(2, '0')}
+                          {$localize`Script generated for`} {scheduledInterval.value.toLowerCase()} {$localize`execution at`} {scheduledTime.value.hour.padStart(2, '0')}:{scheduledTime.value.minute.padStart(2, '0')}
                         </span>
                       </div>
                       <Button
@@ -303,7 +322,7 @@ add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-rout
                   <span class="text-sm font-medium text-primary-500 dark:text-yellow-400">{$localize`Pro Tip`}</span>
                 </div>
                 <p class="text-sm text-gray-600 dark:text-slate-400">
-                  {$localize`Schedule this script to run daily for automatic IP list updates`}
+                  {$localize`Schedule this script to run`} {scheduledInterval.value.toLowerCase()} {$localize`for automatic IP list updates`}
                 </p>
               </div>
             </div>

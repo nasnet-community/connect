@@ -82,7 +82,7 @@ describe("ChooseCG Module Tests - Configuration Display", () => {
       testWithOutput(
         "ForeignBase",
         "Foreign base configuration with bridge and routing setup",
-        { DomesticLink: true },
+        { WANLinkType: "both" },
         () => ForeignBase(true),
       );
 
@@ -292,7 +292,7 @@ describe("ChooseCG Module Tests - Configuration Display", () => {
       testWithOutput(
         "WithDomestic",
         "Complete configuration with domestic link enabled",
-        { DomesticLink: true },
+        { WANLinkType: "both" },
         () => WithDomestic(true),
       );
 
@@ -318,7 +318,7 @@ describe("ChooseCG Module Tests - Configuration Display", () => {
       testWithOutput(
         "WithoutDomestic",
         "Complete configuration with domestic link disabled",
-        { DomesticLink: false },
+        { WANLinkType: "foreign-only" },
         () => WithoutDomestic(false),
       );
 
@@ -388,7 +388,7 @@ describe("ChooseCG Module Tests - Configuration Display", () => {
       testWithOutput(
         "ChooseCG",
         "Main configuration generator with domestic link enabled",
-        { DomesticLink: true },
+        { WANLinkType: "both" },
         () => ChooseCG(true),
       );
 
@@ -414,7 +414,7 @@ describe("ChooseCG Module Tests - Configuration Display", () => {
       testWithOutput(
         "ChooseCG",
         "Main configuration generator with domestic link disabled",
-        { DomesticLink: false },
+        { WANLinkType: "foreign-only" },
         () => ChooseCG(false),
       );
 

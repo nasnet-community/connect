@@ -15,7 +15,7 @@ import type { NetworkDNSConfig, NetworkType, DNSPreset } from "./types";
 interface NetworkDNSCardProps {
   config: NetworkDNSConfig;
   error?: string;
-  dnsPresets?: DNSPreset[];
+  availablePresets?: DNSPreset[];
   onDNSChange$: QRL<(networkType: NetworkType, value: string) => void>;
   onCopyDNS$?: QRL<(networkType: NetworkType) => Promise<boolean>>;
   onApplyPreset$?: QRL<(networkType: NetworkType, preset: DNSPreset) => void>;
@@ -70,7 +70,7 @@ const getNetworkColor = (type: NetworkType) => {
 };
 
 export const NetworkDNSCard = component$<NetworkDNSCardProps>(
-  ({ config, error, dnsPresets = [], onDNSChange$, onCopyDNS$, onApplyPreset$ }) => {
+  ({ config, error, availablePresets = [], onDNSChange$, onCopyDNS$, onApplyPreset$ }) => {
     const copied = useSignal(false);
     const isDropdownOpen = useSignal(false);
     const colors = getNetworkColor(config.type);
@@ -91,15 +91,15 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
     const handlePresetSelect = $((value: string | string[]) => {
       if (onApplyPreset$) {
         const presetValue = Array.isArray(value) ? value[0] : value;
-        const preset = dnsPresets.find(p => p.primary === presetValue);
+        const preset = availablePresets.find(p => p.primary === presetValue);
         if (preset) {
           onApplyPreset$(config.type, preset);
         }
       }
     });
 
-    // Convert DNS presets to SelectOption format
-    const presetOptions: SelectOption[] = dnsPresets.map(preset => ({
+    // Convert available DNS presets to SelectOption format
+    const presetOptions: SelectOption[] = availablePresets.map(preset => ({
       value: preset.primary,
       label: `${preset.name} (${preset.primary})`,
     }));
@@ -224,7 +224,7 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
             </FormField>
 
             {/* DNS Presets */}
-            {dnsPresets.length > 0 && onApplyPreset$ && (
+            {availablePresets.length > 0 && onApplyPreset$ && (
               <Select
                 placeholder={$localize`Quick DNS Presets`}
                 options={presetOptions}

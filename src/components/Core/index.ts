@@ -105,6 +105,7 @@ import { Spinner } from "./DataDisplay/Progress/Spinner";
 import { ProgressBar } from "./DataDisplay/Progress/ProgressBar";
 import { FeatureList } from "./DataDisplay/FeatureList/FeatureList";
 import { SelectionCard } from "./DataDisplay/SelectionCard/SelectionCard";
+import { FrequencySelector } from "./DataDisplay/FrequencySelector/FrequencySelector";
 
 //-------------------------------
 // Media Components
@@ -418,4 +419,22 @@ export {
    * </SelectionCard>
    */
   SelectionCard,
+
+  /**
+   * Frequency selector component with compact card-based selection
+   * @param value - Current selected frequency (Daily, Weekly, Monthly)
+   * @param onChange$ - Handler for frequency selection changes
+   * @param label - Optional label for the selector
+   * @param disabled - Whether the selector is disabled
+   * @param recommendedOption - Which option to mark as recommended
+   *
+   * @example
+   * <FrequencySelector
+   *   value={frequency}
+   *   onChange$={(value) => setFrequency(value)}
+   *   label="Update frequency"
+   *   recommendedOption="Daily"
+   * />
+   */
+  FrequencySelector,
 };

@@ -195,11 +195,14 @@ export const ConfigGenerator = (state: StarState): string => {
   };
 
   try {
+    // Use helper function for backwards compatibility
+    const domesticLinkEnabled = state.Choose.WANLinkType === "domestic-only" || state.Choose.WANLinkType === "both";
+    
     // Generate configurations from each module
-    const chooseConfig = ChooseCG(state.Choose.DomesticLink);
-    const wanConfig = WANCG(state.WAN, state.Choose.DomesticLink);
+    const chooseConfig = ChooseCG(domesticLinkEnabled);
+    const wanConfig = WANCG(state.WAN, domesticLinkEnabled);
     const lanConfig = LANCG(state);
-    const extraConfig = ExtraCG(state.ExtraConfig, state.Choose.DomesticLink);
+    const extraConfig = ExtraCG(state.ExtraConfig, domesticLinkEnabled);
     const showConfig = ShowCG(state);
 
     // Merge all configurations

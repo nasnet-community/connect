@@ -1476,7 +1476,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Generate split bridge ports for domestic link configuration",
-          { DomesticLink: true },
+          { WANLinkType: "both" },
           () => WirelessBridgePortsSingle(true),
         );
 
@@ -1495,7 +1495,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Verify LANBridgeSplit bridge usage for domestic link",
-          { DomesticLink: true },
+          { WANLinkType: "both" },
           () => WirelessBridgePortsSingle(true),
         );
 
@@ -1513,7 +1513,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Configure both wireless bands for split LAN",
-          { DomesticLink: true },
+          { WANLinkType: "both" },
           () => WirelessBridgePortsSingle(true),
         );
 
@@ -1535,7 +1535,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Generate VPN bridge ports for non-domestic link configuration",
-          { DomesticLink: false },
+          { WANLinkType: "foreign-only" },
           () => WirelessBridgePortsSingle(false),
         );
 
@@ -1554,7 +1554,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Verify LANBridgeVPN bridge usage for non-domestic link",
-          { DomesticLink: false },
+          { WANLinkType: "foreign-only" },
           () => WirelessBridgePortsSingle(false),
         );
 
@@ -1572,7 +1572,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Configure both wireless bands for VPN LAN",
-          { DomesticLink: false },
+          { WANLinkType: "foreign-only" },
           () => WirelessBridgePortsSingle(false),
         );
 
@@ -1594,7 +1594,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Validate RouterConfig structure for domestic link",
-          { DomesticLink: true },
+          { WANLinkType: "both" },
           () => WirelessBridgePortsSingle(true),
         );
 
@@ -1614,7 +1614,7 @@ describe("Wireless Helper Function Tests", () => {
         testWithOutput(
           "WirelessBridgePortsSingle",
           "Validate RouterConfig structure for non-domestic link",
-          { DomesticLink: false },
+          { WANLinkType: "foreign-only" },
           () => WirelessBridgePortsSingle(false),
         );
 

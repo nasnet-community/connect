@@ -17,7 +17,6 @@ import { Step3_MultiLink } from "./steps/Step3_MultiLink";
 import { Step4_Summary } from "./steps/Step4_Summary";
 import { useWANAdvanced } from "./hooks/useWANAdvanced";
 import { useWANValidation } from "./hooks/useWANValidation";
-import { useWANPersistence } from "./hooks/useWANPersistence";
 import type { WANConfig } from "../../../StarContext/WANType";
 import type { Ethernet, Wireless, Sfp, LTE } from "../../../StarContext/CommonType";
 
@@ -33,15 +32,13 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     const activeStep = useSignal(0);
 
     // Initialize hooks
-    const advancedHooks = useWANAdvanced();
+    const advancedHooks = useWANAdvanced(mode);
     const validation = useWANValidation();
-    const persistence = useWANPersistence();
     const isApplying = useSignal(false);
 
     // Initialize steps signal early with stable reference
     const steps = useSignal<CStepMeta[]>([]);
     const stepsInitialized = useSignal(false);
-    const stepGenerationCounter = useSignal(0); // Track step regeneration to prevent loops
 
     // Note: Removed automatic step completion tracking to avoid potential render loops
 
@@ -84,13 +81,10 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         }];
       }
       
-      const hasStored = await persistence.hasStoredState$();
-      if (hasStored) {
-        const stored = await persistence.loadState$();
-        if (stored) {
-          // Merge stored state with current state, allowing multiple links
-          Object.assign(advancedHooks.state, stored);
-        }
+      // Save initial links to WANLinks immediately for VPNClient to detect
+      if (mode === "Foreign") {
+        console.log('[WANAdvanced] Saving initial Foreign links to WANLinks:', advancedHooks.state.links);
+        starContext.state.WAN.WANLinks = advancedHooks.state.links;
       }
     });
 
@@ -110,32 +104,38 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     const applyConfiguration$ = $(async () => {
       if (isApplying.value) return;
       isApplying.value = true;
+      
       try {
-        // Basic check
+        // Basic validation check
         if (!advancedHooks.state.links[0]?.interfaceName) {
-          isApplying.value = false;
+          console.warn('Cannot apply configuration: No interface selected');
           return;
         }
 
         const linkConfig = advancedHooks.state.links[0];
         
-        // Direct, simple save to StarContext
+        // Save to StarContext
         const wanConfig: WANConfig = {
           InterfaceName: linkConfig.interfaceName as Ethernet | Wireless | Sfp | LTE,
           WirelessCredentials: linkConfig.wirelessCredentials,
         };
         starContext.state.WAN.WANLink[mode] = wanConfig;
         
-        // Signal outer step completion on next tick to avoid any re-render deadlocks
+        // Save all links to WANLinks array for VPNClient to detect
+        starContext.state.WAN.WANLinks = advancedHooks.state.links;
+        
+        
+        // Call onComplete$ directly without setTimeout to prevent timing issues
         if (onComplete$) {
-          setTimeout(() => {
-            onComplete$();
-          }, 0);
+          await onComplete$();
         }
         
       } catch (error) {
         console.error('Error in apply configuration:', error);
+        // Re-throw to let the UI handle the error appropriately
+        throw error;
       } finally {
+        // Always reset the applying flag
         isApplying.value = false;
       }
     });
@@ -150,131 +150,12 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       activeStep.value = step;
     });
 
-    // Manual refresh function with debouncing to prevent rapid updates
-    const refreshTimeout = useSignal<number | null>(null);
-    const refreshStepCompletion$ = $(async () => {
-      // Debounce rapid calls to prevent loops
-      if (refreshTimeout.value) {
-        clearTimeout(refreshTimeout.value);
-      }
-      
-      await new Promise(resolve => {
-        refreshTimeout.value = setTimeout(resolve, 100) as unknown as number;
-      });
-      // Force recalculation of step completion
-      const step1Complete = advancedHooks.state.links.length > 0 && 
-        advancedHooks.state.links.every(link => 
-          Boolean(link.interfaceName) && 
-          Boolean(link.interfaceType) &&
-          // Check wireless credentials if needed
-          (link.interfaceType !== "Wireless" || Boolean(link.wirelessCredentials?.SSID)) &&
-          // Check LTE settings if needed
-          (link.interfaceType !== "LTE" || Boolean(link.lteSettings?.apn))
-        );
-      
-      // Calculate step 2 completion - connection must be fully configured
-      const step2Complete = advancedHooks.state.links.length > 0 && 
-        advancedHooks.state.links.every(link => {
-          if (!link.connectionType) return false;
-          
-          if (link.connectionType === "PPPoE") {
-            return Boolean(link.connectionConfig?.pppoe?.username) && 
-                   Boolean(link.connectionConfig?.pppoe?.password);
-          }
-          
-          if (link.connectionType === "Static") {
-            return Boolean(link.connectionConfig?.static?.ipAddress) && 
-                   Boolean(link.connectionConfig?.static?.subnet) && 
-                   Boolean(link.connectionConfig?.static?.gateway) && 
-                   Boolean(link.connectionConfig?.static?.primaryDns);
-          }
-          
-          // For DHCP and LTE, automatically consider complete
-          if (link.connectionType === "DHCP" || link.connectionType === "LTE") {
-            return true;
-          }
-          
-          return false;
-        });
-      
-      // Check if user has multiple links
-      const hasMultipleLinks = advancedHooks.state.links.length > 1;
-      
-      // Calculate step 3 completion - only required when there are multiple links
-      const step3Complete = !hasMultipleLinks || Boolean(advancedHooks.state.multiLinkStrategy?.strategy);
-      
-      // Always update step completion status
-      const newSteps = [...steps.value];
-      
-      // Update step 1
-      if (newSteps[0]) {
-        newSteps[0] = { ...newSteps[0], isComplete: step1Complete };
-      }
-      
-      // Update step 2
-      if (newSteps[1]) {
-        newSteps[1] = { ...newSteps[1], isComplete: step2Complete };
-      }
-      
-      // Update step 3 if it exists (multi-link strategy)
-      if (hasMultipleLinks && newSteps[2] && newSteps[2].id === 3) {
-        newSteps[2] = { ...newSteps[2], isComplete: step3Complete };
-      }
-      
-      // Find and update summary step (last step)
-      const summaryStepIndex = newSteps.length - 1;
-      const allRequiredStepsComplete = hasMultipleLinks ? 
-        (step1Complete && step2Complete && step3Complete) : 
-        (step1Complete && step2Complete);
-      
-      if (newSteps[summaryStepIndex]) {
-        newSteps[summaryStepIndex] = { ...newSteps[summaryStepIndex], isComplete: allRequiredStepsComplete };
-      }
-      
-      // Always update to force reactivity
-      steps.value = newSteps;
-    });
 
 
-
-    // Create step definitions (check completion status without reactive tracking)
+    // Create step definitions - simplified to avoid complex reactive dependencies
     const createSteps = $((): CStepMeta[] => {
-      // Check if step 1 is complete - interface must be fully configured
-      const step1Complete = advancedHooks.state.links.every(link => 
-        Boolean(link.interfaceName) && 
-        Boolean(link.interfaceType)
-      );
-      
-      // Check if step 2 is complete - connection must be fully configured
-      const step2Complete = advancedHooks.state.links.every(link => {
-        if (!link.connectionType) return false;
-        
-        if (link.connectionType === "PPPoE") {
-          return Boolean(link.connectionConfig?.pppoe?.username) && 
-                 Boolean(link.connectionConfig?.pppoe?.password);
-        }
-        
-        if (link.connectionType === "Static") {
-          return Boolean(link.connectionConfig?.static?.ipAddress) && 
-                 Boolean(link.connectionConfig?.static?.subnet) && 
-                 Boolean(link.connectionConfig?.static?.gateway) && 
-                 Boolean(link.connectionConfig?.static?.primaryDns);
-        }
-        
-        // For DHCP and LTE, automatically consider complete
-        if (link.connectionType === "DHCP" || link.connectionType === "LTE") {
-          return true;
-        }
-        
-        return false;
-      });
-      
-      // Check if user has multiple links (show multi-link strategy step)
+      // Simple checks without complex reactive tracking
       const hasMultipleLinks = advancedHooks.state.links.length > 1;
-      
-      // Check if step 3 (multi-link) is complete - only required when there are multiple links
-      const step3Complete = !hasMultipleLinks || Boolean(advancedHooks.state.multiLinkStrategy?.strategy);
-
       
       const steps: CStepMeta[] = [
         {
@@ -285,10 +166,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             <Step1_LinkInterface
               wizardState={advancedHooks.state}
               wizardActions={advancedHooks}
-              onRefreshCompletion$={refreshStepCompletion$}
             />
           ),
-          isComplete: step1Complete,
+          isComplete: true, // Allow navigation between steps
         },
         {
           id: 2,
@@ -298,10 +178,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             <Step2_Connection
               wizardState={advancedHooks.state}
               wizardActions={advancedHooks}
-              onRefreshCompletion$={refreshStepCompletion$}
             />
           ),
-          isComplete: step2Complete,
+          isComplete: true, // Allow navigation between steps
         },
       ];
 
@@ -317,13 +196,11 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               wizardActions={advancedHooks}
             />
           ),
-          isComplete: step3Complete,
+          isComplete: true, // Allow navigation between steps
         });
       }
 
-      // Summary step - mark as complete when all previous steps are complete
-      const summaryStepComplete = steps.every(step => step.isComplete);
-      
+      // Summary step
       steps.push({
         id: steps.length + 1,
         title: $localize`Review`,
@@ -335,7 +212,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             onValidate$={validateAdvanced$}
           />
         ),
-        isComplete: summaryStepComplete,
+        isComplete: true, // Allow navigation between steps
       });
 
       return steps;
@@ -350,31 +227,31 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       }
     });
 
-    // Watch for changes in link count to regenerate steps (with protection against loops)
+    // Watch for changes in link count to regenerate steps (simplified to prevent loops)
     useTask$(async ({ track }) => {
       track(() => advancedHooks.state.links.length);
+      track(() => advancedHooks.state.links.map(l => l.name)); // Also track name changes
       
       if (stepsInitialized.value) {
-        // Limit step regeneration frequency
-        stepGenerationCounter.value++;
-        if (stepGenerationCounter.value > 10) {
-          console.warn('Too many step regenerations, skipping to prevent loop');
-          return;
-        }
+        const newSteps = await createSteps();
+        // Only update if steps actually changed (comparing IDs)
+        const currentIds = steps.value.map(s => s.id).join(',');
+        const newIds = newSteps.map(s => s.id).join(',');
         
-        // Use setTimeout to break out of reactive context
-        setTimeout(async () => {
-          const newSteps = await createSteps();
-          // Only update if steps actually changed
-          if (JSON.stringify(newSteps.map(s => s.id)) !== JSON.stringify(steps.value.map(s => s.id))) {
-            steps.value = newSteps;
-          }
+        if (currentIds !== newIds) {
+          steps.value = newSteps;
           
           // If we're currently on step 3 but it no longer exists (single link), go to step 2
           if (activeStep.value >= 2 && advancedHooks.state.links.length === 1) {
             activeStep.value = 1; // Go to step 2 (0-indexed)
           }
-        }, 50);
+        }
+        
+        // Update WANLinks whenever links change (for Foreign mode)
+        if (mode === "Foreign") {
+          console.log('[WANAdvanced] Updating WANLinks on change:', advancedHooks.state.links);
+          starContext.state.WAN.WANLinks = [...advancedHooks.state.links];
+        }
       }
     });
 
@@ -433,7 +310,6 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               activeStep={activeStep.value}
               onStepChange$={handleStepChange$}
               onComplete$={applyConfiguration$}
-              persistState={false}
               allowSkipSteps={false}
             />
           </div>

@@ -4,9 +4,6 @@ import { useSSTPServer } from "./useSSTPServer";
 import { Card } from "~/components/Core/Card";
 import { Field as FormField } from "~/components/Core/Form/Field";
 import { Input } from "~/components/Core/Input";
-import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
-import { CheckboxGroup } from "~/components/Core/Form/Checkbox";
-import { Switch } from "~/components/Core/Switch";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 
 /**
@@ -21,16 +18,7 @@ import { NetworkDropdown } from "../../components/NetworkSelection";
 export const SSTPServerAdvanced = component$(() => {
   const {
     advancedFormState,
-    isEnabled,
-    enableSwitchId,
-    forceAesSwitchId,
-    pfsSwitchId,
-    verifyCertSwitchId,
-    authMethodOptions,
-    tlsVersionOptions,
-    cipherOptions,
     applyChanges,
-    toggleAuthMethod,
   } = useSSTPServer();
 
   return (
@@ -40,22 +28,7 @@ export const SSTPServerAdvanced = component$(() => {
         <span class="font-medium">{$localize`SSTP Server`}</span>
       </div>
       <div class="space-y-6">
-        {/* Enable/Disable Toggle */}
-        <FormField label={$localize`Enable SSTP Server`}>
-          <Switch
-            id={enableSwitchId}
-            label={$localize`Enabled`}
-            checked={isEnabled.value}
-            onChange$={(checked) => {
-              isEnabled.value = checked;
-              applyChanges({});
-            }}
-          />
-        </FormField>
-
-        {isEnabled.value && (
-          <>
-            {/* Basic Configuration */}
+        {/* Basic Configuration */}
             <div class="mb-6">
               <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
                 {$localize`Basic Configuration`}
@@ -71,18 +44,6 @@ export const SSTPServerAdvanced = component$(() => {
               />
             </FormField>
 
-            <FormField
-              label={$localize`Certificate`}
-              helperText={$localize`SSL certificate name`}
-              required
-            >
-              <Input
-                type="text"
-                placeholder={$localize`Enter certificate name`}
-                value={advancedFormState.certificate}
-                onChange$={(_, value) => applyChanges({ certificate: value })}
-              />
-            </FormField>
 
             <FormField
               label={$localize`Port`}
@@ -97,146 +58,15 @@ export const SSTPServerAdvanced = component$(() => {
               />
             </FormField>
 
-            {/* Security Settings */}
-            <div class="mb-6">
-              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
-                {$localize`Security Settings`}
-              </h3>
+            {/* Certificate Configuration Note */}
+            <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+              <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                {$localize`Certificate and Security Configuration`}
+              </h4>
+              <p class="text-sm text-blue-700 dark:text-blue-300">
+                {$localize`SSTP certificates and security settings are configured in the Certificate step. This ensures consistent certificate management and security configuration across all protocols.`}
+              </p>
             </div>
-
-            <FormField
-              label={$localize`TLS Version`}
-              helperText={$localize`Required TLS version`}
-            >
-              <Select
-                value={advancedFormState.tlsVersion}
-                options={tlsVersionOptions}
-                onChange$={(value) =>
-                  applyChanges({ tlsVersion: value as any })
-                }
-              />
-            </FormField>
-
-            <FormField
-              label={$localize`Cipher Suite`}
-              helperText={$localize`Encryption cipher to use`}
-            >
-              <Select
-                value={advancedFormState.ciphers}
-                options={cipherOptions}
-                onChange$={(value) => applyChanges({ ciphers: value as any })}
-              />
-            </FormField>
-
-            <FormField label={$localize`Force AES Encryption`}>
-              <Switch
-                id={forceAesSwitchId}
-                label={$localize`Enabled`}
-                checked={advancedFormState.forceAes}
-                onChange$={(checked) => applyChanges({ forceAes: checked })}
-              />
-            </FormField>
-
-            <FormField label={$localize`Perfect Forward Secrecy (PFS)`}>
-              <Switch
-                id={pfsSwitchId}
-                label={$localize`Enabled`}
-                checked={advancedFormState.pfs}
-                onChange$={(checked) => applyChanges({ pfs: checked })}
-              />
-            </FormField>
-
-            <FormField label={$localize`Verify Client Certificate`}>
-              <Switch
-                id={verifyCertSwitchId}
-                label={$localize`Enabled`}
-                checked={advancedFormState.verifyClientCertificate}
-                onChange$={(checked) =>
-                  applyChanges({ verifyClientCertificate: checked })
-                }
-              />
-            </FormField>
-
-            {/* Authentication */}
-            <div class="mb-6">
-              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
-                {$localize`Authentication`}
-              </h3>
-            </div>
-
-            <FormField
-              label={$localize`Authentication Methods`}
-              helperText={$localize`Select allowed authentication methods`}
-            >
-              <CheckboxGroup
-                options={authMethodOptions}
-                selected={advancedFormState.authentication}
-                onToggle$={toggleAuthMethod}
-              />
-            </FormField>
-
-            {/* Connection Settings */}
-            <div class="mb-6">
-              <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
-                {$localize`Connection Settings`}
-              </h3>
-            </div>
-
-            <FormField
-              label={$localize`Default Profile`}
-              helperText={$localize`PPP profile name`}
-            >
-              <Input
-                type="text"
-                value={advancedFormState.defaultProfile}
-                onChange$={(_, value) =>
-                  applyChanges({ defaultProfile: value })
-                }
-              />
-            </FormField>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormField
-                label={$localize`Maximum MTU`}
-                helperText={$localize`Maximum Transmission Unit`}
-              >
-                <Input
-                  type="number"
-                  value={String(advancedFormState.maxMtu)}
-                  onChange$={(_, value) =>
-                    applyChanges({ maxMtu: parseInt(value) || 1450 })
-                  }
-                />
-              </FormField>
-
-              <FormField
-                label={$localize`Maximum MRU`}
-                helperText={$localize`Maximum Receive Unit`}
-              >
-                <Input
-                  type="number"
-                  value={String(advancedFormState.maxMru)}
-                  onChange$={(_, value) =>
-                    applyChanges({ maxMru: parseInt(value) || 1450 })
-                  }
-                />
-              </FormField>
-            </div>
-
-            <FormField
-              label={$localize`Keepalive Timeout`}
-              helperText={$localize`Connection keepalive timeout in seconds`}
-            >
-              <Input
-                type="number"
-                value={String(advancedFormState.keepaliveTimeout)}
-                onChange$={(_, value) =>
-                  applyChanges({ keepaliveTimeout: parseInt(value) || 30 })
-                }
-              />
-            </FormField>
-          </>
-        )}
       </div>
     </Card>
   );

@@ -1,8 +1,15 @@
 import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
-import { Card } from "~/components/Core";
+import { Card, Input } from "~/components/Core";
 import type { VPNClientAdvancedState } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
-import { VPNLink } from "../components/VPNLink/VPNLink";
+
+// Import protocol-specific fields from Advanced components
+import { WireguardFields } from "../components/fields/WireguardFields";
+import { OpenVPNFields } from "../components/fields/OpenVPNFields";
+import { L2TPFields } from "../components/fields/L2TPFields";
+import { IKEv2Fields } from "../components/fields/IKEv2Fields";
+import { PPTPFields } from "../components/fields/PPTPFields";
+import { SSTFields } from "../components/fields/SSTFields";
 
 export interface Step2VPNConfigurationProps {
   wizardState: VPNClientAdvancedState;
@@ -15,7 +22,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
   wizardActions,
   onRefreshCompletion$
 }) => {
-  const expandedVPNId = useSignal<string | null>(null);
+  // Initialize with the first VPN expanded if any exist
+  const expandedVPNId = useSignal<string | null>(
+    wizardState.vpnConfigs.length > 0 ? wizardState.vpnConfigs[0].id : null
+  );
   const searchQuery = useSignal("");
 
   const canRemoveVPN = wizardState.vpnConfigs.length > wizardActions.foreignWANCount;
@@ -32,15 +42,29 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
     }
   });
 
+  const handleUpdateVPNConfig = $(async (vpnId: string, config: any) => {
+    try {
+      await wizardActions.updateVPN$(vpnId, { config: config });
+      
+      if (onRefreshCompletion$) {
+        await onRefreshCompletion$();
+      }
+    } catch (error) {
+      console.error("Failed to update VPN config:", error);
+    }
+  });
+
   const handleRemoveVPN = $(async (vpnId: string) => {
     if (!canRemoveVPN) return;
     
     try {
       await wizardActions.removeVPN$(vpnId);
       
-      // Close expanded card if it was the removed one
+      // Handle expansion after removal
       if (expandedVPNId.value === vpnId) {
-        expandedVPNId.value = null;
+        // Find another VPN to expand from the remaining ones
+        const remainingVPNs = wizardState.vpnConfigs.filter(vpn => vpn.id !== vpnId);
+        expandedVPNId.value = remainingVPNs.length > 0 ? remainingVPNs[0].id : null;
       }
       
       if (onRefreshCompletion$) {
@@ -53,48 +77,6 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
 
   const handleToggleExpanded = $((vpnId: string) => {
     expandedVPNId.value = expandedVPNId.value === vpnId ? null : vpnId;
-  });
-
-  const handleMoveUp = $(async (vpnId: string) => {
-    // Find the current index
-    const currentIndex = wizardState.vpnConfigs.findIndex(vpn => vpn.id === vpnId);
-    if (currentIndex <= 0) return;
-    
-    try {
-      // Update priorities
-      const currentVPN = wizardState.vpnConfigs[currentIndex];
-      const aboveVPN = wizardState.vpnConfigs[currentIndex - 1];
-      
-      await wizardActions.updateVPN$(currentVPN.id, { priority: aboveVPN.priority });
-      await wizardActions.updateVPN$(aboveVPN.id, { priority: currentVPN.priority });
-      
-      if (onRefreshCompletion$) {
-        await onRefreshCompletion$();
-      }
-    } catch (error) {
-      console.error("Failed to move VPN up:", error);
-    }
-  });
-
-  const handleMoveDown = $(async (vpnId: string) => {
-    // Find the current index
-    const currentIndex = wizardState.vpnConfigs.findIndex(vpn => vpn.id === vpnId);
-    if (currentIndex >= wizardState.vpnConfigs.length - 1) return;
-    
-    try {
-      // Update priorities
-      const currentVPN = wizardState.vpnConfigs[currentIndex];
-      const belowVPN = wizardState.vpnConfigs[currentIndex + 1];
-      
-      await wizardActions.updateVPN$(currentVPN.id, { priority: belowVPN.priority });
-      await wizardActions.updateVPN$(belowVPN.id, { priority: currentVPN.priority });
-      
-      if (onRefreshCompletion$) {
-        await onRefreshCompletion$();
-      }
-    } catch (error) {
-      console.error("Failed to move VPN down:", error);
-    }
   });
 
   // Simple non-reactive filtering
@@ -112,16 +94,42 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
   const configuredVPNs = wizardState.vpnConfigs.filter(vpn => Boolean(vpn.config)).length;
   const totalVPNs = wizardState.vpnConfigs.length;
 
+  const getVPNIcon = (type: string) => {
+    switch (type) {
+      case "Wireguard":
+        return "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0";
+      case "OpenVPN":
+        return "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z";
+      default:
+        return "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z";
+    }
+  };
+
   return (
     <div class="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-          {$localize`VPN Configuration`}
-        </h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {$localize`Configure connection details for each VPN client`}
-        </p>
+      {/* Header with inline statistics */}
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-light text-gray-900 dark:text-white">
+            {$localize`VPN Configuration`}
+          </h2>
+          <div class="mt-2 flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+            <span class="flex items-center gap-2">
+              <div class="h-2 w-2 rounded-full bg-green-500"></div>
+              {configuredVPNs} Configured
+            </span>
+            <span class="flex items-center gap-2">
+              <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+              {totalVPNs} Total
+            </span>
+            {configuredVPNs < totalVPNs && (
+              <span class="flex items-center gap-2">
+                <div class="h-2 w-2 rounded-full bg-yellow-500 animate-pulse"></div>
+                {totalVPNs - configuredVPNs} Remaining
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* No VPNs State */}
@@ -141,78 +149,237 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
         </Card>
       )}
 
-      {/* Progress Overview */}
-      {wizardState.vpnConfigs.length > 0 && (
-        <Card class="bg-blue-50 dark:bg-blue-900/20">
-          <div class="p-4">
-            <div class="flex items-start">
-              <svg class="h-5 w-5 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-              </svg>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  {$localize`Configuration Progress`}
-                </h3>
-                <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                  <p>{$localize`${configuredVPNs} of ${totalVPNs} VPN clients configured`}</p>
-                  {configuredVPNs < totalVPNs && (
-                    <p class="mt-1">{$localize`Configure the remaining ${totalVPNs - configuredVPNs} VPN client(s) below`}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+      {/* Search Box */}
+      {wizardState.vpnConfigs.length > 2 && (
+        <div class="relative">
+          <Input
+            type="text"
+            placeholder="Search VPN clients..."
+            value={searchQuery.value}
+            onInput$={(event: Event, value: string) => searchQuery.value = value}
+            class="pl-10"
+          />
+          <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
       )}
 
-      {/* Search and View Controls */}
-      {wizardState.vpnConfigs.length > 1 && (
-        <Card>
-          <div class="p-4">
-            <div class="flex items-center justify-between">
-              <div class="flex-1 min-w-0">
-                <label class="sr-only">{$localize`Search VPN clients`}</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery.value}
-                    onInput$={(e) => searchQuery.value = (e.target as HTMLInputElement).value}
-                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                    placeholder={$localize`Search VPN clients...`}
-                  />
-                </div>
-              </div>
-              <div class="ml-4 text-sm text-gray-500 dark:text-gray-400">
-                {getFilteredVPNs().length} {getFilteredVPNs().length === 1 ? $localize`client` : $localize`clients`}
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* VPN Links */}
+      {/* VPN Configuration Cards */}
       {wizardState.vpnConfigs.length > 0 && (
         <div class="space-y-4">
-          {getFilteredVPNs().map((vpn, index) => (
-            <VPNLink
-              key={vpn.id}
-              vpn={vpn}
-              index={index}
-              isExpanded={expandedVPNId.value === vpn.id}
-              canRemove={canRemoveVPN}
-              validationErrors={wizardState.validationErrors}
-              onUpdate$={handleUpdateVPN}
-              onRemove$={handleRemoveVPN}
-              onToggleExpand$={handleToggleExpanded}
-              onMoveUp$={handleMoveUp}
-              onMoveDown$={handleMoveDown}
-            />
-          ))}
+          {getFilteredVPNs().map((vpn, index) => {
+            const isExpanded = expandedVPNId.value === vpn.id;
+            const hasConfig = Boolean(vpn.config);
+            const hasErrors = Object.keys(wizardState.validationErrors || {}).some(key => 
+              key.startsWith(`vpn-${vpn.id}`)
+            );
+            
+            // Determine card status
+            const getVPNStatus = () => {
+              if (hasErrors) return "error";
+              if (hasConfig) return "complete";
+              return "incomplete";
+            };
+            
+            const status = getVPNStatus();
+            
+            const getCardStyle = () => {
+              switch (status) {
+                case "complete":
+                  return "bg-white dark:bg-gray-800 border-green-300 dark:border-green-700 hover:border-green-400 dark:hover:border-green-600 hover:shadow-md";
+                case "error":
+                  return "bg-white dark:bg-gray-800 border-red-300 dark:border-red-700 hover:border-red-400 dark:hover:border-red-600 hover:shadow-md";
+                default:
+                  return "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600";
+              }
+            };
+            
+            return (
+              <div
+                key={vpn.id}
+                class={`
+                  relative transition-all duration-200 rounded-xl border ${getCardStyle()}
+                `}
+              >
+                {/* Card Header - Always visible */}
+                <div 
+                  class="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  onClick$={() => handleToggleExpanded(vpn.id)}
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      {/* Icon */}
+                      <div class={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                        status === 'complete' 
+                          ? 'bg-green-100 dark:bg-green-900/30' 
+                          : status === 'error'
+                          ? 'bg-red-100 dark:bg-red-900/30'
+                          : 'bg-gray-100 dark:bg-gray-700'
+                      }`}>
+                        <svg class={`h-5 w-5 ${
+                          status === 'complete' 
+                            ? 'text-green-600 dark:text-green-400' 
+                            : status === 'error'
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-gray-600 dark:text-gray-400'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getVPNIcon(vpn.type)} />
+                        </svg>
+                      </div>
+                      
+                      {/* Name and Info */}
+                      <div>
+                        <h3 class={`font-medium ${
+                          status === 'complete' 
+                            ? 'text-green-900 dark:text-green-100' 
+                            : status === 'incomplete'
+                            ? 'text-gray-600 dark:text-gray-400'
+                            : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {vpn.name || $localize`VPN ${index + 1}`}
+                        </h3>
+                        <p class={`text-sm ${
+                          status === 'incomplete'
+                            ? 'text-gray-400 dark:text-gray-500'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {vpn.type || 'Not configured'}
+                          {vpn.assignedLink && ` • ${vpn.assignedLink}`}
+                          {hasConfig && ` • Configured`}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Right side */}
+                    <div class="flex items-center gap-3">
+                      {status === 'complete' && (
+                        <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      )}
+                      {hasErrors && (
+                        <span class="text-xs text-red-600 dark:text-red-400 font-medium">
+                          Issues detected
+                        </span>
+                      )}
+                      {canRemoveVPN && (
+                        <button
+                          onClick$={$((e: Event) => {
+                            e.stopPropagation();
+                            handleRemoveVPN(vpn.id);
+                          })}
+                          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                      <svg 
+                        class={`h-5 w-5 text-gray-400 transition-transform ${
+                          isExpanded ? 'rotate-90' : ''
+                        }`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Expandable Content with Protocol-Specific Fields */}
+                {isExpanded && (
+                  <div class="border-t border-gray-200 dark:border-gray-700 p-6">
+                    {/* Connection Name */}
+                    <div class="mb-6">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {$localize`Connection Name`}
+                      </label>
+                      <Input
+                        type="text"
+                        value={vpn.name}
+                        onInput$={(event: Event, value: string) => {
+                          handleUpdateVPN(vpn.id, { name: value });
+                        }}
+                        placeholder={$localize`Enter a custom name for this VPN connection`}
+                        class="w-full"
+                      />
+                    </div>
+
+                    {/* Protocol-Specific Configuration */}
+                    <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                      <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                        {$localize`${vpn.type} Configuration`}
+                      </h3>
+                      
+                      {vpn.type === "Wireguard" && (
+                        <WireguardFields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                          mode="advanced"
+                        />
+                      )}
+                      
+                      {vpn.type === "OpenVPN" && (
+                        <OpenVPNFields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                          mode="advanced"
+                        />
+                      )}
+                      
+                      {vpn.type === "L2TP" && (
+                        <L2TPFields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                        />
+                      )}
+                      
+                      {vpn.type === "IKeV2" && (
+                        <IKEv2Fields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                        />
+                      )}
+                      
+                      {vpn.type === "PPTP" && (
+                        <PPTPFields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                        />
+                      )}
+                      
+                      {vpn.type === "SSTP" && (
+                        <SSTFields
+                          config={vpn.config || {}}
+                          onUpdate$={$((updates) => handleUpdateVPNConfig(vpn.id, { ...vpn.config, ...updates }))}
+                          errors={{}}
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Status */}
+                    {hasConfig && (
+                      <div class="mt-4 flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        {$localize`Configuration complete`}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -229,28 +396,6 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {$localize`Try adjusting your search terms`}
             </p>
-          </div>
-        </Card>
-      )}
-
-      {/* Configuration Tips */}
-      {wizardState.vpnConfigs.length > 0 && (
-        <Card class="bg-gray-50 dark:bg-gray-800/50">
-          <div class="p-4">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <span class="inline-flex h-5 w-5 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                <svg class="h-3 w-3 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-              </span>
-              {$localize`Configuration Tips`}
-            </h4>
-            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <li>• {$localize`Click on a VPN card to expand and configure connection details`}</li>
-              <li>• {$localize`Fill in server address, port, and authentication credentials`}</li>
-              <li>• {$localize`Enable/disable individual VPN clients as needed`}</li>
-              <li>• {$localize`Use the priority field to control failover order`}</li>
-            </ul>
           </div>
         </Card>
       )}

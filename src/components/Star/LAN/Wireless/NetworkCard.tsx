@@ -3,6 +3,7 @@ import { HiSparklesOutline, HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
 import { NETWORK_DESCRIPTIONS } from "./constants";
 import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
+import { Toggle } from "~/components/Core";
 
 interface NetworkCardProps {
   networkKey: NetworkKey;
@@ -64,56 +65,34 @@ export const NetworkCard = component$<NetworkCardProps>(
             </div>
 
             <div class="flex items-center gap-4">
-              <div class="flex items-center">
-                <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`Hide`}
-                </span>
-                <label class="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    checked={isHide}
-                    class="peer sr-only"
-                    onChange$={onHideToggle}
-                    disabled={isDisabled}
-                  />
-                  <div
-                    class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? "cursor-not-allowed" : ""}`}
-                  ></div>
-                </label>
-              </div>
+              <Toggle
+                label={$localize`Hide`}
+                labelPosition="left"
+                checked={isHide}
+                onChange$={onHideToggle}
+                disabled={isDisabled}
+                size="md"
+                color="primary"
+              />
 
-              <div class="flex items-center">
-                <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`Split Band`}
-                </span>
-                <label class="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    checked={splitBand}
-                    class="peer sr-only"
-                    onChange$={onSplitBandToggle}
-                    disabled={isDisabled}
-                  />
-                  <div
-                    class={`peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700 ${isDisabled ? "cursor-not-allowed" : ""}`}
-                  ></div>
-                </label>
-              </div>
+              <Toggle
+                label={$localize`Split Band`}
+                labelPosition="left"
+                checked={splitBand}
+                onChange$={onSplitBandToggle}
+                disabled={isDisabled}
+                size="md"
+                color="primary"
+              />
 
-              <div class="flex items-center">
-                <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {isDisabled ? $localize`Enable` : $localize`Disable`}
-                </span>
-                <label class="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    checked={!isDisabled}
-                    class="peer sr-only"
-                    onChange$={onDisabledToggle}
-                  />
-                  <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-500/25 dark:border-gray-600 dark:bg-gray-700"></div>
-                </label>
-              </div>
+              <Toggle
+                label={isDisabled ? $localize`Enable` : $localize`Disable`}
+                labelPosition="left"
+                checked={!isDisabled}
+                onChange$={onDisabledToggle}
+                size="md"
+                color="primary"
+              />
             </div>
           </div>
 
