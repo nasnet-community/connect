@@ -141,10 +141,10 @@ export const CloudDDNSStep = component$(() => {
               </div>
               <Toggle
                 checked={enableDDNS.value}
-                onChange$={(checked) => {
+                onChange$={$((checked) => {
                   enableDDNS.value = checked;
                   validateAndUpdate$();
-                }}
+                })}
                 size="lg"
                 color="secondary"
               />
@@ -332,20 +332,19 @@ export const CloudDDNSStep = component$(() => {
 
 
 
-      {/* Bottom status indicator */}
-      <div class="text-center">
-        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-cyan-200/50 dark:border-cyan-700/50">
+      {/* Bottom status indicator - only show when active */}
+      {enableDDNS.value && ddnsEntries.value.length > 0 && (
+        <div class="text-center">
+          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-cyan-200/50 dark:border-cyan-700/50">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13a3 3 0 00-6 0l3 3 3-3z" />
           </svg>
           <span class="font-medium text-cyan-700 dark:text-cyan-300">
-            {enableDDNS.value && ddnsEntries.value.length > 0
-              ? `${ddnsEntries.value.length} ${ddnsEntries.value.length === 1 ? $localize`DDNS entry configured` : $localize`DDNS entries configured`}`
-              : $localize`Configure Dynamic DNS for consistent domain access`
-            }
+            {`${ddnsEntries.value.length} ${ddnsEntries.value.length === 1 ? $localize`DDNS entry configured` : $localize`DDNS entries configured`}`}
           </span>
         </div>
       </div>
+      )}
     </div>
   );
 });

@@ -125,10 +125,10 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
               <div class="flex items-center gap-3">
                 <Toggle
                   checked={dohConfig.enabled}
-                  onChange$={(checked) => {
+                  onChange$={$((checked) => {
                     onDOHChange$("enabled", checked);
                     isExpanded.value = checked;
-                  }}
+                  })}
                   size="lg"
                   color="primary"
                 />

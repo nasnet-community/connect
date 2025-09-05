@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { Select, Card, CardHeader, CardBody, Input, FormField, Button } from "~/components/Core";
+import { Card, CardHeader, CardBody, Input, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const NTPStep = component$(() => {
@@ -12,39 +12,7 @@ export const NTPStep = component$(() => {
 
   // Create local signals for form state
   const ntpServers = useSignal<string[]>(servicesData.ntp.servers || ["pool.ntp.org"]);
-  const timeZone = useSignal(servicesData.ntp.timeZone || "UTC");
-  const updateInterval = useSignal(servicesData.ntp.updateInterval || "1h");
   const newServerInput = useSignal("");
-
-  // Time zone options
-  const timeZoneOptions = [
-    { value: "UTC", label: $localize`UTC` },
-    { value: "GMT", label: $localize`GMT` },
-    { value: "GMT+1", label: $localize`GMT+1 (CET)` },
-    { value: "GMT+2", label: $localize`GMT+2 (EET)` },
-    { value: "GMT+3", label: $localize`GMT+3 (MSK)` },
-    { value: "GMT+4", label: $localize`GMT+4` },
-    { value: "GMT+5", label: $localize`GMT+5` },
-    { value: "GMT+6", label: $localize`GMT+6` },
-    { value: "GMT+7", label: $localize`GMT+7` },
-    { value: "GMT+8", label: $localize`GMT+8 (CST)` },
-    { value: "GMT+9", label: $localize`GMT+9 (JST)` },
-    { value: "GMT+10", label: $localize`GMT+10 (AEST)` },
-    { value: "GMT-5", label: $localize`GMT-5 (EST)` },
-    { value: "GMT-6", label: $localize`GMT-6 (CST)` },
-    { value: "GMT-7", label: $localize`GMT-7 (MST)` },
-    { value: "GMT-8", label: $localize`GMT-8 (PST)` },
-    { value: "GMT-9", label: $localize`GMT-9 (AKST)` },
-    { value: "GMT-10", label: $localize`GMT-10 (HST)` },
-  ];
-
-  // Update interval options
-  const intervalOptions = [
-    { value: "1h", label: $localize`1 hour` },
-    { value: "6h", label: $localize`6 hours` },
-    { value: "12h", label: $localize`12 hours` },
-    { value: "24h", label: $localize`24 hours` },
-  ];
 
   // Popular NTP servers for quick add
   const popularServers = [
@@ -86,8 +54,8 @@ export const NTPStep = component$(() => {
     // Update context data
     servicesData.ntp = {
       servers: ntpServers.value,
-      timeZone: timeZone.value,
-      updateInterval: updateInterval.value,
+      timeZone: "UTC",
+      updateInterval: "1h",
     };
 
     // Validate: At least one NTP server must be configured
@@ -241,73 +209,7 @@ export const NTPStep = component$(() => {
         </CardBody>
       </Card>
 
-      {/* Time Configuration */}
-      <Card class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-200/50 dark:border-indigo-700/50 shadow-lg">
-        <CardHeader>
-          <h4 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {$localize`Time Configuration`}
-          </h4>
-          <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Configure timezone and synchronization settings`}
-          </p>
-        </CardHeader>
-        <CardBody>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              label={$localize`Time Zone`}
-              helperText={$localize`Select your local timezone`}
-            >
-              <Select
-                options={timeZoneOptions}
-                value={timeZone.value}
-                onChange$={(value) => {
-                  timeZone.value = value;
-                  validateAndUpdate$();
-                }}
-                clearable={false}
-              />
-            </FormField>
 
-            <FormField
-              label={$localize`Update Interval`}
-              helperText={$localize`How often to sync time`}
-            >
-              <Select
-                options={intervalOptions}
-                value={updateInterval.value}
-                onChange$={(value) => {
-                  updateInterval.value = value;
-                  validateAndUpdate$();
-                }}
-                clearable={false}
-              />
-            </FormField>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Status */}
-      {ntpServers.value.length > 0 && (
-        <Card class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-lg">
-          <CardBody>
-            <div class="flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-sm font-medium text-green-800 dark:text-green-200">
-                {ntpServers.value.length === 1 
-                  ? $localize`1 NTP server configured for time synchronization`
-                  : $localize`${ntpServers.value.length} NTP servers configured for redundant time synchronization`
-                }
-              </p>
-            </div>
-          </CardBody>
-        </Card>
-      )}
     </div>
   );
 });

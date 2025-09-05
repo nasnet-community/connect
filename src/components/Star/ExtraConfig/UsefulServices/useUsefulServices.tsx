@@ -7,13 +7,6 @@ export type UsefulServicesMode = "easy" | "advanced";
 export interface CertificateData {
   enableSelfSigned: boolean;
   enableLetsEncrypt: boolean;
-  enableWWWSSL: boolean;
-  enableAPISSL: boolean;
-  name: string;
-  keySize: "2048" | "4096";
-  countryCode: string;
-  organization: string;
-  commonName: string;
 }
 
 export interface NTPData {
@@ -83,13 +76,6 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
     certificate: {
       enableSelfSigned: false,
       enableLetsEncrypt: false,
-      enableWWWSSL: false,
-      enableAPISSL: false,
-      name: "",
-      keySize: "2048",
-      countryCode: "",
-      organization: "",
-      commonName: "",
     },
     ntp: {
       servers: ["pool.ntp.org"],

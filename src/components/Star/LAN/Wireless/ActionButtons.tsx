@@ -1,4 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import { Button } from "~/components/Core";
 
 interface ActionButtonsProps {
   onSubmit: QRL<() => void>;
@@ -9,14 +10,14 @@ export const ActionButtons = component$<ActionButtonsProps>(
   ({ onSubmit, isValid }) => {
     return (
       <div class="mt-8 flex justify-end">
-        <button
+        <Button
           onClick$={onSubmit}
           disabled={!isValid}
-          class="rounded-lg bg-primary-500 px-6 py-2 text-white 
-               transition-colors duration-200 hover:bg-primary-600 disabled:bg-gray-400"
+          variant="primary"
+          size="md"
         >
           {$localize`Save`}
-        </button>
+        </Button>
       </div>
     );
   },

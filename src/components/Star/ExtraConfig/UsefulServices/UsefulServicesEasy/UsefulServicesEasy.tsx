@@ -221,9 +221,9 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
 
                     <Toggle
                       checked={serviceStates[service.id]}
-                      onChange$={(checked) =>
+                      onChange$={$((checked) =>
                         (serviceStates[service.id] = checked)
-                      }
+                      )}
                       label={
                         serviceStates[service.id]
                           ? $localize`Enabled`

@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { SelectionCard, Card, CardHeader, CardBody, Toggle, Alert } from "~/components/Core";
+import { SelectionCard, Card, CardHeader, Toggle, Alert } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const UPNPStep = component$(() => {
@@ -109,8 +109,6 @@ export const UPNPStep = component$(() => {
     validateAndUpdate$();
   });
 
-  const selectedLinkType = linkTypeOptions.find(option => option.id === linkType.value);
-
   return (
     <div class="space-y-8 animate-fade-in-up">
       {/* Modern header */}
@@ -157,10 +155,10 @@ export const UPNPStep = component$(() => {
             </div>
             <Toggle
               checked={upnpEnabled.value}
-              onChange$={(checked) => {
+              onChange$={$((checked) => {
                 upnpEnabled.value = checked;
                 validateAndUpdate$();
-              }}
+              })}
               size="lg"
               color="primary"
             />
@@ -234,77 +232,22 @@ export const UPNPStep = component$(() => {
               </div>
             </Alert>
           )}
-
-          {/* Configuration Summary */}
-          <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-lg">
-            <CardHeader>
-              <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-green-800 dark:text-green-200">
-                    {$localize`UPnP Configuration Active`}
-                  </h4>
-                  <p class="text-green-600 dark:text-green-400">
-                    {$localize`${selectedLinkType?.title} • Automatic port management enabled`}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardBody>
-              <div class="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4">
-                <p class="text-sm text-green-800 dark:text-green-300 font-medium mb-2">
-                  {$localize`UPnP will provide the following capabilities:`}
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-700 dark:text-green-400">
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Automatic port forwarding`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Device discovery`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Media streaming support`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Gaming console support`}
-                  </div>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
         </div>
       )}
 
-      {/* Bottom status indicator */}
-      <div class="text-center">
-        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-orange-200/50 dark:border-orange-700/50">
+      {/* Bottom status indicator - only show when enabled */}
+      {upnpEnabled.value && (
+        <div class="text-center">
+          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-orange-200/50 dark:border-orange-700/50">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d={upnpEnabled.value ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"} />
           </svg>
           <span class="font-medium text-orange-700 dark:text-orange-300">
-            {upnpEnabled.value 
-              ? `${$localize`UPnP enabled on`} ${selectedLinkType?.title}`
-              : $localize`UPnP disabled - Enable for automatic device configuration`
-            }
+            {$localize`UPnP enabled`}
           </span>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 });

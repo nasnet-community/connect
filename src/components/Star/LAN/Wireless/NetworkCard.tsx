@@ -1,9 +1,8 @@
-import { component$, type QRL } from "@builder.io/qwik";
+import { component$, type QRL, $ } from "@builder.io/qwik";
 import { HiSparklesOutline, HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
 import { NETWORK_DESCRIPTIONS } from "./constants";
-import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
-import { Toggle } from "~/components/Core";
+import { Toggle, Button } from "~/components/Core";
 
 interface NetworkCardProps {
   networkKey: NetworkKey;
@@ -69,7 +68,9 @@ export const NetworkCard = component$<NetworkCardProps>(
                 label={$localize`Hide`}
                 labelPosition="left"
                 checked={isHide}
-                onChange$={onHideToggle}
+                onChange$={$(() => {
+                  onHideToggle();
+                })}
                 disabled={isDisabled}
                 size="md"
                 color="primary"
@@ -79,7 +80,9 @@ export const NetworkCard = component$<NetworkCardProps>(
                 label={$localize`Split Band`}
                 labelPosition="left"
                 checked={splitBand}
-                onChange$={onSplitBandToggle}
+                onChange$={$(() => {
+                  onSplitBandToggle();
+                })}
                 disabled={isDisabled}
                 size="md"
                 color="primary"
@@ -89,7 +92,9 @@ export const NetworkCard = component$<NetworkCardProps>(
                 label={isDisabled ? $localize`Enable` : $localize`Disable`}
                 labelPosition="left"
                 checked={!isDisabled}
-                onChange$={onDisabledToggle}
+                onChange$={$(() => {
+                  onDisabledToggle();
+                })}
                 size="md"
                 color="primary"
               />
@@ -116,20 +121,18 @@ export const NetworkCard = component$<NetworkCardProps>(
                   placeholder={$localize`Enter ${displayName} network name`}
                   required={!isDisabled}
                 />
-                <button
+                <Button
                   onClick$={generateNetworkSSID}
                   disabled={isLoading[`${networkKey}SSID`] || isDisabled}
-                  class={`flex h-11 min-w-[160px] items-center justify-center gap-2 
-                       rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600
-                       ${isDisabled ? "cursor-not-allowed opacity-75" : ""}`}
+                  loading={isLoading[`${networkKey}SSID`]}
+                  variant="primary"
+                  size="md"
+                  leftIcon
+                  class="min-w-[160px]"
                 >
-                  {isLoading[`${networkKey}SSID`] ? (
-                    <Spinner size="xs" color="white" variant="circle" />
-                  ) : (
-                    <HiSparklesOutline class="h-5 w-5" />
-                  )}
-                  <span>{$localize`Generate SSID`}</span>
-                </button>
+                  <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
+                  {$localize`Generate SSID`}
+                </Button>
               </div>
             </div>
 
@@ -152,20 +155,18 @@ export const NetworkCard = component$<NetworkCardProps>(
                   placeholder={$localize`Enter ${displayName} password`}
                   required={!isDisabled}
                 />
-                <button
+                <Button
                   onClick$={generateNetworkPassword}
                   disabled={isLoading[`${networkKey}Password`] || isDisabled}
-                  class={`flex h-11 min-w-[160px] items-center justify-center gap-2 
-                       rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600
-                       ${isDisabled ? "cursor-not-allowed opacity-75" : ""}`}
+                  loading={isLoading[`${networkKey}Password`]}
+                  variant="primary"
+                  size="md"
+                  leftIcon
+                  class="min-w-[160px]"
                 >
-                  {isLoading[`${networkKey}Password`] ? (
-                    <Spinner size="xs" color="white" variant="circle" />
-                  ) : (
-                    <HiSparklesOutline class="h-5 w-5" />
-                  )}
-                  <span>{$localize`Generate Pass`}</span>
-                </button>
+                  <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
+                  {$localize`Generate Pass`}
+                </Button>
               </div>
             </div>
           </div>

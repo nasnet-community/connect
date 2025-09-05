@@ -39,6 +39,10 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     // Initialize steps signal early with stable reference
     const steps = useSignal<CStepMeta[]>([]);
     const stepsInitialized = useSignal(false);
+    
+    // Track step completion status
+    const step1Complete = useSignal(false); // Link & Interface
+    const step2Complete = useSignal(false); // Connection
 
     // Note: Removed automatic step completion tracking to avoid potential render loops
 
@@ -168,7 +172,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               wizardActions={advancedHooks}
             />
           ),
-          isComplete: true, // Allow navigation between steps
+          isComplete: step1Complete.value,
         },
         {
           id: 2,
@@ -180,7 +184,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               wizardActions={advancedHooks}
             />
           ),
-          isComplete: true, // Allow navigation between steps
+          isComplete: step2Complete.value,
         },
       ];
 
@@ -197,6 +201,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             />
           ),
           isComplete: true, // Allow navigation between steps
+          skippable: true,
+          isOptional: true,
+          isDisabled: !step1Complete.value || !step2Complete.value,
         });
       }
 
@@ -213,6 +220,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           />
         ),
         isComplete: true, // Allow navigation between steps
+        skippable: true,
+        isOptional: true,
+        isDisabled: !step1Complete.value || !step2Complete.value,
       });
 
       return steps;
@@ -227,10 +237,22 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       }
     });
 
-    // Watch for changes in link count to regenerate steps (simplified to prevent loops)
+    // Watch for changes and check step completion status
     useTask$(async ({ track }) => {
       track(() => advancedHooks.state.links.length);
       track(() => advancedHooks.state.links.map(l => l.name)); // Also track name changes
+      track(() => advancedHooks.state.links.map(l => l.interfaceName)); // Track interface selection
+      track(() => advancedHooks.state.links.map(l => l.connectionConfirmed)); // Track connection confirmation
+      
+      // Check step 1 completion: All links have interfaces selected
+      const allLinksHaveInterfaces = advancedHooks.state.links.length > 0 && 
+        advancedHooks.state.links.every(link => link.interfaceName);
+      step1Complete.value = allLinksHaveInterfaces;
+      
+      // Check step 2 completion: All links have connection confirmed
+      const allLinksHaveConnectionConfirmed = advancedHooks.state.links.length > 0 && 
+        advancedHooks.state.links.every(link => link.connectionConfirmed);
+      step2Complete.value = allLinksHaveConnectionConfirmed;
       
       if (stepsInitialized.value) {
         const newSteps = await createSteps();
@@ -245,6 +267,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           if (activeStep.value >= 2 && advancedHooks.state.links.length === 1) {
             activeStep.value = 1; // Go to step 2 (0-indexed)
           }
+        } else {
+          // Update existing steps' properties even if IDs haven't changed
+          steps.value = newSteps;
         }
         
         // Update WANLinks whenever links change (for Foreign mode)
@@ -310,7 +335,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               activeStep={activeStep.value}
               onStepChange$={handleStepChange$}
               onComplete$={applyConfiguration$}
-              allowSkipSteps={false}
+              allowSkipSteps={true}
             />
           </div>
         </div>

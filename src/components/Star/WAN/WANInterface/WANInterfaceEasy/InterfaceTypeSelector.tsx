@@ -1,12 +1,26 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import type { RouterInterfaces } from "../../../StarContext/ChooseType";
 
 export interface InterfaceTypeSelectorProps {
   selectedType: string;
   onSelect$: QRL<(type: string) => void>;
+  availableInterfaces: RouterInterfaces;
 }
 
 export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
-  ({ selectedType, onSelect$ }) => {
+  ({ selectedType, onSelect$, availableInterfaces }) => {
+    // Check which interface types are available
+    const isEthernetAvailable = availableInterfaces.ethernet && availableInterfaces.ethernet.length > 0;
+    const isWirelessAvailable = availableInterfaces.wireless && availableInterfaces.wireless.length > 0;
+    const isSFPAvailable = availableInterfaces.sfp && availableInterfaces.sfp.length > 0;
+    const isLTEAvailable = availableInterfaces.lte && availableInterfaces.lte.length > 0;
+
+    const interfaceTypes = [
+      { type: "Ethernet", isAvailable: isEthernetAvailable },
+      { type: "Wireless", isAvailable: isWirelessAvailable },
+      { type: "SFP", isAvailable: isSFPAvailable },
+      { type: "LTE", isAvailable: isLTEAvailable },
+    ];
     return (
       <div class="space-y-2">
         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
@@ -18,24 +32,29 @@ export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
           {$localize`Interface Type`}
         </label>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {["Ethernet", "Wireless", "SFP", "LTE"].map((type) => (
+          {interfaceTypes.map(({ type, isAvailable }) => (
             <button
               key={type}
               type="button"
-              onClick$={() => onSelect$(type)}
+              onClick$={() => isAvailable && onSelect$(type)}
+              disabled={!isAvailable}
               class={`
-                group relative overflow-hidden rounded-xl border-2 p-3 transition-all hover:scale-105
-                ${selectedType === type 
-                  ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20" 
-                  : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"}
+                group relative overflow-hidden rounded-xl border-2 p-3 transition-all
+                ${!isAvailable 
+                  ? "opacity-50 cursor-not-allowed border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800" 
+                  : `hover:scale-105 ${selectedType === type 
+                    ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20" 
+                    : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"}`}
               `}
             >
               <div class="relative z-10 flex flex-col items-center gap-2">
                 <div class={`
                   flex h-10 w-10 items-center justify-center rounded-lg transition-colors
-                  ${selectedType === type 
-                    ? "bg-primary-500 text-white" 
-                    : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"}
+                  ${!isAvailable 
+                    ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500" 
+                    : selectedType === type 
+                      ? "bg-primary-500 text-white" 
+                      : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"}
                 `}>
                   {type === "Ethernet" && (
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,9 +77,16 @@ export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
                     </svg>
                   )}
                 </div>
-                <span class={`text-xs font-medium ${selectedType === type ? "text-primary-700 dark:text-primary-300" : "text-gray-700 dark:text-gray-300"}`}>
+                <span class={`text-xs font-medium ${!isAvailable ? "text-gray-400 dark:text-gray-500" : selectedType === type ? "text-primary-700 dark:text-primary-300" : "text-gray-700 dark:text-gray-300"}`}>
                   {type}
                 </span>
+                {!isAvailable && (
+                  <div class="absolute inset-0 flex items-center justify-center bg-gray-50/80 dark:bg-gray-800/80 rounded-xl">
+                    <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 px-2 py-1 rounded shadow-sm">
+                      {$localize`Not Available`}
+                    </span>
+                  </div>
+                )}
               </div>
               {selectedType === type && (
                 <div class="absolute top-1 right-1">

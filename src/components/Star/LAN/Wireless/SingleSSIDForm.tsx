@@ -1,8 +1,7 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import { HiSparklesOutline } from "@qwikest/icons/heroicons";
 import type { QRL, Signal } from "@builder.io/qwik";
-import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
-import { Input, Toggle } from "~/components/Core";
+import { Input, Toggle, Button } from "~/components/Core";
 
 interface SingleSSIDFormProps {
   ssid: Signal<string>;
@@ -12,9 +11,9 @@ interface SingleSSIDFormProps {
   splitBand: Signal<boolean>;
   generateSSID: QRL<() => Promise<void>>;
   generatePassword: QRL<() => Promise<void>>;
-  toggleHide: QRL<() => void>;
-  toggleDisabled: QRL<() => void>;
-  toggleSplitBand: QRL<() => void>;
+  toggleHide?: QRL<() => void>;
+  toggleDisabled?: QRL<() => void>;
+  toggleSplitBand?: QRL<() => void>;
   isLoading: Signal<Record<string, boolean>>;
 }
 
@@ -26,8 +25,6 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     splitBand,
     generateSSID,
     generatePassword,
-    toggleHide,
-    toggleSplitBand,
     isLoading,
   }) => {
     return (
@@ -41,7 +38,9 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
             label={$localize`Hide`}
             labelPosition="left"
             checked={isHide.value}
-            onChange$={toggleHide}
+            onChange$={$((value: boolean) => {
+              isHide.value = value;
+            })}
             size="md"
             color="primary"
           />
@@ -50,7 +49,9 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
             label={$localize`Split Band`}
             labelPosition="left"
             checked={splitBand.value}
-            onChange$={toggleSplitBand}
+            onChange$={$((value: boolean) => {
+              splitBand.value = value;
+            })}
             size="md"
             color="primary"
           />
@@ -77,18 +78,18 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
                 required
                 class="h-11 flex-1"
               />
-              <button
+              <Button
                 onClick$={generateSSID}
                 disabled={isLoading.value.singleSSID}
-                class="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600"
+                loading={isLoading.value.singleSSID}
+                variant="primary"
+                size="md"
+                leftIcon
+                class="min-w-[160px]"
               >
-                {isLoading.value.singleSSID ? (
-                  <Spinner size="xs" color="white" variant="circle" />
-                ) : (
-                  <HiSparklesOutline class="h-5 w-5" />
-                )}
-                <span>{$localize`Generate SSID`}</span>
-              </button>
+                <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
+                {$localize`Generate SSID`}
+              </Button>
             </div>
           </div>
 
@@ -112,18 +113,18 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
                 required
                 class="h-11 flex-1"
               />
-              <button
+              <Button
                 onClick$={generatePassword}
                 disabled={isLoading.value.singlePassword}
-                class="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 text-white transition-all duration-200 hover:bg-primary-600"
+                loading={isLoading.value.singlePassword}
+                variant="primary"
+                size="md"
+                leftIcon
+                class="min-w-[160px]"
               >
-                {isLoading.value.singlePassword ? (
-                  <Spinner size="xs" color="white" variant="circle" />
-                ) : (
-                  <HiSparklesOutline class="h-5 w-5" />
-                )}
-                <span>{$localize`Generate Pass`}</span>
-              </button>
+                <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
+                {$localize`Generate Pass`}
+              </Button>
             </div>
           </div>
         </div>

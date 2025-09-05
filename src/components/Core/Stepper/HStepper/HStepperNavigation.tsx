@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import { HelpSettingsToggle } from "../shared/components/HelpSettingsToggle";
+import { HelpSettingsToggle } from "./HStepperProgress";
 
 interface NavigationProps {
   activeStep: number;
