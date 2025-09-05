@@ -25,13 +25,6 @@ export const UsefulServicesAdvanced = component$<StepProps>(
       certificate: {
         enableSelfSigned: false,
         enableLetsEncrypt: false,
-        enableWWWSSL: false,
-        enableAPISSL: false,
-        name: "",
-        keySize: "2048",
-        countryCode: "",
-        organization: "",
-        commonName: "",
       },
       ntp: {
         servers: ["pool.ntp.org"],
@@ -170,30 +163,10 @@ export const UsefulServicesAdvanced = component$<StepProps>(
                 </div>
               </div>
               
-              {/* Animated progress indicator */}
-              <div class="mt-8 flex items-center space-x-2">
-                <div class="h-1 flex-1 rounded-full bg-white/20">
-                  <div class="h-full w-1/6 animate-shimmer rounded-full bg-gradient-to-r from-white/60 to-white/80"></div>
-                </div>
-                <span class="text-sm text-white/80">{$localize`Step 1 of 6`}</span>
-              </div>
             </div>
 
             {/* Modern stepper content */}
             <div class="relative p-8">
-              {/* Floating step indicators */}
-              <div class="absolute left-8 top-4 flex space-x-2">
-                {steps.map((step, index) => (
-                  <div 
-                    key={step.id}
-                    class={`h-2 w-8 rounded-full transition-all duration-300 ${
-                      index === 0 
-                        ? "bg-primary-500 scale-110" 
-                        : "bg-gray-300 dark:bg-gray-600"
-                    }`}
-                  ></div>
-                ))}
-              </div>
               
               <CStepper
                 steps={steps}
@@ -209,13 +182,6 @@ export const UsefulServicesAdvanced = component$<StepProps>(
               />
             </div>
           </div>
-        </div>
-        
-        {/* Floating action hint */}
-        <div class="mt-4 text-center">
-          <p class="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
-            {$localize`Scroll down to explore each service configuration`}
-          </p>
         </div>
       </div>
     );

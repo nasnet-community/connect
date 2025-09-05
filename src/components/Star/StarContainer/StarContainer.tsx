@@ -313,7 +313,7 @@ export const StarContainer = component$(() => {
             }}
           />
         )),
-        isComplete: true,
+        isComplete: false,
         helpData: {
           title: "Router Selection & Configuration Mode",
           description: "Choose your MikroTik router model and select the configuration approach that best fits your needs.",
@@ -349,7 +349,7 @@ export const StarContainer = component$(() => {
             }}
           />
         )),
-        isComplete: true,
+        isComplete: false,
         helpData: {
           title: "WAN Configuration Guide",
           description: "Configure your internet connection, multi-WAN setup, and VPN client settings for optimal connectivity and redundancy.",
@@ -391,7 +391,7 @@ export const StarContainer = component$(() => {
             }}
           />
         )),
-        isComplete: true,
+        isComplete: false,
         helpData: {
           title: "LAN & Network Configuration",
           description: "Configure your local network segments, wireless settings, VPN servers, and security policies for optimal performance and security.",
@@ -438,7 +438,7 @@ export const StarContainer = component$(() => {
             }}
           />
         )),
-        isComplete: true,
+        isComplete: false,
         helpData: {
           title: "Advanced Features & Gaming",
           description: "Configure advanced features including gaming optimization, DDNS, system maintenance, and other professional-grade networking features.",

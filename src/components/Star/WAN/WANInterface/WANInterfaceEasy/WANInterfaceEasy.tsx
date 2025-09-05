@@ -6,6 +6,7 @@ import { InterfaceTypeSelector } from "./InterfaceTypeSelector";
 import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessSettings } from "./WirelessSettings";
 import { LTESettings } from "./LTESettings";
+import { Button } from "~/components/Core";
 import type { WANInterfaceProps } from "./types";
 
 export const WANInterfaceEasy = component$<WANInterfaceProps>(
@@ -68,6 +69,7 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
             <InterfaceTypeSelector
               selectedType={selectedInterfaceType.value}
               onSelect$={handleInterfaceTypeSelect}
+              availableInterfaces={availableInterfaces}
             />
 
             {selectedInterfaceType.value && (
@@ -81,7 +83,7 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
               />
             )}
 
-            {selectedInterfaceType.value === "Wireless" && (
+            {selectedInterfaceType.value === "Wireless" && selectedInterface.value && (
               <WirelessSettings
                 ssid={ssid.value}
                 password={password.value}
@@ -90,7 +92,7 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
               />
             )}
 
-            {selectedInterfaceType.value === "LTE" && (
+            {selectedInterfaceType.value === "LTE" && selectedInterface.value && (
               <LTESettings
                 apn={apn.value}
                 username={lteUsername.value}
@@ -109,15 +111,14 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
                   ? $localize`Configuration Complete`
                   : $localize`Configuration Incomplete`}
               </span>
-              <button
+              <Button
                 onClick$={handleComplete}
-                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium 
-                text-white transition-colors hover:bg-primary-600
-                disabled:cursor-not-allowed disabled:opacity-50"
+                variant="primary"
+                size="sm"
                 disabled={!isValid.value || isComplete}
               >
                 {isComplete ? $localize`Configured` : $localize`Save`}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

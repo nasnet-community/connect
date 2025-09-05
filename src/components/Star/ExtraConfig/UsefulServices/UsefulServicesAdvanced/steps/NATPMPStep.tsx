@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { SelectionCard, Card, CardHeader, CardBody, Toggle, Alert } from "~/components/Core";
+import { SelectionCard, Card, CardHeader, Toggle, Alert } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const NATPMPStep = component$(() => {
@@ -109,8 +109,6 @@ export const NATPMPStep = component$(() => {
     validateAndUpdate$();
   });
 
-  const selectedLinkType = linkTypeOptions.find(option => option.id === linkType.value);
-
   return (
     <div class="space-y-8 animate-fade-in-up">
       {/* Modern header */}
@@ -160,10 +158,10 @@ export const NATPMPStep = component$(() => {
             </div>
             <Toggle
               checked={natpmpEnabled.value}
-              onChange$={(checked) => {
+              onChange$={$((checked) => {
                 natpmpEnabled.value = checked;
                 validateAndUpdate$();
-              }}
+              })}
               size="lg"
               color="primary"
             />
@@ -242,81 +240,22 @@ export const NATPMPStep = component$(() => {
             </Alert>
           )}
 
-          {/* Configuration Summary */}
-          <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-lg">
-            <CardHeader>
-              <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="text-xl font-bold text-green-800 dark:text-green-200">
-                    {$localize`NAT-PMP Configuration Active`}
-                  </h4>
-                  <p class="text-green-600 dark:text-green-400">
-                    {$localize`${selectedLinkType?.title} • Automatic port mapping enabled`}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardBody>
-              <div class="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4">
-                <p class="text-sm text-green-800 dark:text-green-300 font-medium mb-2">
-                  {$localize`NAT-PMP will provide the following capabilities:`}
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-700 dark:text-green-400">
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Automatic port mapping`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`NAT traversal support`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Apple device compatibility`}
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {$localize`Legacy protocol support`}
-                  </div>
-                </div>
-                <div class="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-200/50 dark:border-blue-700/50">
-                  <p class="text-xs text-blue-800 dark:text-blue-300 font-medium">
-                    💡 {$localize`NAT-PMP is the predecessor to PCP (Port Control Protocol) and is widely supported by Apple devices and applications.`}
-                  </p>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
         </div>
       )}
 
-      {/* Bottom status indicator */}
-      <div class="text-center">
-        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-teal-200/50 dark:border-teal-700/50">
+      {/* Bottom status indicator - only show when enabled */}
+      {natpmpEnabled.value && (
+        <div class="text-center">
+          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-teal-200/50 dark:border-teal-700/50">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d={natpmpEnabled.value ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"} />
           </svg>
           <span class="font-medium text-teal-700 dark:text-teal-300">
-            {natpmpEnabled.value 
-              ? `${$localize`NAT-PMP enabled on`} ${selectedLinkType?.title}`
-              : $localize`NAT-PMP disabled - Enable for automatic port mapping`
-            }
+            {$localize`NAT-PMP enabled`}
           </span>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 });

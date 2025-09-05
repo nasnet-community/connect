@@ -50,7 +50,7 @@ export default component$(() => {
     
     // Add firewall mangle commands before the main script
     const mangleCommands = `/ip firewall mangle
-add action=mark-routing chain=output comment="S4I Route" dst-address-list=!LOCAL-IP dst-port=443,80 new-routing-mark=to-SL passthrough=no protocol=tcp src-address=192.168.30.1
+add action=mark-routing chain=output comment="S4I Route" dst-address-list=!LOCAL-IP dst-port=443,80 new-routing-mark=to-FRN passthrough=no protocol=tcp src-address=192.168.30.1
 
 `;
     

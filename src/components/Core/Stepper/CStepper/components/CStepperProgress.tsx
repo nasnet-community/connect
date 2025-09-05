@@ -1,4 +1,4 @@
-import { component$, useSignal, useTask$, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
 import type { CStepMeta } from "../types";
 import type { QRL } from "@builder.io/qwik";
 import type { JSX } from "@builder.io/qwik";
@@ -26,49 +26,48 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   useTask$(({ track }) => {
     track(() => [steps.length, activeStep, useCondensedView.value]);
     
-    if (useCondensedView.value && steps.length > 5) {
-      // In condensed mode, we show: 
-      // - First two steps 
-      // - Active step (and adjacent steps if possible)
-      // - Last two steps
+    if (steps.length > 5) {
+      // In condensed mode, show maximum 5 steps:
+      // - First step
+      // - Previous step (if not first)
+      // - Active step
+      // - Next step (if not last) 
+      // - Last step
       const stepsToShow = new Set<number>();
       
-      // Always show first and second steps
+      // Always show first step
       stepsToShow.add(0);
-      if (steps.length > 1) stepsToShow.add(1);
       
-      // Always show last and second-to-last steps
+      // Always show last step
       stepsToShow.add(steps.length - 1);
-      if (steps.length > 1) stepsToShow.add(steps.length - 2);
       
-      // Show active step and one step before and after if possible
+      // Always show active step
       stepsToShow.add(activeStep);
-      if (activeStep > 0) stepsToShow.add(activeStep - 1);
-      if (activeStep < steps.length - 1) stepsToShow.add(activeStep + 1);
+      
+      // Show previous step if possible and not first
+      if (activeStep > 0 && activeStep > 1) {
+        stepsToShow.add(activeStep - 1);
+      }
+      
+      // Show next step if possible and not last
+      if (activeStep < steps.length - 1 && activeStep < steps.length - 2) {
+        stepsToShow.add(activeStep + 1);
+      }
       
       // Convert to sorted array
       visibleSteps.value = Array.from(stepsToShow).sort((a, b) => a - b);
     } else {
-      // Show all steps in normal mode
+      // Show all steps when 5 or fewer
       visibleSteps.value = steps.map((_, i) => i);
     }
   });
   
-  // Check if we need condensed view based on container width
-  useVisibleTask$(({ track }) => {
-    track(() => containerRef.value);
+  // Set condensed view based on step count
+  useTask$(({ track }) => {
+    track(() => steps.length);
     
-    if (containerRef.value) {
-      const observer = new ResizeObserver(entries => {
-        const containerWidth = entries[0].contentRect.width;
-        // Use condensed view if less than 100px per step is available
-        useCondensedView.value = containerWidth / steps.length < 100;
-      });
-      
-      observer.observe(containerRef.value);
-      
-      return () => observer.disconnect();
-    }
+    // Use condensed view when more than 5 steps
+    useCondensedView.value = steps.length > 5;
   });
   
   // Function to render step indicator content
@@ -106,9 +105,10 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   };
   
   return (
-    <div class="pt-2 pb-8" ref={containerRef}>
+    <div class="pt-2 pb-8 flex flex-col items-center w-full" ref={containerRef}>
       {/* Mobile view: vertical stepper */}
-      <ol class="relative border-l border-gray-200 dark:border-gray-700 ml-4 space-y-6 sm:hidden">
+      <div class="flex justify-center w-full sm:hidden">
+        <ol class="relative border-l border-gray-200 dark:border-gray-700 ml-4 space-y-6">
         {steps.map((step, index) => {
           const isComplete = activeStep > index;
           const isCurrent = activeStep === index;
@@ -152,61 +152,42 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
             </li>
           );
         })}
-      </ol>
+        </ol>
+      </div>
 
       {/* Desktop view: horizontal stepper */}
-      <div class="relative hidden sm:block px-2">
-        {/* Container for whole stepper */}
-        <div class="relative h-32">
-          {/* Absolute positioned line that will go through the center of the circles */}
-          <div class="absolute top-[18px] left-0 w-full flex items-center">
+      <div class="hidden sm:flex justify-center w-full px-2">
+        {/* Full width container for stepper */}
+        <div class="relative w-full" style={{ minHeight: "80px" }}>
+          {/* Progress line that spans full width */}
+          <div class="absolute top-[18px] left-0 right-0 h-1 z-0">
             {/* Progress track (background) */}
             <div 
-              class="absolute left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700"
+              class="h-1 bg-gray-200 dark:bg-gray-700 w-full"
               aria-hidden="true"
             ></div>
             
             {/* Progress bar (filled part) */}
             <div 
-              class="absolute left-0 h-1 bg-yellow-500 dark:bg-yellow-400 transition-all duration-500"
+              class="absolute top-0 left-0 h-1 bg-yellow-500 dark:bg-yellow-400 transition-all duration-500"
               style={{ width: `${Math.min(100, (activeStep / (steps.length - 1)) * 100)}%` }}
               aria-hidden="true"
             ></div>
           </div>
           
-          {/* Step nodes container with adjusted positioning that places first and last nodes at the edges */}
-          <div class="absolute top-0 left-0 right-0 flex justify-between" style={{ padding: "0" }}>
+          {/* Step nodes container */}
+          <div class="flex justify-between items-start w-full px-4 pt-0 relative z-10" style={{ minHeight: "80px" }}>
             {visibleSteps.value.map((stepIndex, displayIndex) => {
               const step = steps[stepIndex];
               const isComplete = activeStep > stepIndex;
               const isCurrent = activeStep === stepIndex;
               const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
               
-              // Determine if we need to show ellipsis before this step
-              const showEllipsisBefore = displayIndex > 0 && 
-                                       visibleSteps.value[displayIndex - 1] !== stepIndex - 1;
               
-              // Calculate position for steps to ensure first and last are at edges
-              const isFirst = stepIndex === 0;
-              const isLast = stepIndex === steps.length - 1;
-              let positionClass = "";
-              
-              if (isFirst) {
-                positionClass = "ml-0";
-              } else if (isLast) {
-                positionClass = "mr-0";
-              }
               
               // Ensure unique keys by combining step.id with displayIndex
               return (
-                <div key={`step-${step.id}-display-${displayIndex}`} class={`flex flex-col items-center ${positionClass}`}>
-                  {/* Ellipsis indicator before step if needed */}
-                  {showEllipsisBefore && (
-                    <span class="absolute text-xs text-gray-400" style={{ 
-                      top: "18px",
-                      left: `-${100 / (steps.length * 2)}%`,
-                    }}>•••</span>
-                  )}
+                <div key={`step-${step.id}-display-${displayIndex}`} class="flex flex-col items-center">
                   
                   {/* Step button */}
                   <button

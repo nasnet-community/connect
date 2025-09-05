@@ -126,7 +126,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
         />
 
         {/* Elegant Router Cards Grid */}
-        <div class="w-full px-4 sm:px-6 lg:px-8">
+        <div class="w-full">
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 place-items-center max-w-full mx-auto">
             {activeRouters.map((router, _index) => {
               const isSelected = selectedModels.includes(router.model as any);

@@ -162,7 +162,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 mode={wizardState.mode}
               />
 
-              {singleLink.interfaceType === "Wireless" && (
+              {singleLink.interfaceType === "Wireless" && singleLink.interfaceName && (
                 <div class="mt-6">
                   <WirelessFields
                     credentials={singleLink.wirelessCredentials}
@@ -179,7 +179,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 </div>
               )}
 
-              {singleLink.interfaceType === "LTE" && (
+              {singleLink.interfaceType === "LTE" && singleLink.interfaceName && (
                 <div class="mt-6">
                   <LTEFields
                     settings={singleLink.lteSettings}
@@ -450,7 +450,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       mode={wizardState.mode}
                     />
 
-                    {link.interfaceType === "Wireless" && (
+                    {link.interfaceType === "Wireless" && link.interfaceName && (
                       <WirelessFields
                         credentials={link.wirelessCredentials}
                         onUpdate$={$((creds) =>
@@ -465,7 +465,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       />
                     )}
 
-                    {link.interfaceType === "LTE" && (
+                    {link.interfaceType === "LTE" && link.interfaceName && (
                       <LTEFields
                         settings={link.lteSettings}
                         onUpdate$={$((settings) =>

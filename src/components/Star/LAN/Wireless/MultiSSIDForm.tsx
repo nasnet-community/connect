@@ -1,10 +1,10 @@
 import { $, component$, type QRL, useContext } from "@builder.io/qwik";
-import { HiExclamationTriangleOutline } from "@qwikest/icons/heroicons";
+import { HiExclamationTriangleOutline, HiSparklesOutline } from "@qwikest/icons/heroicons";
 import { NetworkCard } from "./NetworkCard";
 import type { NetworkKey, Networks } from "./type";
 import { NETWORK_KEYS } from "./constants";
 import { StarContext } from "../../StarContext/StarContext";
-import { Spinner } from "~/components/Core/DataDisplay/Progress/Spinner";
+import { Button } from "~/components/Core";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -58,19 +58,18 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                 </div>
               </div>
 
-              <button
+              <Button
                 onClick$={generateAllPasswords}
                 disabled={isLoading.allPasswords}
-                class="flex w-full min-w-[200px] items-center justify-center gap-2 
-                     rounded-lg bg-primary-500 px-6 py-3 text-white transition-all 
-                     duration-200 hover:bg-primary-600 lg:w-auto"
+                loading={isLoading.allPasswords}
+                variant="primary"
+                size="md"
+                leftIcon
+                class="w-full lg:w-auto min-w-[200px]"
               >
-                {isLoading.allPasswords ? (
-                  <Spinner size="xs" color="white" variant="circle" />
-                ) : (
-                  $localize`Generate Common Password`
-                )}
-              </button>
+                <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
+                {$localize`Generate Common Password`}
+              </Button>
             </div>
           </div>
         </div>

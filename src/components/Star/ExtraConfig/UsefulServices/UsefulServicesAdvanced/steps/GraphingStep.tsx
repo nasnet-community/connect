@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
-import { SelectionCard, Card, CardHeader, CardBody } from "~/components/Core";
+import { SelectionCard } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 
 export const GraphingStep = component$(() => {
@@ -113,7 +113,6 @@ export const GraphingStep = component$(() => {
   });
 
   const selectedCount = [enableInterface.value, enableQueue.value, enableResources.value].filter(Boolean).length;
-  const selectedOptions = graphingOptions.filter(opt => opt.signal.value);
 
   return (
     <div class="space-y-8 animate-fade-in-up">
@@ -166,68 +165,21 @@ export const GraphingStep = component$(() => {
         </div>
       </div>
 
-      {/* Selection Summary */}
+
+
+      {/* Bottom status indicator - only show when types selected */}
       {selectedCount > 0 && (
-        <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-xl animate-fade-in-up">
-          <CardHeader>
-            <div class="flex items-center gap-4">
-              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h4 class="text-xl font-bold text-green-800 dark:text-green-200">
-                  {$localize`Active Monitoring`}
-                </h4>
-                <p class="text-green-600 dark:text-green-400">
-                  {selectedCount === 1 
-                    ? $localize`1 graph type selected`
-                    : $localize`${selectedCount} graph types selected`
-                  }
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div class="space-y-4">
-              <p class="text-sm text-green-800 dark:text-green-300 font-medium">
-                {$localize`The following monitoring graphs will be enabled:`}
-              </p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {selectedOptions.map((option) => (
-                  <div key={option.id} class="flex items-center gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                    <div class="text-green-600 dark:text-green-400">
-                      {option.icon}
-                    </div>
-                    <div>
-                      <p class="font-medium text-green-900 dark:text-green-200 text-sm">
-                        {option.title}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-      )}
-
-
-      {/* Bottom status indicator */}
-      <div class="text-center">
-        <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-700/50">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d={selectedCount > 0 ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"} />
-          </svg>
-          <span class="font-medium text-emerald-700 dark:text-emerald-300">
-            {selectedCount > 0 
-              ? `${$localize`Monitoring enabled for`} ${selectedCount} ${selectedCount === 1 ? $localize`graph type` : $localize`graph types`}`
-              : $localize`Select monitoring types to enable network graphing`
-            }
-          </span>
+        <div class="text-center">
+          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-700/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-medium text-emerald-700 dark:text-emerald-300">
+              {$localize`Network graphing enabled`}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 });

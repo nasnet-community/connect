@@ -1,4 +1,4 @@
-import { component$, type QRL } from "@builder.io/qwik";
+import { component$, type QRL, $ } from "@builder.io/qwik";
 import type {
   VLANConfig,
   MACAddressConfig,
@@ -63,13 +63,13 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                   
                   <Toggle
                     checked={vlanConfig?.enabled || false}
-                    onChange$={(checked: boolean) => {
+                    onChange$={$((checked: boolean) => {
                       if (checked) {
                         onUpdateVLAN$({ enabled: true, id: vlanConfig?.id || 1 });
                       } else {
                         onUpdateVLAN$(undefined);
                       }
-                    }}
+                    })}
                     size="sm"
                   />
                 </label>
@@ -121,7 +121,7 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                   
                   <Toggle
                     checked={macAddress?.enabled || false}
-                    onChange$={(checked: boolean) => {
+                    onChange$={$((checked: boolean) => {
                       if (checked) {
                         onUpdateMAC$({
                           enabled: true,
@@ -130,7 +130,7 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                       } else {
                         onUpdateMAC$(undefined);
                       }
-                    }}
+                    })}
                     size="sm"
                   />
                 </label>
