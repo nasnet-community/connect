@@ -31,6 +31,7 @@ export interface ButtonProps {
   "aria-label"?: string;
   leftIcon?: boolean;
   rightIcon?: boolean;
+  iconOnly?: boolean;
   fullWidth?: boolean;
   responsive?: boolean;
   ripple?: boolean;
@@ -51,6 +52,7 @@ export const Button = component$<ButtonProps>(
     "aria-label": ariaLabel,
     leftIcon = false,
     rightIcon = false,
+    iconOnly = false,
     fullWidth = false,
     responsive = false,
     ripple = true,
@@ -130,7 +132,14 @@ export const Button = component$<ButtonProps>(
       premium: "bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 text-gray-900 hover:from-amber-300 hover:via-yellow-500 hover:to-amber-300 focus-visible:ring-yellow-400/50 shadow-lg hover:shadow-xl font-semibold tracking-wide relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:-skew-x-12 before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-1000 dark:from-yellow-600 dark:via-amber-500 dark:to-yellow-600 dark:text-white dark:hover:from-yellow-700 dark:hover:via-amber-600 dark:hover:to-yellow-700",
     };
 
-    const sizeClasses = {
+    const sizeClasses = iconOnly ? {
+      // Equal padding for icon-only buttons
+      xs: "p-1.5",
+      sm: "p-2",
+      md: "p-2.5",
+      lg: "p-3",
+      xl: "p-3.5",
+    } : {
       xs: [
         "text-xs px-2.5 py-1.5",
         "sm:text-xs sm:px-2.5 sm:py-1.5",
@@ -226,13 +235,13 @@ export const Button = component$<ButtonProps>(
           />
         )}
         {leftIcon && (
-          <span class={`mr-2 ${getIconClass()}`}>
+          <span class={`${!iconOnly ? 'mr-2' : ''} ${getIconClass()}`}>
             <Slot name="leftIcon" />
           </span>
         )}
         <Slot />
         {rightIcon && (
-          <span class={`ml-2 ${getIconClass()}`}>
+          <span class={`${!iconOnly ? 'ml-2' : ''} ${getIconClass()}`}>
             <Slot name="rightIcon" />
           </span>
         )}

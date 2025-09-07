@@ -203,11 +203,11 @@ export const useWirelessForm = () => {
     }
   });
 
-  const toggleNetworkHide = $((network: NetworkKey) => {
-    networks[network].isHide = !networks[network].isHide;
+  const toggleNetworkHide = $((network: NetworkKey, value?: boolean) => {
+    networks[network].isHide = value !== undefined ? value : !networks[network].isHide;
   });
 
-  const toggleNetworkDisabled = $((network: NetworkKey) => {
+  const toggleNetworkDisabled = $((network: NetworkKey, value?: boolean) => {
     const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
 
     // Don't allow enabling domestic or split networks when DomesticLink is false
@@ -218,7 +218,13 @@ export const useWirelessForm = () => {
       return;
     }
 
-    if (!networks[network].isDisabled) {
+    const newDisabledState = value !== undefined ? value : !networks[network].isDisabled;
+    
+    if (!newDisabledState) {
+      // Enabling the network - just enable it
+      networks[network].isDisabled = false;
+    } else {
+      // Disabling the network - check if we can
       // Count available networks based on DomesticLink setting
       const availableNetworks = isDomesticLinkEnabled
         ? ["foreign", "domestic", "split", "vpn"]
@@ -231,13 +237,11 @@ export const useWirelessForm = () => {
       if (enabledCount > 1) {
         networks[network].isDisabled = true;
       }
-    } else {
-      networks[network].isDisabled = false;
     }
   });
 
-  const toggleNetworkSplitBand = $((network: NetworkKey) => {
-    networks[network].splitBand = !networks[network].splitBand;
+  const toggleNetworkSplitBand = $((network: NetworkKey, value?: boolean) => {
+    networks[network].splitBand = value !== undefined ? value : !networks[network].splitBand;
   });
 
   const toggleSingleHide = $(() => {

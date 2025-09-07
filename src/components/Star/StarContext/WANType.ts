@@ -77,8 +77,8 @@ export interface WANLink {
 
 // Wizard-specific types
 export type ConnectionType = "DHCP" | "PPPoE" | "Static" | "LTE";
-export type LoadBalanceMethod = "PCC" | "NTH" | "ECMP" | "Bonding";
-export type MultiLinkStrategy = "LoadBalance" | "Failover" | "Both";
+export type LoadBalanceMethod = "PCC" | "NTH" | "ECMP" | "Bonding" | "RoundRobin";
+export type MultiLinkStrategy = "LoadBalance" | "Failover" | "RoundRobin" | "Both";
 
 export interface LTESettings {
   apn: string;
@@ -126,7 +126,7 @@ export interface WANLinkConfig {
   macAddress?: MACAddressConfig;
 
   // Connection settings
-  connectionType: ConnectionType;
+  connectionType?: ConnectionType;
   connectionConfig?: {
     pppoe?: PPPoEConfig;
     static?: StaticIPConfig;
@@ -143,6 +143,8 @@ export interface MultiLinkConfig {
   loadBalanceMethod?: LoadBalanceMethod;
   failoverCheckInterval?: number;
   failoverTimeout?: number;
+  roundRobinInterval?: number; // for Round Robin strategy
+  packetMode?: "connection" | "packet"; // for Round Robin strategy
 }
 
 export interface WANWizardState {

@@ -1,10 +1,11 @@
-import { component$, type Signal, type QRL } from "@builder.io/qwik";
+import { component$, type Signal, type QRL, $ } from "@builder.io/qwik";
 import {
   HiWifiOutline,
   HiExclamationTriangleOutline,
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
+import { Toggle } from "~/components/Core";
 
 interface WirelessHeaderProps {
   wirelessEnabled: Signal<boolean>;
@@ -29,54 +30,22 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
           </div>
 
           {/* Enable/Disable Toggle */}
-          <div class="flex gap-4 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-            <label
-              class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-            ${
-              !wirelessEnabled.value
-                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-                : "text-gray-600 dark:text-gray-400"
-            }`}
-            >
-              <input
-                type="radio"
-                name="wireless"
-                checked={!wirelessEnabled.value}
-                onChange$={async () => {
-                  wirelessEnabled.value = false;
-                  if (onToggle$) {
-                    await onToggle$(false);
-                  }
-                }}
-                class="hidden"
-              />
-              <HiXCircleOutline class="h-5 w-5" />
-              <span>{$localize`Disable`}</span>
-            </label>
-            <label
-              class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-            ${
-              wirelessEnabled.value
-                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-                : "text-gray-600 dark:text-gray-400"
-            }`}
-            >
-              <input
-                type="radio"
-                name="wireless"
-                checked={wirelessEnabled.value}
-                onChange$={async () => {
-                  wirelessEnabled.value = true;
-                  if (onToggle$) {
-                    await onToggle$(true);
-                  }
-                }}
-                class="hidden"
-              />
-              <HiCheckCircleOutline class="h-5 w-5" />
-              <span>{$localize`Enable`}</span>
-            </label>
-          </div>
+          <Toggle
+            variant="button"
+            checked={wirelessEnabled.value}
+            onChange$={$(async (enabled: boolean) => {
+              wirelessEnabled.value = enabled;
+              if (onToggle$) {
+                await onToggle$(enabled);
+              }
+            })}
+            offLabel={$localize`Disable`}
+            onLabel={$localize`Enable`}
+            offIcon={<HiXCircleOutline class="h-5 w-5" />}
+            onIcon={<HiCheckCircleOutline class="h-5 w-5" />}
+            color="primary"
+            size="md"
+          />
         </div>
 
         <div class="flex items-center space-x-2 rounded-lg bg-yellow-50 px-4 py-3 dark:bg-yellow-900/30">
