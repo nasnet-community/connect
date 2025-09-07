@@ -75,22 +75,6 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     }
   });
 
-  // Initialize values from context on first load
-  useTask$(({ track }) => {
-    track(() => starContext.state.LAN.Subnets);
-    const existingSubnets = starContext.state.LAN.Subnets || {};
-    
-    // Convert stored CIDR values back to third octet for display
-    const convertedValues: Record<string, number | null> = {};
-    Object.entries(existingSubnets).forEach(([key, cidr]) => {
-      if (cidr) {
-        const match = cidr.match(/192\.168\.(\d+)\.0\/\d+/);
-        if (match) {
-          convertedValues[key] = parseInt(match[1], 10);
-        }
-      }
-    });
-  });
 
   return (
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-primary-50/50 dark:from-gray-900 dark:via-blue-900/10 dark:to-primary-900/10">
