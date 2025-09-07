@@ -167,84 +167,117 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
   });
 
   return (
-    <div class="mx-auto w-full max-w-5xl p-4">
-      <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
-        {/* Header section */}
-        <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
-          <div class="flex items-center space-x-5">
-            <div class="rounded-xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-7 w-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-            </div>
-            <div class="space-y-1">
-              <h2 class="text-2xl font-bold text-white">{$localize`Useful Services - Easy Mode`}</h2>
-              <p class="text-primary-50">{$localize`Quick enable/disable services for your network`}</p>
+    <div class="animate-fade-in-up">
+      {/* Simplified background elements */}
+      <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute left-1/4 top-1/4 h-72 w-72 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/5 to-secondary-500/5"></div>
+        <div class="absolute right-1/3 bottom-1/3 h-64 w-64 animate-float rounded-full bg-gradient-to-br from-secondary-500/5 to-primary-500/5"></div>
+      </div>
+
+      <div class="group relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+        {/* Simplified border effect */}
+        <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/10 via-secondary-500/5 to-primary-500/10 p-px">
+          <div class="h-full w-full rounded-3xl bg-white dark:bg-gray-800"></div>
+        </div>
+        
+        {/* Content container */}
+        <div class="relative z-10">
+          {/* Modern header section */}
+          <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-10">
+            {/* Header background pattern */}
+            <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+            <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/5"></div>
+            
+            <div class="relative flex items-center space-x-6">
+              <div class="group/icon flex h-16 w-16 items-center justify-center rounded-2xl border border-white/30 bg-white/20 transition-all duration-300 hover:scale-110 hover:bg-white/30">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-8 w-8 text-white transition-all duration-300 group-hover/icon:scale-110"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <div class="space-y-1">
+                <h2 class="text-3xl font-bold text-white">{$localize`Useful Services`}</h2>
+                <p class="text-lg text-white/90">{$localize`Easy Mode`}</p>
+                <p class="text-primary-100 max-w-md">{$localize`Quick enable/disable services for your network`}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div class="p-6">
-          <div class="space-y-4">
-            {SERVICES.map((service) => (
-              <div
-                key={service.id}
-                class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl border border-border dark:border-border-dark"
-              >
-                <div class="p-6">
-                  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <div class="flex items-center gap-4">
-                      <div class="rounded-lg bg-primary-100 p-2.5 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
-                        {service.icon}
+          {/* Content */}
+          <div class="relative p-8">
+            <div class="space-y-4">
+              {SERVICES.map((service, index) => (
+                <div
+                  key={service.id}
+                  class="group/card relative overflow-hidden rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/10 dark:border-gray-700/50 dark:from-gray-800 dark:to-gray-900 animate-fade-in-up"
+                  style={`animation-delay: ${index * 100}ms`}
+                >
+                  {/* Gradient overlay on hover */}
+                  <div class="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-secondary-500/0 to-primary-500/0 transition-opacity duration-500 opacity-0 group-hover/card:opacity-5"></div>
+                  
+                  <div class="relative p-6">
+                    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                      <div class="flex items-center gap-4">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 text-primary-600 transition-all duration-300 group-hover/card:scale-110 group-hover/card:shadow-lg group-hover/card:shadow-primary-500/20 dark:from-primary-900/30 dark:to-primary-800/30 dark:text-primary-400">
+                          <div class="transition-transform duration-300 group-hover/card:rotate-12">
+                            {service.icon}
+                          </div>
+                        </div>
+                        <div class="space-y-1">
+                          <h3 class="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+                            {service.title}
+                          </h3>
+                          <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {service.description}
+                          </p>
+                        </div>
                       </div>
-                      <div class="space-y-1">
-                        <h3 class="text-lg font-semibold text-text dark:text-text-dark-default">
-                          {service.title}
-                        </h3>
-                        <p class="text-text-secondary dark:text-text-dark-secondary text-sm">
-                          {service.description}
-                        </p>
-                      </div>
+
+                      <Toggle
+                        checked={serviceStates[service.id]}
+                        onChange$={$((checked) =>
+                          (serviceStates[service.id] = checked)
+                        )}
+                        label={
+                          serviceStates[service.id]
+                            ? $localize`Enabled`
+                            : $localize`Disabled`
+                        }
+                        size="lg"
+                        color={serviceStates[service.id] ? "primary" : "secondary"}
+                      />
                     </div>
-
-                    <Toggle
-                      checked={serviceStates[service.id]}
-                      onChange$={$((checked) =>
-                        (serviceStates[service.id] = checked)
-                      )}
-                      label={
-                        serviceStates[service.id]
-                          ? $localize`Enabled`
-                          : $localize`Disabled`
-                      }
-                    />
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Continue Button */}
-          <div class="mt-8 flex justify-end">
-            <button
-              onClick$={handleSubmit}
-              class="rounded-lg bg-primary-500 px-6 py-2 text-white transition-colors 
-                          duration-200 hover:bg-primary-600"
-            >
-              {$localize`Save`}
-            </button>
+            {/* Continue Button */}
+            <div class="mt-8 flex justify-end">
+              <button
+                onClick$={handleSubmit}
+                class="group relative overflow-hidden rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary-500/25"
+              >
+                {/* Shimmer effect on hover */}
+                <div class="absolute inset-0 -top-2 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:translate-x-full -skew-x-12"></div>
+                <span class="relative flex items-center gap-2">
+                  {$localize`Save Settings`}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

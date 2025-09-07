@@ -22,6 +22,7 @@ export interface MultiVPNConfig {
   failoverCheckInterval?: number; // seconds
   failoverTimeout?: number; // seconds
   roundRobinInterval?: number; // for RoundRobin strategy
+  loadBalanceMethod?: "PCC" | "NTH" | "ECMP" | "Bonding"; // for LoadBalance strategy
 }
 
 export interface VPNClientConfig {
@@ -66,6 +67,18 @@ export interface VPNConfigBase {
   weight?: number; // for load balancing
 }
 
+// Uninitialized VPN config (no protocol selected yet)
+export interface UninitializedVPNConfig {
+  id: string;
+  name: string;
+  type?: undefined; // No protocol selected
+  priority: number;
+  enabled: boolean;
+  description?: string;
+  assignedLink?: string;
+  weight?: number;
+}
+
 export interface WireguardVPNConfig extends VPNConfigBase {
   type: "Wireguard";
   config: WireguardClientConfig;
@@ -97,6 +110,7 @@ export interface IKeV2VPNConfig extends VPNConfigBase {
 }
 
 export type VPNConfig =
+  | UninitializedVPNConfig
   | WireguardVPNConfig
   | OpenVPNConfig
   | PPTPVPNConfig
@@ -116,7 +130,7 @@ export interface VPNClientAdvancedState {
 
 // Helper type for creating new VPN configs
 export interface NewVPNConfig {
-  type: VPNType;
+  type?: VPNType; // Optional - can be undefined for uninitialized configs
   name: string;
   description?: string;
   assignedWANLink?: string;

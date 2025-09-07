@@ -39,7 +39,7 @@ export const VPNCard = component$<VPNCardProps>(({
     return "border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/10";
   };
 
-  const getVPNTypeIcon = (type: string) => {
+  const getVPNTypeIcon = (type: string | undefined) => {
     switch (type) {
       case "Wireguard":
         return "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z";
@@ -217,7 +217,7 @@ export const VPNCard = component$<VPNCardProps>(({
         )}
 
         {/* Quick Info when collapsed */}
-        {!isExpanded && vpn.config && (
+        {!isExpanded && vpn.type && 'config' in vpn && vpn.config && (
           <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
             {vpn.type === "Wireguard" && vpn.config.PeerEndpointAddress && (
               <p>{$localize`Server:`} {vpn.config.PeerEndpointAddress}:{vpn.config.PeerEndpointPort || 51820}</p>

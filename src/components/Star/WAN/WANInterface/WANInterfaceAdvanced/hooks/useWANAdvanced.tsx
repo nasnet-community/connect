@@ -30,9 +30,8 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         name: `${mode} Link 1`,
         interfaceType: "Ethernet",
         interfaceName: "",
-        connectionType: "DHCP",
         connectionConfirmed: false, // User must confirm connection settings
-        weight: 50,
+        weight: 100, // Default to 100% for single link
         priority: 1,
       },
     ],
@@ -50,24 +49,25 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   // Add a new link
   const addLink$ = $(async () => {
     linkCounter.value++;
+    
+    // Calculate appropriate weight for new link
+    const linkCount = state.links.length + 1;
+    const equalWeight = Math.floor(100 / linkCount);
+    
     const newLink: WANLinkConfig = {
       id: generateUniqueId("wan"),
       name: await generateLinkName$(linkCounter.value),
       interfaceType: "Ethernet",
       interfaceName: "",
-      connectionType: state.mode === "easy" ? "DHCP" : "DHCP",
       connectionConfirmed: false, // User must confirm connection settings
-      weight: 50,
+      weight: equalWeight, // Set appropriate weight
       priority: state.links.length + 1,
     };
 
     state.links = [...state.links, newLink];
 
-    // Recalculate weights if in load balance mode
-    if (
-      state.multiLinkStrategy?.strategy === "LoadBalance" &&
-      state.links.length > 1
-    ) {
+    // Recalculate weights for all links to maintain 100% total
+    if (state.links.length > 1) {
       const equalWeight = Math.floor(100 / state.links.length);
       const remainder = 100 - equalWeight * state.links.length;
 
@@ -223,15 +223,44 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   const setMultiLinkStrategy$ = $((strategy: MultiLinkConfig) => {
     state.multiLinkStrategy = strategy;
 
+    // Initialize weights and priorities based on strategy
+    const updates: Array<{ id: string; updates: Partial<WANLinkConfig> }> = [];
+    
     // Initialize weights for load balance
     if (strategy.strategy === "LoadBalance" || strategy.strategy === "Both") {
       const equalWeight = Math.floor(100 / state.links.length);
       const remainder = 100 - equalWeight * state.links.length;
 
-      state.links = state.links.map((link, index) => ({
-        ...link,
-        weight: index === 0 ? equalWeight + remainder : equalWeight,
-      }));
+      state.links.forEach((link, index) => {
+        if (!link.weight || link.weight === 0) {
+          updates.push({
+            id: link.id,
+            updates: { weight: index === 0 ? equalWeight + remainder : equalWeight }
+          });
+        }
+      });
+    }
+    
+    // Initialize priorities for failover
+    if (strategy.strategy === "Failover" || strategy.strategy === "Both") {
+      state.links.forEach((link, index) => {
+        if (!link.priority || link.priority === 0) {
+          const existingUpdate = updates.find(u => u.id === link.id);
+          if (existingUpdate) {
+            existingUpdate.updates.priority = index + 1;
+          } else {
+            updates.push({
+              id: link.id,
+              updates: { priority: index + 1 }
+            });
+          }
+        }
+      });
+    }
+    
+    // Apply updates if any
+    if (updates.length > 0) {
+      batchUpdateLinks$(updates);
     }
   });
 
@@ -257,8 +286,8 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         name: `${mode} Link 1`,
         interfaceType: "Ethernet",
         interfaceName: "",
-        connectionType: "DHCP",
-        weight: 50,
+        connectionConfirmed: false, // User must confirm connection settings
+        weight: 100, // Default to 100% for single link
         priority: 1,
       },
     ];

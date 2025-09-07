@@ -38,12 +38,12 @@ export interface CloudDDNSData {
 
 export interface UPNPData {
   enabled: boolean;
-  linkType: "domestic" | "foreign" | "vpn";
+  linkType: "domestic" | "foreign" | "vpn" | "";
 }
 
 export interface NATPMPData {
   enabled: boolean;
-  linkType: "domestic" | "foreign" | "vpn";
+  linkType: "domestic" | "foreign" | "vpn" | "";
 }
 
 export interface AdvancedServicesData {

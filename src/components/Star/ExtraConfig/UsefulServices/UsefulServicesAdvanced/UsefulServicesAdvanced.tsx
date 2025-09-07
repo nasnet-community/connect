@@ -42,11 +42,11 @@ export const UsefulServicesAdvanced = component$<StepProps>(
       },
       upnp: {
         enabled: false,
-        linkType: "domestic",
+        linkType: "",
       },
       natpmp: {
         enabled: false,
-        linkType: "domestic",
+        linkType: "",
       },
     });
 
@@ -118,32 +118,33 @@ export const UsefulServicesAdvanced = component$<StepProps>(
     });
 
     return (
-      <div class="mx-auto w-full max-w-6xl p-4">
-        {/* Background decorative elements */}
-        <div class="fixed inset-0 -z-10 overflow-hidden">
-          <div class="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/20 to-secondary-500/20 blur-3xl"></div>
-          <div class="absolute right-1/4 top-1/4 h-64 w-64 animate-float rounded-full bg-gradient-to-br from-secondary-500/15 to-primary-500/15 blur-2xl"></div>
+      <div class="mx-auto w-full max-w-7xl animate-fade-in-up">
+        {/* Simplified background decorative elements */}
+        <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div class="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/5 to-secondary-500/5"></div>
+          <div class="absolute right-1/4 top-1/4 h-80 w-80 animate-float rounded-full bg-gradient-to-br from-secondary-500/5 to-primary-500/5 animation-delay-2000"></div>
         </div>
 
-        <div class="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/80 shadow-2xl shadow-primary-500/10 backdrop-blur-xl transition-all duration-700 hover:shadow-3xl hover:shadow-primary-500/20 dark:border-white/10 dark:bg-surface-dark/80 dark:shadow-primary-500/5">
-          {/* Gradient border effect */}
-          <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 p-px">
-            <div class="h-full w-full rounded-3xl bg-white/90 dark:bg-surface-dark/90"></div>
+        <div class="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+          {/* Simplified gradient border effect */}
+          <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/10 via-secondary-500/5 to-primary-500/10 p-px">
+            <div class="h-full w-full rounded-3xl bg-white dark:bg-gray-800"></div>
           </div>
           
           {/* Content container */}
           <div class="relative z-10">
-            {/* Modern header section */}
-            <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-12">
-              {/* Header background pattern */}
+            {/* Enhanced modern header section */}
+            <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-14">
+              {/* Enhanced header background patterns */}
               <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-              <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/10 blur-3xl"></div>
+              <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/5 animate-pulse-slow"></div>
+              <div class="absolute left-0 bottom-0 h-48 w-48 -translate-x-24 translate-y-24 rounded-full bg-secondary-500/5 animate-float"></div>
               
-              <div class="relative flex items-center space-x-6">
-                <div class="group/icon flex h-20 w-20 items-center justify-center rounded-2xl border border-white/30 bg-white/15 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/25">
+              <div class="relative flex flex-col md:flex-row items-start md:items-center gap-8">
+                <div class="group/icon flex h-24 w-24 items-center justify-center rounded-3xl border-2 border-white/30 bg-gradient-to-br from-white/25 to-white/15 transition-all duration-500 hover:scale-110 hover:rotate-3 hover:bg-white/35 hover:shadow-xl">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 text-white transition-all duration-300 group-hover/icon:scale-110"
+                    class="h-12 w-12 text-white transition-all duration-500 group-hover/icon:scale-110 group-hover/icon:rotate-12"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -156,10 +157,10 @@ export const UsefulServicesAdvanced = component$<StepProps>(
                     />
                   </svg>
                 </div>
-                <div class="space-y-2">
-                  <h2 class="text-4xl font-bold text-white">{$localize`Useful Services`}</h2>
-                  <p class="text-lg text-white/90">{$localize`Advanced Mode`}</p>
-                  <p class="text-primary-100 max-w-md">{$localize`Configure advanced network services with detailed settings and modern interface`}</p>
+                <div class="space-y-3 flex-1">
+                  <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight animate-gradient bg-gradient-to-r from-white via-primary-100 to-white bg-clip-text">{$localize`Useful Services`}</h2>
+                  <p class="text-xl text-white/95 font-medium">{$localize`Advanced Configuration Mode`}</p>
+                  <p class="text-primary-100/90 max-w-2xl leading-relaxed">{$localize`Configure advanced network services with detailed settings and modern interface for optimal performance`}</p>
                 </div>
               </div>
               

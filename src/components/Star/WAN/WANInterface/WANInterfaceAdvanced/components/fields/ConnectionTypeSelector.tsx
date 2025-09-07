@@ -2,7 +2,7 @@ import { component$, type QRL } from "@builder.io/qwik";
 import type { ConnectionType } from "../../../../../StarContext/WANType";
 
 export interface ConnectionTypeSelectorProps {
-  connectionType: ConnectionType;
+  connectionType?: ConnectionType;
   interfaceType: "Ethernet" | "Wireless" | "SFP" | "LTE";
   onUpdate$: QRL<(type: ConnectionType) => void>;
   mode: "easy" | "advanced";
@@ -49,13 +49,10 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
         type.value !== "Static" || mode === "advanced"
       );
 
-    // Use connectionType directly instead of useComputed$ to prevent infinite loops
-    const currentConnectionType = connectionType;
-
     // LTE interfaces always use LTE connection type
     if (interfaceType === "LTE") {
       return (
-        <div class="space-y-2" key={`lte-${interfaceType}`}>
+        <div class="space-y-2" key="lte-selector">
           <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <span class="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
               <svg class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +71,7 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
     }
 
     return (
-      <div class="space-y-2" key={`selector-${currentConnectionType}-${mode}`}>
+      <div class="space-y-2" key={`selector-${mode}`}>
         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
           <span class="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
             <svg class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,38 +82,31 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
         </label>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {getAvailableTypes().map((type) => {
-            const isSelected = currentConnectionType === type.value;
+            const isSelected = connectionType === type.value;
             
-            // Build classes directly without useComputed$ inside map
-            const buttonClasses = [
-              "group relative overflow-hidden rounded-xl border-2 p-4 transition-all hover:scale-105"
-            ];
-            
-            if (isSelected) {
-              buttonClasses.push("border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20");
-            } else {
-              buttonClasses.push("border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600");
-            }
+            // Use template literals for direct class assignment
+            const buttonClass = `group relative overflow-hidden rounded-xl border-2 p-4 transition-all hover:scale-105 ${
+              isSelected 
+                ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20" 
+                : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+            }`;
 
-            const iconClasses = [
-              "flex h-12 w-12 items-center justify-center rounded-lg transition-colors"
-            ];
-            
-            if (isSelected) {
-              iconClasses.push("bg-primary-500 text-white");
-            } else {
-              iconClasses.push("bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600");
-            }
+            const iconClass = `flex h-12 w-12 items-center justify-center rounded-lg transition-colors ${
+              isSelected 
+                ? "bg-primary-500 text-white" 
+                : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"
+            }`;
 
             return (
               <button
-                key={`${type.value}-${isSelected}`}
+                key={type.value}
                 type="button"
                 onClick$={() => onUpdate$(type.value)}
-                class={buttonClasses.join(" ")}
+                class={buttonClass}
+                data-selected={isSelected ? "true" : "false"}
               >
                 <div class="relative z-10 flex flex-col items-center gap-3">
-                  <div class={iconClasses.join(" ")}>
+                  <div class={iconClass}>
                     {type.icon}
                   </div>
                   <div class="text-center">

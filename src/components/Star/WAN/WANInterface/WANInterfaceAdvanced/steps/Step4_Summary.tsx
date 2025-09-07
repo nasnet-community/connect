@@ -1,4 +1,4 @@
-import { component$, type QRL } from "@builder.io/qwik";
+import { component$, type QRL, useComputed$ } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
 import { Alert, Card } from "~/components/Core";
 
@@ -11,13 +11,13 @@ export interface Step4Props {
 export const Step4_Summary = component$<Step4Props>(
   ({ wizardState, onEdit$, onValidate$ }) => {
     
-    console.log('[Step4_Summary] Component initialized with props:', {
-      hasOnEdit: !!onEdit$,
-      hasOnValidate: !!onValidate$,
-      validationErrorsCount: Object.keys(wizardState.validationErrors).length
+    // Use useComputed$ for sorted links to avoid mutations during render
+    const sortedLinksByPriority = useComputed$(() => {
+      return [...wizardState.links].sort((a, b) => (a.priority || 0) - (b.priority || 0));
     });
 
-    const getConnectionTypeDisplay = (type: string) => {
+    const getConnectionTypeDisplay = (type?: string) => {
+      if (!type) return "Not configured";
       const types: Record<string, string> = {
         DHCP: "DHCP Client",
         PPPoE: "PPPoE",
@@ -49,7 +49,8 @@ export const Step4_Summary = component$<Step4Props>(
       }
     };
 
-    const getConnectionIcon = (type: string) => {
+    const getConnectionIcon = (type?: string) => {
+      if (!type) return "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
       switch (type) {
         case "DHCP":
           return "M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01";
@@ -64,10 +65,14 @@ export const Step4_Summary = component$<Step4Props>(
       }
     };
 
-    // Simple non-reactive check for validation errors
-    const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
-    
-
+    // Use useComputed$ to safely compute validation errors without causing state mutations
+    const validationErrors = useComputed$(() => {
+      const errors = Object.values(wizardState.validationErrors).flat();
+      return {
+        list: errors,
+        hasErrors: errors.length > 0
+      };
+    });
 
     return (
       <div class="space-y-6">
@@ -87,14 +92,14 @@ export const Step4_Summary = component$<Step4Props>(
         </div>
 
         {/* Validation Status */}
-        {hasValidationErrors && Object.keys(wizardState.validationErrors).length > 0 ? (
+        {validationErrors.value.hasErrors ? (
           <Alert
             status="error"
             title="Configuration Issues"
             message="Please review and fix the following issues:"
           >
             <ul class="mt-2 list-disc list-inside text-sm">
-              {Object.values(wizardState.validationErrors).flat().map((error, index) => (
+              {validationErrors.value.list.map((error, index) => (
                 <li key={index}>{error as string}</li>
               ))}
             </ul>
@@ -351,9 +356,7 @@ export const Step4_Summary = component$<Step4Props>(
                     </div>
                     <div class="space-y-1">
                       <p class="text-xs text-gray-500 dark:text-gray-400">Priority Order:</p>
-                      {wizardState.links
-                        .sort((a, b) => (a.priority || 0) - (b.priority || 0))
-                        .map((link, index) => (
+                      {sortedLinksByPriority.value.map((link, index) => (
                           <div key={link.id} class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 px-3 py-2">
                             <div class={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${
                               index === 0 ? "bg-green-500" : index === 1 ? "bg-blue-500" : "bg-gray-400"
