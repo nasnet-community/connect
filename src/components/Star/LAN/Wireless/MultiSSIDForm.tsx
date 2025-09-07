@@ -1,10 +1,10 @@
 import { $, component$, type QRL, useContext } from "@builder.io/qwik";
-import { HiExclamationTriangleOutline, HiSparklesOutline } from "@qwikest/icons/heroicons";
-import { NetworkCard } from "./NetworkCard";
+import { CompactNetworkCard } from "./CompactNetworkCard";
+import { CompactHeader } from "./CompactHeader";
 import type { NetworkKey, Networks } from "./type";
 import { NETWORK_KEYS } from "./constants";
 import { StarContext } from "../../StarContext/StarContext";
-import { Button } from "~/components/Core";
+import { Grid } from "~/components/Core";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -12,9 +12,9 @@ interface MultiSSIDFormProps {
   generateNetworkSSID: QRL<(network: NetworkKey) => Promise<void>>;
   generateNetworkPassword: QRL<(network: NetworkKey) => Promise<void>>;
   generateAllPasswords: QRL<() => Promise<void>>;
-  toggleNetworkHide: QRL<(network: NetworkKey) => void>;
-  toggleNetworkDisabled: QRL<(network: NetworkKey) => void>;
-  toggleNetworkSplitBand: QRL<(network: NetworkKey) => void>;
+  toggleNetworkHide: QRL<(network: NetworkKey, value?: boolean) => void>;
+  toggleNetworkDisabled: QRL<(network: NetworkKey, value?: boolean) => void>;
+  toggleNetworkSplitBand: QRL<(network: NetworkKey, value?: boolean) => void>;
 }
 
 export const MultiSSIDForm = component$<MultiSSIDFormProps>(
@@ -37,47 +37,28 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
       (key) => isDomesticLinkEnabled || (key !== "domestic" && key !== "split"),
     );
 
+    // Count active networks
+    const activeNetworksCount = filteredNetworkKeys.filter(
+      key => !networks[key].isDisabled
+    ).length;
+
     return (
-      <div class="space-y-8">
-        {/* Warning and Actions Header */}
-        <div
-          class="rounded-xl border border-warning-200 bg-gradient-to-r 
-                  from-warning-50 to-warning-100 dark:border-warning-800 dark:from-warning-900/20 dark:to-warning-800/20"
+      <div class="space-y-4">
+        {/* Compact Header with unified controls */}
+        <CompactHeader
+          generateAllPasswords={generateAllPasswords}
+          isLoading={isLoading.allPasswords}
+          activeNetworksCount={activeNetworksCount}
+          totalNetworksCount={filteredNetworkKeys.length}
+        />
+
+        {/* Networks Grid - Always 2 columns on desktop */}
+        <Grid
+          columns={{ base: "1", lg: "2" }}
+          gap="md"
         >
-          <div class="p-4 sm:p-6">
-            <div class="flex flex-col gap-6 lg:flex-row">
-              <div class="flex flex-1 items-start space-x-3">
-                <HiExclamationTriangleOutline class="mt-1 h-6 w-6 flex-shrink-0 text-warning-500" />
-                <div>
-                  <h3 class="font-medium text-warning-700 dark:text-warning-300">
-                    {$localize`Multiple Networks`}
-                  </h3>
-                  <p class="mt-1 text-sm text-warning-600 dark:text-warning-400">
-                    {$localize`Setting up multiple SSIDs will create separate networks for different purposes`}
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                onClick$={generateAllPasswords}
-                disabled={isLoading.allPasswords}
-                loading={isLoading.allPasswords}
-                variant="primary"
-                size="md"
-                leftIcon
-                class="w-full lg:w-auto min-w-[200px]"
-              >
-                <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
-                {$localize`Generate Common Password`}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Networks Grid */}
-        <div class="grid gap-8">
           {filteredNetworkKeys.map((networkKey) => (
-            <NetworkCard
+            <CompactNetworkCard
               key={networkKey}
               networkKey={networkKey}
               ssid={networks[networkKey].ssid}
@@ -91,9 +72,9 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               onPasswordChange={$((value: string) => {
                 networks[networkKey].password = value;
               })}
-              onHideToggle={$(() => toggleNetworkHide(networkKey))}
-              onDisabledToggle={$(() => toggleNetworkDisabled(networkKey))}
-              onSplitBandToggle={$(() => toggleNetworkSplitBand(networkKey))}
+              onHideToggle={$((value: boolean) => toggleNetworkHide(networkKey, value))}
+              onDisabledToggle={$((value: boolean) => toggleNetworkDisabled(networkKey, value))}
+              onSplitBandToggle={$((value: boolean) => toggleNetworkSplitBand(networkKey, value))}
               generateNetworkSSID={$(() => generateNetworkSSID(networkKey))}
               generateNetworkPassword={$(() =>
                 generateNetworkPassword(networkKey),
@@ -101,12 +82,12 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               isLoading={isLoading}
             />
           ))}
-        </div>
+        </Grid>
 
         {/* Info Note */}
-        <div class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <div class="text-center text-xs text-gray-500 dark:text-gray-400">
           <p>
-            {$localize`Note: At least one network must remain enabled. To save, fill out all required fields for enabled networks.`}
+            {$localize`Note: At least one network must remain enabled. Fill all required fields for enabled networks.`}
           </p>
         </div>
       </div>

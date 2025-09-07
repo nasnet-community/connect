@@ -153,10 +153,10 @@ export const StepperHelpModal = component$<StepperHelpModalProps>((props) => {
     <Dialog
       isOpen={isOpen}
       onClose$={onClose$}
-      size="full"
+      size="xl"
       fullscreenOnMobile={true}
       backdropVariant="heavy"
-      class="stepper-help-modal"
+      class="stepper-help-modal !max-w-[75vw] mx-auto"
       contentClass="h-full"
       ariaLabel={`Help for ${stepTitle}`}
       zIndex={1080}
