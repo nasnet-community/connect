@@ -2,6 +2,7 @@ import { component$, $, useSignal, useContext } from "@builder.io/qwik";
 import type {
   VPNClientAdvancedState,
   VPNConfig,
+  VPNClientConfig,
 } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNBox } from "../components/VPNBox/VPNBox";
@@ -33,6 +34,16 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
         <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
           <p class="text-sm text-red-700 dark:text-red-300">
             {$localize`VPN configuration not found`}
+          </p>
+        </div>
+      );
+    }
+
+    if (!vpn.type) {
+      return (
+        <div class="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
+          <p class="text-sm text-yellow-700 dark:text-yellow-300">
+            {$localize`Please select a VPN protocol first`}
           </p>
         </div>
       );
@@ -156,14 +167,14 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
 
         {/* VPN Box with configuration */}
         <VPNBox
-          vpn={vpn}
+          vpn={vpn as VPNClientConfig}
           index={0}
           isExpanded={true}
           canRemove={false}
           validationErrors={{}}
         >
           <VPNBoxContent
-            vpn={vpn}
+            vpn={vpn as VPNClientConfig}
             validationErrors={{}}
             onUpdate$={$((updates: any) => wizardActions.updateVPN$(vpnId, updates))}
           >

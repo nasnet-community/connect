@@ -64,10 +64,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
                         existingConfig.InterfaceName.includes("sfp") ? "SFP" : "Ethernet",
           interfaceName: existingConfig.InterfaceName || "",
           wirelessCredentials: existingConfig.WirelessCredentials,
-          connectionType: "DHCP",
           connectionConfirmed: false, // User must confirm connection settings
           priority: 1,
-          weight: 100,
+          weight: 100, // Single link gets 100% weight
         }];
       }
       
@@ -78,12 +77,18 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           name: `${mode} Link`,
           interfaceType: "Ethernet",
           interfaceName: "",
-          connectionType: "DHCP",
           connectionConfirmed: false, // User must confirm connection settings
           priority: 1,
-          weight: 100,
+          weight: 100, // Single link gets 100% weight
         }];
       }
+      
+      // Ensure all links have weights and priorities set
+      advancedHooks.state.links = advancedHooks.state.links.map((link, index) => ({
+        ...link,
+        priority: link.priority ?? index + 1,
+        weight: link.weight ?? (advancedHooks.state.links.length === 1 ? 100 : Math.floor(100 / advancedHooks.state.links.length))
+      }));
       
       // Save initial links to WANLinks immediately for VPNClient to detect
       if (mode === "Foreign") {
@@ -238,46 +243,118 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     });
 
     // Watch for changes and check step completion status
-    useTask$(async ({ track }) => {
+    // Only track essential properties to prevent unnecessary updates
+    useTask$(async ({ track, cleanup }) => {
+      // Track only essential properties that affect step structure
       track(() => advancedHooks.state.links.length);
-      track(() => advancedHooks.state.links.map(l => l.name)); // Also track name changes
       track(() => advancedHooks.state.links.map(l => l.interfaceName)); // Track interface selection
+      track(() => advancedHooks.state.links.map(l => l.connectionType)); // Track connection type
       track(() => advancedHooks.state.links.map(l => l.connectionConfirmed)); // Track connection confirmation
+      
+      // Don't track weight/priority changes as they don't affect step structure
+      // Weight and priority tracking removed to prevent infinite loops
       
       // Check step 1 completion: All links have interfaces selected
       const allLinksHaveInterfaces = advancedHooks.state.links.length > 0 && 
         advancedHooks.state.links.every(link => link.interfaceName);
       step1Complete.value = allLinksHaveInterfaces;
       
-      // Check step 2 completion: All links have connection confirmed
+      // Immediately update step 1's isComplete property for responsive UI
+      if (steps.value[0]) {
+        steps.value[0].isComplete = allLinksHaveInterfaces;
+        steps.value = [...steps.value]; // Trigger reactivity
+      }
+      
+      // Check step 2 completion: All links have connection type selected and confirmed
       const allLinksHaveConnectionConfirmed = advancedHooks.state.links.length > 0 && 
-        advancedHooks.state.links.every(link => link.connectionConfirmed);
+        advancedHooks.state.links.every(link => link.connectionType && link.connectionConfirmed);
       step2Complete.value = allLinksHaveConnectionConfirmed;
       
-      if (stepsInitialized.value) {
-        const newSteps = await createSteps();
-        // Only update if steps actually changed (comparing IDs)
-        const currentIds = steps.value.map(s => s.id).join(',');
-        const newIds = newSteps.map(s => s.id).join(',');
-        
-        if (currentIds !== newIds) {
-          steps.value = newSteps;
-          
-          // If we're currently on step 3 but it no longer exists (single link), go to step 2
-          if (activeStep.value >= 2 && advancedHooks.state.links.length === 1) {
-            activeStep.value = 1; // Go to step 2 (0-indexed)
-          }
-        } else {
-          // Update existing steps' properties even if IDs haven't changed
-          steps.value = newSteps;
-        }
-        
-        // Update WANLinks whenever links change (for Foreign mode)
-        if (mode === "Foreign") {
-          console.log('[WANAdvanced] Updating WANLinks on change:', advancedHooks.state.links);
-          starContext.state.WAN.WANLinks = [...advancedHooks.state.links];
-        }
+      // Immediately update step 2's isComplete property for responsive UI
+      if (steps.value[1]) {
+        steps.value[1].isComplete = allLinksHaveConnectionConfirmed;
       }
+      
+      // Update optional Step 3 (MultiLink) if it exists - always allow navigation
+      if (steps.value[2] && advancedHooks.state.links.length > 1) {
+        steps.value[2].isDisabled = !allLinksHaveInterfaces || !allLinksHaveConnectionConfirmed;
+      }
+      
+      // Update Review step (last step) if it exists
+      const lastStepIndex = steps.value.length - 1;
+      if (steps.value[lastStepIndex] && steps.value[lastStepIndex].title?.includes('Review')) {
+        steps.value[lastStepIndex].isDisabled = !allLinksHaveInterfaces || !allLinksHaveConnectionConfirmed;
+      }
+      
+      // Trigger reactivity after all updates
+      steps.value = [...steps.value];
+      
+      // Add debouncing to prevent rapid step updates
+      let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
+      
+      const updateSteps = async () => {
+        if (stepsInitialized.value) {
+          // Check if we need to add/remove the multi-link step
+          const hasMultipleLinks = advancedHooks.state.links.length > 1;
+          const currentHasMultiLink = steps.value.some(s => s.title?.includes('LoadBalance'));
+          
+          // Only recreate steps if structure changes (multi-link step added/removed)
+          if (hasMultipleLinks !== currentHasMultiLink) {
+            const newSteps = await createSteps();
+            steps.value = newSteps;
+            
+            // If we're currently on step 3 but it no longer exists (single link), go to step 2
+            if (activeStep.value >= 2 && advancedHooks.state.links.length === 1) {
+              activeStep.value = 1; // Go to step 2 (0-indexed)
+            }
+          } else {
+            // Only update completion status without recreating components
+            // This prevents re-mounting of Step3_MultiLink
+            const newCompletions = {
+              step1: advancedHooks.state.links.length > 0 && 
+                     advancedHooks.state.links.every(link => link.interfaceName),
+              step2: advancedHooks.state.links.length > 0 && 
+                     advancedHooks.state.links.every(link => link.connectionType && link.connectionConfirmed)
+            };
+            
+            // Update step 1 completion
+            if (steps.value[0]) {
+              steps.value[0].isComplete = newCompletions.step1;
+            }
+            
+            // Update step 2 completion
+            if (steps.value[1]) {
+              steps.value[1].isComplete = newCompletions.step2;
+            }
+            
+            // Update optional steps' disabled state
+            for (let i = 2; i < steps.value.length; i++) {
+              if (steps.value[i]) {
+                steps.value[i].isDisabled = !newCompletions.step1 || !newCompletions.step2;
+              }
+            }
+            
+            // Trigger minimal reactivity update
+            steps.value = [...steps.value];
+          }
+          
+          // Update WANLinks whenever essential properties change (for Foreign mode)
+          if (mode === "Foreign") {
+            console.log('[WANAdvanced] Updating WANLinks on change:', advancedHooks.state.links);
+            starContext.state.WAN.WANLinks = [...advancedHooks.state.links];
+          }
+        }
+      };
+      
+      // Debounce the update with 500ms delay to prevent rapid updates
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateSteps();
+      }, 500);
+      
+      cleanup(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+      });
     });
 
     // Note: Removed automatic step completion tracking to prevent infinite loops
@@ -335,7 +412,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               activeStep={activeStep.value}
               onStepChange$={handleStepChange$}
               onComplete$={applyConfiguration$}
-              allowSkipSteps={true}
+              hideStepHeader={true}
             />
           </div>
         </div>

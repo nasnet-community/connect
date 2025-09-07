@@ -17,14 +17,11 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
 }) => {
   // Check validation status
   const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
-  const allVPNsConfigured = wizardState.vpnConfigs.every(vpn => 
-    Boolean(vpn.name) && Boolean(vpn.type) && Boolean(vpn.config)
-  );
   
   const enabledVPNs = wizardState.vpnConfigs.filter(vpn => vpn.enabled);
-  const disabledVPNs = wizardState.vpnConfigs.filter(vpn => !vpn.enabled);
+  const configuredVPNs = wizardState.vpnConfigs.filter(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config));
 
-  const getVPNIcon = (type: string) => {
+  const getVPNIcon = (type?: string) => {
     switch (type) {
       case "Wireguard":
         return "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z";
@@ -43,28 +40,23 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
     }
   };
 
-  const getStatusBadge = (vpn: any) => {
-    if (!vpn.enabled) {
-      return (
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-          {$localize`Disabled`}
-        </span>
-      );
+  const getProtocolColor = (type?: string) => {
+    switch (type) {
+      case "Wireguard":
+        return "bg-gradient-to-br from-blue-500 to-blue-700";
+      case "OpenVPN":
+        return "bg-gradient-to-br from-green-500 to-green-700";
+      case "L2TP":
+        return "bg-gradient-to-br from-purple-500 to-purple-700";
+      case "PPTP":
+        return "bg-gradient-to-br from-orange-500 to-orange-700";
+      case "SSTP":
+        return "bg-gradient-to-br from-pink-500 to-pink-700";
+      case "IKeV2":
+        return "bg-gradient-to-br from-indigo-500 to-indigo-700";
+      default:
+        return "bg-gradient-to-br from-gray-500 to-gray-700";
     }
-    
-    if (!vpn.config) {
-      return (
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-          {$localize`Not Configured`}
-        </span>
-      );
-    }
-    
-    return (
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-        {$localize`Ready`}
-      </span>
-    );
   };
 
   const handleEditStep = $((step: number) => {
@@ -73,278 +65,299 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
     }
   });
 
+  const completionPercentage = Math.round((configuredVPNs.length / wizardState.vpnConfigs.length) * 100) || 0;
+
   return (
     <div class="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-          {$localize`Review & Summary`}
-        </h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {$localize`Review your VPN client configuration before applying`}
-        </p>
+      {/* Modern Header with Gradient */}
+      <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-white">
+        <div class="relative z-10">
+          <h2 class="text-3xl font-bold">
+            {$localize`Configuration Summary`}
+          </h2>
+          <p class="mt-2 text-primary-100">
+            {$localize`Review your VPN configuration before deploying to your router`}
+          </p>
+        </div>
+        {/* Background Pattern */}
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white"></div>
+          <div class="absolute -left-10 -bottom-10 h-60 w-60 rounded-full bg-white"></div>
+        </div>
       </div>
 
-      {/* Validation Status */}
+      {/* Status Alert with Modern Style */}
       {hasValidationErrors && (
-        <Alert status="error">
+        <Alert status="error" class="border-l-4 border-red-500">
           <div class="flex">
             <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             </svg>
             <div class="ml-3">
               <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                {$localize`Configuration has errors`}
+                {$localize`Configuration Issues Detected`}
               </h3>
-              <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                <p>{$localize`Please review and fix the following issues before continuing:`}</p>
-                <ul class="list-disc ml-5 mt-1">
-                  {Object.entries(wizardState.validationErrors).map(([key, errors]) => (
-                    <li key={key}>
-                      {errors.join(', ')}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </Alert>
-      )}
-
-      {!hasValidationErrors && allVPNsConfigured && (
-        <Alert status="success">
-          <div class="flex">
-            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
-                {$localize`Configuration is ready`}
-              </h3>
-              <p class="mt-1 text-sm text-green-700 dark:text-green-300">
-                {$localize`All VPN clients are properly configured and ready to deploy.`}
+              <p class="mt-1 text-sm text-red-700 dark:text-red-300">
+                {$localize`Please review and fix the issues before proceeding.`}
               </p>
             </div>
           </div>
         </Alert>
       )}
 
-      {/* Configuration Summary */}
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* VPN Clients Overview */}
-        <Card>
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {$localize`VPN Clients`}
-              </h3>
-              <button
-                onClick$={() => handleEditStep(0)}
-                class="text-primary-600 hover:text-primary-700 text-sm font-medium dark:text-primary-400 dark:hover:text-primary-300"
-              >
-                {$localize`Edit`}
-              </button>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">{$localize`Total VPN clients:`}</span>
-                <span class="font-medium text-gray-900 dark:text-white">{wizardState.vpnConfigs.length}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">{$localize`Enabled clients:`}</span>
-                <span class="font-medium text-green-600 dark:text-green-400">{enabledVPNs.length}</span>
-              </div>
-              {disabledVPNs.length > 0 && (
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-400">{$localize`Disabled clients:`}</span>
-                  <span class="font-medium text-gray-500">{disabledVPNs.length}</span>
-                </div>
-              )}
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">{$localize`Configured clients:`}</span>
-                <span class="font-medium text-gray-900 dark:text-white">
-                  {wizardState.vpnConfigs.filter(vpn => vpn.config).length}
-                </span>
-              </div>
-            </div>
-            
-            {/* Protocol Breakdown */}
-            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                {$localize`Protocols Used`}
-              </h4>
-              <div class="flex flex-wrap gap-2">
-                {Array.from(new Set(wizardState.vpnConfigs.map(vpn => vpn.type))).map((protocol) => (
-                  <span
-                    key={protocol}
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300"
-                  >
-                    {protocol}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
 
-        {/* Configuration Details */}
-        <Card>
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {$localize`Configuration Details`}
-              </h3>
-              <button
-                onClick$={() => handleEditStep(1)}
-                class="text-primary-600 hover:text-primary-700 text-sm font-medium dark:text-primary-400 dark:hover:text-primary-300"
-              >
-                {$localize`Edit`}
-              </button>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">{$localize`Strategy:`}</span>
-                <span class="font-medium text-gray-900 dark:text-white">
-                  {wizardState.multiVPNStrategy?.strategy || $localize`Failover`}
-                </span>
+      {/* Modern Statistics Dashboard */}
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Total VPNs Card */}
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-xl">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-blue-100">{$localize`Total VPNs`}</p>
+                <p class="mt-2 text-3xl font-bold">{wizardState.vpnConfigs.length}</p>
               </div>
-              {wizardState.multiVPNStrategy?.failoverCheckInterval && (
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-400">{$localize`Check interval:`}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
-                    {wizardState.multiVPNStrategy.failoverCheckInterval}s
-                  </span>
-                </div>
-              )}
-              {wizardState.multiVPNStrategy?.failoverTimeout && (
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-400">{$localize`Timeout:`}</span>
-                  <span class="font-medium text-gray-900 dark:text-white">
-                    {wizardState.multiVPNStrategy.failoverTimeout}s
-                  </span>
-                </div>
-              )}
+              <div class="rounded-lg bg-white/20 p-3">
+                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
             </div>
           </div>
-        </Card>
+          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
+        </div>
+
+        {/* Active VPNs Card */}
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500 to-green-600 p-6 text-white shadow-xl">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-green-100">{$localize`Active VPNs`}</p>
+                <p class="mt-2 text-3xl font-bold">{enabledVPNs.length}</p>
+              </div>
+              <div class="rounded-lg bg-white/20 p-3">
+                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
+        </div>
+
+        {/* Configured VPNs Card */}
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 p-6 text-white shadow-xl">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-purple-100">{$localize`Configured`}</p>
+                <p class="mt-2 text-3xl font-bold">{configuredVPNs.length}</p>
+              </div>
+              <div class="rounded-lg bg-white/20 p-3">
+                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
+        </div>
+
+        {/* Completion Progress Card */}
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white shadow-xl">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between">
+              <div class="w-full">
+                <p class="text-orange-100">{$localize`Completion`}</p>
+                <p class="mt-2 text-3xl font-bold">{completionPercentage}%</p>
+                <div class="mt-3 w-full rounded-full bg-white/20">
+                  <div 
+                    class="h-2 rounded-full bg-white transition-all duration-500"
+                    style={`width: ${completionPercentage}%`}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
+        </div>
       </div>
 
-      {/* VPN Clients List */}
-      <Card>
-        <div class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">
-            {$localize`VPN Clients Detail`}
-          </h3>
-          
-          <div class="space-y-4">
-            {wizardState.vpnConfigs
-              .sort((a, b) => (a.priority || 0) - (b.priority || 0))
-              .map((vpn, index) => (
-                <div
-                  key={vpn.id}
-                  class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
-                >
-                  <div class="flex items-center space-x-4">
-                    {/* Priority Badge */}
-                    <div class="flex items-center justify-center w-8 h-8 bg-primary-100 rounded-lg dark:bg-primary-900/30">
-                      <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
-                        {index + 1}
-                      </span>
-                    </div>
-
-                    {/* Protocol Icon */}
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
-                      <svg class="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getVPNIcon(vpn.type)} />
-                      </svg>
-                    </div>
-
-                    {/* VPN Info */}
-                    <div>
-                      <h4 class="font-medium text-gray-900 dark:text-white">
-                        {vpn.name}
-                      </h4>
-                      <div class="flex items-center space-x-2 mt-1">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">
-                          {vpn.type}
-                        </span>
-                        {vpn.description && (
-                          <>
-                            <span class="text-gray-400">•</span>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">
-                              {vpn.description}
-                            </span>
-                          </>
-                        )}
-                        {vpn.assignedLink && (
-                          <>
-                            <span class="text-gray-400">•</span>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">
-                              {$localize`Assigned to ${vpn.assignedLink}`}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status */}
-                  <div class="flex items-center space-x-3">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                      {$localize`Priority ${vpn.priority || index + 1}`}
-                    </span>
-                    {getStatusBadge(vpn)}
-                  </div>
-                </div>
-              ))}
+      {/* VPN Clients Overview with Modern Cards */}
+      <Card class="overflow-hidden border-0 shadow-lg">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {$localize`VPN Connections Overview`}
+            </h3>
+            <button
+              onClick$={() => handleEditStep(1)}
+              class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              {$localize`Edit Configuration`}
+            </button>
           </div>
         </div>
-      </Card>
+        
+        <div class="p-6 space-y-4">
+          {[...wizardState.vpnConfigs]
+            .sort((a, b) => (a.priority || 0) - (b.priority || 0))
+            .map((vpn, index) => {
+              const isConfigured = vpn.type && 'config' in vpn && Boolean(vpn.config);
+              const statusColor = !vpn.enabled 
+                ? 'border-gray-300 dark:border-gray-600'
+                : isConfigured
+                ? 'border-green-300 dark:border-green-600'
+                : 'border-yellow-300 dark:border-yellow-600';
+              
+              return (
+                <div
+                  key={vpn.id}
+                  class={`group relative overflow-hidden rounded-xl border-2 ${statusColor} bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-5 transition-all hover:shadow-lg`}
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                      {/* Priority Badge */}
+                      <div class="flex flex-col items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{$localize`Priority`}</span>
+                        <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white font-bold shadow-lg">
+                          {index + 1}
+                        </div>
+                      </div>
 
-      {/* Next Steps */}
-      <Card class="bg-blue-50 dark:bg-blue-900/20">
-        <div class="p-6">
-          <h3 class="text-lg font-medium text-blue-900 dark:text-blue-100 mb-4">
-            {$localize`What happens next?`}
-          </h3>
-          <ul class="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-5 h-5 mt-0.5 mr-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-              </span>
-              {$localize`VPN client configurations will be applied to your router`}
-            </li>
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-5 h-5 mt-0.5 mr-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-              </span>
-              {$localize`VPN connections will be established based on priority`}
-            </li>
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-5 h-5 mt-0.5 mr-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-              </span>
-              {$localize`Failover strategy will handle connection failures automatically`}
-            </li>
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-5 h-5 mt-0.5 mr-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-              </span>
-              {$localize`You can modify these settings later from the router management interface`}
-            </li>
-          </ul>
+                      {/* Protocol Icon with Gradient Background */}
+                      <div class={`rounded-xl p-3 text-white shadow-lg ${getProtocolColor(vpn.type)}`}>
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getVPNIcon(vpn.type)} />
+                        </svg>
+                      </div>
+
+                      {/* VPN Details */}
+                      <div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {vpn.name}
+                        </h4>
+                        <div class="mt-1 flex items-center gap-3 text-sm">
+                          <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            {vpn.type || $localize`No protocol selected`}
+                          </span>
+                          {vpn.assignedLink && (
+                            <>
+                              <span class="text-gray-400">•</span>
+                              <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                {vpn.assignedLink}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Indicators */}
+                    <div class="flex items-center gap-3">
+                      {!vpn.enabled ? (
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                          <span class="mr-1.5 h-2 w-2 rounded-full bg-gray-400"></span>
+                          {$localize`Disabled`}
+                        </span>
+                      ) : isConfigured ? (
+                        <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <span class="mr-1.5 h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                          {$localize`Ready`}
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
+                          {$localize`Not Configured`}
+                        </span>
+                      )}
+
+                      {/* Weight Badge for Load Balancing */}
+                      {vpn.weight && (
+                        <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          {vpn.weight}% {$localize`weight`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hover Effect Line */}
+                  <div class="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-primary-500 to-primary-700 transform scale-x-0 transition-transform group-hover:scale-x-100"></div>
+                </div>
+              );
+            })}
         </div>
       </Card>
+
+      {/* Strategy Configuration */}
+      {wizardState.multiVPNStrategy && (
+        <Card class="overflow-hidden border-0 shadow-lg">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {$localize`Multi-VPN Strategy`}
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <div class="flex items-center gap-3">
+                <div class="rounded-lg bg-indigo-100 dark:bg-indigo-900/30 p-3">
+                  <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Strategy`}</p>
+                  <p class="font-semibold text-gray-900 dark:text-white">
+                    {wizardState.multiVPNStrategy.strategy}
+                  </p>
+                </div>
+              </div>
+
+              {wizardState.multiVPNStrategy.failoverCheckInterval && (
+                <div class="flex items-center gap-3">
+                  <div class="rounded-lg bg-yellow-100 dark:bg-yellow-900/30 p-3">
+                    <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Check Interval`}</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                      {wizardState.multiVPNStrategy.failoverCheckInterval}s
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {wizardState.multiVPNStrategy.failoverTimeout && (
+                <div class="flex items-center gap-3">
+                  <div class="rounded-lg bg-red-100 dark:bg-red-900/30 p-3">
+                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Timeout`}</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                      {wizardState.multiVPNStrategy.failoverTimeout}s
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
     </div>
   );
 });

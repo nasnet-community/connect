@@ -2,7 +2,7 @@ import { component$, type QRL } from "@builder.io/qwik";
 import type { VPNType } from "../../types/VPNClientAdvancedTypes";
 
 export interface VPNProtocolSelectorProps {
-  selectedProtocol?: VPNType;
+  selectedProtocol?: VPNType | undefined;
   onSelect$: QRL<(protocol: VPNType) => void>;
 }
 
@@ -69,6 +69,13 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
           <p class="text-sm text-gray-600 dark:text-gray-400">
             {$localize`Choose a VPN protocol for your connection`}
           </p>
+          {!selectedProtocol && (
+            <div class="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+              <p class="text-sm text-blue-800 dark:text-blue-300">
+                {$localize`Please select a VPN protocol to continue`}
+              </p>
+            </div>
+          )}
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

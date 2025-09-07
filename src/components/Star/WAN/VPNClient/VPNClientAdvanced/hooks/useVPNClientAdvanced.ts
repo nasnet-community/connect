@@ -79,7 +79,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   });
 
   // Create default config based on VPN type
-  const createDefaultConfig$ = $((type: VPNType) => {
+  const createDefaultConfig$ = $((type?: VPNType) => {
     const baseConfig = {
       id: generateUniqueId("vpn"),
       name: "",
@@ -89,6 +89,11 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       weight: 50,
       assignedLink: undefined as string | undefined,
     };
+
+    // If no type provided, return uninitialized config
+    if (!type) {
+      return baseConfig;
+    }
 
     switch (type) {
       case "Wireguard":
@@ -166,8 +171,8 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   // Add a new VPN client
   const addVPNClient$ = $(async () => {
     vpnCounter.value++;
-    const newVPNClient = await createDefaultConfig$("Wireguard");
-    newVPNClient.name = await generateVPNClientName$(vpnCounter.value, "Wireguard");
+    const newVPNClient = await createDefaultConfig$();
+    newVPNClient.name = `VPN ${vpnCounter.value}`;
 
     state.vpnConfigs = [...state.vpnConfigs, newVPNClient as VPNConfig];
 
@@ -249,7 +254,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   });
 
   // Update a specific VPN client
-  const updateVPNClient$ = $((id: string, updates: Partial<VPNConfig>) => {
+  const updateVPNClient$ = $(async (id: string, updates: Partial<VPNConfig>) => {
     const vpnIndex = state.vpnConfigs.findIndex((vpn) => vpn.id === id);
     if (vpnIndex === -1) return;
 
@@ -260,8 +265,11 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       updates.type &&
       updates.type !== state.vpnConfigs[vpnIndex].type
     ) {
-      // Create default config for new type (sync)
-      updatedVPN.config = createDefaultConfig$(updates.type) as any;
+      // Create default config for new type
+      const newConfig = await createDefaultConfig$(updates.type);
+      if ('config' in newConfig && newConfig.config) {
+        (updatedVPN as any).config = newConfig.config;
+      }
     }
 
     // Use Object.assign for proper Qwik reactivity
@@ -269,13 +277,13 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   });
 
   // Batch update multiple VPN clients at once
-  const batchUpdateVPNs$ = $((updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => {
+  const batchUpdateVPNs$ = $(async (updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => {
     // Create a new array with all updates applied
     const newVPNs = [...state.vpnConfigs];
     
-    updates.forEach(({ id, updates: vpnUpdates }) => {
+    for (const { id, updates: vpnUpdates } of updates) {
       const vpnIndex = newVPNs.findIndex((vpn) => vpn.id === id);
-      if (vpnIndex === -1) return;
+      if (vpnIndex === -1) continue;
 
       const currentVPN = newVPNs[vpnIndex];
       const updatedVPN = { ...currentVPN, ...vpnUpdates };
@@ -285,12 +293,15 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         vpnUpdates.type &&
         vpnUpdates.type !== currentVPN.type
       ) {
-        // Create default config for new type (sync)
-        updatedVPN.config = createDefaultConfig$(vpnUpdates.type) as any;
+        // Create default config for new type
+        const newConfig = await createDefaultConfig$(vpnUpdates.type);
+        if ('config' in newConfig && newConfig.config) {
+          (updatedVPN as any).config = newConfig.config;
+        }
       }
 
       newVPNs[vpnIndex] = updatedVPN as VPNConfig;
-    });
+    }
 
     // Update state once with all changes
     state.vpnConfigs = newVPNs;
@@ -374,10 +385,15 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   // Alias methods for component compatibility
   const addVPN$ = $(async (config: Partial<VPNConfig>) => {
     vpnCounter.value++;
-    const defaultConfig = await createDefaultConfig$(config.type || "Wireguard");
+    const defaultConfig = await createDefaultConfig$(config.type);
     const newVPN = { ...defaultConfig, ...config };
     if (!newVPN.name) {
-      newVPN.name = await generateVPNClientName$(vpnCounter.value, newVPN.type);
+      // Only generate type-specific name if type is provided
+      if (newVPN.type) {
+        newVPN.name = await generateVPNClientName$(vpnCounter.value, newVPN.type);
+      } else {
+        newVPN.name = `VPN ${vpnCounter.value}`;
+      }
     }
     state.vpnConfigs = [...state.vpnConfigs, newVPN as VPNConfig];
   });

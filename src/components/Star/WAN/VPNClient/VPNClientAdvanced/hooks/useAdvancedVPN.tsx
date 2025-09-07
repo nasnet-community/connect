@@ -51,12 +51,18 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
   const vpnCounter = useSignal(0);
 
   // Generate consistent VPN names
-  const generateVPNName$ = $((type: VPNType, index: number) => {
+  const generateVPNName$ = $((type: VPNType | undefined, index: number) => {
+    if (!type) {
+      return `VPN ${index}`;
+    }
     return `${type} VPN ${index}`;
   });
 
   // Create default config based on VPN type
-  const createDefaultConfig$ = $((type: VPNType): any => {
+  const createDefaultConfig$ = $((type: VPNType | undefined): any => {
+    if (!type) {
+      return undefined;
+    }
     switch (type) {
       case "Wireguard":
         return {

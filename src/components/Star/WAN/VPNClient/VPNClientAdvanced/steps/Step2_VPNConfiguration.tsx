@@ -85,13 +85,13 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
     const query = searchQuery.value.toLowerCase();
     return wizardState.vpnConfigs.filter(vpn => 
       vpn.name.toLowerCase().includes(query) ||
-      vpn.type.toLowerCase().includes(query) ||
+      (vpn.type && vpn.type.toLowerCase().includes(query)) ||
       (vpn.description && vpn.description.toLowerCase().includes(query))
     );
   };
 
   // Get statistics
-  const configuredVPNs = wizardState.vpnConfigs.filter(vpn => Boolean(vpn.config)).length;
+  const configuredVPNs = wizardState.vpnConfigs.filter(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config)).length;
   const totalVPNs = wizardState.vpnConfigs.length;
 
   const getVPNIcon = (type: string) => {
@@ -170,7 +170,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
         <div class="space-y-4">
           {getFilteredVPNs().map((vpn, index) => {
             const isExpanded = expandedVPNId.value === vpn.id;
-            const hasConfig = Boolean(vpn.config);
+            const hasConfig = vpn.type && 'config' in vpn && Boolean(vpn.config);
             const hasErrors = Object.keys(wizardState.validationErrors || {}).some(key => 
               key.startsWith(`vpn-${vpn.id}`)
             );
@@ -224,7 +224,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(({
                             ? 'text-red-600 dark:text-red-400'
                             : 'text-gray-600 dark:text-gray-400'
                         }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getVPNIcon(vpn.type)} />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={getVPNIcon(vpn.type || "Unknown")} />
                         </svg>
                       </div>
                       

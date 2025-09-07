@@ -1,4 +1,4 @@
-import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
+import { component$, $, useSignal, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import { Alert, Input } from "~/components/Core";
 import type { VPNClientAdvancedState, VPNType } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
@@ -18,12 +18,18 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   onRefreshCompletion$
 }) => {
   const isAdding = useSignal(false);
-  // Initialize with the first VPN expanded if any exist
-  const expandedVPNs = useSignal<Set<string>>(
-    wizardState.vpnConfigs.length > 0 
-      ? new Set([wizardState.vpnConfigs[0].id]) 
-      : new Set()
-  );
+  // Initialize with empty set, will be populated on mount
+  const expandedVPNs = useSignal<Set<string>>(new Set());
+  
+  // Auto-expand the first VPN card when component mounts
+  useVisibleTask$(() => {
+    if (wizardState.vpnConfigs.length > 0 && expandedVPNs.value.size === 0) {
+      const firstVPN = wizardState.vpnConfigs[0];
+      if (firstVPN?.id) {
+        expandedVPNs.value = new Set([firstVPN.id]);
+      }
+    }
+  });
 
   const canRemoveVPN = wizardState.vpnConfigs.length > foreignWANCount;
   const needsMoreVPNs = wizardState.vpnConfigs.length < foreignWANCount;
@@ -34,17 +40,8 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
     try {
       const name = `VPN ${wizardState.vpnConfigs.length + 1}`;
       await wizardActions.addVPN$({
-        type: "Wireguard", // Default protocol
         name: name,
       });
-      
-      // If no cards are expanded, expand the newly added VPN (get the last one added)
-      if (expandedVPNs.value.size === 0 && wizardState.vpnConfigs.length > 0) {
-        const lastVPN = wizardState.vpnConfigs[wizardState.vpnConfigs.length - 1];
-        if (lastVPN?.id) {
-          expandedVPNs.value = new Set([lastVPN.id]);
-        }
-      }
       
       if (onRefreshCompletion$) {
         await onRefreshCompletion$();
@@ -61,18 +58,9 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
     try {
       await wizardActions.removeVPN$(vpnId);
       
-      // Handle expansion after removal
+      // Handle expansion after removal - just remove the deleted VPN from expanded set
       const newExpanded = new Set(expandedVPNs.value);
       newExpanded.delete(vpnId);
-      
-      // If no cards are expanded and VPNs remain, expand the first one
-      if (newExpanded.size === 0 && wizardState.vpnConfigs.length > 1) {
-        const remainingVPNs = wizardState.vpnConfigs.filter(vpn => vpn.id !== vpnId);
-        if (remainingVPNs.length > 0) {
-          newExpanded.add(remainingVPNs[0].id);
-        }
-      }
-      
       expandedVPNs.value = newExpanded;
       
       if (onRefreshCompletion$) {
@@ -98,10 +86,7 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   const handleToggleVPNExpansion = $((vpnId: string) => {
     const newExpanded = new Set(expandedVPNs.value);
     if (newExpanded.has(vpnId)) {
-      // Don't allow closing if this is the only expanded card
-      if (newExpanded.size > 1) {
-        newExpanded.delete(vpnId);
-      }
+      newExpanded.delete(vpnId);
     } else {
       newExpanded.add(vpnId);
     }
@@ -187,14 +172,14 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
                               ? 'text-yellow-600 dark:text-yellow-400'
                               : 'text-gray-600 dark:text-gray-400'
                           }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={{
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={vpn.type ? {
                               "Wireguard": "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
                               "OpenVPN": "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
                               "L2TP": "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9",
                               "PPTP": "M13 10V3L4 14h7v7l9-11h-7z",
                               "SSTP": "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
                               "IKeV2": "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                            }[vpn.type] || "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
+                            }[vpn.type] : "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
                           </svg>
                         </div>
                         

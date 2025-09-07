@@ -1,4 +1,4 @@
-import { component$, $, useSignal } from "@builder.io/qwik";
+import { component$, $, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
 import type { VPNClientAdvancedState, MultiVPNStrategy } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { Input } from "~/components/Core";
@@ -15,6 +15,70 @@ export const StepPriorities = component$<StepPrioritiesProps>(
     
     // Strategy state
     const strategy = useSignal<MultiVPNStrategy>(wizardState.multiVPNStrategy?.strategy || "Failover");
+    
+    // Track initialization to prevent re-initialization on remount
+    const initState = useStore({ 
+      weightsInitialized: false,
+      prioritiesInitialized: false 
+    });
+    
+    // Initialize weights and priorities once on mount
+    useVisibleTask$(({ cleanup }) => {
+      // Check if priorities need initialization
+      if (!initState.prioritiesInitialized) {
+        const needsPriorityInit = wizardState.vpnConfigs.some(vpn => 
+          vpn.priority === undefined || vpn.priority === null || vpn.priority === 0
+        );
+        
+        if (needsPriorityInit) {
+          console.log('[StepPriorities] Initializing priorities');
+          const updates = wizardState.vpnConfigs.map((vpn, index) => ({
+            id: vpn.id,
+            updates: { priority: vpn.priority || index + 1 }
+          }));
+          
+          // Apply priority initialization with delay to prevent immediate re-renders
+          const timeoutId = setTimeout(() => {
+            wizardActions.batchUpdateVPNs$(updates);
+          }, 100);
+          
+          cleanup(() => clearTimeout(timeoutId));
+        }
+        
+        initState.prioritiesInitialized = true;
+      }
+      
+      // Check if weights need initialization only for LoadBalance or Both strategies
+      if (!initState.weightsInitialized && 
+          (strategy.value === "LoadBalance" || strategy.value === "Both")) {
+        const needsWeightInit = wizardState.vpnConfigs.some(vpn => 
+          vpn.weight === undefined || vpn.weight === null || vpn.weight === 0
+        );
+        
+        if (needsWeightInit) {
+          console.log('[StepPriorities] Initializing weights for', strategy.value);
+          const equalWeight = Math.floor(100 / wizardState.vpnConfigs.length);
+          const remainder = 100 - (equalWeight * wizardState.vpnConfigs.length);
+          
+          const updates = wizardState.vpnConfigs.map((vpn, index) => ({
+            id: vpn.id,
+            updates: { 
+              weight: vpn.weight || (equalWeight + (index === 0 ? remainder : 0))
+            }
+          }));
+          
+          // Apply weight initialization with delay
+          const timeoutId = setTimeout(() => {
+            wizardActions.batchUpdateVPNs$(updates);
+            initState.weightsInitialized = true;
+          }, 200);
+          
+          cleanup(() => clearTimeout(timeoutId));
+        } else {
+          initState.weightsInitialized = true;
+        }
+      }
+    });
 
     // Sort VPNs by priority
     const sortedVPNs = [...wizardState.vpnConfigs].sort(
@@ -127,13 +191,39 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         if (!wizardState.multiVPNStrategy?.roundRobinInterval) {
           updates.roundRobinInterval = 60;
         }
-      } else if (newStrategy === "Both") {
-        // LoadBalance & Failover needs both failover settings
-        if (!wizardState.multiVPNStrategy?.failoverCheckInterval) {
-          updates.failoverCheckInterval = 10;
+      } else if (newStrategy === "Both" || newStrategy === "LoadBalance") {
+        // LoadBalance & Both need weights initialized
+        // Check if weights need initialization
+        const needsWeightInit = wizardState.vpnConfigs.some(vpn => 
+          vpn.weight === undefined || vpn.weight === null || vpn.weight === 0
+        );
+        
+        if (needsWeightInit && !initState.weightsInitialized) {
+          const equalWeight = Math.floor(100 / wizardState.vpnConfigs.length);
+          const remainder = 100 - (equalWeight * wizardState.vpnConfigs.length);
+          
+          const weightUpdates = wizardState.vpnConfigs.map((vpn, index) => ({
+            id: vpn.id,
+            updates: { 
+              weight: vpn.weight || (equalWeight + (index === 0 ? remainder : 0))
+            }
+          }));
+          
+          // Apply weight updates separately with a small delay
+          setTimeout(() => {
+            wizardActions.batchUpdateVPNs$(weightUpdates);
+            initState.weightsInitialized = true;
+          }, 100);
         }
-        if (!wizardState.multiVPNStrategy?.failoverTimeout) {
-          updates.failoverTimeout = 30;
+        
+        // Set default failover settings for "Both" strategy
+        if (newStrategy === "Both") {
+          if (!wizardState.multiVPNStrategy?.failoverCheckInterval) {
+            updates.failoverCheckInterval = 10;
+          }
+          if (!wizardState.multiVPNStrategy?.failoverTimeout) {
+            updates.failoverTimeout = 30;
+          }
         }
       }
       
@@ -321,11 +411,211 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           {strategy.value === "LoadBalance" && (
             <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
               <h4 class="text-sm font-medium text-orange-800 dark:text-orange-200 mb-3">
-                {$localize`Load Balance Settings`}
+                {$localize`Load Balance Configuration`}
               </h4>
-              <div class="text-sm text-orange-700 dark:text-orange-300">
-                <p>{$localize`Traffic will be distributed evenly across all active VPN connections based on the priority order set below.`}</p>
-                <p class="mt-2 font-medium">{$localize`Note: Configure connection priorities in the VPN Priority Order section.`}</p>
+              
+              {/* Load Balance Method Selection */}
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-orange-700 dark:text-orange-300 mb-2">
+                  {$localize`Load Balance Method`}
+                </label>
+                <select
+                  value={wizardState.multiVPNStrategy?.loadBalanceMethod || "PCC"}
+                  onChange$={(e: Event) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    wizardState.multiVPNStrategy = {
+                      ...wizardState.multiVPNStrategy,
+                      strategy: strategy.value,
+                      loadBalanceMethod: value as "PCC" | "NTH" | "ECMP" | "Bonding"
+                    };
+                  }}
+                  class="w-full px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                >
+                  <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
+                  <option value="NTH">{$localize`NTH (Round Robin)`}</option>
+                  <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
+                  <option value="Bonding">{$localize`Bonding`}</option>
+                </select>
+                <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  {$localize`Choose how traffic will be distributed across multiple VPN connections`}
+                </p>
+              </div>
+              
+              {/* Weight Distribution */}
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h5 class="text-sm font-medium text-orange-800 dark:text-orange-200">
+                    {$localize`Load Balance Weights`}
+                  </h5>
+                  <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                    {$localize`Adjust traffic distribution percentage for each VPN`}
+                  </p>
+                </div>
+                <button
+                  onClick$={() => {
+                    const equalWeight = Math.floor(100 / wizardState.vpnConfigs.length);
+                    const remainder = 100 - (equalWeight * wizardState.vpnConfigs.length);
+                    const updates = wizardState.vpnConfigs.map((vpn, index) => ({
+                      id: vpn.id,
+                      updates: {
+                        weight: equalWeight + (index === 0 ? remainder : 0),
+                      }
+                    }));
+                    wizardActions.batchUpdateVPNs$(updates);
+                  }}
+                  class="px-3 py-1.5 text-xs bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                >
+                  {$localize`Auto Balance`}
+                </button>
+              </div>
+              
+              <div class="space-y-3">
+                {wizardState.vpnConfigs.map((vpn) => {
+                  const weight = vpn.weight || 0;
+                  
+                  return (
+                    <div key={vpn.id} class="p-3 bg-white dark:bg-gray-700 rounded-lg">
+                      <div class="flex items-center justify-between mb-2">
+                        <div>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            {vpn.name}
+                          </span>
+                          {vpn.type && (
+                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                              ({vpn.type})
+                            </span>
+                          )}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max="99"
+                            value={weight}
+                            onInput$={(e) => {
+                              const value = parseInt((e.target as HTMLInputElement).value);
+                              if (!isNaN(value) && value >= 1 && value <= 99) {
+                                // Calculate adjustment for other VPNs
+                                const targetVPN = vpn;
+                                const oldWeight = targetVPN.weight || 0;
+                                const diff = value - oldWeight;
+                                
+                                // Prepare batch updates
+                                const updates: Array<{ id: string; updates: any }> = [];
+                                
+                                // Add target weight update
+                                updates.push({ id: vpn.id, updates: { weight: value } });
+                                
+                                // Distribute the difference among other VPNs
+                                const otherVPNs = wizardState.vpnConfigs.filter(v => v.id !== vpn.id);
+                                const totalOtherWeight = otherVPNs.reduce((sum, v) => sum + (v.weight || 0), 0);
+                                
+                                if (totalOtherWeight > 0) {
+                                  otherVPNs.forEach((otherVPN) => {
+                                    const proportion = (otherVPN.weight || 0) / totalOtherWeight;
+                                    const newWeight = Math.max(1, Math.round((otherVPN.weight || 0) - (diff * proportion)));
+                                    updates.push({ id: otherVPN.id, updates: { weight: newWeight } });
+                                  });
+                                }
+                                
+                                // Apply batch update
+                                wizardActions.batchUpdateVPNs$(updates);
+                                
+                                // Check if adjustment is needed after batch update
+                                const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
+                                if (newSum !== 100 && otherVPNs.length > 0) {
+                                  const adjustment = 100 - newSum;
+                                  const firstOther = otherVPNs[0];
+                                  const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
+                                  wizardActions.updateVPN$(firstOther.id, { 
+                                    weight: currentWeight + adjustment 
+                                  });
+                                }
+                              }
+                            }}
+                            class="w-12 px-2 py-1 text-center text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                          />
+                          <span class="text-xs text-gray-700 dark:text-gray-300">%</span>
+                        </div>
+                      </div>
+                      <div class="relative">
+                        <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div 
+                            class="h-full bg-orange-500 transition-all duration-300"
+                            style={`width: ${weight}%`}
+                          />
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="99"
+                          value={weight}
+                          onInput$={(e) => {
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            // Same weight adjustment logic as above
+                            const targetVPN = vpn;
+                            const oldWeight = targetVPN.weight || 0;
+                            const diff = value - oldWeight;
+                            
+                            const updates: Array<{ id: string; updates: any }> = [];
+                            updates.push({ id: vpn.id, updates: { weight: value } });
+                            
+                            const otherVPNs = wizardState.vpnConfigs.filter(v => v.id !== vpn.id);
+                            const totalOtherWeight = otherVPNs.reduce((sum, v) => sum + (v.weight || 0), 0);
+                            
+                            if (totalOtherWeight > 0) {
+                              otherVPNs.forEach((otherVPN) => {
+                                const proportion = (otherVPN.weight || 0) / totalOtherWeight;
+                                const newWeight = Math.max(1, Math.round((otherVPN.weight || 0) - (diff * proportion)));
+                                updates.push({ id: otherVPN.id, updates: { weight: newWeight } });
+                              });
+                            }
+                            
+                            wizardActions.batchUpdateVPNs$(updates);
+                            
+                            const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
+                            if (newSum !== 100 && otherVPNs.length > 0) {
+                              const adjustment = 100 - newSum;
+                              const firstOther = otherVPNs[0];
+                              const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
+                              wizardActions.updateVPN$(firstOther.id, { 
+                                weight: currentWeight + adjustment 
+                              });
+                            }
+                          }}
+                          class="absolute inset-0 w-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Total Weight Indicator */}
+                <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-orange-700 dark:text-orange-300">
+                      {$localize`Total Weight:`}
+                    </span>
+                    <div class="flex items-center gap-2">
+                      {wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0) === 100 ? (
+                        <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                      )}
+                      <span class={`text-sm font-bold ${
+                        wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0) === 100
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}>
+                        {wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -335,6 +625,32 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               <h4 class="text-sm font-medium text-purple-800 dark:text-purple-200 mb-3">
                 {$localize`Load Balance & Failover Settings`}
               </h4>
+              
+              {/* Load Balance Method Selection */}
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
+                  {$localize`Load Balance Method`}
+                </label>
+                <select
+                  value={wizardState.multiVPNStrategy?.loadBalanceMethod || "PCC"}
+                  onChange$={(e: Event) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    wizardState.multiVPNStrategy = {
+                      ...wizardState.multiVPNStrategy,
+                      strategy: strategy.value,
+                      loadBalanceMethod: value as "PCC" | "NTH" | "ECMP" | "Bonding"
+                    };
+                  }}
+                  class="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                >
+                  <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
+                  <option value="NTH">{$localize`NTH (Round Robin)`}</option>
+                  <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
+                  <option value="Bonding">{$localize`Bonding`}</option>
+                </select>
+              </div>
+              
+              {/* Failover Settings */}
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label class="block text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">
@@ -381,7 +697,177 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   />
                 </div>
               </div>
-              <div class="text-sm text-purple-700 dark:text-purple-300">
+              
+              {/* Weight Distribution */}
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h5 class="text-sm font-medium text-purple-800 dark:text-purple-200">
+                    {$localize`Load Balance Weights`}
+                  </h5>
+                  <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    {$localize`Adjust traffic distribution for active VPNs`}
+                  </p>
+                </div>
+                <button
+                  onClick$={() => {
+                    const equalWeight = Math.floor(100 / wizardState.vpnConfigs.length);
+                    const remainder = 100 - (equalWeight * wizardState.vpnConfigs.length);
+                    const updates = wizardState.vpnConfigs.map((vpn, index) => ({
+                      id: vpn.id,
+                      updates: {
+                        weight: equalWeight + (index === 0 ? remainder : 0),
+                      }
+                    }));
+                    wizardActions.batchUpdateVPNs$(updates);
+                  }}
+                  class="px-3 py-1.5 text-xs bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  {$localize`Auto Balance`}
+                </button>
+              </div>
+              
+              <div class="space-y-3">
+                {wizardState.vpnConfigs.map((vpn) => {
+                  const weight = vpn.weight || 0;
+                  
+                  return (
+                    <div key={vpn.id} class="p-3 bg-white dark:bg-gray-700 rounded-lg">
+                      <div class="flex items-center justify-between mb-2">
+                        <div>
+                          <span class="text-sm font-medium text-gray-900 dark:text-white">
+                            {vpn.name}
+                          </span>
+                          {vpn.type && (
+                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                              ({vpn.type})
+                            </span>
+                          )}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max="99"
+                            value={weight}
+                            onInput$={(e) => {
+                              const value = parseInt((e.target as HTMLInputElement).value);
+                              if (!isNaN(value) && value >= 1 && value <= 99) {
+                                const targetVPN = vpn;
+                                const oldWeight = targetVPN.weight || 0;
+                                const diff = value - oldWeight;
+                                
+                                const updates: Array<{ id: string; updates: any }> = [];
+                                updates.push({ id: vpn.id, updates: { weight: value } });
+                                
+                                const otherVPNs = wizardState.vpnConfigs.filter(v => v.id !== vpn.id);
+                                const totalOtherWeight = otherVPNs.reduce((sum, v) => sum + (v.weight || 0), 0);
+                                
+                                if (totalOtherWeight > 0) {
+                                  otherVPNs.forEach((otherVPN) => {
+                                    const proportion = (otherVPN.weight || 0) / totalOtherWeight;
+                                    const newWeight = Math.max(1, Math.round((otherVPN.weight || 0) - (diff * proportion)));
+                                    updates.push({ id: otherVPN.id, updates: { weight: newWeight } });
+                                  });
+                                }
+                                
+                                wizardActions.batchUpdateVPNs$(updates);
+                                
+                                const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
+                                if (newSum !== 100 && otherVPNs.length > 0) {
+                                  const adjustment = 100 - newSum;
+                                  const firstOther = otherVPNs[0];
+                                  const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
+                                  wizardActions.updateVPN$(firstOther.id, { 
+                                    weight: currentWeight + adjustment 
+                                  });
+                                }
+                              }
+                            }}
+                            class="w-12 px-2 py-1 text-center text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                          />
+                          <span class="text-xs text-gray-700 dark:text-gray-300">%</span>
+                        </div>
+                      </div>
+                      <div class="relative">
+                        <div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div 
+                            class="h-full bg-purple-500 transition-all duration-300"
+                            style={`width: ${weight}%`}
+                          />
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="99"
+                          value={weight}
+                          onInput$={(e) => {
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            const targetVPN = vpn;
+                            const oldWeight = targetVPN.weight || 0;
+                            const diff = value - oldWeight;
+                            
+                            const updates: Array<{ id: string; updates: any }> = [];
+                            updates.push({ id: vpn.id, updates: { weight: value } });
+                            
+                            const otherVPNs = wizardState.vpnConfigs.filter(v => v.id !== vpn.id);
+                            const totalOtherWeight = otherVPNs.reduce((sum, v) => sum + (v.weight || 0), 0);
+                            
+                            if (totalOtherWeight > 0) {
+                              otherVPNs.forEach((otherVPN) => {
+                                const proportion = (otherVPN.weight || 0) / totalOtherWeight;
+                                const newWeight = Math.max(1, Math.round((otherVPN.weight || 0) - (diff * proportion)));
+                                updates.push({ id: otherVPN.id, updates: { weight: newWeight } });
+                              });
+                            }
+                            
+                            wizardActions.batchUpdateVPNs$(updates);
+                            
+                            const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
+                            if (newSum !== 100 && otherVPNs.length > 0) {
+                              const adjustment = 100 - newSum;
+                              const firstOther = otherVPNs[0];
+                              const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
+                              wizardActions.updateVPN$(firstOther.id, { 
+                                weight: currentWeight + adjustment 
+                              });
+                            }
+                          }}
+                          class="absolute inset-0 w-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Total Weight Indicator */}
+                <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-purple-700 dark:text-purple-300">
+                      {$localize`Total Weight:`}
+                    </span>
+                    <div class="flex items-center gap-2">
+                      {wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0) === 100 ? (
+                        <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                      )}
+                      <span class={`text-sm font-bold ${
+                        wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0) === 100
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}>
+                        {wizardState.vpnConfigs.reduce((sum, vpn) => sum + (vpn.weight || 0), 0)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-4 text-sm text-purple-700 dark:text-purple-300">
                 <p>{$localize`Combines load balancing with automatic failover. Traffic is distributed across active connections, with backup VPNs ready when primary connections fail.`}</p>
               </div>
             </div>
@@ -458,14 +944,14 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={{
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={vpn.type ? {
                       "Wireguard": "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
                       "OpenVPN": "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
                       "L2TP": "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 919-9",
                       "PPTP": "M13 10V3L4 14h7v7l9-11h-7z",
                       "SSTP": "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
                       "IKeV2": "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                    }[vpn.type] || "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
+                    }[vpn.type] || "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" : "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"} />
                   </svg>
                 </div>
 

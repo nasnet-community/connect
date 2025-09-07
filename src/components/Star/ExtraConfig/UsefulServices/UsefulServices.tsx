@@ -12,13 +12,16 @@ export const UsefulServices = component$<StepProps>(({ onComplete$ }) => {
   const mode = ctx.state.Choose.Mode === "advance" ? "advanced" : "easy";
 
   return (
-    <div class="mx-auto w-full max-w-6xl p-4">
-      {/* Mode-specific Content */}
-      {mode === "easy" ? (
-        <UsefulServicesEasy isComplete={false} onComplete$={onComplete$} />
-      ) : (
-        <UsefulServicesAdvanced isComplete={false} onComplete$={onComplete$} />
-      )}
+    <div class="container mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      {/* Animated container with responsive padding */}
+      <div class="animate-fade-in">
+        {/* Mode-specific Content */}
+        {mode === "easy" ? (
+          <UsefulServicesEasy isComplete={false} onComplete$={onComplete$} />
+        ) : (
+          <UsefulServicesAdvanced isComplete={false} onComplete$={onComplete$} />
+        )}
+      </div>
     </div>
   );
 });

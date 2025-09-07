@@ -103,7 +103,7 @@ export const CloudDDNSStep = component$(() => {
     <div class="space-y-8 animate-fade-in-up">
       {/* Modern header */}
       <div class="text-center space-y-4">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 text-white mb-6 shadow-xl shadow-cyan-500/25 transition-transform hover:scale-105">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-500 text-white mb-6 shadow-xl shadow-primary-500/25 transition-transform hover:scale-105">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
           </svg>
@@ -121,11 +121,11 @@ export const CloudDDNSStep = component$(() => {
       <div class="space-y-6">
 
         {/* DDNS Enable Toggle */}
-        <Card class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg">
+        <Card class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-2 border-primary-200/50 dark:border-primary-700/50 shadow-lg">
           <CardHeader>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
-                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
                   </svg>
@@ -146,7 +146,7 @@ export const CloudDDNSStep = component$(() => {
                   validateAndUpdate$();
                 })}
                 size="lg"
-                color="secondary"
+                color="primary"
               />
             </div>
           </CardHeader>
@@ -154,10 +154,10 @@ export const CloudDDNSStep = component$(() => {
 
         {/* Current DDNS Entries List */}
         {enableDDNS.value && ddnsEntries.value.length > 0 && (
-          <Card class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200/50 dark:border-green-700/50 shadow-lg animate-fade-in-up">
+          <Card class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-2 border-primary-200/50 dark:border-primary-700/50 shadow-lg animate-fade-in-up">
             <CardHeader>
               <h4 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {$localize`Configured DDNS Entries`} ({ddnsEntries.value.length})
@@ -170,18 +170,22 @@ export const CloudDDNSStep = component$(() => {
                   return (
                     <div
                       key={entry.id}
-                      class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                      class="group/entry flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                     >
                       <div class="flex items-center gap-4">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-secondary-800/50 dark:to-secondary-700/50 text-secondary-600 dark:text-secondary-300 transition-all duration-300 group-hover/entry:scale-110 group-hover/entry:rotate-6">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 group-hover/entry:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
                           </svg>
                         </div>
                         <div>
-                          <p class="font-medium text-gray-900 dark:text-white">{entry.hostname}</p>
-                          <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {provider?.label} • {$localize`Updates every`} {entry.updateInterval}
+                          <p class="font-semibold text-gray-900 dark:text-white bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">{entry.hostname}</p>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1">
+                              <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                              {provider?.label}
+                            </span>
+                            • {$localize`Updates every`} {entry.updateInterval}
                           </p>
                         </div>
                       </div>
@@ -205,10 +209,10 @@ export const CloudDDNSStep = component$(() => {
 
         {/* Add New DDNS Entry Form - shown only when enabled */}
         {enableDDNS.value && (
-          <Card class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg animate-fade-in-up">
+          <Card class="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-2 border-primary-200/50 dark:border-primary-700/50 shadow-lg animate-fade-in-up">
             <CardHeader>
               <h4 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 {$localize`Add DDNS Entry`}
@@ -335,11 +339,11 @@ export const CloudDDNSStep = component$(() => {
       {/* Bottom status indicator - only show when active */}
       {enableDDNS.value && ddnsEntries.value.length > 0 && (
         <div class="text-center">
-          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/30 dark:to-blue-900/30 px-6 py-3 text-sm backdrop-blur-sm border border-cyan-200/50 dark:border-cyan-700/50">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 px-6 py-3 text-sm border border-primary-200/50 dark:border-primary-700/50">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13a3 3 0 00-6 0l3 3 3-3z" />
           </svg>
-          <span class="font-medium text-cyan-700 dark:text-cyan-300">
+          <span class="font-medium text-primary-700 dark:text-primary-300">
             {`${ddnsEntries.value.length} ${ddnsEntries.value.length === 1 ? $localize`DDNS entry configured` : $localize`DDNS entries configured`}`}
           </span>
         </div>

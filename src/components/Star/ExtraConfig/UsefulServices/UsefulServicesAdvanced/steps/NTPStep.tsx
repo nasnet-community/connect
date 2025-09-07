@@ -80,33 +80,45 @@ export const NTPStep = component$(() => {
 
   return (
     <div class="space-y-8 animate-fade-in-up">
-      {/* Modern header */}
-      <div class="text-center space-y-4">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white mb-6 shadow-xl shadow-blue-500/25 transition-transform hover:scale-105">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      {/* Enhanced modern header with glassmorphism */}
+      <div class="text-center space-y-6">
+        <div class="relative inline-flex items-center justify-center">
+          {/* Subtle glow effect */}
+          <div class="absolute inset-0 w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500/15 via-secondary-500/15 to-primary-500/15 animate-pulse-slow"></div>
+          <div class="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white shadow-2xl shadow-primary-500/30 transition-all duration-500 hover:scale-110 hover:rotate-3 hover:shadow-primary-500/40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 transition-transform duration-500 hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
         </div>
-        <h3 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
-          {$localize`NTP Time Synchronization`}
-        </h3>
-        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-          {$localize`Configure multiple NTP servers for accurate time synchronization`}
-        </p>
+        <div class="space-y-3">
+          <h3 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent dark:from-white dark:via-gray-200 dark:to-white animate-gradient bg-300%">
+            {$localize`NTP Time Synchronization`}
+          </h3>
+          <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            {$localize`Configure multiple NTP servers for accurate time synchronization across your network`}
+          </p>
+        </div>
       </div>
 
-      {/* NTP Servers Configuration */}
-      <Card class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-200/50 dark:border-gray-700/50 shadow-xl">
-        <CardHeader>
-          <h4 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-            </svg>
-            {$localize`NTP Servers`}
-          </h4>
-          <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Add multiple NTP servers for redundancy and accuracy`}
-          </p>
+      {/* NTP Servers Configuration with glassmorphism */}
+      <Card class="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl transition-all duration-300 hover:shadow-2xl">
+        <CardHeader class="relative">
+          <div class="flex items-start justify-between">
+            <div class="space-y-2">
+              <h4 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 text-primary-600 dark:text-primary-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
+                </div>
+                {$localize`NTP Servers Configuration`}
+              </h4>
+              <p class="text-gray-600 dark:text-gray-400">
+                {$localize`Add multiple NTP servers for redundancy and accuracy`}
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardBody class="space-y-6">
           {/* Current NTP Servers List */}
@@ -118,18 +130,24 @@ export const NTPStep = component$(() => {
               {ntpServers.value.map((server, index) => (
                 <div
                   key={index}
-                  class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700"
+                  class="group/item flex items-center justify-between p-4 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl border border-primary-200/50 dark:border-primary-700/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary-500/10 animate-fade-in-up"
                 >
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-800/50 dark:to-primary-700/50 text-primary-600 dark:text-primary-300 transition-all duration-300 group-hover/item:scale-110 group-hover/item:rotate-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform duration-300 group-hover/item:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div>
-                      <p class="font-medium text-gray-900 dark:text-white">{server}</p>
+                      <p class="font-semibold text-gray-900 dark:text-white bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">{server}</p>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {index === 0 ? $localize`Primary server` : $localize`Backup server ${index}`}
+                        {index === 0 ? 
+                          <span class="inline-flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            {$localize`Primary server`}
+                          </span> : 
+                          $localize`Backup server ${index}`
+                        }
                       </p>
                     </div>
                   </div>
@@ -190,17 +208,22 @@ export const NTPStep = component$(() => {
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               {popularServers
                 .filter(server => !ntpServers.value.includes(server))
-                .map((server) => (
+                .map((server, _index) => (
                   <Button
                     key={server}
                     variant="ghost"
                     size="sm"
                     onClick$={() => addPopularServer$(server)}
-                    class="h-auto py-3 px-4 text-left border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                    class="group h-auto py-3 px-4 text-left border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20 hover:scale-[1.02] hover:shadow-md transition-all duration-300 rounded-xl animate-fade-in-up"
                   >
-                    <div class="w-full">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{server}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{$localize`Click to add`}</p>
+                    <div class="w-full space-y-1">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{server}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        {$localize`Click to add`}
+                      </p>
                     </div>
                   </Button>
                 ))}

@@ -16,7 +16,7 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
   const { config, errors = {}, mode = "advanced", onUpdate$ } = props;
   
   // State for config method and file content
-  const configMethod = useSignal<"file" | "manual">("manual");
+  const configMethod = useSignal<"file" | "manual">("file");
   const configContent = useSignal("");
   
   // Parse WireGuard config file

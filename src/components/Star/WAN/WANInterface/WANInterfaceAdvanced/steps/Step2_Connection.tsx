@@ -1,4 +1,4 @@
-import { component$, $, useSignal } from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { WANWizardState } from "../../../../StarContext/WANType";
 import { ConnectionTypeSelector } from "../components/fields/ConnectionTypeSelector";
 import { PPPoEFields } from "../components/fields/PPPoEFields";
@@ -14,6 +14,18 @@ export const Step2_Connection = component$<Step2Props>(
   ({ wizardState, wizardActions }) => {
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
+    const hasAutoExpanded = useSignal(false);
+    
+    // Auto-expand first card when entering step with multiple links (only once)
+    useTask$(({ track }) => {
+      track(() => wizardState.links.length);
+      
+      // Only auto-expand once on initial load if we have multiple links
+      if (wizardState.links.length > 1 && !hasAutoExpanded.value) {
+        expandedLinkId.value = wizardState.links[0]?.id || null;
+        hasAutoExpanded.value = true;
+      }
+    });
     
     const getLinkErrors = (linkId: string) => {
       return Object.entries(wizardState.validationErrors)
@@ -32,7 +44,7 @@ export const Step2_Connection = component$<Step2Props>(
       const query = searchQuery.value.toLowerCase();
       return wizardState.links.filter(link => 
         link.name.toLowerCase().includes(query) ||
-        link.connectionType.toLowerCase().includes(query) ||
+        (link.connectionType && link.connectionType.toLowerCase().includes(query)) ||
         link.interfaceName.toLowerCase().includes(query)
       );
     };
@@ -43,17 +55,46 @@ export const Step2_Connection = component$<Step2Props>(
 
     // Helper to handle connection changes
     const handleConnectionUpdate = $(async (linkId: string, updates: any) => {
-      // For DHCP and LTE, automatically confirm when selected
+      // Get the current link
+      const link = wizardState.links.find(l => l.id === linkId);
+      if (!link) return;
+      
+      // Merge updates with existing config
+      const updatedLink = { ...link, ...updates };
+      
+      // Check if connection is complete based on type
+      let connectionConfirmed = false;
+      
+      if (updates.connectionType === "DHCP" || updates.connectionType === "LTE") {
+        connectionConfirmed = true;
+      } else if (updatedLink.connectionType === "PPPoE") {
+        connectionConfirmed = !!(
+          updatedLink.connectionConfig?.pppoe?.username && 
+          updatedLink.connectionConfig?.pppoe?.password
+        );
+      } else if (updatedLink.connectionType === "Static") {
+        connectionConfirmed = !!(
+          updatedLink.connectionConfig?.static?.ipAddress &&
+          updatedLink.connectionConfig?.static?.subnet &&
+          updatedLink.connectionConfig?.static?.gateway &&
+          updatedLink.connectionConfig?.static?.primaryDns
+        );
+      }
+      
       const updatesWithConfirmation = {
         ...updates,
-        connectionConfirmed: (updates.connectionType === "DHCP" || updates.connectionType === "LTE") ? true : updates.connectionConfirmed,
+        connectionConfirmed
       };
+      
       await wizardActions.updateLink$(linkId, updatesWithConfirmation);
     });
 
     // Get link statistics
     const configuredConnections = wizardState.links.filter(l => l.connectionType).length;
     const completedConnections = wizardState.links.filter(l => {
+      // If no connection type selected, it's not complete
+      if (!l.connectionType) return false;
+      
       if (l.connectionType === "PPPoE") {
         return l.connectionConfig?.pppoe?.username && l.connectionConfig.pppoe.password;
       }
@@ -76,12 +117,15 @@ export const Step2_Connection = component$<Step2Props>(
       const errors = getLinkErrors(link.id);
       if (errors.length > 0) return "error";
       
+      // If no connection type selected, it's incomplete
+      if (!link.connectionType) return "incomplete";
+      
       // Check connection configuration completeness
       if (link.connectionType === "PPPoE") {
         if (link.connectionConfig?.pppoe?.username && link.connectionConfig.pppoe.password) {
           return "complete";
         }
-        return link.connectionType ? "partial" : "incomplete";
+        return "partial";
       }
       
       if (link.connectionType === "Static") {
@@ -91,7 +135,7 @@ export const Step2_Connection = component$<Step2Props>(
             link.connectionConfig.static.primaryDns) {
           return "complete";
         }
-        return link.connectionType ? "partial" : "incomplete";
+        return "partial";
       }
       
       if (link.connectionType === "DHCP" || link.connectionType === "LTE") {
@@ -151,6 +195,7 @@ export const Step2_Connection = component$<Step2Props>(
         <>
           {/* Connection Type Selection */}
           <ConnectionTypeSelector
+            key={`${link.id}-${link.connectionType || 'none'}`}
             connectionType={link.connectionType}
             interfaceType={link.interfaceType}
             onUpdate$={$((type) =>
@@ -222,18 +267,6 @@ export const Step2_Connection = component$<Step2Props>(
               <h2 class="text-xl font-medium text-gray-900 dark:text-white">
                 {$localize`Configure Connection Type`}
               </h2>
-              <button
-                onClick$={$(async () => {
-                  // This would add another link, but this is typically managed from Step 1
-                  // For now, we'll just show the button for consistency
-                })}
-                class="inline-flex items-center gap-2 rounded-lg bg-primary-600 text-white px-4 py-2 text-sm font-medium hover:bg-primary-700 transition-colors"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                {$localize`Add Another Link`}
-              </button>
             </div>
             
             {/* Inline Configuration Fields */}
@@ -308,14 +341,14 @@ export const Step2_Connection = component$<Step2Props>(
                   <div
                     key={link.id}
                     class={`
-                      relative transition-all duration-200 rounded-xl border
+                      relative transition-all duration-200 rounded-xl border-2
                       ${status === 'complete'
                         ? 'bg-white dark:bg-gray-800 border-green-300 dark:border-green-700 hover:border-green-400 dark:hover:border-green-600 hover:shadow-md'
                         : status === 'error'
                         ? 'bg-white dark:bg-gray-800 border-red-300 dark:border-red-700 hover:border-red-400 dark:hover:border-red-600 hover:shadow-md'
                         : status === 'partial'
                         ? 'bg-white dark:bg-gray-800 border-yellow-300 dark:border-yellow-700 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-md'
-                        : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 opacity-75'}
+                        : 'bg-white dark:bg-gray-800 border-orange-400 dark:border-orange-500 hover:border-orange-500 dark:hover:border-orange-400 hover:shadow-md'}
                     `}
                   >
                     {/* Card Header - Always visible */}

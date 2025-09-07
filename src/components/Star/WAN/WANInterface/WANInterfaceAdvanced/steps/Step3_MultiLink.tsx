@@ -1,5 +1,5 @@
-import { component$, $, useSignal, useVisibleTask$, useStore } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import { component$, $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import type { WANWizardState, MultiLinkConfig } from "../../../../StarContext/WANType";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
 import { Select, Input, FormLabel, FormHelperText } from "~/components/Core";
 
@@ -12,73 +12,47 @@ export const Step3_MultiLink = component$<Step3Props>(
   ({ wizardState, wizardActions }) => {
     const draggedItem = useSignal<string | null>(null);
     const draggedOverItem = useSignal<string | null>(null);
-    const strategy = useSignal(wizardState.multiLinkStrategy?.strategy || "LoadBalance");
     
-    // Track if we've initialized to prevent multiple executions
-    const initState = useStore({ initialized: false });
-
-    // Initialize failover priorities and load balance weights
-    // Use a non-reactive initialization approach to prevent loops
+    // Get the current strategy or default to LoadBalance
+    const currentStrategy = wizardState.multiLinkStrategy?.strategy || "LoadBalance";
+    const strategy = useSignal<"LoadBalance" | "Failover" | "RoundRobin" | "Both">(currentStrategy);
+    
+    // Initialize strategy if not set
     useVisibleTask$(() => {
-      // Only initialize once to prevent reactive loops
-      if (initState.initialized) return;
-      initState.initialized = true;
-      
-      // Batch all initialization updates to prevent multiple renders
-      const updates: Array<{ id: string; updates: any }> = [];
-      
-      // Check and prepare priority updates
-      wizardState.links.forEach((link, index) => {
-        if (link.priority === undefined) {
-          updates.push({ id: link.id, updates: { priority: index + 1 } });
-        }
-      });
-      
-      // Check and prepare weight updates
-      const needsWeightInit = wizardState.links.some(link => link.weight === undefined);
-      if (needsWeightInit) {
-        const equalWeight = Math.floor(100 / wizardState.links.length);
-        const remainder = 100 - (equalWeight * wizardState.links.length);
-        wizardState.links.forEach((link, index) => {
-          const existingUpdate = updates.find(u => u.id === link.id);
-          const weightUpdate = { weight: equalWeight + (index === 0 ? remainder : 0) };
-          
-          if (existingUpdate) {
-            Object.assign(existingUpdate.updates, weightUpdate);
-          } else {
-            updates.push({ id: link.id, updates: weightUpdate });
-          }
-        });
-      }
-      
-      // Apply all updates at once using batch update to prevent multiple renders
-      if (updates.length > 0) {
-        wizardActions.batchUpdateLinks$(updates);
+      // Only set initial strategy if none exists
+      if (!wizardState.multiLinkStrategy) {
+        // Use setTimeout to ensure state mutation happens after render
+        setTimeout(() => {
+          wizardActions.setMultiLinkStrategy$({ 
+            strategy: "LoadBalance",
+            loadBalanceMethod: "PCC"
+          });
+        }, 0);
       }
     });
     
-    const handleStrategyChange = $(async (value: string) => {
-      strategy.value = value as "LoadBalance" | "Failover" | "Both";
+    const handleStrategyChange = $((value: string) => {
+      const newStrategy = value as "LoadBalance" | "Failover" | "RoundRobin" | "Both";
+      strategy.value = newStrategy;
       
-      // Initialize default values when strategy changes
-      const updates: any = { strategy: value as "LoadBalance" | "Failover" | "Both" };
+      // Build the complete strategy configuration
+      const strategyConfig: MultiLinkConfig = { 
+        strategy: newStrategy,
+        // Keep existing values or set defaults
+        loadBalanceMethod: wizardState.multiLinkStrategy?.loadBalanceMethod || 
+          ((newStrategy === "LoadBalance" || newStrategy === "Both") ? "PCC" : undefined),
+        failoverCheckInterval: wizardState.multiLinkStrategy?.failoverCheckInterval || 
+          ((newStrategy === "Failover" || newStrategy === "Both") ? 10 : undefined),
+        failoverTimeout: wizardState.multiLinkStrategy?.failoverTimeout || 
+          ((newStrategy === "Failover" || newStrategy === "Both") ? 30 : undefined),
+        roundRobinInterval: wizardState.multiLinkStrategy?.roundRobinInterval || 
+          (newStrategy === "RoundRobin" ? 60 : undefined),
+        packetMode: wizardState.multiLinkStrategy?.packetMode || 
+          (newStrategy === "RoundRobin" ? "connection" : undefined),
+      };
       
-      // Set default load balance method if not set
-      if ((value === "LoadBalance" || value === "Both") && !wizardState.multiLinkStrategy?.loadBalanceMethod) {
-        updates.loadBalanceMethod = "PCC";
-      }
-      
-      // Set default failover timings if not set
-      if ((value === "Failover" || value === "Both")) {
-        if (!wizardState.multiLinkStrategy?.failoverCheckInterval) {
-          updates.failoverCheckInterval = 10;
-        }
-        if (!wizardState.multiLinkStrategy?.failoverTimeout) {
-          updates.failoverTimeout = 30;
-        }
-      }
-      
-      wizardActions.updateMultiLink(updates);
+      // Use setMultiLinkStrategy$ which handles initialization
+      wizardActions.setMultiLinkStrategy$(strategyConfig);
     });
     
     const handleWeightChange = $((linkId: string, newWeight: number) => {
@@ -88,7 +62,10 @@ export const Step3_MultiLink = component$<Step3Props>(
       const oldWeight = targetLink.weight || 0;
       const diff = newWeight - oldWeight;
       
-      // Prepare batch updates
+      // If no change, exit early
+      if (diff === 0) return;
+      
+      // Prepare all updates at once
       const updates: Array<{ id: string; updates: Partial<typeof targetLink> }> = [];
       
       // Add target weight update
@@ -96,29 +73,41 @@ export const Step3_MultiLink = component$<Step3Props>(
       
       // Distribute the difference among other links
       const otherLinks = wizardState.links.filter(l => l.id !== linkId);
-      const totalOtherWeight = otherLinks.reduce((sum, l) => sum + (l.weight || 0), 0);
       
-      if (totalOtherWeight > 0) {
-        otherLinks.forEach((link) => {
-          const proportion = (link.weight || 0) / totalOtherWeight;
-          const newLinkWeight = Math.max(1, Math.round((link.weight || 0) - (diff * proportion)));
-          updates.push({ id: link.id, updates: { weight: newLinkWeight } });
-        });
+      if (otherLinks.length > 0) {
+        const totalOtherWeight = otherLinks.reduce((sum, l) => sum + (l.weight || 0), 0);
+        
+        if (totalOtherWeight > 0) {
+          // Calculate new weights for other links
+          let remainingDiff = diff;
+          
+          otherLinks.forEach((link, index) => {
+            const proportion = (link.weight || 0) / totalOtherWeight;
+            const weightChange = index === otherLinks.length - 1 
+              ? remainingDiff // Give any remaining difference to the last link
+              : Math.round(diff * proportion);
+            
+            const newLinkWeight = Math.max(1, (link.weight || 0) - weightChange);
+            remainingDiff -= weightChange;
+            
+            updates.push({ id: link.id, updates: { weight: newLinkWeight } });
+          });
+        } else {
+          // If other links have no weight, distribute evenly
+          const equalWeight = Math.floor((100 - newWeight) / otherLinks.length);
+          const remainder = (100 - newWeight) - (equalWeight * otherLinks.length);
+          
+          otherLinks.forEach((link, index) => {
+            updates.push({ 
+              id: link.id, 
+              updates: { weight: equalWeight + (index === 0 ? remainder : 0) } 
+            });
+          });
+        }
       }
       
-      // Apply batch update first
+      // Apply all updates in a single batch operation
       wizardActions.batchUpdateLinks$(updates);
-      
-      // Check if adjustment is needed after batch update
-      const newSum = updates.reduce((sum, u) => sum + (u.updates.weight || 0), 0);
-      if (newSum !== 100 && otherLinks.length > 0) {
-        const adjustment = 100 - newSum;
-        const firstOther = otherLinks[0];
-        const currentWeight = updates.find(u => u.id === firstOther.id)?.updates.weight || firstOther.weight || 0;
-        wizardActions.updateLink$(firstOther.id, { 
-          weight: currentWeight + adjustment 
-        });
-      }
     });
     
     const handleDragStart = $((linkId: string) => {
@@ -138,17 +127,6 @@ export const Step3_MultiLink = component$<Step3Props>(
           const draggedPriority = draggedLink.priority || 0;
           const targetPriority = targetLink.priority || 0;
           
-          // Prepare batch updates for priority swap and reordering
-          const updates: Array<{ id: string; updates: { priority: number } }> = [];
-          
-          // First swap the two items
-          updates.push({ id: draggedItem.value, updates: { priority: targetPriority } });
-          updates.push({ id: draggedOverItem.value, updates: { priority: draggedPriority } });
-          
-          // Apply initial swap
-          wizardActions.batchUpdateLinks$(updates);
-          
-          // Then reorder all priorities to ensure they're sequential
           // Create a new sorted list with swapped priorities
           const tempLinks = wizardState.links.map(link => ({
             ...link,
@@ -157,23 +135,25 @@ export const Step3_MultiLink = component$<Step3Props>(
                      link.priority || 0
           }));
           
+          // Sort and reassign sequential priorities
           const sortedLinks = tempLinks.sort((a, b) => (a.priority || 0) - (b.priority || 0));
-          const reorderUpdates = sortedLinks.map((link, index) => ({
+          const allUpdates = sortedLinks.map((link, index) => ({
             id: link.id,
             updates: { priority: index + 1 }
           }));
           
-          // Apply reordering in a single batch
-          wizardActions.batchUpdateLinks$(reorderUpdates);
+          // Apply all priority updates in a single batch operation
+          wizardActions.batchUpdateLinks$(allUpdates);
         }
       }
       
+      // Clear drag state
       draggedItem.value = null;
       draggedOverItem.value = null;
     });
     
     
-    // Sort links by priority for display
+    // Sort links by priority for display - create a new array to avoid mutation
     const linksByPriority = [...wizardState.links].sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     return (
@@ -184,7 +164,7 @@ export const Step3_MultiLink = component$<Step3Props>(
             Multi-WAN Strategy
           </h3>
           
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { 
                 value: "LoadBalance", 
@@ -197,6 +177,12 @@ export const Step3_MultiLink = component$<Step3Props>(
                 label: "Failover", 
                 description: "Backup links",
                 icon: "M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+              },
+              { 
+                value: "RoundRobin", 
+                label: "Round Robin", 
+                description: "Rotating links",
+                icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               },
               { 
                 value: "Both", 
@@ -267,7 +253,8 @@ export const Step3_MultiLink = component$<Step3Props>(
                 }}
                 options={[
                   { value: "PCC", label: "PCC (Per Connection Classifier)" },
-                  { value: "NTH", label: "NTH (Round Robin)" },
+                  { value: "NTH", label: "NTH (Nth Connection)" },
+                  { value: "RoundRobin", label: "Round Robin" },
                   { value: "ECMP", label: "ECMP (Equal Cost Multi-Path)" },
                   { value: "Bonding", label: "Bonding" }
                 ]}
@@ -297,6 +284,7 @@ export const Step3_MultiLink = component$<Step3Props>(
                       weight: equalWeight + (index === 0 ? remainder : 0),
                     }
                   }));
+                  // Apply updates directly
                   wizardActions.batchUpdateLinks$(updates);
                 }}
                 class="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
@@ -384,6 +372,66 @@ export const Step3_MultiLink = component$<Step3Props>(
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Round Robin Settings */}
+        {strategy.value === "RoundRobin" && (
+          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Round Robin Configuration
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <FormLabel for="rotationInterval">Rotation Interval (seconds)</FormLabel>
+                <Input
+                  id="rotationInterval"
+                  type="number"
+                  min={30}
+                  max={300}
+                  value={wizardState.multiLinkStrategy?.roundRobinInterval || 60}
+                  onInput$={(e: Event) => {
+                    const value = parseInt((e.target as HTMLInputElement).value);
+                    if (!isNaN(value) && value >= 30 && value <= 300) {
+                      wizardActions.updateMultiLink({ roundRobinInterval: value });
+                    }
+                  }}
+                  class="w-full"
+                />
+                <FormHelperText>How often to switch between WAN links (30-300 seconds)</FormHelperText>
+              </div>
+              
+              <div>
+                <FormLabel for="packetMode">Packet Distribution Mode</FormLabel>
+                <Select
+                  id="packetMode"
+                  value={wizardState.multiLinkStrategy?.packetMode || "connection"}
+                  onChange$={(value: string | string[]) => {
+                    const selectedValue = Array.isArray(value) ? value[0] : value;
+                    wizardActions.updateMultiLink({ packetMode: selectedValue as "connection" | "packet" });
+                  }}
+                  options={[
+                    { value: "connection", label: "Per Connection" },
+                    { value: "packet", label: "Per Packet" }
+                  ]}
+                  placeholder="Select packet mode"
+                  class="w-full"
+                />
+                <FormHelperText>How to distribute traffic during rotation</FormHelperText>
+              </div>
+            </div>
+            
+            <div class="p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-700">
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm text-green-700 dark:text-green-300">
+                  Traffic will rotate between all available WAN links at the specified interval, ensuring even distribution of usage
+                </p>
               </div>
             </div>
           </div>
