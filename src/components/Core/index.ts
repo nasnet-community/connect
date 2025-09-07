@@ -72,6 +72,9 @@ export * from "./Form/RadioGroup";
 export { Toggle } from "./Toggle/Toggle";
 export type { ToggleProps, ToggleSize, ToggleColor, LabelPosition } from "./Toggle/Toggle.types";
 
+// Segmented Control Component for multi-option selection
+export * from "./SegmentedControl";
+
 // @deprecated Switch components - use Toggle instead for new code
 export * from "./Switch";
 import { ConfigMethodToggle } from "./Switch/ConfigMethodToggle";
@@ -106,6 +109,7 @@ import { ProgressBar } from "./DataDisplay/Progress/ProgressBar";
 import { FeatureList } from "./DataDisplay/FeatureList/FeatureList";
 import { SelectionCard } from "./DataDisplay/SelectionCard/SelectionCard";
 import { FrequencySelector } from "./DataDisplay/FrequencySelector/FrequencySelector";
+import { SegmentedControl } from "./SegmentedControl/SegmentedControl";
 
 //-------------------------------
 // Media Components
@@ -265,6 +269,26 @@ export {
    * @param onChange$ - Handler for value changes
    */
   ConfigMethodToggle,
+
+  /**
+   * Segmented control for selecting between mutually exclusive options
+   * @param value - Signal containing the selected option value
+   * @param options - Array of options with value, label, and optional icon
+   * @param onChange$ - Handler for selection changes
+   * @param size - Size variant (sm, md, lg)
+   * @param color - Color theme (primary, secondary, neutral)
+   * 
+   * @example
+   * const enabledState = useSignal("false");
+   * <SegmentedControl
+   *   value={enabledState}
+   *   options={[
+   *     { value: "false", label: "Disable" },
+   *     { value: "true", label: "Enable" }
+   *   ]}
+   * />
+   */
+  SegmentedControl,
 
   // File Input Components
   /**

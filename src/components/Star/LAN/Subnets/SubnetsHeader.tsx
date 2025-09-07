@@ -1,6 +1,6 @@
-import { component$, type Signal, type QRL } from "@builder.io/qwik";
-import { Toggle } from "~/components/Core";
-import { LuNetwork, LuZap } from "@qwikest/icons/lucide";
+import { component$, type Signal, type QRL, useSignal, useTask$, $ } from "@builder.io/qwik";
+import { SegmentedControl } from "~/components/Core";
+import { LuNetwork, LuZap, LuPowerOff, LuPower } from "@qwikest/icons/lucide";
 
 interface SubnetsHeaderProps {
   subnetsEnabled: Signal<boolean>;
@@ -9,6 +9,15 @@ interface SubnetsHeaderProps {
 
 export const SubnetsHeader = component$<SubnetsHeaderProps>(
   ({ subnetsEnabled, onToggle$ }) => {
+    // Create a string signal for SegmentedControl
+    const subnetState = useSignal(subnetsEnabled.value ? "enable" : "disable");
+    
+    // Sync the string signal with the boolean signal
+    useTask$(({ track }) => {
+      track(() => subnetsEnabled.value);
+      subnetState.value = subnetsEnabled.value ? "enable" : "disable";
+    });
+    
     return (
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 via-blue-50 to-primary-100 dark:from-primary-900/20 dark:via-blue-900/20 dark:to-primary-800/20 p-8">
         {/* Background Pattern */}
@@ -58,20 +67,30 @@ export const SubnetsHeader = component$<SubnetsHeaderProps>(
               </span>
             </div>
 
-            {/* Toggle Control */}
-            <div class="flex items-center gap-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-lg">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`Enable Subnets`}
-              </span>
-              <Toggle
-                checked={subnetsEnabled.value}
-                onChange$={async (checked) => {
-                  subnetsEnabled.value = checked;
-                  if (onToggle$) {
-                    await onToggle$(checked);
+            {/* Segmented Control */}
+            <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-lg">
+              <SegmentedControl
+                value={subnetState}
+                options={[
+                  { 
+                    value: "disable", 
+                    label: $localize`Disable`,
+                    icon: <LuPowerOff class="h-5 w-5" /> as any
+                  },
+                  { 
+                    value: "enable", 
+                    label: $localize`Enable`,
+                    icon: <LuPower class="h-5 w-5" /> as any
                   }
-                }}
-                size="lg"
+                ]}
+                onChange$={$((value: string) => {
+                  const enabled = value === "enable";
+                  subnetsEnabled.value = enabled;
+                  if (onToggle$) {
+                    onToggle$(enabled);
+                  }
+                })}
+                size="md"
                 color="primary"
               />
             </div>

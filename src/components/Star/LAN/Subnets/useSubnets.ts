@@ -23,7 +23,7 @@ export const useSubnets = (): UseSubnetsReturn => {
   const values = useSignal<Record<string, number | null>>({});
   const errors = useSignal<Record<string, string>>({});
 
-  // Initialize values from context
+  // Initialize values from context or use placeholders as defaults
   useComputed$(() => {
     const existingSubnets = starContext.state.LAN.Subnets || {};
     const initialValues: Record<string, number | null> = {};
@@ -37,6 +37,20 @@ export const useSubnets = (): UseSubnetsReturn => {
         }
       }
     });
+    
+    // If no existing values, set placeholders as defaults for base networks
+    if (Object.keys(initialValues).length === 0) {
+      // Set default placeholder values based on DomesticLink
+      if (isDomesticLink) {
+        initialValues["Split"] = 10;
+        initialValues["Domestic"] = 20;
+        initialValues["Foreign"] = 30;
+        initialValues["VPN"] = 40;
+      } else {
+        initialValues["VPN"] = 10;
+        initialValues["Foreign"] = 30;
+      }
+    }
     
     values.value = initialValues;
   });

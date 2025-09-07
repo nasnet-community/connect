@@ -1,5 +1,6 @@
-import { component$, Slot } from "@builder.io/qwik";
-import { Toggle } from "~/components/Core";
+import { component$, Slot, useSignal, useTask$, $ } from "@builder.io/qwik";
+import { SegmentedControl } from "~/components/Core";
+import { HiCheckCircleOutline, HiXCircleOutline } from "@qwikest/icons/heroicons";
 import type { GradientHeaderProps } from "./GradientHeader.types";
 
 /**
@@ -49,6 +50,17 @@ export const GradientHeader = component$<GradientHeaderProps>(({
   children,
   rightContent,
 }) => {
+  
+  // Create a string signal for SegmentedControl when toggleConfig is provided
+  const toggleState = useSignal(toggleConfig?.enabled.value ? "enable" : "disable");
+  
+  // Sync the string signal with the boolean signal when toggleConfig exists
+  useTask$(({ track }) => {
+    if (toggleConfig) {
+      track(() => toggleConfig.enabled.value);
+      toggleState.value = toggleConfig.enabled.value ? "enable" : "disable";
+    }
+  });
   
   // Size configurations
   const sizeConfig = {
@@ -160,33 +172,49 @@ export const GradientHeader = component$<GradientHeaderProps>(({
             </div>
           )}
 
-          {/* Toggle Control */}
+          {/* Toggle Control using SegmentedControl */}
           {toggleConfig && (
-            <div class="flex items-center gap-4 group">
+            <div class="flex flex-col items-end gap-4">
+              {/* Status indicator with label */}
               <div class="flex items-center gap-2">
-                {/* Status indicator dot */}
-                <div class={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                <div class={`w-3 h-3 rounded-full transition-colors duration-300 ${
                   toggleConfig.enabled.value 
-                    ? 'bg-green-500 shadow-lg shadow-green-500/50 scale-100' 
-                    : 'bg-gray-300 dark:bg-gray-600 scale-75'
+                    ? 'bg-green-500 shadow-lg shadow-green-500/50' 
+                    : 'bg-gray-400'
                 }`} />
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
-                  {toggleConfig.label}
+                <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {toggleConfig.enabled.value 
+                    ? toggleConfig.label || 'Configuration Active'
+                    : 'Configuration Disabled'
+                  }
                 </span>
               </div>
-              <div class="relative">
-                {/* Subtle toggle background glow */}
-                <div class={`absolute inset-0 rounded-full transition-all duration-300 opacity-75 ${
-                  toggleConfig.enabled.value 
-                    ? 'bg-primary-400/15 blur-sm scale-105' 
-                    : 'bg-gray-300/10 blur-sm scale-100'
-                }`} />
-                <Toggle
-                  checked={toggleConfig.enabled.value}
-                  onChange$={toggleConfig.onChange$}
-                  size={toggleConfig.size || "lg"}
+              
+              {/* Segmented Control */}
+              <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-lg">
+                <SegmentedControl
+                  value={toggleState}
+                  options={[
+                    { 
+                      value: "disable", 
+                      label: $localize`Disable`,
+                      icon: <HiXCircleOutline class="h-5 w-5" /> as any
+                    },
+                    { 
+                      value: "enable", 
+                      label: $localize`Enable`,
+                      icon: <HiCheckCircleOutline class="h-5 w-5" /> as any
+                    }
+                  ]}
+                  onChange$={$((value: string) => {
+                    const enabled = value === "enable";
+                    toggleConfig.enabled.value = enabled;
+                    if (toggleConfig.onChange$) {
+                      toggleConfig.onChange$(enabled);
+                    }
+                  })}
+                  size={toggleConfig.size || "md"}
                   color={toggleConfig.color || "primary"}
-                  class="relative z-10"
                 />
               </div>
             </div>
