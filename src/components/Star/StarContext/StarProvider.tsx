@@ -10,16 +10,15 @@ import {
   type StarState,
   type StarContextType,
 } from "./StarContext";
-import type { Mode, FrimwareType, RouterModeType, WANLinkType } from "./ChooseType";
-import type { Ethernet } from "./CommonType";
+import type { Mode, FirmwareType, RouterModeType, WANLinkType } from "./ChooseType";
 
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
       Mode: "" as Mode,
-      Firmware: "" as FrimwareType,
+      Firmware: "" as FirmwareType,
       RouterMode: "" as RouterModeType,
-      WANLinkType: "both" as WANLinkType,
+      WANLinkType: "" as WANLinkType,
       RouterModels: [],
       Newsletter: {
         isSubscribed: false,
@@ -30,12 +29,20 @@ export const StarContextProvider = component$(() => {
     WAN: {
       WANLink: {
         Foreign: {
-          InterfaceName: "" as Ethernet,
+          WANConfigs: [],
+          MultiLinkConfig: undefined,
         },
       },
     },
     LAN: {},
-    ExtraConfig: {},
+    ExtraConfig: {
+      RUI: {
+        Timezone: "UTC",
+        Reboot: { interval: "", time: "" },
+        Update: { interval: "", time: "" },
+        IPAddressUpdate: { interval: "", time: "" },
+      },
+    },
     ShowConfig: {},
   });
 

@@ -1,6 +1,17 @@
 export type ServiceType = "Enable" | "Disable" | "Local";
-export type UpdateInterval = "Daily" | "Weekly" | "Monthly" | "";
-export type RebootInterval = "Daily" | "Weekly" | "Monthly" | "";
+export type Interval = "Daily" | "Weekly" | "Monthly" | "";
+
+export interface IntervalConfig {
+  interval: Interval;
+  time: string;
+}
+
+export interface RUIConfig {
+  Timezone: string;
+  Reboot?: IntervalConfig;
+  Update?: IntervalConfig;
+  IPAddressUpdate: IntervalConfig;
+}
 
 export interface ServiceConfig {
   type: ServiceType;
@@ -32,35 +43,57 @@ export interface RouterIdentityRomon {
   isRomon?: boolean;
 }
 
-export interface AutoReboot {
-  isAutoReboot: boolean;
-  RebootTime: string;
-  RebootInterval: RebootInterval;
+export interface CertificateConfig {
+  SelfSigned?: boolean;
+  LetsEncrypt?: boolean;
 }
 
-export interface Update {
-  isAutoReboot: boolean;
-  UpdateTime: string;
-  UpdateInterval: UpdateInterval;
+export interface NTPConfig {
+  servers: string[];
+  updateInterval: "1h" | "6h" | "12h" | "24h";
 }
 
-export interface IPAddressUpdate {
-  isIPAddressUpdate: boolean;
-  IPAddressUpdateTime: string;
-  IPAddressUpdateInterval: UpdateInterval;
+export interface GraphingConfig {
+  Interface: boolean;
+  Queue: boolean;
+  Resources: boolean;
+}
+
+export interface DDNSEntry {
+  provider: "no-ip" | "dyndns" | "duckdns" | "cloudflare" | "custom";
+  hostname: string;
+  username: string;
+  password: string;
+  updateInterval: "5m" | "10m" | "30m" | "1h";
+  customServerURL?: string;
+}
+
+export interface CloudDDNSConfig {
+  ddnsEntries: DDNSEntry[];
+}
+
+export interface UPNPConfig {
+  linkType: "domestic" | "foreign" | "vpn" | "";
+}
+
+export interface NATPMPConfig {
+  linkType?: "domestic" | "foreign" | "vpn" | "";
+  InterfaceName?: string;
+}
+
+export interface UsefulServicesConfig {
+  certificate?: CertificateConfig;
+  ntp?: NTPConfig;
+  graphing?: GraphingConfig;
+  cloudDDNS?: CloudDDNSConfig;
+  upnp?: UPNPConfig;
+  natpmp?: NATPMPConfig;
 }
 
 export interface ExtraConfigState {
   RouterIdentityRomon?: RouterIdentityRomon;
   services?: services;
-  Timezone?: string;
-  AutoReboot?: AutoReboot;
-  Update?: Update;
-  IPAddressUpdate?: IPAddressUpdate;
-  isCertificate?: boolean;
-  isNTP?: boolean;
-  isGraphing?: boolean;
-  isDDNS?: boolean;
-  isLetsEncrypt?: boolean;
+  RUI: RUIConfig;
+  usefulServices?: UsefulServicesConfig;
   Games?: GameConfig[];
 }
