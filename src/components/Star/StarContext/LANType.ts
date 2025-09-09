@@ -3,7 +3,6 @@ import type { Networks } from "./CommonType";
 import type { Tunnel } from "./Utils/TunnelType";
 import type { VPNServer } from "./Utils/VPNServerType";
 
-// Wireless
 
 export type WirelessInterfaceType = "Master" | "Slave";
 export interface WirelessConfig {
@@ -26,12 +25,38 @@ export interface Wireless {
   MultiMode?: MultiMode;
 }
 
-// Ethernet Interface Bridges
 export interface EthernetInterfaceConfig {
   name: Ethernet;
   bridge: Networks;
 }
 
+export interface LocalNetworks {
+  Split?: string;
+  Domestic?: string;
+  Foreign?: string;
+  VPN?: string;
+}
+
+export interface VPNNetworks {
+  Wireguard?: string[];
+  OpenVPN?: string[];
+  L2TP?: string;
+  PPTP?: string;
+  SSTP?: string;
+  IKev2?: string;
+}
+
+export interface TunnelNetworks {
+  IPIP?: string[];
+  Eoip?: string[];
+  Gre?: string[];
+  Vxlan?: string[];
+}
+export interface Subnets {
+  LocalNetworks:LocalNetworks;
+  VPNNetworks?:VPNNetworks;
+  TunnelNetworks?:TunnelNetworks;
+}
 export interface LANState {
   Wireless?: Wireless;
   VPNServer?: VPNServer;

@@ -140,3 +140,26 @@ export type IkeIdType =
   | "key-id";
 export type IkePolicyAction = "encrypt" | "none" | "discard";
 export type IkePolicyLevel = "require" | "unique" | "use";
+export type RouterModel = 
+  | "Chateau 5G R17 ax"
+  | "Chateau LTE18 ax"
+  | "Chateau LTE6 ax"
+  | "Chateau PRO ax"
+  | "hAP ax3"
+  | "hAP ax2"
+  | "hAP ax lite LTE6"
+  | "RB5009UPr+S+IN"
+  | "Audience"
+  | "cAP ax"
+  | "cAP XL ac"
+  | "cAP ac"
+  | "L009UiGS-2HaxD-IN"
+  | "hAP ac3"
+  | "hAP ac2"
+  | "hAP ax lite"
+  | "wAP ax"
+  | "RB5009"
+  | "hAP AX2"
+  | "hAP AX3";
+
+export type InterfaceType = Ethernet | Wireless | Sfp | LTE;
