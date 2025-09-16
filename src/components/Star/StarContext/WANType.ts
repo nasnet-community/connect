@@ -1,7 +1,10 @@
 import type { VPNClient } from "./Utils/VPNClientType";
 import type {
-  WANLinks,
+  WANLinks
 } from "./Utils/WANLinkType";
+
+// Re-export for convenience
+export type { WANLink, WANLinkConfig, InterfaceConfig, WANLinks } from "./Utils/WANLinkType";
 
 export interface FailoverConfig {
   failoverCheckInterval?: number;
@@ -28,7 +31,7 @@ export interface DNSConfig {
   VPNDNS?: string;
   DomesticDNS?: string;
   SplitDNS?: string;
-  DOHConfig?: DOHConfig;
+  DOH?: DOHConfig;
 }
 
 export interface WANState {

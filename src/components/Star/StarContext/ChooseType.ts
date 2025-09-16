@@ -27,6 +27,15 @@ export interface NewsletterState {
   email?: string;
 }
 
+// export type BaseNetworks = "Domestic" | "Foreign" | "Split" | "VPN";
+
+// export interface Networks {
+//   BaseNetworks: BaseNetworks[];
+//   ForeignNetworks?: string[];
+//   DomesticNetworks?: string[];
+//   VPNNetworks?: string[];
+// }
+
 
 export interface ChooseState {
   Mode: Mode;
@@ -35,4 +44,5 @@ export interface ChooseState {
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
   Newsletter?: NewsletterState;
+  // Networks?: Networks;
 }

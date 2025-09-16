@@ -30,30 +30,37 @@ export interface EthernetInterfaceConfig {
   bridge: Networks;
 }
 
-export interface LocalNetworks {
-  Split?: string;
-  Domestic?: string;
-  Foreign?: string;
-  VPN?: string;
+export interface SubnetConfig {
+  name: string;
+  subnet: string;
+}
+
+export interface BaseNetworks {
+  Split?: SubnetConfig;
+  Domestic?: SubnetConfig;
+  Foreign?: SubnetConfig;
+  VPN?: SubnetConfig;
 }
 
 export interface VPNNetworks {
-  Wireguard?: string[];
-  OpenVPN?: string[];
-  L2TP?: string;
-  PPTP?: string;
-  SSTP?: string;
-  IKev2?: string;
+  Wireguard?: SubnetConfig[];
+  OpenVPN?: SubnetConfig[];
+  L2TP?: SubnetConfig;
+  PPTP?: SubnetConfig;
+  SSTP?: SubnetConfig;
+  IKev2?: SubnetConfig;
 }
 
 export interface TunnelNetworks {
-  IPIP?: string[];
-  Eoip?: string[];
-  Gre?: string[];
-  Vxlan?: string[];
+  IPIP?: SubnetConfig[];
+  Eoip?: SubnetConfig[];
+  Gre?: SubnetConfig[];
+  Vxlan?: SubnetConfig[];
 }
 export interface Subnets {
-  LocalNetworks:LocalNetworks;
+  BaseNetworks: BaseNetworks;
+  ForeignNetworks?:SubnetConfig[];
+  DomesticNetworks?:SubnetConfig[];
   VPNNetworks?:VPNNetworks;
   TunnelNetworks?:TunnelNetworks;
 }
@@ -62,5 +69,5 @@ export interface LANState {
   VPNServer?: VPNServer;
   Tunnel?: Tunnel;
   Interface?: EthernetInterfaceConfig[];
-  Subnets?: Record<string, string>;
+  Subnets?: Subnets;
 }
