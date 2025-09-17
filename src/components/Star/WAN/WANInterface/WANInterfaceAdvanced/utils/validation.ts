@@ -1,7 +1,7 @@
 import type {
   WANLinkConfig,
   WANWizardState,
-} from "../../../../StarContext/WANType";
+} from "../types";
 
 // Regular expressions for validation
 export const IP_REGEX =
@@ -162,21 +162,12 @@ export function validateWANLink(
         });
       }
       if (
-        !staticConfig?.primaryDns ||
-        !validateIPAddress(staticConfig.primaryDns)
+        !staticConfig?.DNS ||
+        !validateIPAddress(staticConfig.DNS)
       ) {
         errors.push({
           field: "static-dns1",
           message: "Valid primary DNS is required",
-        });
-      }
-      if (
-        staticConfig?.secondaryDns &&
-        !validateIPAddress(staticConfig.secondaryDns)
-      ) {
-        errors.push({
-          field: "static-dns2",
-          message: "Invalid secondary DNS format",
         });
       }
       break;

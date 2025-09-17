@@ -43,20 +43,20 @@ export const useSSTPConfig = (
 
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.SSTP) {
-    const existingConfig = starContext.state.WAN.VPNClient.SSTP;
-    serverAddress.value = existingConfig.Server.Address || "";
-    port.value = existingConfig.Server.Port?.toString() || "443";
+    const existingConfig = starContext.state.WAN.VPNClient.SSTP[0];
+    serverAddress.value = existingConfig?.Server.Address || "";
+    port.value = existingConfig?.Server.Port?.toString() || "443";
 
-    if (existingConfig.Credentials) {
+    if (existingConfig?.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig.VerifyServerCertificate !== undefined) {
+    if (existingConfig?.VerifyServerCertificate !== undefined) {
       verifyServerCertificate.value = existingConfig.VerifyServerCertificate;
     }
 
-    if (existingConfig.TlsVersion) {
+    if (existingConfig?.TlsVersion) {
       tlsVersion.value = existingConfig.TlsVersion;
     }
 
@@ -101,7 +101,7 @@ export const useSSTPConfig = (
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        SSTP: parsedConfig,
+        SSTP: [parsedConfig],
       },
     });
   });

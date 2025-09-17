@@ -748,15 +748,15 @@ export const VPNClientWrapper = (
   let endpointAddress = "";
   let dns = "";
 
-  if (Wireguard) {
-    vpnConfig = WireguardClient(Wireguard);
+  if (Wireguard && Wireguard.length > 0) {
+    vpnConfig = WireguardClient(Wireguard[0]);
     interfaceName = "wireguard-client";
-    endpointAddress = Wireguard.PeerEndpointAddress;
-    dns = Wireguard.InterfaceDNS || "1.1.1.1";
-  } else if (OpenVPN) {
-    vpnConfig = OpenVPNClient(OpenVPN);
-    if (OpenVPN.Certificates) {
-      const certScript = GenerateOpenVPNCertificateScript(OpenVPN);
+    endpointAddress = Wireguard[0].PeerEndpointAddress;
+    dns = Wireguard[0].InterfaceDNS || "1.1.1.1";
+  } else if (OpenVPN && OpenVPN.length > 0) {
+    vpnConfig = OpenVPNClient(OpenVPN[0]);
+    if (OpenVPN[0].Certificates) {
+      const certScript = GenerateOpenVPNCertificateScript(OpenVPN[0]);
       Object.keys(certScript).forEach((key) => {
         if (vpnConfig[key]) {
           vpnConfig[key] = [...vpnConfig[key], ...certScript[key]];
@@ -766,27 +766,27 @@ export const VPNClientWrapper = (
       });
     }
     interfaceName = "ovpn-client";
-    endpointAddress = OpenVPN.Server.Address;
+    endpointAddress = OpenVPN[0].Server.Address;
     dns = "1.1.1.1";
-  } else if (PPTP) {
-    vpnConfig = PPTPClient(PPTP);
+  } else if (PPTP && PPTP.length > 0) {
+    vpnConfig = PPTPClient(PPTP[0]);
     interfaceName = "pptp-client";
-    endpointAddress = PPTP.ConnectTo;
+    endpointAddress = PPTP[0].ConnectTo;
     dns = "1.1.1.1";
-  } else if (L2TP) {
-    vpnConfig = L2TPClient(L2TP);
+  } else if (L2TP && L2TP.length > 0) {
+    vpnConfig = L2TPClient(L2TP[0]);
     interfaceName = "l2tp-client";
-    endpointAddress = L2TP.Server.Address;
+    endpointAddress = L2TP[0].Server.Address;
     dns = "1.1.1.1";
-  } else if (SSTP) {
-    vpnConfig = SSTPClient(SSTP);
+  } else if (SSTP && SSTP.length > 0) {
+    vpnConfig = SSTPClient(SSTP[0]);
     interfaceName = "sstp-client";
-    endpointAddress = SSTP.Server.Address;
+    endpointAddress = SSTP[0].Server.Address;
     dns = "1.1.1.1";
-  } else if (IKeV2) {
-    vpnConfig = IKeV2Client(IKeV2);
+  } else if (IKeV2 && IKeV2.length > 0) {
+    vpnConfig = IKeV2Client(IKeV2[0]);
     interfaceName = "ike2-client";
-    endpointAddress = IKeV2.ServerAddress;
+    endpointAddress = IKeV2[0].ServerAddress;
     dns = "1.1.1.1";
   }
 

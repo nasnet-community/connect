@@ -165,14 +165,15 @@ auth SHA256`}
           <Input
             type="text"
             value={config.Server?.Address || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[OpenVPNFields] Server Address updated:', value);
               onUpdate$({
                 Server: {
                   Address: value,
                   Port: config.Server?.Port || 1194,
                 },
-              })
-            }
+              });
+            }}
             placeholder="vpn.example.com"
             validation={errors.ServerAddress ? "invalid" : "default"}
           />
@@ -188,14 +189,15 @@ auth SHA256`}
           <Input
             type="number"
             value={config.Server?.Port?.toString() || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[OpenVPNFields] Server Port updated:', value);
               onUpdate$({
                 Server: {
                   Address: config.Server?.Address || "",
                   Port: parseInt(value) || 1194,
                 },
-              })
-            }
+              });
+            }}
             placeholder="1194"
             validation={errors.ServerPort ? "invalid" : "default"}
           />
@@ -214,15 +216,16 @@ auth SHA256`}
           <Input
             type="text"
             value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[OpenVPNFields] Username updated:', value);
               onUpdate$({ 
                 Credentials: { 
                   ...config.Credentials, 
                   Username: value,
                   Password: config.Credentials?.Password || ""
                 } 
-              })
-            }
+              });
+            }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
@@ -236,17 +239,18 @@ auth SHA256`}
             {$localize`Password`} *
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+            onInput$={(event: Event, value: string) => {
+              console.log('[OpenVPNFields] Password updated:', value ? '***' : '(empty)');
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: config.Credentials?.Username || "",
                   Password: value
-                } 
-              })
-            }
+                }
+              });
+            }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />

@@ -214,7 +214,7 @@ export const GradientHeader = component$<GradientHeaderProps>(({
                     }
                   })}
                   size={toggleConfig.size || "md"}
-                  color={toggleConfig.color || "primary"}
+                  color={(toggleConfig.color === "warning" || toggleConfig.color === "error") ? "secondary" : "primary"}
                 />
               </div>
             </div>

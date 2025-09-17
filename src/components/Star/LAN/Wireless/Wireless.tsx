@@ -54,7 +54,7 @@ export const Wireless = component$<StepProps>(
           },
         });
       } else {
-        const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+        const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
         const enabledNetworks: Record<
           string,
           {

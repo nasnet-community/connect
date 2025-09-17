@@ -22,6 +22,7 @@ export const EOIPTunnelStep = component$(() => {
     const newTunnel: EoipTunnelConfig = {
       type: "eoip",
       name: `eoip-tunnel-${stepper.data.eoip.length + 1}`,
+      localAddress: "",
       remoteAddress: "",
       tunnelId: stepper.data.eoip.length + 1,
     };

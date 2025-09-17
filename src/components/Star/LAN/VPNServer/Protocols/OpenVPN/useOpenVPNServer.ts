@@ -2,14 +2,13 @@ import { $, useSignal, useStore } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import type {
   OpenVpnServerConfig,
-  OpenVpnProtocol,
   OvpnAuthMethod,
   OvpnCipher,
 } from "../../../../StarContext/Utils/VPNServerType";
 import type {
   LayerMode,
   AuthMethod,
-  Networks,
+  NetworkProtocol,
 } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
 
@@ -29,7 +28,6 @@ export const useOpenVPNServer = () => {
     Port: 1194,
     Protocol: "udp",
     Mode: "ip",
-    Network: "VPN",
     DefaultProfile: "ovpn-profile",
     Authentication: ["mschap2"],
     PacketSize: {
@@ -79,8 +77,7 @@ export const useOpenVPNServer = () => {
     udpPort: 1195, // Default UDP port
     protocol: openVpnState.Protocol || "udp",
     mode: openVpnState.Mode || "ip",
-    network: openVpnState.Network || "VPN",
-    addressPool: openVpnState.Address.AddressPool || "192.168.78.0/24",
+    addressPool: openVpnState.Address?.AddressPool || "192.168.78.0/24",
     requireClientCertificate:
       openVpnState.Certificate.RequireClientCertificate !== undefined
         ? openVpnState.Certificate.RequireClientCertificate
@@ -244,13 +241,12 @@ export const useOpenVPNServer = () => {
     // Update local state first
     Object.assign(formState, updatedValues);
 
-    // Handle "Both" protocol case - create two servers
-    if (formState.protocol === "both") {
+    // Handle "Both" protocol case - create two servers (check if protocol is not tcp or udp)
+    if (formState.protocol !== "tcp" && formState.protocol !== "udp") {
       const baseConfig = {
         name: formState.name,
         enabled: formState.enabled,
         Mode: formState.mode as LayerMode,
-        Network: formState.network as Networks,
         DefaultProfile: formState.defaultProfile,
         Authentication: formState.authentication as AuthMethod[],
         PacketSize: {
@@ -309,9 +305,8 @@ export const useOpenVPNServer = () => {
         name: formState.name,
         enabled: formState.enabled,
         Port: formState.port,
-        Protocol: formState.protocol as OpenVpnProtocol,
+        Protocol: formState.protocol as NetworkProtocol,
         Mode: formState.mode as LayerMode,
-        Network: formState.network as Networks,
         DefaultProfile: formState.defaultProfile,
         Authentication: formState.authentication as AuthMethod[],
         PacketSize: {
@@ -362,10 +357,9 @@ export const useOpenVPNServer = () => {
         CertificateKeyPassphrase: formState.certificateKeyPassphrase,
         RequireClientCertificate: false,
       },
-      enabled: true,
-      Mode: "ip" as const,
-      Network: formState.network as Networks,
-      DefaultProfile: "ovpn-profile",
+        enabled: true,
+        Mode: "ip" as const,
+        DefaultProfile: "ovpn-profile",
       Authentication: ["mschap2" as AuthMethod],
       PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
       KeepaliveTimeout: 30,
@@ -427,14 +421,11 @@ export const useOpenVPNServer = () => {
   const updateUdpPort$ = $((value: number) =>
     updateAdvancedForm$({ udpPort: value }),
   );
-  const updateProtocol$ = $((value: OpenVpnProtocol) =>
+  const updateProtocol$ = $((value: NetworkProtocol) =>
     updateAdvancedForm$({ protocol: value }),
   );
   const updateMode$ = $((value: LayerMode) =>
     updateAdvancedForm$({ mode: value }),
-  );
-  const updateNetwork$ = $((value: Networks | string) =>
-    updateAdvancedForm$({ network: value as any }),
   );
   const updateAddressPool$ = $((value: string) =>
     updateAdvancedForm$({ addressPool: value }),
@@ -505,7 +496,6 @@ export const useOpenVPNServer = () => {
         },
         enabled: true,
         Mode: "ip" as const,
-        Network: "VPN" as Networks,
         DefaultProfile: "ovpn-profile",
         Authentication: ["mschap2" as AuthMethod],
         PacketSize: { MaxMtu: 1450, MaxMru: 1450 },
@@ -595,7 +585,6 @@ export const useOpenVPNServer = () => {
     updateUdpPort$,
     updateProtocol$,
     updateMode$,
-    updateNetwork$,
     updateAddressPool$,
     updateRequireClientCertificate$,
     updateAuth$,

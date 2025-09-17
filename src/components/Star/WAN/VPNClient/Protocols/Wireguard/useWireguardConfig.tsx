@@ -59,19 +59,19 @@ export const useWireguardConfig = (
   const listeningPort = useSignal("");
 
   if (starContext.state.WAN.VPNClient?.Wireguard) {
-    const existingConfig = starContext.state.WAN.VPNClient.Wireguard;
-    privateKey.value = existingConfig.InterfacePrivateKey || "";
-    address.value = existingConfig.InterfaceAddress || "";
-    listeningPort.value = existingConfig.InterfaceListenPort?.toString() || "";
-    mtu.value = existingConfig.InterfaceMTU?.toString() || "1420";
-    dns.value = existingConfig.InterfaceDNS || "";
-    publicKey.value = existingConfig.PeerPublicKey || "";
-    serverAddress.value = existingConfig.PeerEndpointAddress || "";
-    serverPort.value = existingConfig.PeerEndpointPort.toString() || "51820";
-    allowedIPs.value = existingConfig.PeerAllowedIPs || "0.0.0.0/0, ::/0";
-    preSharedKey.value = existingConfig.PeerPresharedKey || "";
+    const existingConfig = starContext.state.WAN.VPNClient.Wireguard[0];
+    privateKey.value = existingConfig?.InterfacePrivateKey || "";
+    address.value = existingConfig?.InterfaceAddress || "";
+    listeningPort.value = existingConfig?.InterfaceListenPort?.toString() || "";
+    mtu.value = existingConfig?.InterfaceMTU?.toString() || "1420";
+    dns.value = existingConfig?.InterfaceDNS || "";
+    publicKey.value = existingConfig?.PeerPublicKey || "";
+    serverAddress.value = existingConfig?.PeerEndpointAddress || "";
+    serverPort.value = existingConfig?.PeerEndpointPort.toString() || "51820";
+    allowedIPs.value = existingConfig?.PeerAllowedIPs || "0.0.0.0/0, ::/0";
+    preSharedKey.value = existingConfig?.PeerPresharedKey || "";
     persistentKeepalive.value =
-      existingConfig.PeerPersistentKeepalive?.toString() || "25";
+      existingConfig?.PeerPersistentKeepalive?.toString() || "25";
 
     const isConfigValid =
       privateKey.value &&
@@ -121,7 +121,7 @@ export const useWireguardConfig = (
       await starContext.updateWAN$({
         VPNClient: {
           ...starContext.state.WAN.VPNClient,
-          Wireguard: parsedConfig,
+          Wireguard: [parsedConfig],
         },
       });
 
@@ -428,7 +428,7 @@ export const useWireguardConfig = (
     await starContext.updateWAN$({
       VPNClient: {
         ...starContext.state.WAN.VPNClient,
-        Wireguard: manualConfig,
+        Wireguard: [manualConfig],
       },
     });
 

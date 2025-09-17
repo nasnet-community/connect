@@ -58,43 +58,43 @@ export const useIKEv2Config = (
 
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.IKeV2) {
-    const existingConfig = starContext.state.WAN.VPNClient.IKeV2;
-    serverAddress.value = existingConfig.ServerAddress || "";
+    const existingConfig = starContext.state.WAN.VPNClient.IKeV2[0];
+    serverAddress.value = existingConfig?.ServerAddress || "";
 
-    if (existingConfig.AuthMethod) {
+    if (existingConfig?.AuthMethod) {
       authMethod.value = existingConfig.AuthMethod;
     }
 
-    if (existingConfig.PresharedKey) {
+    if (existingConfig?.PresharedKey) {
       presharedKey.value = existingConfig.PresharedKey;
     }
 
-    if (existingConfig.Credentials) {
+    if (existingConfig?.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig.PolicyDstAddress) {
+    if (existingConfig?.PolicyDstAddress) {
       policyDstAddress.value = existingConfig.PolicyDstAddress;
     }
 
     // Map algorithm values if they exist
     if (
-      existingConfig.HashAlgorithm &&
+      existingConfig?.HashAlgorithm &&
       existingConfig.HashAlgorithm.length > 0
     ) {
       phase1HashAlgorithm.value = existingConfig.HashAlgorithm[0];
     }
 
-    if (existingConfig.EncAlgorithm && existingConfig.EncAlgorithm.length > 0) {
+    if (existingConfig?.EncAlgorithm && existingConfig.EncAlgorithm.length > 0) {
       phase1EncryptionAlgorithm.value = existingConfig.EncAlgorithm[0];
     }
 
-    if (existingConfig.DhGroup && existingConfig.DhGroup.length > 0) {
+    if (existingConfig?.DhGroup && existingConfig.DhGroup.length > 0) {
       phase1DHGroup.value = existingConfig.DhGroup[0];
     }
 
-    if (existingConfig.PfsGroup) {
+    if (existingConfig?.PfsGroup) {
       phase2PFSGroup.value = existingConfig.PfsGroup;
     }
 
@@ -234,7 +234,7 @@ export const useIKEv2Config = (
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        IKeV2: parsedConfig,
+        IKeV2: [parsedConfig],
       },
     });
   });

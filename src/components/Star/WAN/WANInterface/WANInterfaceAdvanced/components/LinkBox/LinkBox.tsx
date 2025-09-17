@@ -1,6 +1,6 @@
 import { component$, Slot, useSignal, $, type QRL } from "@builder.io/qwik";
 import { LinkBoxHeader } from "./LinkBoxHeader";
-import type { WANLinkConfig } from "../../../../../StarContext/WANType";
+import type { WANLinkConfig } from "../../types";
 
 export interface LinkBoxProps {
   link: WANLinkConfig;

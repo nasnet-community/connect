@@ -2,9 +2,7 @@ import type { RouterConfig } from "../ConfigGenerator";
 import type {
   services,
   RouterIdentityRomon,
-  AutoReboot,
-  Update,
-  IPAddressUpdate,
+  IntervalConfig,
   GameConfig,
   ExtraConfigState,
 } from "~/components/Star/StarContext/ExtraType";
@@ -97,67 +95,84 @@ export const Timezone = (Timezone: string): RouterConfig => {
   return config;
 };
 
-export const AReboot = (AReboot: AutoReboot): RouterConfig => {
+export const AReboot = (rebootConfig: IntervalConfig): RouterConfig => {
   const config: RouterConfig = {
     "/system scheduler": [],
   };
 
-  const { RebootTime } = AReboot;
+  const { time, interval } = rebootConfig;
 
-  config["/system scheduler"].push(
-    `add disabled=no interval=1d name=reboot-${RebootTime} on-event="/system reboot" \\
-  policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
-  start-date=2024-08-28 start-time=${RebootTime}:00`,
-  );
-
-  return config;
-};
-
-export const AUpdate = (Update: Update): RouterConfig => {
-  const config: RouterConfig = {
-    "/system scheduler": [],
-  };
-
-  const { UpdateTime, UpdateInterval } = Update;
-
-  if (UpdateTime) {
-    let interval = "";
-    switch (UpdateInterval) {
+  if (time && interval) {
+    let intervalStr = "";
+    switch (interval) {
       case "Daily":
-        interval = "1d";
+        intervalStr = "1d";
         break;
       case "Weekly":
-        interval = "1w";
+        intervalStr = "1w";
         break;
       case "Monthly":
-        interval = "30d";
+        intervalStr = "30d";
         break;
       default:
-        interval = "1w";
+        intervalStr = "1d";
     }
 
     config["/system scheduler"].push(
-      `add disabled=no interval=${interval} name=update on-event="/system package update\\r\\
-    \\ncheck-for-updates once\\r\\
-    \\n:delay 9s;\\r\\
-    \\n:if ( [get status] = \\"New version is available\\") do={ install }" \\
-    policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
-    start-date=2024-08-28 start-time=${UpdateTime}:00`,
+      `add disabled=no interval=${intervalStr} name=reboot-${time} on-event="/system reboot" \\
+  policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
+  start-date=2024-08-28 start-time=${time}:00`,
     );
   }
 
   return config;
 };
 
-export const IPAddressUpdateFunc = (IPAddressUpdate: IPAddressUpdate): RouterConfig => {
-  const { isIPAddressUpdate, IPAddressUpdateTime } = IPAddressUpdate;
+export const AUpdate = (updateConfig: IntervalConfig): RouterConfig => {
+  const config: RouterConfig = {
+    "/system scheduler": [],
+  };
 
-  if (!isIPAddressUpdate || !IPAddressUpdateTime) {
+  const { time, interval } = updateConfig;
+
+  if (time && interval) {
+    let intervalStr = "";
+    switch (interval) {
+      case "Daily":
+        intervalStr = "1d";
+        break;
+      case "Weekly":
+        intervalStr = "1w";
+        break;
+      case "Monthly":
+        intervalStr = "30d";
+        break;
+      default:
+        intervalStr = "1w";
+    }
+
+    config["/system scheduler"].push(
+      `add disabled=no interval=${intervalStr} name=update on-event="/system package update\\r\\
+    \\ncheck-for-updates once\\r\\
+    \\n:delay 9s;\\r\\
+    \\n:if ( [get status] = \\"New version is available\\") do={ install }" \\
+    policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \\
+    start-date=2024-08-28 start-time=${time}:00`,
+    );
+  }
+
+  return config;
+};
+
+export const IPAddressUpdateFunc = (ipAddressConfig: IntervalConfig): RouterConfig => {
+  const { time, interval } = ipAddressConfig;
+
+  if (!time || !interval) {
     return {};
   }
 
   // Get the domestic IP script configuration
-  const domesticConfig = generateDomesticIPScript(IPAddressUpdateTime);
+  const domesticConfig = generateDomesticIPScript(time);
 
   // Add S4I routing rule
   const s4iConfig: RouterConfig = {
@@ -411,27 +426,27 @@ export const ExtraCG = (
     configs.push(AccessServices(ExtraConfigState.services));
   }
 
-  if (ExtraConfigState.Timezone) {
-    configs.push(Timezone(ExtraConfigState.Timezone));
+  if (ExtraConfigState.RUI?.Timezone) {
+    configs.push(Timezone(ExtraConfigState.RUI.Timezone));
   }
 
-  if (ExtraConfigState.AutoReboot) {
-    configs.push(AReboot(ExtraConfigState.AutoReboot));
+  if (ExtraConfigState.RUI?.Reboot) {
+    configs.push(AReboot(ExtraConfigState.RUI.Reboot));
   }
 
-  if (ExtraConfigState.Update) {
-    configs.push(AUpdate(ExtraConfigState.Update));
+  if (ExtraConfigState.RUI?.Update) {
+    configs.push(AUpdate(ExtraConfigState.RUI.Update));
   }
 
-  if (ExtraConfigState.IPAddressUpdate) {
-    configs.push(IPAddressUpdateFunc(ExtraConfigState.IPAddressUpdate));
+  if (ExtraConfigState.RUI?.IPAddressUpdate) {
+    configs.push(IPAddressUpdateFunc(ExtraConfigState.RUI.IPAddressUpdate));
   }
 
   if (ExtraConfigState.Games) {
     configs.push(Game(ExtraConfigState.Games, DomesticLink));
   }
 
-  if (ExtraConfigState.isCertificate !== undefined) {
+  if (ExtraConfigState.usefulServices?.certificate !== undefined) {
     configs.push(PublicCert());
   }
 

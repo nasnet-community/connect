@@ -12,7 +12,7 @@ import type {
   MultiMode,
   WirelessConfig as WirelessConfigType,
 } from "~/components/Star/StarContext/LANType";
-import type { WANLink, WANConfig } from "~/components/Star/StarContext/WANType";
+import type { WANLinks, WANLinkConfig } from "~/components/Star/StarContext/WANType";
 
 import {
   testWithOutput,
@@ -31,8 +31,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: true,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -63,9 +70,23 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: false,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -96,10 +117,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: true,
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: { SSID: "ExternalAP", Password: "extpass" },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi2.4",
+              WirelessCredentials: { SSID: "ExternalAP", Password: "extpass" },
+            },
+          }],
         },
       };
 
@@ -129,14 +155,24 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: false,
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: { SSID: "AP1", Password: "pass1" },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi2.4",
+              WirelessCredentials: { SSID: "AP1", Password: "pass1" },
+            },
+          }],
         },
         Domestic: {
-          InterfaceName: "wifi5",
-          WirelessCredentials: { SSID: "AP2", Password: "pass2" },
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi5",
+              WirelessCredentials: { SSID: "AP2", Password: "pass2" },
+            },
+          }],
         },
       };
 
@@ -191,9 +227,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -235,8 +285,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -274,12 +331,24 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi5",
-          WirelessCredentials: { SSID: "UpstreamAP", Password: "upstream123" },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi5",
+              WirelessCredentials: { SSID: "UpstreamAP", Password: "upstream123" },
+            },
+          }],
         },
-        Domestic: { InterfaceName: "ether2" },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -318,9 +387,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -342,8 +425,15 @@ describe("Wireless Configuration Tests", () => {
     it("should handle empty multi mode configuration", () => {
       const multiMode: MultiMode = {};
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -372,8 +462,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: true,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -408,9 +505,23 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: false,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -473,8 +584,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: true,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -536,8 +654,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: true,
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -565,10 +690,15 @@ describe("Wireless Configuration Tests", () => {
         SplitBand: false,
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi5",
-          WirelessCredentials: { SSID: "UpstreamAP", Password: "upstream123" },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi5",
+              WirelessCredentials: { SSID: "UpstreamAP", Password: "upstream123" },
+            },
+          }],
         },
       };
 
@@ -631,9 +761,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -694,9 +838,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -762,8 +920,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -859,9 +1024,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -916,14 +1095,24 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: { SSID: "ExternalAP", Password: "external123" },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi2.4",
+              WirelessCredentials: { SSID: "ExternalAP", Password: "external123" },
+            },
+          }],
         },
         Domestic: {
-          InterfaceName: "wifi5",
-          WirelessCredentials: { SSID: "InternalAP", Password: "internal123" },
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi5",
+              WirelessCredentials: { SSID: "InternalAP", Password: "internal123" },
+            },
+          }],
         },
       };
 
@@ -972,8 +1161,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1011,7 +1207,16 @@ describe("Wireless Configuration Tests", () => {
   describe("Enhanced WirelessConfig Function Tests", () => {
     it("should return DisableInterfaces when wireless configuration is empty", () => {
       const wireless: Wireless = {};
-      const wanLink: WANLink = { Foreign: { InterfaceName: "ether1" } };
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+      };
 
       testWithOutput(
         "WirelessConfig",
@@ -1043,9 +1248,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1091,8 +1310,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1139,13 +1365,18 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: {
-            SSID: "UpstreamWiFi",
-            Password: "upstream123",
-          },
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "wifi2.4",
+              WirelessCredentials: {
+                SSID: "UpstreamWiFi",
+                Password: "upstream123",
+              },
+            },
+          }],
         },
       };
 
@@ -1192,8 +1423,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1228,8 +1466,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1254,8 +1499,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1280,8 +1532,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1324,9 +1583,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1353,8 +1626,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1395,9 +1675,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1426,8 +1720,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
         // No Domestic interface defined
       };
 
@@ -1445,8 +1746,15 @@ describe("Wireless Configuration Tests", () => {
     it("should handle empty wireless configuration", () => {
       const wirelessConfig: Wireless = {};
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1471,8 +1779,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1498,8 +1813,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1540,9 +1862,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1578,8 +1914,15 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1620,9 +1963,23 @@ describe("Wireless Configuration Tests", () => {
         },
       };
 
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
-        Domestic: { InterfaceName: "ether2" },
+      const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+        Domestic: {
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+            },
+          }],
+        },
       };
 
       testWithOutput(
@@ -1710,9 +2067,12 @@ describe("Wireless Configuration Tests", () => {
 
     describe("StationMode", () => {
       it("should generate proper station mode configuration", () => {
-        const wanConfig: WANConfig = {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: { SSID: "ExternalAP", Password: "ExternalPass" },
+        const wanConfig: WANLinkConfig = {
+          name: "Test Foreign Link",
+          InterfaceConfig: {
+            InterfaceName: "wifi2.4",
+            WirelessCredentials: { SSID: "ExternalAP", Password: "ExternalPass" },
+          },
         };
 
         testWithOutput(
@@ -1734,9 +2094,12 @@ describe("Wireless Configuration Tests", () => {
       });
 
       it("should handle domestic link station mode", () => {
-        const wanConfig: WANConfig = {
-          InterfaceName: "wifi5",
-          WirelessCredentials: { SSID: "DomesticAP", Password: "DomesticPass" },
+        const wanConfig: WANLinkConfig = {
+          name: "Test Domestic Link",
+          InterfaceConfig: {
+            InterfaceName: "wifi5",
+            WirelessCredentials: { SSID: "DomesticAP", Password: "DomesticPass" },
+          },
         };
 
         testWithOutput(
@@ -1760,7 +2123,10 @@ describe("Wireless Configuration Tests", () => {
       });
 
       it("should return empty config when no wireless credentials provided", () => {
-        const wanConfig: WANConfig = { InterfaceName: "wifi2.4" };
+        const wanConfig: WANLinkConfig = { 
+          name: "Test Link",
+          InterfaceConfig: { InterfaceName: "wifi2.4" } 
+        };
 
         testWithOutput(
           "StationMode",
@@ -1926,7 +2292,16 @@ describe("Wireless Configuration Tests", () => {
     describe("WirelessConfig - Comprehensive Integration Tests", () => {
       it("should disable interfaces when no wireless configuration provided", () => {
         const wireless: Wireless = {};
-        const wanLink: WANLink = { Foreign: { InterfaceName: "ether1" } };
+        const wanLink: WANLinks = {
+        Foreign: {
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+            },
+          }],
+        },
+      };
 
         testWithOutput(
           "WirelessConfig",
@@ -1954,10 +2329,15 @@ describe("Wireless Configuration Tests", () => {
             SplitBand: true,
           },
         };
-        const wanLink: WANLink = {
+        const wanLink: WANLinks = {
           Foreign: {
-            InterfaceName: "wifi2.4",
-            WirelessCredentials: { SSID: "ExternalAP", Password: "extpass" },
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi2.4",
+                WirelessCredentials: { SSID: "ExternalAP", Password: "extpass" },
+              },
+            }],
           },
         };
 
@@ -2005,9 +2385,23 @@ describe("Wireless Configuration Tests", () => {
             },
           },
         };
-        const wanLink: WANLink = {
-          Foreign: { InterfaceName: "ether1" },
-          Domestic: { InterfaceName: "ether2" },
+        const wanLink: WANLinks = {
+          Foreign: {
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether1",
+              },
+            }],
+          },
+          Domestic: {
+            WANConfigs: [{
+              name: "Domestic-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether2",
+              },
+            }],
+          },
         };
 
         testWithOutput(

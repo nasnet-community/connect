@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { WANLinkConfig } from "../../../../../StarContext/WANType";
+import type { WANLinkConfig } from "../../types";
 
 export interface LinkBoxHeaderProps {
   link: WANLinkConfig;

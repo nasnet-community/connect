@@ -8,6 +8,7 @@ import { Button } from "~/components/Core/button";
 import { TabNavigation } from "~/components/Core/Navigation/TabNavigation";
 import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
 import { NetworkDropdown } from "../../components/NetworkSelection";
+import type { ExtendedNetworks } from "../../components/NetworkSelection";
 import {
   HiServerOutline,
   HiPlusCircleOutline,
@@ -22,8 +23,15 @@ export const OpenVPNServerAdvanced = component$(() => {
     updatePort$,
     updateTcpPort$,
     updateUdpPort$,
-    updateNetwork$,
   } = useOpenVPNServer();
+
+  // Local network state (not part of VPN server config)
+  const selectedNetwork = useSignal<ExtendedNetworks>("VPN");
+  
+  // Local handler for network updates
+  const updateNetwork$ = $((network: ExtendedNetworks) => {
+    selectedNetwork.value = network;
+  });
 
   // Tab management for multiple interfaces
   const activeTab = useSignal("interface-1");
@@ -126,7 +134,7 @@ export const OpenVPNServerAdvanced = component$(() => {
 
             {/* Network Selection */}
             <NetworkDropdown
-              selectedNetwork={advancedFormState.network}
+              selectedNetwork={selectedNetwork.value}
               onNetworkChange$={updateNetwork$}
               label={$localize`Network`}
             />
@@ -143,7 +151,7 @@ export const OpenVPNServerAdvanced = component$(() => {
             </FormField>
 
             {/* Port Configuration - Conditional rendering based on protocol */}
-            {advancedFormState.protocol === "both" ? (
+            {(advancedFormState.protocol !== "tcp" && advancedFormState.protocol !== "udp") ? (
               <>
                 {/* TCP Port */}
                 <FormField label={$localize`TCP Port`}>

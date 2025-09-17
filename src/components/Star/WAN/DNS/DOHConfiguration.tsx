@@ -17,7 +17,7 @@ interface DOHConfigurationProps {
   domainError?: string;
   bindingError?: string;
   dohPresets?: DNSPreset[];
-  onDOHChange$: QRL<(field: keyof DOHConfig, value: string | boolean) => void>;
+  onDOHChange$: QRL<(field: keyof DOHConfig | "enabled", value: string | boolean) => void>;
   onApplyDOHPreset$?: QRL<(preset: DNSPreset) => void>;
 }
 
@@ -47,7 +47,9 @@ const getNetworkColors = (target: "Domestic" | "VPN") => {
 
 export const DOHConfiguration = component$<DOHConfigurationProps>(
   ({ dohConfig, networkInfo, domainError, bindingError, dohPresets = [], onDOHChange$, onApplyDOHPreset$ }) => {
-    const isExpanded = useSignal(dohConfig.enabled);
+    // Track enabled state locally since it's not part of DOHConfig
+    const isEnabled = useSignal(!!dohConfig.domain);
+    const isExpanded = useSignal(!!dohConfig.domain);
     const isDropdownOpen = useSignal(false);
     const colors = getNetworkColors(networkInfo.target);
 
@@ -124,20 +126,25 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-3">
                 <Toggle
-                  checked={dohConfig.enabled}
+                  checked={isEnabled.value}
                   onChange$={$((checked) => {
-                    onDOHChange$("enabled", checked);
+                    isEnabled.value = checked;
                     isExpanded.value = checked;
+                    if (!checked) {
+                      // Clear DOH config when disabled
+                      onDOHChange$("domain", "");
+                      onDOHChange$("bindingIP", "");
+                    }
                   })}
                   size="lg"
                   color="primary"
                 />
                 <div class="text-right">
                   <div class="text-sm font-medium text-gray-900 dark:text-white">
-                    {dohConfig.enabled ? $localize`Enabled` : $localize`Disabled`}
+                    {isEnabled.value ? $localize`Enabled` : $localize`Disabled`}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {dohConfig.enabled ? $localize`Secure DNS` : $localize`Standard DNS`}
+                    {isEnabled.value ? $localize`Secure DNS` : $localize`Standard DNS`}
                   </div>
                 </div>
               </div>
@@ -146,7 +153,7 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
         </div>
 
         {/* Configuration Fields */}
-        {dohConfig.enabled && (
+        {isEnabled.value && (
           <div class="relative p-6 space-y-6 animate-slide-down">
             {/* Domain Configuration */}
             <div class="space-y-4">

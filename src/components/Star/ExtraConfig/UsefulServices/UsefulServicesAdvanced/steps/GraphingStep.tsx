@@ -63,15 +63,6 @@ export const GraphingStep = component$(() => {
     }
   };
 
-  // Handler for graph type selection
-  const handleGraphToggle$ = $((optionId: string) => {
-    const option = graphingOptions.find(opt => opt.id === optionId);
-    if (option) {
-      option.signal.value = !option.signal.value;
-      validateAndUpdate$();
-    }
-  });
-
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
     // Update context data
@@ -93,6 +84,15 @@ export const GraphingStep = component$(() => {
         context.steps.value[currentStepIndex].id,
         isComplete,
       );
+    }
+  });
+
+  // Handler for graph type selection
+  const handleGraphToggle$ = $((optionId: string) => {
+    const option = graphingOptions.find(opt => opt.id === optionId);
+    if (option) {
+      option.signal.value = !option.signal.value;
+      validateAndUpdate$();
     }
   });
 

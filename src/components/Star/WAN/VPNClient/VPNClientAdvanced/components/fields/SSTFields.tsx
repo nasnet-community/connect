@@ -23,14 +23,15 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Server?.Address || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[SSTFields] Server Address updated:', value);
               onUpdate$({
                 Server: {
                   Address: value,
                   Port: config.Server?.Port || 443,
                 },
-              })
-            }
+              });
+            }}
             placeholder="vpn.example.com"
             validation={errors.ServerAddress ? "invalid" : "default"}
           />
@@ -46,14 +47,15 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Server?.Port || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[SSTFields] Server Port updated:', value);
               onUpdate$({
                 Server: {
                   Address: config.Server?.Address || "",
                   Port: parseInt(value) || 443,
                 },
-              })
-            }
+              });
+            }}
             placeholder="443"
           />
         </div>
@@ -68,15 +70,16 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[SSTFields] Username updated:', value);
               onUpdate$({ 
                 Credentials: { 
                   ...config.Credentials, 
                   Username: value,
                   Password: config.Credentials?.Password || ""
                 } 
-              })
-            }
+              });
+            }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
@@ -90,17 +93,18 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             {$localize`Password`} *
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+            onInput$={(event: Event, value: string) => {
+              console.log('[SSTFields] Password updated:', value ? '***' : '(empty)');
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: config.Credentials?.Username || "",
                   Password: value
-                } 
-              })
-            }
+                }
+              });
+            }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
@@ -108,21 +112,6 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             <ErrorMessage message={errors.Password} />
           )}
         </div>
-      </div>
-
-      {/* Client Certificate Name - exists in type */}
-      <div>
-        <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-          {$localize`Client Certificate Name`}
-        </label>
-        <Input
-          type="text"
-          value={config.ClientCertificateName || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ ClientCertificateName: value })
-          }
-          placeholder="client-cert"
-        />
       </div>
     </div>
   );

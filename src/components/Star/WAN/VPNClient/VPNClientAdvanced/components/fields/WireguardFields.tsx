@@ -137,17 +137,18 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
         <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
           {$localize`Interface Private Key`} *
         </label>
-        <Input
-          type="text"
-          value={config.InterfacePrivateKey || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({
-              InterfacePrivateKey: value,
-            })
-          }
-          placeholder="Your private key"
-          validation={errors.InterfacePrivateKey ? "invalid" : "default"}
-        />
+          <Input
+            type="text"
+            value={config.InterfacePrivateKey || ""}
+            onInput$={(event: Event, value: string) => {
+              console.log('[WireguardFields] InterfacePrivateKey updated:', value);
+              onUpdate$({
+                InterfacePrivateKey: value,
+              });
+            }}
+            placeholder="Your private key"
+            validation={errors.InterfacePrivateKey ? "invalid" : "default"}
+          />
         {errors.InterfacePrivateKey && (
           <ErrorMessage message={errors.InterfacePrivateKey} />
         )}
@@ -161,11 +162,12 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
         <Input
           type="text"
           value={config.InterfaceAddress || ""}
-          onInput$={(event: Event, value: string) =>
+          onInput$={(event: Event, value: string) => {
+            console.log('[WireguardFields] InterfaceAddress updated:', value);
             onUpdate$({
               InterfaceAddress: value,
-            })
-          }
+            });
+          }}
           placeholder="10.0.0.2/32"
           validation={errors.InterfaceAddress ? "invalid" : "default"}
         />
@@ -182,9 +184,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
         <Input
           type="text"
           value={config.PeerPublicKey || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ PeerPublicKey: value })
-          }
+          onInput$={(event: Event, value: string) => {
+            console.log('[WireguardFields] PeerPublicKey updated:', value);
+            onUpdate$({ PeerPublicKey: value });
+          }}
           placeholder="Server public key"
           validation={errors.PeerPublicKey ? "invalid" : "default"}
         />
@@ -202,11 +205,12 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           <Input
             type="text"
             value={config.PeerEndpointAddress || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[WireguardFields] PeerEndpointAddress updated:', value);
               onUpdate$({
                 PeerEndpointAddress: value,
-              })
-            }
+              });
+            }}
             placeholder="vpn.example.com"
             validation={errors.PeerEndpointAddress ? "invalid" : "default"}
           />
@@ -222,11 +226,12 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           <Input
             type="number"
             value={config.PeerEndpointPort || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[WireguardFields] PeerEndpointPort updated:', value);
               onUpdate$({
                 PeerEndpointPort: parseInt(value) || 0,
-              })
-            }
+              });
+            }}
             placeholder="51820"
             validation={errors.PeerEndpointPort ? "invalid" : "default"}
           />
@@ -244,9 +249,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
         <Input
           type="text"
           value={config.PeerAllowedIPs || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ PeerAllowedIPs: value })
-          }
+          onInput$={(event: Event, value: string) => {
+            console.log('[WireguardFields] PeerAllowedIPs updated:', value);
+            onUpdate$({ PeerAllowedIPs: value });
+          }}
           placeholder="0.0.0.0/0"
           validation={errors.PeerAllowedIPs ? "invalid" : "default"}
         />

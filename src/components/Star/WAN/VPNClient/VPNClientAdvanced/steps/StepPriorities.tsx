@@ -24,11 +24,19 @@ export const StepPriorities = component$<StepPrioritiesProps>(
     
     // Initialize weights and priorities once on mount
     useVisibleTask$(({ cleanup }) => {
+      console.log('[StepPriorities] useVisibleTask triggered, current VPNs:', wizardState.vpnConfigs.map(v => ({ name: v.name, priority: v.priority, weight: v.weight })));
+      console.log('[StepPriorities] Current strategy:', wizardState.multiVPNStrategy);
+      
       // Check if priorities need initialization
       if (!initState.prioritiesInitialized) {
         const needsPriorityInit = wizardState.vpnConfigs.some(vpn => 
           vpn.priority === undefined || vpn.priority === null || vpn.priority === 0
         );
+        
+        console.log('[StepPriorities] Priority initialization check:', {
+          needsPriorityInit,
+          priorities: wizardState.vpnConfigs.map(v => v.priority)
+        });
         
         if (needsPriorityInit) {
           console.log('[StepPriorities] Initializing priorities');
@@ -36,6 +44,8 @@ export const StepPriorities = component$<StepPrioritiesProps>(
             id: vpn.id,
             updates: { priority: vpn.priority || index + 1 }
           }));
+          
+          console.log('[StepPriorities] Priority updates to apply:', updates);
           
           // Apply priority initialization with delay to prevent immediate re-renders
           const timeoutId = setTimeout(() => {
@@ -174,6 +184,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
 
     // Strategy change handler
     const handleStrategyChange = $((newStrategy: MultiVPNStrategy) => {
+      console.log(`[StepPriorities] Strategy changing from ${strategy.value} to ${newStrategy}`);
       strategy.value = newStrategy;
       
       // Update the strategy in the wizard state
@@ -198,6 +209,8 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           vpn.weight === undefined || vpn.weight === null || vpn.weight === 0
         );
         
+        console.log(`[StepPriorities] ${newStrategy} strategy selected, needsWeightInit:`, needsWeightInit);
+        
         if (needsWeightInit && !initState.weightsInitialized) {
           const equalWeight = Math.floor(100 / wizardState.vpnConfigs.length);
           const remainder = 100 - (equalWeight * wizardState.vpnConfigs.length);
@@ -208,6 +221,8 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               weight: vpn.weight || (equalWeight + (index === 0 ? remainder : 0))
             }
           }));
+          
+          console.log('[StepPriorities] Applying weight updates:', weightUpdates);
           
           // Apply weight updates separately with a small delay
           setTimeout(() => {
@@ -228,10 +243,13 @@ export const StepPriorities = component$<StepPrioritiesProps>(
       }
       
       // Update the multiVPNStrategy in state
-      wizardState.multiVPNStrategy = {
+      const newMultiVPNStrategy = {
         ...wizardState.multiVPNStrategy,
         ...updates,
       };
+      wizardState.multiVPNStrategy = newMultiVPNStrategy;
+      
+      console.log('[StepPriorities] Multi-VPN strategy updated:', newMultiVPNStrategy);
     });
 
     return (

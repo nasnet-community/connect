@@ -22,9 +22,10 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
         <Input
           type="text"
           value={config.ConnectTo || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ ConnectTo: value })
-          }
+          onInput$={(event: Event, value: string) => {
+            console.log('[PPTPFields] Connect To updated:', value);
+            onUpdate$({ ConnectTo: value });
+          }}
           placeholder="vpn.example.com"
           validation={errors.ConnectTo ? "invalid" : "default"}
         />
@@ -42,15 +43,16 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[PPTPFields] Username updated:', value);
               onUpdate$({ 
                 Credentials: { 
                   ...config.Credentials, 
                   Username: value,
                   Password: config.Credentials?.Password || ""
                 } 
-              })
-            }
+              });
+            }}
             placeholder="Your username"
             validation={errors.User ? "invalid" : "default"}
           />
@@ -64,17 +66,18 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
             {$localize`Password`} *
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+            onInput$={(event: Event, value: string) => {
+              console.log('[PPTPFields] Password updated:', value ? '***' : '(empty)');
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: config.Credentials?.Username || "",
                   Password: value
-                } 
-              })
-            }
+                }
+              });
+            }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />

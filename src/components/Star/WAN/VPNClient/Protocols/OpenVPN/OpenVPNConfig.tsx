@@ -41,7 +41,7 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
       auth,
       errorMessage,
       missingFields,
-      clientCertName,
+      clientCertName: _clientCertName,
       handleConfigChange$,
       handleManualFormSubmit$,
       handleFileUpload$,
@@ -423,7 +423,7 @@ auth SHA256`}
                   )}
                   {missingFields.value.includes("Password") && (
                     <FormField
-                      type="password"
+                      type="text"
                       label={$localize`Password`}
                       value={password.value}
                       onInput$={(_, el) => {
@@ -433,19 +433,6 @@ auth SHA256`}
                       required
                       placeholder={$localize`Your VPN password`}
                       helperText={$localize`Maximum 1000 characters for RouterOS compatibility`}
-                    />
-                  )}
-                  {missingFields.value.includes("Client Certificate") && (
-                    <FormField
-                      label={$localize`Client Certificate Name`}
-                      value={clientCertName.value}
-                      onInput$={(_, el) => {
-                        clientCertName.value = el.value;
-                        handleManualFormSubmit$();
-                      }}
-                      required
-                      placeholder={$localize`client-cert`}
-                      helperText={$localize`Name of the client certificate in your RouterOS certificate store`}
                     />
                   )}
                 </div>
@@ -566,7 +553,7 @@ auth SHA256`}
                     />
 
                     <FormField
-                      type="password"
+                      type="text"
                       label={$localize`Password`}
                       required
                       value={password.value}

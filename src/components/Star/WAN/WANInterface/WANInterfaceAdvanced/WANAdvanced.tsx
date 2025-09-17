@@ -17,8 +17,7 @@ import { Step3_MultiLink } from "./steps/Step3_MultiLink";
 import { Step4_Summary } from "./steps/Step4_Summary";
 import { useWANAdvanced } from "./hooks/useWANAdvanced";
 import { useWANValidation } from "./hooks/useWANValidation";
-import type { WANConfig } from "../../../StarContext/WANType";
-import type { Ethernet, Wireless, Sfp, LTE } from "../../../StarContext/CommonType";
+// import type { WANLink } from "./types";
 
 export interface WANAdvancedProps {
   mode?: "Foreign" | "Domestic";
@@ -55,15 +54,16 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       const existingConfig = starContext.state.WAN.WANLink[mode];
       
       // If we have existing config and no links, initialize with it
-      if (existingConfig && advancedHooks.state.links.length === 0) {
+      if (existingConfig?.WANConfigs?.[0] && advancedHooks.state.links.length === 0) {
+        const interfaceConfig = existingConfig.WANConfigs[0].InterfaceConfig;
         advancedHooks.state.links = [{
           id: `${mode.toLowerCase()}-1`,
           name: `${mode} Link`,
-          interfaceType: existingConfig.InterfaceName.includes("wifi") ? "Wireless" : 
-                        existingConfig.InterfaceName.includes("lte") ? "LTE" : 
-                        existingConfig.InterfaceName.includes("sfp") ? "SFP" : "Ethernet",
-          interfaceName: existingConfig.InterfaceName || "",
-          wirelessCredentials: existingConfig.WirelessCredentials,
+          interfaceType: interfaceConfig.InterfaceName.includes("wifi") ? "Wireless" : 
+                        interfaceConfig.InterfaceName.includes("lte") ? "LTE" : 
+                        interfaceConfig.InterfaceName.includes("sfp") ? "SFP" : "Ethernet",
+          interfaceName: interfaceConfig.InterfaceName || "",
+          InterfaceConfig: interfaceConfig,
           connectionConfirmed: false, // User must confirm connection settings
           priority: 1,
           weight: 100, // Single link gets 100% weight
@@ -80,6 +80,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           connectionConfirmed: false, // User must confirm connection settings
           priority: 1,
           weight: 100, // Single link gets 100% weight
+          InterfaceConfig: {
+            InterfaceName: "ether1"
+          },
         }];
       }
       
@@ -90,11 +93,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         weight: link.weight ?? (advancedHooks.state.links.length === 1 ? 100 : Math.floor(100 / advancedHooks.state.links.length))
       }));
       
-      // Save initial links to WANLinks immediately for VPNClient to detect
-      if (mode === "Foreign") {
-        console.log('[WANAdvanced] Saving initial Foreign links to WANLinks:', advancedHooks.state.links);
-        starContext.state.WAN.WANLinks = advancedHooks.state.links;
-      }
+      // Note: WANLinks property doesn't exist in StarContext, using WANLink structure instead
     });
 
     // Note: Removed automatic state saving to prevent render loops
@@ -113,7 +112,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     const applyConfiguration$ = $(async () => {
       if (isApplying.value) return;
       isApplying.value = true;
-      
+
       try {
         // Basic validation check
         if (!advancedHooks.state.links[0]?.interfaceName) {
@@ -121,24 +120,14 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           return;
         }
 
-        const linkConfig = advancedHooks.state.links[0];
-        
-        // Save to StarContext
-        const wanConfig: WANConfig = {
-          InterfaceName: linkConfig.interfaceName as Ethernet | Wireless | Sfp | LTE,
-          WirelessCredentials: linkConfig.wirelessCredentials,
-        };
-        starContext.state.WAN.WANLink[mode] = wanConfig;
-        
-        // Save all links to WANLinks array for VPNClient to detect
-        starContext.state.WAN.WANLinks = advancedHooks.state.links;
-        
-        
+        // Use syncWithStarContext$ to save with proper data mapping
+        await advancedHooks.syncWithStarContext$();
+
         // Call onComplete$ directly without setTimeout to prevent timing issues
         if (onComplete$) {
           await onComplete$();
         }
-        
+
       } catch (error) {
         console.error('Error in apply configuration:', error);
         // Re-throw to let the UI handle the error appropriately
@@ -255,21 +244,33 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       // Weight and priority tracking removed to prevent infinite loops
       
       // Check step 1 completion: All links have interfaces selected
-      const allLinksHaveInterfaces = advancedHooks.state.links.length > 0 && 
+      const allLinksHaveInterfaces = advancedHooks.state.links.length > 0 &&
         advancedHooks.state.links.every(link => link.interfaceName);
+
+      // Save to StarContext when step 1 is completed for the first time
+      const prevStep1Complete = step1Complete.value;
       step1Complete.value = allLinksHaveInterfaces;
-      
+      if (!prevStep1Complete && allLinksHaveInterfaces) {
+        await advancedHooks.syncWithStarContext$();
+      }
+
       // Immediately update step 1's isComplete property for responsive UI
       if (steps.value[0]) {
         steps.value[0].isComplete = allLinksHaveInterfaces;
         steps.value = [...steps.value]; // Trigger reactivity
       }
-      
+
       // Check step 2 completion: All links have connection type selected and confirmed
-      const allLinksHaveConnectionConfirmed = advancedHooks.state.links.length > 0 && 
+      const allLinksHaveConnectionConfirmed = advancedHooks.state.links.length > 0 &&
         advancedHooks.state.links.every(link => link.connectionType && link.connectionConfirmed);
+
+      // Save to StarContext when step 2 is completed for the first time
+      const prevStep2Complete = step2Complete.value;
       step2Complete.value = allLinksHaveConnectionConfirmed;
-      
+      if (!prevStep2Complete && allLinksHaveConnectionConfirmed) {
+        await advancedHooks.syncWithStarContext$();
+      }
+
       // Immediately update step 2's isComplete property for responsive UI
       if (steps.value[1]) {
         steps.value[1].isComplete = allLinksHaveConnectionConfirmed;
@@ -338,11 +339,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             steps.value = [...steps.value];
           }
           
-          // Update WANLinks whenever essential properties change (for Foreign mode)
-          if (mode === "Foreign") {
-            console.log('[WANAdvanced] Updating WANLinks on change:', advancedHooks.state.links);
-            starContext.state.WAN.WANLinks = [...advancedHooks.state.links];
-          }
+          // Note: WANLinks array doesn't exist in StarContext
         }
       };
       
@@ -364,7 +361,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     // Step completion is now handled manually through handleStepComplete$ only
 
     // Handle step change (no automatic step refresh to prevent loops)
-    const handleStepChange$ = $((step: number) => {
+    const handleStepChange$ = $(async (step: number) => {
+      // Save current state to StarContext when navigating steps
+      await advancedHooks.syncWithStarContext$();
       activeStep.value = step;
     });
 
@@ -413,6 +412,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               onStepChange$={handleStepChange$}
               onComplete$={applyConfiguration$}
               hideStepHeader={true}
+              disableAutoFocus={true}
             />
           </div>
         </div>

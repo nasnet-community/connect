@@ -83,27 +83,27 @@ export const useOpenVPNConfig = (
   const parsedConfigWaitingForAuth = useSignal<any>(null);
 
   if (starContext.state.WAN.VPNClient?.OpenVPN) {
-    const existingConfig = starContext.state.WAN.VPNClient.OpenVPN;
-    serverAddress.value = existingConfig.Server.Address || "";
-    serverPort.value = existingConfig.Server.Port?.toString() || "1194";
-    protocol.value = existingConfig.Protocol || "udp";
-    authType.value = existingConfig.AuthType || "Credentials";
-    username.value = existingConfig.Credentials?.Username || "";
-    password.value = existingConfig.Credentials?.Password || "";
-    cipher.value = existingConfig.Cipher || "aes-256-gcm";
-    auth.value = existingConfig.Auth || "sha256";
+    const existingConfig = starContext.state.WAN.VPNClient.OpenVPN[0];
+    serverAddress.value = existingConfig?.Server.Address || "";
+    serverPort.value = existingConfig?.Server.Port?.toString() || "1194";
+    protocol.value = existingConfig?.Protocol || "udp";
+    authType.value = existingConfig?.AuthType || "Credentials";
+    username.value = existingConfig?.Credentials?.Username || "";
+    password.value = existingConfig?.Credentials?.Password || "";
+    cipher.value = existingConfig?.Cipher || "aes-256-gcm";
+    auth.value = existingConfig?.Auth || "sha256";
     clientCertName.value =
-      existingConfig.Certificates?.ClientCertificateName || "";
-    caCertName.value = existingConfig.Certificates?.CaCertificateName || "";
-    verifyServerCert.value = existingConfig.VerifyServerCertificate !== false;
+      existingConfig?.Certificates?.ClientCertificateName || "";
+    caCertName.value = existingConfig?.Certificates?.CaCertificateName || "";
+    verifyServerCert.value = existingConfig?.VerifyServerCertificate !== false;
     caCertificateContent.value =
-      existingConfig.Certificates?.CaCertificateContent || "";
+      existingConfig?.Certificates?.CaCertificateContent || "";
     clientCertificateContent.value =
-      existingConfig.Certificates?.ClientCertificateContent || "";
+      existingConfig?.Certificates?.ClientCertificateContent || "";
     clientKeyContent.value =
-      existingConfig.Certificates?.ClientKeyContent || "";
+      existingConfig?.Certificates?.ClientKeyContent || "";
 
-    if (onIsValidChange$) {
+    if (onIsValidChange$ && existingConfig) {
       setTimeout(async () => {
         const { isValid } = await validateOpenVPNConfig(existingConfig);
         onIsValidChange$(isValid);
@@ -200,7 +200,7 @@ export const useOpenVPNConfig = (
       await starContext.updateWAN$({
         VPNClient: {
           ...starContext.state.WAN.VPNClient,
-          OpenVPN: parsedConfig,
+          OpenVPN: [parsedConfig],
         },
       });
 
@@ -871,7 +871,7 @@ export const useOpenVPNConfig = (
     await starContext.updateWAN$({
       VPNClient: {
         ...starContext.state.WAN.VPNClient,
-        OpenVPN: manualConfig,
+        OpenVPN: [manualConfig],
       },
     });
 

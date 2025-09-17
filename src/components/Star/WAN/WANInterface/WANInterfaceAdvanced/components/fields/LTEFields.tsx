@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { LTESettings } from "../../../../../StarContext/WANType";
+import type { LTESettings } from "../../types";
 import { Input, FormField, PasswordField } from "~/components/Core";
 
 export interface LTEFieldsProps {

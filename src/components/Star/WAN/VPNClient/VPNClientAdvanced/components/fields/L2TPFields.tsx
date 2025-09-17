@@ -23,14 +23,15 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Server?.Address || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[L2TPFields] Server Address updated:', value);
               onUpdate$({
                 Server: {
                   ...config.Server,
                   Address: value,
                 },
-              })
-            }
+              });
+            }}
             placeholder="vpn.example.com"
             validation={errors.ServerAddress ? "invalid" : "default"}
           />
@@ -44,11 +45,12 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             {$localize`IPSec Secret`}
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.IPsecSecret || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ IPsecSecret: value })
-            }
+            onInput$={(event: Event, value: string) => {
+              console.log('[L2TPFields] IPsec Secret updated:', value ? '***' : '(empty)');
+              onUpdate$({ IPsecSecret: value });
+            }}
             placeholder="Pre-shared key"
           />
         </div>
@@ -63,15 +65,16 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
           <Input
             type="text"
             value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[L2TPFields] Username updated:', value);
               onUpdate$({ 
                 Credentials: { 
                   ...config.Credentials, 
                   Username: value,
                   Password: config.Credentials?.Password || ""
                 } 
-              })
-            }
+              });
+            }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
@@ -85,17 +88,18 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             {$localize`Password`} *
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+            onInput$={(event: Event, value: string) => {
+              console.log('[L2TPFields] Password updated:', value ? '***' : '(empty)');
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: config.Credentials?.Username || "",
                   Password: value
-                } 
-              })
-            }
+                }
+              });
+            }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />

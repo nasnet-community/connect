@@ -1,18 +1,18 @@
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import type { WANWizardState } from "../types";
 
 export const getLinkErrors = (linkId: string, validationErrors: WANWizardState["validationErrors"]): string[] => {
-  return Object.entries(validationErrors)
+  return Object.entries(validationErrors || {})
     .filter(([key]) => key.startsWith(`link-${linkId}`))
     .map(([, errors]) => errors)
     .flat() as string[];
 };
 
 export const getFieldErrors = (linkId: string, field: string, validationErrors: WANWizardState["validationErrors"]): string[] => {
-  return validationErrors[`link-${linkId}-${field}`] || [];
+  return (validationErrors || {})[`link-${linkId}-${field}`] || [];
 };
 
 export const hasValidationErrors = (validationErrors: WANWizardState["validationErrors"]): boolean => {
-  return Object.keys(validationErrors).length > 0;
+  return Object.keys(validationErrors || {}).length > 0;
 };
 
 export const isLinkConfigurationComplete = (link: WANWizardState["links"][0]): boolean => {
@@ -30,7 +30,7 @@ export const isLinkConfigurationComplete = (link: WANWizardState["links"][0]): b
       link.connectionConfig?.static?.ipAddress &&
       link.connectionConfig.static.subnet &&
       link.connectionConfig.static.gateway &&
-      link.connectionConfig.static.primaryDns
+      link.connectionConfig.static.DNS
     );
   }
   

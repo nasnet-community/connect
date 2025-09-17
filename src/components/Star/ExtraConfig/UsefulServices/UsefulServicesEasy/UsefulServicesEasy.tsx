@@ -126,42 +126,54 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
 
   // Initialize default values if they don't exist
   useTask$(() => {
-    // Ensure ExtraConfig is initialized with defaults for the undefined boolean values
-    const defaults = {
-      isCertificate: ctx.state.ExtraConfig.isCertificate ?? false,
-      isNTP: ctx.state.ExtraConfig.isNTP ?? false,
-      isGraphing: ctx.state.ExtraConfig.isGraphing ?? false,
-      isDDNS: ctx.state.ExtraConfig.isDDNS ?? false,
-      isLetsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? false,
-    };
-
-    // Only update if any values were undefined
-    if (
-      ctx.state.ExtraConfig.isCertificate === undefined ||
-      ctx.state.ExtraConfig.isNTP === undefined ||
-      ctx.state.ExtraConfig.isGraphing === undefined ||
-      ctx.state.ExtraConfig.isDDNS === undefined ||
-      ctx.state.ExtraConfig.isLetsEncrypt === undefined
-    ) {
-      ctx.updateExtraConfig$(defaults);
+    // Ensure usefulServices is initialized with defaults
+    if (!ctx.state.ExtraConfig.usefulServices) {
+      const defaultUsefulServices = {
+        certificate: { SelfSigned: false, LetsEncrypt: false },
+        ntp: { servers: [], updateInterval: "1h" as const },
+        graphing: { Interface: false, Queue: false, Resources: false },
+        cloudDDNS: { ddnsEntries: [] },
+        upnp: { linkType: "" as const },
+        natpmp: { linkType: "" as const },
+      };
+      
+      ctx.updateExtraConfig$({
+        usefulServices: defaultUsefulServices
+      });
     }
   });
 
   const serviceStates = useStore<ServiceState>({
-    certificate: ctx.state.ExtraConfig.isCertificate ?? false,
-    ntp: ctx.state.ExtraConfig.isNTP ?? false,
-    graphing: ctx.state.ExtraConfig.isGraphing ?? false,
-    DDNS: ctx.state.ExtraConfig.isDDNS ?? false,
-    letsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? false,
+    certificate: ctx.state.ExtraConfig.usefulServices?.certificate?.SelfSigned ?? false,
+    ntp: ctx.state.ExtraConfig.usefulServices?.ntp?.servers?.length ? true : false,
+    graphing: ctx.state.ExtraConfig.usefulServices?.graphing?.Interface ?? false,
+    DDNS: ctx.state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries?.length ? true : false,
+    letsEncrypt: ctx.state.ExtraConfig.usefulServices?.certificate?.LetsEncrypt ?? false,
   });
 
   const handleSubmit = $(() => {
+    // Update usefulServices structure
+    const usefulServicesConfig = {
+      ...ctx.state.ExtraConfig.usefulServices,
+      certificate: { 
+        SelfSigned: serviceStates.certificate, 
+        LetsEncrypt: serviceStates.letsEncrypt 
+      },
+      ntp: serviceStates.ntp ? 
+        { servers: ["pool.ntp.org"], updateInterval: "1h" as const } : 
+        { servers: [], updateInterval: "1h" as const },
+      graphing: { 
+        Interface: serviceStates.graphing, 
+        Queue: serviceStates.graphing, 
+        Resources: serviceStates.graphing 
+      },
+      cloudDDNS: serviceStates.DDNS ? 
+        { ddnsEntries: [] } : 
+        { ddnsEntries: [] },
+    };
+    
     ctx.updateExtraConfig$({
-      isCertificate: serviceStates.certificate,
-      isNTP: serviceStates.ntp,
-      isGraphing: serviceStates.graphing,
-      isDDNS: serviceStates.DDNS,
-      isLetsEncrypt: serviceStates.letsEncrypt,
+      usefulServices: usefulServicesConfig
     });
     onComplete$();
   });

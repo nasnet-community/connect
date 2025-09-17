@@ -61,7 +61,8 @@ export interface Subnets {
   BaseNetworks: BaseNetworks;
   ForeignNetworks?:SubnetConfig[];
   DomesticNetworks?:SubnetConfig[];
-  VPNNetworks?:VPNNetworks;
+  VPNClientNetworks?:SubnetConfig[];
+  VPNServerNetworks?:VPNNetworks;
   TunnelNetworks?:TunnelNetworks;
 }
 export interface LANState {

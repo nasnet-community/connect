@@ -30,7 +30,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
   }) => {
     const starContext = useContext(StarContext);
     const isDomesticLinkEnabled =
-      (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+      (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
 
     // Filter network keys based on DomesticLink value
     const filteredNetworkKeys = NETWORK_KEYS.filter(

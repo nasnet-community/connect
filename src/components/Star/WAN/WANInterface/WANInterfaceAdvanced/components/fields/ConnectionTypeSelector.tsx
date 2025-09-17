@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { ConnectionType } from "../../../../../StarContext/WANType";
+import type { ConnectionType } from "../../types";
 
 export interface ConnectionTypeSelectorProps {
   connectionType?: ConnectionType;

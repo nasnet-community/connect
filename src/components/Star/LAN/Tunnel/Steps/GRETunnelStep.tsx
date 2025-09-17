@@ -22,6 +22,7 @@ export const GRETunnelStep = component$(() => {
     const newTunnel: GreTunnelConfig = {
       type: "gre",
       name: `gre-tunnel-${stepper.data.gre.length + 1}`,
+      localAddress: "",
       remoteAddress: "",
     };
 

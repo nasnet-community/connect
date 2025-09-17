@@ -1,59 +1,36 @@
 import { $, useContext, useSignal } from "@builder.io/qwik";
 import type { Signal } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
+import type {
+  CertificateConfig,
+  NTPConfig,
+  GraphingConfig,
+  DDNSEntry,
+  CloudDDNSConfig,
+  UPNPConfig,
+  NATPMPConfig,
+  UsefulServicesConfig,
+} from "../../StarContext/ExtraType";
 
+// Define missing types locally
 export type UsefulServicesMode = "easy" | "advanced";
+export type InterfaceOption = {
+  label: string;
+  value: string;
+  type: 'domestic' | 'foreign' | 'vpn';
+};
 
-export interface CertificateData {
-  enableSelfSigned: boolean;
-  enableLetsEncrypt: boolean;
-}
+// Re-export types for backward compatibility
+export type CertificateData = CertificateConfig;
+export type NTPData = NTPConfig;
+export type GraphingData = GraphingConfig;
+export type CloudDDNSData = CloudDDNSConfig;
+export type UPNPData = UPNPConfig;
+export type NATPMPData = NATPMPConfig;
+export type AdvancedServicesData = UsefulServicesConfig;
 
-export interface NTPData {
-  servers: string[];
-  timeZone: string;
-  updateInterval: "1h" | "6h" | "12h" | "24h";
-}
-
-export interface GraphingData {
-  enableInterface: boolean;
-  enableQueue: boolean;
-  enableResources: boolean;
-}
-
-export interface DDNSEntry {
-  id: string;
-  provider: "no-ip" | "dyndns" | "duckdns" | "cloudflare" | "custom";
-  hostname: string;
-  username: string;
-  password: string;
-  updateInterval: "5m" | "10m" | "30m" | "1h";
-  customServerURL?: string;
-}
-
-export interface CloudDDNSData {
-  enableDDNS: boolean;
-  ddnsEntries: DDNSEntry[];
-}
-
-export interface UPNPData {
-  enabled: boolean;
-  linkType: "domestic" | "foreign" | "vpn" | "";
-}
-
-export interface NATPMPData {
-  enabled: boolean;
-  linkType: "domestic" | "foreign" | "vpn" | "";
-}
-
-export interface AdvancedServicesData {
-  certificate: CertificateData;
-  ntp: NTPData;
-  graphing: GraphingData;
-  cloudDDNS: CloudDDNSData;
-  upnp: UPNPData;
-  natpmp: NATPMPData;
-}
+// Re-export other types
+export type { DDNSEntry };
 
 export interface UseUsefulServicesReturn {
   advancedData: Signal<AdvancedServicesData>;
@@ -71,33 +48,29 @@ export interface UseUsefulServicesReturn {
 export const useUsefulServices = (): UseUsefulServicesReturn => {
   const ctx = useContext(StarContext);
 
-  // Initialize advanced data with defaults
+  // Initialize advanced data with defaults that match StarContext structure
   const advancedData = useSignal<AdvancedServicesData>({
     certificate: {
-      enableSelfSigned: false,
-      enableLetsEncrypt: false,
+      SelfSigned: false,
+      LetsEncrypt: false,
     },
     ntp: {
       servers: ["pool.ntp.org"],
-      timeZone: "UTC",
       updateInterval: "1h",
     },
     graphing: {
-      enableInterface: false,
-      enableQueue: false,
-      enableResources: false,
+      Interface: false,
+      Queue: false,
+      Resources: false,
     },
     cloudDDNS: {
-      enableDDNS: false,
       ddnsEntries: [],
     },
     upnp: {
-      enabled: false,
       linkType: "domestic",
     },
     natpmp: {
-      enabled: false,
-      linkType: "domestic",
+      linkType: "",
     },
   });
 
@@ -113,12 +86,12 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
     // Update completion status based on configured services
     const services = advancedData.value;
     const hasEnabledService =
-      (services.certificate.enableSelfSigned || services.certificate.enableLetsEncrypt) ||
-      services.ntp.servers.length > 0 ||
-      (services.graphing.enableInterface || services.graphing.enableQueue || services.graphing.enableResources) ||
-      services.cloudDDNS.enableDDNS ||
-      services.upnp.enabled ||
-      services.natpmp.enabled;
+      (services.certificate?.SelfSigned || services.certificate?.LetsEncrypt) ||
+      (services.ntp?.servers && services.ntp.servers.length > 0) ||
+      (services.graphing?.Interface || services.graphing?.Queue || services.graphing?.Resources) ||
+      (services.cloudDDNS?.ddnsEntries && services.cloudDDNS.ddnsEntries.length > 0) ||
+      (services.upnp?.linkType !== "") ||
+      (services.natpmp?.linkType !== "");
 
     isAdvancedModeComplete.value = hasEnabledService;
   });
@@ -130,12 +103,17 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
       graphing: boolean;
       DDNS: boolean;
     }) => {
-      // Map easy mode selections to global state
+      // Map easy mode selections to usefulServices structure
+      const usefulServicesConfig = {
+        ...ctx.state.ExtraConfig.usefulServices,
+        certificate: services.certificate ? { SelfSigned: true, LetsEncrypt: false } : { SelfSigned: false, LetsEncrypt: false },
+        ntp: services.ntp ? { servers: ["pool.ntp.org"], updateInterval: "1h" as const } : { servers: [], updateInterval: "1h" as const },
+        graphing: services.graphing ? { Interface: true, Queue: true, Resources: true } : { Interface: false, Queue: false, Resources: false },
+        cloudDDNS: services.DDNS ? { ddnsEntries: [] } : { ddnsEntries: [] },
+      };
+      
       ctx.updateExtraConfig$({
-        isCertificate: services.certificate,
-        isNTP: services.ntp,
-        isGraphing: services.graphing,
-        isDDNS: services.DDNS,
+        usefulServices: usefulServicesConfig
       });
     },
   );
@@ -143,15 +121,9 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
   const saveAdvancedMode = $(() => {
     const services = advancedData.value;
 
-    // Convert advanced configuration to boolean flags for the global state
+    // Save the entire usefulServices configuration to the context
     ctx.updateExtraConfig$({
-      isCertificate: services.certificate.enableSelfSigned || services.certificate.enableLetsEncrypt,
-      isNTP: services.ntp.servers.length > 0,
-      isGraphing: services.graphing.enableInterface || services.graphing.enableQueue || services.graphing.enableResources,
-      isDDNS: services.cloudDDNS.enableDDNS,
-
-      // Note: Store the detailed advanced configuration if needed
-      // servicesAdvancedConfig can be added to ExtraConfigState if needed
+      usefulServices: services
     });
   });
 

@@ -1301,7 +1301,7 @@ describe("VPNClientCG Module", () => {
   describe("VPNClientWrapper", () => {
     it("should configure Wireguard VPN with base config and domestic link", () => {
       const vpnClient: VPNClient = {
-        Wireguard: {
+        Wireguard: [{
           InterfacePrivateKey: "privatekey123",
           InterfaceAddress: "10.0.0.2/24",
           InterfaceDNS: "8.8.8.8",
@@ -1309,7 +1309,7 @@ describe("VPNClientCG Module", () => {
           PeerEndpointAddress: "1.2.3.4",
           PeerEndpointPort: 51820,
           PeerAllowedIPs: "0.0.0.0/0",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1349,12 +1349,12 @@ describe("VPNClientCG Module", () => {
 
     it("should configure OpenVPN with base config without domestic link", () => {
       const vpnClient: VPNClient = {
-        OpenVPN: {
+        OpenVPN: [{
           Server: { Address: "vpn.example.com" },
           AuthType: "Credentials",
           Credentials: { Username: "user", Password: "pass" },
           Auth: "sha256",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1390,11 +1390,11 @@ describe("VPNClientCG Module", () => {
 
     it("should configure PPTP VPN with base config", () => {
       const vpnClient: VPNClient = {
-        PPTP: {
+        PPTP: [{
           ConnectTo: "pptp.example.com",
           Credentials: { Username: "pptpuser", Password: "pptppass" },
           AuthMethod: ["mschap2"],
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1433,12 +1433,12 @@ describe("VPNClientCG Module", () => {
 
     it("should configure L2TP VPN with base config", () => {
       const vpnClient: VPNClient = {
-        L2TP: {
+        L2TP: [{
           Server: { Address: "l2tp.example.com", Port: 1701 },
           Credentials: { Username: "l2tpuser", Password: "l2tppass" },
           UseIPsec: true,
           IPsecSecret: "sharedsecret",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1465,11 +1465,11 @@ describe("VPNClientCG Module", () => {
 
     it("should configure SSTP VPN with base config", () => {
       const vpnClient: VPNClient = {
-        SSTP: {
+        SSTP: [{
           Server: { Address: "sstp.example.com", Port: 443 },
           Credentials: { Username: "sstpuser", Password: "sstppass" },
           AuthMethod: ["mschap2"],
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1495,11 +1495,11 @@ describe("VPNClientCG Module", () => {
 
     it("should configure IKeV2 VPN with base config", () => {
       const vpnClient: VPNClient = {
-        IKeV2: {
+        IKeV2: [{
           ServerAddress: "ikev2.example.com",
           AuthMethod: "pre-shared-key",
           PresharedKey: "sharedsecret123",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1563,67 +1563,67 @@ describe("VPNClientCG Module", () => {
       const vpnTypes = [
         {
           config: {
-            Wireguard: {
+            Wireguard: [{
               InterfacePrivateKey: "key",
               InterfaceAddress: "10.0.0.1/24",
               PeerPublicKey: "pubkey",
               PeerEndpointAddress: "1.1.1.1",
               PeerEndpointPort: 51820,
               PeerAllowedIPs: "0.0.0.0/0",
-            },
+            }],
           },
           expectedInterface: "wireguard-client",
           type: "Wireguard",
         },
         {
           config: {
-            OpenVPN: {
+            OpenVPN: [{
               Server: { Address: "ovpn.test.com" },
               AuthType: "Credentials" as const,
               Credentials: { Username: "user", Password: "pass" },
               Auth: "sha256" as const,
-            },
+            }],
           },
           expectedInterface: "ovpn-client",
           type: "OpenVPN",
         },
         {
           config: {
-            PPTP: {
+            PPTP: [{
               ConnectTo: "pptp.test.com",
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
           expectedInterface: "pptp-client",
           type: "PPTP",
         },
         {
           config: {
-            L2TP: {
+            L2TP: [{
               Server: { Address: "l2tp.test.com" },
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
           expectedInterface: "l2tp-client",
           type: "L2TP",
         },
         {
           config: {
-            SSTP: {
+            SSTP: [{
               Server: { Address: "sstp.test.com" },
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
           expectedInterface: "sstp-client",
           type: "SSTP",
         },
         {
           config: {
-            IKeV2: {
+            IKeV2: [{
               ServerAddress: "ikev2.test.com",
               AuthMethod: "pre-shared-key" as const,
               PresharedKey: "secret",
-            },
+            }],
           },
           expectedInterface: "ike2-client",
           type: "IKeV2",
@@ -1659,7 +1659,7 @@ describe("VPNClientCG Module", () => {
 
     it("should duplicate routes with main table when DomesticLink is false", () => {
       const vpnClient: VPNClient = {
-        Wireguard: {
+        Wireguard: [{
           InterfacePrivateKey: "test-private-key",
           InterfaceAddress: "10.0.0.2/24",
           InterfaceDNS: "8.8.8.8",
@@ -1667,7 +1667,7 @@ describe("VPNClientCG Module", () => {
           PeerEndpointAddress: "1.2.3.4",
           PeerEndpointPort: 51820,
           PeerAllowedIPs: "0.0.0.0/0",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1707,12 +1707,12 @@ describe("VPNClientCG Module", () => {
 
     it("should not duplicate routes when DomesticLink is true", () => {
       const vpnClient: VPNClient = {
-        OpenVPN: {
+        OpenVPN: [{
           Server: { Address: "vpn.example.com" },
           AuthType: "Credentials",
           Credentials: { Username: "user", Password: "pass" },
           Auth: "sha256",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1743,52 +1743,52 @@ describe("VPNClientCG Module", () => {
         {
           name: "Wireguard",
           config: {
-            Wireguard: {
+            Wireguard: [{
               InterfacePrivateKey: "key",
               InterfaceAddress: "10.0.0.1/24",
               PeerPublicKey: "pubkey",
               PeerEndpointAddress: "1.1.1.1",
               PeerEndpointPort: 51820,
               PeerAllowedIPs: "0.0.0.0/0",
-            },
+            }],
           },
         },
         {
           name: "OpenVPN",
           config: {
-            OpenVPN: {
+            OpenVPN: [{
               Server: { Address: "ovpn.test.com" },
               AuthType: "Credentials" as const,
               Credentials: { Username: "user", Password: "pass" },
               Auth: "sha256" as const,
-            },
+            }],
           },
         },
         {
           name: "PPTP",
           config: {
-            PPTP: {
+            PPTP: [{
               ConnectTo: "pptp.test.com",
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
         },
         {
           name: "L2TP",
           config: {
-            L2TP: {
+            L2TP: [{
               Server: { Address: "l2tp.test.com" },
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
         },
         {
           name: "SSTP",
           config: {
-            SSTP: {
+            SSTP: [{
               Server: { Address: "sstp.test.com" },
               Credentials: { Username: "user", Password: "pass" },
-            },
+            }],
           },
         },
       ];
@@ -1827,11 +1827,11 @@ describe("VPNClientCG Module", () => {
 
     it("should handle IKeV2 correctly without route duplication", () => {
       const vpnClient: VPNClient = {
-        IKeV2: {
+        IKeV2: [{
           ServerAddress: "ikev2.test.com",
           AuthMethod: "pre-shared-key",
           PresharedKey: "secret",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1852,14 +1852,14 @@ describe("VPNClientCG Module", () => {
 
     it("should preserve original routes and add duplicates when DomesticLink is false", () => {
       const vpnClient: VPNClient = {
-        Wireguard: {
+        Wireguard: [{
           InterfacePrivateKey: "preservation-test-key",
           InterfaceAddress: "10.0.0.5/24",
           PeerPublicKey: "preservation-pub-key",
           PeerEndpointAddress: "preserve.test.com",
           PeerEndpointPort: 51820,
           PeerAllowedIPs: "0.0.0.0/0",
-        },
+        }],
       };
 
       const result = testWithOutput(
@@ -1916,12 +1916,12 @@ describe("VPNClientCG Module", () => {
     it("should verify route table replacement regex works correctly", () => {
       // Test the regex replacement logic directly through the wrapper
       const vpnClient: VPNClient = {
-        OpenVPN: {
+        OpenVPN: [{
           Server: { Address: "regex.test.com" },
           AuthType: "Credentials",
           Credentials: { Username: "user", Password: "pass" },
           Auth: "sha256",
-        },
+        }],
       };
 
       const result = testWithOutput(

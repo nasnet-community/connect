@@ -50,6 +50,7 @@ export interface CStepperProps {
   
   // UI customization
   hideStepHeader?: boolean;
+  disableAutoFocus?: boolean;
 }
 
 export interface CStepperContext<T = any> {

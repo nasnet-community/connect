@@ -1,6 +1,6 @@
 import type { QRL, JSXChildren } from "@builder.io/qwik";
 
-export type SubnetCategory = "base" | "vpn" | "tunnel";
+export type SubnetCategory = "base" | "vpn" | "tunnel" | "wan-domestic" | "wan-foreign" | "vpn-client";
 export type SubnetMask = 24 | 30;
 
 export interface SubnetConfig {
@@ -43,6 +43,9 @@ export interface UseSubnetsReturn {
     base: SubnetConfig[];
     vpn: SubnetConfig[];
     tunnel: SubnetConfig[];
+    "wan-domestic": SubnetConfig[];
+    "wan-foreign": SubnetConfig[];
+    "vpn-client": SubnetConfig[];
   };
   values: Record<string, number | null>;
   errors: Record<string, string>;
@@ -52,6 +55,8 @@ export interface UseSubnetsReturn {
   reset$: QRL<() => void>;
   getSubnetString: QRL<(config: SubnetConfig, value: number | null) => string>;
   getSuggestedValue: QRL<(category: SubnetCategory) => number>;
+  getTabsWithContent: QRL<() => SubnetCategory[]>;
+  getCategoryProgress: QRL<(category: SubnetCategory) => { configured: number; total: number; percentage: number }>;
 }
 
 export interface SubnetValidationRule {

@@ -17,31 +17,33 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
   ({ selectedNetwork, onNetworkChange$, disabled = false, label, _vpnType }) => {
     const starContext = useContext(StarContext);
     const subnets = starContext.state.LAN.Subnets || {};
+    const baseNetworks = (subnets as any)?.BaseNetworks || {};
+    const vpnNetworks = (subnets as any)?.VPNNetworks || {};
     
     // Base network options
     const networkOptions = [
       {
         value: "VPN",
-        label: subnets.VPN ? 
-          $localize`VPN Network (${subnets.VPN})` : 
+        label: baseNetworks.VPN?.subnet ? 
+          $localize`VPN Network (${baseNetworks.VPN.subnet})` : 
           $localize`VPN Network (192.168.40.0/24)`,
       },
       {
         value: "Split",
-        label: subnets.Split ? 
-          $localize`Split Network (${subnets.Split})` : 
+        label: baseNetworks.Split?.subnet ? 
+          $localize`Split Network (${baseNetworks.Split.subnet})` : 
           $localize`Split Network (192.168.10.0/24)`,
       },
       {
         value: "Domestic",
-        label: subnets.Domestic ? 
-          $localize`Domestic Network (${subnets.Domestic})` : 
+        label: baseNetworks.Domestic?.subnet ? 
+          $localize`Domestic Network (${baseNetworks.Domestic.subnet})` : 
           $localize`Domestic Network (192.168.20.0/24)`,
       },
       {
         value: "Foreign",
-        label: subnets.Foreign ? 
-          $localize`Foreign Network (${subnets.Foreign})` : 
+        label: baseNetworks.Foreign?.subnet ? 
+          $localize`Foreign Network (${baseNetworks.Foreign.subnet})` : 
           $localize`Foreign Network (192.168.30.0/24)`,
       },
     ];
@@ -50,45 +52,45 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
     const vpnSubnetOptions = [
       {
         value: "Wireguard",
-        label: subnets.Wireguard ? 
-          $localize`WireGuard Network (${subnets.Wireguard})` : 
+        label: vpnNetworks.Wireguard?.[0]?.subnet ? 
+          $localize`WireGuard Network (${vpnNetworks.Wireguard[0].subnet})` : 
           $localize`WireGuard Network (192.168.40.0/24)`,
-        show: !!subnets.Wireguard
+        show: !!(vpnNetworks.Wireguard && vpnNetworks.Wireguard.length > 0)
       },
       {
         value: "OpenVPN",
-        label: subnets.OpenVPN ? 
-          $localize`OpenVPN Network (${subnets.OpenVPN})` : 
+        label: vpnNetworks.OpenVPN?.[0]?.subnet ? 
+          $localize`OpenVPN Network (${vpnNetworks.OpenVPN[0].subnet})` : 
           $localize`OpenVPN Network (192.168.41.0/24)`,
-        show: !!subnets.OpenVPN
+        show: !!(vpnNetworks.OpenVPN && vpnNetworks.OpenVPN.length > 0)
       },
       {
         value: "L2TP",
-        label: subnets.L2TP ? 
-          $localize`L2TP Network (${subnets.L2TP})` : 
+        label: vpnNetworks.L2TP?.subnet ? 
+          $localize`L2TP Network (${vpnNetworks.L2TP.subnet})` : 
           $localize`L2TP Network (192.168.42.0/24)`,
-        show: !!subnets.L2TP
+        show: !!vpnNetworks.L2TP
       },
       {
         value: "PPTP",
-        label: subnets.PPTP ? 
-          $localize`PPTP Network (${subnets.PPTP})` : 
+        label: vpnNetworks.PPTP?.subnet ? 
+          $localize`PPTP Network (${vpnNetworks.PPTP.subnet})` : 
           $localize`PPTP Network (192.168.43.0/24)`,
-        show: !!subnets.PPTP
+        show: !!vpnNetworks.PPTP
       },
       {
         value: "SSTP",
-        label: subnets.SSTP ? 
-          $localize`SSTP Network (${subnets.SSTP})` : 
+        label: vpnNetworks.SSTP?.subnet ? 
+          $localize`SSTP Network (${vpnNetworks.SSTP.subnet})` : 
           $localize`SSTP Network (192.168.44.0/24)`,
-        show: !!subnets.SSTP
+        show: !!vpnNetworks.SSTP
       },
       {
         value: "IKev2",
-        label: subnets.IKev2 ? 
-          $localize`IKEv2 Network (${subnets.IKev2})` : 
+        label: vpnNetworks.IKev2?.subnet ? 
+          $localize`IKEv2 Network (${vpnNetworks.IKev2.subnet})` : 
           $localize`IKEv2 Network (192.168.45.0/24)`,
-        show: !!subnets.IKev2
+        show: !!vpnNetworks.IKev2
       },
     ];
     

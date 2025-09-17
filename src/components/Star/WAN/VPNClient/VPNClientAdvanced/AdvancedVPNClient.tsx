@@ -32,6 +32,11 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // Initialize steps signal early
     const steps = useSignal<CStepMeta[]>([]);
 
+    // Track step completion status (following WANInterfaceAdvanced pattern)
+    const step1Complete = useSignal(false); // VPN Protocol Selection
+    const step2Complete = useSignal(false); // VPN Configuration
+    const step3Complete = useSignal(false); // Strategy & Priority
+
     // Always use advanced mode
     useTask$(() => {
       advancedHooks.state.mode = "advanced";
@@ -57,12 +62,34 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         for (let i = 0; i < minCount; i++) {
           console.log('[AdvancedVPNClient] Adding VPN client', i + 1);
           await advancedHooks.addVPN$({
-            name: `VPN ${i + 1}`
+            name: `VPN ${i + 1}`,
+            priority: i + 1 // Ensure proper priority from the start
           });
         }
         console.log('[AdvancedVPNClient] Final vpnConfigs length:', advancedHooks.state.vpnConfigs.length);
+        console.log('[AdvancedVPNClient] VPN configs with priorities:', advancedHooks.state.vpnConfigs.map(v => ({ name: v.name, priority: v.priority })));
+        
+        // Initialize priorities array
+        advancedHooks.state.priorities = advancedHooks.state.vpnConfigs.map(vpn => vpn.id);
+        console.log('[AdvancedVPNClient] Initialized priorities array:', advancedHooks.state.priorities);
       } else {
         console.log('[AdvancedVPNClient] VPN configs already exist, skipping initialization');
+        
+        // Ensure existing VPNs have proper priorities
+        const needsPriorityFix = advancedHooks.state.vpnConfigs.some(vpn => !vpn.priority);
+        if (needsPriorityFix) {
+          console.log('[AdvancedVPNClient] Fixing missing priorities for existing VPNs');
+          advancedHooks.state.vpnConfigs = advancedHooks.state.vpnConfigs.map((vpn, index) => ({
+            ...vpn,
+            priority: vpn.priority || index + 1
+          }));
+        }
+        
+        // Ensure priorities array is initialized
+        if (advancedHooks.state.priorities.length === 0) {
+          console.log('[AdvancedVPNClient] Initializing missing priorities array');
+          advancedHooks.state.priorities = advancedHooks.state.vpnConfigs.map(vpn => vpn.id);
+        }
       }
     });
 
@@ -84,27 +111,33 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // Handle step completion (simplified - no complex validation to prevent loops)
     const handleStepComplete$ = $(async (stepId: number) => {
       console.log('[VPNClientAdvanced] Step completion requested:', stepId);
-      
-      // Simply mark the step as complete - validation happens only in applyConfiguration$
+
+      // Create a new step object to ensure reactivity detects the change
       const stepIndex = steps.value.findIndex((s) => s.id === stepId);
       if (stepIndex !== -1 && !steps.value[stepIndex].isComplete) {
-        steps.value[stepIndex].isComplete = true;
-        steps.value = [...steps.value]; // Force re-render
-        console.log('[VPNClientAdvanced] Step marked as complete:', stepId);
+        const updatedSteps = [...steps.value];
+        updatedSteps[stepIndex] = { ...updatedSteps[stepIndex], isComplete: true };
+        steps.value = updatedSteps;
+        console.log('[VPNClientAdvanced] Step marked as complete with new object:', stepId);
       }
     });
 
     // Apply configuration
     const applyConfiguration$ = $(async () => {
       console.log('[VPNClientAdvanced] Starting applyConfiguration');
-      
+
       try {
-        const isValid = await validateAdvanced$();
-        console.log('[VPNClientAdvanced] Validation result:', isValid);
-        
-        if (!isValid) {
+        const validationResult = await validation.validateAdvanced$(advancedHooks.state);
+        console.log('[VPNClientAdvanced] Full validation result:', validationResult);
+
+        if (!validationResult.isValid) {
           console.error("[VPNClientAdvanced] Configuration has validation errors");
-          console.log('Validation errors:', Object.keys(advancedHooks.state.validationErrors));
+          console.log('Detailed validation errors:', validationResult.errors);
+          console.log('Error keys:', Object.keys(validationResult.errors));
+          console.log('Error details:', Object.entries(validationResult.errors).map(([key, errors]) => `${key}: ${errors.join(', ')}`));
+
+          // Update state with validation errors for display
+          advancedHooks.state.validationErrors = validationResult.errors;
           return;
         }
       } catch (error) {
@@ -114,46 +147,29 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
       console.log('[VPNClientAdvanced] Configuration ready for application');
 
+      // Save configuration to StarContext before completion
+      console.log('[VPNClientAdvanced] Saving VPN configuration to StarContext');
+      await advancedHooks.syncWithStarContext$();
+      console.log('[VPNClientAdvanced] VPN configuration saved to StarContext');
+
       // Call completion handler
       if (onComplete$) {
         console.log('[VPNClientAdvanced] Calling completion handler');
         await onComplete$();
       }
-      
+
       console.log('[VPNClientAdvanced] applyConfiguration completed');
     });
 
     // Forward declaration for refreshStepCompletion$
+    // eslint-disable-next-line prefer-const
     let refreshStepCompletion$: QRL<() => Promise<void>>;
 
-    // Create step definitions
-    const createSteps = $((): CStepMeta[] => {
-      // Check if step 1 is complete - minimum VPNs with names and types
-      const step1Complete = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
-                           advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
-      
-      // Check if step 2 (configuration) is complete - all VPNs have valid configurations
-      const step2Complete = step1Complete && advancedHooks.state.vpnConfigs.length > 0 &&
-                           advancedHooks.state.vpnConfigs.every(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config));
-      
+    // Create step definitions - isComplete values will be updated directly in useTask
+    const createSteps = $(async (): Promise<CStepMeta[]> => {
       // Check if we have multiple VPN clients to determine if Strategy & Priority step is needed
       const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
-      
-      // Check if step 3 (priorities) is complete - VPNs have proper priorities (only for multiple VPNs)
-      const step3Complete = hasMultipleVPNs ? 
-        (step2Complete && advancedHooks.state.vpnConfigs.length > 0 &&
-         advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority))) :
-        true; // Always complete if single VPN (no priority needed)
-      
-      console.log('[VPNClientAdvanced] createSteps - Step completion calculated:', {
-        step1Complete,
-        step2Complete,
-        step3Complete,
-        hasMultipleVPNs,
-        vpnConfigsCount: advancedHooks.state.vpnConfigs.length,
-        minVPNCount: advancedHooks.foreignWANCount
-      });
-      
+
       const steps: CStepMeta[] = [
         {
           id: 1,
@@ -167,7 +183,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               onRefreshCompletion$={refreshStepCompletion$}
             />
           ),
-          isComplete: step1Complete,
+          isComplete: false, // Will be updated in useTask
         },
         {
           id: 2,
@@ -180,7 +196,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               onRefreshCompletion$={refreshStepCompletion$}
             />
           ),
-          isComplete: step2Complete,
+          isComplete: false, // Will be updated in useTask
         },
       ];
 
@@ -196,7 +212,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               wizardActions={advancedHooks}
             />
           ),
-          isComplete: step3Complete,
+          isComplete: false, // Will be updated in useTask
           skippable: true,
         });
       }
@@ -204,8 +220,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       // Add Review step - mark as complete when all previous steps are complete
       // Use appropriate step ID based on whether priority step exists
       const reviewStepId = hasMultipleVPNs ? 4 : 3;
-      const reviewStepComplete = step1Complete && step2Complete && step3Complete;
-      
+
       steps.push({
         id: reviewStepId,
         title: $localize`Review & Summary`,
@@ -220,110 +235,202 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
             onValidate$={validateAdvanced$}
           />
         ),
-        isComplete: reviewStepComplete,
+        isComplete: false, // Will be updated in useTask
         skippable: true,
       });
 
       return steps;
     });
 
-    // Manual step completion refresh (called by user actions)
+    // Manual step completion refresh (called by user actions) - following WANInterfaceAdvanced pattern
     refreshStepCompletion$ = $(async () => {
       console.log('[VPNClientAdvanced] Manual step completion refresh requested');
-      steps.value = await createSteps();
-      console.log('[VPNClientAdvanced] Step completion refreshed');
+
+      const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
+
+      // Check step 1 completion
+      const allVPNsHaveProtocols = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
+                                   advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
+
+      // Check step 2 completion with detailed logging
+      let allVPNsConfigured = false;
+      if (allVPNsHaveProtocols && advancedHooks.state.vpnConfigs.length > 0) {
+        console.log('[VPNClientAdvanced] Manual refresh - Validating all VPNs for step 2 completion...');
+        const validationResults = await Promise.all(
+          advancedHooks.state.vpnConfigs.map(async (vpn, index) => {
+            const isValid = await validation.hasAllMandatoryFields$(vpn);
+            console.log(`[VPNClientAdvanced] Manual refresh - VPN ${index + 1} (${vpn.name}) validation result:`, isValid);
+            return isValid;
+          })
+        );
+        allVPNsConfigured = validationResults.every(isValid => isValid);
+        console.log('[VPNClientAdvanced] Manual refresh - All VPNs configured result:', allVPNsConfigured, 'Individual results:', validationResults);
+      }
+
+      // Check step 3 completion (if applicable)
+      const allVPNsHavePriorities = hasMultipleVPNs ?
+        (allVPNsConfigured && advancedHooks.state.vpnConfigs.length > 0 &&
+         advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority))) :
+        true;
+
+      // Update step completion signals
+      step1Complete.value = allVPNsHaveProtocols;
+      step2Complete.value = allVPNsConfigured;
+      step3Complete.value = allVPNsHavePriorities;
+
+      // Directly update steps array - WANAdvanced pattern
+      if (steps.value[0]) {
+        steps.value[0].isComplete = allVPNsHaveProtocols;
+      }
+
+      if (steps.value[1]) {
+        steps.value[1].isComplete = allVPNsConfigured;
+        console.log('[VPNClientAdvanced] Manual refresh - Step 2 isComplete updated to:', allVPNsConfigured);
+      }
+
+      // Update step 3 (Strategy & Priority) if it exists
+      if (hasMultipleVPNs && steps.value[2] && steps.value[2].title === $localize`Strategy & Priority`) {
+        steps.value[2].isComplete = allVPNsHavePriorities;
+      }
+
+      // Update Review step (last step)
+      const lastStepIndex = steps.value.length - 1;
+      if (steps.value[lastStepIndex]) {
+        steps.value[lastStepIndex].isComplete = allVPNsHaveProtocols && allVPNsConfigured && allVPNsHavePriorities;
+      }
+
+      // Trigger reactivity - WANAdvanced pattern
+      steps.value = [...steps.value];
+      console.log('[VPNClientAdvanced] Manual refresh - Steps array updated with reactivity trigger');
+      
+      console.log('[VPNClientAdvanced] Manual refresh completed - Final states:', {
+        step1Complete: step1Complete.value,
+        step2Complete: step2Complete.value,
+        step3Complete: step3Complete.value
+      });
     });
 
     // Initialize steps
     useTask$(async () => {
       steps.value = await createSteps();
+      
+      // After initializing steps, trigger an immediate completion check
+      console.log('[VPNClientAdvanced] Steps initialized, checking initial completion state...');
+      await refreshStepCompletion$();
     });
 
-    // Add lightweight step completion tracking (debounced to prevent loops)
-    useTask$(({ track, cleanup }) => {
-      // Skip tracking when on Review & Summary OR Strategy & Priority steps to prevent infinite loops
-      const currentStep = activeStep.value;
-      const currentStepData = steps.value[currentStep];
-      const isReviewStep = currentStepData?.title === $localize`Review & Summary` || 
-                          (currentStep >= 2 && currentStep === steps.value.length - 1);
-      const isStrategyStep = currentStepData?.title === $localize`Strategy & Priority` ||
-                           currentStep === 2; // Strategy & Priority is typically step 3 (index 2)
-      
-      if (isReviewStep || isStrategyStep) {
-        console.log('[VPNClientAdvanced] Skipping tracking on', currentStepData?.title || 'step');
-        return;
-      }
-      
-      // Track essential configuration changes only (NOT weights/priorities)
-      track(() => advancedHooks.state.vpnConfigs.map(vpn => ({
-        hasName: !!vpn.name,
-        hasType: !!vpn.type,
-        hasConfig: vpn.type && 'config' in vpn ? !!vpn.config : false,
-        isEnabled: vpn.enabled
-        // Weight and priority are NOT tracked to prevent infinite loops
-      })));
+    // Simple step completion tracking - using WANAdvanced pattern for better reliability
+    useTask$(async ({ track, cleanup }) => {
+      // Track essential properties like WANAdvanced does
+      track(() => advancedHooks.state.vpnConfigs.length);
+      track(() => advancedHooks.state.vpnConfigs.map(v => v.name)); // Track VPN names
+      track(() => advancedHooks.state.vpnConfigs.map(v => v.type)); // Track VPN types
       track(() => advancedHooks.foreignWANCount);
       
-      // Debounce step refresh to prevent excessive updates
+      // Track config fields for Step 2 completion - simplified tracking
+      track(() => advancedHooks.state.vpnConfigs.map(vpn => {
+        if (vpn.type && 'config' in vpn && vpn.config) {
+          const config = vpn.config as any;
+          switch (vpn.type) {
+            case 'Wireguard':
+              return `${vpn.id}:${config.InterfacePrivateKey}:${config.InterfaceAddress}:${config.PeerPublicKey}:${config.PeerEndpointAddress}:${config.PeerEndpointPort}`;
+            case 'OpenVPN':
+              return `${vpn.id}:${config.Server?.Address}:${config.Server?.Port}:${config.Credentials?.Username}:${config.Credentials?.Password}`;
+            case 'L2TP':
+              return `${vpn.id}:${config.Server?.Address}:${config.Credentials?.Username}:${config.Credentials?.Password}`;
+            case 'IKeV2':
+              return `${vpn.id}:${config.ServerAddress}:${config.Credentials?.Username}:${config.Credentials?.Password}`;
+            case 'PPTP':
+              return `${vpn.id}:${config.ConnectTo}:${config.Credentials?.Username}:${config.Credentials?.Password}`;
+            case 'SSTP':
+              return `${vpn.id}:${config.Server?.Address}:${config.Credentials?.Username}:${config.Credentials?.Password}`;
+            default:
+              return `${(vpn as any).id}:incomplete`;
+          }
+        }
+        return `${vpn.id}:no-config`;
+      }));
+      
+      console.log('[VPNClientAdvanced] Step completion tracking triggered');
+      
+      // Check step 1 completion: All VPNs have names and types
+      const allVPNsHaveProtocols = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
+                                   advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
+
+      // Update step 1 signal - following WANAdvanced pattern
+      step1Complete.value = allVPNsHaveProtocols;
+
+      // Check step 2 completion: All VPNs have mandatory fields configured
+      let allVPNsConfigured = false;
+      if (step1Complete.value && advancedHooks.state.vpnConfigs.length > 0) {
+        console.log('[VPNClientAdvanced] Checking step 2 completion...');
+        const validationResults = await Promise.all(
+          advancedHooks.state.vpnConfigs.map(async (vpn, index) => {
+            const isValid = await validation.hasAllMandatoryFields$(vpn);
+            console.log(`[VPNClientAdvanced] VPN ${index + 1} (${vpn.name}) validation:`, isValid);
+            return isValid;
+          })
+        );
+        allVPNsConfigured = validationResults.every(isValid => isValid);
+        console.log('[VPNClientAdvanced] All VPNs configured result:', allVPNsConfigured);
+      }
+
+      // Update step 2 signal - following WANAdvanced pattern
+      step2Complete.value = allVPNsConfigured;
+
+      // Check step 3 completion
+      const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
+      const allVPNsHavePriorities = hasMultipleVPNs ?
+        (step2Complete.value && advancedHooks.state.vpnConfigs.length > 0 &&
+         advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority))) :
+        true;
+
+      // Update step 3 signal
+      step3Complete.value = allVPNsHavePriorities;
+
+      // Immediately update step completion in steps array - WANAdvanced pattern (no debouncing)
+      if (steps.value[0]) {
+        steps.value[0].isComplete = allVPNsHaveProtocols;
+      }
+      if (steps.value[1]) {
+        steps.value[1].isComplete = allVPNsConfigured;
+        console.log('[VPNClientAdvanced] Step 2 isComplete directly set to:', allVPNsConfigured);
+      }
+      
+      // Update step 3 (Strategy & Priority) if it exists
+      if (hasMultipleVPNs && steps.value[2] && steps.value[2].title === $localize`Strategy & Priority`) {
+        steps.value[2].isComplete = allVPNsHavePriorities;
+      }
+
+      // Update Review step (last step)
+      const lastStepIndex = steps.value.length - 1;
+      if (steps.value[lastStepIndex]) {
+        steps.value[lastStepIndex].isComplete = allVPNsHaveProtocols && allVPNsConfigured && allVPNsHavePriorities;
+      }
+
+      // Trigger reactivity - WANAdvanced pattern
+      steps.value = [...steps.value];
+      console.log('[VPNClientAdvanced] Steps array updated with reactivity trigger');
+      
+      // Handle step structure changes separately (only when VPN count changes)
       let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
       
-      const refreshSteps = () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(async () => {
-          console.log('[VPNClientAdvanced] Checking if step refresh is needed');
-          
-          // Check if we need to add/remove the Strategy & Priority step
-          const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
-          const currentHasStrategyStep = steps.value.some(s => s.title === $localize`Strategy & Priority`);
-          
-          // Only recreate steps if structure changes (multi-VPN step added/removed)
-          if (hasMultipleVPNs !== currentHasStrategyStep) {
-            console.log('[VPNClientAdvanced] Step structure changed, recreating steps');
-            steps.value = await createSteps();
-          } else {
-            // Only update completion status without recreating components
-            console.log('[VPNClientAdvanced] Updating step completion status only');
-            
-            // Check step completions
-            const step1Complete = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
-                                 advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
-            
-            const step2Complete = step1Complete && advancedHooks.state.vpnConfigs.length > 0 &&
-                                 advancedHooks.state.vpnConfigs.every(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config));
-            
-            const step3Complete = hasMultipleVPNs ? 
-              (step2Complete && advancedHooks.state.vpnConfigs.length > 0 &&
-               advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.priority))) :
-              true;
-            
-            // Update step 1 completion
-            if (steps.value[0]) {
-              steps.value[0].isComplete = step1Complete;
-            }
-            
-            // Update step 2 completion
-            if (steps.value[1]) {
-              steps.value[1].isComplete = step2Complete;
-            }
-            
-            // Update step 3 (Strategy & Priority) if it exists
-            if (hasMultipleVPNs && steps.value[2] && steps.value[2].title === $localize`Strategy & Priority`) {
-              steps.value[2].isComplete = step3Complete;
-            }
-            
-            // Update Review step (last step)
-            const lastStepIndex = steps.value.length - 1;
-            if (steps.value[lastStepIndex]) {
-              steps.value[lastStepIndex].isComplete = step1Complete && step2Complete && step3Complete;
-            }
-            
-            // Trigger minimal reactivity update
-            steps.value = [...steps.value];
-          }
-        }, 500); // 500ms debounce for stability
+      const updateStepStructure = async () => {
+        // Check if we need to add/remove the Strategy & Priority step
+        const currentHasStrategyStep = steps.value.some(s => s.title === $localize`Strategy & Priority`);
+        
+        // Only recreate steps if structure changes (multi-VPN step added/removed)
+        if (hasMultipleVPNs !== currentHasStrategyStep) {
+          console.log('[VPNClientAdvanced] Step structure changed, recreating steps');
+          steps.value = await createSteps();
+        }
       };
       
-      refreshSteps();
+      // Debounce only structure changes, not completion updates
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateStepStructure();
+      }, 100);
       
       cleanup(() => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -334,9 +441,13 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     const handleStepChange$ = $(async (step: number) => {
       activeStep.value = step;
       console.log('[VPNClientAdvanced] Step changed to:', step);
-      
-      // Refresh step completion status when changing steps
-      steps.value = await createSteps();
+
+      // Save current state to StarContext when navigating steps (optional)
+      // This ensures state is persisted even if user doesn't complete the wizard
+      await advancedHooks.syncWithStarContext$();
+
+      // Call refreshStepCompletion$ instead of recreating steps
+      await refreshStepCompletion$();
       console.log('[VPNClientAdvanced] Steps refreshed after step change');
     });
 
@@ -384,8 +495,8 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               onStepChange$={handleStepChange$}
               onStepComplete$={handleStepComplete$}
               onComplete$={applyConfiguration$}
-              allowSkipSteps={false}
               hideStepHeader={true}
+              disableAutoFocus={true}
             />
           </div>
         </div>

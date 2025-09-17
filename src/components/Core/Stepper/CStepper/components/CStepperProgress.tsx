@@ -14,60 +14,18 @@ export interface CStepperProgressProps {
 
 export const CStepperProgress = component$((props: CStepperProgressProps) => {
   const { steps, activeStep, onStepClick$, customIcons = {}, useNumbers = false, allowSkipSteps = false } = props;
-  
-  // Signal to track if we need condensed mode (too many steps)
-  const useCondensedView = useSignal(false);
+
   const containerRef = useSignal<Element>();
-  
-  // Calculate which steps to show in condensed mode
+
+  // Calculate which steps to show - always show all steps
   const visibleSteps = useSignal<number[]>([]);
   
-  // Calculate visible steps when active step or condensed mode changes
+  // Calculate visible steps - always show all steps
   useTask$(({ track }) => {
-    track(() => [steps.length, activeStep, useCondensedView.value]);
-    
-    if (steps.length > 5) {
-      // In condensed mode, show maximum 5 steps:
-      // - First step
-      // - Previous step (if not first)
-      // - Active step
-      // - Next step (if not last) 
-      // - Last step
-      const stepsToShow = new Set<number>();
-      
-      // Always show first step
-      stepsToShow.add(0);
-      
-      // Always show last step
-      stepsToShow.add(steps.length - 1);
-      
-      // Always show active step
-      stepsToShow.add(activeStep);
-      
-      // Show previous step if possible and not first
-      if (activeStep > 0 && activeStep > 1) {
-        stepsToShow.add(activeStep - 1);
-      }
-      
-      // Show next step if possible and not last
-      if (activeStep < steps.length - 1 && activeStep < steps.length - 2) {
-        stepsToShow.add(activeStep + 1);
-      }
-      
-      // Convert to sorted array
-      visibleSteps.value = Array.from(stepsToShow).sort((a, b) => a - b);
-    } else {
-      // Show all steps when 5 or fewer
-      visibleSteps.value = steps.map((_, i) => i);
-    }
-  });
-  
-  // Set condensed view based on step count
-  useTask$(({ track }) => {
-    track(() => steps.length);
-    
-    // Use condensed view when more than 5 steps
-    useCondensedView.value = steps.length > 5;
+    track(() => [steps.length, activeStep]);
+
+    // Always show all steps
+    visibleSteps.value = steps.map((_, i) => i);
   });
   
   // Function to render step indicator content

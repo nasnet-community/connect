@@ -22,6 +22,7 @@ export const IPIPTunnelStep = component$(() => {
     const newTunnel: IpipTunnelConfig = {
       type: "ipip",
       name: `ipip-tunnel-${stepper.data.ipip.length + 1}`,
+      localAddress: "",
       remoteAddress: "",
     };
 

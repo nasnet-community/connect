@@ -51,7 +51,8 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
 
     const isInterfaceSelectedInOtherMode = $((iface: string) => {
       const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
-      return starContext.state.WAN.WANLink[otherMode]?.InterfaceName === iface;
+      const otherInterfaceName = starContext.state.WAN.WANLink[otherMode]?.WANConfigs?.[0]?.InterfaceConfig.InterfaceName;
+      return otherInterfaceName === iface;
     });
 
     const handleComplete = $(async () => {

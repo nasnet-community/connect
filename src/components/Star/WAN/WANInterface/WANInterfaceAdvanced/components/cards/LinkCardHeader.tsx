@@ -1,5 +1,5 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../../StarContext/WANType";
+import type { WANWizardState } from "../../types";
 import type { LinkStatus } from "../../utils/linkHelpers";
 import { getInterfaceIcon, getConnectionIcon } from "../../utils/iconMappings";
 import { getStatusColorClass } from "../../utils/displayFormatters";
@@ -29,7 +29,7 @@ export const LinkCardHeader = component$<LinkCardHeaderProps>(
   }) => {
     const statusColors = getStatusColorClass(status);
     const iconPath = iconType === "interface" 
-      ? getInterfaceIcon(link.interfaceType)
+      ? getInterfaceIcon(link.interfaceType || "Ethernet")
       : getConnectionIcon(link.connectionType);
     
     return (

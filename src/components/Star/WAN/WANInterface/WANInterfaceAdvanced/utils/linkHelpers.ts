@@ -1,4 +1,4 @@
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import type { WANWizardState } from "../types";
 import { getLinkErrors, isInterfaceConfigurationComplete, isLinkConfigurationComplete } from "./validationUtils";
 
 export type LinkStatus = "complete" | "partial" | "error" | "incomplete";
@@ -34,9 +34,9 @@ export const filterLinks = (
   
   const query = searchQuery.toLowerCase();
   return links.filter(link => 
-    link.name.toLowerCase().includes(query) ||
-    link.interfaceName.toLowerCase().includes(query) ||
-    link.interfaceType.toLowerCase().includes(query) ||
+    (link.name && link.name.toLowerCase().includes(query)) ||
+    (link.interfaceName && link.interfaceName.toLowerCase().includes(query)) ||
+    (link.interfaceType && link.interfaceType.toLowerCase().includes(query)) ||
     (link.connectionType && link.connectionType.toLowerCase().includes(query))
   );
 };
@@ -44,7 +44,7 @@ export const filterLinks = (
 export const getUsedInterfaces = (links: WANWizardState["links"]): string[] => {
   return links
     .map((l) => l.interfaceName)
-    .filter(Boolean);
+    .filter((name): name is string => Boolean(name));
 };
 
 export const getLinkStatistics = (
@@ -54,7 +54,7 @@ export const getLinkStatistics = (
   const activeLinks = links.filter(l => l.interfaceName).length;
   const configuredLinks = links.filter(l => l.connectionType).length;
   const completedConnections = links.filter(l => isLinkConfigurationComplete(l)).length;
-  const hasErrors = Object.keys(validationErrors).length > 0;
+  const hasErrors = Object.keys(validationErrors || {}).length > 0;
   
   return {
     activeLinks,

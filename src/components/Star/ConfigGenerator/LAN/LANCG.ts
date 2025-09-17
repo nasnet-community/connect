@@ -88,7 +88,7 @@ export const LANCG = (state: StarState): RouterConfig => {
   const configs: RouterConfig[] = [IPv6()];
 
   // Use helper function for backwards compatibility
-  const hasDomesticLink = state.Choose.WANLinkType === "domestic-only" || state.Choose.WANLinkType === "both";
+  const hasDomesticLink = state.Choose.WANLinkType === "domestic" || state.Choose.WANLinkType === "both";
 
   // Only configure wireless if router models have wireless interfaces AND LAN.Wireless is defined
   const hasWireless = hasWirelessInterfaces(state.Choose.RouterModels);
@@ -122,8 +122,12 @@ export const LANCG = (state: StarState): RouterConfig => {
   }
 
   // Add subnet IP configurations if defined
+  // For backward compatibility, convert to Record<string, string> if needed
   if (state.LAN.Subnets) {
-    configs.push(SubnetIPConfigurations(state.LAN.Subnets));
+    const subnets = state.LAN.Subnets as any;
+    if (typeof subnets === 'object' && !Array.isArray(subnets)) {
+      configs.push(SubnetIPConfigurations(subnets as Record<string, string>));
+    }
   }
 
   return mergeMultipleConfigs(...configs);

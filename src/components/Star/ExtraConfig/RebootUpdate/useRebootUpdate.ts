@@ -1,7 +1,6 @@
 import { useContext, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { TimeConfig } from "./type";
-import type { UpdateInterval, RebootInterval } from "../../StarContext/ExtraType";
 import type { FrequencyValue } from "~/components/Core";
 
 
@@ -11,95 +10,94 @@ export const useRebootUpdate = () => {
   // Initialize defaults if needed
   useTask$(() => {
     const needsUpdate =
-      !ctx.state.ExtraConfig.AutoReboot ||
-      !ctx.state.ExtraConfig.Update ||
-      !ctx.state.ExtraConfig.IPAddressUpdate ||
-      !ctx.state.ExtraConfig.Timezone;
+      !ctx.state.ExtraConfig.RUI.Reboot ||
+      !ctx.state.ExtraConfig.RUI.Update;
 
     if (needsUpdate) {
+      const updatedRUI = {
+        ...ctx.state.ExtraConfig.RUI,
+        Reboot: ctx.state.ExtraConfig.RUI.Reboot || {
+          interval: "",
+          time: "02:00",
+        },
+        Update: ctx.state.ExtraConfig.RUI.Update || {
+          interval: "",
+          time: "03:00",
+        },
+      };
+      
       ctx.updateExtraConfig$({
-        Timezone: ctx.state.ExtraConfig.Timezone,
-        AutoReboot: ctx.state.ExtraConfig.AutoReboot || {
-          isAutoReboot: false,
-          RebootTime: "00:00",
-          RebootInterval: "Daily" as RebootInterval,
-        },
-        Update: ctx.state.ExtraConfig.Update || {
-          isAutoReboot: false,
-          UpdateTime: "00:00",
-          UpdateInterval: "Weekly" as UpdateInterval,
-        },
-        IPAddressUpdate: ctx.state.ExtraConfig.IPAddressUpdate || {
-          isIPAddressUpdate: true,
-          IPAddressUpdateTime: "03:00",
-          IPAddressUpdateInterval: "Daily" as UpdateInterval,
-        },
+        RUI: updatedRUI
       });
     }
   });
 
   const autoRebootEnabled = useSignal(
-    ctx.state.ExtraConfig.AutoReboot?.isAutoReboot ?? false,
+    (ctx.state.ExtraConfig.RUI.Reboot?.interval !== "") || false,
   );
 
   const autoUpdateEnabled = useSignal(
-    ctx.state.ExtraConfig.Update?.isAutoReboot ?? false,
+    (ctx.state.ExtraConfig.RUI.Update?.interval !== "") || false,
   );
 
   const ipAddressUpdateEnabled = useSignal(true);
 
-  const selectedTimezone = useSignal(ctx.state.ExtraConfig.Timezone);
+  const selectedTimezone = useSignal(ctx.state.ExtraConfig.RUI.Timezone);
 
   // Track changes to selectedTimezone
   useTask$(({ track }) => {
     const timezone = track(() => selectedTimezone.value);
 
     // Update the context when timezone changes
-    if (timezone && timezone !== ctx.state.ExtraConfig.Timezone) {
-      ctx.updateExtraConfig$({
-        ...ctx.state.ExtraConfig,
+    if (timezone && timezone !== ctx.state.ExtraConfig.RUI.Timezone) {
+      const updatedRUI = {
+        ...ctx.state.ExtraConfig.RUI,
         Timezone: timezone,
+      };
+      
+      ctx.updateExtraConfig$({
+        RUI: updatedRUI
       });
     }
   });
 
   const updateInterval = useSignal<FrequencyValue | undefined>(
-    ctx.state.ExtraConfig.Update?.UpdateInterval === "Daily" || 
-    ctx.state.ExtraConfig.Update?.UpdateInterval === "Weekly" || 
-    ctx.state.ExtraConfig.Update?.UpdateInterval === "Monthly"
-      ? ctx.state.ExtraConfig.Update.UpdateInterval 
+    ctx.state.ExtraConfig.RUI.Update?.interval === "Daily" || 
+    ctx.state.ExtraConfig.RUI.Update?.interval === "Weekly" || 
+    ctx.state.ExtraConfig.RUI.Update?.interval === "Monthly"
+      ? ctx.state.ExtraConfig.RUI.Update.interval as FrequencyValue
       : "Weekly",
   );
 
   const rebootInterval = useSignal<FrequencyValue | undefined>(
-    ctx.state.ExtraConfig.AutoReboot?.RebootInterval === "Daily" || 
-    ctx.state.ExtraConfig.AutoReboot?.RebootInterval === "Weekly" || 
-    ctx.state.ExtraConfig.AutoReboot?.RebootInterval === "Monthly"
-      ? ctx.state.ExtraConfig.AutoReboot.RebootInterval 
+    ctx.state.ExtraConfig.RUI.Reboot?.interval === "Daily" || 
+    ctx.state.ExtraConfig.RUI.Reboot?.interval === "Weekly" || 
+    ctx.state.ExtraConfig.RUI.Reboot?.interval === "Monthly"
+      ? ctx.state.ExtraConfig.RUI.Reboot.interval as FrequencyValue
       : "Daily",
   );
 
 
   const rebootTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.AutoReboot?.RebootTime.split(":")[0] || "00",
-    minute: ctx.state.ExtraConfig.AutoReboot?.RebootTime.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.Reboot?.time?.split(":")[0] || "02",
+    minute: ctx.state.ExtraConfig.RUI.Reboot?.time?.split(":")[1] || "00",
   });
 
   const updateTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.Update?.UpdateTime.split(":")[0] || "00",
-    minute: ctx.state.ExtraConfig.Update?.UpdateTime.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.Update?.time?.split(":")[0] || "03",
+    minute: ctx.state.ExtraConfig.RUI.Update?.time?.split(":")[1] || "00",
   });
 
   const ipAddressUpdateTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateTime.split(":")[0] || "03",
-    minute: ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateTime.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.IPAddressUpdate?.time?.split(":")[0] || "03",
+    minute: ctx.state.ExtraConfig.RUI.IPAddressUpdate?.time?.split(":")[1] || "00",
   });
 
   const ipAddressUpdateInterval = useSignal<FrequencyValue | undefined>(
-    ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateInterval === "Daily" || 
-    ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateInterval === "Weekly" || 
-    ctx.state.ExtraConfig.IPAddressUpdate?.IPAddressUpdateInterval === "Monthly"
-      ? ctx.state.ExtraConfig.IPAddressUpdate.IPAddressUpdateInterval 
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Daily" || 
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Weekly" || 
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Monthly"
+      ? ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval as FrequencyValue
       : "Daily",
   );
 

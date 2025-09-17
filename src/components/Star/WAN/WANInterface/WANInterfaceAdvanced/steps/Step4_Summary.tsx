@@ -1,5 +1,5 @@
 import { component$, type QRL, useComputed$ } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import type { WANWizardState } from "../types";
 import { Alert, Card } from "~/components/Core";
 
 export interface Step4Props {
@@ -9,7 +9,7 @@ export interface Step4Props {
 }
 
 export const Step4_Summary = component$<Step4Props>(
-  ({ wizardState, onEdit$, onValidate$ }) => {
+  ({ wizardState, onEdit$, onValidate$: _onValidate$ }) => {
     
     // Use useComputed$ for sorted links to avoid mutations during render
     const sortedLinksByPriority = useComputed$(() => {
@@ -67,7 +67,7 @@ export const Step4_Summary = component$<Step4Props>(
 
     // Use useComputed$ to safely compute validation errors without causing state mutations
     const validationErrors = useComputed$(() => {
-      const errors = Object.values(wizardState.validationErrors).flat();
+      const errors = Object.values(wizardState.validationErrors || {}).flat();
       return {
         list: errors,
         hasErrors: errors.length > 0
@@ -150,7 +150,7 @@ export const Step4_Summary = component$<Step4Props>(
                   <div class="flex gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
                       <svg class="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getInterfaceIcon(link.interfaceType)} />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getInterfaceIcon(link.interfaceType || "Ethernet")} />
                       </svg>
                     </div>
                     <div class="flex-1">
@@ -235,10 +235,7 @@ export const Step4_Summary = component$<Step4Props>(
                             Gateway: <span class="font-medium">{link.connectionConfig.static.gateway}</span>
                           </p>
                           <p class="text-gray-500 dark:text-gray-400">
-                            DNS: <span class="font-medium">{link.connectionConfig.static.primaryDns}</span>
-                            {link.connectionConfig.static.secondaryDns && (
-                              <span>, {link.connectionConfig.static.secondaryDns}</span>
-                            )}
+                            DNS: <span class="font-medium">{link.connectionConfig.static.DNS}</span>
                           </p>
                         </div>
                       )}

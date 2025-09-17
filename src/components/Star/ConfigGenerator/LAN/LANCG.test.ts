@@ -81,7 +81,14 @@ describe("LANCG Module Tests", () => {
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
@@ -117,7 +124,15 @@ describe("LANCG Module Tests", () => {
             ],
           },
         },
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -137,13 +152,20 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          WANLinkType: "foreign-only",
+          WANLinkType: "foreign",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
@@ -155,7 +177,15 @@ describe("LANCG Module Tests", () => {
             },
           ],
         },
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -175,18 +205,33 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          WANLinkType: "foreign-only",
+          WANLinkType: "foreign",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
         LAN: {},
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -212,7 +257,14 @@ describe("LANCG Module Tests", () => {
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
@@ -263,7 +315,15 @@ describe("LANCG Module Tests", () => {
             ],
           },
         },
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -289,7 +349,14 @@ describe("LANCG Module Tests", () => {
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
@@ -301,7 +368,15 @@ describe("LANCG Module Tests", () => {
             },
           ],
         },
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -323,18 +398,33 @@ describe("LANCG Module Tests", () => {
         Choose: {
           Mode: "easy",
           Firmware: "MikroTik",
-          WANLinkType: "foreign-only",
+          WANLinkType: "foreign",
           RouterMode: "AP Mode",
           RouterModels: [],
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
         LAN: {},
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 
@@ -379,7 +469,14 @@ describe("LANCG Module Tests", () => {
         },
         WAN: {
           WANLink: {
-            Foreign: { InterfaceName: "ether1" },
+            Foreign: {
+              WANConfigs: [{
+                name: "Foreign-WAN",
+                InterfaceConfig: {
+                  InterfaceName: "ether1",
+                },
+              }],
+            },
           },
           VPNClient: {},
         },
@@ -395,7 +492,15 @@ describe("LANCG Module Tests", () => {
             },
           ],
         },
-        ExtraConfig: {},
+        ExtraConfig: {
+          RUI: {
+            Timezone: "UTC",
+            IPAddressUpdate: {
+              interval: "",
+              time: "",
+            },
+          },
+        },
         ShowConfig: {},
       };
 

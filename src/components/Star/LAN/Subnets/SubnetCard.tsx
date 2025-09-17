@@ -30,7 +30,7 @@ export const SubnetCard = component$<SubnetCardProps>(({
       header: "text-primary-700 dark:text-primary-300",
     },
     vpn: {
-      border: "border-green-200 dark:border-green-800", 
+      border: "border-green-200 dark:border-green-800",
       gradient: "from-green-500/10 via-emerald-500/5 to-green-500/10",
       icon: "text-green-500 bg-green-100 dark:bg-green-900/30",
       header: "text-green-700 dark:text-green-300",
@@ -38,8 +38,26 @@ export const SubnetCard = component$<SubnetCardProps>(({
     tunnel: {
       border: "border-purple-200 dark:border-purple-800",
       gradient: "from-purple-500/10 via-violet-500/5 to-purple-500/10",
-      icon: "text-purple-500 bg-purple-100 dark:bg-purple-900/30", 
+      icon: "text-purple-500 bg-purple-100 dark:bg-purple-900/30",
       header: "text-purple-700 dark:text-purple-300",
+    },
+    "wan-domestic": {
+      border: "border-orange-200 dark:border-orange-800",
+      gradient: "from-orange-500/10 via-amber-500/5 to-orange-500/10",
+      icon: "text-orange-500 bg-orange-100 dark:bg-orange-900/30",
+      header: "text-orange-700 dark:text-orange-300",
+    },
+    "wan-foreign": {
+      border: "border-blue-200 dark:border-blue-800",
+      gradient: "from-blue-500/10 via-indigo-500/5 to-blue-500/10",
+      icon: "text-blue-500 bg-blue-100 dark:bg-blue-900/30",
+      header: "text-blue-700 dark:text-blue-300",
+    },
+    "vpn-client": {
+      border: "border-teal-200 dark:border-teal-800",
+      gradient: "from-teal-500/10 via-cyan-500/5 to-teal-500/10",
+      icon: "text-teal-500 bg-teal-100 dark:bg-teal-900/30",
+      header: "text-teal-700 dark:text-teal-300",
     },
   };
 
@@ -179,10 +197,13 @@ export const SubnetCard = component$<SubnetCardProps>(({
               {/* Progress Bar */}
               <div class="mt-2">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
+                  <div
                     class={`h-2 rounded-full transition-all duration-500 ${
                       category === 'base' ? 'bg-primary-500' :
-                      category === 'vpn' ? 'bg-green-500' : 'bg-purple-500'
+                      category === 'vpn' ? 'bg-green-500' :
+                      category === 'tunnel' ? 'bg-purple-500' :
+                      category === 'wan-domestic' ? 'bg-orange-500' :
+                      category === 'wan-foreign' ? 'bg-blue-500' : 'bg-teal-500'
                     }`}
                     style={{ 
                       width: configs.length > 0 
@@ -198,12 +219,15 @@ export const SubnetCard = component$<SubnetCardProps>(({
       </div>
 
       {/* Hover Glow Effect */}
-      <div 
+      <div
         class={`
           absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300
           group-hover:opacity-100 pointer-events-none
           ${category === 'base' ? 'shadow-primary-500/25' :
-            category === 'vpn' ? 'shadow-green-500/25' : 'shadow-purple-500/25'}
+            category === 'vpn' ? 'shadow-green-500/25' :
+            category === 'tunnel' ? 'shadow-purple-500/25' :
+            category === 'wan-domestic' ? 'shadow-orange-500/25' :
+            category === 'wan-foreign' ? 'shadow-blue-500/25' : 'shadow-teal-500/25'}
           hover:shadow-2xl
         `}
       />

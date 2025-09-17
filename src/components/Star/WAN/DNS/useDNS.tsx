@@ -7,11 +7,11 @@ import type {
   DOHNetworkInfo,
   DNSPreset 
 } from "./types";
-import type { DNSConfig } from "../../StarContext/WANType";
+import type { DNSConfig, DOHConfig } from "../../StarContext/WANType";
 
 export const useDNS = () => {
   const starContext = useContext(StarContext);
-  const isDomestic = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+  const isDomestic = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
 
   // Initialize DNS configuration with existing state or defaults
   const dnsConfig = useStore<DNSConfig>({
@@ -19,10 +19,9 @@ export const useDNS = () => {
     VPNDNS: starContext.state.WAN.DNSConfig?.VPNDNS || "",
     DomesticDNS: starContext.state.WAN.DNSConfig?.DomesticDNS || "",
     SplitDNS: starContext.state.WAN.DNSConfig?.SplitDNS || "",
-    DOHConfig: {
-      enabled: starContext.state.WAN.DNSConfig?.DOHConfig?.enabled || false,
-      domain: starContext.state.WAN.DNSConfig?.DOHConfig?.domain || "",
-      bindingIP: starContext.state.WAN.DNSConfig?.DOHConfig?.bindingIP || "",
+    DOH: {
+      domain: starContext.state.WAN.DNSConfig?.DOH?.domain || "",
+      bindingIP: starContext.state.WAN.DNSConfig?.DOH?.bindingIP || "",
     },
   });
 
@@ -286,7 +285,7 @@ export const useDNS = () => {
     const configs: NetworkDNSConfig[] = [
       {
         type: "Foreign",
-        dns: dnsConfig.ForeignDNS,
+        dns: dnsConfig.ForeignDNS || "",
         label: $localize`Foreign Network DNS`,
         description: $localize`DNS server for foreign network traffic`,
         required: true,
@@ -296,7 +295,7 @@ export const useDNS = () => {
       },
       {
         type: "VPN",
-        dns: dnsConfig.VPNDNS,
+        dns: dnsConfig.VPNDNS || "",
         label: $localize`VPN Network DNS`,
         description: $localize`DNS server for VPN network traffic`,
         required: true,
@@ -361,20 +360,20 @@ export const useDNS = () => {
     }
   });
 
-  const updateDOH = $((field: keyof NonNullable<DNSConfig["DOHConfig"]>, value: string | boolean) => {
-    if (!dnsConfig.DOHConfig) {
-      dnsConfig.DOHConfig = { enabled: false };
+  const updateDOH = $((field: keyof DOHConfig | "enabled", value: string | boolean) => {
+    if (!dnsConfig.DOH) {
+      dnsConfig.DOH = {};
     }
     
     if (field === "enabled") {
-      dnsConfig.DOHConfig.enabled = value as boolean;
+      // Handle enabled state separately (not part of DOHConfig)
       // Clear DOH fields if disabled
       if (!value) {
-        dnsConfig.DOHConfig.domain = "";
-        dnsConfig.DOHConfig.bindingIP = "";
+        dnsConfig.DOH.domain = "";
+        dnsConfig.DOH.bindingIP = "";
       }
     } else {
-      dnsConfig.DOHConfig[field] = value as string;
+      dnsConfig.DOH[field as keyof DOHConfig] = value as string;
     }
 
     // Clear validation errors for DOH fields
@@ -391,14 +390,14 @@ export const useDNS = () => {
     const errors: ValidationErrors = {};
 
     // Validate Foreign DNS
-    if (!dnsConfig.ForeignDNS.trim()) {
+    if (!dnsConfig.ForeignDNS || !dnsConfig.ForeignDNS.trim()) {
       errors.Foreign = $localize`Foreign Network DNS is required`;
     } else if (!(await validateIPv4(dnsConfig.ForeignDNS))) {
       errors.Foreign = $localize`Please enter a valid IPv4 address`;
     }
 
     // Validate VPN DNS
-    if (!dnsConfig.VPNDNS.trim()) {
+    if (!dnsConfig.VPNDNS || !dnsConfig.VPNDNS.trim()) {
       errors.VPN = $localize`VPN Network DNS is required`;
     } else if (!(await validateIPv4(dnsConfig.VPNDNS))) {
       errors.VPN = $localize`Please enter a valid IPv4 address`;
@@ -419,15 +418,13 @@ export const useDNS = () => {
       }
     }
 
-    // Validate DOH configuration if enabled
-    if (isDomestic && dnsConfig.DOHConfig?.enabled) {
-      if (!dnsConfig.DOHConfig.domain?.trim()) {
-        errors.dohDomain = $localize`Domain is required when DOH is enabled`;
-      } else if (!(await validateDomain(dnsConfig.DOHConfig.domain))) {
+    // Validate DOH configuration if domain is set (DOH is enabled)
+    if (isDomestic && dnsConfig.DOH?.domain) {
+      if (!(await validateDomain(dnsConfig.DOH.domain))) {
         errors.dohDomain = $localize`Please enter a valid domain name`;
       }
 
-      if (dnsConfig.DOHConfig.bindingIP?.trim() && !(await validateIPv4(dnsConfig.DOHConfig.bindingIP))) {
+      if (dnsConfig.DOH.bindingIP?.trim() && !(await validateIPv4(dnsConfig.DOH.bindingIP))) {
         errors.dohBinding = $localize`Please enter a valid IPv4 address for binding IP`;
       }
     }
@@ -492,10 +489,9 @@ export const useDNS = () => {
     dnsConfig.VPNDNS = "";
     dnsConfig.DomesticDNS = "";
     dnsConfig.SplitDNS = "";
-    if (dnsConfig.DOHConfig) {
-      dnsConfig.DOHConfig.enabled = false;
-      dnsConfig.DOHConfig.domain = "";
-      dnsConfig.DOHConfig.bindingIP = "";
+    if (dnsConfig.DOH) {
+      dnsConfig.DOH.domain = "";
+      dnsConfig.DOH.bindingIP = "";
     }
     
     // Clear validation errors

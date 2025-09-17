@@ -37,7 +37,7 @@ const DNSStep = component$((props: StepProps) => (
 
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
-  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
   const isAdvancedMode = starContext.state.Choose.Mode === "advance";
 
   let steps: StepItem[] = [];

@@ -261,12 +261,17 @@ export const Choose = component$((props: StepProps) => {
       starContext.updateChoose$({ RouterMode: "AP Mode" });
     }
 
-    // Clear TrunkInterface when switching from Trunk Mode to AP Mode
+    // Clear MasterSlaveInterface when switching from Trunk Mode to AP Mode
     if (
       selectedRouterMode === "AP Mode" &&
-      starContext.state.Choose.TrunkInterface
+      starContext.state.Choose.RouterModels.some(rm => rm.MasterSlaveInterface)
     ) {
-      starContext.updateChoose$({ TrunkInterface: undefined });
+      // Clear MasterSlaveInterface from all router models
+      const updatedModels = starContext.state.Choose.RouterModels.map(rm => ({
+        ...rm,
+        MasterSlaveInterface: undefined
+      }));
+      starContext.updateChoose$({ RouterModels: updatedModels });
     }
 
     // Only proceed if we have a valid firmware selection
@@ -329,8 +334,11 @@ export const Choose = component$((props: StepProps) => {
         steps.value.find((step) => step.title === $localize`Router Model`)
           ?.isComplete || false;
 
+      // If RouterMode exists in context, it should be considered complete
+      const routerModeComplete = routerModeStepComplete || Boolean(selectedRouterMode);
+      
       // Restore MikroTik steps if user switches back from OpenWRT
-      const mikrotikSteps = await createMikroTikSteps(routerModeStepComplete);
+      const mikrotikSteps = await createMikroTikSteps(routerModeComplete);
       // console.log('Adding MikroTik steps:', mikrotikSteps); // Debug log
 
       // Update completion statuses for preserved steps
@@ -353,6 +361,14 @@ export const Choose = component$((props: StepProps) => {
       );
       if (routerModelStep) {
         routerModelStep.isComplete = routerModelStepComplete;
+      }
+
+      // Update RouterMode step completion status
+      const routerModeStep = mikrotikSteps.find(
+        (step) => step.title === $localize`Router Mode`,
+      );
+      if (routerModeStep) {
+        routerModeStep.isComplete = routerModeComplete;
       }
 
       // Create new array with firmware and MikroTik steps
@@ -378,13 +394,14 @@ export const Choose = component$((props: StepProps) => {
         steps.value = newSteps;
       }
 
-      // If RouterMode was just completed with Trunk Mode, navigate to TrunkInterface (only in advance mode)
-      if (selectedMode === "advance" && routerModeStepComplete && selectedRouterMode === "Trunk Mode") {
-        const trunkInterfaceIndex = newSteps.findIndex(
-          (step) => step.title === $localize`Trunk Interface`,
+      // If RouterMode is complete with Trunk Mode, navigate to Slave Router step (only in advance mode)
+      const routerModeJustCompleted = !routerModeStepComplete && Boolean(selectedRouterMode);
+      if (selectedMode === "advance" && routerModeJustCompleted && selectedRouterMode === "Trunk Mode") {
+        const slaveRouterIndex = newSteps.findIndex(
+          (step) => step.title === $localize`Slave Router`,
         );
-        if (trunkInterfaceIndex !== -1) {
-          activeStep.value = trunkInterfaceIndex;
+        if (slaveRouterIndex !== -1) {
+          activeStep.value = slaveRouterIndex;
         }
       } else if (activeStep.value >= newSteps.length) {
         // Reset active step if we're beyond the new step count

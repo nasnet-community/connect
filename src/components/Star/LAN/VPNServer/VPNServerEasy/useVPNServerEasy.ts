@@ -8,21 +8,15 @@ export const useVPNServerEasy = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
-    SelectedNetworks: ["VPN"],
-    CertificatePassphrase: "",
   };
 
   // Certificate passphrase state
-  const certificatePassphrase = useSignal(
-    vpnServerState.CertificatePassphrase || ""
-  );
+  const certificatePassphrase = useSignal("");
   const showPassphrase = useSignal(false);
   const passphraseError = useSignal("");
 
   // Network selection state
-  const selectedNetworks = useStore<Networks[]>(
-    vpnServerState.SelectedNetworks || ["VPN"]
-  );
+  const selectedNetworks = useStore<Networks[]>(["VPN"]);
 
   // User management state
   const users = useStore<Credentials[]>(
@@ -237,8 +231,6 @@ export const useVPNServerEasy = () => {
         VPNServer: {
           ...vpnServerState,
           Users: users,
-          SelectedNetworks: selectedNetworks,
-          CertificatePassphrase: certificatePassphrase.value,
           ...defaultProtocols,
         },
       });

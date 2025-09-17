@@ -5,12 +5,13 @@ export const VPNLinksLayout = component$(() => {
   const starContext = useContext(StarContext);
 
   const foreignWANLinks = useComputed$(() => {
-    const wanLinks = starContext.state.WAN.WANLinks || [];
-    return wanLinks.filter(
-      (link) =>
-        link.name.toLowerCase().includes("foreign") ||
-        link.id.includes("foreign"),
-    );
+    // Get Foreign WAN configs from the WANLink structure
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign.WANConfigs || [];
+    return foreignWANConfigs.map((config, index) => ({
+      id: config.name || `foreign-${index}`,
+      name: config.name || `Foreign Link ${index + 1}`,
+      interfaceType: config.InterfaceConfig.InterfaceName,
+    }));
   });
 
   return (

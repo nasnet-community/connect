@@ -1,14 +1,14 @@
 import type { RouterConfig } from "../ConfigGenerator";
 import type {
-  WANConfig,
-  WANLink,
+  WANLinks,
+  InterfaceConfig,
   WANState,
 } from "../../StarContext/WANType";
 import { VPNClientWrapper } from "./VPNClient/VPNClientCG";
 import { DNSCG } from "./DNSCG";
 import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
 
-export const ForeignWAN = (WANConfig: WANConfig): RouterConfig => {
+export const ForeignWAN = (WANConfig: InterfaceConfig): RouterConfig => {
   const config: RouterConfig = {
     "/interface ethernet": [],
     "/interface wifi": [],
@@ -49,7 +49,7 @@ export const ForeignWAN = (WANConfig: WANConfig): RouterConfig => {
   return config;
 };
 
-export const DomesticWAN = (WANConfig: WANConfig): RouterConfig => {
+export const DomesticWAN = (WANConfig: InterfaceConfig): RouterConfig => {
   const config: RouterConfig = {
     "/interface ethernet": [],
     "/interface wifi": [],
@@ -89,13 +89,24 @@ export const DomesticWAN = (WANConfig: WANConfig): RouterConfig => {
   return config;
 };
 
-export const WANLinks = (WANLink: WANLink): RouterConfig => {
-  const { Foreign, Domestic } = WANLink;
+export const WANLinksConfig = (WANLinks: WANLinks): RouterConfig => {
+  const { Foreign, Domestic } = WANLinks;
 
-  if (Domestic) {
-    return mergeMultipleConfigs(ForeignWAN(Foreign), DomesticWAN(Domestic));
+  // Extract the first config from each WANLink
+  const foreignConfig = Foreign?.WANConfigs?.[0];
+  const domesticConfig = Domestic?.WANConfigs?.[0];
+  
+  if (!foreignConfig) {
+    return {}; // Return empty config if no foreign config
+  }
+  
+  if (domesticConfig) {
+    return mergeMultipleConfigs(
+      ForeignWAN(foreignConfig.InterfaceConfig), 
+      DomesticWAN(domesticConfig.InterfaceConfig)
+    );
   } else {
-    return ForeignWAN(Foreign);
+    return ForeignWAN(foreignConfig.InterfaceConfig);
   }
 };
 
@@ -105,7 +116,7 @@ export const WANCG = (
 ): RouterConfig => {
   const { WANLink, VPNClient, DNSConfig } = WANState;
 
-  const configs: RouterConfig[] = [WANLinks(WANLink)];
+  const configs: RouterConfig[] = [WANLinksConfig(WANLink)];
 
   // Add VPN Client configuration if present
   if (VPNClient) {
