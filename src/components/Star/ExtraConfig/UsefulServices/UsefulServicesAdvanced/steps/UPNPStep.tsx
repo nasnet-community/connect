@@ -64,12 +64,6 @@ export const UPNPStep = component$(() => {
     }
   };
 
-  // Handle link type selection
-  const handleLinkTypeSelect$ = $((selectedType: string) => {
-    linkType.value = selectedType;
-    validateAndUpdate$();
-  });
-
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
     // Update context data
@@ -91,6 +85,12 @@ export const UPNPStep = component$(() => {
         isComplete,
       );
     }
+  });
+
+  // Handle link type selection
+  const handleLinkTypeSelect$ = $((selectedType: string) => {
+    linkType.value = selectedType;
+    validateAndUpdate$();
   });
 
   // Run validation on component mount and when values change

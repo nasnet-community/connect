@@ -1,5 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import type { PPPoEConfig } from "../../../../../StarContext/WANType";
+import type { PPPoEConfig } from "../../types";
 import { Input, FormField, PasswordField } from "~/components/Core";
 
 export interface PPPoEFieldsProps {

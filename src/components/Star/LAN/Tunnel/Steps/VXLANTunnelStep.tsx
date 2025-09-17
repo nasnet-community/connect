@@ -29,6 +29,7 @@ export const VXLANTunnelStep = component$(() => {
     const newTunnel: VxlanInterfaceConfig = {
       type: "vxlan",
       name: `vxlan-tunnel-${stepper.data.vxlan.length + 1}`,
+      localAddress: "",
       remoteAddress: "",
       vni: stepper.data.vxlan.length + 1,
       bumMode: "unicast",

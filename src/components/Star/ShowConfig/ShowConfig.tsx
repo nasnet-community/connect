@@ -20,23 +20,31 @@ export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
   const ctx = useContext(StarContext);
   const configPreview = useSignal<string>("");
-  const apConfigPreview = useSignal<string>("");
+  const slaveRouterConfigs = useSignal<{ [key: number]: string }>({});
+
+  // Get slave routers from context
+  const slaveRouters = ctx.state.Choose.RouterModels.filter(rm => !rm.isMaster);
 
   const {
     downloadFile,
     generatePythonScript,
     generateROSScript,
     generateConfigPreview,
-    generateAPScript,
-    generateAPConfigPreview,
+    generateSlaveRouterScript,
+    generateSlaveRouterConfigPreview,
+    downloadSlaveRouterFile,
   } = useConfigGenerator(ctx.state);
 
   useTask$(async () => {
     configPreview.value = await generateConfigPreview();
 
-    // Generate AP config if in Trunk Mode
-    if (ctx.state.Choose.RouterMode === "Trunk Mode") {
-      apConfigPreview.value = await generateAPConfigPreview();
+    // Generate slave router configurations
+    if (slaveRouters.length > 0) {
+      const slaveConfigs: { [key: number]: string } = {};
+      for (let i = 0; i < slaveRouters.length; i++) {
+        slaveConfigs[i] = await generateSlaveRouterConfigPreview(slaveRouters[i], i);
+      }
+      slaveRouterConfigs.value = slaveConfigs;
     }
   });
 
@@ -64,47 +72,83 @@ export const ShowConfig = component$<StepProps>(() => {
     await downloadFile(content, "rsc");
   });
 
-  const handleAPDownload = $(async () => {
-    // Track AP script download
+
+  const handleSlaveRouterDownload = $(async (slaveRouter: typeof slaveRouters[0], index: number) => {
+    // Track slave router script download
     track("config_downloaded", {
-      file_type: "mikrotik_ap",
+      file_type: "mikrotik_slave",
       format: "rsc",
       step: "show_config",
+      router_model: slaveRouter.Model,
+      router_index: index,
     });
 
-    const content = await generateAPScript();
-    await downloadFile(content, "rsc");
+    const content = await generateSlaveRouterScript(slaveRouter, index);
+    await downloadSlaveRouterFile(content, slaveRouter, index, "rsc");
+  });
+
+  const handleSlaveRouterPythonDownload = $(async (slaveRouter: typeof slaveRouters[0], index: number) => {
+    // Track slave router Python script download
+    track("config_downloaded", {
+      file_type: "python_slave",
+      format: "py",
+      step: "show_config",
+      router_model: slaveRouter.Model,
+      router_index: index,
+    });
+
+    // For now, use a placeholder Python script
+    const content = `# Python configuration for ${slaveRouter.Model} (Slave Router ${index + 1})
+import routeros_api
+
+def configure_slave_router(host, username, password):
+    # TODO: Implement slave router Python configuration
+    pass`;
+    
+    await downloadSlaveRouterFile(content, slaveRouter, index, "py");
   });
 
   return (
-    <div class="container mx-auto px-4 py-8">
-      <Header />
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+      <Header title={
+        slaveRouters.length > 0 
+          ? $localize`Master Router Configuration` 
+          : $localize`Configuration Preview`
+      } />
 
-      <div class="mb-12">
-        <Code
-          // configPreview={generateConfigPreview()}
-          configPreview={configPreview.value} // Use the signal value instead
-          onPythonDownload$={handlePythonDownload}
-          onROSDownload$={handleROSDownload}
-        />
-      </div>
+      <div class="container mx-auto px-4 pb-16">
+        <div class="mb-12">
+          <Code
+            // configPreview={generateConfigPreview()}
+            configPreview={configPreview.value} // Use the signal value instead
+            onPythonDownload$={handlePythonDownload}
+            onROSDownload$={handleROSDownload}
+          />
+        </div>
 
-      {ctx.state.Choose.RouterMode === "Trunk Mode" && (
-        <>
-          <Header title={$localize`AP Router Configuration`} />
-          <div class="mb-12">
-            <Code
-              configPreview={apConfigPreview.value}
-              onPythonDownload$={handlePythonDownload}
-              onROSDownload$={handleAPDownload}
-            />
+
+        {/* Display Slave Router Configurations */}
+        {slaveRouters.length > 0 && slaveRouters.map((slaveRouter, index) => (
+          <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
+            <div class="mb-8">
+              <Header 
+                title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`} 
+              />
+            </div>
+            <div class="mb-12">
+              <Code
+                configPreview={slaveRouterConfigs.value[index] || $localize`Generating configuration...`}
+                onPythonDownload$={$(() => handleSlaveRouterPythonDownload(slaveRouter, index))}
+                onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))}
+              />
+            </div>
           </div>
-        </>
-      )}
+        ))}
 
-      {/* <MikrotikApplyConfig /> */}
+        {/* <MikrotikApplyConfig /> */}
 
-      <ScriptGuide />
+        <ScriptGuide />
+      </div>
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">
         <TutorialCard
@@ -125,7 +169,7 @@ export const ShowConfig = component$<StepProps>(() => {
           description={$localize`Learn how to apply this configuration directly in RouterOS.`}
           icon={
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
           }
           onClick$={() => activeTutorial.value = activeTutorial.value === 'mikrotik' ? null : 'mikrotik'}

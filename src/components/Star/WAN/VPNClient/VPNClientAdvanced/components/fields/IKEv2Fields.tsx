@@ -22,9 +22,10 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
         <Input
           type="text"
           value={config.ServerAddress || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ ServerAddress: value })
-          }
+          onInput$={(event: Event, value: string) => {
+            console.log('[IKEv2Fields] Server Address updated:', value);
+            onUpdate$({ ServerAddress: value });
+          }}
           placeholder="vpn.example.com"
           validation={errors.ServerAddress ? "invalid" : "default"}
         />
@@ -42,15 +43,16 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
           <Input
             type="text"
             value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) =>
+            onInput$={(event: Event, value: string) => {
+              console.log('[IKEv2Fields] Username updated:', value);
               onUpdate$({ 
                 Credentials: { 
                   ...config.Credentials, 
                   Username: value,
                   Password: config.Credentials?.Password || ""
                 } 
-              })
-            }
+              });
+            }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
@@ -64,17 +66,18 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
             {$localize`Password`} *
           </label>
           <Input
-            type="password"
+            type="text"
             value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+            onInput$={(event: Event, value: string) => {
+              console.log('[IKEv2Fields] Password updated:', value ? '***' : '(empty)');
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: config.Credentials?.Username || "",
                   Password: value
-                } 
-              })
-            }
+                }
+              });
+            }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
@@ -82,21 +85,6 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
             <ErrorMessage message={errors.Password} />
           )}
         </div>
-      </div>
-
-      {/* Certificate Name */}
-      <div>
-        <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-          {$localize`Client Certificate Name`}
-        </label>
-        <Input
-          type="text"
-          value={config.ClientCertificateName || ""}
-          onInput$={(event: Event, value: string) =>
-            onUpdate$({ ClientCertificateName: value })
-          }
-          placeholder="client-cert"
-        />
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import type {
   WirelessConfig as WirelessConfigType,
   MultiMode,
 } from "~/components/Star/StarContext/LANType";
-import type { WANLink, WANConfig } from "~/components/Star/StarContext/WANType";
+import type { WANLinks, WANLinkConfig } from "~/components/Star/StarContext/WANType";
 import type { RouterConfig } from "../../ConfigGenerator";
 import type { Networks, Band } from "~/components/Star/StarContext/CommonType";
 import {
@@ -58,9 +58,17 @@ describe("Wireless Helper Function Tests", () => {
 
   describe("CheckMasters", () => {
     it("should return true for both bands if present in WANLink", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "wifi2.4" },
-        Domestic: { InterfaceName: "wifi5" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+        },
+        Domestic: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi5" } }] 
+        },
       };
 
       testWithGenericOutput(
@@ -75,8 +83,12 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should return true for 2.4GHz only", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "wifi2.4" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+        },
       };
 
       testWithGenericOutput(
@@ -91,8 +103,12 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should return true for 5GHz only", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "wifi5" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi5" } }] 
+        },
       };
 
       testWithGenericOutput(
@@ -107,8 +123,12 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should return false for both if not wifi interfaces", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "ether1" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "ether1" } }] 
+        },
       };
 
       testWithGenericOutput(
@@ -123,9 +143,17 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should handle interface names with wifi pattern variations", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "wifi2.4" },
-        Domestic: { InterfaceName: "wifi5" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+        },
+        Domestic: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi5" } }] 
+        },
       };
 
       testWithGenericOutput(
@@ -140,8 +168,12 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should handle undefined domestic interface", () => {
-      const wanLink: WANLink = {
-        Foreign: { InterfaceName: "wifi2.4" },
+      const wanLink: WANLinks = {
+        Foreign: { 
+          WANConfigs: [{ 
+            name: "Test Link",
+            InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+        },
         // Domestic is undefined
       };
 
@@ -248,9 +280,12 @@ describe("Wireless Helper Function Tests", () => {
 
   describe("StationMode", () => {
     it("should generate station mode command with credentials", () => {
-      const wanConfig: WANConfig = {
-        InterfaceName: "wifi2.4",
-        WirelessCredentials: { SSID: "TargetSSID", Password: "TargetPassword" },
+      const wanConfig: WANLinkConfig = {
+        name: "Test Link",
+        InterfaceConfig: {
+          InterfaceName: "wifi2.4",
+          WirelessCredentials: { SSID: "TargetSSID", Password: "TargetPassword" },
+        }
       };
 
       testWithOutput(
@@ -275,7 +310,10 @@ describe("Wireless Helper Function Tests", () => {
     });
 
     it("should return empty config if no wireless credentials", () => {
-      const wanConfig: WANConfig = { InterfaceName: "wifi2.4" };
+      const wanConfig: WANLinkConfig = { 
+        name: "Test Link",
+        InterfaceConfig: { InterfaceName: "wifi2.4" } 
+      };
 
       testWithOutput(
         "StationMode",
@@ -298,9 +336,19 @@ describe("Wireless Helper Function Tests", () => {
       SplitBand: false,
       isDisabled: false,
     };
-    const wanLinkWithWifi: WANLink = {
-      Foreign: { InterfaceName: "wifi2.4" },
-      Domestic: { InterfaceName: "wifi5" },
+    const wanLinkWithWifi: WANLinks = {
+      Foreign: { 
+        WANConfigs: [{ 
+          name: "Foreign Link",
+          InterfaceConfig: { InterfaceName: "wifi2.4" } 
+        }] 
+      },
+      Domestic: { 
+        WANConfigs: [{ 
+          name: "Domestic Link", 
+          InterfaceConfig: { InterfaceName: "wifi5" } 
+        }] 
+      },
     };
 
     describe("Basic Slave Interface Generation", () => {

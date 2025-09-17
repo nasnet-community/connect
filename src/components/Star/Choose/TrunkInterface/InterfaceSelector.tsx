@@ -13,7 +13,8 @@ interface InterfaceSelectorProps {
 export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   const starContext = useContext(StarContext);
   const routerModels = starContext.state.Choose.RouterModels;
-  const selectedTrunkInterface = starContext.state.Choose.TrunkInterface;
+  // Get the current master slave interface from the first router model
+  const _selectedTrunkInterface = starContext.state.Choose.RouterModels[0]?.MasterSlaveInterface;
 
   // Get available interfaces based on router models and interface type
   const getAvailableInterfaces = () => {
@@ -54,17 +55,6 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
   const handleInterfaceSelect = $(
     (interfaceName: string, isSlaveInterface: boolean = false) => {
-      const updateData = {
-        ...selectedTrunkInterface,
-        type: props.interfaceType,
-      };
-
-      if (isSlaveInterface) {
-        updateData.slaveInterface = interfaceName;
-      } else {
-        updateData.masterInterface = interfaceName;
-      }
-
       // Track interface selection
       track("trunk_interface_port_selected", {
         interface_type: props.interfaceType,
@@ -73,17 +63,22 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
         router_mode: starContext.state.Choose.RouterMode,
       });
 
-      starContext.updateChoose$({
-        TrunkInterface: updateData,
+      // Update the MasterSlaveInterface for the appropriate router
+      const updatedModels = starContext.state.Choose.RouterModels.map((model, index) => {
+        if ((!isSlaveInterface && model.isMaster) || (isSlaveInterface && !model.isMaster && index === 1)) {
+          return {
+            ...model,
+            MasterSlaveInterface: interfaceName as any // Cast to MasterSlaveInterfaceType
+          };
+        }
+        return model;
       });
 
-      // Check if selection is complete
-      if (
-        !isTrunkMode ||
-        (updateData.masterInterface && updateData.slaveInterface)
-      ) {
-        props.onComplete$?.();
-      }
+      starContext.updateChoose$({
+        RouterModels: updatedModels,
+      });
+
+      props.onComplete$?.();
     }
   );
 
@@ -243,7 +238,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
         {renderInterfaceSection(
           isTrunkMode ? $localize`Master Router Interface` : $localize`Router Interface`,
           availableInterfaces.master,
-          selectedTrunkInterface?.masterInterface
+          starContext.state.Choose.RouterModels.find(rm => rm.isMaster)?.MasterSlaveInterface
         )}
 
         {/* Slave router interfaces (only in Trunk Mode) */}
@@ -252,7 +247,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
           renderInterfaceSection(
             $localize`Slave Router Interface`,
             availableInterfaces.slave,
-            selectedTrunkInterface?.slaveInterface,
+            starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)?.MasterSlaveInterface,
             true
           )}
       </div>
@@ -275,16 +270,20 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
               />
             </svg>
             <div class="text-xs text-text-secondary dark:text-text-dark-secondary">
-              {selectedTrunkInterface?.masterInterface &&
-              selectedTrunkInterface.slaveInterface ? (
-                <span class="font-medium text-success dark:text-success-light">
-                  {$localize`Trunk ready`}: {selectedTrunkInterface.masterInterface} ↔ {selectedTrunkInterface.slaveInterface}
-                </span>
-              ) : (
-                <span>
-                  {$localize`Select interfaces on both routers to complete configuration`}
-                </span>
-              )}
+              {(() => {
+                const masterInterface = starContext.state.Choose.RouterModels.find(rm => rm.isMaster)?.MasterSlaveInterface;
+                const slaveInterface = starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)?.MasterSlaveInterface;
+                
+                return masterInterface && slaveInterface ? (
+                  <span class="font-medium text-success dark:text-success-light">
+                    {$localize`Trunk ready`}: {masterInterface} ↔ {slaveInterface}
+                  </span>
+                ) : (
+                  <span>
+                    {$localize`Select interfaces on both routers to complete configuration`}
+                  </span>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -132,7 +132,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$ }) => {
             </div>
 
             <DOHConfiguration
-              dohConfig={dnsConfig.DOHConfig || { enabled: false }}
+              dohConfig={dnsConfig.DOH || {}}
               networkInfo={dohNetworkInfo.value}
               domainError={validationErrors.dohDomain}
               bindingError={validationErrors.dohBinding}

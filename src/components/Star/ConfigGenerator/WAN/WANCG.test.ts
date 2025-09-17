@@ -1,29 +1,32 @@
 import { describe, it } from "vitest";
 // import type { RouterConfig } from '../ConfigGenerator';
 import type {
-  WANConfig,
-  WANLink,
+  WANLinkConfig,
+  WANLinks,
   WANState,
 } from "../../StarContext/WANType";
 // import type { VPNClient } from '../../StarContext/Utils/VPNClientType';
 
-import { ForeignWAN, DomesticWAN, WANLinks, WANCG } from "./WANCG";
+import { ForeignWAN, DomesticWAN, WANLinksConfig, WANCG } from "./WANCG";
 
 // import { DomesticAddresslist } from "../../Choose/ChooseCG";
 
 describe("WANCG Module", () => {
   describe("ForeignWAN", () => {
     it("should configure ethernet foreign WAN", () => {
-      const wanConfig: WANConfig = {
-        InterfaceName: "ether1",
-        WirelessCredentials: undefined,
+      const wanConfig: WANLinkConfig = {
+        name: "Foreign-WAN",
+        InterfaceConfig: {
+          InterfaceName: "ether1",
+          WirelessCredentials: undefined,
+        },
       };
 
       const result = testWithOutput(
         "ForeignWAN",
         "Ethernet foreign WAN configuration",
         { wanConfig },
-        () => ForeignWAN(wanConfig),
+        () => ForeignWAN(wanConfig.InterfaceConfig),
       );
 
       validateRouterConfig(result, [
@@ -35,11 +38,14 @@ describe("WANCG Module", () => {
     });
 
     it("should configure wireless foreign WAN", () => {
-      const wanConfig: WANConfig = {
-        InterfaceName: "wifi2.4",
-        WirelessCredentials: {
-          SSID: "ForeignNetwork",
-          Password: "foreignpass123",
+      const wanConfig: WANLinkConfig = {
+        name: "Foreign-WAN",
+        InterfaceConfig: {
+          InterfaceName: "wifi2.4",
+          WirelessCredentials: {
+            SSID: "ForeignNetwork",
+            Password: "foreignpass123",
+          },
         },
       };
 
@@ -47,7 +53,7 @@ describe("WANCG Module", () => {
         "ForeignWAN",
         "Wireless foreign WAN configuration",
         { wanConfig },
-        () => ForeignWAN(wanConfig),
+        () => ForeignWAN(wanConfig.InterfaceConfig),
       );
 
       validateRouterConfig(result, [
@@ -60,16 +66,19 @@ describe("WANCG Module", () => {
 
   describe("DomesticWAN", () => {
     it("should configure ethernet domestic WAN", () => {
-      const wanConfig: WANConfig = {
-        InterfaceName: "ether2",
-        WirelessCredentials: undefined,
+      const wanConfig: WANLinkConfig = {
+        name: "Domestic-WAN",
+        InterfaceConfig: {
+          InterfaceName: "ether2",
+          WirelessCredentials: undefined,
+        },
       };
 
       const result = testWithOutput(
         "DomesticWAN",
         "Ethernet domestic WAN configuration",
         { wanConfig },
-        () => DomesticWAN(wanConfig),
+        () => DomesticWAN(wanConfig.InterfaceConfig),
       );
 
       validateRouterConfig(result, [
@@ -81,11 +90,14 @@ describe("WANCG Module", () => {
     });
 
     it("should configure wireless domestic WAN", () => {
-      const wanConfig: WANConfig = {
-        InterfaceName: "wifi5",
-        WirelessCredentials: {
-          SSID: "DomesticNetwork",
-          Password: "domesticpass456",
+      const wanConfig: WANLinkConfig = {
+        name: "Domestic-WAN",
+        InterfaceConfig: {
+          InterfaceName: "wifi5",
+          WirelessCredentials: {
+            SSID: "DomesticNetwork",
+            Password: "domesticpass456",
+          },
         },
       };
 
@@ -93,7 +105,7 @@ describe("WANCG Module", () => {
         "DomesticWAN",
         "Wireless domestic WAN configuration",
         { wanConfig },
-        () => DomesticWAN(wanConfig),
+        () => DomesticWAN(wanConfig.InterfaceConfig),
       );
 
       validateRouterConfig(result, [
@@ -117,16 +129,26 @@ describe("WANCG Module", () => {
   //   });
   // });
 
-  describe("WANLinks", () => {
+  describe("WANLinksConfig", () => {
     it("should configure both foreign and domestic WAN links", () => {
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "ether1",
-          WirelessCredentials: undefined,
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+              WirelessCredentials: undefined,
+            },
+          }],
         },
         Domestic: {
-          InterfaceName: "ether2",
-          WirelessCredentials: undefined,
+          WANConfigs: [{
+            name: "Domestic-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether2",
+              WirelessCredentials: undefined,
+            },
+          }],
         },
       };
 
@@ -134,7 +156,7 @@ describe("WANCG Module", () => {
         "WANLinks",
         "Both foreign and domestic WAN links",
         { wanLink },
-        () => WANLinks(wanLink),
+        () => WANLinksConfig(wanLink),
       );
 
       validateRouterConfig(result, [
@@ -147,10 +169,15 @@ describe("WANCG Module", () => {
     });
 
     it("should configure only foreign WAN when domestic is not provided", () => {
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "ether1",
-          WirelessCredentials: undefined,
+          WANConfigs: [{
+            name: "Foreign-WAN",
+            InterfaceConfig: {
+              InterfaceName: "ether1",
+              WirelessCredentials: undefined,
+            },
+          }],
         },
       };
 
@@ -158,7 +185,7 @@ describe("WANCG Module", () => {
         "WANLinks",
         "Foreign WAN only, domestic not provided",
         { wanLink },
-        () => WANLinks(wanLink),
+        () => WANLinksConfig(wanLink),
       );
 
       validateRouterConfig(result, [
@@ -170,20 +197,30 @@ describe("WANCG Module", () => {
     });
 
     it("should handle wireless configurations", () => {
-      const wanLink: WANLink = {
+      const wanLink: WANLinks = {
         Foreign: {
-          InterfaceName: "wifi2.4",
-          WirelessCredentials: {
-            SSID: "ForeignWiFi",
-            Password: "foreignwifi123",
-          },
+          WANConfigs: [{
+            name: "Foreign Test Link",
+            InterfaceConfig: {
+              InterfaceName: "wifi2.4",
+              WirelessCredentials: {
+                SSID: "ForeignWiFi",
+                Password: "foreignwifi123",
+              },
+            },
+          }],
         },
         Domestic: {
-          InterfaceName: "wifi5",
-          WirelessCredentials: {
-            SSID: "DomesticWiFi",
-            Password: "domesticwifi456",
-          },
+          WANConfigs: [{
+            name: "Domestic Test Link",
+            InterfaceConfig: {
+              InterfaceName: "wifi5",
+              WirelessCredentials: {
+                SSID: "DomesticWiFi",
+                Password: "domesticwifi456",
+              },
+            },
+          }],
         },
       };
 
@@ -191,7 +228,7 @@ describe("WANCG Module", () => {
         "WANLinks",
         "Wireless WAN configurations for both foreign and domestic",
         { wanLink },
-        () => WANLinks(wanLink),
+        () => WANLinksConfig(wanLink),
       );
 
       validateRouterConfig(result, ["/interface wifi"]);
@@ -203,16 +240,24 @@ describe("WANCG Module", () => {
       const wanState: WANState = {
         WANLink: {
           Foreign: {
-            InterfaceName: "ether1",
-            WirelessCredentials: undefined,
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether1",
+              },
+            }],
           },
           Domestic: {
-            InterfaceName: "ether2",
-            WirelessCredentials: undefined,
+            WANConfigs: [{
+              name: "Domestic-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether2",
+              },
+            }],
           },
         },
         VPNClient: {
-          Wireguard: {
+          Wireguard: [{
             InterfacePrivateKey: "privatekey123",
             InterfaceAddress: "10.0.0.2/24",
             InterfaceDNS: "8.8.8.8",
@@ -220,7 +265,7 @@ describe("WANCG Module", () => {
             PeerEndpointAddress: "1.2.3.4",
             PeerEndpointPort: 51820,
             PeerAllowedIPs: "0.0.0.0/0",
-          },
+          }],
         },
       };
 
@@ -248,8 +293,12 @@ describe("WANCG Module", () => {
       const wanState: WANState = {
         WANLink: {
           Foreign: {
-            InterfaceName: "ether1",
-            WirelessCredentials: undefined,
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether1",
+              },
+            }],
           },
         },
       };
@@ -273,16 +322,20 @@ describe("WANCG Module", () => {
       const wanState: WANState = {
         WANLink: {
           Foreign: {
-            InterfaceName: "ether1",
-            WirelessCredentials: undefined,
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether1",
+              },
+            }],
           },
         },
         VPNClient: {
-          PPTP: {
+          PPTP: [{
             ConnectTo: "pptp.example.com",
             Credentials: { Username: "pptpuser", Password: "pptppass" },
             AuthMethod: ["mschap2"],
-          },
+          }],
         },
       };
 
@@ -307,28 +360,38 @@ describe("WANCG Module", () => {
       const wanState: WANState = {
         WANLink: {
           Foreign: {
-            InterfaceName: "wifi2.4",
-            WirelessCredentials: {
-              SSID: "FreeWiFi",
-              Password: "password123",
-            },
+            WANConfigs: [{
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi2.4",
+                WirelessCredentials: {
+                  SSID: "FreeWiFi",
+                  Password: "password123",
+                },
+              },
+            }],
           },
           Domestic: {
-            InterfaceName: "wifi5",
-            WirelessCredentials: {
-              SSID: "HomeInternet",
-              Password: "homepass456",
-            },
+            WANConfigs: [{
+              name: "Domestic-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi5",
+                WirelessCredentials: {
+                  SSID: "HomeInternet",
+                  Password: "homepass456",
+                },
+              },
+            }],
           },
         },
         VPNClient: {
-          OpenVPN: {
+          OpenVPN: [{
             Server: { Address: "openvpn.example.com", Port: 1194 },
             AuthType: "Credentials",
             Credentials: { Username: "vpnuser", Password: "vpnpass" },
             Auth: "sha256",
             Protocol: "udp",
-          },
+          }],
         },
       };
 

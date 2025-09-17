@@ -37,19 +37,19 @@ export const useL2TPConfig = (
 
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.L2TP) {
-    const existingConfig = starContext.state.WAN.VPNClient.L2TP;
-    serverAddress.value = existingConfig.Server.Address || "";
+    const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
+    serverAddress.value = existingConfig?.Server.Address || "";
 
-    if (existingConfig.Credentials) {
+    if (existingConfig?.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig.UseIPsec !== undefined) {
+    if (existingConfig?.UseIPsec !== undefined) {
       useIPsec.value = existingConfig.UseIPsec;
     }
 
-    if (existingConfig.IPsecSecret) {
+    if (existingConfig?.IPsecSecret) {
       ipsecSecret.value = existingConfig.IPsecSecret;
     }
 
@@ -107,7 +107,7 @@ export const useL2TPConfig = (
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        L2TP: parsedConfig,
+        L2TP: [parsedConfig],
       },
     });
   });

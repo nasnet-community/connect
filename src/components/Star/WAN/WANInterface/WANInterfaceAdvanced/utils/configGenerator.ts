@@ -1,7 +1,9 @@
 import type {
   WANWizardState,
+  WANLink,
+} from "../types";
+import type {
   WANState,
-  WANConfig,
 } from "../../../../StarContext/WANType";
 import type {
   Ethernet,
@@ -18,36 +20,47 @@ export function generateWANState(
   const foreignLink = advancedState.links[0];
   const domesticLink = advancedState.links[1];
 
+  // Convert UI state to WANState format
+  // Note: This will need proper mapping from UI links to WANLink structure
   const wanState: Partial<WANState> = {
-    WANLinks: advancedState.links,
-    MultiLinkConfig: advancedState.multiLinkStrategy,
+    // WANLink expects a different structure - this needs proper conversion
+    // Temporarily commenting out until proper conversion is implemented
+    // WANLink: advancedState.links,
   };
 
   // Create legacy WANLink format
   if (foreignLink) {
-    const foreignConfig: WANConfig = {
-      InterfaceName: foreignLink.interfaceName as
-        | Ethernet
-        | Wireless
-        | Sfp
-        | LTE,
-      WirelessCredentials: foreignLink.wirelessCredentials,
+    const foreignWANLink: WANLink = {
+      WANConfigs: [{
+        name: foreignLink.name || "Foreign Link",
+        InterfaceConfig: {
+          InterfaceName: foreignLink.interfaceName as Ethernet | Wireless | Sfp | LTE,
+          WirelessCredentials: foreignLink.wirelessCredentials,
+        },
+        ConnectionConfig: foreignLink.ConnectionConfig,
+        priority: foreignLink.priority,
+        weight: foreignLink.weight,
+      }]
     };
 
     wanState.WANLink = {
-      Foreign: foreignConfig,
+      Foreign: foreignWANLink,
     };
 
     if (domesticLink) {
-      const domesticConfig: WANConfig = {
-        InterfaceName: domesticLink.interfaceName as
-          | Ethernet
-          | Wireless
-          | Sfp
-          | LTE,
-        WirelessCredentials: domesticLink.wirelessCredentials,
+      const domesticWANLink: WANLink = {
+        WANConfigs: [{
+          name: domesticLink.name || "Domestic Link",
+          InterfaceConfig: {
+            InterfaceName: domesticLink.interfaceName as Ethernet | Wireless | Sfp | LTE,
+            WirelessCredentials: domesticLink.wirelessCredentials,
+          },
+          ConnectionConfig: domesticLink.ConnectionConfig,
+          priority: domesticLink.priority,
+          weight: domesticLink.weight,
+        }]
       };
-      wanState.WANLink.Domestic = domesticConfig;
+      wanState.WANLink!.Domestic = domesticWANLink;
     }
   }
 
@@ -124,7 +137,7 @@ export function generateRouterOSCommands(
 
       case "Static":
         if (link.connectionConfig?.static) {
-          const { ipAddress, subnet, gateway, primaryDns, secondaryDns } =
+          const { ipAddress, subnet, gateway, DNS } =
             link.connectionConfig.static;
           commands.push(
             `/ip address add address=${ipAddress}/${calculateCIDR(subnet)} interface=${interfaceName}`,
@@ -133,7 +146,7 @@ export function generateRouterOSCommands(
             `/ip route add gateway=${gateway} distance=${index + 1}`,
           );
           commands.push(
-            `/ip dns set servers=${primaryDns}${secondaryDns ? "," + secondaryDns : ""}`,
+            `/ip dns set servers=${DNS}`,
           );
         }
         break;

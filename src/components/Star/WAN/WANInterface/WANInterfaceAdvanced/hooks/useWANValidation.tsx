@@ -2,7 +2,7 @@ import { $, type QRL } from "@builder.io/qwik";
 import type {
   WANLinkConfig,
   WANWizardState,
-} from "../../../../StarContext/WANType";
+} from "../types";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -131,16 +131,10 @@ export function useWANValidation(): UseWANValidationReturn {
             errors[`${prefix}-static-gateway`] = ["Valid gateway is required"];
           }
           if (
-            !staticConfig?.primaryDns ||
-            !ipRegex.test(staticConfig.primaryDns)
+        !staticConfig?.DNS ||
+        !ipRegex.test(staticConfig.DNS)
           ) {
             errors[`${prefix}-static-dns1`] = ["Valid primary DNS is required"];
-          }
-          if (
-            staticConfig?.secondaryDns &&
-            !ipRegex.test(staticConfig.secondaryDns)
-          ) {
-            errors[`${prefix}-static-dns2`] = ["Invalid secondary DNS format"];
           }
           break;
       }

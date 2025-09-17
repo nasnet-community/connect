@@ -1,6 +1,6 @@
 import { component$, useContext, type QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../../StarContext/StarContext";
-import type { WANLinkConfig } from "../../../../../StarContext/WANType";
+import type { WANLinkConfig } from "../../types";
 import { Select, FormField } from "~/components/Core";
 
 export interface InterfaceSelectorProps {

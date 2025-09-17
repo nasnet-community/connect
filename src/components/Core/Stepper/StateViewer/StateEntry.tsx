@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { StateEntryProps } from "./type";
+import { JsonViewer } from "./JsonViewer";
 
 export const StateEntry = component$((props: StateEntryProps) => {
   return (
@@ -70,9 +71,11 @@ export const StateEntry = component$((props: StateEntryProps) => {
           </button>
         </div>
       </div>
-      <pre class="max-h-[500px] overflow-auto rounded-lg bg-surface-secondary/50 p-4 font-mono text-sm dark:bg-surface-dark-secondary/50">
-        <code>{JSON.stringify(props.entry.state, null, 2)}</code>
-      </pre>
+      <JsonViewer
+        data={props.entry.state}
+        maxHeight="600px"
+        class="mt-3"
+      />
     </div>
   );
 });

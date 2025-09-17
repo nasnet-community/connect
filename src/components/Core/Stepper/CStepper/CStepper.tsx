@@ -74,17 +74,51 @@ export const CStepper = component$((props: CStepperProps) => {
   // Setup focus management for accessibility
   useVisibleTask$(({ track }) => {
     track(() => activeStep.value);
-    
+
+    // Skip focus management if disabled
+    if (props.disableAutoFocus) {
+      return;
+    }
+
     // Focus the active step element after step change
     setTimeout(() => {
       const activeStepEl = document.getElementById(`cstepper-step-${activeStep.value}`);
       if (activeStepEl) {
+        // Check if the parent container is visible and not hidden
+        const isParentVisible = () => {
+          let element = activeStepEl as HTMLElement | null;
+          while (element) {
+            const style = window.getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden') {
+              return false;
+            }
+            element = element.parentElement;
+          }
+          return true;
+        };
+
+        // Only focus if the parent container is actually visible
+        if (!isParentVisible()) {
+          return;
+        }
+
+        // Check if element is in viewport
+        const rect = activeStepEl.getBoundingClientRect();
+        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+        // Find focusable element within the step
         const focusableEl = activeStepEl.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (focusableEl) {
-          (focusableEl as HTMLElement).focus();
+          // Always use preventScroll to avoid unwanted scrolling
+          (focusableEl as HTMLElement).focus({ preventScroll: true });
+
+          // Only scroll into view if element is not in viewport and user initiated the change
+          if (!isInViewport && activeStep.value > 0) {
+            activeStepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         } else {
           activeStepEl.setAttribute('tabindex', '-1');
-          activeStepEl.focus();
+          activeStepEl.focus({ preventScroll: true });
         }
       }
     }, 100);
@@ -110,11 +144,36 @@ export const CStepper = component$((props: CStepperProps) => {
   const stepHeaderText = `Step ${stepNumber}: ${stepTitle}`;
   const totalSteps = steps.value.length;
   const isLastStep = activeStep.value === totalSteps - 1;
-  const currentStepIsComplete = steps.value[activeStep.value].isComplete;
   const currentStep = steps.value[activeStep.value];
   const currentStepHasErrors = Boolean(currentStep.validationErrors && currentStep.validationErrors.length > 0);
   const isOptional = Boolean(currentStep.isOptional);
   const isStepSkippable = Boolean(currentStep.skippable);
+
+  // Make currentStepIsComplete reactive
+  const currentStepIsComplete = useSignal(false);
+
+  // Track step completion changes
+  useTask$(({ track }) => {
+    track(() => steps.value);
+    track(() => activeStep.value);
+    const stepCompletion = track(() => steps.value[activeStep.value]?.isComplete);
+
+    const newCompletionValue = stepCompletion || false;
+    const previousValue = currentStepIsComplete.value;
+    
+    currentStepIsComplete.value = newCompletionValue;
+    
+    // Debug logging for step completion changes
+    if (previousValue !== newCompletionValue) {
+      console.log('[CStepper] Step completion changed:', {
+        activeStep: activeStep.value,
+        stepTitle: steps.value[activeStep.value]?.title,
+        previousComplete: previousValue,
+        newComplete: newCompletionValue,
+        stepId: steps.value[activeStep.value]?.id
+      });
+    }
+  });
   
   // Help system properties
   const hasHelp = helpSystem?.currentStepHasHelp.value || false;
@@ -158,7 +217,7 @@ export const CStepper = component$((props: CStepperProps) => {
         {/* Navigation Buttons */}
         <CStepperNavigation
           activeStep={activeStep.value}
-          currentStepIsComplete={currentStepIsComplete}
+          currentStepIsComplete={currentStepIsComplete.value}
           currentStepHasErrors={currentStepHasErrors}
           isLoading={isLoading.value}
           isLastStep={isLastStep}
@@ -179,7 +238,7 @@ export const CStepper = component$((props: CStepperProps) => {
         {/* Accessible progress indicator */}
         <div class="sr-only" aria-live="polite">
           {$localize`Step ${stepNumber} of ${totalSteps}\: ${stepTitle}`}
-          {currentStepIsComplete ? $localize`Step is complete` : $localize`Step is incomplete`}
+          {currentStepIsComplete.value ? $localize`Step is complete` : $localize`Step is incomplete`}
           {currentStepHasErrors ? $localize`Step has validation errors` : ''}
         </div>
       </div>

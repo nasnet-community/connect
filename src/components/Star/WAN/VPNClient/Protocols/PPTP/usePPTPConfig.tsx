@@ -36,15 +36,15 @@ export const usePPTPConfig = (
 
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.PPTP) {
-    const existingConfig = starContext.state.WAN.VPNClient.PPTP;
-    serverAddress.value = existingConfig.ConnectTo || "";
+    const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
+    serverAddress.value = existingConfig?.ConnectTo || "";
 
-    if (existingConfig.Credentials) {
+    if (existingConfig?.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig.KeepaliveTimeout !== undefined) {
+    if (existingConfig?.KeepaliveTimeout !== undefined) {
       keepaliveTimeout.value = existingConfig.KeepaliveTimeout.toString();
     }
 
@@ -89,7 +89,7 @@ export const usePPTPConfig = (
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,
-        PPTP: parsedConfig,
+        PPTP: [parsedConfig],
       },
     });
   });

@@ -3,7 +3,7 @@ import type {
   MultiMode,
   Wireless,
 } from "../../../StarContext/LANType";
-import type { WANLink } from "../../../StarContext/WANType";
+import type { WANLinks } from "../../../StarContext/WANType";
 import type { RouterConfig } from "../../ConfigGenerator";
 import {
   CommandShortner,
@@ -24,7 +24,7 @@ import {
 
 export const SingleSSID = (
   SingleMode: WirelessConfig,
-  WANLink: WANLink,
+  WANLink: WANLinks,
   DomesticLink: boolean,
 ): RouterConfig => {
   const config: RouterConfig = {
@@ -91,7 +91,7 @@ export const SingleSSID = (
 
 export const MultiSSID = (
   MultiMode: MultiMode,
-  WANLink: WANLink,
+  WANLink: WANLinks,
 ): RouterConfig => {
   const config: RouterConfig = {
     "/interface wifi": [],
@@ -184,7 +184,7 @@ export const MultiSSID = (
 
 export function WirelessConfig(
   Wireless: Wireless,
-  WANLink: WANLink,
+  WANLink: WANLinks,
   DomesticLink: boolean,
 ): RouterConfig {
   const baseConfig: RouterConfig = {

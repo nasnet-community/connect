@@ -1,5 +1,5 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
-import type { StaticIPConfig } from "../../../../../StarContext/WANType";
+import type { StaticIPConfig } from "../../types";
 import { Input, FormField } from "~/components/Core";
 
 export interface StaticIPFieldsProps {
@@ -9,7 +9,7 @@ export interface StaticIPFieldsProps {
     ipAddress?: string[];
     subnet?: string[];
     gateway?: string[];
-    primaryDns?: string[];
+    DNS?: string[];
     secondaryDns?: string[];
   };
 }
@@ -21,8 +21,7 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
         ipAddress: config?.ipAddress || "",
         subnet: config?.subnet || "",
         gateway: config?.gateway || "",
-        primaryDns: config?.primaryDns || "",
-        secondaryDns: config?.secondaryDns,
+        DNS: config?.DNS || "",
         [field]: value,
       });
     });
@@ -85,36 +84,19 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
           <FormField
             label={$localize`Primary DNS`}
             required
-            error={errors?.primaryDns?.[0]}
+            error={errors?.DNS?.[0]}
           >
             <Input
               type="text"
-              value={config?.primaryDns || ""}
+              value={config?.DNS || ""}
               onInput$={(event: Event, value: string) =>
-                updateField("primaryDns", value)
+                updateField("DNS", value)
               }
               placeholder="8.8.8.8"
               
             />
           </FormField>
 
-          <div class="md:col-span-2">
-            <FormField
-              label={$localize`Secondary DNS`}
-              helperText={$localize`(Optional)`}
-              error={errors?.secondaryDns?.[0]}
-            >
-              <Input
-                type="text"
-                value={config?.secondaryDns || ""}
-                onInput$={(event: Event, value: string) =>
-                  updateField("secondaryDns", value)
-                }
-                placeholder="8.8.4.4"
-                
-              />
-            </FormField>
-          </div>
         </div>
       </div>
     );

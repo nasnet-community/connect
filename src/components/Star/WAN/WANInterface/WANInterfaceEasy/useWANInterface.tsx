@@ -1,6 +1,6 @@
 import { $, useContext, useSignal, useTask$ } from "@builder.io/qwik";
 import { StarContext } from "../../../StarContext/StarContext";
-import type { WANConfig } from "../../../StarContext/WANType";
+import type { InterfaceConfig } from "../../../StarContext/WANType";
 import type {
   LTE,
   Sfp,
@@ -51,44 +51,46 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
 
     // Initialize values from context if they exist
     const interfaceData = starContext.state.WAN.WANLink[mode];
-    if (interfaceData) {
-      if (interfaceData.InterfaceName && selectedInterface.value === "") {
-        selectedInterface.value = interfaceData.InterfaceName;
+    if (interfaceData && interfaceData.WANConfigs?.[0]) {
+      const interfaceConfig = interfaceData.WANConfigs[0].InterfaceConfig;
+      
+      if (interfaceConfig.InterfaceName && selectedInterface.value === "") {
+        selectedInterface.value = interfaceConfig.InterfaceName;
         
         // Determine interface type from interface name
-        if (interfaceData.InterfaceName.includes("wifi") || interfaceData.InterfaceName.includes("wlan")) {
+        if (interfaceConfig.InterfaceName.includes("wifi") || interfaceConfig.InterfaceName.includes("wlan")) {
           selectedInterfaceType.value = "Wireless";
-        } else if (interfaceData.InterfaceName.includes("lte")) {
+        } else if (interfaceConfig.InterfaceName.includes("lte")) {
           selectedInterfaceType.value = "LTE";
-        } else if (interfaceData.InterfaceName.includes("sfp")) {
+        } else if (interfaceConfig.InterfaceName.includes("sfp")) {
           selectedInterfaceType.value = "SFP";
         } else {
           selectedInterfaceType.value = "Ethernet";
         }
       }
 
-      if (interfaceData.WirelessCredentials) {
-        if (interfaceData.WirelessCredentials.SSID && ssid.value === "") {
-          ssid.value = interfaceData.WirelessCredentials.SSID;
+      if (interfaceConfig.WirelessCredentials) {
+        if (interfaceConfig.WirelessCredentials.SSID && ssid.value === "") {
+          ssid.value = interfaceConfig.WirelessCredentials.SSID;
         }
 
         if (
-          interfaceData.WirelessCredentials.Password &&
+          interfaceConfig.WirelessCredentials.Password &&
           password.value === ""
         ) {
-          password.value = interfaceData.WirelessCredentials.Password;
+          password.value = interfaceConfig.WirelessCredentials.Password;
         }
       }
 
-      if (interfaceData.lteSettings) {
-        if (interfaceData.lteSettings.apn && apn.value === "") {
-          apn.value = interfaceData.lteSettings.apn;
+      if (interfaceConfig.lteSettings) {
+        if (interfaceConfig.lteSettings.apn && apn.value === "") {
+          apn.value = interfaceConfig.lteSettings.apn;
         }
-        if (interfaceData.lteSettings.username && lteUsername.value === "") {
-          lteUsername.value = interfaceData.lteSettings.username;
+        if (interfaceConfig.lteSettings.username && lteUsername.value === "") {
+          lteUsername.value = interfaceConfig.lteSettings.username;
         }
-        if (interfaceData.lteSettings.password && ltePassword.value === "") {
-          ltePassword.value = interfaceData.lteSettings.password;
+        if (interfaceConfig.lteSettings.password && ltePassword.value === "") {
+          ltePassword.value = interfaceConfig.lteSettings.password;
         }
       }
     }
@@ -100,7 +102,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const updateStarContext = $(() => {
     const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
     const otherInterface =
-      starContext.state.WAN.WANLink[otherMode]?.InterfaceName || "";
+      starContext.state.WAN.WANLink[otherMode]?.WANConfigs?.[0]?.InterfaceConfig.InterfaceName || "";
 
     const isCurrentWifi2_4 =
       selectedInterface.value.includes("2.4") ||
@@ -121,7 +123,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       },
     };
 
-    const modeConfig: WANConfig = {
+    const modeConfig: InterfaceConfig = {
       InterfaceName: selectedInterface.value as Ethernet | Wireless | Sfp | LTE,
     };
 
@@ -140,9 +142,21 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       };
     }
 
+    // Create proper WANLink structure
+    const currentWANLink = starContext.state.WAN.WANLink[mode] || { WANConfigs: [] };
+    const existingConfig = currentWANLink.WANConfigs?.[0] || { name: `${mode} Link`, InterfaceConfig: { InterfaceName: selectedInterface.value } };
+    
     updateData.WANLink[mode] = {
-      ...starContext.state.WAN.WANLink[mode],
-      ...modeConfig,
+      ...currentWANLink,
+      WANConfigs: [{
+        ...existingConfig,
+        InterfaceConfig: {
+          ...existingConfig.InterfaceConfig,
+          InterfaceName: modeConfig.InterfaceName,
+          WirelessCredentials: modeConfig.WirelessCredentials,
+          lteSettings: modeConfig.lteSettings,
+        }
+      }]
     };
 
     starContext.updateWAN$(updateData);

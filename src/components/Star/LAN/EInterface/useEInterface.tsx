@@ -15,7 +15,7 @@ export const useEInterface = () => {
   // The DomesticLink property determines whether we need Domestic network options:
   // - When true: We offer Domestic, Foreign, Split, and VPN options
   // - When false: We restrict options to Foreign and VPN only
-  const isDomesticLinkEnabled = (ctx.state.Choose.WANLinkType === "domestic-only" || ctx.state.Choose.WANLinkType === "both");
+  const isDomesticLinkEnabled = (ctx.state.Choose.WANLinkType === "domestic" || ctx.state.Choose.WANLinkType === "both");
   const networkOptions: Networks[] = isDomesticLinkEnabled
     ? ["Domestic", "Foreign", "Split", "VPN"]
     : ["Foreign", "VPN"];
@@ -28,18 +28,21 @@ export const useEInterface = () => {
   // - DomesticLink false: VPN network is default (no domestic network available)
   const getDefaultNetwork = $(() => {
     // Explicitly check if true or false to avoid undefined/null issues
-    return (ctx.state.Choose.WANLinkType === "domestic-only" || ctx.state.Choose.WANLinkType === "both") ? "Split" : "VPN";
+    return (ctx.state.Choose.WANLinkType === "domestic" || ctx.state.Choose.WANLinkType === "both") ? "Split" : "VPN";
   });
 
   const getUsedWANInterfaces = $(() => {
     const usedInterfaces: string[] = [];
 
-    if (ctx.state.WAN.WANLink.Foreign.InterfaceName) {
-      usedInterfaces.push(ctx.state.WAN.WANLink.Foreign.InterfaceName);
+    // Access interface name through WANConfigs structure
+    const foreignInterfaceName = ctx.state.WAN.WANLink.Foreign.WANConfigs[0]?.InterfaceConfig.InterfaceName;
+    if (foreignInterfaceName) {
+      usedInterfaces.push(foreignInterfaceName);
     }
 
-    if (ctx.state.WAN.WANLink.Domestic?.InterfaceName) {
-      usedInterfaces.push(ctx.state.WAN.WANLink.Domestic.InterfaceName);
+    const domesticInterfaceName = ctx.state.WAN.WANLink.Domestic?.WANConfigs[0]?.InterfaceConfig.InterfaceName;
+    if (domesticInterfaceName) {
+      usedInterfaces.push(domesticInterfaceName);
     }
 
     return usedInterfaces;

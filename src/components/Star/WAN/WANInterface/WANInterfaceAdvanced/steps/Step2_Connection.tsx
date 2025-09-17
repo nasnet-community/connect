@@ -1,5 +1,5 @@
 import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import type { WANWizardState } from "../types";
 import { ConnectionTypeSelector } from "../components/fields/ConnectionTypeSelector";
 import { PPPoEFields } from "../components/fields/PPPoEFields";
 import { StaticIPFields } from "../components/fields/StaticIPFields";
@@ -28,14 +28,14 @@ export const Step2_Connection = component$<Step2Props>(
     });
     
     const getLinkErrors = (linkId: string) => {
-      return Object.entries(wizardState.validationErrors)
+      return Object.entries(wizardState.validationErrors || {})
         .filter(([key]) => key.startsWith(`link-${linkId}`))
         .map(([, errors]) => errors)
         .flat();
     };
 
     const getFieldErrors = (linkId: string, field: string) => {
-      return wizardState.validationErrors[`link-${linkId}-${field}`] || [];
+      return (wizardState.validationErrors || {})[`link-${linkId}-${field}`] || [];
     };
 
     // Simple non-reactive filtering to prevent loops
@@ -43,9 +43,9 @@ export const Step2_Connection = component$<Step2Props>(
       if (!searchQuery.value) return wizardState.links;
       const query = searchQuery.value.toLowerCase();
       return wizardState.links.filter(link => 
-        link.name.toLowerCase().includes(query) ||
+        (link.name && link.name.toLowerCase().includes(query)) ||
         (link.connectionType && link.connectionType.toLowerCase().includes(query)) ||
-        link.interfaceName.toLowerCase().includes(query)
+        (link.interfaceName && link.interfaceName.toLowerCase().includes(query))
       );
     };
     
@@ -77,7 +77,7 @@ export const Step2_Connection = component$<Step2Props>(
           updatedLink.connectionConfig?.static?.ipAddress &&
           updatedLink.connectionConfig?.static?.subnet &&
           updatedLink.connectionConfig?.static?.gateway &&
-          updatedLink.connectionConfig?.static?.primaryDns
+          updatedLink.connectionConfig?.static?.DNS
         );
       }
       
@@ -102,7 +102,7 @@ export const Step2_Connection = component$<Step2Props>(
         return l.connectionConfig?.static?.ipAddress && 
                l.connectionConfig.static.subnet && 
                l.connectionConfig.static.gateway && 
-               l.connectionConfig.static.primaryDns;
+               l.connectionConfig.static.DNS;
       }
       // For DHCP and LTE, automatically consider complete
       if (l.connectionType === "DHCP" || l.connectionType === "LTE") {
@@ -110,7 +110,7 @@ export const Step2_Connection = component$<Step2Props>(
       }
       return false;
     }).length;
-    const hasErrors = Object.keys(wizardState.validationErrors).length > 0;
+    const hasErrors = Object.keys(wizardState.validationErrors || {}).length > 0;
     
     // Get link status
     const getLinkStatus = (link: typeof wizardState.links[0]) => {
@@ -132,7 +132,7 @@ export const Step2_Connection = component$<Step2Props>(
         if (link.connectionConfig?.static?.ipAddress && 
             link.connectionConfig.static.subnet && 
             link.connectionConfig.static.gateway && 
-            link.connectionConfig.static.primaryDns) {
+            link.connectionConfig.static.DNS) {
           return "complete";
         }
         return "partial";
@@ -197,7 +197,7 @@ export const Step2_Connection = component$<Step2Props>(
           <ConnectionTypeSelector
             key={`${link.id}-${link.connectionType || 'none'}`}
             connectionType={link.connectionType}
-            interfaceType={link.interfaceType}
+            interfaceType={link.interfaceType || "Ethernet"}
             onUpdate$={$((type) =>
               handleConnectionUpdate(link.id, {
                 connectionType: type,
@@ -244,7 +244,7 @@ export const Step2_Connection = component$<Step2Props>(
                   ipAddress: getFieldErrors(link.id, "static-ip"),
                   subnet: getFieldErrors(link.id, "static-subnet"),
                   gateway: getFieldErrors(link.id, "static-gateway"),
-                  primaryDns: getFieldErrors(link.id, "static-dns1"),
+                  DNS: getFieldErrors(link.id, "static-dns1"),
                   secondaryDns: getFieldErrors(link.id, "static-dns2"),
                 }}
               />

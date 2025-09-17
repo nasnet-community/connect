@@ -25,7 +25,7 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   useVisibleTask$(() => {
     if (wizardState.vpnConfigs.length > 0 && expandedVPNs.value.size === 0) {
       const firstVPN = wizardState.vpnConfigs[0];
-      if (firstVPN?.id) {
+      if (firstVPN.id) {
         expandedVPNs.value = new Set([firstVPN.id]);
       }
     }
@@ -39,9 +39,15 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
     isAdding.value = true;
     try {
       const name = `VPN ${wizardState.vpnConfigs.length + 1}`;
+      const priority = wizardState.vpnConfigs.length + 1;
+      console.log(`[Step1_VPNProtocols] Adding VPN: ${name} with priority: ${priority}`);
+      
       await wizardActions.addVPN$({
         name: name,
+        priority: priority
       });
+      
+      console.log('[Step1_VPNProtocols] VPN added, current configs:', wizardState.vpnConfigs.map(v => ({ name: v.name, priority: v.priority })));
       
       if (onRefreshCompletion$) {
         await onRefreshCompletion$();

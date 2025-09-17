@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import type {
   services,
   RouterIdentityRomon,
-  AutoReboot,
-  Update,
+  IntervalConfig,
   GameConfig,
   ExtraConfigState,
 } from "../../StarContext/ExtraType";
@@ -136,10 +135,9 @@ describe("ExtraCG Module", () => {
 
   describe("AReboot", () => {
     it("should configure auto-reboot scheduler", () => {
-      const autoReboot: AutoReboot = {
-        isAutoReboot: true,
-        RebootTime: "03:00",
-        RebootInterval: "Daily",
+      const autoReboot: IntervalConfig = {
+        interval: "Daily",
+        time: "03:00",
       };
 
       const result = testWithOutput(
@@ -159,10 +157,9 @@ describe("ExtraCG Module", () => {
 
   describe("AUpdate", () => {
     it("should configure auto-update scheduler - daily", () => {
-      const update: Update = {
-        isAutoReboot: true,
-        UpdateTime: "02:00",
-        UpdateInterval: "Daily",
+      const update: IntervalConfig = {
+        interval: "Daily",
+        time: "02:00",
       };
 
       const result = testWithOutput(
@@ -179,10 +176,9 @@ describe("ExtraCG Module", () => {
     });
 
     it("should configure auto-update scheduler - weekly", () => {
-      const update: Update = {
-        isAutoReboot: true,
-        UpdateTime: "01:30",
-        UpdateInterval: "Weekly",
+      const update: IntervalConfig = {
+        interval: "Weekly",
+        time: "01:30",
       };
 
       const result = testWithOutput(
@@ -197,10 +193,9 @@ describe("ExtraCG Module", () => {
     });
 
     it("should configure auto-update scheduler - monthly", () => {
-      const update: Update = {
-        isAutoReboot: true,
-        UpdateTime: "04:00",
-        UpdateInterval: "Monthly",
+      const update: IntervalConfig = {
+        interval: "Monthly",
+        time: "04:00",
       };
 
       const result = testWithOutput(
@@ -551,16 +546,20 @@ describe("ExtraCG Module", () => {
           web: { type: "Enable" },
           webssl: { type: "Local" },
         },
-        Timezone: "Asia/Tehran",
-        AutoReboot: {
-          isAutoReboot: true,
-          RebootTime: "03:00",
-          RebootInterval: "Daily",
-        },
-        Update: {
-          isAutoReboot: true,
-          UpdateTime: "02:00",
-          UpdateInterval: "Weekly",
+        RUI: {
+          Timezone: "Asia/Tehran",
+          Reboot: {
+            interval: "Daily",
+            time: "03:00",
+          },
+          Update: {
+            interval: "Weekly",
+            time: "02:00",
+          },
+          IPAddressUpdate: {
+            interval: "",
+            time: "",
+          },
         },
         Games: [
           {
@@ -572,7 +571,11 @@ describe("ExtraCG Module", () => {
             },
           },
         ],
-        isCertificate: true,
+        usefulServices: {
+          certificate: {
+            SelfSigned: true,
+          },
+        },
       };
 
       const result = testWithOutput(
@@ -616,13 +619,19 @@ describe("ExtraCG Module", () => {
             },
           },
         ],
-        isCertificate: false,
+        RUI: {
+          Timezone: "UTC",
+          IPAddressUpdate: {
+            interval: "",
+            time: "",
+          },
+        },
       };
 
       const result = testWithOutput(
         "ExtraCG",
         "Merge extra configurations with DomesticLink disabled",
-        { extraConfigState, WANLinkType: "foreign-only" },
+        { extraConfigState, WANLinkType: "foreign" },
         () => ExtraCG(extraConfigState, false),
       );
 
@@ -648,7 +657,15 @@ describe("ExtraCG Module", () => {
     });
 
     it("should handle empty configuration with DomesticLink enabled", () => {
-      const extraConfigState: ExtraConfigState = {};
+      const extraConfigState: ExtraConfigState = {
+        RUI: {
+          Timezone: "UTC",
+          IPAddressUpdate: {
+            interval: "",
+            time: "",
+          },
+        },
+      };
 
       const result = testWithOutput(
         "ExtraCG",
@@ -666,12 +683,20 @@ describe("ExtraCG Module", () => {
     });
 
     it("should handle empty configuration with DomesticLink disabled", () => {
-      const extraConfigState: ExtraConfigState = {};
+      const extraConfigState: ExtraConfigState = {
+        RUI: {
+          Timezone: "UTC",
+          IPAddressUpdate: {
+            interval: "",
+            time: "",
+          },
+        },
+      };
 
       const result = testWithOutput(
         "ExtraCG",
         "Handle empty extra configuration with base settings only and DomesticLink disabled",
-        { extraConfigState, WANLinkType: "foreign-only" },
+        { extraConfigState, WANLinkType: "foreign" },
         () => ExtraCG(extraConfigState, false),
       );
 

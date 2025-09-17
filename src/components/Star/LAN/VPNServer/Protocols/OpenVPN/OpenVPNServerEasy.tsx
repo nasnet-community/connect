@@ -1,14 +1,22 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { HiServerOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { ServerFormField } from "~/components/Core/Form/ServerField";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 import { Input } from "~/components/Core";
-import { NetworkDropdown } from "../../components/NetworkSelection";
+import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
 
 export const OpenVPNServerEasy = component$(() => {
-  const { easyFormState, passphraseError, updateEasyPassphrase$, updateNetwork$ } =
+  const { easyFormState, passphraseError, updateEasyPassphrase$ } =
     useOpenVPNServer();
+  
+  // Local network state (not part of VPN server config)
+  const selectedNetwork = useSignal<ExtendedNetworks>("VPN");
+  
+  // Local handler for network updates
+  const updateNetwork$ = $((network: ExtendedNetworks) => {
+    selectedNetwork.value = network;
+  });
 
   return (
     <ServerCard
@@ -19,7 +27,7 @@ export const OpenVPNServerEasy = component$(() => {
         {/* Network Selection */}
         <ServerFormField label={$localize`Network`}>
           <NetworkDropdown
-            selectedNetwork={easyFormState.network || "VPN"}
+            selectedNetwork={selectedNetwork.value}
             onNetworkChange$={updateNetwork$}
           />
         </ServerFormField>

@@ -1,5 +1,5 @@
 import { component$, $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import type { WANWizardState, MultiLinkConfig } from "../../../../StarContext/WANType";
+import type { WANWizardState, MultiLinkUIConfig } from "../types";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
 import { Select, Input, FormLabel, FormHelperText } from "~/components/Core";
 
@@ -36,7 +36,7 @@ export const Step3_MultiLink = component$<Step3Props>(
       strategy.value = newStrategy;
       
       // Build the complete strategy configuration
-      const strategyConfig: MultiLinkConfig = { 
+      const strategyConfig: MultiLinkUIConfig = { 
         strategy: newStrategy,
         // Keep existing values or set defaults
         loadBalanceMethod: wizardState.multiLinkStrategy?.loadBalanceMethod || 

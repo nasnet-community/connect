@@ -3,7 +3,7 @@ import type {
   MultiMode,
   Wireless,
 } from "../../../StarContext/LANType";
-import type { WANLink, WANConfig } from "../../../StarContext/WANType";
+import type { WANLinks, WANLinkConfig } from "../../../StarContext/WANType";
 import type { Networks, Band } from "../../../StarContext/CommonType";
 import type { RouterConfig } from "../../ConfigGenerator";
 import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
@@ -45,13 +45,13 @@ export const DisableInterfaces = (): RouterConfig => {
   return config;
 };
 
-export function CheckMasters(WANLink: WANLink) {
-  const Domestic = WANLink.Domestic?.InterfaceName;
-  const Foreign = WANLink.Foreign.InterfaceName;
+export function CheckMasters(WANLink: WANLinks) {
+  const DomesticInterface = WANLink.Domestic?.WANConfigs?.[0]?.InterfaceConfig?.InterfaceName;
+  const ForeignInterface = WANLink.Foreign?.WANConfigs?.[0]?.InterfaceConfig?.InterfaceName;
   const isWifi2_4: boolean =
-    Domestic?.includes("wifi2.4") || Foreign.includes("wifi2.4");
+    DomesticInterface?.includes("wifi2.4") || ForeignInterface?.includes("wifi2.4") || false;
   const isWifi5: boolean =
-    Domestic?.includes("wifi5") || Foreign.includes("wifi5");
+    DomesticInterface?.includes("wifi5") || ForeignInterface?.includes("wifi5") || false;
   return {
     isWifi2_4,
     isWifi5,
@@ -102,14 +102,14 @@ export function Passphrase(passphrase: string, command: string) {
 }
 
 export function StationMode(
-  WANConfig: WANConfig,
+  WANConfig: WANLinkConfig,
   Link: "Domestic" | "Foreign",
 ): RouterConfig {
   const config: RouterConfig = {
     "/interface wifi": [],
   };
 
-  const { InterfaceName, WirelessCredentials } = WANConfig;
+  const { InterfaceName, WirelessCredentials } = WANConfig.InterfaceConfig;
   if (!WirelessCredentials) {
     return config; // Return empty config instead of empty string
   }

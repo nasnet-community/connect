@@ -47,7 +47,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
 
   const options = [
     {
-      value: "domestic-only" as WANLinkType,
+      value: "domestic" as WANLinkType,
       icon: <LuGlobe class="h-8 w-8" />,
       title: $localize`I only have Domestic Link`,
       description: $localize`Connect using only domestic internet connection`,
@@ -68,7 +68,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
       ),
     },
     {
-      value: "foreign-only" as WANLinkType,
+      value: "foreign" as WANLinkType,
       icon: <LuGlobe2 class="h-8 w-8" />,
       title: $localize`I only have Foreign Link`,
       description: $localize`Connect using only foreign internet connection`,

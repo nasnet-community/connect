@@ -33,23 +33,19 @@ export const ExtraConfig = component$<StepProps>((props) => {
       }
 
       // Set default values for UsefulServices if not already set
-      const usefulServicesDefaults = {
-        isCertificate: ctx.state.ExtraConfig.isCertificate ?? true,
-        isNTP: ctx.state.ExtraConfig.isNTP ?? true,
-        isGraphing: ctx.state.ExtraConfig.isGraphing ?? true,
-        isDDNS: ctx.state.ExtraConfig.isDDNS ?? true,
-        isLetsEncrypt: ctx.state.ExtraConfig.isLetsEncrypt ?? true,
-      };
-      
-      // Only update if any values were undefined
-      if (
-        ctx.state.ExtraConfig.isCertificate === undefined ||
-        ctx.state.ExtraConfig.isNTP === undefined ||
-        ctx.state.ExtraConfig.isGraphing === undefined ||
-        ctx.state.ExtraConfig.isDDNS === undefined ||
-        ctx.state.ExtraConfig.isLetsEncrypt === undefined
-      ) {
-        ctx.updateExtraConfig$(usefulServicesDefaults);
+      if (!ctx.state.ExtraConfig.usefulServices) {
+        const defaultUsefulServices = {
+          certificate: { SelfSigned: true, LetsEncrypt: false },
+          ntp: { servers: ["pool.ntp.org"], updateInterval: "1h" as const },
+          graphing: { Interface: true, Queue: true, Resources: true },
+          cloudDDNS: { ddnsEntries: [] },
+          upnp: { linkType: "domestic" as const },
+          natpmp: { linkType: "domestic" as const },
+        };
+        
+        ctx.updateExtraConfig$({ 
+          usefulServices: defaultUsefulServices 
+        });
       }
     }
   });

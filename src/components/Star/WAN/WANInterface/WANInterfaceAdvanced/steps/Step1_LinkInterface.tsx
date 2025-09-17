@@ -1,5 +1,5 @@
 import { component$, $, useSignal } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../StarContext/WANType";
+import type { WANWizardState } from "../types";
 import { InterfaceSelector } from "../components/fields/InterfaceSelector";
 import { WirelessFields } from "../components/fields/WirelessFields";
 import { LTEFields } from "../components/fields/LTEFields";

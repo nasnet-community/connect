@@ -31,7 +31,6 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
 
           {/* Enable/Disable Toggle */}
           <Toggle
-            variant="button"
             checked={wirelessEnabled.value}
             onChange$={$(async (enabled: boolean) => {
               wirelessEnabled.value = enabled;
@@ -39,10 +38,9 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
                 await onToggle$(enabled);
               }
             })}
-            offLabel={$localize`Disable`}
-            onLabel={$localize`Enable`}
-            offIcon={<HiXCircleOutline class="h-5 w-5" />}
-            onIcon={<HiCheckCircleOutline class="h-5 w-5" />}
+            label={wirelessEnabled.value ? $localize`Enabled` : $localize`Disabled`}
+            checkedIcon={<HiCheckCircleOutline class="h-5 w-5" />}
+            uncheckedIcon={<HiXCircleOutline class="h-5 w-5" />}
             color="primary"
             size="md"
           />

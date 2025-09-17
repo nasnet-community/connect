@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
@@ -7,9 +7,16 @@ import { NetworkDropdown, type ExtendedNetworks } from "../../components/Network
 
 export const PPTPServerAdvanced = component$(() => {
   const {
-    advancedFormState,
-    updateNetwork$,
+    advancedFormState: _advancedFormState,
   } = usePPTPServer();
+  
+  // Local network state (not part of VPN server config)
+  const selectedNetwork = useSignal<string>("PPTP");
+  
+  // Local handler for network updates
+  const updateNetwork$ = $((network: string) => {
+    selectedNetwork.value = network;
+  });
 
   return (
     <ServerCard
@@ -21,7 +28,7 @@ export const PPTPServerAdvanced = component$(() => {
         <div>
           <SectionTitle title={$localize`Network Configuration`} />
           <NetworkDropdown
-            selectedNetwork={(advancedFormState.network as ExtendedNetworks) || "PPTP"}
+            selectedNetwork={selectedNetwork.value as ExtendedNetworks}
             onNetworkChange$={(network) => {
               updateNetwork$(network);
             }}

@@ -17,6 +17,11 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
 }) => {
   // Check validation status
   const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
+  console.log('[Step3_Summary] Validation status check:', {
+    hasValidationErrors,
+    errorKeys: Object.keys(wizardState.validationErrors),
+    errorDetails: wizardState.validationErrors
+  });
   
   const enabledVPNs = wizardState.vpnConfigs.filter(vpn => vpn.enabled);
   const configuredVPNs = wizardState.vpnConfigs.filter(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config));

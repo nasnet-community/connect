@@ -42,25 +42,25 @@ export function convertToStarContextVPNClient(
   const primaryVPN = enabledVPNs[0];
   const vpnClient: VPNClient = {};
 
-  // Map the VPN config to the appropriate VPNClient property
+  // Map the VPN config to the appropriate VPNClient property (as arrays)
   switch (primaryVPN.type) {
     case "Wireguard":
-      vpnClient.Wireguard = primaryVPN.config as WireguardClientConfig;
+      vpnClient.Wireguard = [primaryVPN.config as WireguardClientConfig];
       break;
     case "OpenVPN":
-      vpnClient.OpenVPN = primaryVPN.config as OpenVpnClientConfig;
+      vpnClient.OpenVPN = [primaryVPN.config as OpenVpnClientConfig];
       break;
     case "PPTP":
-      vpnClient.PPTP = primaryVPN.config as PptpClientConfig;
+      vpnClient.PPTP = [primaryVPN.config as PptpClientConfig];
       break;
     case "L2TP":
-      vpnClient.L2TP = primaryVPN.config as L2tpClientConfig;
+      vpnClient.L2TP = [primaryVPN.config as L2tpClientConfig];
       break;
     case "SSTP":
-      vpnClient.SSTP = primaryVPN.config as SstpClientConfig;
+      vpnClient.SSTP = [primaryVPN.config as SstpClientConfig];
       break;
     case "IKeV2":
-      vpnClient.IKeV2 = primaryVPN.config as Ike2ClientConfig;
+      vpnClient.IKeV2 = [primaryVPN.config as Ike2ClientConfig];
       break;
   }
 

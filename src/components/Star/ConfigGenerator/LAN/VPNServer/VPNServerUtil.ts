@@ -435,18 +435,13 @@ export const InboundTraffic = (vpnServer: VPNServer): RouterConfig => {
     return config;
   }
 
-  // Determine which network interfaces to allow VPN connections from
-  const selectedNetworks = vpnServer.SelectedNetworks || ["VPN"];
-  const interfaceList = selectedNetworks.includes("Domestic") 
-    ? "DOM-WAN" 
-    : selectedNetworks.includes("Foreign")
-    ? "FRN-WAN"
-    : "DOM-WAN"; // Default to DOM-WAN if only VPN or Split is selected
+  // Default to DOM-WAN for VPN server connections
+  // TODO: Add network selection support in VPNServer type if needed
+  const interfaceList = "DOM-WAN";
 
   // Add comment header
   config["/ip firewall mangle"].push(
     "# --- VPN Server Inbound Traffic Marking ---",
-    `# Selected Networks: ${selectedNetworks.join(", ")}`,
     "# Mark inbound VPN connections and route outbound replies",
   );
 

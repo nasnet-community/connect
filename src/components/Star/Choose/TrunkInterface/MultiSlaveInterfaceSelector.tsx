@@ -2,7 +2,16 @@ import { $, component$, useContext, useSignal, type PropFunction } from "@builde
 import { LuCable, LuWifi, LuRouter, LuLink } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterfaceType, SlaveInterfaceMapping } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
+
+// Define SlaveInterfaceMapping locally since it doesn't exist in StarContext
+interface SlaveInterfaceMapping {
+  slaveRouterIndex: number;
+  slaveRouterModel: string;
+  slaveInterface: string;
+  masterInterface: string;
+  connectionType: TrunkInterfaceType;
+}
 import { getRouterByModel } from "../RouterModel/Constants";
 
 interface MultiSlaveInterfaceSelectorProps {
@@ -12,9 +21,9 @@ interface MultiSlaveInterfaceSelectorProps {
 export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfaceSelectorProps) => {
   const starContext = useContext(StarContext);
   const routerModels = starContext.state.Choose.RouterModels;
-  const currentMappings = useSignal<SlaveInterfaceMapping[]>(
-    starContext.state.Choose.TrunkInterface?.slaveMappings || []
-  );
+  // Since StarContext doesn't have complex trunk interface structure,
+  // handle mappings at component level
+  const currentMappings = useSignal<SlaveInterfaceMapping[]>([]);
   
   // Get master router
   const masterRouter = routerModels.find(rm => rm.isMaster);
@@ -79,19 +88,29 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
     // Track the change
     track("trunk_interface_mapping_updated", {
       slave_model: slaveModel,
-      field: field,
+      field: field.toString(), // Convert to string to fix type issue
       value: value,
       total_slaves: slaveRouters.length,
     });
     
-    // Update context
-    starContext.updateChoose$({
-      TrunkInterface: {
-        ...starContext.state.Choose.TrunkInterface,
-        slaveMappings: newMappings,
-        masterInterfaces: [...new Set(newMappings.map(m => m.masterInterface).filter(Boolean))],
-      },
-    });
+    // Update the MasterSlaveInterface for the appropriate router model
+    // Simplified approach since StarContext doesn't have complex trunk interface structure
+    if (field === "slaveInterface" || field === "masterInterface") {
+      const updatedModels = starContext.state.Choose.RouterModels.map((model, idx) => {
+        if ((field === "masterInterface" && model.isMaster) || 
+            (field === "slaveInterface" && !model.isMaster && idx === slaveIndex + 1)) {
+          return {
+            ...model,
+            MasterSlaveInterface: value as any // Cast to MasterSlaveInterfaceType
+          };
+        }
+        return model;
+      });
+      
+      starContext.updateChoose$({
+        RouterModels: updatedModels,
+      });
+    }
     
     // Check if all slaves are configured
     const allConfigured = slaveRouters.every((_, idx) => {

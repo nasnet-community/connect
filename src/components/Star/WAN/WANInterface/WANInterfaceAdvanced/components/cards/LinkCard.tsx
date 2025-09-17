@@ -1,5 +1,5 @@
 import { component$, type QRL, Slot } from "@builder.io/qwik";
-import type { WANWizardState } from "../../../../../StarContext/WANType";
+import type { WANWizardState } from "../../types";
 import type { LinkStatus } from "../../utils/linkHelpers";
 import { getCardStyleByStatus } from "../../utils/displayFormatters";
 import { LinkCardHeader } from "./LinkCardHeader";

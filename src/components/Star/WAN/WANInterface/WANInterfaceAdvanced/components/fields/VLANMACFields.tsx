@@ -2,7 +2,7 @@ import { component$, type QRL, $ } from "@builder.io/qwik";
 import type {
   VLANConfig,
   MACAddressConfig,
-} from "../../../../../StarContext/WANType";
+} from "../../types";
 import { Input, Toggle, FormField } from "~/components/Core";
 
 export interface VLANMACFieldsProps {

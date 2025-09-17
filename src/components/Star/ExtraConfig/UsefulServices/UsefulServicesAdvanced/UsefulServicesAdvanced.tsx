@@ -23,29 +23,25 @@ export const UsefulServicesAdvanced = component$<StepProps>(
     // Initialize services data with defaults
     const servicesData = useStore<AdvancedServicesData>({
       certificate: {
-        enableSelfSigned: false,
-        enableLetsEncrypt: false,
+        SelfSigned: false,
+        LetsEncrypt: false,
       },
       ntp: {
         servers: ["pool.ntp.org"],
-        timeZone: "UTC",
         updateInterval: "1h",
       },
       graphing: {
-        enableInterface: false,
-        enableQueue: false,
-        enableResources: false,
+        Interface: false,
+        Queue: false,
+        Resources: false,
       },
       cloudDDNS: {
-        enableDDNS: false,
         ddnsEntries: [],
       },
       upnp: {
-        enabled: false,
         linkType: "",
       },
       natpmp: {
-        enabled: false,
         linkType: "",
       },
     });

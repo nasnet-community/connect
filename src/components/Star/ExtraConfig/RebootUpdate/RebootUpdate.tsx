@@ -7,6 +7,7 @@ import { RebootCard } from "./RebootCard";
 import { UpdateCard } from "./UpdateCard";
 import { IPAddressUpdateCard } from "./IPAddressUpdateCard";
 import { useRebootUpdate } from "./useRebootUpdate";
+import type { Interval } from "../../StarContext/ExtraType";
 
 export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
   const {
@@ -60,23 +61,26 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
       }
     }
 
-    ctx.updateExtraConfig$({
-      Timezone: selectedTimezone.value,
-      AutoReboot: {
-        isAutoReboot: autoRebootEnabled.value,
-        RebootTime: `${rebootTime.hour}:${rebootTime.minute}`,
-        RebootInterval: rebootInterval.value || "Daily",
-      },
-      Update: {
-        isAutoReboot: autoUpdateEnabled.value,
-        UpdateTime: `${updateTime.hour}:${updateTime.minute}`,
-        UpdateInterval: updateInterval.value || "Weekly",
-      },
+    // Update RUI configuration
+    const updatedRUI = {
+      ...ctx.state.ExtraConfig.RUI,
+      Timezone: selectedTimezone.value || "UTC",
+      Reboot: autoRebootEnabled.value ? {
+        interval: (rebootInterval.value || "Weekly") as Interval,
+        time: `${rebootTime.hour}:${rebootTime.minute}`,
+      } : { interval: "" as Interval, time: "" },
+      Update: autoUpdateEnabled.value ? {
+        interval: (updateInterval.value || "Monthly") as Interval, 
+        time: `${updateTime.hour}:${updateTime.minute}`,
+      } : { interval: "" as Interval, time: "" },
       IPAddressUpdate: {
-        isIPAddressUpdate: true,
-        IPAddressUpdateTime: `${ipAddressUpdateTime.hour}:${ipAddressUpdateTime.minute}`,
-        IPAddressUpdateInterval: ipAddressUpdateInterval.value || "Daily",
+        interval: (ipAddressUpdateInterval.value || "Daily") as Interval,
+        time: `${ipAddressUpdateTime.hour}:${ipAddressUpdateTime.minute}`,
       },
+    };
+
+    ctx.updateExtraConfig$({
+      RUI: updatedRUI
     });
     onComplete$();
   });

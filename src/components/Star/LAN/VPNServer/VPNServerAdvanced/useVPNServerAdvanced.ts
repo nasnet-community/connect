@@ -18,8 +18,7 @@ import { useUserManagement } from "../UserCredential/useUserCredential";
 export const useVPNServerAdvanced = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { 
-    Users: [],
-    SelectedNetworks: ["VPN"]
+    Users: []
   };
 
   // === PROTOCOL HOOKS FOR DEFAULT CONFIGS ===
@@ -38,9 +37,7 @@ export const useVPNServerAdvanced = () => {
   const isValid = useSignal(true);
 
   // === NETWORK SELECTION STATE ===
-  const selectedNetworks = useStore<Networks[]>(
-    vpnServerState.SelectedNetworks || ["VPN"]
-  );
+  const selectedNetworks = useStore<Networks[]>(["VPN"]);
 
   // === PROTOCOL ENABLING/DISABLING ===
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
@@ -49,7 +46,7 @@ export const useVPNServerAdvanced = () => {
     PPTP: !!vpnServerState.PptpServer?.enabled || false,
     L2TP: !!vpnServerState.L2tpServer?.enabled || false,
     SSTP: !!vpnServerState.SstpServer?.enabled || false,
-    IKeV2: !!vpnServerState.Ikev2Server?.ipPools?.Ranges || false,
+    IKeV2: !!vpnServerState.Ikev2Server || false,
   });
 
   // === UI STATE ===

@@ -32,7 +32,7 @@ export const usePPTPServer = () => {
     maxMru: pptpState.PacketSize?.MaxMru || 1450,
     keepaliveTimeout: pptpState.KeepaliveTimeout || 30,
     authentication: pptpState.Authentication || ["mschap2"],
-    network: pptpState.Network || "PPTP",
+    // network property removed as it doesn't exist in PptpServerConfig
   });
 
   // UI state
@@ -89,7 +89,6 @@ export const usePPTPServer = () => {
       enabled: true,
       DefaultProfile: formState.defaultProfile,
       Authentication: formState.authentication as AuthMethod[],
-      Network: formState.network as any,
       PacketSize: {
         MaxMtu: formState.maxMtu,
         MaxMru: formState.maxMru,
@@ -108,7 +107,6 @@ export const usePPTPServer = () => {
       enabled: true,
       DefaultProfile: formState.defaultProfile,
       Authentication: ["mschap2"],
-      Network: formState.network as any,
       PacketSize: {
         MaxMtu: 1450,
         MaxMru: 1450,
@@ -130,9 +128,7 @@ export const usePPTPServer = () => {
   const updateKeepaliveTimeout$ = $((value: number) =>
     updateAdvancedForm$({ keepaliveTimeout: value }),
   );
-  const updateNetwork$ = $((value: string) =>
-    updateAdvancedForm$({ network: value }),
-  );
+  // Network selection is handled locally in components, not part of server config
 
   // Authentication methods handling
   const isAuthMethodSelected = $((method: string) => {
@@ -235,7 +231,6 @@ export const usePPTPServer = () => {
     updateMaxMtu$,
     updateMaxMru$,
     updateKeepaliveTimeout$,
-    updateNetwork$,
 
     // Authentication methods
     isAuthMethodSelected,

@@ -74,9 +74,9 @@ export const DNSCG = (dnsConfig: DNSConfig, domesticLink: boolean): RouterConfig
     }
 
     // DNS over HTTPS (DOH) configuration for Domestic network
-    if (dnsConfig.DOHConfig?.enabled && dnsConfig.DOHConfig.domain) {
-      const dohDomain = dnsConfig.DOHConfig.domain;
-      const bindingIP = dnsConfig.DOHConfig.bindingIP || "192.168.20.1";
+    if (dnsConfig.DOH?.domain) {
+      const dohDomain = dnsConfig.DOH.domain;
+      const bindingIP = dnsConfig.DOH.bindingIP || "192.168.20.1";
 
       // Update main DNS configuration to enable DOH
       config["/ip dns"] = [
@@ -124,9 +124,9 @@ export const DNSCGTest = (dnsConfig: DNSConfig, domesticLink: boolean): string =
     output += `- Domestic DNS: ${dnsConfig.DomesticDNS || "Not set"}\n`;
     output += `- Split DNS: ${dnsConfig.SplitDNS || "Not set"}\n`;
     
-    if (dnsConfig.DOHConfig?.enabled) {
-      output += `- DOH Domain: ${dnsConfig.DOHConfig.domain || "Not set"}\n`;
-      output += `- DOH Binding IP: ${dnsConfig.DOHConfig.bindingIP || "Auto"}\n`;
+    if (dnsConfig.DOH?.domain) {
+      output += `- DOH Domain: ${dnsConfig.DOH.domain}\n`;
+      output += `- DOH Binding IP: ${dnsConfig.DOH.bindingIP || "192.168.20.1"}\n`;
     }
   }
   

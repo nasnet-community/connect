@@ -59,7 +59,7 @@ export const LAN = component$((props: StepProps) => {
     (routerModel) => !!routerModel.Interfaces.wireless?.length,
   );
 
-  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic-only" || starContext.state.Choose.WANLinkType === "both");
+  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
 
   // Create a store to manage steps
   const stepsStore = useStore({

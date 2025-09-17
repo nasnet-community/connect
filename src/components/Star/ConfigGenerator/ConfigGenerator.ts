@@ -47,30 +47,18 @@ export const generateAPConfig = (state: StarState): string => {
       );
     }
 
-    // Configure interfaces based on TrunkInterface (backward compatibility and new structure)
-    if (state.Choose.TrunkInterface) {
-      // Check for new multi-slave structure
-      if (state.Choose.TrunkInterface.slaveMappings && state.Choose.TrunkInterface.slaveMappings.length > 0) {
-        // Find this router's mapping in slaveMappings
-        const routerModels = state.Choose.RouterModels;
-        const thisRouterIndex = routerModels.findIndex(rm => !rm.isMaster);
-        if (thisRouterIndex >= 0) {
-          const mapping = state.Choose.TrunkInterface.slaveMappings.find(
-            m => m.slaveRouterIndex === thisRouterIndex
+    // Configure interfaces based on RouterModels MasterSlaveInterface for Trunk Mode
+    if (state.Choose.RouterMode === "Trunk Mode") {
+      const routerModels = state.Choose.RouterModels;
+      // Check if any router has wireless MasterSlaveInterface
+      for (const model of routerModels) {
+        if (model.MasterSlaveInterface && 
+            (model.MasterSlaveInterface.includes("wifi") || model.MasterSlaveInterface.includes("wlan"))) {
+          config["/interface wireless"].push(
+            "set [ find default-name=wlan1 ] mode=station-bridge ssid=TrunkLink disabled=no",
           );
-          if (mapping && mapping.connectionType === "wireless" && 
-              (mapping.slaveInterface.includes("wifi") || mapping.slaveInterface.includes("wlan"))) {
-            config["/interface wireless"].push(
-              "set [ find default-name=wlan1 ] mode=station-bridge ssid=TrunkLink disabled=no",
-            );
-          }
+          break;
         }
-      } else if (state.Choose.TrunkInterface.masterInterface?.includes("wifi") || 
-                 state.Choose.TrunkInterface.masterInterface?.includes("wlan")) {
-        // Legacy single interface support
-        config["/interface wireless"].push(
-          "set [ find default-name=wlan1 ] mode=station-bridge ssid=TrunkLink disabled=no",
-        );
       }
     }
 
@@ -196,10 +184,10 @@ export const ConfigGenerator = (state: StarState): string => {
 
   try {
     // Use helper function for backwards compatibility
-    const domesticLinkEnabled = state.Choose.WANLinkType === "domestic-only" || state.Choose.WANLinkType === "both";
+    const domesticLinkEnabled = state.Choose.WANLinkType === "domestic" || state.Choose.WANLinkType === "both";
     
     // Generate configurations from each module
-    const chooseConfig = ChooseCG(domesticLinkEnabled);
+    const chooseConfig = ChooseCG();
     const wanConfig = WANCG(state.WAN, domesticLinkEnabled);
     const lanConfig = LANCG(state);
     const extraConfig = ExtraCG(state.ExtraConfig, domesticLinkEnabled);

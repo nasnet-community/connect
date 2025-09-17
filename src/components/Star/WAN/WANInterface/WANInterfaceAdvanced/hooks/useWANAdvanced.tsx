@@ -1,10 +1,12 @@
-import { $, useSignal, useStore, type QRL } from "@builder.io/qwik";
+import { $, useSignal, useStore, useContext, type QRL } from "@builder.io/qwik";
 import type {
   WANLinkConfig,
   WANWizardState,
-  MultiLinkConfig,
-} from "../../../../StarContext/WANType";
+  MultiLinkUIConfig,
+} from "../types";
 import { generateUniqueId } from "~/components/Core/common/utils";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
+import type { InterfaceType } from "~/components/Star/StarContext/CommonType";
 
 export interface UseWANAdvancedReturn {
   state: WANWizardState;
@@ -14,13 +16,16 @@ export interface UseWANAdvancedReturn {
   batchUpdateLinks$: QRL<(updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => void>;
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
-  setMultiLinkStrategy$: QRL<(strategy: MultiLinkConfig) => void>;
-  updateMultiLink: QRL<(updates: Partial<MultiLinkConfig>) => void>;
+  setMultiLinkStrategy$: QRL<(strategy: MultiLinkUIConfig) => void>;
+  updateMultiLink: QRL<(updates: Partial<MultiLinkUIConfig>) => void>;
   resetAdvanced$: QRL<() => void>;
   generateLinkName$: QRL<(index: number) => string>;
+  syncWithStarContext$: QRL<() => void>;
 }
 
 export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
+  const starContext = useContext(StarContext);
+  
   // Initialize state with at least one link
   const state = useStore<WANWizardState>({
     mode: "advanced", // Always use advanced mode
@@ -33,6 +38,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         connectionConfirmed: false, // User must confirm connection settings
         weight: 100, // Default to 100% for single link
         priority: 1,
+        InterfaceConfig: {
+          InterfaceName: "ether1"
+        },
       },
     ],
     validationErrors: {},
@@ -44,6 +52,66 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   // Generate consistent link names based on mode
   const generateLinkName$ = $((index: number) => {
     return `${mode} Link ${index}`;
+  });
+
+  // Helper function to sync local state with StarContext
+  const syncWithStarContext$ = $(() => {
+    // Convert local WANWizardState to StarContext WANLinks format
+    const updatedWANLink = { ...starContext.state.WAN.WANLink };
+
+    // Build proper WANLinkConfig structures from UI state
+    const wanConfigs = state.links.map(link => {
+      // Build InterfaceConfig with proper type mapping
+      const interfaceConfig = {
+        InterfaceName: (link.interfaceName || link.InterfaceConfig?.InterfaceName || "ether1") as InterfaceType,
+        WirelessCredentials: link.wirelessCredentials,
+        lteSettings: link.lteSettings,
+        VLANID: link.vlanConfig?.enabled ? String(link.vlanConfig.id) : undefined,
+        MacAddress: link.macAddress?.enabled ? link.macAddress.address : undefined,
+      };
+
+      // Build ConnectionConfig based on connection type
+      let connectionConfig = undefined;
+      if (link.connectionType === "DHCP") {
+        connectionConfig = { isDHCP: true };
+      } else if (link.connectionType === "PPPoE" && link.pppoe) {
+        connectionConfig = { pppoe: link.pppoe };
+      } else if (link.connectionType === "Static" && link.staticIP) {
+        connectionConfig = { static: link.staticIP };
+      } else if (link.connectionConfig) {
+        // Use existing connectionConfig if available
+        connectionConfig = link.connectionConfig;
+      }
+
+      return {
+        name: link.name,
+        InterfaceConfig: interfaceConfig,
+        ConnectionConfig: connectionConfig,
+        priority: link.priority,
+        weight: link.weight,
+      };
+    });
+
+    // Create the WANLink structure with MultiLinkConfig if applicable
+    const wanLink = {
+      WANConfigs: wanConfigs,
+      MultiLinkConfig: state.multiLinkStrategy ? {
+        strategy: state.multiLinkStrategy.strategy,
+        loadBalanceMethod: state.multiLinkStrategy.loadBalanceMethod,
+        FailoverConfig: state.multiLinkStrategy.FailoverConfig,
+        roundRobinInterval: state.multiLinkStrategy.roundRobinInterval,
+      } : undefined,
+    };
+
+    // Update the appropriate mode in StarContext
+    if (mode === "Foreign") {
+      updatedWANLink.Foreign = wanLink;
+    } else if (mode === "Domestic") {
+      updatedWANLink.Domestic = wanLink;
+    }
+
+    // Update StarContext with the new WAN configuration
+    starContext.updateWAN$({ WANLink: updatedWANLink });
   });
 
   // Add a new link
@@ -62,6 +130,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       connectionConfirmed: false, // User must confirm connection settings
       weight: equalWeight, // Set appropriate weight
       priority: state.links.length + 1,
+      InterfaceConfig: {
+        InterfaceName: "ether1"
+      },
     };
 
     state.links = [...state.links, newLink];
@@ -76,6 +147,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         weight: index === 0 ? equalWeight + remainder : equalWeight,
       }));
     }
+    
+    // Sync with StarContext and update Networks configuration
+    syncWithStarContext$();
   });
 
   // Remove a link
@@ -115,6 +189,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       }
     });
     state.validationErrors = newErrors;
+    
+    // Sync with StarContext and update Networks configuration
+    syncWithStarContext$();
   });
 
   // Update a specific link with batching to prevent multiple renders
@@ -157,6 +234,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     const newLinks = [...state.links];
     newLinks[linkIndex] = updatedLink;
     state.links = newLinks;
+    
+    // Sync with StarContext and update Networks configuration
+    syncWithStarContext$();
   });
 
   // Batch update multiple links in a single operation to prevent multiple renders
@@ -205,6 +285,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
 
     // Update state once with all changes
     state.links = newLinks;
+    
+    // Sync with StarContext and update Networks configuration
+    syncWithStarContext$();
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)
@@ -220,7 +303,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   });
 
   // Set multi-link strategy
-  const setMultiLinkStrategy$ = $((strategy: MultiLinkConfig) => {
+  const setMultiLinkStrategy$ = $((strategy: MultiLinkUIConfig) => {
     state.multiLinkStrategy = strategy;
 
     // Initialize weights and priorities based on strategy
@@ -265,10 +348,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   });
 
   // Update multi-link configuration with proper state management
-  const updateMultiLink = $((updates: Partial<MultiLinkConfig>) => {
+  const updateMultiLink = $((updates: Partial<MultiLinkUIConfig>) => {
     // Use single assignment to prevent multiple renders
     if (!state.multiLinkStrategy) {
-      state.multiLinkStrategy = updates as MultiLinkConfig;
+      state.multiLinkStrategy = updates as MultiLinkUIConfig;
     } else {
       // Create new object to ensure change detection
       const newStrategy = { ...state.multiLinkStrategy, ...updates };
@@ -289,6 +372,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         connectionConfirmed: false, // User must confirm connection settings
         weight: 100, // Default to 100% for single link
         priority: 1,
+        InterfaceConfig: {
+          InterfaceName: "ether1"
+        },
       },
     ];
     state.multiLinkStrategy = undefined;
@@ -310,5 +396,6 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     updateMultiLink,
     resetAdvanced$,
     generateLinkName$,
+    syncWithStarContext$,
   };
 }

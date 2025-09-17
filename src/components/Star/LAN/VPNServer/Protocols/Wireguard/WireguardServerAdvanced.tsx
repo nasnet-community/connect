@@ -18,6 +18,9 @@ export const WireguardServerAdvanced = component$(() => {
     updateServerConfig,
   } = useWireguardServer();
 
+  // Local network state (not part of VPN server config)
+  const selectedNetwork = useSignal<string>("Wireguard");
+
   // Tab management for multiple interfaces
   const activeTab = useSignal("interface-1");
   const interfaces = useSignal([
@@ -121,8 +124,10 @@ export const WireguardServerAdvanced = component$(() => {
             {/* Network Selection */}
             <ServerFormField label={$localize`Network`}>
               <NetworkDropdown
-                selectedNetwork={advancedFormState.network as ExtendedNetworks}
-                onNetworkChange$={(network) => updateServerConfig({ network: network as any })}
+                selectedNetwork={selectedNetwork.value as ExtendedNetworks}
+                onNetworkChange$={(network) => {
+                  selectedNetwork.value = network;
+                }}
               />
             </ServerFormField>
 

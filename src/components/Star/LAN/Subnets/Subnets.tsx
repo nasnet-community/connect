@@ -2,30 +2,37 @@ import {
   component$,
   useContext,
   useSignal,
+  useComputed$,
   $,
-  useTask$,
 } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
-import { Card, CardFooter, Button, GradientHeader } from "~/components/Core";
+import { Card, CardFooter, Button, GradientHeader, Alert } from "~/components/Core";
 import type { StepProps } from "~/types/step";
-import { 
-  LuShield, 
-  LuNetwork, 
-  LuRoute, 
+import {
+  LuShield,
+  LuNetwork,
+  LuRoute,
   LuCheckCircle,
-  LuAlertTriangle 
+  LuAlertTriangle,
+  LuHome,
+  LuGlobe,
+  LuLock,
+  LuInfo
 } from "@qwikest/icons/lucide";
-import { SubnetCard } from "./SubnetCard";
+import { TabContent } from "./TabContent";
 import { useSubnets } from "./useSubnets";
 
 export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const starContext = useContext(StarContext);
-  
+
   // Check if subnets are already configured
   const hasSubnetsConfigured = !!(starContext.state.LAN.Subnets && Object.keys(starContext.state.LAN.Subnets).length > 0);
-  
+
   // Enable/disable state - default true if subnets are configured, otherwise true (enabled by default)
   const subnetsEnabled = useSignal(hasSubnetsConfigured || true);
+
+  // Active tab state
+  const activeTab = useSignal('base');
 
   // Use custom hook for subnet logic
   const {
@@ -37,11 +44,102 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     validateAll$,
   } = useSubnets();
 
+  // Type assertion for the new categories
+  const extendedGroupedConfigs = groupedConfigs as any;
+
+  // Create tabs configuration based on available subnets - make it reactive
+  const tabs = useComputed$(() => {
+    const tabList: Array<{
+      id: string;
+      label: string;
+      icon: any;
+      count: number;
+    }> = [];
+
+    // Always show base tab
+    if (extendedGroupedConfigs.base?.length > 0) {
+      tabList.push({
+        id: 'base',
+        label: $localize`Base`,
+        icon: <LuNetwork class="h-4 w-4" />,
+        count: extendedGroupedConfigs.base.filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    // Show domestic tab if there are multiple domestic WAN links
+    if (extendedGroupedConfigs['wan-domestic']?.length > 0) {
+      tabList.push({
+        id: 'wan-domestic',
+        label: $localize`Domestic`,
+        icon: <LuHome class="h-4 w-4" />,
+        count: extendedGroupedConfigs['wan-domestic'].filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    // Show foreign tab if there are multiple foreign WAN links
+    if (extendedGroupedConfigs['wan-foreign']?.length > 0) {
+      tabList.push({
+        id: 'wan-foreign',
+        label: $localize`Foreign`,
+        icon: <LuGlobe class="h-4 w-4" />,
+        count: extendedGroupedConfigs['wan-foreign'].filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    // Show VPN Client tab if there are multiple VPN clients
+    if (extendedGroupedConfigs['vpn-client']?.length > 0) {
+      tabList.push({
+        id: 'vpn-client',
+        label: $localize`VPN Client`,
+        icon: <LuLock class="h-4 w-4" />,
+        count: extendedGroupedConfigs['vpn-client'].filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    // Show VPN Server tab if there are VPN servers configured
+    if (extendedGroupedConfigs.vpn?.length > 0) {
+      tabList.push({
+        id: 'vpn',
+        label: $localize`VPN Server`,
+        icon: <LuShield class="h-4 w-4" />,
+        count: extendedGroupedConfigs.vpn.filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    // Show Tunnel tab if there are tunnels configured
+    if (extendedGroupedConfigs.tunnel?.length > 0) {
+      tabList.push({
+        id: 'tunnel',
+        label: $localize`Tunnel`,
+        icon: <LuRoute class="h-4 w-4" />,
+        count: extendedGroupedConfigs.tunnel.filter((c: any) => values[c.key] !== null).length,
+      });
+    }
+
+    return tabList;
+  });
+
+  // Initialize active tab with first available tab
+  useComputed$(() => {
+    // Set initial tab if current tab doesn't exist in tabs array
+    if (tabs.value.length > 0) {
+      const currentTabExists = tabs.value.some(tab => tab.id === activeTab.value);
+      if (!currentTabExists) {
+        activeTab.value = tabs.value[0].id;
+      }
+    }
+  });
+
+  // Handle tab selection
+  const handleTabSelect$ = $((tabId: string) => {
+    activeTab.value = tabId;
+  });
+
   // Handle save with modern error handling
   const handleSave$ = $(async () => {
     if (!subnetsEnabled.value) {
-      // Clear subnets when disabled
-      await starContext.updateLAN$({ Subnets: {} });
+      // Clear subnets when disabled - use empty Record for backward compatibility
+      await starContext.updateLAN$({ Subnets: {} as any });
       if (onComplete$) {
         onComplete$();
       }
@@ -55,8 +153,15 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
     // Convert third octet values back to full CIDR format for storage
     const finalSubnets: Record<string, string> = {};
-    
-    [...groupedConfigs.base, ...groupedConfigs.vpn, ...groupedConfigs.tunnel].forEach((config) => {
+
+    [
+      ...extendedGroupedConfigs.base,
+      ...extendedGroupedConfigs.vpn,
+      ...extendedGroupedConfigs.tunnel,
+      ...extendedGroupedConfigs["wan-domestic"],
+      ...extendedGroupedConfigs["wan-foreign"],
+      ...extendedGroupedConfigs["vpn-client"]
+    ].forEach((config) => {
       const value = values[config.key];
       if (value !== null && value !== undefined) {
         finalSubnets[config.key] = `192.168.${value}.0/${config.mask}`;
@@ -66,8 +171,8 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       }
     });
 
-    // Update context
-    await starContext.updateLAN$({ Subnets: finalSubnets });
+    // Update context - use any for backward compatibility
+    await starContext.updateLAN$({ Subnets: finalSubnets as any });
 
     // Complete step
     if (onComplete$) {
@@ -137,57 +242,125 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
               </Card>
             </div>
           ) : (
-            /* Enabled State with Modern Subnet Cards */
+            /* Enabled State with Tab Navigation */
             <>
-              <div class="space-y-8">
-                {/* Base Networks Section */}
-                {groupedConfigs.base.length > 0 && (
-                  <div class="animate-in slide-in-from-left-4 duration-600">
-                    <SubnetCard
-                      title={$localize`Base Networks`}
-                      description={$localize`Core network segments for your router configuration`}
-                      icon={<LuNetwork class="h-6 w-6" />}
-                      category="base"
-                      configs={groupedConfigs.base}
-                      values={values}
-                      onChange$={handleChange$}
-                      errors={errors}
-                    />
+              {/* Warning Alert about Subnet Configuration */}
+              <Alert
+                status="warning"
+                title={$localize`Important Network Configuration Notice`}
+                class="mb-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+              >
+                <div class="flex gap-3">
+                  <LuInfo class="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div class="space-y-2">
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      {$localize`We've established a systematic subnet configuration that helps organize and manage your network effectively. These values follow best practices for network segmentation and routing.`}
+                    </p>
+                    <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                      ⚠️ {$localize`Warning: Only modify these settings if you have technical networking knowledge. Incorrect subnet values may cause network connectivity issues and routing problems.`}
+                    </p>
                   </div>
-                )}
+                </div>
+              </Alert>
 
-                {/* VPN Networks Section */}
-                {groupedConfigs.vpn.length > 0 && (
-                  <div class="animate-in slide-in-from-left-4 duration-600" style={{ animationDelay: "200ms" }}>
-                    <SubnetCard
-                      title={$localize`VPN Server Networks`}
-                      description={$localize`Dedicated subnets for VPN client connections`}
-                      icon={<LuShield class="h-6 w-6" />}
-                      category="vpn"
-                      configs={groupedConfigs.vpn}
-                      values={values}
-                      onChange$={handleChange$}
-                      errors={errors}
-                    />
+              {/* Custom Wrapping Tab Navigation */}
+              {tabs.value.length > 0 && (
+                <div class="mb-6">
+                  <div class="flex flex-wrap gap-2 justify-center">
+                    {tabs.value.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick$={() => handleTabSelect$(tab.id)}
+                        class={`
+                          px-4 py-2.5 rounded-full font-medium transition-all duration-200
+                          flex items-center gap-2
+                          ${activeTab.value === tab.id
+                            ? 'bg-primary-500 text-white shadow-lg transform scale-105'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                          }
+                        `}
+                        aria-selected={activeTab.value === tab.id}
+                        role="tab"
+                      >
+                        {tab.icon}
+                        <span>{tab.label}</span>
+                        {tab.count > 0 && (
+                          <span class={`
+                            ml-1 px-2 py-0.5 rounded-full text-xs font-semibold
+                            ${activeTab.value === tab.id
+                              ? 'bg-white/20 text-white'
+                              : 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                            }
+                          `}>
+                            {tab.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Tunnel Networks Section */}
-                {groupedConfigs.tunnel.length > 0 && (
-                  <div class="animate-in slide-in-from-left-4 duration-600" style={{ animationDelay: "400ms" }}>
-                    <SubnetCard
-                      title={$localize`Tunnel Networks`}
-                      description={$localize`Point-to-point tunnel connections with /30 subnets`}
-                      icon={<LuRoute class="h-6 w-6" />}
-                      category="tunnel"
-                      configs={groupedConfigs.tunnel}
-                      values={values}
-                      onChange$={handleChange$}
-                      errors={errors}
-                    />
-                  </div>
-                )}
+              {/* Tab Content */}
+              <div class="min-h-[400px] relative">
+                {/* Debug info - remove after testing */}
+                {/* <div class="text-xs text-gray-500 mb-2">Active Tab: {activeTab.value}</div> */}
 
+                {/* Render active tab content - TabContent handles empty configs */}
+                {activeTab.value === 'base' && (
+                  <TabContent
+                    category="base"
+                    configs={extendedGroupedConfigs.base || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
+                {activeTab.value === 'wan-domestic' && (
+                  <TabContent
+                    category="wan-domestic"
+                    configs={extendedGroupedConfigs['wan-domestic'] || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
+                {activeTab.value === 'wan-foreign' && (
+                  <TabContent
+                    category="wan-foreign"
+                    configs={extendedGroupedConfigs['wan-foreign'] || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
+                {activeTab.value === 'vpn-client' && (
+                  <TabContent
+                    category="vpn-client"
+                    configs={extendedGroupedConfigs['vpn-client'] || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
+                {activeTab.value === 'vpn' && (
+                  <TabContent
+                    category="vpn"
+                    configs={extendedGroupedConfigs.vpn || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
+                {activeTab.value === 'tunnel' && (
+                  <TabContent
+                    category="tunnel"
+                    configs={extendedGroupedConfigs.tunnel || []}
+                    values={values}
+                    onChange$={handleChange$}
+                    errors={errors}
+                  />
+                )}
               </div>
 
               {/* Action Footer with Enhanced Design */}

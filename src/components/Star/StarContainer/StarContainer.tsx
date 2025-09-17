@@ -97,7 +97,7 @@ export const StarContainer = component$(() => {
             router_models: state.Choose.RouterModels.map((rm) => rm.Model).join(
               ",",
             ),
-            has_domestic_link: (state.Choose.WANLinkType === "domestic-only" || state.Choose.WANLinkType === "both"),
+            has_domestic_link: (state.Choose.WANLinkType === "domestic" || state.Choose.WANLinkType === "both"),
           });
           break;
         case 2:
@@ -159,9 +159,9 @@ export const StarContainer = component$(() => {
             track("step_extra_config_completed", {
               ...baseEventData,
               gaming_rules_enabled: !!state.ExtraConfig.Games?.length,
-              ddns_enabled: !!state.ExtraConfig.isDDNS,
-              auto_update_enabled: !!state.ExtraConfig.Update,
-              auto_reboot_enabled: !!state.ExtraConfig.AutoReboot,
+              ddns_enabled: !!(state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries?.length),
+              auto_update_enabled: !!(state.ExtraConfig.RUI?.Update?.interval),
+              auto_reboot_enabled: !!(state.ExtraConfig.RUI?.Reboot?.interval),
             });
           }
           // Handle ShowConfig step (step 4 in easy mode, step 5 in advanced mode)

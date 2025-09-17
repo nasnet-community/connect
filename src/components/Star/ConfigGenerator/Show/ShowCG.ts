@@ -170,6 +170,9 @@ export const Security = (): RouterConfig => {
   return config;
 };
 
+// `add action=accept chain=input protocol=icmp in-interface-list=DOM-WAN comment="Allow ping from DOM-WAN"`,
+
+
 // export const ShowCG = (Ethernet: EthernetInterfaceConfig[]): RouterConfig => {
 
 //   const config: RouterConfig = {
