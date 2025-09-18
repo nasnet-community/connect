@@ -1,11 +1,11 @@
-import { component$, type Signal, type QRL, $ } from "@builder.io/qwik";
+import { component$, type Signal, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
 import {
   HiWifiOutline,
   HiExclamationTriangleOutline,
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
-import { Toggle } from "~/components/Core";
+import { SegmentedControl } from "~/components/Core";
 
 interface WirelessHeaderProps {
   wirelessEnabled: Signal<boolean>;
@@ -14,6 +14,28 @@ interface WirelessHeaderProps {
 
 export const WirelessHeader = component$<WirelessHeaderProps>(
   ({ wirelessEnabled, onToggle$ }) => {
+    // Create a mutable string signal for SegmentedControl
+    const enabledState = useSignal(wirelessEnabled.value ? "enabled" : "disabled");
+
+    // Keep the string signal in sync with the boolean signal
+    useTask$(({ track }) => {
+      track(() => wirelessEnabled.value);
+      enabledState.value = wirelessEnabled.value ? "enabled" : "disabled";
+    });
+
+    const enabledOptions = [
+      {
+        value: "disabled",
+        label: $localize`Disabled`,
+        icon: <HiXCircleOutline />,
+      },
+      {
+        value: "enabled", 
+        label: $localize`Enabled`,
+        icon: <HiCheckCircleOutline />,
+      },
+    ];
+
     return (
       <div class="mb-6 space-y-4">
         <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
@@ -29,18 +51,17 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
             </div>
           </div>
 
-          {/* Enable/Disable Toggle */}
-          <Toggle
-            checked={wirelessEnabled.value}
-            onChange$={$(async (enabled: boolean) => {
+          {/* Enable/Disable SegmentedControl */}
+          <SegmentedControl
+            value={enabledState}
+            options={enabledOptions}
+            onChange$={$(async (value: string) => {
+              const enabled = value === "enabled";
               wirelessEnabled.value = enabled;
               if (onToggle$) {
                 await onToggle$(enabled);
               }
             })}
-            label={wirelessEnabled.value ? $localize`Enabled` : $localize`Disabled`}
-            checkedIcon={<HiCheckCircleOutline class="h-5 w-5" />}
-            uncheckedIcon={<HiXCircleOutline class="h-5 w-5" />}
             color="primary"
             size="md"
           />
