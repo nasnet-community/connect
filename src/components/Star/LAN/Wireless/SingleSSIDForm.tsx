@@ -1,7 +1,7 @@
-import { component$, $ } from "@builder.io/qwik";
-import { HiSparklesOutline } from "@qwikest/icons/heroicons";
+import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { HiSparklesOutline, HiEyeSlashOutline, HiEyeOutline, HiSignalOutline, HiSignalSlashOutline } from "@qwikest/icons/heroicons";
 import type { QRL, Signal } from "@builder.io/qwik";
-import { Input, Toggle, Button } from "~/components/Core";
+import { Input, SegmentedControl, Button } from "~/components/Core";
 
 interface SingleSSIDFormProps {
   ssid: Signal<string>;
@@ -27,6 +27,47 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     generatePassword,
     isLoading,
   }) => {
+    // Create mutable string signals for SegmentedControls
+    const hideState = useSignal(isHide.value ? "hidden" : "visible");
+    const splitBandState = useSignal(splitBand.value ? "split" : "combined");
+
+    // Keep the string signals in sync with the boolean signals
+    useTask$(({ track }) => {
+      track(() => isHide.value);
+      hideState.value = isHide.value ? "hidden" : "visible";
+    });
+
+    useTask$(({ track }) => {
+      track(() => splitBand.value);
+      splitBandState.value = splitBand.value ? "split" : "combined";
+    });
+
+    const hideOptions = [
+      {
+        value: "visible",
+        label: $localize`Visible`,
+        icon: <HiEyeOutline />,
+      },
+      {
+        value: "hidden",
+        label: $localize`Hidden`,
+        icon: <HiEyeSlashOutline />,
+      },
+    ];
+
+    const splitBandOptions = [
+      {
+        value: "combined",
+        label: $localize`Combined`,
+        icon: <HiSignalOutline />,
+      },
+      {
+        value: "split",
+        label: $localize`Split Band`,
+        icon: <HiSignalSlashOutline />,
+      },
+    ];
+
     return (
       <div class="space-y-6">
         <p class="dark:text-text-secondary-dark text-text-secondary">
@@ -34,27 +75,35 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
         </p>
 
         <div class="flex flex-wrap items-center justify-end gap-4 border-b border-gray-200 pb-4 dark:border-gray-700">
-          <Toggle
-            label={$localize`Hide`}
-            labelPosition="left"
-            checked={isHide.value}
-            onChange$={$((value: boolean) => {
-              isHide.value = value;
-            })}
-            size="md"
-            color="primary"
-          />
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {$localize`Visibility:`}
+            </label>
+            <SegmentedControl
+              value={hideState}
+              options={hideOptions}
+              onChange$={$((value: string) => {
+                isHide.value = value === "hidden";
+              })}
+              size="sm"
+              color="primary"
+            />
+          </div>
 
-          <Toggle
-            label={$localize`Split Band`}
-            labelPosition="left"
-            checked={splitBand.value}
-            onChange$={$((value: boolean) => {
-              splitBand.value = value;
-            })}
-            size="md"
-            color="primary"
-          />
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {$localize`Band Mode:`}
+            </label>
+            <SegmentedControl
+              value={splitBandState}
+              options={splitBandOptions}
+              onChange$={$((value: string) => {
+                splitBand.value = value === "split";
+              })}
+              size="sm"
+              color="primary"
+            />
+          </div>
         </div>
 
         <div class="mt-4 space-y-6">

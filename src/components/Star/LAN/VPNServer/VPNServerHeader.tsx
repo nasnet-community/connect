@@ -1,9 +1,10 @@
-import { component$, type Signal, type QRL } from "@builder.io/qwik";
+import { component$, type Signal, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
 import {
   HiServerOutline,
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
+import { SegmentedControl } from "~/components/Core";
 
 interface VPNServerHeaderProps {
   vpnServerEnabled: Signal<boolean>;
@@ -12,6 +13,15 @@ interface VPNServerHeaderProps {
 
 export const VPNServerHeader = component$<VPNServerHeaderProps>(
   ({ vpnServerEnabled, onToggle$ }) => {
+    // Create a mutable string signal for SegmentedControl
+    const enabledState = useSignal(vpnServerEnabled.value ? "enabled" : "disabled");
+
+    // Keep the string signal in sync with the boolean signal
+    useTask$(({ track }) => {
+      track(() => vpnServerEnabled.value);
+      enabledState.value = vpnServerEnabled.value ? "enabled" : "disabled";
+    });
+
     return (
       <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div class="flex items-center gap-4">
@@ -28,55 +38,29 @@ export const VPNServerHeader = component$<VPNServerHeaderProps>(
           </div>
         </div>
 
-        {/* Enable/Disable Toggle */}
-        <div class="flex gap-4 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-          <label
-            class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-          ${
-            !vpnServerEnabled.value
-              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-              : "text-gray-600 dark:text-gray-400"
-          }`}
-          >
-            <input
-              type="radio"
-              name="vpnserver"
-              checked={!vpnServerEnabled.value}
-              onChange$={async () => {
-                vpnServerEnabled.value = false;
-                if (onToggle$) {
-                  await onToggle$(false);
-                }
-              }}
-              class="hidden"
-            />
-            <HiXCircleOutline class="h-5 w-5" />
-            <span>{$localize`Disable`}</span>
-          </label>
-          <label
-            class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
-          ${
-            vpnServerEnabled.value
-              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
-              : "text-gray-600 dark:text-gray-400"
-          }`}
-          >
-            <input
-              type="radio"
-              name="vpnserver"
-              checked={vpnServerEnabled.value}
-              onChange$={async () => {
-                vpnServerEnabled.value = true;
-                if (onToggle$) {
-                  await onToggle$(true);
-                }
-              }}
-              class="hidden"
-            />
-            <HiCheckCircleOutline class="h-5 w-5" />
-            <span>{$localize`Enable`}</span>
-          </label>
-        </div>
+        {/* Enable/Disable SegmentedControl */}
+        <SegmentedControl
+          value={enabledState}
+          options={[
+            {
+              value: "disabled",
+              label: $localize`Disabled`,
+            },
+            {
+              value: "enabled", 
+              label: $localize`Enabled`,
+            },
+          ]}
+          onChange$={$(async (value: string) => {
+            const enabled = value === "enabled";
+            vpnServerEnabled.value = enabled;
+            if (onToggle$) {
+              await onToggle$(enabled);
+            }
+          })}
+          color="primary"
+          size="md"
+        />
       </div>
     );
   },
