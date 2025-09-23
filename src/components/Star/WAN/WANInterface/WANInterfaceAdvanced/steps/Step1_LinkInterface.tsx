@@ -5,7 +5,7 @@ import { WirelessFields } from "../components/fields/WirelessFields";
 import { LTEFields } from "../components/fields/LTEFields";
 import { VLANMACFields } from "../components/fields/VLANMACFields";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
-import { Input } from "~/components/Core";
+import { Input, Card } from "~/components/Core";
 import { SearchBar } from "../components/common/SearchBar";
 import { EmptyState } from "../components/common/EmptyState";
 import { LinkStatistics } from "../components/common/LinkStatistics";
@@ -16,10 +16,11 @@ import { getLinkErrors, getFieldErrors } from "../utils/validationUtils";
 export interface Step1Props {
   wizardState: WANWizardState;
   wizardActions: UseWANAdvancedReturn;
+  mode?: "Foreign" | "Domestic";
 }
 
 export const Step1_LinkInterface = component$<Step1Props>(
-  ({ wizardState, wizardActions }) => {
+  ({ wizardState, wizardActions, mode = "Foreign" }) => {
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const viewMode = useSignal<"grid" | "list">("grid");
@@ -45,13 +46,72 @@ export const Step1_LinkInterface = component$<Step1Props>(
     
     return (
       <div class="relative">
-        {/* Show inline editing for single link */}
-        {showInlineEdit && singleLink ? (
+        {/* Empty State - No links configured */}
+        {wizardState.links.length === 0 ? (
+          <div class="space-y-6">
+            {/* Header */}
+            <Card>
+              <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {mode === "Foreign"
+                      ? $localize`Foreign WAN Links`
+                      : $localize`Domestic WAN Links`}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {$localize`Configure multiple WAN connections for load balancing and failover`}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Empty State Message */}
+            <Card>
+              <div class="text-center py-12">
+                <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  {$localize`No WAN links configured`}
+                </h3>
+                <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+                  {mode === "Foreign"
+                    ? $localize`Create your first foreign WAN connection. You can add multiple links for load balancing and failover.`
+                    : $localize`Create your first domestic WAN connection. You can add multiple links for load balancing and failover.`}
+                </p>
+                <button
+                  onClick$={$(async () => {
+                    await wizardActions.addLink$();
+                  })}
+                  class="inline-flex items-center gap-2 rounded-lg bg-primary-600 text-white px-6 py-3 text-sm font-medium hover:bg-primary-700 transition-colors"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  {mode === "Foreign" ? $localize`Add Foreign Link` : $localize`Add Domestic Link`}
+                </button>
+              </div>
+            </Card>
+          </div>
+        ) : (
+          // Show configured links
+          <div class="space-y-6">
+            {/* Show inline editing for single link */}
+            {showInlineEdit && singleLink ? (
           <div class="space-y-6">
             {/* Single Link Header */}
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-medium text-gray-900 dark:text-white">
-                {$localize`Configure WAN Interface`}
+                {mode === "Foreign"
+                  ? $localize`Configure Foreign WAN Interface`
+                  : $localize`Configure Domestic WAN Interface`}
               </h2>
               <button
                 onClick$={$(async () => {
@@ -338,28 +398,27 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 );
               })}
             </div>
-          </>
-        )}
+            </>
+          )}
 
-        {/* Empty State */}
-        {getFilteredLinks().length === 0 && searchQuery.value && (
-          <EmptyState searchQuery={searchQuery.value} />
-        )}
+          {/* Empty State for filtered results */}
+          {getFilteredLinks().length === 0 && searchQuery.value && (
+            <EmptyState searchQuery={searchQuery.value} />
+          )}
 
-
-
-
-        {/* Info message for easy mode */}
-        {wizardState.mode === "easy" && (
-          <div class="mt-6 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4">
-            <div class="flex items-start gap-3">
-              <svg class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-sm text-blue-700 dark:text-blue-300">
-                {$localize`In Easy Mode, DHCP connection type will be used by default. Switch to Advanced Mode for more options.`}
-              </p>
+          {/* Info message for easy mode */}
+          {wizardState.mode === "easy" && (
+            <div class="mt-6 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4">
+              <div class="flex items-start gap-3">
+                <svg class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm text-blue-700 dark:text-blue-300">
+                  {$localize`In Easy Mode, DHCP connection type will be used by default. Switch to Advanced Mode for more options.`}
+                </p>
+              </div>
             </div>
+          )}
           </div>
         )}
       </div>

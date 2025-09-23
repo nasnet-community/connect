@@ -13,6 +13,7 @@ import { Step1_VPNProtocols } from "./steps/Step1_VPNProtocols";
 import { StepPriorities } from "./steps/StepPriorities";
 import { Step2_VPNConfiguration } from "./steps/Step2_VPNConfiguration";
 import { Step3_Summary } from "./steps/Step3_Summary";
+import type { L2TPCredentials } from "~/utils/supabaseClient";
 // Removed unused VPNClientAdvancedState import
 
 export interface VPNClientAdvancedProps {
@@ -165,6 +166,64 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // eslint-disable-next-line prefer-const
     let refreshStepCompletion$: QRL<() => Promise<void>>;
 
+    // Handler for promotional L2TP credentials
+    const handlePromoL2TP$ = $(async (credentials: L2TPCredentials) => {
+      console.log('[AdvancedVPNClient] Handling promotional L2TP credentials');
+
+      // Check if we already have a promotional L2TP VPN
+      const hasPromoL2TP = advancedHooks.state.vpnConfigs.some(vpn =>
+        vpn.type === "L2TP" && vpn.name?.includes("Promotional")
+      );
+
+      if (hasPromoL2TP) {
+        console.log('[AdvancedVPNClient] Promotional L2TP already exists, skipping');
+        return;
+      }
+
+      // Create a new L2TP VPN with promotional credentials
+      const promoVPNId = `vpn-promo-l2tp-${Date.now()}`;
+      const promoVPN = {
+        id: promoVPNId,
+        name: "Promotional L2TP VPN",
+        type: "L2TP" as const,
+        enabled: true,
+        priority: 1, // Give it highest priority
+        weight: 50,
+        config: {
+          Server: {
+            Address: credentials.server,
+            Port: 1701
+          },
+          Credentials: {
+            Username: credentials.username,
+            Password: credentials.password
+          },
+          UseIPsec: true,
+          IPsecSecret: "nasnetconnect", // Default promotional IPsec secret
+        },
+      };
+
+      // If we have existing VPNs, adjust their priorities
+      if (advancedHooks.state.vpnConfigs.length > 0) {
+        // Shift all existing VPN priorities down by 1
+        advancedHooks.state.vpnConfigs.forEach(vpn => {
+          if (vpn.priority) {
+            vpn.priority += 1;
+          }
+        });
+      }
+
+      // Add the promotional L2TP VPN
+      await advancedHooks.addVPN$(promoVPN);
+
+      console.log('[AdvancedVPNClient] Promotional L2TP VPN added successfully');
+
+      // Refresh step completion status
+      if (refreshStepCompletion$) {
+        await refreshStepCompletion$();
+      }
+    });
+
     // Create step definitions - isComplete values will be updated directly in useTask
     const createSteps = $(async (): Promise<CStepMeta[]> => {
       // Check if we have multiple VPN clients to determine if Strategy & Priority step is needed
@@ -181,6 +240,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
               wizardActions={advancedHooks}
               foreignWANCount={advancedHooks.foreignWANCount}
               onRefreshCompletion$={refreshStepCompletion$}
+              onPromoL2TP$={handlePromoL2TP$}
             />
           ),
           isComplete: false, // Will be updated in useTask

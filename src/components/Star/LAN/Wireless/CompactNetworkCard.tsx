@@ -1,4 +1,4 @@
-import { component$, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, type QRL, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
 import { 
   HiSparklesOutline, 
   HiEyeSlashOutline, 
@@ -74,12 +74,12 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
       {
         value: "visible",
         label: $localize`Show`,
-        icon: <HiEyeOutline />,
+        icon: <HiEyeOutline /> as JSXNode,
       },
       {
         value: "hidden",
         label: $localize`Hide`,
-        icon: <HiEyeSlashOutline />,
+        icon: <HiEyeSlashOutline /> as JSXNode,
       },
     ];
 
@@ -87,12 +87,12 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
       {
         value: "combined",
         label: $localize`Single`,
-        icon: <HiSignalOutline />,
+        icon: <HiSignalOutline /> as JSXNode,
       },
       {
         value: "split",
         label: $localize`Split`,
-        icon: <HiSignalSlashOutline />,
+        icon: <HiSignalSlashOutline /> as JSXNode,
       },
     ];
 
@@ -100,12 +100,12 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
       {
         value: "disabled",
         label: $localize`Off`,
-        icon: <HiXCircleOutline />,
+        icon: <HiXCircleOutline /> as JSXNode,
       },
       {
         value: "enabled",
         label: $localize`On`,
-        icon: <HiCheckCircleOutline />,
+        icon: <HiCheckCircleOutline /> as JSXNode,
       },
     ];
 

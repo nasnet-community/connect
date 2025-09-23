@@ -2,11 +2,16 @@ import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import { LuCable, LuWifi, LuRouter } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType, OccupiedInterface } from "../../StarContext/ChooseType";
 import { routers } from "../RouterModel/Constants";
+import {
+  addOccupiedInterface,
+} from "../../utils/InterfaceManagementUtils";
+import type { InterfaceType } from "../../StarContext/CommonType";
 
 interface InterfaceSelectorProps {
   interfaceType: TrunkInterfaceType;
+  selectedBand?: "2.4G" | "5G" | null;
   onComplete$?: PropFunction<() => void>;
 }
 
@@ -23,29 +28,55 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
       slave: [],
     };
 
-    routerModels.forEach((routerModel, index) => {
-      const routerData = routers.find((r) => r.model === routerModel.Model);
-      if (!routerData) return;
+    // Find master and slave routers by their isMaster flag
+    const masterRouter = routerModels.find(rm => rm.isMaster);
+    const slaveRouter = routerModels.find(rm => !rm.isMaster);
 
-      let availableInterfaces: string[] = [];
+    // Process master router interfaces
+    if (masterRouter) {
+      const routerData = routers.find((r) => r.model === masterRouter.Model);
+      if (routerData) {
+        if (props.interfaceType === "wireless") {
+          let wirelessInterfaces = routerData.interfaces.Interfaces.wireless || [];
 
-      if (props.interfaceType === "wireless") {
-        // Show only wireless interfaces
-        availableInterfaces = routerData.interfaces.wireless || [];
-      } else {
-        // Show ethernet and SFP interfaces for wired
-        availableInterfaces = [
-          ...(routerData.interfaces.ethernet || []),
-          ...(routerData.interfaces.sfp || []),
-        ];
+          // Filter based on selected band if provided
+          if (props.selectedBand) {
+            const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
+            wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
+          }
+
+          interfaces.master = wirelessInterfaces;
+        } else {
+          interfaces.master = [
+            ...(routerData.interfaces.Interfaces.ethernet || []),
+            ...(routerData.interfaces.Interfaces.sfp || []),
+          ];
+        }
       }
+    }
 
-      if (index === 0 || routerModel.isMaster) {
-        interfaces.master = availableInterfaces;
-      } else {
-        interfaces.slave = availableInterfaces;
+    // Process slave router interfaces
+    if (slaveRouter) {
+      const routerData = routers.find((r) => r.model === slaveRouter.Model);
+      if (routerData) {
+        if (props.interfaceType === "wireless") {
+          let wirelessInterfaces = routerData.interfaces.Interfaces.wireless || [];
+
+          // Filter based on selected band if provided
+          if (props.selectedBand) {
+            const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
+            wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
+          }
+
+          interfaces.slave = wirelessInterfaces;
+        } else {
+          interfaces.slave = [
+            ...(routerData.interfaces.Interfaces.ethernet || []),
+            ...(routerData.interfaces.Interfaces.sfp || []),
+          ];
+        }
       }
-    });
+    }
 
     return interfaces;
   };
@@ -63,22 +94,97 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
         router_mode: starContext.state.Choose.RouterMode,
       });
 
-      // Update the MasterSlaveInterface for the appropriate router
-      const updatedModels = starContext.state.Choose.RouterModels.map((model, index) => {
-        if ((!isSlaveInterface && model.isMaster) || (isSlaveInterface && !model.isMaster && index === 1)) {
-          return {
-            ...model,
-            MasterSlaveInterface: interfaceName as any // Cast to MasterSlaveInterfaceType
-          };
+      console.log(`Interface selection: ${interfaceName}, isSlaveInterface: ${isSlaveInterface}`);
+
+      // Update the MasterSlaveInterface and check completion in single state update
+      const updatedModels = starContext.state.Choose.RouterModels.map((model) => {
+        const updatedModel = { ...model };
+
+        // In Trunk Mode, use isMaster flag for identification
+        if (isTrunkMode) {
+          if (!isSlaveInterface && model.isMaster) {
+            // Master interface selection for master router
+            console.log(`Setting master router (${model.Model}) MasterSlaveInterface to: ${interfaceName}`);
+            updatedModel.MasterSlaveInterface = interfaceName as any;
+          } else if (isSlaveInterface && !model.isMaster) {
+            // Slave interface selection for slave router
+            console.log(`Setting slave router (${model.Model}) MasterSlaveInterface to: ${interfaceName}`);
+            updatedModel.MasterSlaveInterface = interfaceName as any;
+          }
+        } else {
+          // Non-trunk mode: only update the master router
+          if (!isSlaveInterface && model.isMaster) {
+            updatedModel.MasterSlaveInterface = interfaceName as any;
+          }
         }
-        return model;
+
+        return updatedModel;
       });
 
+      // Check if configuration is complete after this update
+      const masterRouter = updatedModels.find(rm => rm.isMaster);
+      const slaveRouter = isTrunkMode ? updatedModels.find(rm => !rm.isMaster) : null;
+      const masterInterface = masterRouter?.MasterSlaveInterface;
+      const slaveInterface = slaveRouter?.MasterSlaveInterface;
+
+      console.log(`After interface selection - Master: ${masterInterface}, Slave: ${slaveInterface}`);
+
+      // Final models with OccupiedInterfaces updated if both interfaces are selected
+      const finalModels = updatedModels.map((model) => {
+        const finalModel = { ...model };
+
+        // Only update OccupiedInterfaces if configuration is complete
+        if (masterInterface && slaveInterface) {
+          // Start with clean OccupiedInterfaces to prevent accumulation
+          const cleanOccupied: OccupiedInterface[] = [];
+
+          // Each router should only track its own interface
+          if (finalModel.MasterSlaveInterface) {
+            const interfaceToAdd = finalModel.MasterSlaveInterface;
+            const role = finalModel.isMaster ? "Master" : "Slave";
+
+            console.log(`Adding ${interfaceToAdd} to ${role} router (${finalModel.Model}) OccupiedInterfaces`);
+            finalModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
+              cleanOccupied,
+              interfaceToAdd as InterfaceType,
+              "Trunk",
+              role
+            );
+          } else {
+            finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
+          }
+
+          // Validation: warn if OccupiedInterfaces doesn't match MasterSlaveInterface
+          if (finalModel.MasterSlaveInterface) {
+            const occupied = finalModel.Interfaces.OccupiedInterfaces;
+            const hasInterface = occupied.some(item => item.interface === finalModel.MasterSlaveInterface);
+
+            const routerType = finalModel.isMaster ? 'Master' : 'Slave';
+            if (!hasInterface) {
+              console.warn(`Warning: ${routerType} router (${finalModel.Model}) has MasterSlaveInterface ${finalModel.MasterSlaveInterface} but it's not in OccupiedInterfaces`);
+              console.warn(`OccupiedInterfaces:`, occupied);
+            } else {
+              console.log(`✓ ${routerType} router (${finalModel.Model}) correctly has ${finalModel.MasterSlaveInterface} in OccupiedInterfaces`);
+            }
+          }
+        } else {
+          // Keep existing OccupiedInterfaces if configuration is not complete
+          // (Don't clear them in case they were set from a previous configuration)
+        }
+
+        return finalModel;
+      });
+
+      // Single state update with complete information
       starContext.updateChoose$({
-        RouterModels: updatedModels,
+        RouterModels: finalModels,
       });
 
-      props.onComplete$?.();
+      // Trigger completion callback if both interfaces are now selected
+      if (masterInterface && slaveInterface) {
+        console.log(`Configuration complete - Master: ${masterInterface}, Slave: ${slaveInterface}`);
+        props.onComplete$?.();
+      }
     }
   );
 
@@ -101,7 +207,9 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   ) => {
     if (interfaces.length === 0) return null;
 
-    const routerModel = routerModels[isSlaveInterface ? 1 : 0]?.Model;
+    const routerModel = isSlaveInterface
+      ? routerModels.find(rm => !rm.isMaster)?.Model
+      : routerModels.find(rm => rm.isMaster)?.Model;
 
     return (
       <div class="space-y-4">
@@ -273,7 +381,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
               {(() => {
                 const masterInterface = starContext.state.Choose.RouterModels.find(rm => rm.isMaster)?.MasterSlaveInterface;
                 const slaveInterface = starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)?.MasterSlaveInterface;
-                
+
                 return masterInterface && slaveInterface ? (
                   <span class="font-medium text-success dark:text-success-light">
                     {$localize`Trunk ready`}: {masterInterface} ↔ {slaveInterface}

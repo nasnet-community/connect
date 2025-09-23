@@ -1,7 +1,8 @@
 import { component$ } from "@builder.io/qwik";
-import { Card, CardHeader, CardBody } from "~/components/Core";
+import { Card, CardHeader, CardBody, Alert } from "~/components/Core";
 import { SubnetInput } from "./SubnetInput";
 import type { SubnetCardProps } from "./types";
+import { LuAlertTriangle } from "@qwikest/icons/lucide";
 
 /**
  * Modern card component for grouping subnet configurations
@@ -63,6 +64,14 @@ export const SubnetCard = component$<SubnetCardProps>(({
 
   const styles = categoryStyles[category];
 
+  // Detect conflicts and errors in this card
+  const configKeys = configs.map(c => c.key);
+  const cardErrors = Object.entries(errors).filter(([key]) => configKeys.includes(key));
+  const conflictErrors = cardErrors.filter(([_, error]) =>
+    error.includes($localize`conflicts with`) || error.includes($localize`already in use`)
+  );
+  const hasConflicts = conflictErrors.length > 0;
+
   return (
     <Card
       variant="outlined"
@@ -70,7 +79,7 @@ export const SubnetCard = component$<SubnetCardProps>(({
       hoverEffect="shadow"
       class={`
         relative overflow-hidden transition-all duration-300
-        ${styles.border}
+        ${hasConflicts ? "border-red-300 dark:border-red-700 ring-2 ring-red-200 dark:ring-red-800" : styles.border}
         ${disabled ? "opacity-60" : "hover:shadow-lg hover:scale-[1.01]"}
         ${className}
       `}
@@ -128,6 +137,40 @@ export const SubnetCard = component$<SubnetCardProps>(({
             </div>
           </div>
         </CardHeader>
+
+        {/* Conflict Alert Banner */}
+        {hasConflicts && (
+          <div class="relative z-10 px-6 pb-4">
+            <Alert
+              status="error"
+              title={$localize`Subnet Conflicts Detected`}
+              class="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20"
+            >
+              <div class="flex gap-3">
+                <LuAlertTriangle class="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div class="space-y-1">
+                  <p class="text-sm text-red-700 dark:text-red-300">
+                    {conflictErrors.length === 1
+                      ? $localize`One subnet in this section conflicts with another:`
+                      : $localize`${conflictErrors.length} subnets in this section have conflicts:`}
+                  </p>
+                  <ul class="text-xs text-red-600 dark:text-red-400 space-y-1">
+                    {conflictErrors.map(([key, error]) => {
+                      const config = configs.find(c => c.key === key);
+                      return (
+                        <li key={key} class="flex items-center gap-2">
+                          <span class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
+                          <span class="font-medium">{config?.label || key}:</span>
+                          <span>{error}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            </Alert>
+          </div>
+        )}
 
         <CardBody>
           {/* Grid Layout for Subnet Inputs with Staggered Animation */}

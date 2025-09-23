@@ -26,13 +26,13 @@ export const Header = component$<{ mode: "Foreign" | "Domestic" }>(
         <div>
           <h2 class="text-text-default text-xl font-semibold dark:text-text-dark-default">
             {mode === "Foreign"
-              ? $localize`External Network Connection`
-              : $localize`Internal Network Connection`}
+              ? $localize`Foreign Network Connection`
+              : $localize`Domestic Network Connection`}
           </h2>
           <p class="text-text-muted dark:text-text-dark-muted">
             {mode === "Foreign"
-              ? $localize`Configure your internet connection (WAN)`
-              : $localize`Configure your local network connection (LAN)`}
+              ? $localize`Configure your foreign network connection (WAN)`
+              : $localize`Configure your domestic network connection`}
           </p>
         </div>
       </div>

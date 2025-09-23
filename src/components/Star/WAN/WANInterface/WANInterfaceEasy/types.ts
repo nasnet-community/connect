@@ -1,5 +1,6 @@
 import type { QRL } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
+import type { RouterInterfaces } from "../../../StarContext/ChooseType";
 
 export interface WANInterfaceProps extends StepProps {
   mode: "Foreign" | "Domestic";
@@ -21,12 +22,7 @@ export interface FooterProps {
 export interface InterfaceSelectorProps {
   selectedInterface: string;
   selectedInterfaceType: string;
-  availableInterfaces: {
-    ethernet: string[];
-    wireless: string[];
-    sfp: string[];
-    lte: string[];
-  };
+  availableInterfaces: RouterInterfaces;
   onSelect: QRL<(value: string) => void>;
   isInterfaceSelectedInOtherMode: QRL<(iface: string) => boolean>;
   mode: "Foreign" | "Domestic";

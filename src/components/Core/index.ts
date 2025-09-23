@@ -127,6 +127,7 @@ import { DialogHeader } from "./Feedback/Dialog/DialogHeader";
 import { DialogBody } from "./Feedback/Dialog/DialogBody";
 import { DialogFooter } from "./Feedback/Dialog/DialogFooter";
 import { Drawer } from "./Feedback/Drawer/Drawer";
+import { Newsletter } from "./Feedback/Newsletter/Newsletter";
 
 //-------------------------------
 // Layout Components
@@ -461,4 +462,26 @@ export {
    * />
    */
   FrequencySelector,
+
+  /**
+   * Newsletter subscription component with vertical and horizontal variants
+   * @param variant - Layout variant (vertical, horizontal, responsive)
+   * @param title - Newsletter signup title
+   * @param description - Newsletter description text
+   * @param onSubscribe$ - Handler for email subscription
+   * @param showLogo - Whether to display the NASNET Connect logo
+   * @param glassmorphism - Enable glassmorphism effect
+   * @param themeColors - Use theme colors instead of default styling
+   *
+   * @example
+   * <Newsletter
+   *   variant="horizontal"
+   *   title="Stay Updated"
+   *   description="Get the latest router configuration tips."
+   *   onSubscribe$={handleSubscription}
+   *   showLogo={true}
+   *   themeColors={true}
+   * />
+   */
+  Newsletter,
 };

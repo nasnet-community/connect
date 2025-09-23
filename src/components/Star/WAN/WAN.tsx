@@ -37,25 +37,24 @@ const DNSStep = component$((props: StepProps) => (
 
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
-  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+  const wanLinkType = starContext.state.Choose.WANLinkType;
   const isAdvancedMode = starContext.state.Choose.Mode === "advance";
 
-  let steps: StepItem[] = [];
+  const steps: StepItem[] = [];
 
-  // Both easy and advanced modes now use separate Foreign/Domestic steps
-  steps = [
-    {
-      id: 1,
+  // Add WAN interface steps based on WANLinkType
+  if (wanLinkType === "foreign" || wanLinkType === "both") {
+    steps.push({
+      id: steps.length + 1,
       title: $localize`Foreign WAN`,
       component: ForeignStep,
       isComplete: false,
-    },
-  ];
+    });
+  }
 
-  // Only add Domestic step if DomesticLink is enabled
-  if (isDomesticLinkEnabled) {
+  if (wanLinkType === "domestic" || wanLinkType === "both") {
     steps.push({
-      id: 2,
+      id: steps.length + 1,
       title: $localize`Domestic WAN`,
       component: DomesticStep,
       isComplete: false,

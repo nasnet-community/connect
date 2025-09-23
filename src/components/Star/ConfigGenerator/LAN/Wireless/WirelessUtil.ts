@@ -3,7 +3,9 @@ import type {
   MultiMode,
   Wireless,
 } from "../../../StarContext/LANType";
-import type { WANLinks, WANLinkConfig } from "../../../StarContext/WANType";
+import type { WANLinks, 
+  // WANLinkConfig
+ } from "../../../StarContext/WANType";
 import type { Networks, Band } from "../../../StarContext/CommonType";
 import type { RouterConfig } from "../../ConfigGenerator";
 import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
@@ -14,7 +16,7 @@ export const hasWirelessInterfaces = (
 ): boolean => {
   return routerModels.some(
     (model: RouterModels) =>
-      model.Interfaces.wireless && model.Interfaces.wireless.length > 0,
+      model.Interfaces.Interfaces.wireless && model.Interfaces.Interfaces.wireless.length > 0,
   );
 };
 
@@ -101,28 +103,37 @@ export function Passphrase(passphrase: string, command: string) {
   return `${command} security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${passphrase}" disabled=no`;
 }
 
-export function StationMode(
-  WANConfig: WANLinkConfig,
-  Link: "Domestic" | "Foreign",
-): RouterConfig {
+export function StationMode(SSID: string, Password: string, Band: string, name?: string):RouterConfig {
   const config: RouterConfig = {
     "/interface wifi": [],
   };
-
-  const { InterfaceName, WirelessCredentials } = WANConfig.InterfaceConfig;
-  if (!WirelessCredentials) {
-    return config; // Return empty config instead of empty string
-  }
-
-  // change the interface name to default name wifi1 or wifi2 that was wifi2.4 or wifi5 and wifi5 is wifi1
-  const DInterfaceName = InterfaceName === "wifi5" ? "wifi1" : "wifi2";
-
-  const { SSID, Password } = WirelessCredentials;
-  const command = `set [ find default-name=${DInterfaceName} ] comment=${Link}WAN configuration.mode=station .ssid="${SSID}" security.passphrase="${Password}" disabled=no`;
-
+  const command = `set [ find default-name=${Band} ] comment="${name} ${Band}WAN" configuration.mode=station .ssid="${SSID}" security.passphrase="${Password}" disabled=no`;
   config["/interface wifi"].push(command);
-  return CommandShortner(config);
+  return config;
 }
+
+// export function StationMode(
+//   WANConfig: WANLinkConfig,
+//   Link: "Domestic" | "Foreign",
+// ): RouterConfig {
+//   const config: RouterConfig = {
+//     "/interface wifi": [],
+//   };
+
+//   const { InterfaceName, WirelessCredentials } = WANConfig.InterfaceConfig;
+//   if (!WirelessCredentials) {
+//     return config; // Return empty config instead of empty string
+//   }
+
+//   // change the interface name to default name wifi1 or wifi2 that was wifi2.4 or wifi5 and wifi5 is wifi1
+//   const DInterfaceName = InterfaceName === "wifi5" ? "wifi1" : "wifi2";
+
+//   const { SSID, Password } = WirelessCredentials;
+//   const command = `set [ find default-name=${DInterfaceName} ] comment=${Link}WAN configuration.mode=station .ssid="${SSID}" security.passphrase="${Password}" disabled=no`;
+
+//   config["/interface wifi"].push(command);
+//   return CommandShortner(config);
+// }
 
 export function Slave(
   Network: Networks,

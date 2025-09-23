@@ -1,4 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, $, useComputed$ } from "@builder.io/qwik";
 import {
   HiServerOutline,
   HiPlusCircleOutline,
@@ -49,19 +49,22 @@ export const WireguardServerAdvanced = component$(() => {
   // Remove interface
   const removeInterface$ = $((interfaceId: string) => {
     if (interfaces.value.length > 1) {
-      interfaces.value = interfaces.value.filter(iface => iface.id !== interfaceId);
+      const filteredInterfaces = interfaces.value.filter(iface => iface.id !== interfaceId);
+      interfaces.value = filteredInterfaces;
       if (activeTab.value === interfaceId) {
-        activeTab.value = interfaces.value[0].id;
+        activeTab.value = filteredInterfaces[0].id;
       }
     }
   });
 
   // Generate tab options for TabNavigation
-  const tabOptions = interfaces.value.map(iface => ({
-    id: iface.id,
-    label: `wg-server-${iface.suffix}`,
-    icon: <HiServerOutline class="h-4 w-4" />,
-  }));
+  const tabOptions = useComputed$(() =>
+    interfaces.value.map(iface => ({
+      id: iface.id,
+      label: `wg-server-${iface.suffix}`,
+      icon: <HiServerOutline class="h-4 w-4" />,
+    }))
+  );
 
   return (
     <ServerCard
@@ -99,11 +102,11 @@ export const WireguardServerAdvanced = component$(() => {
 
         {/* Tab Navigation */}
         <TabNavigation
-          tabs={tabOptions}
+          tabs={tabOptions.value}
           activeTab={activeTab.value}
-          onSelect$={(tabId: string) => {
+          onSelect$={$((tabId: string) => {
             activeTab.value = tabId;
-          }}
+          })}
           variant="underline"
           size="sm"
         />

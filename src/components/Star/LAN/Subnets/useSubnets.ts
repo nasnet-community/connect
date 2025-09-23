@@ -226,7 +226,14 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     // Add tunnel subnets (using /30 mask for point-to-point)
     const tunnels = starContext.state.LAN.Tunnel;
-    let tunnelSubnetBase = 100;
+
+    // Fixed starting points for each tunnel type
+    const tunnelSubnetBases = {
+      ipip: 170,
+      eoip: 180,
+      gre: 190,
+      vxlan: 210
+    };
 
     // IPIP Tunnels
     if (tunnels?.IPIP?.length) {
@@ -235,7 +242,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         configs.push({
           key,
           label: $localize`${tunnel.name || `IPIP ${index + 1}`}`,
-          placeholder: tunnelSubnetBase + index * 4,
+          placeholder: tunnelSubnetBases.ipip + index,
           value: values.value[key] ?? null,
           description: $localize`IPIP tunnel connection`,
           category: "tunnel",
@@ -243,7 +250,6 @@ export const useSubnets = (): UseSubnetsReturn => {
           mask: 30,
         });
       });
-      tunnelSubnetBase += tunnels.IPIP.length * 4;
     }
 
     // EoIP Tunnels
@@ -253,7 +259,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         configs.push({
           key,
           label: $localize`${tunnel.name || `EoIP ${index + 1}`}`,
-          placeholder: tunnelSubnetBase + index * 4,
+          placeholder: tunnelSubnetBases.eoip + index,
           value: values.value[key] ?? null,
           description: $localize`EoIP tunnel connection`,
           category: "tunnel",
@@ -261,7 +267,6 @@ export const useSubnets = (): UseSubnetsReturn => {
           mask: 30,
         });
       });
-      tunnelSubnetBase += tunnels.Eoip.length * 4;
     }
 
     // GRE Tunnels
@@ -271,7 +276,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         configs.push({
           key,
           label: $localize`${tunnel.name || `GRE ${index + 1}`}`,
-          placeholder: tunnelSubnetBase + index * 4,
+          placeholder: tunnelSubnetBases.gre + index,
           value: values.value[key] ?? null,
           description: $localize`GRE tunnel connection`,
           category: "tunnel",
@@ -279,7 +284,6 @@ export const useSubnets = (): UseSubnetsReturn => {
           mask: 30,
         });
       });
-      tunnelSubnetBase += tunnels.Gre.length * 4;
     }
 
     // VXLAN Tunnels
@@ -289,7 +293,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         configs.push({
           key,
           label: $localize`${tunnel.name || `VXLAN ${index + 1}`}`,
-          placeholder: tunnelSubnetBase + index * 4,
+          placeholder: tunnelSubnetBases.vxlan + index,
           value: values.value[key] ?? null,
           description: $localize`VXLAN tunnel connection`,
           category: "tunnel",
@@ -443,7 +447,57 @@ export const useSubnets = (): UseSubnetsReturn => {
     return Object.keys(errors.value).length === 0;
   });
 
-  // Handle subnet value changes
+  // Real-time duplicate validation
+  const validateDuplicatesRealTime$ = $(async () => {
+    const newErrors: Record<string, string> = { ...errors.value };
+    const usedValues = new Map<number, string>(); // Map value to config key for better error messages
+
+    // Clear existing duplicate errors
+    Object.keys(newErrors).forEach(key => {
+      if (newErrors[key]?.includes($localize`already in use`) || newErrors[key]?.includes($localize`conflicts with`)) {
+        delete newErrors[key];
+      }
+    });
+
+    // Check each configuration for duplicates
+    for (const config of subnetConfigs.value) {
+      const value = values.value[config.key];
+
+      if (value !== null && value !== undefined) {
+        // Range validation (keep existing)
+        if (value < 1 || value > 254) {
+          newErrors[config.key] = $localize`Value must be between 1-254`;
+          continue;
+        }
+
+        // Reserved addresses validation (keep existing)
+        if (value === 1 || value === 255) {
+          newErrors[config.key] = $localize`Values 1 and 255 are reserved`;
+          continue;
+        }
+
+        // Enhanced duplicate validation with specific conflict information
+        if (usedValues.has(value)) {
+          const conflictingKey = usedValues.get(value)!;
+          const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+          const conflictingLabel = conflictingConfig?.label || conflictingKey;
+
+          newErrors[config.key] = $localize`This subnet conflicts with ${conflictingLabel} (192.168.${value}.0/${config.mask})`;
+
+          // Also mark the original conflicting field if it doesn't have an error yet
+          if (!newErrors[conflictingKey]) {
+            newErrors[conflictingKey] = $localize`This subnet conflicts with ${config.label} (192.168.${value}.0/${config.mask})`;
+          }
+        } else {
+          usedValues.set(value, config.key);
+        }
+      }
+    }
+
+    errors.value = newErrors;
+  });
+
+  // Handle subnet value changes with real-time validation
   const handleChange$ = $((key: string, value: number | null) => {
     values.value = {
       ...values.value,
@@ -457,12 +511,15 @@ export const useSubnets = (): UseSubnetsReturn => {
         [key]: "",
       };
     }
+
+    // Trigger real-time duplicate validation
+    validateDuplicatesRealTime$();
   });
 
-  // Validate all subnets
+  // Validate all subnets (enhanced version for save validation)
   const validateAll$ = $(async (): Promise<boolean> => {
     const newErrors: Record<string, string> = {};
-    const usedValues = new Set<number>();
+    const usedValues = new Map<number, string>();
 
     // Check each configuration
     for (const config of subnetConfigs.value) {
@@ -487,13 +544,16 @@ export const useSubnets = (): UseSubnetsReturn => {
           continue;
         }
 
-        // Duplicate validation
+        // Enhanced duplicate validation with specific conflict information
         if (usedValues.has(value)) {
-          newErrors[config.key] = $localize`This subnet is already in use`;
-          continue;
-        }
+          const conflictingKey = usedValues.get(value)!;
+          const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+          const conflictingLabel = conflictingConfig?.label || conflictingKey;
 
-        usedValues.add(value);
+          newErrors[config.key] = $localize`This subnet conflicts with ${conflictingLabel} (192.168.${value}.0/${config.mask})`;
+        } else {
+          usedValues.set(value, config.key);
+        }
       }
     }
 
@@ -581,6 +641,7 @@ export const useSubnets = (): UseSubnetsReturn => {
     isValid: isValid.value,
     handleChange$,
     validateAll$,
+    validateDuplicatesRealTime$,
     reset$,
     getSubnetString,
     getSuggestedValue,

@@ -10,10 +10,10 @@ export interface InterfaceTypeSelectorProps {
 export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
   ({ selectedType, onSelect$, availableInterfaces }) => {
     // Check which interface types are available
-    const isEthernetAvailable = availableInterfaces.ethernet && availableInterfaces.ethernet.length > 0;
-    const isWirelessAvailable = availableInterfaces.wireless && availableInterfaces.wireless.length > 0;
-    const isSFPAvailable = availableInterfaces.sfp && availableInterfaces.sfp.length > 0;
-    const isLTEAvailable = availableInterfaces.lte && availableInterfaces.lte.length > 0;
+    const isEthernetAvailable = availableInterfaces.Interfaces.ethernet && availableInterfaces.Interfaces.ethernet.length > 0;
+    const isWirelessAvailable = availableInterfaces.Interfaces.wireless && availableInterfaces.Interfaces.wireless.length > 0;
+    const isSFPAvailable = availableInterfaces.Interfaces.sfp && availableInterfaces.Interfaces.sfp.length > 0;
+    const isLTEAvailable = availableInterfaces.Interfaces.lte && availableInterfaces.Interfaces.lte.length > 0;
 
     const interfaceTypes = [
       { type: "Ethernet", isAvailable: isEthernetAvailable },

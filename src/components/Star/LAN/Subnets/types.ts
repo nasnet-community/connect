@@ -52,6 +52,7 @@ export interface UseSubnetsReturn {
   isValid: boolean;
   handleChange$: QRL<(key: string, value: number | null) => void>;
   validateAll$: QRL<() => Promise<boolean>>;
+  validateDuplicatesRealTime$: QRL<() => Promise<void>>;
   reset$: QRL<() => void>;
   getSubnetString: QRL<(config: SubnetConfig, value: number | null) => string>;
   getSuggestedValue: QRL<(category: SubnetCategory) => number>;

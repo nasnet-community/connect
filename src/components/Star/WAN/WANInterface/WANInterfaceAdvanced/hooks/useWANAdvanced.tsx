@@ -26,28 +26,15 @@ export interface UseWANAdvancedReturn {
 export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
   const starContext = useContext(StarContext);
   
-  // Initialize state with at least one link
+  // Initialize state with zero links (empty state pattern)
   const state = useStore<WANWizardState>({
     mode: "advanced", // Always use advanced mode
-    links: [
-      {
-        id: generateUniqueId("wan"),
-        name: `${mode} Link 1`,
-        interfaceType: "Ethernet",
-        interfaceName: "",
-        connectionConfirmed: false, // User must confirm connection settings
-        weight: 100, // Default to 100% for single link
-        priority: 1,
-        InterfaceConfig: {
-          InterfaceName: "ether1"
-        },
-      },
-    ],
+    links: [], // Start with zero links
     validationErrors: {},
   });
 
   // Track link count for naming
-  const linkCounter = useSignal(1);
+  const linkCounter = useSignal(0);
 
   // Generate consistent link names based on mode
   const generateLinkName$ = $((index: number) => {
@@ -117,21 +104,25 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   // Add a new link
   const addLink$ = $(async () => {
     linkCounter.value++;
-    
+
     // Calculate appropriate weight for new link
     const linkCount = state.links.length + 1;
     const equalWeight = Math.floor(100 / linkCount);
-    
+
     const newLink: WANLinkConfig = {
       id: generateUniqueId("wan"),
       name: await generateLinkName$(linkCounter.value),
       interfaceType: "Ethernet",
       interfaceName: "",
-      connectionConfirmed: false, // User must confirm connection settings
+      connectionType: "DHCP", // Default to DHCP
+      connectionConfirmed: true, // DHCP doesn't require additional configuration
       weight: equalWeight, // Set appropriate weight
       priority: state.links.length + 1,
       InterfaceConfig: {
         InterfaceName: "ether1"
+      },
+      connectionConfig: {
+        isDHCP: true
       },
     };
 
@@ -361,22 +352,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
 
   // Reset advanced configuration to initial state
   const resetAdvanced$ = $(() => {
-    linkCounter.value = 1;
+    linkCounter.value = 0; // Reset counter to 0
     state.mode = "advanced";
-    state.links = [
-      {
-        id: generateUniqueId("wan"),
-        name: `${mode} Link 1`,
-        interfaceType: "Ethernet",
-        interfaceName: "",
-        connectionConfirmed: false, // User must confirm connection settings
-        weight: 100, // Default to 100% for single link
-        priority: 1,
-        InterfaceConfig: {
-          InterfaceName: "ether1"
-        },
-      },
-    ];
+    state.links = []; // Reset to empty state
     state.multiLinkStrategy = undefined;
     state.validationErrors = {};
   });

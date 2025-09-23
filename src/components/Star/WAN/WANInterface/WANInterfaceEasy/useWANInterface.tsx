@@ -6,7 +6,12 @@ import type {
   Sfp,
   Wireless,
   Ethernet,
+  InterfaceType,
 } from "../../../StarContext/CommonType";
+import {
+  addOccupiedInterface,
+  removeOccupiedInterface,
+} from "../../../utils/InterfaceManagementUtils";
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
@@ -181,9 +186,40 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   });
 
   const handleInterfaceSelect = $((value: string) => {
+    const previousInterface = selectedInterface.value;
     selectedInterface.value = value;
     updateStarContext();
     validateForm();
+
+    // Update occupied interfaces in context
+    const updatedModels = starContext.state.Choose.RouterModels.map(model => {
+      if (!model.isMaster) return model;
+
+      const updatedModel = { ...model };
+
+      // Remove previous interface from occupied list
+      if (previousInterface) {
+        updatedModel.Interfaces.OccupiedInterfaces = removeOccupiedInterface(
+          updatedModel.Interfaces.OccupiedInterfaces,
+          previousInterface as InterfaceType
+        );
+      }
+
+      // Add new interface to occupied list
+      if (value) {
+        updatedModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
+          updatedModel.Interfaces.OccupiedInterfaces,
+          value as InterfaceType,
+          "WAN"
+        );
+      }
+
+      return updatedModel;
+    });
+
+    starContext.updateChoose$({
+      RouterModels: updatedModels,
+    });
   });
 
   const handleSSIDChange = $((value: string) => {

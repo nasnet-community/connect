@@ -36,17 +36,15 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
     );
 
     const availableInterfaces = masterRouter
-      ? {
-          ethernet: masterRouter.Interfaces.ethernet || [],
-          wireless: masterRouter.Interfaces.wireless || [],
-          sfp: masterRouter.Interfaces.sfp || [],
-          lte: masterRouter.Interfaces.lte || [],
-        }
+      ? masterRouter.Interfaces
       : {
-          ethernet: [],
-          wireless: [],
-          sfp: [],
-          lte: [],
+          Interfaces: {
+            ethernet: [],
+            wireless: [],
+            sfp: [],
+            lte: [],
+          },
+          OccupiedInterfaces: [],
         };
 
     const isInterfaceSelectedInOtherMode = $((iface: string) => {

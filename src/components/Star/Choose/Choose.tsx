@@ -4,23 +4,25 @@ import {
   $,
   useContext,
   useTask$,
-  useVisibleTask$,
 } from "@builder.io/qwik";
+import { track } from "@vercel/analytics";
 import { Frimware } from "./Frimware/Frimware";
 import { RouterMode } from "./RouterMode/RouterMode";
 import { RouterModel } from "./RouterModel/RouterModel";
 import { SlaveRouterModel } from "./RouterModel/SlaveRouterModel";
-import { DomesticWAN } from "./DomesticWAN/DomesticWAN";
+import { WANLinkType } from "./WANLinkType/WANLinkType";
 import { OWRT } from "./OWRT/OWRT";
 import { OWRTInstall } from "./OWRT/Install";
 import { OWRTPackage } from "./OWRT/Package";
 import { TrunkInterface } from "./TrunkInterface/TrunkInterface";
+import { InterfaceType } from "./InterfaceType/InterfaceType";
 import { SetupMode } from "./SetupMode/SetupMode";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../StarContext/StarContext";
-import { NewsletterModal } from "~/components/Core/newsletter";
+import { Newsletter } from "~/components/Core";
+import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter/Newsletter.types";
 
 // Define step components outside the main component to avoid serialization issues
 const FirmwareStep = component$((props: StepProps) => (
@@ -39,8 +41,15 @@ const SlaveRouterModelStep = component$((props: StepProps) => (
   <SlaveRouterModel isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
 
-const DomesticStep = component$((props: StepProps) => (
-  <DomesticWAN isComplete={props.isComplete} onComplete$={props.onComplete$} />
+const WANLinkStep = component$((props: StepProps) => (
+  <WANLinkType isComplete={props.isComplete} onComplete$={props.onComplete$} />
+));
+
+const InterfaceTypeStep = component$((props: StepProps) => (
+  <InterfaceType
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
+  />
 ));
 
 const TrunkInterfaceStep = component$((props: StepProps) => (
@@ -77,8 +86,6 @@ export const Choose = component$((props: StepProps) => {
   const openWRTOption = useSignal<"stock" | "already-installed" | undefined>(
     undefined,
   );
-  const showNewsletterModal = useSignal(false);
-  const newsletterModalShown = useSignal(false);
 
   // Handle OpenWRT option selection
   const _handleOpenWRTOptionSelect = $(
@@ -86,6 +93,42 @@ export const Choose = component$((props: StepProps) => {
       openWRTOption.value = option;
     },
   );
+
+  // Handle newsletter subscription for router configuration tips
+  const handleNewsletterSubscription$ = $(async (subscription: NewsletterSubscription) => {
+    try {
+      // Track newsletter signup from router configuration flow
+      if (typeof track !== 'undefined') {
+        track("newsletter_subscription", {
+          source: "router-configuration",
+          step: "choose",
+          email_domain: subscription.email.split('@')[1] || 'unknown',
+          firmware: starContext.state.Choose.Firmware || 'not-selected',
+          mode: starContext.state.Choose.Mode || 'not-selected',
+        });
+      }
+
+      // In a real application, this would send to your newsletter API
+      console.log("Router configuration newsletter subscription:", subscription);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Here you would typically call your newsletter API
+      // Example: await fetch('/api/newsletter/subscribe', {
+      //   method: 'POST',
+      //   body: JSON.stringify({
+      //     ...subscription,
+      //     source: 'router-configuration',
+      //     interests: ['mikrotik', 'router-setup', 'network-security']
+      //   })
+      // });
+
+    } catch (error) {
+      console.error("Failed to subscribe to newsletter:", error);
+      throw new Error($localize`Failed to subscribe. Please try again.`);
+    }
+  });
 
   // Create step building functions to avoid serialization issues
   const createMikroTikSteps = $((routerModeComplete: boolean = false) => {
@@ -98,8 +141,8 @@ export const Choose = component$((props: StepProps) => {
       },
       {
         id: 3,
-        title: $localize`Domestic Link`,
-        component: DomesticStep,
+        title: $localize`WAN Link Type`,
+        component: WANLinkStep,
         isComplete: false,
       },
       {
@@ -133,7 +176,16 @@ export const Choose = component$((props: StepProps) => {
       });
       nextId++;
 
-      // Add Trunk Interface step after slave router selection
+      // Add Interface Type step first
+      baseSteps.push({
+        id: nextId,
+        title: $localize`Interface Type`,
+        component: InterfaceTypeStep,
+        isComplete: false,
+      });
+      nextId++;
+
+      // Add Trunk Interface step after interface type selection
       baseSteps.push({
         id: nextId,
         title: $localize`Trunk Interface`,
@@ -199,8 +251,8 @@ export const Choose = component$((props: StepProps) => {
     },
     {
       id: 3,
-      title: $localize`Domestic Link`,
-      component: DomesticStep,
+      title: $localize`WAN Link Type`,
+      component: WANLinkStep,
       isComplete: false,
     },
     {
@@ -226,22 +278,6 @@ export const Choose = component$((props: StepProps) => {
       // Check if all steps are complete
       if (steps.value.every((step) => step.isComplete)) {
         props.onComplete$();
-      }
-    }
-  });
-
-  // Show newsletter modal when user selects MikroTik firmware if not already subscribed
-  useVisibleTask$(({ track }) => {
-    const selectedFirmware = track(() => starContext.state.Choose.Firmware);
-
-    if (selectedFirmware === "MikroTik" && !newsletterModalShown.value) {
-      const isSubscribed = starContext.state.Choose.Newsletter?.isSubscribed;
-      if (!isSubscribed) {
-        // Show modal after a short delay
-        setTimeout(() => {
-          showNewsletterModal.value = true;
-          newsletterModalShown.value = true;
-        }, 1000);
       }
     }
   });
@@ -327,8 +363,8 @@ export const Choose = component$((props: StepProps) => {
       const setupModeStepComplete =
         steps.value.find((step) => step.title === $localize`Setup Mode`)
           ?.isComplete || false;
-      const domesticLinkStepComplete =
-        steps.value.find((step) => step.title === $localize`Domestic Link`)
+      const wanLinkStepComplete =
+        steps.value.find((step) => step.title === $localize`WAN Link Type`)
           ?.isComplete || false;
       const routerModelStepComplete =
         steps.value.find((step) => step.title === $localize`Router Model`)
@@ -349,11 +385,11 @@ export const Choose = component$((props: StepProps) => {
         setupModeStep.isComplete = setupModeStepComplete;
       }
       
-      const domesticLinkStep = mikrotikSteps.find(
-        (step) => step.title === $localize`Domestic Link`,
+      const wanLinkStep = mikrotikSteps.find(
+        (step) => step.title === $localize`WAN Link Type`,
       );
-      if (domesticLinkStep) {
-        domesticLinkStep.isComplete = domesticLinkStepComplete;
+      if (wanLinkStep) {
+        wanLinkStep.isComplete = wanLinkStepComplete;
       }
       
       const routerModelStep = mikrotikSteps.find(
@@ -462,12 +498,29 @@ export const Choose = component$((props: StepProps) => {
     }
   });
 
-  const handleNewsletterClose = $(() => {
-    showNewsletterModal.value = false;
-  });
-
   return (
     <div class="container mx-auto w-full px-4">
+      {/* Newsletter Section - Router Configuration Tips */}
+      <div class="mb-12">
+        <Newsletter
+          variant="horizontal"
+          size="md"
+          title={$localize`Stay Updated with NASNET Connect`}
+          description={$localize`Get the latest product updates, new features, and important announcements delivered directly to your inbox.`}
+          placeholder={$localize`your.email@example.com`}
+          buttonText={$localize`Subscribe Now`}
+          showLogo={true}
+          themeColors={true}
+          theme="branded"
+          glassmorphism={false}
+          animated={true}
+          touchOptimized={true}
+          surfaceElevation="elevated"
+          onSubscribe$={handleNewsletterSubscription$}
+          class="max-w-6xl mx-auto backdrop-blur-sm bg-gradient-to-br from-primary-50/80 to-secondary-50/80 dark:from-primary-dark-950/80 dark:to-secondary-dark-950/80 border border-primary-200/50 dark:border-primary-dark-700/50 shadow-lg hover:shadow-xl transition-all duration-300"
+        />
+      </div>
+
       {/* Add a key to force re-render when steps change */}
       <VStepper
         key={`stepper-${stepperKey.value}-${steps.value.length}-${steps.value.map((s) => s.id).join("-")}`}
@@ -483,11 +536,30 @@ export const Choose = component$((props: StepProps) => {
         isComplete={props.isComplete}
       />
 
-      {/* Newsletter Modal */}
-      <NewsletterModal
-        isVisible={showNewsletterModal.value}
-        onClose$={handleNewsletterClose}
-      />
+      {/* Completion Newsletter - Shown when all steps are completed */}
+      {/* {steps.value.every((step) => step.isComplete) && (
+        <div class="mt-16 mb-8">
+          <Newsletter
+            variant="horizontal"
+            size="md"
+            title={$localize`Don't Miss Future Updates`}
+            description={$localize`Thank you for using NASNET Connect! Subscribe to receive product updates, new features, and exclusive offers.`}
+            placeholder={$localize`your.email@example.com`}
+            buttonText={$localize`Stay Connected`}
+            showLogo={false}
+            themeColors={true}
+            theme="glass"
+            glassmorphism={true}
+            animated={true}
+            compact={true}
+            touchOptimized={true}
+            surfaceElevation="base"
+            onSubscribe$={handleNewsletterSubscription$}
+            class="max-w-5xl mx-auto bg-gradient-to-r from-success-50/60 to-primary-50/60 dark:from-success-dark-950/60 dark:to-primary-dark-950/60 border border-success-200/30 dark:border-success-dark-700/30"
+            privacyNoticeText={$localize`Join thousands of users. Unsubscribe anytime.`}
+          />
+        </div>
+      )} */}
     </div>
   );
 });

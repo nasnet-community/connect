@@ -34,14 +34,9 @@ export const obfuscateUUID = (uuid: string): string => {
   return performUUIDObfuscation(uuid);
 };
 
-export const getObfuscatedUserUUID = (state: StarState): string => {
-  const userUUID = state.Choose.Newsletter?.userUUID;
-
-  if (!userUUID) {
-    return "";
-  }
-
-  return obfuscateUUID(userUUID);
+export const getObfuscatedUserUUID = (_state: StarState): string => {
+  // Newsletter feature has been removed, returning empty string
+  return "";
 };
 
 // export const BridgePorts = (RouterInterfaces: RouterInterfaces, EInterface: EthernetInterfaceConfig[]): RouterConfig => {

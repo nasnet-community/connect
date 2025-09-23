@@ -28,8 +28,8 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   // Check if subnets are already configured
   const hasSubnetsConfigured = !!(starContext.state.LAN.Subnets && Object.keys(starContext.state.LAN.Subnets).length > 0);
 
-  // Enable/disable state - default true if subnets are configured, otherwise true (enabled by default)
-  const subnetsEnabled = useSignal(hasSubnetsConfigured || true);
+  // Enable/disable state - default false (disabled by default), but enabled if subnets are already configured
+  const subnetsEnabled = useSignal(hasSubnetsConfigured || false);
 
   // Active tab state
   const activeTab = useSignal('base');
@@ -214,23 +214,165 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           />
 
           {!subnetsEnabled.value ? (
-            /* Disabled State with Modern Design */
+            /* Disabled State with Default Subnet Display */
             <div class="space-y-6">
               <div class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 backdrop-blur-sm">
                 <div class="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 dark:from-gray-800/50 dark:to-gray-900/50" />
-                <div class="relative z-10 p-12 text-center">
-                  <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                    <LuNetwork class="h-10 w-10 text-gray-400" />
+                <div class="relative z-10 p-8">
+                  <div class="mb-6 text-center">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                      <LuNetwork class="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 class="mb-2 text-xl font-semibold text-gray-700 dark:text-gray-300">
+                      {$localize`Using Default Network Configuration`}
+                    </h3>
+                    <p class="mx-auto max-w-md text-sm text-gray-600 dark:text-gray-400">
+                      {$localize`The following default subnets will be used. Enable subnet configuration above to customize these values.`}
+                    </p>
                   </div>
-                  <h3 class="mb-3 text-xl font-semibold text-gray-700 dark:text-gray-300">
-                    {$localize`Network Configuration Disabled`}
-                  </h3>
-                  <p class="mx-auto max-w-md text-gray-600 dark:text-gray-400">
-                    {$localize`Enable subnet configuration above to set up your network segments and IP addressing scheme.`}
-                  </p>
+
+                  {/* Default Subnets Display */}
+                  <div class="mt-8 space-y-4">
+                    {/* Base Networks */}
+                    <div class="p-4 rounded-lg bg-primary-50/50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                      <h4 class="font-medium text-primary-700 dark:text-primary-300 mb-3 flex items-center gap-2">
+                        <LuNetwork class="h-4 w-4" />
+                        {$localize`Base Networks`}
+                      </h4>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both" ? (
+                          <>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Split Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.10.0/24</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Domestic Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.20.0/24</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Foreign Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.30.0/24</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`VPN Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.40.0/24</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`VPN Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.10.0/24</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Foreign Network`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.30.0/24</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* VPN Server Networks if configured */}
+                    {starContext.state.LAN.VPNServer && (
+                      (starContext.state.LAN.VPNServer.WireguardServers && starContext.state.LAN.VPNServer.WireguardServers.length > 0) ||
+                      (starContext.state.LAN.VPNServer.OpenVpnServer && starContext.state.LAN.VPNServer.OpenVpnServer.length > 0) ||
+                      starContext.state.LAN.VPNServer.L2tpServer?.enabled ||
+                      starContext.state.LAN.VPNServer.PptpServer?.enabled ||
+                      starContext.state.LAN.VPNServer.SstpServer?.enabled ||
+                      starContext.state.LAN.VPNServer.Ikev2Server
+                    ) && (
+                      <div class="p-4 rounded-lg bg-green-50/50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <h4 class="font-medium text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
+                          <LuShield class="h-4 w-4" />
+                          {$localize`VPN Server Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {starContext.state.LAN.VPNServer.WireguardServers?.map((server, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{server.Interface?.Name || `WireGuard${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{110 + index}.0/24</span>
+                            </div>
+                          ))}
+                          {starContext.state.LAN.VPNServer.OpenVpnServer?.map((server, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{server.name || `OpenVPN${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{120 + index}.0/24</span>
+                            </div>
+                          ))}
+                          {starContext.state.LAN.VPNServer.L2tpServer?.enabled && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`L2TP`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.150.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.LAN.VPNServer.PptpServer?.enabled && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`PPTP`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.130.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.LAN.VPNServer.SstpServer?.enabled && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`SSTP`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.140.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.LAN.VPNServer.Ikev2Server && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`IKEv2`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.160.0/24</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tunnel Networks if configured */}
+                    {starContext.state.LAN.Tunnel && (
+                      (starContext.state.LAN.Tunnel.IPIP && starContext.state.LAN.Tunnel.IPIP.length > 0) ||
+                      (starContext.state.LAN.Tunnel.Eoip && starContext.state.LAN.Tunnel.Eoip.length > 0) ||
+                      (starContext.state.LAN.Tunnel.Gre && starContext.state.LAN.Tunnel.Gre.length > 0) ||
+                      (starContext.state.LAN.Tunnel.Vxlan && starContext.state.LAN.Tunnel.Vxlan.length > 0)
+                    ) && (
+                      <div class="p-4 rounded-lg bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                        <h4 class="font-medium text-purple-700 dark:text-purple-300 mb-3 flex items-center gap-2">
+                          <LuRoute class="h-4 w-4" />
+                          {$localize`Tunnel Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {starContext.state.LAN.Tunnel.IPIP?.map((tunnel, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{tunnel.name || `IPIP${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{170 + index}.0/30</span>
+                            </div>
+                          ))}
+                          {starContext.state.LAN.Tunnel.Eoip?.map((tunnel, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{tunnel.name || `EoIP${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{180 + index}.0/30</span>
+                            </div>
+                          ))}
+                          {starContext.state.LAN.Tunnel.Gre?.map((tunnel, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{tunnel.name || `GRE${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{190 + index}.0/30</span>
+                            </div>
+                          ))}
+                          {starContext.state.LAN.Tunnel.Vxlan?.map((tunnel, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{tunnel.name || `VXLAN${index + 1}`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{210 + index}.0/30</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              
+
               <Card variant="outlined" class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 <CardFooter>
                   <div class="flex items-center justify-end w-full">

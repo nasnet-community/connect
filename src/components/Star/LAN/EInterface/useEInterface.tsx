@@ -55,14 +55,14 @@ export const useEInterface = () => {
     }
 
     const masterModel = routerModels.find((model) => model.isMaster);
-    if (!masterModel || !masterModel.Interfaces.ethernet) {
+    if (!masterModel || !masterModel.Interfaces.Interfaces.ethernet) {
       return [] as Ethernet[];
     }
 
     const usedWANInterfaces = await getUsedWANInterfaces();
 
-    return masterModel.Interfaces.ethernet.filter(
-      (intf) => !usedWANInterfaces.includes(intf),
+    return (masterModel.Interfaces.Interfaces.ethernet || []).filter(
+      (intf: string) => !usedWANInterfaces.includes(intf),
     ) as Ethernet[];
   });
 

@@ -18,3 +18,6 @@ export * from "./Popover";
 
 // Export from Dialog
 export * from "./Dialog";
+
+// Export from Newsletter
+export * from "./Newsletter";

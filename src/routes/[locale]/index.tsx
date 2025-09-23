@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
-import { Star } from "~/components/Star/StarHome/Star";
+import { LandingPage } from "~/components/Star/LandingPage";
 
 export default component$(() => {
-  return <Star />;
+  return <LandingPage />;
 });

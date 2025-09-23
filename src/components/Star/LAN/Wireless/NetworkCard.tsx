@@ -1,4 +1,4 @@
-import { component$, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, type QRL, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
 import { 
   HiSparklesOutline, 
   HiWifiOutline, 
@@ -75,12 +75,12 @@ export const NetworkCard = component$<NetworkCardProps>(
       {
         value: "visible",
         label: $localize`Visible`,
-        icon: <HiEyeOutline />,
+        icon: <HiEyeOutline /> as JSXNode,
       },
       {
         value: "hidden",
         label: $localize`Hidden`,
-        icon: <HiEyeSlashOutline />,
+        icon: <HiEyeSlashOutline /> as JSXNode,
       },
     ];
 
@@ -88,12 +88,12 @@ export const NetworkCard = component$<NetworkCardProps>(
       {
         value: "combined",
         label: $localize`Combined`,
-        icon: <HiSignalOutline />,
+        icon: <HiSignalOutline /> as JSXNode,
       },
       {
         value: "split",
         label: $localize`Split Band`,
-        icon: <HiSignalSlashOutline />,
+        icon: <HiSignalSlashOutline /> as JSXNode,
       },
     ];
 
@@ -101,12 +101,12 @@ export const NetworkCard = component$<NetworkCardProps>(
       {
         value: "disabled",
         label: $localize`Disabled`,
-        icon: <HiXCircleOutline />,
+        icon: <HiXCircleOutline /> as JSXNode,
       },
       {
         value: "enabled",
         label: $localize`Enabled`,
-        icon: <HiCheckCircleOutline />,
+        icon: <HiCheckCircleOutline /> as JSXNode,
       },
     ];
 
@@ -140,7 +140,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                 <SegmentedControl
                   value={enabledState}
                   options={enabledOptions}
-                  onChange$={$((value: string) => {
+                  onChange$={$((_value: string) => {
                     onDisabledToggle();
                   })}
                   size="sm"
@@ -156,7 +156,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                   <SegmentedControl
                     value={hideState}
                     options={hideOptions}
-                    onChange$={$((value: string) => {
+                    onChange$={$((_value: string) => {
                       onHideToggle();
                     })}
                     disabled={isDisabled}
@@ -172,7 +172,7 @@ export const NetworkCard = component$<NetworkCardProps>(
                   <SegmentedControl
                     value={splitBandState}
                     options={splitBandOptions}
-                    onChange$={$((value: string) => {
+                    onChange$={$((_value: string) => {
                       onSplitBandToggle();
                     })}
                     disabled={isDisabled}

@@ -52,39 +52,29 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       
       // Check if we have existing state in StarContext for this mode
       const existingConfig = starContext.state.WAN.WANLink[mode];
-      
+
       // If we have existing config and no links, initialize with it
       if (existingConfig?.WANConfigs?.[0] && advancedHooks.state.links.length === 0) {
         const interfaceConfig = existingConfig.WANConfigs[0].InterfaceConfig;
         advancedHooks.state.links = [{
           id: `${mode.toLowerCase()}-1`,
           name: `${mode} Link`,
-          interfaceType: interfaceConfig.InterfaceName.includes("wifi") ? "Wireless" : 
-                        interfaceConfig.InterfaceName.includes("lte") ? "LTE" : 
+          interfaceType: interfaceConfig.InterfaceName.includes("wifi") ? "Wireless" :
+                        interfaceConfig.InterfaceName.includes("lte") ? "LTE" :
                         interfaceConfig.InterfaceName.includes("sfp") ? "SFP" : "Ethernet",
           interfaceName: interfaceConfig.InterfaceName || "",
           InterfaceConfig: interfaceConfig,
-          connectionConfirmed: false, // User must confirm connection settings
-          priority: 1,
-          weight: 100, // Single link gets 100% weight
-        }];
-      }
-      
-      // Initialize with at least one link if none exist
-      if (advancedHooks.state.links.length === 0) {
-        advancedHooks.state.links = [{
-          id: `${mode.toLowerCase()}-1`,
-          name: `${mode} Link`,
-          interfaceType: "Ethernet",
-          interfaceName: "",
-          connectionConfirmed: false, // User must confirm connection settings
-          priority: 1,
-          weight: 100, // Single link gets 100% weight
-          InterfaceConfig: {
-            InterfaceName: "ether1"
+          connectionType: "DHCP", // Default to DHCP
+          connectionConfirmed: true, // DHCP doesn't require additional configuration
+          connectionConfig: {
+            isDHCP: true
           },
+          priority: 1,
+          weight: 100, // Single link gets 100% weight
         }];
       }
+
+      // Note: No longer automatically creating default links - users start with empty state
       
       // Ensure all links have weights and priorities set
       advancedHooks.state.links = advancedHooks.state.links.map((link, index) => ({
@@ -164,6 +154,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             <Step1_LinkInterface
               wizardState={advancedHooks.state}
               wizardActions={advancedHooks}
+              mode={mode}
             />
           ),
           isComplete: step1Complete.value,
@@ -385,7 +376,9 @@ export const WANAdvanced = component$<WANAdvancedProps>(
                 
                 <div>
                   <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {$localize`Advanced WAN Configuration`}
+                    {mode === "Foreign"
+                      ? $localize`Foreign WAN Configuration`
+                      : $localize`Domestic WAN Configuration`}
                   </h1>
                   <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     {$localize`Configure multiple WAN connections with advanced networking features`}
