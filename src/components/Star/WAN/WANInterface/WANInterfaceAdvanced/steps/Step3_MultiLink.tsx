@@ -254,7 +254,6 @@ export const Step3_MultiLink = component$<Step3Props>(
                 options={[
                   { value: "PCC", label: "PCC (Per Connection Classifier)" },
                   { value: "NTH", label: "NTH (Nth Connection)" },
-                  { value: "RoundRobin", label: "Round Robin" },
                   { value: "ECMP", label: "ECMP (Equal Cost Multi-Path)" },
                   { value: "Bonding", label: "Bonding" }
                 ]}

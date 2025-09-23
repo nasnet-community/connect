@@ -41,23 +41,8 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
     const selectedRouter = availableSlaveRouters.find((r) => r.model === model);
     if (!selectedRouter) return;
 
-    const interfaces: RouterInterfaces = {};
-
-    if (selectedRouter.interfaces.ethernet?.length) {
-      interfaces.ethernet = selectedRouter.interfaces.ethernet;
-    }
-
-    if (selectedRouter.interfaces.wireless?.length) {
-      interfaces.wireless = selectedRouter.interfaces.wireless;
-    }
-
-    if (selectedRouter.interfaces.sfp?.length) {
-      interfaces.sfp = selectedRouter.interfaces.sfp;
-    }
-
-    if (selectedRouter.interfaces.lte?.length) {
-      interfaces.lte = selectedRouter.interfaces.lte;
-    }
+    // Use the full RouterInterfaces structure from the selected router
+    const interfaces: RouterInterfaces = selectedRouter.interfaces;
 
     // Check if this model is already selected as slave
     const isAlreadySelected = slaveRouters.some((rm) => rm.Model === model);

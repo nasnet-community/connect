@@ -23,7 +23,6 @@ export const getLoadBalanceMethodDisplay = (method?: string): string => {
   const methods: Record<string, string> = {
     PCC: "PCC (Per Connection Classifier)",
     NTH: "NTH (Nth Connection)",
-    RoundRobin: "Round Robin",
     ECMP: "ECMP (Equal Cost Multi-Path)",
     Bonding: "Bonding",
   };

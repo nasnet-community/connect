@@ -56,7 +56,7 @@ export const LAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
 
   const hasWirelessEInterface = starContext.state.Choose.RouterModels.some(
-    (routerModel) => !!routerModel.Interfaces.wireless?.length,
+    (routerModel) => !!routerModel.Interfaces.Interfaces.wireless?.length,
   );
 
   const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");

@@ -1,6 +1,5 @@
-import { component$, type QRL, useSignal, $ } from "@builder.io/qwik";
-import { FormField, Input, Toggle, ErrorMessage, Select } from "~/components/Core";
-import type { SelectOption } from "~/components/Core/Select/UnifiedSelect";
+import { component$, type QRL, useSignal } from "@builder.io/qwik";
+import { FormField, Input, ErrorMessage, Select } from "~/components/Core";
 import { 
   LuLock, 
   LuServer, 
@@ -17,7 +16,7 @@ interface DOHConfigurationProps {
   domainError?: string;
   bindingError?: string;
   dohPresets?: DNSPreset[];
-  onDOHChange$: QRL<(field: keyof DOHConfig | "enabled", value: string | boolean) => void>;
+  disabled?: boolean;
   onApplyDOHPreset$?: QRL<(preset: DNSPreset) => void>;
 }
 
@@ -46,37 +45,21 @@ const getNetworkColors = (target: "Domestic" | "VPN") => {
 };
 
 export const DOHConfiguration = component$<DOHConfigurationProps>(
-  ({ dohConfig, networkInfo, domainError, bindingError, dohPresets = [], onDOHChange$, onApplyDOHPreset$ }) => {
-    // Track enabled state locally since it's not part of DOHConfig
-    const isEnabled = useSignal(!!dohConfig.domain);
-    const isExpanded = useSignal(!!dohConfig.domain);
+  ({ dohConfig: _dohConfig, networkInfo, domainError, bindingError, dohPresets = [], disabled = false, onApplyDOHPreset$ }) => {
     const isDropdownOpen = useSignal(false);
     const colors = getNetworkColors(networkInfo.target);
-
-    const handlePresetSelect = $((value: string | string[]) => {
-      if (onApplyDOHPreset$) {
-        const presetValue = Array.isArray(value) ? value[0] : value;
-        const preset = dohPresets.find(p => p.primary === presetValue);
-        if (preset) {
-          onApplyDOHPreset$(preset);
-        }
-      }
-    });
-
-    // Convert DOH presets to SelectOption format
-    const presetOptions: SelectOption[] = dohPresets.map(preset => ({
-      value: preset.primary,
-      label: `${preset.name} (${preset.primary})`,
-    }));
 
     return (
       <div class={`
         group relative overflow-visible rounded-xl backdrop-blur-md
-        bg-white/70 dark:bg-gray-900/70 
-        border-2 ${colors.border}
-        shadow-lg hover:shadow-xl ${colors.glow}
+        ${disabled
+          ? 'bg-gray-100/50 dark:bg-gray-800/30 opacity-60'
+          : 'bg-white/70 dark:bg-gray-900/70'
+        }
+        border-2 ${disabled ? 'border-gray-300/30 dark:border-gray-600/30' : colors.border}
+        shadow-lg ${disabled ? '' : `hover:shadow-xl ${colors.glow}`}
         transition-all duration-500 ease-out
-        hover:scale-[1.01] hover:backdrop-blur-lg
+        ${disabled ? '' : 'hover:scale-[1.01] hover:backdrop-blur-lg'}
         motion-safe:animate-fade-in-up animation-delay-200
         ${isDropdownOpen.value ? 'z-[100]' : ''}
       `}>
@@ -122,29 +105,37 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
               </div>
             </div>
 
-            {/* Toggle Section */}
+            {/* Status Section */}
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-3">
-                <Toggle
-                  checked={isEnabled.value}
-                  onChange$={$((checked) => {
-                    isEnabled.value = checked;
-                    isExpanded.value = checked;
-                    if (!checked) {
-                      // Clear DOH config when disabled
-                      onDOHChange$("domain", "");
-                      onDOHChange$("bindingIP", "");
+                <div class={`
+                  flex items-center justify-center w-12 h-6 rounded-full
+                  ${disabled
+                    ? 'bg-gray-300 dark:bg-gray-600'
+                    : 'bg-red-100 dark:bg-red-900/30'
+                  }
+                `}>
+                  <div class={`
+                    w-4 h-4 rounded-full transition-all duration-200
+                    ${disabled
+                      ? 'bg-gray-500 translate-x-[-8px]'
+                      : 'bg-red-500 translate-x-[-8px]'
                     }
-                  })}
-                  size="lg"
-                  color="primary"
-                />
+                  `} />
+                </div>
                 <div class="text-right">
-                  <div class="text-sm font-medium text-gray-900 dark:text-white">
-                    {isEnabled.value ? $localize`Enabled` : $localize`Disabled`}
+                  <div class={`text-sm font-medium ${
+                    disabled
+                      ? 'text-gray-500 dark:text-gray-400'
+                      : 'text-gray-900 dark:text-white'
+                  }`}>
+                    {$localize`Disabled`}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {isEnabled.value ? $localize`Secure DNS` : $localize`Standard DNS`}
+                    {disabled
+                      ? $localize`Currently unavailable`
+                      : $localize`Standard DNS`
+                    }
                   </div>
                 </div>
               </div>
@@ -153,8 +144,14 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
         </div>
 
         {/* Configuration Fields */}
-        {isEnabled.value && (
-          <div class="relative p-6 space-y-6 animate-slide-down">
+        {!disabled && (
+          <div class="relative p-6 space-y-6 animate-slide-down opacity-40 pointer-events-none">
+            {/* Disabled Notice */}
+            <div class="mb-4 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
+                {$localize`DNS over HTTPS (DOH) is currently disabled. This feature is temporarily unavailable.`}
+              </p>
+            </div>
             {/* Domain Configuration */}
             <div class="space-y-4">
               <FormField
@@ -172,24 +169,15 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
                   
                   <Input
                     type="text"
-                    value={dohConfig.domain || ""}
+                    value=""
                     placeholder="cloudflare-dns.com"
-                    onInput$={(_, element) => {
-                      onDOHChange$("domain", (element as unknown as HTMLInputElement).value);
-                    }}
+                    disabled={true}
                     class={`
                       pl-11 pr-4 h-12 rounded-lg
-                      bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm
-                      border-gray-200/60 dark:border-gray-700/60
-                      focus:bg-white/80 dark:focus:bg-gray-800/80
-                      focus:border-primary-400 dark:focus:border-primary-500
-                      focus:ring-2 focus:ring-primary-500/20
+                      bg-gray-100/60 dark:bg-gray-700/60 backdrop-blur-sm
+                      border-gray-300/60 dark:border-gray-600/60
+                      cursor-not-allowed
                       transition-all duration-300
-                      hover:bg-white/70 dark:hover:bg-gray-800/70
-                      ${domainError 
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" 
-                        : ""
-                      }
                     `}
                   />
                 </div>
@@ -216,24 +204,15 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
                   
                   <Input
                     type="text"
-                    value={dohConfig.bindingIP || ""}
+                    value=""
                     placeholder="192.168.1.1"
-                    onInput$={(_, element) => {
-                      onDOHChange$("bindingIP", (element as unknown as HTMLInputElement).value);
-                    }}
+                    disabled={true}
                     class={`
                       pl-11 pr-4 h-12 rounded-lg
-                      bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm
-                      border-gray-200/60 dark:border-gray-700/60
-                      focus:bg-white/80 dark:focus:bg-gray-800/80
-                      focus:border-primary-400 dark:focus:border-primary-500
-                      focus:ring-2 focus:ring-primary-500/20
+                      bg-gray-100/60 dark:bg-gray-700/60 backdrop-blur-sm
+                      border-gray-300/60 dark:border-gray-600/60
+                      cursor-not-allowed
                       transition-all duration-300
-                      hover:bg-white/70 dark:hover:bg-gray-800/70
-                      ${bindingError 
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" 
-                        : ""
-                      }
                     `}
                   />
                 </div>
@@ -249,17 +228,14 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
             {/* DOH Presets */}
             {dohPresets.length > 0 && onApplyDOHPreset$ && (
               <div class="space-y-2">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400">
                   {$localize`Quick DNS Presets`}
                 </label>
                 <Select
                   placeholder={$localize`Select a DOH provider`}
-                  options={presetOptions}
-                  onChange$={handlePresetSelect}
-                  onOpenChange$={$((isOpen: boolean) => {
-                    isDropdownOpen.value = isOpen;
-                  })}
-                  class="w-full"
+                  options={[]}
+                  disabled={true}
+                  class="w-full opacity-50 cursor-not-allowed"
                   size="md"
                 />
               </div>

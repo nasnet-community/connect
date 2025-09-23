@@ -15,6 +15,7 @@ import { ScriptGuide } from "./ScriptGuide";
 // import { TutorialCard } from './TutorialCard';
 import { useConfigGenerator } from "./useShow";
 // import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
+import { Newsletter } from "~/components/Core";
 
 export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
@@ -104,8 +105,28 @@ import routeros_api
 def configure_slave_router(host, username, password):
     # TODO: Implement slave router Python configuration
     pass`;
-    
+
     await downloadSlaveRouterFile(content, slaveRouter, index, "py");
+  });
+
+  const handleNewsletterSubscribe = $(async (subscription: { email: string; timestamp: Date; source?: string }) => {
+    // Track newsletter subscription
+    track("newsletter_subscribed", {
+      location: "show_config",
+      email_domain: subscription.email.split('@')[1],
+      source: subscription.source || "show_config",
+    });
+
+    // Here you would typically call your newsletter API
+    // For now, we'll simulate a successful subscription
+    console.log(`Newsletter subscription for: ${subscription.email} at ${subscription.timestamp}`);
+
+    // Return a promise to handle the subscription
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 1000);
+    });
   });
 
   return (
@@ -148,6 +169,25 @@ def configure_slave_router(host, username, password):
         {/* <MikrotikApplyConfig /> */}
 
         <ScriptGuide />
+
+        {/* Newsletter Section */}
+        <div class="mt-16">
+          <Newsletter
+            variant="horizontal"
+            size="lg"
+            title={$localize`Stay Updated with Router Configurations`}
+            description={$localize`Get the latest MikroTik tips, security updates, and configuration best practices delivered to your inbox.`}
+            placeholder={$localize`Enter your email address`}
+            buttonText={$localize`Subscribe Now`}
+            onSubscribe$={handleNewsletterSubscribe}
+            showLogo={true}
+            glassmorphism={true}
+            themeColors={true}
+            theme="branded"
+            animated={true}
+            fullWidth={true}
+          />
+        </div>
       </div>
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">

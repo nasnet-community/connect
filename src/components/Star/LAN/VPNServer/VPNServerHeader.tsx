@@ -1,8 +1,6 @@
 import { component$, type Signal, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
 import {
   HiServerOutline,
-  HiCheckCircleOutline,
-  HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { SegmentedControl } from "~/components/Core";
 

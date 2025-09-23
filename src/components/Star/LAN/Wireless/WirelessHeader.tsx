@@ -1,4 +1,4 @@
-import { component$, type Signal, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, type Signal, type QRL, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
 import {
   HiWifiOutline,
   HiExclamationTriangleOutline,
@@ -27,12 +27,12 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
       {
         value: "disabled",
         label: $localize`Disabled`,
-        icon: <HiXCircleOutline />,
+        icon: <HiXCircleOutline /> as JSXNode,
       },
       {
-        value: "enabled", 
+        value: "enabled",
         label: $localize`Enabled`,
-        icon: <HiCheckCircleOutline />,
+        icon: <HiCheckCircleOutline /> as JSXNode,
       },
     ];
 

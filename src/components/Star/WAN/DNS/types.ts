@@ -18,6 +18,7 @@ export interface NetworkDNSConfig {
 export interface DNSStepProps {
   isComplete?: boolean;
   onComplete$: QRL<() => void>;
+  onDisabled$?: QRL<() => void>;
 }
 
 export interface ValidationErrors {

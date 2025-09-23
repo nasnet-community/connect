@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageSelect } from "./LanguageSelect";
@@ -26,6 +27,12 @@ export const Header = component$(() => {
           <Logo />
 
           <div class="hidden items-center gap-6 lg:flex">
+            <Link
+              href="/star/"
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+            >
+              {$localize`Launch App`}
+            </Link>
             <ThemeToggle
               isDarkMode={isDarkMode.value}
               onToggle$={toggleTheme$}
@@ -80,6 +87,12 @@ export const Header = component$(() => {
           class={`fixed inset-x-0 top-20 border-t border-primary-100 bg-white/90 p-4 backdrop-blur-xl transition-all duration-300 lg:hidden dark:border-primary-900/20 dark:bg-surface-dark/90 ${isMenuOpen.value ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"}`}
         >
           <div class="space-y-4">
+            <Link
+              href="/star/"
+              class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+            >
+              {$localize`Launch App`}
+            </Link>
             <div class="flex items-center justify-between gap-4 border-t border-primary-100 pt-4 dark:border-primary-900/20">
               <ThemeToggle
                 isDarkMode={isDarkMode.value}

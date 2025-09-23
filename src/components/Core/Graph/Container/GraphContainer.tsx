@@ -6,7 +6,7 @@ import { LuX } from "@qwikest/icons/lucide";
 // Default config values
 export const defaultConfig = {
   width: "100%",
-  height: "11rem", // 176px to match h-44
+  height: "26rem", // 416px to accommodate larger graphs
   expandOnHover: false,
   expandOnClick: true,
   maxExpandedWidth: "90vw",
@@ -15,7 +15,7 @@ export const defaultConfig = {
   showLegend: true,
   showDomesticLegend: true,
   legendItems: [],
-  viewBox: "0 0 400 200", // Match NetworkTopologyGraph viewBox
+  viewBox: "0 0 500 420", // Updated to accommodate typical node coordinates
   preserveAspectRatio: "xMidYMid meet",
 };
 
@@ -70,7 +70,7 @@ export const GraphContainer = component$<{
   return (
     <div
       class={{
-        "topology-container relative h-44 transition-all duration-500 ease-in-out": true,
+        "topology-container relative h-96 transition-all duration-500 ease-in-out": true,
         expanded: isExpanded.value,
       }}
       style={graphContainerStyle as any}
@@ -128,7 +128,7 @@ export const GraphContainer = component$<{
       </div>
 
       {/* Network topology visualization with expandable height */}
-      <div class="topology-content relative flex h-24 items-center justify-center transition-all duration-500 ease-in-out">
+      <div class="topology-content relative flex h-80 items-center justify-center transition-all duration-500 ease-in-out">
         {children}
       </div>
 

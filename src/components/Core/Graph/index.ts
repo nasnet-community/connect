@@ -1,4 +1,4 @@
-export { default as Graph } from "./Graph";
+export { Graph } from "./Graph";
 
 export { createNode, NodeIcon } from "./Node/NodeTypes";
 export { default as networkNodeTypes } from "./Node/NodeTypes";

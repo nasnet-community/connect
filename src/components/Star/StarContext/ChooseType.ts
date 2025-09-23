@@ -7,11 +7,22 @@ export type TrunkInterfaceType = "wired" | "wireless";
 export type Mode = "easy" | "advance";
 export type MasterSlaveInterfaceType = Ethernet | Wireless | Sfp;
 
-export interface RouterInterfaces {
+
+export interface Interfaces {
   ethernet?: Ethernet[];
   wireless?: Wireless[];
   sfp?: Sfp[];
   lte?: LTE[];
+}
+
+export interface OccupiedInterface {
+  interface: Ethernet | Wireless | Sfp;
+  UsedFor: string;
+}
+
+export interface RouterInterfaces {
+  Interfaces: Interfaces;
+  OccupiedInterfaces: OccupiedInterface[];
 }
 
 export interface RouterModels {
@@ -21,28 +32,11 @@ export interface RouterModels {
   MasterSlaveInterface?: MasterSlaveInterfaceType;
 }
 
-export interface NewsletterState {
-  isSubscribed: boolean;
-  userUUID?: string;
-  email?: string;
-}
-
-// export type BaseNetworks = "Domestic" | "Foreign" | "Split" | "VPN";
-
-// export interface Networks {
-//   BaseNetworks: BaseNetworks[];
-//   ForeignNetworks?: string[];
-//   DomesticNetworks?: string[];
-//   VPNNetworks?: string[];
-// }
-
-
 export interface ChooseState {
   Mode: Mode;
   Firmware: FirmwareType;
   WANLinkType: WANLinkType;
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
-  Newsletter?: NewsletterState;
-  // Networks?: Networks;
+  TrunkInterfaceType?: TrunkInterfaceType;
 }

@@ -1,10 +1,16 @@
-import { component$, useVisibleTask$, $, useSignal } from "@builder.io/qwik";
+import { component$, useVisibleTask$, $, useSignal, useContext } from "@builder.io/qwik";
 import { useEInterface } from "./useEInterface";
 import type { Ethernet } from "../../StarContext/CommonType";
 import type { Networks } from "../../StarContext/CommonType";
 import type { StepProps } from "~/types/step";
+import { StarContext } from "../../StarContext/StarContext";
+import {
+  isInterfaceOccupied,
+  getOccupiedInterfacesForRouter
+} from "../../utils/InterfaceManagementUtils";
 
 export default component$<StepProps>(({ isComplete, onComplete$ }) => {
+  const starContext = useContext(StarContext);
   const {
     availableNetworks,
     selectedEInterfaces,
@@ -38,18 +44,27 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     // Get default network based on DomesticLink setting
     const defaultNetwork = await getDefaultNetwork();
 
+    // Get occupied interfaces for the master router only
+    const masterRouter = starContext.state.Choose.RouterModels.find(rm => rm.isMaster);
+    const occupiedInterfaces = masterRouter
+      ? getOccupiedInterfacesForRouter(masterRouter)
+      : [];
+
     const allIntfs = [...availableEInterfaces.value].map((name) => {
       const selected = currentlySelected.has(name);
+      const isOccupied = isInterfaceOccupied(occupiedInterfaces, name);
+
       return {
         name,
-        inUse: false,
-        usedBy: "",
+        inUse: isOccupied,
+        usedBy: isOccupied ? "Trunk/Other" : "",
         selected,
         // Use default network for non-selected interfaces
         network: selected ? currentlySelected.get(name)! : defaultNetwork,
       };
     });
 
+    // Mark WAN interfaces as used
     usedWANInterfaces.value.forEach((name) => {
       const existingIntf = allIntfs.find((intf) => intf.name === name);
       if (existingIntf) {
@@ -230,7 +245,11 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                     </td>
                     <td class="text-text-secondary dark:text-text-dark-secondary px-6 py-4">
                       {intf.inUse ? (
-                        <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300">
+                        <span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          intf.usedBy === "WAN"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                            : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                        }`}>
                           {$localize`Used by ${intf.usedBy}`}
                         </span>
                       ) : intf.selected ? (

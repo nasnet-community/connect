@@ -67,9 +67,12 @@ export const routers: RouterData[] = [
     isLTE: true,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
-      lte: ["lte1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+        lte: ["lte1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: false,
@@ -115,9 +118,12 @@ export const routers: RouterData[] = [
     isLTE: true,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
-      lte: ["lte1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+        lte: ["lte1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: false,
@@ -163,9 +169,12 @@ export const routers: RouterData[] = [
     isLTE: true,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
-      lte: ["lte1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+        lte: ["lte1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: false,
@@ -211,8 +220,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: false,
@@ -260,8 +272,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: true,
@@ -307,8 +322,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: true,
@@ -353,9 +371,12 @@ export const routers: RouterData[] = [
     isLTE: true,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4"],
-      wireless: ["wifi2.4"],
-      lte: ["lte1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4"],
+        wireless: ["wifi2.4"],
+        lte: ["lte1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: true,
@@ -401,8 +422,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4"],
-      wireless: ["wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4"],
+        wireless: ["wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -451,8 +475,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: true,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
-      sfp: ["sfp-sfpplus1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
+        sfp: ["sfp-sfpplus1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: true,
     canBeSlave: false,
@@ -502,8 +529,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2"],
-      wireless: ["wifi5", "wifi5-2", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2"],
+        wireless: ["wifi5", "wifi5-2", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -551,8 +581,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -598,8 +631,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -648,8 +684,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -698,9 +737,12 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: true,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
-      wireless: ["wifi2.4"],
-      sfp: ["sfp1"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
+        wireless: ["wifi2.4"],
+        sfp: ["sfp1"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -749,8 +791,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -798,8 +843,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,
@@ -849,8 +897,11 @@ export const routers: RouterData[] = [
     isLTE: false,
     isSFP: false,
     interfaces: {
-      ethernet: ["ether1", "ether2"],
-      wireless: ["wifi5", "wifi2.4"],
+      Interfaces: {
+        ethernet: ["ether1", "ether2"],
+        wireless: ["wifi5", "wifi2.4"],
+      },
+      OccupiedInterfaces: [],
     },
     canBeMaster: false,
     canBeSlave: true,

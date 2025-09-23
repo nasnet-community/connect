@@ -2,7 +2,11 @@ import { $, component$, useContext, useSignal, type PropFunction } from "@builde
 import { LuCable, LuWifi, LuRouter, LuLink } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType, OccupiedInterface } from "../../StarContext/ChooseType";
+import {
+  addOccupiedInterface,
+} from "../../utils/InterfaceManagementUtils";
+import type { InterfaceType } from "../../StarContext/CommonType";
 
 // Define SlaveInterfaceMapping locally since it doesn't exist in StarContext
 interface SlaveInterfaceMapping {
@@ -33,20 +37,20 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
   const slaveRouters = routerModels.filter(rm => !rm.isMaster);
   
   // Get available interfaces for a router model
-  const getAvailableInterfaces = (model: string, connectionType: TrunkInterfaceType) => {
+  const getAvailableInterfaces = (model: string, connectionType: TrunkInterfaceType, _currentInterface?: string) => {
     const routerData = getRouterByModel(model);
     if (!routerData) return [];
-    
+
     let interfaces: string[] = [];
     if (connectionType === "wireless") {
-      interfaces = routerData.interfaces.wireless || [];
+      interfaces = routerData.interfaces.Interfaces.wireless || [];
     } else {
       interfaces = [
-        ...(routerData.interfaces.ethernet || []),
-        ...(routerData.interfaces.sfp || []),
+        ...(routerData.interfaces.Interfaces.ethernet || []),
+        ...(routerData.interfaces.Interfaces.sfp || []),
       ];
     }
-    
+
     return interfaces;
   };
   
@@ -63,10 +67,10 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
     value: string
   ) => {
     const newMappings = [...currentMappings.value];
-    
+
     // Find existing mapping for this slave
     let mapping = newMappings.find(m => m.slaveRouterIndex === slaveIndex);
-    
+
     if (!mapping) {
       // Create new mapping
       mapping = {
@@ -78,13 +82,13 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
       };
       newMappings.push(mapping);
     }
-    
+
     // Update the field
     (mapping as any)[field] = value;
-    
+
     // Update signal
     currentMappings.value = newMappings;
-    
+
     // Track the change
     track("trunk_interface_mapping_updated", {
       slave_model: slaveModel,
@@ -92,37 +96,104 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
       value: value,
       total_slaves: slaveRouters.length,
     });
-    
-    // Update the MasterSlaveInterface for the appropriate router model
-    // Simplified approach since StarContext doesn't have complex trunk interface structure
+
+    // Update the MasterSlaveInterface
     if (field === "slaveInterface" || field === "masterInterface") {
       const updatedModels = starContext.state.Choose.RouterModels.map((model, idx) => {
-        if ((field === "masterInterface" && model.isMaster) || 
+        const updatedModel = { ...model };
+
+        // Update MasterSlaveInterface only
+        if ((field === "masterInterface" && model.isMaster) ||
             (field === "slaveInterface" && !model.isMaster && idx === slaveIndex + 1)) {
-          return {
-            ...model,
-            MasterSlaveInterface: value as any // Cast to MasterSlaveInterfaceType
-          };
+          updatedModel.MasterSlaveInterface = value as any;
         }
-        return model;
+
+        return updatedModel;
       });
-      
+
       starContext.updateChoose$({
         RouterModels: updatedModels,
       });
-    }
-    
-    // Check if all slaves are configured
-    const allConfigured = slaveRouters.every((_, idx) => {
-      const mapping = newMappings.find(m => m.slaveRouterIndex === idx);
-      return mapping && mapping.masterInterface && mapping.slaveInterface;
-    });
-    
-    if (allConfigured) {
-      props.onComplete$?.();
+
+      // Check if all slaves are configured
+      const allConfigured = slaveRouters.every((_, idx) => {
+        const m = newMappings.find(map => map.slaveRouterIndex === idx);
+        return m && m.masterInterface && m.slaveInterface;
+      });
+
+      if (allConfigured) {
+        // Now update OccupiedInterfaces when configuration is complete
+        const finalModels = updatedModels.map((model, idx) => {
+          const finalModel = { ...model };
+
+          // Start with clean OccupiedInterfaces to prevent accumulation
+          const cleanOccupied: OccupiedInterface[] = [];
+
+          // Each router should only track its own interface
+          // Use explicit interface assignment to prevent cross-contamination
+          if (model.isMaster) {
+            // Master router: For multi-slave, master has multiple interfaces (one per slave)
+            // Collect all master interfaces from mappings
+            const masterInterfaces = newMappings
+              .map(m => m.masterInterface)
+              .filter(Boolean);
+
+            // Add all master interfaces to master router
+            let occupied: OccupiedInterface[] = [...cleanOccupied];
+            masterInterfaces.forEach(intf => {
+              console.log(`Adding ${intf} to master router's OccupiedInterfaces`);
+              occupied = addOccupiedInterface(
+                occupied,
+                intf as InterfaceType,
+                "Trunk",
+                "Master"
+              );
+            });
+            finalModel.Interfaces.OccupiedInterfaces = occupied;
+          } else if (!model.isMaster) {
+            // Slave router: find its specific mapping
+            const slaveIndex = idx - 1; // Slave routers start at index 1
+            const slaveMapping = newMappings.find(m => m.slaveRouterIndex === slaveIndex);
+            const interfaceToAdd = slaveMapping?.slaveInterface;
+
+            if (interfaceToAdd) {
+              console.log(`Adding ${interfaceToAdd} to slave router ${slaveIndex}'s OccupiedInterfaces`);
+              finalModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
+                cleanOccupied,
+                interfaceToAdd as InterfaceType,
+                "Trunk",
+                "Slave"
+              );
+            } else {
+              finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
+            }
+          } else {
+            // Other routers: keep clean/empty OccupiedInterfaces
+            finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
+          }
+
+          // Validation: warn if there's a mismatch
+          if (model.MasterSlaveInterface && !model.isMaster) {
+            const occupied = finalModel.Interfaces.OccupiedInterfaces;
+            const hasInterface = occupied.some(item => item.interface === model.MasterSlaveInterface);
+
+            if (!hasInterface) {
+              console.warn(`Warning: Slave router at index ${idx} has MasterSlaveInterface ${model.MasterSlaveInterface} but it's not in OccupiedInterfaces`);
+            }
+          }
+
+          return finalModel;
+        });
+
+        starContext.updateChoose$({
+          RouterModels: finalModels,
+        });
+
+        props.onComplete$?.();
+      }
     }
   });
-  
+
   // Get icon for interface type
   const getInterfaceIcon = (interfaceName: string) => {
     if (interfaceName.startsWith("wifi")) {
@@ -175,9 +246,9 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
             </p>
             <div class="flex flex-wrap gap-2">
               {[...new Set([
-                ...(masterRouterData.interfaces.ethernet || []),
-                ...(masterRouterData.interfaces.wireless || []),
-                ...(masterRouterData.interfaces.sfp || []),
+                ...(masterRouterData.interfaces.Interfaces.ethernet || []),
+                ...(masterRouterData.interfaces.Interfaces.wireless || []),
+                ...(masterRouterData.interfaces.Interfaces.sfp || []),
               ])].map(intf => {
                 const usageCount = getUsedMasterInterfaces().filter(i => i === intf).length;
                 return (
@@ -296,12 +367,13 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
                       class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                     >
                       <option value="">{$localize`Select interface...`}</option>
-                      {masterRouter && getAvailableInterfaces(masterRouter.Model, connectionType).map(intf => {
-                        const isUsed = getUsedMasterInterfaces().includes(intf) && 
+                      {masterRouter && getAvailableInterfaces(masterRouter.Model, connectionType, currentMapping?.masterInterface).map(intf => {
+                        const isUsed = getUsedMasterInterfaces().includes(intf) &&
                                       currentMapping?.masterInterface !== intf;
+
                         return (
-                          <option 
-                            key={intf} 
+                          <option
+                            key={intf}
                             value={intf}
                           >
                             {`${intf}${isUsed ? " (shared with other slave)" : ""}`}
@@ -327,11 +399,16 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
                       class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                     >
                       <option value="">{$localize`Select interface...`}</option>
-                      {getAvailableInterfaces(slaveRouter.Model, connectionType).map(intf => (
-                        <option key={intf} value={intf}>
-                          {intf}
-                        </option>
-                      ))}
+                      {getAvailableInterfaces(slaveRouter.Model, connectionType, currentMapping?.slaveInterface).map(intf => {
+                        return (
+                          <option
+                            key={intf}
+                            value={intf}
+                          >
+                            {intf}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>

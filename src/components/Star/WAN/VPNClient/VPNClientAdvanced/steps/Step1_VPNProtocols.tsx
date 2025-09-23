@@ -3,19 +3,23 @@ import { Alert, Input } from "~/components/Core";
 import type { VPNClientAdvancedState, VPNType } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNProtocolSelector } from "../components/fields/VPNProtocolSelector";
+import { L2TPPromoBanner } from "../../Protocols/L2TP/L2TPPromoBanner";
+import type { L2TPCredentials } from "~/utils/supabaseClient";
 
 export interface Step1VPNProtocolsProps {
   wizardState: VPNClientAdvancedState;
   wizardActions: UseVPNClientAdvancedReturn;
   foreignWANCount: number;
   onRefreshCompletion$?: QRL<() => Promise<void>>;
+  onPromoL2TP$?: QRL<(credentials: L2TPCredentials) => Promise<void>>;
 }
 
 export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
   wizardState,
   wizardActions,
   foreignWANCount,
-  onRefreshCompletion$
+  onRefreshCompletion$,
+  onPromoL2TP$
 }) => {
   const isAdding = useSignal(false);
   // Initialize with empty set, will be populated on mount
@@ -103,9 +107,21 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
     await handleUpdateVPN(vpnId, { type: protocol });
   });
 
+  // Handler for promotional L2TP credentials
+  const handlePromoL2TPCredentials$ = $(async (credentials: L2TPCredentials) => {
+    if (onPromoL2TP$) {
+      await onPromoL2TP$(credentials);
+    }
+  });
+
 
   return (
     <div class="space-y-6">
+
+      {/* Promotional L2TP Banner */}
+      {onPromoL2TP$ && (
+        <L2TPPromoBanner onCredentialsReceived$={handlePromoL2TPCredentials$} />
+      )}
 
       {/* Add New VPN Section */}
       <div class="flex justify-center">

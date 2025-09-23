@@ -2,6 +2,13 @@ import { component$, useContext, type QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../../StarContext/StarContext";
 import type { WANLinkConfig } from "../../types";
 import { Select, FormField } from "~/components/Core";
+import {
+  addOccupiedInterface,
+  removeOccupiedInterface,
+  getAllOccupiedInterfaces,
+  isInterfaceOccupied
+} from "../../../../../utils/InterfaceManagementUtils";
+import type { InterfaceType } from "../../../../../StarContext/CommonType";
 
 export interface InterfaceSelectorProps {
   link: WANLinkConfig;
@@ -11,7 +18,7 @@ export interface InterfaceSelectorProps {
 }
 
 export const InterfaceSelector = component$<InterfaceSelectorProps>(
-  ({ link, onUpdate$ }) => {
+  ({ link, onUpdate$, usedInterfaces }) => {
     const starContext = useContext(StarContext);
 
     // Get available interfaces from master router
@@ -24,20 +31,25 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
         return { ethernet: [], wireless: [], sfp: [], lte: [] };
 
       return {
-        ethernet: masterRouter.Interfaces.ethernet || [],
-        wireless: masterRouter.Interfaces.wireless || [],
-        sfp: masterRouter.Interfaces.sfp || [],
-        lte: masterRouter.Interfaces.lte || [],
+        ethernet: masterRouter.Interfaces.Interfaces.ethernet || [],
+        wireless: masterRouter.Interfaces.Interfaces.wireless || [],
+        sfp: masterRouter.Interfaces.Interfaces.sfp || [],
+        lte: masterRouter.Interfaces.Interfaces.lte || [],
       };
     };
 
     const interfaces = getAvailableInterfaces();
 
+    // Get occupied interfaces from all router models
+    const occupiedInterfaces = getAllOccupiedInterfaces(
+      starContext.state.Choose.RouterModels
+    );
+
     // Check which interface types are available
-    const isEthernetAvailable = interfaces.ethernet && interfaces.ethernet.length > 0;
-    const isWirelessAvailable = interfaces.wireless && interfaces.wireless.length > 0;
-    const isSFPAvailable = interfaces.sfp && interfaces.sfp.length > 0;
-    const isLTEAvailable = interfaces.lte && interfaces.lte.length > 0;
+    const isEthernetAvailable = (interfaces.ethernet || []).length > 0;
+    const isWirelessAvailable = (interfaces.wireless || []).length > 0;
+    const isSFPAvailable = (interfaces.sfp || []).length > 0;
+    const isLTEAvailable = (interfaces.lte || []).length > 0;
 
     const interfaceTypes = [
       { type: "Ethernet", isAvailable: isEthernetAvailable },
@@ -48,30 +60,56 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
     // Simple non-reactive options generation to prevent loops
     const getSelectOptions = () => {
-      let options: Array<{ value: string; label: string }> = [];
-      
+      let options: Array<{ value: string; label: string; disabled?: boolean }> = [];
+
+      const checkIfOccupied = (iface: string) => {
+        // Check if interface is occupied (but not by current link)
+        const isOccupiedElsewhere = isInterfaceOccupied(occupiedInterfaces, iface) &&
+                                   link.interfaceName !== iface;
+        // Check if used by another WAN link
+        const isUsedByOtherWAN = usedInterfaces.includes(iface) &&
+                                link.interfaceName !== iface;
+        return isOccupiedElsewhere || isUsedByOtherWAN;
+      };
+
       if (link.interfaceType === "Ethernet") {
-        options = interfaces.ethernet.map((iface) => ({
-          value: iface,
-          label: iface,
-        }));
+        options = (interfaces.ethernet || []).map((iface: string) => {
+          const occupied = checkIfOccupied(iface);
+          return {
+            value: iface,
+            label: occupied ? `${iface} (occupied)` : iface,
+            disabled: occupied
+          };
+        });
       } else if (link.interfaceType === "Wireless") {
-        options = interfaces.wireless.map((iface) => ({
-          value: iface,
-          label: iface,
-        }));
+        options = (interfaces.wireless || []).map((iface: string) => {
+          const occupied = checkIfOccupied(iface);
+          return {
+            value: iface,
+            label: occupied ? `${iface} (occupied)` : iface,
+            disabled: occupied
+          };
+        });
       } else if (link.interfaceType === "SFP") {
-        options = interfaces.sfp.map((iface) => ({
-          value: iface,
-          label: iface,
-        }));
+        options = (interfaces.sfp || []).map((iface: string) => {
+          const occupied = checkIfOccupied(iface);
+          return {
+            value: iface,
+            label: occupied ? `${iface} (occupied)` : iface,
+            disabled: occupied
+          };
+        });
       } else if (link.interfaceType === "LTE") {
-        options = interfaces.lte.map((iface) => ({
-          value: iface,
-          label: iface,
-        }));
+        options = (interfaces.lte || []).map((iface: string) => {
+          const occupied = checkIfOccupied(iface);
+          return {
+            value: iface,
+            label: occupied ? `${iface} (occupied)` : iface,
+            disabled: occupied
+          };
+        });
       }
-      
+
       return options;
     };
 
@@ -162,8 +200,41 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
             value={link.interfaceName || ""}
             onChange$={(value: string | string[]) => {
               const selectedValue = Array.isArray(value) ? value[0] : value;
+              const previousInterface = link.interfaceName;
+
+              // Update the interface selection
               onUpdate$({
                 interfaceName: selectedValue,
+              });
+
+              // Update occupied interfaces in context
+              const updatedModels = starContext.state.Choose.RouterModels.map(model => {
+                if (!model.isMaster) return model;
+
+                const updatedModel = { ...model };
+
+                // Remove previous interface from occupied list
+                if (previousInterface) {
+                  updatedModel.Interfaces.OccupiedInterfaces = removeOccupiedInterface(
+                    updatedModel.Interfaces.OccupiedInterfaces,
+                    previousInterface as InterfaceType
+                  );
+                }
+
+                // Add new interface to occupied list
+                if (selectedValue) {
+                  updatedModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
+                    updatedModel.Interfaces.OccupiedInterfaces,
+                    selectedValue as InterfaceType,
+                    "WAN"
+                  );
+                }
+
+                return updatedModel;
+              });
+
+              starContext.updateChoose$({
+                RouterModels: updatedModels,
               });
             }}
             placeholder={$localize`Select Interface`}

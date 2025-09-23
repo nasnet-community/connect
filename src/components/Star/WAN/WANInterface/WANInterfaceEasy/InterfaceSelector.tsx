@@ -1,6 +1,11 @@
 import type { InterfaceSelectorProps } from "./types";
-import { component$, useResource$, Resource } from "@builder.io/qwik";
+import { component$, useResource$, Resource, useContext } from "@builder.io/qwik";
 import { Select } from "~/components/Core";
+import { StarContext } from "../../../StarContext/StarContext";
+import {
+  isInterfaceOccupied,
+  getAllOccupiedInterfaces
+} from "../../../utils/InterfaceManagementUtils";
 
 const interfaceDisplayNames: Record<string, string> = {
   ether1: "Ethernet 1",
@@ -27,16 +32,17 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     isInterfaceSelectedInOtherMode,
     mode,
   }) => {
+    const starContext = useContext(StarContext);
     const getInterfacesForType = () => {
       switch (selectedInterfaceType.toLowerCase()) {
         case "ethernet":
-          return availableInterfaces.ethernet;
+          return availableInterfaces.Interfaces?.ethernet || [];
         case "wireless":
-          return availableInterfaces.wireless;
+          return availableInterfaces.Interfaces?.wireless || [];
         case "sfp":
-          return availableInterfaces.sfp;
+          return availableInterfaces.Interfaces?.sfp || [];
         case "lte":
-          return availableInterfaces.lte;
+          return availableInterfaces.Interfaces?.lte || [];
         default:
           return [];
       }
@@ -47,18 +53,29 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     const disabledStates = useResource$<boolean[]>(async ({ track }) => {
       track(() => selectedInterfaceType);
       track(() => availableInterfaces);
+      track(() => starContext.state.Choose.RouterModels);
 
       if (!currentInterfaces.length) return [];
 
+      const occupiedInterfaces = getAllOccupiedInterfaces(
+        starContext.state.Choose.RouterModels
+      );
+
       return Promise.all(
-        currentInterfaces.map((iface) =>
-          isInterfaceSelectedInOtherMode(iface),
-        ),
+        currentInterfaces.map(async (iface) => {
+          // Check if interface is selected in other mode (WAN)
+          const isSelectedElsewhere = await isInterfaceSelectedInOtherMode(iface);
+          // Check if interface is occupied (Trunk, etc.)
+          const isOccupied = isInterfaceOccupied(occupiedInterfaces, iface) &&
+                           selectedInterface !== iface;
+          return isSelectedElsewhere || isOccupied;
+        }),
       );
     });
 
-    const getDisplayName = (iface: string) => {
-      return interfaceDisplayNames[iface] || iface;
+    const getDisplayName = (iface: string, isDisabled: boolean) => {
+      const baseName = interfaceDisplayNames[iface] || iface;
+      return isDisabled ? `${baseName} (occupied)` : baseName;
     };
 
     if (!selectedInterfaceType || !currentInterfaces.length) {
@@ -92,7 +109,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 { value: "", label: $localize`Select interface` },
                 ...currentInterfaces.map((iface) => ({
                   value: iface,
-                  label: getDisplayName(iface),
+                  label: getDisplayName(iface, true),
                   disabled: true,
                 })),
               ]}
@@ -106,7 +123,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 { value: "", label: $localize`Select interface` },
                 ...currentInterfaces.map((iface, index) => ({
                   value: iface,
-                  label: getDisplayName(iface),
+                  label: getDisplayName(iface, states[index]),
                   disabled: states[index],
                 })),
               ]}

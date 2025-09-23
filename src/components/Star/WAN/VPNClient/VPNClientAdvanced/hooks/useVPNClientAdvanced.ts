@@ -108,7 +108,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         return {
           ...baseConfig,
           config: {
-            Server: { Address: "", Port: "1194" },
+            Server: { Address: "", Port: 1194 },
             AuthType: "Credentials" as const,
             Auth: "sha256" as const,
             Mode: "layer3" as const,
@@ -130,7 +130,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         return {
           ...baseConfig,
           config: {
-            Server: { Address: "", Port: "1701" },
+            Server: { Address: "", Port: 1701 },
             Credentials: { Username: "", Password: "" },
             UseIPsec: true,
             IPsecSecret: "",
@@ -141,7 +141,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         return {
           ...baseConfig,
           config: {
-            Server: { Address: "", Port: "443" },
+            Server: { Address: "", Port: 443 },
             Credentials: { Username: "", Password: "" },
             AuthMethod: ["pap", "chap", "mschap1", "mschap2"] as const,
             TlsVersion: "tls1.2" as const,
@@ -152,7 +152,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         return {
           ...baseConfig,
           config: {
-            Server: { Address: "", Port: "500" },
+            Server: { Address: "", Port: 500 },
             Credentials: { Username: "", Password: "" },
             AuthMethod: ["eap-mschapv2"] as const,
           },

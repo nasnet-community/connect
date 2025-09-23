@@ -1,629 +1,220 @@
-// import { describe, it } from "vitest";
-// import {
-//   BaseConfig,
-//   DomesticBase,
-//   ForeignBase,
-//   VPNBase,
-//   SplitBase,
-//   // DNS,
-//   // AdvanceDNS,
-//   // WithDomestic,
-//   // WithoutDomestic,
-//   ChooseCG,
-// } from "./ChooseCG";
-// import type { RouterConfig } from "../ConfigGenerator";
+import { describe, it, expect } from "vitest";
+import { BaseConfig, ChooseCG } from "./ChooseCG";
+import type { RouterConfig } from "../ConfigGenerator";
+import { SConfigGenerator } from "../utils/ConfigGeneratorUtil";
 
-// // Test helper functions from global setup
-// declare global {
-//   function testWithOutput(
-//     functionName: string,
-//     testCase: string,
-//     inputs: Record<string, any>,
-//     testFn: () => RouterConfig,
-//   ): RouterConfig;
+// Helper function to display test results with formatted output (following project memory pattern)
+const testWithOutput = (
+  functionName: string,
+  testCase: string,
+  inputs: Record<string, any>,
+  testFn: () => RouterConfig,
+) => {
+  console.log("\n" + "=".repeat(80));
+  console.log(`🧪 Testing: ${functionName}`);
+  console.log(`📝 Test Case: ${testCase}`);
+  console.log(`⚙️ Function: ${functionName}`);
+  console.log("📥 Input Parameters:");
+  Object.entries(inputs).forEach(([key, value]) => {
+    console.log(`   ${key}: ${JSON.stringify(value)}`);
+  });
 
-//   function testWithGenericOutput(
-//     functionName: string,
-//     testCase: string,
-//     inputs: Record<string, any>,
-//     testFn: () => any,
-//   ): any;
+  const result = testFn();
+  const formattedOutput = SConfigGenerator(result);
 
-//   function validateRouterConfig(
-//     config: RouterConfig,
-//     expectedSections?: string[],
-//   ): boolean;
-// }
+  console.log("\n📤 Raw RouterConfig Output:");
+  console.log(JSON.stringify(result, null, 2));
 
-// describe("ChooseCG Module Tests - Configuration Display", () => {
-//   describe("Base Configuration Functions", () => {
-//     it("should display BaseConfig output", () => {
-//       testWithOutput(
-//         "BaseConfig",
-//         "Basic router configuration with interface lists and firewall rules",
-//         {},
-//         () => BaseConfig(),
-//       );
+  console.log("\n🎯 Formatted MikroTik Configuration:");
+  console.log("─".repeat(40));
+  console.log(formattedOutput);
+  console.log("─".repeat(40));
 
-//       const result = BaseConfig();
-//       validateRouterConfig(result, [
-//         "/interface list",
-//         "/ip firewall address-list",
-//         "/ip firewall nat",
-//       ]);
-//     });
+  return result;
+};
 
-//     it("should display DomesticBase configuration output", () => {
-//       testWithOutput(
-//         "DomesticBase",
-//         "Domestic base configuration with bridge and DHCP setup",
-//         {},
-//         () => DomesticBase(),
-//       );
+// Validation helper
+const validateRouterConfig = (
+  config: RouterConfig,
+  expectedSections: string[] = [],
+) => {
+  expect(config).toBeDefined();
+  expect(typeof config).toBe("object");
 
-//       const result = DomesticBase();
-//       validateRouterConfig(result, [
-//         "/interface bridge",
-//         "/interface list",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall address-list",
-//         "/ip firewall mangle",
-//         "/ip firewall nat",
-//         "/ip route",
-//       ]);
-//     });
+  // Check that all expected sections exist
+  expectedSections.forEach((section) => {
+    expect(config).toHaveProperty(section);
+    expect(Array.isArray(config[section])).toBe(true);
+  });
+};
 
-//     it("should display ForeignBase configuration output", () => {
-//       testWithOutput(
-//         "ForeignBase",
-//         "Foreign base configuration with bridge and routing setup",
-//         { WANLinkType: "both" },
-//         () => ForeignBase(),
-//       );
+describe("ChooseCG Module", () => {
+  describe("BaseConfig", () => {
+    it("should return basic RouterConfig with essential sections", () => {
+      const result = testWithOutput(
+        "BaseConfig",
+        "Generate base configuration with interface lists, address-lists, mangle, and NAT rules",
+        {},
+        () => BaseConfig(),
+      );
 
-//       const result = ForeignBase();
-//       validateRouterConfig(result, [
-//         "/interface bridge",
-//         "/interface list",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall address-list",
-//         "/ip firewall mangle",
-//         "/ip firewall nat",
-//         "/ip route",
-//       ]);
-//     });
+      validateRouterConfig(result, [
+        "/interface list",
+        "/ip firewall address-list",
+        "/ip firewall mangle",
+        "/ip firewall nat",
+      ]);
 
-//     it("should display VPNBase configuration output", () => {
-//       testWithOutput(
-//         "VPNBase",
-//         "VPN base configuration with bridge and routing setup",
-//         {},
-//         () => VPNBase(),
-//       );
+      // Check interface list configuration
+      expect(result["/interface list"]).toContain("add name=WAN");
+      expect(result["/interface list"]).toContain("add name=LAN");
+      expect(result["/interface list"]).toHaveLength(2);
+    });
 
-//       const result = VPNBase();
-//       validateRouterConfig(result, [
-//         "/interface bridge",
-//         "/interface list",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall address-list",
-//         "/ip firewall mangle",
-//         "/ip route",
-//       ]);
-//     });
+    it("should include correct LOCAL-IP address-list entries", () => {
+      const result = BaseConfig();
 
-//     it("should display SplitBase configuration output", () => {
-//       testWithOutput(
-//         "SplitBase",
-//         "Split base configuration with bridge and mangle rules",
-//         {},
-//         () => SplitBase(),
-//       );
+      const addressListCommands = result["/ip firewall address-list"];
+      
+      expect(addressListCommands).toContain("add address=192.168.0.0/16 list=LOCAL-IP");
+      expect(addressListCommands).toContain("add address=172.16.0.0/12 list=LOCAL-IP");
+      expect(addressListCommands).toContain("add address=10.0.0.0/8 list=LOCAL-IP");
+      expect(addressListCommands).toHaveLength(3);
+    });
 
-//       const result = SplitBase();
-//       validateRouterConfig(result, [
-//         "/interface bridge",
-//         "/interface list",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/interface list member",
-//         "/ip firewall address-list",
-//         "/ip firewall mangle",
-//         "/ip route",
-//       ]);
-//     });
-//   });
+    it("should include correct firewall mangle rules for local traffic", () => {
+      const result = BaseConfig();
 
-//   describe("DNS Configuration Functions", () => {
-//     it("should display basic DNS configuration output", () => {
-//       testWithOutput(
-//         "DNS",
-//         "Basic DNS configuration with simple server setup",
-//         {},
-//         () => DNS(),
-//       );
+      const mangleRules = result["/ip firewall mangle"];
+      
+      expect(mangleRules).toHaveLength(5);
+      
+      // Check that all mangle rules are for accepting local traffic
+      mangleRules.forEach(rule => {
+        expect(rule).toContain("action=accept");
+        expect(rule).toContain("dst-address-list=LOCAL-IP src-address-list=LOCAL-IP");
+      });
 
-//       const result = DNS();
-//       validateRouterConfig(result, ["/ip dns"]);
-//     });
+      // Check specific chain rules
+      expect(mangleRules.some(rule => rule.includes("chain=prerouting"))).toBe(true);
+      expect(mangleRules.some(rule => rule.includes("chain=postrouting"))).toBe(true);
+      expect(mangleRules.some(rule => rule.includes("chain=output"))).toBe(true);
+      expect(mangleRules.some(rule => rule.includes("chain=input"))).toBe(true);
+      expect(mangleRules.some(rule => rule.includes("chain=forward"))).toBe(true);
+    });
 
-//     it("should display advanced DNS configuration output", () => {
-//       testWithOutput(
-//         "AdvanceDNS",
-//         "Advanced DNS configuration with forwarders, static entries, and policy-based routing",
-//         {},
-//         () => AdvanceDNS(),
-//       );
+    it("should include masquerade NAT rule for WAN traffic", () => {
+      const result = BaseConfig();
 
-//       const result = AdvanceDNS();
-//       validateRouterConfig(result, [
-//         "/ip dns",
-//         "/ip dns forwarders",
-//         "/ip dns static",
-//         "/routing table",
-//         "/ip route",
-//         "/ip firewall address-list",
-//         "/ip firewall mangle",
-//         "/ip dhcp-server network",
-//         "/ip firewall nat",
-//         "/ip firewall filter",
-//         "/ip firewall layer7-protocol",
-//       ]);
-//     });
+      const natRules = result["/ip firewall nat"];
+      
+      expect(natRules).toHaveLength(1);
+      expect(natRules[0]).toContain("action=masquerade");
+      expect(natRules[0]).toContain("chain=srcnat");
+      expect(natRules[0]).toContain("out-interface-list=WAN");
+      expect(natRules[0]).toContain('comment="MASQUERADE the traffic go to WAN Interfaces"');
+    });
 
-//     it("should include DNS forwarders for DOM, FRN, and VPN", () => {
-//       const result = AdvanceDNS();
-//       const forwarders = result["/ip dns forwarders"] || [];
+    it("should return consistent configuration on multiple calls", () => {
+      const result1 = BaseConfig();
+      const result2 = BaseConfig();
 
-//       testWithGenericOutput(
-//         "AdvanceDNS Forwarders",
-//         "Verify DNS forwarders are created for DOM, FRN, and VPN",
-//         {},
-//         () => ({
-//           hasDOM: forwarders.some((cmd: string) => cmd.includes("name=DOM")),
-//           hasFRN: forwarders.some((cmd: string) => cmd.includes("name=FRN")),
-//           hasVPN: forwarders.some((cmd: string) => cmd.includes("name=VPN")),
-//           totalForwarders: forwarders.length,
-//           forwarderCommands: forwarders,
-//         }),
-//       );
-//     });
+      expect(result1).toEqual(result2);
+    });
+  });
 
-//     it("should include DNS static entries for .ir TLD and local addresses", () => {
-//       const result = AdvanceDNS();
+  describe("ChooseCG", () => {
+    it("should merge BaseConfig with additional empty sections", () => {
+      const result = testWithOutput(
+        "ChooseCG",
+        "Merge BaseConfig with additional empty mangle and route sections",
+        {},
+        () => ChooseCG(),
+      );
 
-//       testWithGenericOutput(
-//         "AdvanceDNS Static Entries",
-//         "Verify DNS static entries for .ir TLD and local addresses",
-//         {},
-//         () => {
-//           const staticEntries = result["/ip dns static"] || [];
-//           const hasIrTLD = staticEntries.some((cmd: string) => cmd.includes(".ir\\$"));
-//           const hasS4iCo = staticEntries.some((cmd: string) => cmd.includes("s4i.co"));
-//           const hasLocalDNS = staticEntries.some((cmd: string) =>
-//             cmd.includes("dns.DOM.local"),
-//           );
+      validateRouterConfig(result, [
+        "/interface list",
+        "/ip firewall address-list", 
+        "/ip firewall mangle",
+        "/ip firewall nat",
+        "/ip route",
+      ]);
 
-//           return {
-//             hasIrTLD,
-//             hasS4iCo,
-//             hasLocalDNS,
-//             totalStaticEntries: staticEntries.length,
-//             staticEntryCommands: staticEntries,
-//           };
-//         },
-//       );
-//     });
+      // Verify that BaseConfig sections are preserved
+      expect(result["/interface list"]).toContain("add name=WAN");
+      expect(result["/interface list"]).toContain("add name=LAN");
+      
+      // Verify LOCAL-IP address-list is preserved
+      expect(result["/ip firewall address-list"]).toContain("add address=192.168.0.0/16 list=LOCAL-IP");
+      expect(result["/ip firewall address-list"]).toContain("add address=172.16.0.0/12 list=LOCAL-IP");
+      expect(result["/ip firewall address-list"]).toContain("add address=10.0.0.0/8 list=LOCAL-IP");
 
-//     it("should validate AdvanceDNS contains policy-based routing and mangle rules", () => {
-//       const result = AdvanceDNS();
+      // Verify mangle rules from BaseConfig are preserved (should be 5 rules from BaseConfig)
+      expect(result["/ip firewall mangle"]).toHaveLength(5);
+      
+      // Verify NAT rule from BaseConfig is preserved  
+      expect(result["/ip firewall nat"]).toHaveLength(1);
+      expect(result["/ip firewall nat"][0]).toContain("action=masquerade");
 
-//       testWithGenericOutput(
-//         "AdvanceDNS PBR and DoH Validation",
-//         "Validate PBR and DoH components in advanced DNS config",
-//         {
-//           expectedFeatures: [
-//             "routing tables",
-//             "mangle rules",
-//             "NAT rules",
-//             "DNS forwarders",
-//           ],
-//         },
-//         () => {
-//           const routingTables = result["/routing table"] || [];
-//           const mangleRules = result["/ip firewall mangle"] || [];
-//           const natRules = result["/ip firewall nat"] || [];
-//           const filterRules = result["/ip firewall filter"] || [];
-//           const forwarders = result["/ip dns forwarders"] || [];
-//           const staticEntries = result["/ip dns static"] || [];
-//           const layer7Protocols = result["/ip firewall layer7-protocol"] || [];
+      // Verify additional empty sections exist
+      expect(result["/ip route"]).toEqual([]);
+    });
 
-//           return {
-//             routingTableCount: routingTables.length,
-//             mangleRuleCount: mangleRules.length,
-//             natRuleCount: natRules.length,
-//             filterRuleCount: filterRules.length,
-//             forwarderCount: forwarders.length,
-//             staticEntryCount: staticEntries.length,
-//             layer7ProtocolCount: layer7Protocols.length,
-//             hasDNSServers:
-//               result["/ip dns"].some((cmd: string) => cmd.includes("servers=")) ||
-//               false,
-//             hasDoHServer:
-//               result["/ip dns"].some((cmd: string) =>
-//                 cmd.includes("use-doh-server="),
-//               ) || false,
-//             hasDoHMangleRule: mangleRules.some((cmd: string) =>
-//               cmd.includes("dst-port=443"),
-//             ),
-//             hasRedirectNatRule: natRules.some(
-//               (cmd: string) =>
-//                 cmd.includes("action=redirect") &&
-//                 cmd.includes("in-interface-list=LAN"),
-//             ),
-//             sampleMangleRules: mangleRules.slice(0, 3),
-//             sampleForwarders: forwarders.slice(0, 3),
-//             sampleStaticEntries: staticEntries.slice(0, 3),
-//           };
-//         },
-//       );
-//     });
-//   });
+    it("should maintain BaseConfig structure when merged", () => {
+      const baseResult = BaseConfig();
+      const chooseResult = ChooseCG();
 
-//   describe("Combined Configuration Functions", () => {
-//     it("should display WithDomestic configuration output", () => {
-//       testWithOutput(
-//         "WithDomestic",
-//         "Complete configuration with domestic link enabled",
-//         { WANLinkType: "both" },
-//         () => WithDomestic(true),
-//       );
+      // All BaseConfig sections should exist in ChooseCG result
+      Object.keys(baseResult).forEach(section => {
+        expect(chooseResult).toHaveProperty(section);
+        
+        // For sections that only exist in BaseConfig, they should be identical
+        if (section !== "/ip firewall mangle") { // mangle might be merged with empty array
+          expect(chooseResult[section]).toEqual(baseResult[section]);
+        }
+      });
 
-//       const result = WithDomestic(true);
-//       validateRouterConfig(result, [
-//         "/interface list",
-//         "/ip firewall address-list",
-//         "/ip firewall nat",
-//         "/interface bridge",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall mangle",
-//         "/ip route",
-//         "/ip dns",
-//       ]);
-//     });
+      // BaseConfig mangle rules should be preserved in ChooseCG
+      baseResult["/ip firewall mangle"].forEach(rule => {
+        expect(chooseResult["/ip firewall mangle"]).toContain(rule);
+      });
+    });
 
-//     it("should display WithoutDomestic configuration output", () => {
-//       testWithOutput(
-//         "WithoutDomestic",
-//         "Complete configuration with domestic link disabled",
-//         { WANLinkType: "foreign-only" },
-//         () => WithoutDomestic(false),
-//       );
+    it("should include empty route section for future expansion", () => {
+      const result = ChooseCG();
 
-//       const result = WithoutDomestic(false);
-//       validateRouterConfig(result, [
-//         "/interface list",
-//         "/ip firewall address-list",
-//         "/ip firewall nat",
-//         "/interface bridge",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall mangle",
-//         "/ip route",
-//         "/ip dns",
-//       ]);
-//     });
+      expect(result).toHaveProperty("/ip route");
+      expect(result["/ip route"]).toEqual([]);
+      expect(Array.isArray(result["/ip route"])).toBe(true);
+    });
 
-//     it("should validate network segmentation in combined configs", () => {
-//       const withDomestic = WithDomestic(true);
-//       const withoutDomestic = WithoutDomestic(false);
+    it("should generate valid MikroTik configuration output", () => {
+      const result = ChooseCG();
+      const formattedOutput = SConfigGenerator(result);
 
-//       testWithGenericOutput(
-//         "Network Segmentation Comparison",
-//         "Compare configuration complexity between domestic and non-domestic setups",
-//         { domesticEnabled: true, domesticDisabled: false },
-//         () => {
-//           const domesticBridges = withDomestic["/interface bridge"].length || 0;
-//           const nonDomesticBridges =
-//             withoutDomestic["/interface bridge"].length || 0;
+      // Check that the output contains expected MikroTik sections
+      expect(formattedOutput).toContain("/interface list");
+      expect(formattedOutput).toContain("/ip firewall address-list");
+      expect(formattedOutput).toContain("/ip firewall mangle");
+      expect(formattedOutput).toContain("/ip firewall nat");
 
-//           const domesticRoutes = withDomestic["/ip route"].length || 0;
-//           const nonDomesticRoutes = withoutDomestic["/ip route"].length || 0;
+      // Check for specific commands
+      expect(formattedOutput).toContain("add name=WAN");
+      expect(formattedOutput).toContain("add name=LAN");
+      expect(formattedOutput).toContain("list=LOCAL-IP");
+      expect(formattedOutput).toContain("action=masquerade");
+    });
 
-//           const domesticMangle =
-//             withDomestic["/ip firewall mangle"].length || 0;
-//           const nonDomesticMangle =
-//             withoutDomestic["/ip firewall mangle"].length || 0;
+    it("should be ready for extension with additional configuration", () => {
+      const result = ChooseCG();
 
-//           return {
-//             domesticComplexity: {
-//               bridges: domesticBridges,
-//               routes: domesticRoutes,
-//               mangleRules: domesticMangle,
-//             },
-//             nonDomesticComplexity: {
-//               bridges: nonDomesticBridges,
-//               routes: nonDomesticRoutes,
-//               mangleRules: nonDomesticMangle,
-//             },
-//             complexityDifference: {
-//               bridges: domesticBridges - nonDomesticBridges,
-//               routes: domesticRoutes - nonDomesticRoutes,
-//               mangleRules: domesticMangle - nonDomesticMangle,
-//             },
-//           };
-//         },
-//       );
-//     });
-//   });
-
-//   describe("Main ChooseCG Function", () => {
-//     it("should display ChooseCG with domestic link enabled", () => {
-//       testWithOutput(
-//         "ChooseCG",
-//         "Main configuration generator with domestic link enabled",
-//         { WANLinkType: "both" },
-//         () => ChooseCG(),
-//       );
-
-//       const result = ChooseCG();
-//       validateRouterConfig(result, [
-//         "/interface list",
-//         "/ip firewall address-list",
-//         "/ip firewall nat",
-//         "/interface bridge",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall mangle",
-//         "/ip route",
-//         "/ip dns",
-//       ]);
-//     });
-
-//     it("should display ChooseCG with domestic link disabled", () => {
-//       testWithOutput(
-//         "ChooseCG",
-//         "Main configuration generator with domestic link disabled",
-//         { WANLinkType: "foreign-only" },
-//         () => ChooseCG(),
-//       );
-
-//       const result = ChooseCG();
-//       validateRouterConfig(result, [
-//         "/interface list",
-//         "/ip firewall address-list",
-//         "/ip firewall nat",
-//         "/interface bridge",
-//         "/ip pool",
-//         "/ip dhcp-server",
-//         "/ip dhcp-server network",
-//         "/ip address",
-//         "/routing table",
-//         "/interface list member",
-//         "/ip firewall mangle",
-//         "/ip route",
-//         "/ip dns",
-//       ]);
-//     });
-//   });
-
-//   describe("Configuration Content Validation", () => {
-//     it("should validate BaseConfig contains correct interface lists", () => {
-//       const result = BaseConfig();
-
-//       testWithGenericOutput(
-//         "BaseConfig Interface Lists",
-//         "Validate presence of WAN and LAN interface lists",
-//         { expectedLists: ["WAN", "LAN"] },
-//         () => {
-//           const interfaceListCommands = result["/interface list"] || [];
-//           const hasWAN = interfaceListCommands.some((cmd) =>
-//             cmd.includes("name=WAN"),
-//           );
-//           const hasLAN = interfaceListCommands.some((cmd) =>
-//             cmd.includes("name=LAN"),
-//           );
-//           return { hasWAN, hasLAN, totalLists: interfaceListCommands.length };
-//         },
-//       );
-//     });
-
-//     it("should validate DomesticBase contains correct bridge configuration", () => {
-//       const result = DomesticBase();
-
-//       testWithGenericOutput(
-//         "DomesticBase Bridge Config",
-//         "Validate presence of LANBridgeDOM and related configurations",
-//         { expectedBridge: "LANBridgeDOM" },
-//         () => {
-//           const bridgeCommands = result["/interface bridge"] || [];
-//           const addressCommands = result["/ip address"] || [];
-//           const hasBridge = bridgeCommands.some((cmd: string) =>
-//             cmd.includes("name=LANBridgeDOM"),
-//           );
-//           const hasAddress = addressCommands.some((cmd: string) =>
-//             cmd.includes("interface=LANBridgeDOM"),
-//           );
-//           return { hasBridge, hasAddress, bridgeCount: bridgeCommands.length };
-//         },
-//       );
-//     });
-//   });
-
-//   describe("Edge Cases and Error Handling", () => {
-//     it("should handle multiple calls to configuration functions", () => {
-//       testWithOutput(
-//         "Multiple BaseConfig Calls",
-//         "Verify consistency across multiple function calls",
-//         { callCount: 3 },
-//         () => {
-//           const config1 = BaseConfig();
-//           const config2 = BaseConfig();
-//           const config3 = BaseConfig();
-
-//           // Merge all three configs to test consistency
-//           const mergedConfig = {
-//             ...config1,
-//             ...config2,
-//             ...config3,
-//           };
-
-//           return mergedConfig;
-//         },
-//       );
-//     });
-
-//     it("should validate configuration command syntax", () => {
-//       const result = AdvanceDNS();
-
-//       testWithGenericOutput(
-//         "Command Syntax Validation",
-//         "Validate MikroTik command syntax in generated configuration",
-//         { totalSections: Object.keys(result).length },
-//         () => {
-//           const syntaxIssues: string[] = [];
-
-//           Object.entries(result).forEach(([section, commands]) => {
-//             (commands as string[]).forEach((command: string, index: number) => {
-//               // Check for basic MikroTik command syntax
-//               if (command.trim().length > 0) {
-//                 // Check if command starts with 'add' or 'set'
-//                 const trimmedCommand = command.trim();
-//                 if (
-//                   !trimmedCommand.startsWith("add ") &&
-//                   !trimmedCommand.startsWith("set ") &&
-//                   !trimmedCommand.includes("//")
-//                 ) {
-//                   syntaxIssues.push(
-//                     `${section}[${index}]: ${trimmedCommand.substring(0, 50)}...`,
-//                   );
-//                 }
-//               }
-//             });
-//           });
-
-//           return {
-//             totalCommands: Object.values(result).flat().length,
-//             syntaxIssues: syntaxIssues.slice(0, 5), // Limit to first 5 issues
-//             isValid: syntaxIssues.length === 0,
-//           };
-//         },
-//       );
-//     });
-//   });
-
-//   describe("Performance and Configuration Size Tests", () => {
-//     it("should measure configuration generation performance", () => {
-//       testWithGenericOutput(
-//         "Performance Benchmark",
-//         "Measure time taken to generate different configuration types",
-//         { iterations: 100 },
-//         () => {
-//           const iterations = 100;
-
-//           // Benchmark BaseConfig
-//           const baseStart = performance.now();
-//           for (let i = 0; i < iterations; i++) {
-//             BaseConfig();
-//           }
-//           const baseTime = performance.now() - baseStart;
-
-//           // Benchmark WithDomestic
-//           const domesticStart = performance.now();
-//           for (let i = 0; i < iterations; i++) {
-//             WithDomestic(true);
-//           }
-//           const domesticTime = performance.now() - domesticStart;
-
-//           // Benchmark AdvanceDNS
-//           const dnsStart = performance.now();
-//           for (let i = 0; i < iterations; i++) {
-//             AdvanceDNS();
-//           }
-//           const dnsTime = performance.now() - dnsStart;
-
-//           return {
-//             iterations,
-//             averageTimes: {
-//               baseConfig: Number((baseTime / iterations).toFixed(3)),
-//               withDomestic: Number((domesticTime / iterations).toFixed(3)),
-//               advanceDNS: Number((dnsTime / iterations).toFixed(3)),
-//             },
-//             totalTime: Number((baseTime + domesticTime + dnsTime).toFixed(2)),
-//           };
-//         },
-//       );
-//     });
-
-//     it("should analyze configuration size and complexity", () => {
-//       testWithGenericOutput(
-//         "Configuration Size Analysis",
-//         "Analyze the size and complexity of generated configurations",
-//         {},
-//         () => {
-//           const baseConfig = BaseConfig();
-//           const advanceDNS = AdvanceDNS();
-//           const withDomestic = WithDomestic(true);
-//           const withoutDomestic = WithoutDomestic(false);
-
-//           const calculateStats = (config: any) => {
-//             const sections = Object.keys(config).length;
-//             const totalCommands = Object.values(config).flat().length;
-//             const avgCommandsPerSection = Number(
-//               (totalCommands / sections).toFixed(1),
-//             );
-//             const longestCommand = Math.max(
-//               ...Object.values(config)
-//                 .flat()
-//                 .map((cmd: any) => cmd.length),
-//             );
-
-//             return {
-//               sections,
-//               totalCommands,
-//               avgCommandsPerSection,
-//               longestCommand,
-//             };
-//           };
-
-//           return {
-//             baseConfig: calculateStats(baseConfig),
-//             advanceDNS: calculateStats(advanceDNS),
-//             withDomestic: calculateStats(withDomestic),
-//             withoutDomestic: calculateStats(withoutDomestic),
-//           };
-//         },
-//       );
-//     });
-//   });
-// });
+      // Verify the structure allows for easy extension
+      expect(Object.keys(result)).toContain("/ip firewall mangle");
+      expect(Object.keys(result)).toContain("/ip route");
+      
+      // Both sections should be arrays that can be extended
+      expect(Array.isArray(result["/ip firewall mangle"])).toBe(true);
+      expect(Array.isArray(result["/ip route"])).toBe(true);
+    });
+  });
+});

@@ -1,4 +1,4 @@
-import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
 import { HiSparklesOutline, HiEyeSlashOutline, HiEyeOutline, HiSignalOutline, HiSignalSlashOutline } from "@qwikest/icons/heroicons";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { Input, SegmentedControl, Button } from "~/components/Core";
@@ -46,12 +46,12 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
       {
         value: "visible",
         label: $localize`Visible`,
-        icon: <HiEyeOutline />,
+        icon: <HiEyeOutline /> as JSXNode,
       },
       {
         value: "hidden",
         label: $localize`Hidden`,
-        icon: <HiEyeSlashOutline />,
+        icon: <HiEyeSlashOutline /> as JSXNode,
       },
     ];
 
@@ -59,12 +59,12 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
       {
         value: "combined",
         label: $localize`Combined`,
-        icon: <HiSignalOutline />,
+        icon: <HiSignalOutline /> as JSXNode,
       },
       {
         value: "split",
         label: $localize`Split Band`,
-        icon: <HiSignalSlashOutline />,
+        icon: <HiSignalSlashOutline /> as JSXNode,
       },
     ];
 

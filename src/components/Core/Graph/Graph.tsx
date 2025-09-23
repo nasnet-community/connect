@@ -1,4 +1,4 @@
-import { $, component$, useComputed$ } from "@builder.io/qwik";
+import { $, component$ } from "@builder.io/qwik";
 import type { GraphNode, GraphProps } from "./types";
 import { NodeRenderer } from "./Node/NodeRenderer";
 import { processConnections } from "./Traffic/TrafficUtils";
@@ -22,16 +22,15 @@ export const Graph = component$<GraphProps>((props) => {
 
   const mergedConfig = { ...defaultConfig, ...config };
 
-  // Make sure we have a valid viewBox that encompasses all nodes
-  const computedViewBox = useComputed$(() => {
+  // Calculate viewBox - simplified to avoid useComputed$ issues
+  const getViewBox = () => {
     if (mergedConfig.viewBox && nodes.length > 0) {
       return mergedConfig.viewBox;
     }
 
-    // If no viewBox specified or no nodes, calculate responsive default
+    // If no viewBox specified or no nodes, use default
     if (nodes.length === 0) {
-      // Responsive default viewBox matching NetworkTopologyGraph
-      return "0 0 400 200"; // Compact aspect ratio for network topology
+      return "0 0 500 420";
     }
 
     // Find min/max coordinates to encompass all nodes
@@ -47,42 +46,48 @@ export const Graph = component$<GraphProps>((props) => {
       maxY = Math.max(maxY, node.y);
     });
 
-    // Add padding using Tailwind spacing system (24 = 6rem = 96px, closest to 100)
-    const padding = 96; // Equivalent to Tailwind's spacing.24
+    // Add padding
+    const padding = 96;
     minX = Math.max(0, minX - padding);
     minY = Math.max(0, minY - padding);
     maxX = maxX + padding;
     maxY = maxY + padding;
 
     return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
-  });
+  };
 
-  // Process connections to apply traffic and connection type styling
-  const processedConnections = useComputed$(() => {
+  const computedViewBox = getViewBox();
+
+  // Process connections to apply traffic and connection type styling - simplified
+  const getProcessedConnections = () => {
     let result = [...rawConnections];
     // Apply traffic type styling
     result = processConnections(result);
     // Apply connection type styling
     result = processConnectionTypes(result);
     return result;
-  });
+  };
 
-  // Create a map for faster node lookup
-  const nodeMap = useComputed$(() => {
+  const processedConnections = getProcessedConnections();
+
+  // Create a map for faster node lookup - simplified
+  const getNodeMap = () => {
     const map = new Map<string | number, GraphNode>();
     nodes.forEach((node) => map.set(node.id, node));
     return map;
-  });
+  };
+
+  const nodeMap = getNodeMap();
 
   return (
     <GraphContainer
       title={title}
       config={mergedConfig}
-      connections={processedConnections.value}
+      connections={processedConnections}
     >
       <svg
         class="h-full w-full"
-        viewBox={computedViewBox.value}
+        viewBox={computedViewBox}
         preserveAspectRatio={
           mergedConfig.preserveAspectRatio || "xMidYMid meet"
         }
@@ -92,16 +97,16 @@ export const Graph = component$<GraphProps>((props) => {
       >
         {/* Accessibility description */}
         <desc id="graph-description">
-          Network graph showing {nodes.length} nodes and {processedConnections.value.length} connections.
+          Network graph showing {nodes.length} nodes and {processedConnections.length} connections.
           Use arrow keys to navigate between nodes, Enter to select, and Tab to move between interactive elements.
         </desc>
         
         {/* Background is handled by container, no need for rect here */}
 
         {/* Draw connections with accessibility support */}
-        {processedConnections.value.map((connection) => {
-          const fromNode = nodeMap.value.get(connection.from);
-          const toNode = nodeMap.value.get(connection.to);
+        {processedConnections.map((connection) => {
+          const fromNode = nodeMap.get(connection.from);
+          const toNode = nodeMap.get(connection.to);
           if (!fromNode || !toNode) return null;
 
           const id = connection.id || `${connection.from}-${connection.to}`;
@@ -197,5 +202,3 @@ export const Graph = component$<GraphProps>((props) => {
     </GraphContainer>
   );
 });
-
-export default Graph;

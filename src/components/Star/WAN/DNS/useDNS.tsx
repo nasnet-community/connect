@@ -39,9 +39,6 @@ export const useDNS = () => {
   // IPv4 validation regex
   const IPv4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
-  // Domain validation regex for DOH
-  const DOMAIN_REGEX = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
-
   // DNS Presets for quick selection
   const dnsPresets: DNSPreset[] = [
     // Fast & Secure Options
@@ -277,10 +274,6 @@ export const useDNS = () => {
     return IPv4_REGEX.test(ip.trim());
   });
 
-  const validateDomain = $((domain: string): boolean => {
-    return DOMAIN_REGEX.test(domain.trim());
-  });
-
   const getNetworkConfigs = $(() => {
     const configs: NetworkDNSConfig[] = [
       {
@@ -418,16 +411,18 @@ export const useDNS = () => {
       }
     }
 
+    // DOH is currently disabled - skip validation
+    // TODO: Remove this comment if DOH is re-enabled in the future
     // Validate DOH configuration if domain is set (DOH is enabled)
-    if (isDomestic && dnsConfig.DOH?.domain) {
-      if (!(await validateDomain(dnsConfig.DOH.domain))) {
-        errors.dohDomain = $localize`Please enter a valid domain name`;
-      }
+    // if (isDomestic && dnsConfig.DOH?.domain) {
+    //   if (!(await validateDomain(dnsConfig.DOH.domain))) {
+    //     errors.dohDomain = $localize`Please enter a valid domain name`;
+    //   }
 
-      if (dnsConfig.DOH.bindingIP?.trim() && !(await validateIPv4(dnsConfig.DOH.bindingIP))) {
-        errors.dohBinding = $localize`Please enter a valid IPv4 address for binding IP`;
-      }
-    }
+    //   if (dnsConfig.DOH.bindingIP?.trim() && !(await validateIPv4(dnsConfig.DOH.bindingIP))) {
+    //     errors.dohBinding = $localize`Please enter a valid IPv4 address for binding IP`;
+    //   }
+    // }
 
     // Update validation errors
     Object.keys(validationErrors).forEach(key => {
@@ -439,7 +434,7 @@ export const useDNS = () => {
     return Object.keys(errors).length === 0;
   });
 
-  const saveConfiguration = $(() => {
+  const saveConfiguration = $((enabled = true) => {
     // Update the global state
     if (!starContext.state.WAN.DNSConfig) {
       starContext.state.WAN.DNSConfig = {
@@ -448,7 +443,23 @@ export const useDNS = () => {
       };
     }
 
-    Object.assign(starContext.state.WAN.DNSConfig, dnsConfig);
+    if (enabled) {
+      // Save current configuration when enabled
+      Object.assign(starContext.state.WAN.DNSConfig, dnsConfig);
+    } else {
+      // Set default DNS values when disabled
+      const defaultConfig: typeof dnsConfig = {
+        ForeignDNS: "8.8.8.8",
+        VPNDNS: "1.1.1.1",
+        DomesticDNS: isDomestic ? "208.67.222.222" : "",
+        SplitDNS: isDomestic ? "9.9.9.9" : "",
+        DOH: {
+          domain: "",
+          bindingIP: "",
+        },
+      };
+      Object.assign(starContext.state.WAN.DNSConfig, defaultConfig);
+    }
   });
 
   // Apply DNS preset to a specific network
