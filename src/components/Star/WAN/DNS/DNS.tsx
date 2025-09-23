@@ -33,7 +33,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
     copyDNSConfig,
   } = useDNS();
 
-  // Enable/disable state - default false (disabled by default)
+  // Enable/disable state - default false (disabled by default)2
   const dnsEnabled = useSignal(false);
 
   const handleComplete = $(async () => {
