@@ -1,4 +1,4 @@
-import type { QRL, JSXChildren } from "@builder.io/qwik";
+import type { QRL, JSXChildren, Signal } from "@builder.io/qwik";
 
 export type SubnetCategory = "base" | "vpn" | "tunnel" | "wan-domestic" | "wan-foreign" | "vpn-client";
 export type SubnetMask = 24 | 30;
@@ -47,12 +47,11 @@ export interface UseSubnetsReturn {
     "wan-foreign": SubnetConfig[];
     "vpn-client": SubnetConfig[];
   };
-  values: Record<string, number | null>;
-  errors: Record<string, string>;
-  isValid: boolean;
+  values: Signal<Record<string, number | null>>;
+  errors: Signal<Record<string, string>>;
+  isValid: Signal<boolean>;
   handleChange$: QRL<(key: string, value: number | null) => void>;
   validateAll$: QRL<() => Promise<boolean>>;
-  validateDuplicatesRealTime$: QRL<() => Promise<void>>;
   reset$: QRL<() => void>;
   getSubnetString: QRL<(config: SubnetConfig, value: number | null) => string>;
   getSuggestedValue: QRL<(category: SubnetCategory) => number>;

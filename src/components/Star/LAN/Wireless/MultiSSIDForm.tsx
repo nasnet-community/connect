@@ -5,6 +5,7 @@ import type { NetworkKey, Networks } from "./type";
 import { NETWORK_KEYS } from "./constants";
 import { StarContext } from "../../StarContext/StarContext";
 import { Grid } from "~/components/Core";
+import type { Mode } from "../../StarContext/ChooseType";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -15,6 +16,7 @@ interface MultiSSIDFormProps {
   toggleNetworkHide: QRL<(network: NetworkKey, value?: boolean) => void>;
   toggleNetworkDisabled: QRL<(network: NetworkKey, value?: boolean) => void>;
   toggleNetworkSplitBand: QRL<(network: NetworkKey, value?: boolean) => void>;
+  mode?: Mode;
 }
 
 export const MultiSSIDForm = component$<MultiSSIDFormProps>(
@@ -27,6 +29,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     toggleNetworkHide,
     toggleNetworkDisabled,
     toggleNetworkSplitBand,
+    mode = "advance",
   }) => {
     const starContext = useContext(StarContext);
     const isDomesticLinkEnabled =
@@ -72,14 +75,15 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               onPasswordChange={$((value: string) => {
                 networks[networkKey].password = value;
               })}
-              onHideToggle={$((value: boolean) => toggleNetworkHide(networkKey, value))}
-              onDisabledToggle={$((value: boolean) => toggleNetworkDisabled(networkKey, value))}
-              onSplitBandToggle={$((value: boolean) => toggleNetworkSplitBand(networkKey, value))}
+              onHideToggle={$((value?: boolean) => toggleNetworkHide(networkKey, value))}
+              onDisabledToggle={$((value?: boolean) => toggleNetworkDisabled(networkKey, value))}
+              onSplitBandToggle={$((value?: boolean) => toggleNetworkSplitBand(networkKey, value))}
               generateNetworkSSID={$(() => generateNetworkSSID(networkKey))}
               generateNetworkPassword={$(() =>
                 generateNetworkPassword(networkKey),
               )}
               isLoading={isLoading}
+              mode={mode}
             />
           ))}
         </Grid>

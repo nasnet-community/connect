@@ -33,7 +33,7 @@ export const Newsletter = component$<NewsletterProps>(
   ({
     variant = "responsive",
     size = "md",
-    title = $localize`Stay Connected`,
+    title = $localize`Stay Connected by subscribing to our newsletter`,
     description = $localize`Subscribe to get the latest router configuration tips, security updates, and exclusive content.`,
     placeholder = $localize`Enter your email address`,
     buttonText = $localize`Subscribe`,
@@ -95,6 +95,8 @@ export const Newsletter = component$<NewsletterProps>(
           return `${baseLayout} flex-row gap-6`;
         case "vertical":
           return `${baseLayout} flex-col gap-4`;
+        case "hero":
+          return `${baseLayout} flex-col gap-4 sm:flex-row sm:gap-4 justify-center`;
         case "responsive":
         default:
           return `${baseLayout} flex-col gap-6 md:flex-row md:gap-8 lg:gap-10`;
@@ -105,12 +107,16 @@ export const Newsletter = component$<NewsletterProps>(
     const getContainerClasses = () => {
       const baseClasses = [
         "relative overflow-hidden transition-all duration-700 group",
-        fullWidth ? "w-full" : "max-w-5xl mx-auto",
+        fullWidth ? "w-full" : variant === "hero" ? "max-w-2xl mx-auto" : "max-w-5xl mx-auto",
         animated ? "transform-gpu" : "",
       ];
 
       // Size classes with enhanced padding
-      const sizeClasses = {
+      const sizeClasses = variant === "hero" ? {
+        sm: "p-4 rounded-2xl",
+        md: "p-5 rounded-2xl",
+        lg: "p-6 rounded-2xl",
+      } : {
         sm: compact ? "p-6 rounded-2xl" : "p-8 rounded-3xl",
         md: compact ? "p-8 rounded-3xl" : "p-10 lg:p-12 rounded-3xl",
         lg: compact ? "p-10 rounded-3xl" : "p-12 lg:p-16 rounded-3xl",
@@ -119,7 +125,9 @@ export const Newsletter = component$<NewsletterProps>(
       // Premium glassmorphism and theme classes
       let surfaceClasses = "";
 
-      if (glassmorphism) {
+      if (variant === "hero") {
+        surfaceClasses = "bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl backdrop-saturate-150 border border-white/30 dark:border-gray-700/30";
+      } else if (glassmorphism) {
         surfaceClasses = "bg-white/80 dark:bg-gray-900/80 backdrop-blur-3xl backdrop-saturate-200 border-2 border-white/40 dark:border-primary-500/20";
       } else if (themeColors) {
         switch (theme) {
@@ -141,7 +149,11 @@ export const Newsletter = component$<NewsletterProps>(
       }
 
       // Premium elevation shadow with enhanced effects
-      const elevationClasses = {
+      const elevationClasses = variant === "hero" ? {
+        base: "shadow-md",
+        elevated: "shadow-lg hover:shadow-xl",
+        depressed: "shadow-inner shadow-gray-200/30 dark:shadow-gray-900/30",
+      } : {
         base: "shadow-lg",
         elevated: "shadow-2xl hover:shadow-primary/20 hover:shadow-3xl dark:shadow-dark-2xl dark:hover:shadow-primary-500/10 dark:hover:shadow-dark-3xl",
         depressed: "shadow-inner shadow-gray-200/50 dark:shadow-gray-900/50",
@@ -159,6 +171,10 @@ export const Newsletter = component$<NewsletterProps>(
 
     // Get logo container classes
     const getLogoContainerClasses = () => {
+      if (variant === "hero") {
+        return "hidden"; // Hide logo in hero variant
+      }
+
       const baseClasses = "flex-shrink-0";
 
       if (variant === "horizontal" || variant === "responsive") {
@@ -170,6 +186,10 @@ export const Newsletter = component$<NewsletterProps>(
 
     // Get content container classes
     const getContentContainerClasses = () => {
+      if (variant === "hero") {
+        return "flex-1 space-y-3";
+      }
+
       const baseClasses = "flex-1 space-y-5";
 
       if (variant === "vertical" || (variant === "responsive")) {
@@ -181,44 +201,51 @@ export const Newsletter = component$<NewsletterProps>(
 
     // Get form classes - enhanced spacing
     const getFormClasses = () => {
+      if (variant === "hero") {
+        return "flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto";
+      }
       return "space-y-5 w-full max-w-md mx-auto" +
         (variant === "horizontal" ? " md:mx-0" : "");
     };
 
     return (
       <div class="relative">
-        {/* Premium multi-layer gradient background */}
-        <div class="absolute inset-0 -z-10">
-          <div class="absolute inset-0 bg-gradient-to-br from-primary-100/30 via-transparent to-secondary-100/30 dark:from-primary-950/20 dark:to-secondary-950/20" />
-          <div class="absolute inset-0 bg-gradient-to-tr from-secondary-100/20 via-transparent to-primary-100/20 dark:from-secondary-950/10 dark:to-primary-950/10" />
+        {/* Premium multi-layer gradient background - only for non-hero variants */}
+        {variant !== "hero" && (
+          <div class="absolute inset-0 -z-10">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary-100/30 via-transparent to-secondary-100/30 dark:from-primary-950/20 dark:to-secondary-950/20" />
+            <div class="absolute inset-0 bg-gradient-to-tr from-secondary-100/20 via-transparent to-primary-100/20 dark:from-secondary-950/10 dark:to-primary-950/10" />
 
-          {/* Circuit pattern overlay */}
-          <svg class="absolute inset-0 w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="circuit-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                <circle cx="5" cy="5" r="1" fill="currentColor" class="text-primary-500" />
-                <circle cx="95" cy="5" r="1" fill="currentColor" class="text-primary-500" />
-                <circle cx="50" cy="50" r="2" fill="currentColor" class="text-secondary-500" />
-                <circle cx="5" cy="95" r="1" fill="currentColor" class="text-primary-500" />
-                <circle cx="95" cy="95" r="1" fill="currentColor" class="text-primary-500" />
-                <path d="M5,5 L50,50 M50,50 L95,5 M50,50 L5,95 M50,50 L95,95" stroke="currentColor" stroke-width="0.5" fill="none" class="text-secondary-300 dark:text-secondary-700" opacity="0.3" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#circuit-pattern)" />
-          </svg>
-        </div>
+            {/* Circuit pattern overlay */}
+            <svg class="absolute inset-0 w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="circuit-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                  <circle cx="5" cy="5" r="1" fill="currentColor" class="text-primary-500" />
+                  <circle cx="95" cy="5" r="1" fill="currentColor" class="text-primary-500" />
+                  <circle cx="50" cy="50" r="2" fill="currentColor" class="text-secondary-500" />
+                  <circle cx="5" cy="95" r="1" fill="currentColor" class="text-primary-500" />
+                  <circle cx="95" cy="95" r="1" fill="currentColor" class="text-primary-500" />
+                  <path d="M5,5 L50,50 M50,50 L95,5 M50,50 L5,95 M50,50 L95,95" stroke="currentColor" stroke-width="0.5" fill="none" class="text-secondary-300 dark:text-secondary-700" opacity="0.3" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#circuit-pattern)" />
+            </svg>
+          </div>
+        )}
 
         {/* Main container with background logo */}
         <div class={getContainerClasses()}>
-          {/* Large background logo watermark */}
-          <BackgroundLogo
-            size={size === "sm" ? 600 : size === "lg" ? 1000 : 800}
-            opacity={0.06}
-            position="bottom-center"
-            animated={animated}
-            rotation={-5}
-            blur={0.5}
-          />
+          {/* Large background logo watermark - hide for hero variant */}
+          {variant !== "hero" && (
+            <BackgroundLogo
+              size={size === "sm" ? 600 : size === "lg" ? 1000 : 800}
+              opacity={0.06}
+              position="bottom-center"
+              animated={animated}
+              rotation={-5}
+              blur={0.5}
+            />
+          )}
 
           {/* Premium animated background decorations */}
           {animated && (
@@ -233,8 +260,8 @@ export const Newsletter = component$<NewsletterProps>(
           )}
 
           <div class={getLayoutClasses() + " relative z-10"}>
-          {/* Small Logo Badge (optional) */}
-          {showLogo && variant !== "responsive" && (
+          {/* Small Logo Badge (optional) - hide for hero variant */}
+          {showLogo && variant !== "responsive" && variant !== "hero" && (
             <div class={getLogoContainerClasses()}>
               <div class="transform transition-all duration-500">
                 <NewsletterLogo />
@@ -244,24 +271,35 @@ export const Newsletter = component$<NewsletterProps>(
 
           {/* Content Section */}
           <div class={getContentContainerClasses()}>
-            {/* Enhanced Header with gradient text */}
-            <div class="space-y-3">
-              <h2 class={`font-black bg-gradient-to-r from-gray-900 via-primary-500 to-secondary-500 dark:from-white dark:via-primary-400 dark:to-secondary-400 bg-clip-text text-transparent leading-tight bg-300% animate-gradient ${
-                size === "sm" ? "text-2xl md:text-3xl" : size === "lg" ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
-              }`}>
-                {title}
-              </h2>
+            {/* Enhanced Header with gradient text - simplified for hero variant */}
+            {variant !== "hero" && (
+              <div class="space-y-3">
+                <h2 class={`font-black bg-gradient-to-r from-gray-900 via-primary-500 to-secondary-500 dark:from-white dark:via-primary-400 dark:to-secondary-400 bg-clip-text text-transparent leading-tight bg-300% animate-gradient ${
+                  size === "sm" ? "text-2xl md:text-3xl" : size === "lg" ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
+                }`}>
+                  {title}
+                </h2>
 
-              <p class={`text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-2xl mx-auto ${
-                size === "sm" ? "text-sm md:text-base" : size === "lg" ? "text-lg md:text-xl" : "text-base md:text-lg"
-              }`}>
-                {description}
-              </p>
-            </div>
+                <p class={`text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-2xl mx-auto ${
+                  size === "sm" ? "text-sm md:text-base" : size === "lg" ? "text-lg md:text-xl" : "text-base md:text-lg"
+                }`}>
+                  {description}
+                </p>
+              </div>
+            )}
+
+            {/* Hero variant title - compact and minimal */}
+            {variant === "hero" && title && (
+              <div class="text-center mb-4">
+                <h3 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 dark:from-white dark:to-primary-400 bg-clip-text text-transparent">
+                  {title}
+                </h3>
+              </div>
+            )}
 
             {/* Premium Form with floating label */}
             <form class={getFormClasses()} onSubmit$={handleSubmit$} preventdefault:submit>
-              <div class="relative group">
+              <div class={variant === "hero" ? "flex-1" : "relative group"}>
                 <Input
                   type="email"
                   value={email.value}
@@ -269,7 +307,7 @@ export const Newsletter = component$<NewsletterProps>(
                   id="newsletter-email"
                   disabled={disabled || isLoading}
                   required
-                  size={size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
+                  size={variant === "hero" ? "md" : size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
                   validation={errorMessage ? "invalid" : isSuccess ? "valid" : "default"}
                   onInput$={handleEmailInput$}
                   onFocus$={handleFocus$}
@@ -300,8 +338,8 @@ export const Newsletter = component$<NewsletterProps>(
                 </Input>
               </div>
 
-              {/* Error Message with animation */}
-              {errorMessage && (
+              {/* Error Message with animation - hide for hero variant */}
+              {errorMessage && variant !== "hero" && (
                 <div id="newsletter-error" class="text-error-600 dark:text-error-400 text-sm flex items-center gap-2 animate-slide-up bg-error-50/50 dark:bg-error-950/30 px-4 py-2 rounded-lg border border-error-200 dark:border-error-800">
                   <svg class="h-4 w-4 flex-shrink-0 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -315,9 +353,9 @@ export const Newsletter = component$<NewsletterProps>(
                 type="submit"
                 disabled={disabled || isLoading || !isValid.value || isSuccess}
                 loading={isLoading}
-                variant={theme === "glass" ? "glass" : "primary"}
-                size={size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
-                fullWidth={true}
+                variant={variant === "hero" ? "primary" : theme === "glass" ? "glass" : "primary"}
+                size={variant === "hero" ? "md" : size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
+                fullWidth={variant !== "hero"}
                 ripple={true}
                 gradientDirection="to-r"
                 radius="lg"
@@ -325,7 +363,7 @@ export const Newsletter = component$<NewsletterProps>(
                 pulse={false}
                 onClick$={$(() => handleSubmit$(new Event('submit')))}
                 aria-label={isSuccess ? $localize`Successfully subscribed` : $localize`Subscribe to newsletter`}
-                class="mt-4 !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"
+                class={variant === "hero" ? "!bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700 min-w-[120px]" : "mt-4 !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"}
               >
                 {isSuccess ? (
                   <div class="flex items-center justify-center gap-3">
@@ -344,7 +382,7 @@ export const Newsletter = component$<NewsletterProps>(
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0" />
                       </svg>
                     )}
-                    <span class="tracking-widest">{isLoading ? $localize`CONNECTING...` : buttonText}</span>
+                    <span class={variant === "hero" ? "font-semibold" : "tracking-widest"}>{isLoading ? (variant === "hero" ? $localize`...` : $localize`CONNECTING...`) : buttonText}</span>
                     {!isLoading && (
                       <svg class="h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -354,8 +392,8 @@ export const Newsletter = component$<NewsletterProps>(
                 )}
               </Button>
 
-              {/* Privacy Notice with icons */}
-              {showPrivacyNotice && !isSuccess && (
+              {/* Privacy Notice with icons - hide for hero variant */}
+              {showPrivacyNotice && !isSuccess && variant !== "hero" && (
                 <div id="newsletter-privacy" class={`text-gray-500 dark:text-gray-400 text-center flex items-center justify-center gap-2 ${
                   size === "sm" ? "text-xs" : "text-sm"
                 }`}>
@@ -366,8 +404,8 @@ export const Newsletter = component$<NewsletterProps>(
                 </div>
               )}
 
-              {/* Enhanced Success Message */}
-              {isSuccess && (
+              {/* Enhanced Success Message - simplified for hero variant */}
+              {isSuccess && variant !== "hero" && (
                 <div class="text-center space-y-3 p-6 bg-success-50/30 dark:bg-success-950/20 rounded-2xl border border-success-200 dark:border-success-800 animate-slide-up">
                   <div class="flex justify-center">
                     <div class="p-3 bg-success-100 dark:bg-success-900 rounded-full">

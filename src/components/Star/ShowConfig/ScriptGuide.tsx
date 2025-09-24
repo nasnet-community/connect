@@ -43,6 +43,45 @@ export const ScriptGuide = component$(() => {
 
       {/* Main Content */}
       <div class="space-y-8 p-6">
+        {/* Demo Section with fullscreen button - MOVED TO TOP */}
+        <div class="rounded-lg bg-surface p-4 dark:bg-surface-dark">
+          <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
+            {$localize`Visual Guide`}
+          </h5>
+          <div class="relative overflow-hidden rounded-lg">
+            <button
+              onClick$={() => (isFullScreen.value = true)}
+              class="absolute right-4 top-4 rounded-lg bg-surface/80 p-2
+                   shadow-lg backdrop-blur transition-colors hover:bg-surface
+                   dark:bg-surface-dark/80 dark:hover:bg-surface-dark"
+              aria-label="View fullscreen"
+            >
+              <svg
+                class="h-6 w-6 text-text dark:text-text-dark-default"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
+                />
+              </svg>
+            </button>
+            <img
+              src={GifScriptguide}
+              alt="RouterOS Terminal Guide"
+              width={1024}
+              height={576}
+              class="w-full rounded-lg shadow-lg transition-all duration-300
+                   hover:shadow-xl dark:border dark:border-gray-700"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
         {/* Prerequisites Section */}
         <div class="max-w-3xl">
           <div class="rounded-lg bg-surface p-6 shadow-sm dark:bg-surface-dark">
@@ -180,45 +219,6 @@ export const ScriptGuide = component$(() => {
           </div>
         </div>
 
-        {/* Demo Section with fullscreen button */}
-        <div class="mt-8 rounded-lg bg-surface p-4 dark:bg-surface-dark">
-          <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
-            {$localize`Visual Guide`}
-          </h5>
-          <div class="relative overflow-hidden rounded-lg">
-            <button
-              onClick$={() => (isFullScreen.value = true)}
-              class="absolute right-4 top-4 rounded-lg bg-surface/80 p-2 
-                   shadow-lg backdrop-blur transition-colors hover:bg-surface 
-                   dark:bg-surface-dark/80 dark:hover:bg-surface-dark"
-              aria-label="View fullscreen"
-            >
-              <svg
-                class="h-6 w-6 text-text dark:text-text-dark-default"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-                />
-              </svg>
-            </button>
-            <img
-              src={GifScriptguide}
-              alt="RouterOS Terminal Guide"
-              width={1024}
-              height={576}
-              class="w-full rounded-lg shadow-lg transition-all duration-300
-                   hover:shadow-xl dark:border dark:border-gray-700"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </div>
 
         {/* Fullscreen Modal */}
         {isFullScreen.value && (

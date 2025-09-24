@@ -1,4 +1,4 @@
-import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
+import { $, component$, useContext, useSignal, useTask$, type PropFunction } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessBandSelector } from "./WirelessBandSelector";
@@ -17,21 +17,26 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
   // Get interface type from context (set by InterfaceType component)
   const interfaceType = starContext.state.Choose.TrunkInterfaceType || "wired";
 
-  // Get selected band from router models (if already set)
-  const getSelectedBand = () => {
+  // Initialize selectedBand from existing state using useTask$
+  useTask$(({ track }) => {
+    // Track router models to re-initialize when they change
+    track(() => starContext.state.Choose.RouterModels);
+
     const models = starContext.state.Choose.RouterModels;
-    if (models.length === 0) return null;
+    if (models.length === 0) {
+      selectedBand.value = null;
+      return;
+    }
 
     const firstModel = models[0];
-    if (firstModel.MasterSlaveInterface === "wifi2.4") return "2.4G";
-    if (firstModel.MasterSlaveInterface === "wifi5") return "5G";
-    return null;
-  };
-
-  // Initialize selectedBand from existing state
-  if (!selectedBand.value) {
-    selectedBand.value = getSelectedBand();
-  }
+    if (firstModel.MasterSlaveInterface === "wifi2.4") {
+      selectedBand.value = "2.4G";
+    } else if (firstModel.MasterSlaveInterface === "wifi5") {
+      selectedBand.value = "5G";
+    } else {
+      selectedBand.value = null;
+    }
+  });
 
   const handleInterfaceSelectorComplete = $(() => {
     if (props.onComplete$) {

@@ -129,9 +129,62 @@ export const RouterChainingSection = component$(() => {
 
   return (
     <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-blue-50 dark:from-slate-900 dark:via-green-900 dark:to-emerald-900">
-      {/* Background Pattern */}
+      {/* Chain-link pattern */}
       <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0 bg-grid-pattern bg-[size:60px_60px]" />
+        <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="chain" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
+              <ellipse cx="20" cy="20" rx="18" ry="10" fill="none" stroke="#10b981" stroke-width="1.5" />
+              <ellipse cx="60" cy="20" rx="18" ry="10" fill="none" stroke="#34d399" stroke-width="1.5" />
+              <ellipse cx="40" cy="20" rx="18" ry="10" fill="none" stroke="#059669" stroke-width="1.5" transform="rotate(90 40 20)" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#chain)" />
+        </svg>
+      </div>
+
+      {/* Interconnected nodes animation */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-3 h-3 bg-green-500 rounded-full">
+          <div class="absolute inset-0 bg-green-500 rounded-full animate-ping" />
+        </div>
+        <div class="absolute top-1/4 right-1/4 w-3 h-3 bg-emerald-500 rounded-full">
+          <div class="absolute inset-0 bg-emerald-500 rounded-full animate-ping animation-delay-1000" />
+        </div>
+        <div class="absolute bottom-1/4 left-1/2 w-3 h-3 bg-blue-500 rounded-full">
+          <div class="absolute inset-0 bg-blue-500 rounded-full animate-ping animation-delay-2000" />
+        </div>
+      </div>
+
+      {/* Connection lines between nodes */}
+      <div class="absolute inset-0">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="25" y1="25" x2="75" y2="25" stroke="#10b981" stroke-width="0.2" opacity="0.3" class="animate-pulse" />
+          <line x1="75" y1="25" x2="50" y2="75" stroke="#34d399" stroke-width="0.2" opacity="0.3" class="animate-pulse animation-delay-1000" />
+          <line x1="50" y1="75" x2="25" y2="25" stroke="#059669" stroke-width="0.2" opacity="0.3" class="animate-pulse animation-delay-2000" />
+        </svg>
+      </div>
+
+      {/* Signal strength indicators */}
+      <div class="absolute inset-0">
+        <div class="absolute top-20 left-1/3">
+          <svg class="w-8 h-8 text-green-400 opacity-20 animate-float" viewBox="0 0 24 24" fill="none">
+            <path d="M8.5 16.5l3-3m0 0l3-3m-3 3l-3-3m3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+            <path d="M2 12c0-3.5 2.5-6.5 6-7.5M22 12c0-3.5-2.5-6.5-6-7.5M2 12c0 3.5 2.5 6.5 6 7.5M22 12c0 3.5-2.5 6.5-6 7.5" stroke="currentColor" stroke-width="1" opacity="0.5" />
+          </svg>
+        </div>
+        <div class="absolute bottom-32 right-1/4">
+          <svg class="w-6 h-6 text-emerald-400 opacity-20 animate-float animation-delay-2000" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+            <path d="M12 2v6m0 4v6m0 4v-2m10-8h-6m-4 0H6m16 0h-2" stroke="currentColor" stroke-width="1" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Mesh network overlay */}
+      <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #10b981 1px, transparent 1px); background-size: 30px 30px;" />
       </div>
 
       <div class="max-w-7xl mx-auto relative z-10">

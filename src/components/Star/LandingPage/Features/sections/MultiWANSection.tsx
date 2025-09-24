@@ -71,9 +71,55 @@ export const MultiWANSection = component$(() => {
 
   return (
     <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-purple-900">
-      {/* Animated Background Pattern */}
+      {/* Network mesh pattern */}
       <div class="absolute inset-0 opacity-20">
-        <div class="absolute inset-0 bg-grid-pattern bg-[size:50px_50px] animate-pulse-slow" />
+        <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="mesh" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <circle cx="0" cy="0" r="1" fill="#3b82f6" />
+              <circle cx="50" cy="0" r="1" fill="#3b82f6" />
+              <circle cx="100" cy="0" r="1" fill="#3b82f6" />
+              <circle cx="0" cy="50" r="1" fill="#06b6d4" />
+              <circle cx="50" cy="50" r="2" fill="#8b5cf6" />
+              <circle cx="100" cy="50" r="1" fill="#06b6d4" />
+              <circle cx="0" cy="100" r="1" fill="#3b82f6" />
+              <circle cx="50" cy="100" r="1" fill="#3b82f6" />
+              <circle cx="100" cy="100" r="1" fill="#3b82f6" />
+              <path d="M0,0 L50,50 L100,0 M0,100 L50,50 L100,100 M0,0 L0,100 M100,0 L100,100" stroke="#3b82f650" stroke-width="0.5" fill="none" />
+              <path d="M0,50 L50,50 L100,50 M50,0 L50,100" stroke="#06b6d450" stroke-width="0.3" fill="none" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#mesh)" />
+        </svg>
+      </div>
+
+      {/* Animated data flow visualization */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/4 left-0 w-full h-px">
+          <div class="h-full bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-slide-right" />
+        </div>
+        <div class="absolute top-3/4 left-0 w-full h-px">
+          <div class="h-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent animate-slide-right animation-delay-2000" />
+        </div>
+        <div class="absolute top-0 left-1/4 h-full w-px">
+          <div class="w-full bg-gradient-to-b from-transparent via-purple-500 to-transparent animate-slide-down" />
+        </div>
+        <div class="absolute top-0 left-3/4 h-full w-px">
+          <div class="w-full bg-gradient-to-b from-transparent via-blue-500 to-transparent animate-slide-down animation-delay-3000" />
+        </div>
+      </div>
+
+      {/* Connection nodes */}
+      <div class="absolute inset-0">
+        <div class="absolute top-1/3 left-1/3 w-4 h-4 bg-blue-500 rounded-full animate-pulse" />
+        <div class="absolute top-2/3 right-1/3 w-4 h-4 bg-cyan-500 rounded-full animate-pulse animation-delay-2000" />
+        <div class="absolute bottom-1/3 left-1/2 w-4 h-4 bg-purple-500 rounded-full animate-pulse animation-delay-4000" />
+      </div>
+
+      {/* Glowing orbs for depth */}
+      <div class="absolute inset-0">
+        <div class="absolute top-40 left-20 w-32 h-32 bg-blue-400 rounded-full filter blur-3xl opacity-20 animate-float" />
+        <div class="absolute bottom-40 right-20 w-40 h-40 bg-cyan-400 rounded-full filter blur-3xl opacity-20 animate-float animation-delay-2000" />
       </div>
 
       <div class="max-w-7xl mx-auto relative z-10">

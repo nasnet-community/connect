@@ -43,7 +43,15 @@ export const RouterModel = component$((props: RouterModelProps) => {
     });
 
     // Use the full RouterInterfaces structure from the selected router
-    const interfaces: RouterInterfaces = selectedRouter.interfaces;
+    const interfaces: RouterInterfaces = {
+      Interfaces: {
+        ethernet: [...(selectedRouter.interfaces.Interfaces.ethernet || [])],
+        wireless: [...(selectedRouter.interfaces.Interfaces.wireless || [])],
+        sfp: [...(selectedRouter.interfaces.Interfaces.sfp || [])],
+        lte: [...(selectedRouter.interfaces.Interfaces.lte || [])],
+      },
+      OccupiedInterfaces: [],
+    };
 
     // Check if this router is already selected
     const existingModels = starContext.state.Choose.RouterModels;

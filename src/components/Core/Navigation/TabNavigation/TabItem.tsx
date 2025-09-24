@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { Tab, TabSize, TabVariant } from "./TabNavigation.types";
 
@@ -61,13 +61,15 @@ export const TabItem = component$<TabItemProps>(
       variantClasses[variant].tab[tabState],
       sizeClasses[size].tab,
       animationClass,
+      "whitespace-nowrap",
       tab.disabled ? "pointer-events-none" : "",
       // Mobile-first responsive classes
       "min-h-[44px] touch-manipulation",
       "focus-visible:outline-none focus-visible:ring-2",
       "focus-visible:ring-primary-500 focus-visible:ring-offset-2",
       "dark:focus-visible:ring-offset-gray-900",
-      "active:scale-95 motion-safe:active:transition-transform",
+      // Remove active scale to avoid layout shift/scrollbar flicker on hover/press
+      // "active:scale-95 motion-safe:active:transition-transform",
       tab.class,
     ]
       .filter(Boolean)
@@ -88,7 +90,7 @@ export const TabItem = component$<TabItemProps>(
         role="presentation"
       >
         <button
-          onClick$={() => onSelect$(tab.id, tab.disabled)}
+          onClick$={$(() => onSelect$(tab.id, tab.disabled))}
           class={tabClass}
           role="tab"
           id={`${navigationId}-${tab.id}`}
@@ -96,6 +98,7 @@ export const TabItem = component$<TabItemProps>(
           aria-disabled={tab.disabled}
           aria-controls={`${navigationId}-panel-${tab.id}`}
           tabIndex={isActive ? 0 : -1}
+          type="button"
           {...Object.fromEntries(
             Object.entries(tab).filter(([key]) => key.startsWith("data-")),
           )}

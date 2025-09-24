@@ -3,6 +3,7 @@ import {
   useComputed$,
   useContext,
   useSignal,
+  useTask$,
 } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { 
@@ -23,8 +24,67 @@ export const useSubnets = (): UseSubnetsReturn => {
   const values = useSignal<Record<string, number | null>>({});
   const errors = useSignal<Record<string, string>>({});
 
+  // Extract WAN Static Route subnets for conflict detection
+  const getWANStaticSubnets = useComputed$(() => {
+    const wanSubnets: Array<{ value: number; name: string }> = [];
+    const wanLinks = starContext.state.WAN?.WANLink;
+
+    if (!wanLinks) return wanSubnets;
+
+    // Check both Domestic and Foreign WAN links
+    const allLinks = [
+      ...(wanLinks.Domestic?.WANConfigs || []).map(c => ({ ...c, type: 'Domestic' })),
+      ...(wanLinks.Foreign?.WANConfigs || []).map(c => ({ ...c, type: 'Foreign' }))
+    ];
+
+    // Helper to compute third octet of network from IP and mask
+    const toThirdOctet = (ip: string, mask: string): number | null => {
+      // Fallback: handle accidental CIDR stored in mask field (e.g., "192.168.30.0/24")
+      if (mask && mask.includes('/')) {
+        const m = mask.match(/192\.168\.(\d+)\.\d+\/\d+/);
+        if (m) return parseInt(m[1], 10);
+      }
+
+      const ipParts = ip?.split('.').map(p => parseInt(p, 10));
+      const maskParts = mask?.split('.').map(p => parseInt(p, 10));
+      if (!ipParts || !maskParts || ipParts.length !== 4 || maskParts.length !== 4) return null;
+      if (ipParts.some(n => isNaN(n)) || maskParts.some(n => isNaN(n))) return null;
+
+      const network = ipParts.map((octet, i) => (octet & maskParts[i]));
+      if (network[0] === 192 && network[1] === 168) {
+        return network[2];
+      }
+      return null;
+    };
+
+    allLinks.forEach(link => {
+      const staticCfg = link.ConnectionConfig?.static;
+      if (staticCfg?.ipAddress && staticCfg.subnet) {
+        const third = toThirdOctet(staticCfg.ipAddress, staticCfg.subnet);
+        if (third !== null) {
+          wanSubnets.push({
+            value: third,
+            name: `${link.type} WAN: ${link.name || 'Link'}`
+          });
+        }
+      } else if (staticCfg?.subnet) {
+        // Legacy: attempt to parse CIDR-like subnet stored in 'subnet'
+        const match = staticCfg.subnet.match(/192\.168\.(\d+)\.\d+\/\d+/);
+        if (match) {
+          wanSubnets.push({
+            value: parseInt(match[1], 10),
+            name: `${link.type} WAN: ${link.name || 'Link'}`
+          });
+        }
+      }
+    });
+
+    return wanSubnets;
+  });
+
   // Initialize values from context or use placeholders as defaults
-  const _initializeValues = useComputed$(() => {
+  const _initializeValues = useTask$(({ track }) => {
+    track(() => starContext.state.LAN.Subnets);
     const existingSubnets = starContext.state.LAN.Subnets || {};
     const initialValues: Record<string, number | null> = {};
 
@@ -400,8 +460,66 @@ export const useSubnets = (): UseSubnetsReturn => {
     return configs;
   });
 
+  // Real-time validation function that runs on every value change
+  const validateRealTime$ = $(() => {
+    const newErrors: Record<string, string> = {};
+    const usedValues = new Map<number, string>();
+
+    // First, add all WAN static subnets to the used values map
+    const wanSubnets = getWANStaticSubnets.value;
+    wanSubnets.forEach(wan => {
+      usedValues.set(wan.value, `WAN:${wan.name}`);
+    });
+
+    // Validate all current values
+    for (const config of subnetConfigs.value) {
+      const value = values.value[config.key];
+
+      if (value !== null && value !== undefined) {
+        // Range validation
+        if (value < 1 || value > 254) {
+          newErrors[config.key] = $localize`Value must be between 1-254`;
+          continue;
+        }
+
+        // Reserved addresses validation
+        if (value === 1 || value === 255) {
+          newErrors[config.key] = $localize`Values 1 and 255 are reserved`;
+          continue;
+        }
+
+        // Check for conflicts (both LAN-LAN and LAN-WAN)
+        if (usedValues.has(value)) {
+          const conflictingKey = usedValues.get(value)!;
+
+          // Check if it's a WAN conflict
+          if (conflictingKey.startsWith('WAN:')) {
+            const wanName = conflictingKey.substring(4);
+            newErrors[config.key] = $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+          } else {
+            // It's a LAN-LAN conflict
+            const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+            const conflictingLabel = conflictingConfig?.label || conflictingKey;
+
+            // Mark both conflicting subnets
+            newErrors[config.key] = $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
+            newErrors[conflictingKey] = $localize`Conflicts with ${config.label} (192.168.${value}.0)`;
+          }
+        } else {
+          usedValues.set(value, config.key);
+        }
+      }
+    }
+
+    // Update errors signal
+    errors.value = newErrors;
+  });
+
   // Initialize subnet values with placeholders if not already set
-  useComputed$(() => {
+  useTask$(({ track }) => {
+    track(() => subnetConfigs.value);
+    track(() => values.value);
+    track(() => starContext.state.LAN.Subnets);
     const currentValues = { ...values.value };
     let hasChanges = false;
 
@@ -421,7 +539,11 @@ export const useSubnets = (): UseSubnetsReturn => {
       if (hasChanges) {
         values.value = currentValues;
       }
+    } else {
+      // keep current values; no defaulting
     }
+    // run validation when tracked deps change
+    validateRealTime$();
   });
 
   // Group configurations by category
@@ -443,83 +565,34 @@ export const useSubnets = (): UseSubnetsReturn => {
   });
 
   // Validation state
-  const isValid = useComputed$(() => {
-    return Object.keys(errors.value).length === 0;
+  const isValid = useSignal<boolean>(true);
+  useTask$(({ track }) => {
+    track(() => errors.value);
+    isValid.value = Object.keys(errors.value).length === 0;
   });
 
-  // Real-time duplicate validation
-  const validateDuplicatesRealTime$ = $(async () => {
-    const newErrors: Record<string, string> = { ...errors.value };
-    const usedValues = new Map<number, string>(); // Map value to config key for better error messages
-
-    // Clear existing duplicate errors
-    Object.keys(newErrors).forEach(key => {
-      if (newErrors[key]?.includes($localize`already in use`) || newErrors[key]?.includes($localize`conflicts with`)) {
-        delete newErrors[key];
-      }
-    });
-
-    // Check each configuration for duplicates
-    for (const config of subnetConfigs.value) {
-      const value = values.value[config.key];
-
-      if (value !== null && value !== undefined) {
-        // Range validation (keep existing)
-        if (value < 1 || value > 254) {
-          newErrors[config.key] = $localize`Value must be between 1-254`;
-          continue;
-        }
-
-        // Reserved addresses validation (keep existing)
-        if (value === 1 || value === 255) {
-          newErrors[config.key] = $localize`Values 1 and 255 are reserved`;
-          continue;
-        }
-
-        // Enhanced duplicate validation with specific conflict information
-        if (usedValues.has(value)) {
-          const conflictingKey = usedValues.get(value)!;
-          const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
-          const conflictingLabel = conflictingConfig?.label || conflictingKey;
-
-          newErrors[config.key] = $localize`This subnet conflicts with ${conflictingLabel} (192.168.${value}.0/${config.mask})`;
-
-          // Also mark the original conflicting field if it doesn't have an error yet
-          if (!newErrors[conflictingKey]) {
-            newErrors[conflictingKey] = $localize`This subnet conflicts with ${config.label} (192.168.${value}.0/${config.mask})`;
-          }
-        } else {
-          usedValues.set(value, config.key);
-        }
-      }
-    }
-
-    errors.value = newErrors;
-  });
-
-  // Handle subnet value changes with real-time validation
+  // Handle subnet value changes with immediate validation
   const handleChange$ = $((key: string, value: number | null) => {
+    // Update the value
     values.value = {
       ...values.value,
       [key]: value,
     };
 
-    // Clear error when user changes value
-    if (errors.value[key]) {
-      errors.value = {
-        ...errors.value,
-        [key]: "",
-      };
-    }
-
-    // Trigger real-time duplicate validation
-    validateDuplicatesRealTime$();
+    // Run validation immediately
+    validateRealTime$();
   });
 
   // Validate all subnets (enhanced version for save validation)
   const validateAll$ = $(async (): Promise<boolean> => {
     const newErrors: Record<string, string> = {};
     const usedValues = new Map<number, string>();
+
+    // First, add all WAN static subnets to the used values map
+    const wanSubnets = getWANStaticSubnets.value;
+    wanSubnets.forEach(wan => {
+      usedValues.set(wan.value, `WAN:${wan.name}`);
+    });
 
     // Check each configuration
     for (const config of subnetConfigs.value) {
@@ -544,13 +617,20 @@ export const useSubnets = (): UseSubnetsReturn => {
           continue;
         }
 
-        // Enhanced duplicate validation with specific conflict information
+        // Check for conflicts (both LAN-LAN and LAN-WAN)
         if (usedValues.has(value)) {
           const conflictingKey = usedValues.get(value)!;
-          const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
-          const conflictingLabel = conflictingConfig?.label || conflictingKey;
 
-          newErrors[config.key] = $localize`This subnet conflicts with ${conflictingLabel} (192.168.${value}.0/${config.mask})`;
+          // Check if it's a WAN conflict
+          if (conflictingKey.startsWith('WAN:')) {
+            const wanName = conflictingKey.substring(4);
+            newErrors[config.key] = $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+          } else {
+            // It's a LAN-LAN conflict
+            const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+            const conflictingLabel = conflictingConfig?.label || conflictingKey;
+            newErrors[config.key] = $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
+          }
         } else {
           usedValues.set(value, config.key);
         }
@@ -636,12 +716,11 @@ export const useSubnets = (): UseSubnetsReturn => {
   return {
     subnetConfigs: subnetConfigs.value,
     groupedConfigs: groupedConfigs.value,
-    values: values.value,
-    errors: errors.value,
-    isValid: isValid.value,
+    values,
+    errors,
+    isValid,
     handleChange$,
     validateAll$,
-    validateDuplicatesRealTime$,
     reset$,
     getSubnetString,
     getSuggestedValue,

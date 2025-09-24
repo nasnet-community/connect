@@ -1,7 +1,8 @@
-import { component$, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
-import { HiSparklesOutline, HiEyeSlashOutline, HiEyeOutline, HiSignalOutline, HiSignalSlashOutline } from "@qwikest/icons/heroicons";
+import { component$, $ } from "@builder.io/qwik";
+import { HiSparklesOutline } from "@qwikest/icons/heroicons";
 import type { QRL, Signal } from "@builder.io/qwik";
-import { Input, SegmentedControl, Button } from "~/components/Core";
+import { Input, Toggle, Button } from "~/components/Core";
+import type { Mode } from "../../StarContext/ChooseType";
 
 interface SingleSSIDFormProps {
   ssid: Signal<string>;
@@ -15,6 +16,7 @@ interface SingleSSIDFormProps {
   toggleDisabled?: QRL<() => void>;
   toggleSplitBand?: QRL<() => void>;
   isLoading: Signal<Record<string, boolean>>;
+  mode?: Mode;
 }
 
 export const SingleSSIDForm = component$<SingleSSIDFormProps>(
@@ -26,47 +28,8 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     generateSSID,
     generatePassword,
     isLoading,
+    mode = "advance",
   }) => {
-    // Create mutable string signals for SegmentedControls
-    const hideState = useSignal(isHide.value ? "hidden" : "visible");
-    const splitBandState = useSignal(splitBand.value ? "split" : "combined");
-
-    // Keep the string signals in sync with the boolean signals
-    useTask$(({ track }) => {
-      track(() => isHide.value);
-      hideState.value = isHide.value ? "hidden" : "visible";
-    });
-
-    useTask$(({ track }) => {
-      track(() => splitBand.value);
-      splitBandState.value = splitBand.value ? "split" : "combined";
-    });
-
-    const hideOptions = [
-      {
-        value: "visible",
-        label: $localize`Visible`,
-        icon: <HiEyeOutline /> as JSXNode,
-      },
-      {
-        value: "hidden",
-        label: $localize`Hidden`,
-        icon: <HiEyeSlashOutline /> as JSXNode,
-      },
-    ];
-
-    const splitBandOptions = [
-      {
-        value: "combined",
-        label: $localize`Combined`,
-        icon: <HiSignalOutline /> as JSXNode,
-      },
-      {
-        value: "split",
-        label: $localize`Split Band`,
-        icon: <HiSignalSlashOutline /> as JSXNode,
-      },
-    ];
 
     return (
       <div class="space-y-6">
@@ -75,35 +38,32 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
         </p>
 
         <div class="flex flex-wrap items-center justify-end gap-4 border-b border-gray-200 pb-4 dark:border-gray-700">
-          <div class="flex items-center gap-2">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Visibility:`}
-            </label>
-            <SegmentedControl
-              value={hideState}
-              options={hideOptions}
-              onChange$={$((value: string) => {
-                isHide.value = value === "hidden";
+          {/* Only show visibility toggle in advance mode */}
+          {mode === "advance" && (
+            <Toggle
+              checked={!isHide.value}
+              onChange$={$((checked: boolean) => {
+                isHide.value = !checked;
               })}
+              label={$localize`Show SSID`}
+              labelPosition="left"
               size="sm"
               color="primary"
             />
-          </div>
+          )}
 
-          <div class="flex items-center gap-2">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Band Mode:`}
-            </label>
-            <SegmentedControl
-              value={splitBandState}
-              options={splitBandOptions}
-              onChange$={$((value: string) => {
-                splitBand.value = value === "split";
-              })}
-              size="sm"
-              color="primary"
-            />
-          </div>
+          <Toggle
+            checked={mode === "easy" ? true : splitBand.value}
+            onChange$={$((checked: boolean) => {
+              // In easy mode, always keep split band
+              splitBand.value = mode === "easy" ? true : checked;
+            })}
+            label={$localize`Split 2.4/5GHz`}
+            labelPosition="left"
+            size="sm"
+            color="primary"
+            disabled={mode === "easy"}
+          />
         </div>
 
         <div class="mt-4 space-y-6">

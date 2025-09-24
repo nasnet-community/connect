@@ -1,9 +1,18 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import { LuPlay, LuArrowRight, LuRouter, LuShield, LuZap } from "@qwikest/icons/lucide";
-import { Button } from "~/components/Core";
+import { Button, Newsletter } from "~/components/Core";
+import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
 
 export const HeroSection = component$(() => {
+  // Newsletter subscription handler
+  const handleNewsletterSubscribe$ = $(async (subscription: NewsletterSubscription) => {
+    console.log("Newsletter subscription for:", subscription.email);
+    // Here you can add your subscription logic (API call, etc.)
+    // For now, we'll just simulate a successful subscription
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  });
+
   return (
     <section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
       {/* Hero Content */}
@@ -34,7 +43,8 @@ export const HeroSection = component$(() => {
 
         {/* Subtitle */}
         <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed animate-fade-in-up animation-delay-500">
-          {$localize`Transform your MikroTik router into a professional network infrastructure with our intelligent configuration wizard. Multi-WAN, VPN, gaming optimization, and enterprise features - all in one beautiful interface.`}
+          {$localize`Share, Secure & Optimize Your Starlink
+Unlock the full potential of your Starlink connection with advanced networking powered by MikroTik routers. Seamlessly share your internet, secure it with VPN, and optimize for gaming and enterprise performance, all through NasNet Connect intelligent interface.`}
         </p>
 
         {/* Key Features Pills */}
@@ -75,6 +85,16 @@ export const HeroSection = component$(() => {
             <LuPlay class="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
             {$localize`Watch Demo`}
           </Button>
+        </div>
+
+        {/* Newsletter Card */}
+        <div class="mt-16 animate-fade-in-up animation-delay-1100">
+          <Newsletter
+            variant="hero"
+            placeholder={$localize`Enter your email for updates`}
+            buttonText={$localize`Subscribe`}
+            onSubscribe$={handleNewsletterSubscribe$}
+          />
         </div>
 
         {/* Trust Indicators */}

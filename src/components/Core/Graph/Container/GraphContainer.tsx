@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$, Slot } from "@builder.io/qwik";
 import type { CSSProperties, GraphConfig } from "../types";
 import { GraphLegend } from "./GraphLegend";
 import { LuX } from "@qwikest/icons/lucide";
@@ -25,10 +25,9 @@ export const defaultConfig = {
 export const GraphContainer = component$<{
   title?: string;
   config?: GraphConfig;
-  children?: any;
   connections: any[];
 }>((props) => {
-  const { title, config, children, connections } = props;
+  const { title, config, connections } = props;
   const mergedConfig = { ...defaultConfig, ...config };
 
   // State for expanded mode and touch detection
@@ -129,7 +128,7 @@ export const GraphContainer = component$<{
 
       {/* Network topology visualization with expandable height */}
       <div class="topology-content relative flex h-80 items-center justify-center transition-all duration-500 ease-in-out">
-        {children}
+        <Slot />
       </div>
 
       </div>
