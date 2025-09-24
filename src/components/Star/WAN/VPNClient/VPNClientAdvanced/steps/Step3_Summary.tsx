@@ -22,9 +22,6 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
     errorKeys: Object.keys(wizardState.validationErrors),
     errorDetails: wizardState.validationErrors
   });
-  
-  const enabledVPNs = wizardState.vpnConfigs.filter(vpn => vpn.enabled);
-  const configuredVPNs = wizardState.vpnConfigs.filter(vpn => vpn.type && 'config' in vpn && Boolean(vpn.config));
 
   const getVPNIcon = (type?: string) => {
     switch (type) {
@@ -70,8 +67,6 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
     }
   });
 
-  const completionPercentage = Math.round((configuredVPNs.length / wizardState.vpnConfigs.length) * 100) || 0;
-
   return (
     <div class="space-y-6">
       {/* Modern Header with Gradient */}
@@ -111,82 +106,6 @@ export const Step3_Summary = component$<Step3SummaryProps>(({
       )}
 
 
-      {/* Modern Statistics Dashboard */}
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total VPNs Card */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-xl">
-          <div class="relative z-10">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-blue-100">{$localize`Total VPNs`}</p>
-                <p class="mt-2 text-3xl font-bold">{wizardState.vpnConfigs.length}</p>
-              </div>
-              <div class="rounded-lg bg-white/20 p-3">
-                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
-        </div>
-
-        {/* Active VPNs Card */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500 to-green-600 p-6 text-white shadow-xl">
-          <div class="relative z-10">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-green-100">{$localize`Active VPNs`}</p>
-                <p class="mt-2 text-3xl font-bold">{enabledVPNs.length}</p>
-              </div>
-              <div class="rounded-lg bg-white/20 p-3">
-                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
-        </div>
-
-        {/* Configured VPNs Card */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 p-6 text-white shadow-xl">
-          <div class="relative z-10">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-purple-100">{$localize`Configured`}</p>
-                <p class="mt-2 text-3xl font-bold">{configuredVPNs.length}</p>
-              </div>
-              <div class="rounded-lg bg-white/20 p-3">
-                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
-        </div>
-
-        {/* Completion Progress Card */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white shadow-xl">
-          <div class="relative z-10">
-            <div class="flex items-center justify-between">
-              <div class="w-full">
-                <p class="text-orange-100">{$localize`Completion`}</p>
-                <p class="mt-2 text-3xl font-bold">{completionPercentage}%</p>
-                <div class="mt-3 w-full rounded-full bg-white/20">
-                  <div 
-                    class="h-2 rounded-full bg-white transition-all duration-500"
-                    style={`width: ${completionPercentage}%`}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10"></div>
-        </div>
-      </div>
 
       {/* VPN Clients Overview with Modern Cards */}
       <Card class="overflow-hidden border-0 shadow-lg">

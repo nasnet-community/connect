@@ -16,6 +16,8 @@ import { ScriptGuide } from "./ScriptGuide";
 import { useConfigGenerator } from "./useShow";
 // import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
 import { Newsletter } from "~/components/Core";
+import { DocumentSection } from "./DocumentSection/DocumentSection";
+import { EasyModeDownloadCard } from "./EasyModeDownloadCard";
 
 export const ShowConfig = component$<StepProps>(() => {
   // const activeTutorial = useSignal<'python' | 'mikrotik' | null>(null);
@@ -132,46 +134,14 @@ def configure_slave_router(host, username, password):
   return (
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       <Header title={
-        slaveRouters.length > 0 
-          ? $localize`Master Router Configuration` 
+        slaveRouters.length > 0
+          ? $localize`Master Router Configuration`
           : $localize`Configuration Preview`
       } />
 
       <div class="container mx-auto px-4 pb-16">
+        {/* Newsletter Section - Moved to Top */}
         <div class="mb-12">
-          <Code
-            // configPreview={generateConfigPreview()}
-            configPreview={configPreview.value} // Use the signal value instead
-            onPythonDownload$={handlePythonDownload}
-            onROSDownload$={handleROSDownload}
-          />
-        </div>
-
-
-        {/* Display Slave Router Configurations */}
-        {slaveRouters.length > 0 && slaveRouters.map((slaveRouter, index) => (
-          <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
-            <div class="mb-8">
-              <Header 
-                title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`} 
-              />
-            </div>
-            <div class="mb-12">
-              <Code
-                configPreview={slaveRouterConfigs.value[index] || $localize`Generating configuration...`}
-                onPythonDownload$={$(() => handleSlaveRouterPythonDownload(slaveRouter, index))}
-                onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))}
-              />
-            </div>
-          </div>
-        ))}
-
-        {/* <MikrotikApplyConfig /> */}
-
-        <ScriptGuide />
-
-        {/* Newsletter Section */}
-        <div class="mt-16">
           <Newsletter
             variant="horizontal"
             size="lg"
@@ -188,6 +158,49 @@ def configure_slave_router(host, username, password):
             fullWidth={true}
           />
         </div>
+
+        {/* Configuration Display - Conditional based on mode */}
+        <div class="mb-12">
+          {ctx.state.Choose.Mode === "easy" ? (
+            <EasyModeDownloadCard onROSDownload$={handleROSDownload} />
+          ) : (
+            <Code
+              configPreview={configPreview.value}
+              onPythonDownload$={handlePythonDownload}
+              onROSDownload$={handleROSDownload}
+            />
+          )}
+        </div>
+
+
+        {/* Display Slave Router Configurations */}
+        {slaveRouters.length > 0 && slaveRouters.map((slaveRouter, index) => (
+          <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
+            <div class="mb-8">
+              <Header
+                title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`}
+              />
+            </div>
+            <div class="mb-12">
+              {ctx.state.Choose.Mode === "easy" ? (
+                <EasyModeDownloadCard onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))} />
+              ) : (
+                <Code
+                  configPreview={slaveRouterConfigs.value[index] || $localize`Generating configuration...`}
+                  onPythonDownload$={$(() => handleSlaveRouterPythonDownload(slaveRouter, index))}
+                  onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))}
+                />
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* <MikrotikApplyConfig /> */}
+
+        <ScriptGuide />
+
+        {/* Documentation & FAQ Section */}
+        <DocumentSection />
       </div>
 
       {/* <div class="grid md:grid-cols-2 gap-6 w-full">

@@ -181,6 +181,59 @@ export const NetworkTunnelsSection = component$(() => {
 
   return (
     <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-slate-900 dark:via-gray-900 dark:to-zinc-900">
+      {/* Tunnel portal effects with depth */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div class="relative w-96 h-96">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-500 to-zinc-500 rounded-full opacity-5 animate-pulse" />
+            <div class="absolute inset-8 bg-gradient-to-r from-slate-400 to-zinc-400 rounded-full opacity-5 animate-pulse animation-delay-1000" />
+            <div class="absolute inset-16 bg-gradient-to-r from-slate-300 to-zinc-300 rounded-full opacity-5 animate-pulse animation-delay-2000" />
+            <div class="absolute inset-24 bg-gradient-to-r from-slate-200 to-zinc-200 rounded-full opacity-5 animate-pulse animation-delay-3000" />
+            <div class="absolute inset-32 bg-gradient-to-r from-slate-100 to-zinc-100 rounded-full opacity-5 animate-pulse animation-delay-4000" />
+          </div>
+        </div>
+      </div>
+
+      {/* 3D tunnel perspective grid */}
+      <div class="absolute inset-0 opacity-10">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="tunnel-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#64748b;stop-opacity:0" />
+              <stop offset="50%" style="stop-color:#64748b;stop-opacity:0.5" />
+              <stop offset="100%" style="stop-color:#64748b;stop-opacity:0" />
+            </linearGradient>
+          </defs>
+          <line x1="50" y1="0" x2="0" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line x1="50" y1="0" x2="100" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line x1="50" y1="0" x2="20" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line x1="50" y1="0" x2="80" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line x1="50" y1="0" x2="40" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line x1="50" y1="0" x2="60" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <circle cx="50" cy="0" r="2" fill="#64748b" opacity="0.3" />
+        </svg>
+      </div>
+
+      {/* Data streams through tunnel */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full">
+          <div class="w-full h-full bg-gradient-to-b from-transparent via-slate-500 to-transparent opacity-30 animate-slide-down" />
+        </div>
+        <div class="absolute top-0 left-1/3 w-px h-full">
+          <div class="w-full h-full bg-gradient-to-b from-transparent via-gray-500 to-transparent opacity-20 animate-slide-down animation-delay-2000" />
+        </div>
+        <div class="absolute top-0 right-1/3 w-px h-full">
+          <div class="w-full h-full bg-gradient-to-b from-transparent via-zinc-500 to-transparent opacity-20 animate-slide-down animation-delay-4000" />
+        </div>
+      </div>
+
+      {/* Tunnel entry/exit points */}
+      <div class="absolute inset-0">
+        <div class="absolute top-10 left-1/2 -translate-x-1/2 w-8 h-8 border-2 border-slate-400 rounded-full opacity-20 animate-pulse" />
+        <div class="absolute bottom-10 left-1/4 w-6 h-6 border-2 border-gray-400 rounded-full opacity-15 animate-pulse animation-delay-2000" />
+        <div class="absolute bottom-10 right-1/4 w-6 h-6 border-2 border-zinc-400 rounded-full opacity-15 animate-pulse animation-delay-3000" />
+      </div>
+
       <div class="max-w-7xl mx-auto relative z-10">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content Side */}

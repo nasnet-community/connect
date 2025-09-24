@@ -68,8 +68,9 @@ export const SubnetCard = component$<SubnetCardProps>(({
   const configKeys = configs.map(c => c.key);
   const cardErrors = Object.entries(errors).filter(([key]) => configKeys.includes(key));
   const conflictErrors = cardErrors.filter(([_, error]) =>
-    error.includes($localize`conflicts with`) || error.includes($localize`already in use`)
+    error.includes("Conflicts with") || error.includes("conflicts with")
   );
+  const hasErrors = cardErrors.length > 0;
   const hasConflicts = conflictErrors.length > 0;
 
   return (
@@ -79,7 +80,7 @@ export const SubnetCard = component$<SubnetCardProps>(({
       hoverEffect="shadow"
       class={`
         relative overflow-hidden transition-all duration-300
-        ${hasConflicts ? "border-red-300 dark:border-red-700 ring-2 ring-red-200 dark:ring-red-800" : styles.border}
+        ${hasErrors ? "border-red-300 dark:border-red-700 ring-2 ring-red-200 dark:ring-red-800" : styles.border}
         ${disabled ? "opacity-60" : "hover:shadow-lg hover:scale-[1.01]"}
         ${className}
       `}

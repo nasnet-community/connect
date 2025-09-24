@@ -2,8 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import { HeroSection } from "./Hero/HeroSection";
 import { EnhancedFeatureShowcase } from "./Features/EnhancedFeatureShowcase";
 import { RouterModelsSection } from "./Interactive/RouterModels/RouterModelsSection";
-import { VPNCapabilities } from "./Interactive/VPNCapabilities/VPNCapabilities";
-import { TechSpecsSection } from "./SocialProof/TechSpecs/TechSpecsSection";
+// import { TechSpecsSection } from "./SocialProof/TechSpecs/TechSpecsSection";
 
 export const LandingPage = component$(() => {
   return (
@@ -25,11 +24,8 @@ export const LandingPage = component$(() => {
         {/* Router Models Interactive Gallery */}
         <RouterModelsSection />
 
-        {/* VPN Capabilities */}
-        <VPNCapabilities />
-
         {/* Technical Specifications */}
-        <TechSpecsSection />
+        {/* <TechSpecsSection /> */}
       </main>
 
 

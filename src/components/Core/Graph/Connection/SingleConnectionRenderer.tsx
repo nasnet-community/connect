@@ -19,6 +19,19 @@ export const SingleConnectionRenderer = component$<{
   const arrowHead =
     connection.arrowHead !== undefined ? connection.arrowHead : true;
 
+  // Robust numeric seed for animation timings (avoid NaN when id is non-numeric)
+  const idString = id.toString();
+  const numericSeed = (() => {
+    const direct = Number(idString);
+    if (!Number.isNaN(direct)) return direct;
+    let sum = 0;
+    for (let i = 0; i < idString.length; i++) {
+      sum = (sum + idString.charCodeAt(i)) % 1024;
+    }
+    return sum;
+  })();
+  const baseDur = 2 + (numericSeed % 3) * 0.5;
+
   // Path for line (straight, not curved for NetworkTopology style)
   const x1 = fromNode.x + 16;
   const y1 = fromNode.y;
@@ -89,7 +102,7 @@ export const SingleConnectionRenderer = component$<{
           <circle r="3" fill={packetColor} opacity="0.9">
             <animateMotion
               path={pathD}
-              dur={`${2 + (parseInt(id.toString()) % 3) * 0.5}s`}
+              dur={`${baseDur}s`}
               repeatCount="indefinite"
               rotate="auto"
             />
@@ -99,8 +112,8 @@ export const SingleConnectionRenderer = component$<{
           <circle r="2" fill={packetColor} opacity="0.7">
             <animateMotion
               path={pathD}
-              dur={`${2 + (parseInt(id.toString()) % 3) * 0.5}s`}
-              begin={`${0.7 + (parseInt(id.toString()) % 3) * 0.2}s`}
+              dur={`${baseDur}s`}
+              begin={`${0.7 + (numericSeed % 3) * 0.2}s`}
               repeatCount="indefinite"
               rotate="auto"
             />
@@ -117,8 +130,8 @@ export const SingleConnectionRenderer = component$<{
             >
               <animateMotion
                 path={pathD}
-                dur={`${1.5 + (parseInt(id.toString()) % 3) * 0.3}s`}
-                begin={`${1.3 + (parseInt(id.toString()) % 3) * 0.1}s`}
+                dur={`${1.5 + (numericSeed % 3) * 0.3}s`}
+                begin={`${1.3 + (numericSeed % 3) * 0.1}s`}
                 repeatCount="indefinite"
                 rotate="auto"
               />

@@ -1,6 +1,9 @@
 // Export main Newsletter component
 export { Newsletter } from "./Newsletter";
 
+// Export NewsletterHero variant component
+export { NewsletterHero } from "./NewsletterHero";
+
 // Export BackgroundLogo component
 export { BackgroundLogo } from "./BackgroundLogo";
 export type { BackgroundLogoProps } from "./BackgroundLogo";

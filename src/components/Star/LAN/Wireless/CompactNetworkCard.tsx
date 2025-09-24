@@ -1,16 +1,11 @@
-import { component$, type QRL, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
-import { 
-  HiSparklesOutline, 
-  HiEyeSlashOutline, 
-  HiEyeOutline, 
-  HiSignalOutline, 
-  HiSignalSlashOutline,
-  HiCheckCircleOutline,
-  HiXCircleOutline
+import { component$, type QRL, $ } from "@builder.io/qwik";
+import {
+  HiSparklesOutline,
 } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
 import { NETWORK_DESCRIPTIONS } from "./constants";
-import { SegmentedControl, Input, Button } from "~/components/Core";
+import { Toggle, Input, Button } from "~/components/Core";
+import type { Mode } from "../../StarContext/ChooseType";
 
 interface CompactNetworkCardProps {
   networkKey: NetworkKey;
@@ -21,12 +16,13 @@ interface CompactNetworkCardProps {
   splitBand: boolean;
   onSSIDChange: QRL<(value: string) => void>;
   onPasswordChange: QRL<(value: string) => void>;
-  onHideToggle: QRL<(value: boolean) => void>;
-  onDisabledToggle: QRL<(value: boolean) => void>;
-  onSplitBandToggle: QRL<(value: boolean) => void>;
+  onHideToggle: QRL<(value?: boolean) => void>;
+  onDisabledToggle: QRL<(value?: boolean) => void>;
+  onSplitBandToggle: QRL<(value?: boolean) => void>;
   generateNetworkSSID: QRL<() => Promise<void>>;
   generateNetworkPassword: QRL<() => Promise<void>>;
   isLoading: Record<string, boolean>;
+  mode?: Mode;
 }
 
 export const CompactNetworkCard = component$<CompactNetworkCardProps>(
@@ -45,69 +41,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
     generateNetworkSSID,
     generateNetworkPassword,
     isLoading,
+    mode = "advance",
   }) => {
     const displayName =
       networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
-
-    // Create mutable string signals for SegmentedControls
-    const hideState = useSignal(isHide ? "hidden" : "visible");
-    const splitBandState = useSignal(splitBand ? "split" : "combined");
-    const enabledState = useSignal(isDisabled ? "disabled" : "enabled");
-
-    // Keep the string signals in sync with the boolean values
-    useTask$(({ track }) => {
-      track(() => isHide);
-      hideState.value = isHide ? "hidden" : "visible";
-    });
-
-    useTask$(({ track }) => {
-      track(() => splitBand);
-      splitBandState.value = splitBand ? "split" : "combined";
-    });
-
-    useTask$(({ track }) => {
-      track(() => isDisabled);
-      enabledState.value = isDisabled ? "disabled" : "enabled";
-    });
-
-    const hideOptions = [
-      {
-        value: "visible",
-        label: $localize`Show`,
-        icon: <HiEyeOutline /> as JSXNode,
-      },
-      {
-        value: "hidden",
-        label: $localize`Hide`,
-        icon: <HiEyeSlashOutline /> as JSXNode,
-      },
-    ];
-
-    const splitBandOptions = [
-      {
-        value: "combined",
-        label: $localize`Single`,
-        icon: <HiSignalOutline /> as JSXNode,
-      },
-      {
-        value: "split",
-        label: $localize`Split`,
-        icon: <HiSignalSlashOutline /> as JSXNode,
-      },
-    ];
-
-    const enabledOptions = [
-      {
-        value: "disabled",
-        label: $localize`Off`,
-        icon: <HiXCircleOutline /> as JSXNode,
-      },
-      {
-        value: "enabled",
-        label: $localize`On`,
-        icon: <HiCheckCircleOutline /> as JSXNode,
-      },
-    ];
 
     return (
       <div
@@ -130,13 +67,15 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
           </div>
 
           <div class="flex items-center gap-2">
-            {/* Inline SegmentedControl for Enable/Disable */}
-            <SegmentedControl
-              value={enabledState}
-              options={enabledOptions}
-              onChange$={$((value: string) => {
-                onDisabledToggle(value === "enabled");
+            {/* Inline Toggle for Enable/Disable */}
+            <Toggle
+              checked={!isDisabled}
+              onChange$={$((checked: boolean) => {
+                // checked represents enabled state, so invert for disabled
+                onDisabledToggle(!checked);
               })}
+              label={!isDisabled ? $localize`On` : $localize`Off`}
+              labelPosition="left"
               size="sm"
               color="primary"
             />
@@ -145,31 +84,41 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
 
         {/* Content */}
         <div class="px-3 pb-3 space-y-3 pt-3">
-            {/* Quick SegmentedControls */}
+            {/* Quick Toggles */}
             <div class="flex flex-col gap-3 text-xs">
-              <div class="flex items-center justify-between">
-                <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`SSID Visibility:`}</span>
-                <SegmentedControl
-                  value={hideState}
-                  options={hideOptions}
-                  onChange$={$((value: string) => {
-                    onHideToggle(value === "hidden");
-                  })}
-                  disabled={isDisabled}
-                  size="sm"
-                  color="primary"
-                />
-              </div>
+              {/* Only show visibility toggle in advance mode */}
+              {mode === "advance" && (
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`SSID Visibility:`}</span>
+                  <Toggle
+                    checked={!isHide}
+                    onChange$={$((checked: boolean) => {
+                      // checked represents visible state, so invert for hide
+                      onHideToggle(!checked);
+                    })}
+                    label={!isHide ? $localize`Show` : $localize`Hide`}
+                    labelPosition="left"
+                    disabled={isDisabled}
+                    size="sm"
+                    color="primary"
+                  />
+                </div>
+              )}
 
               <div class="flex items-center justify-between">
                 <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
-                <SegmentedControl
-                  value={splitBandState}
-                  options={splitBandOptions}
-                  onChange$={$((value: string) => {
-                    onSplitBandToggle(value === "split");
+                <Toggle
+                  checked={mode === "easy" ? true : splitBand}
+                  onChange$={$((checked: boolean) => {
+                    // In easy mode, always keep split band
+                    if (mode !== "easy") {
+                      // checked directly represents splitBand state
+                      onSplitBandToggle(checked);
+                    }
                   })}
-                  disabled={isDisabled}
+                  label={splitBand ? $localize`Split` : $localize`Single`}
+                  labelPosition="left"
+                  disabled={isDisabled || mode === "easy"}
                   size="sm"
                   color="primary"
                 />

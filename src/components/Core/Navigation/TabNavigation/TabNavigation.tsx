@@ -43,9 +43,9 @@ export const TabNavigation = component$<TabNavigationProps>(
         animated,
       });
 
-    // Handle tab selection with a barrier for disabled tabs
+    // Handle tab selection (always invoke when not disabled)
     const selectTab$ = $((tabId: string, disabled?: boolean) => {
-      if (!disabled && tabId !== activeTab) {
+      if (!disabled) {
         onSelect$(tabId);
       }
     });
@@ -117,8 +117,7 @@ export const TabNavigation = component$<TabNavigationProps>(
         <div
           ref={containerRef}
           class="
-            overflow-x-auto scrollbar-hide
-            scroll-smooth
+            overflow-x-hidden
             touch-pan-x
             mobile:-mx-4 mobile:px-4
             tablet:-mx-2 tablet:px-2

@@ -140,9 +140,47 @@ export const LoadBalanceSection = component$(() => {
 
   return (
     <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-purple-50 via-violet-50 to-pink-50 dark:from-slate-900 dark:via-purple-900 dark:to-violet-900">
-      {/* Animated Background */}
-      <div class="absolute inset-0 opacity-20">
+      {/* Balanced geometric shapes */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 border-4 border-purple-200 dark:border-purple-800 rounded-full opacity-20 animate-spin-slow" />
+        <div class="absolute bottom-1/4 right-1/4 w-64 h-64 border-4 border-violet-200 dark:border-violet-800 rounded-full opacity-20 animate-spin-slow animation-delay-3000" />
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-pink-200 dark:border-pink-800 rotate-45 opacity-20 animate-pulse" />
+      </div>
+
+      {/* Floating balance indicators */}
+      <div class="absolute inset-0">
+        <div class="absolute top-20 right-1/3 animate-float">
+          <svg class="w-12 h-12 text-purple-400 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <path d="M12 2v20M2 12h20" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="absolute bottom-32 left-1/4 animate-float animation-delay-2000">
+          <svg class="w-8 h-8 text-violet-400 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+            <line x1="4" y1="12" x2="20" y2="12" stroke-width="1"/>
+            <line x1="12" y1="4" x2="12" y2="20" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Grid pattern with gradient overlay */}
+      <div class="absolute inset-0 opacity-10">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,purple_1px,transparent_1px)] bg-[size:50px_50px]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-20" />
+      </div>
+
+      {/* Animated load bars */}
+      <div class="absolute inset-0">
+        <div class="absolute top-1/3 left-10 w-32 h-2 bg-purple-200 dark:bg-purple-800 rounded-full overflow-hidden">
+          <div class="h-full bg-purple-500 animate-load-bar" style="width: 75%;" />
+        </div>
+        <div class="absolute top-1/2 right-10 w-32 h-2 bg-violet-200 dark:bg-violet-800 rounded-full overflow-hidden">
+          <div class="h-full bg-violet-500 animate-load-bar animation-delay-2000" style="width: 60%;" />
+        </div>
+        <div class="absolute bottom-1/3 left-20 w-32 h-2 bg-pink-200 dark:bg-pink-800 rounded-full overflow-hidden">
+          <div class="h-full bg-pink-500 animate-load-bar animation-delay-4000" style="width: 85%;" />
+        </div>
       </div>
 
       <div class="max-w-7xl mx-auto relative z-10">

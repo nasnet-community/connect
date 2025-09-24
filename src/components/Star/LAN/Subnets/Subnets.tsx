@@ -4,6 +4,7 @@ import {
   useSignal,
   useComputed$,
   $,
+  useTask$,
 } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { Card, CardFooter, Button, GradientHeader, Alert } from "~/components/Core";
@@ -62,7 +63,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'base',
         label: $localize`Base`,
         icon: <LuNetwork class="h-4 w-4" />,
-        count: extendedGroupedConfigs.base.filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs.base.filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
@@ -72,7 +73,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'wan-domestic',
         label: $localize`Domestic`,
         icon: <LuHome class="h-4 w-4" />,
-        count: extendedGroupedConfigs['wan-domestic'].filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs['wan-domestic'].filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
@@ -82,7 +83,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'wan-foreign',
         label: $localize`Foreign`,
         icon: <LuGlobe class="h-4 w-4" />,
-        count: extendedGroupedConfigs['wan-foreign'].filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs['wan-foreign'].filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
@@ -92,7 +93,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'vpn-client',
         label: $localize`VPN Client`,
         icon: <LuLock class="h-4 w-4" />,
-        count: extendedGroupedConfigs['vpn-client'].filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs['vpn-client'].filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
@@ -102,7 +103,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'vpn',
         label: $localize`VPN Server`,
         icon: <LuShield class="h-4 w-4" />,
-        count: extendedGroupedConfigs.vpn.filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs.vpn.filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
@@ -112,16 +113,16 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         id: 'tunnel',
         label: $localize`Tunnel`,
         icon: <LuRoute class="h-4 w-4" />,
-        count: extendedGroupedConfigs.tunnel.filter((c: any) => values[c.key] !== null).length,
+        count: extendedGroupedConfigs.tunnel.filter((c: any) => values.value[c.key] !== null).length,
       });
     }
 
     return tabList;
   });
 
-  // Initialize active tab with first available tab
-  useComputed$(() => {
-    // Set initial tab if current tab doesn't exist in tabs array
+  // Initialize/adjust active tab when tabs change (no mutations in useComputed$)
+  useTask$(({ track }) => {
+    track(() => tabs.value);
     if (tabs.value.length > 0) {
       const currentTabExists = tabs.value.some(tab => tab.id === activeTab.value);
       if (!currentTabExists) {
@@ -162,7 +163,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       ...extendedGroupedConfigs["wan-foreign"],
       ...extendedGroupedConfigs["vpn-client"]
     ].forEach((config) => {
-      const value = values[config.key];
+      const value = values.value[config.key as string];
       if (value !== null && value !== undefined) {
         finalSubnets[config.key] = `192.168.${value}.0/${config.mask}`;
       } else if (config.isRequired) {
@@ -453,54 +454,54 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                   <TabContent
                     category="base"
                     configs={extendedGroupedConfigs.base || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
                 {activeTab.value === 'wan-domestic' && (
                   <TabContent
                     category="wan-domestic"
                     configs={extendedGroupedConfigs['wan-domestic'] || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
                 {activeTab.value === 'wan-foreign' && (
                   <TabContent
                     category="wan-foreign"
                     configs={extendedGroupedConfigs['wan-foreign'] || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
                 {activeTab.value === 'vpn-client' && (
                   <TabContent
                     category="vpn-client"
                     configs={extendedGroupedConfigs['vpn-client'] || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
                 {activeTab.value === 'vpn' && (
                   <TabContent
                     category="vpn"
                     configs={extendedGroupedConfigs.vpn || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
                 {activeTab.value === 'tunnel' && (
                   <TabContent
                     category="tunnel"
                     configs={extendedGroupedConfigs.tunnel || []}
-                    values={values}
+                    values={values.value}
                     onChange$={handleChange$}
-                    errors={errors}
+                    errors={errors.value}
                   />
                 )}
               </div>
@@ -511,14 +512,14 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                   <div class="flex items-center justify-between w-full">
                     {/* Status Display */}
                     <div class="flex items-center gap-3">
-                      {Object.keys(errors).length > 0 ? (
+                      {Object.keys(errors.value).length > 0 ? (
                         <>
                           <LuAlertTriangle class="h-5 w-5 text-red-500" />
                           <span class="text-sm text-red-600 dark:text-red-400">
-                            {$localize`Please fix ${Object.keys(errors).length} error(s)`}
+                            {$localize`Please fix ${Object.keys(errors.value).length} error(s)`}
                           </span>
                         </>
-                      ) : isValid ? (
+                      ) : isValid.value ? (
                         <>
                           <LuCheckCircle class="h-5 w-5 text-green-500" />
                           <span class="text-sm text-green-600 dark:text-green-400">
@@ -536,7 +537,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     <Button
                       onClick$={handleSave$}
                       size="lg"
-                      disabled={!isValid}
+                      disabled={!isValid.value || Object.keys(errors.value).length > 0}
                       class="px-8 font-medium shadow-lg hover:shadow-xl transition-shadow"
                     >
                       {$localize`Save & Continue`}

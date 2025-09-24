@@ -6,10 +6,10 @@ export const techSpecs = [
     icon: "LuZap" as IconName,
     color: "from-yellow-500 to-orange-500",
     specs: [
-      { label: $localize`Configuration Time`, value: "< 5 min", highlight: true },
-      { label: $localize`Script Generation`, value: "Real-time" },
-      { label: $localize`Router Models`, value: "17+" },
-      { label: $localize`Concurrent Users`, value: "Unlimited" }
+      { label: $localize`Configuration Time`, value: "< 5 min", highlight: true, progress: 95 },
+      { label: $localize`Script Generation`, value: "Real-time", progress: 100 },
+      { label: $localize`Router Models`, value: "17+", progress: 85 },
+      { label: $localize`Concurrent Users`, value: "Unlimited", progress: 100 }
     ]
   },
   {
@@ -17,10 +17,10 @@ export const techSpecs = [
     icon: "LuShield" as IconName,
     color: "from-green-500 to-emerald-500",
     specs: [
-      { label: $localize`VPN Protocols`, value: "6", highlight: true },
-      { label: $localize`Encryption`, value: "AES-256" },
-      { label: $localize`Authentication`, value: "Multi-factor" },
-      { label: $localize`Firewall Rules`, value: "Advanced" }
+      { label: $localize`VPN Protocols`, value: "6", highlight: true, progress: 100 },
+      { label: $localize`Encryption`, value: "AES-256", progress: 100 },
+      { label: $localize`Authentication`, value: "Multi-factor", progress: 95 },
+      { label: $localize`Firewall Rules`, value: "Advanced", progress: 90 }
     ]
   },
   {
@@ -28,10 +28,10 @@ export const techSpecs = [
     icon: "LuGlobe" as IconName,
     color: "from-blue-500 to-cyan-500",
     specs: [
-      { label: $localize`WAN Connections`, value: "Multi-WAN", highlight: true },
-      { label: $localize`Network Segments`, value: "4 Zones" },
-      { label: $localize`Load Balancing`, value: "Intelligent" },
-      { label: $localize`Failover`, value: "Automatic" }
+      { label: $localize`WAN Connections`, value: "Multi-WAN", highlight: true, progress: 100 },
+      { label: $localize`Network Segments`, value: "4 Zones", progress: 80 },
+      { label: $localize`Load Balancing`, value: "Intelligent", progress: 92 },
+      { label: $localize`Failover`, value: "Automatic", progress: 100 }
     ]
   },
   {
@@ -39,10 +39,10 @@ export const techSpecs = [
     icon: "LuCpu" as IconName,
     color: "from-purple-500 to-violet-500",
     specs: [
-      { label: $localize`Web Interface`, value: "Modern", highlight: true },
-      { label: $localize`Mobile Support`, value: "Responsive" },
-      { label: $localize`Languages`, value: "9+" },
-      { label: $localize`Updates`, value: "Continuous" }
+      { label: $localize`Web Interface`, value: "Modern", highlight: true, progress: 98 },
+      { label: $localize`Mobile Support`, value: "Responsive", progress: 100 },
+      { label: $localize`Languages`, value: "9+", progress: 90 },
+      { label: $localize`Updates`, value: "Continuous", progress: 100 }
     ]
   }
 ];

@@ -6,7 +6,8 @@ import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import {
   isInterfaceOccupied,
-  getOccupiedInterfacesForRouter
+  getOccupiedInterfacesForRouter,
+  getInterfaceUsage
 } from "../../utils/InterfaceManagementUtils";
 
 export default component$<StepProps>(({ isComplete, onComplete$ }) => {
@@ -53,11 +54,12 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     const allIntfs = [...availableEInterfaces.value].map((name) => {
       const selected = currentlySelected.has(name);
       const isOccupied = isInterfaceOccupied(occupiedInterfaces, name);
+      const usage = isOccupied ? (getInterfaceUsage(occupiedInterfaces, name) || "Other") : "";
 
       return {
         name,
         inUse: isOccupied,
-        usedBy: isOccupied ? "Trunk/Other" : "",
+        usedBy: isOccupied ? usage : "",
         selected,
         // Use default network for non-selected interfaces
         network: selected ? currentlySelected.get(name)! : defaultNetwork,

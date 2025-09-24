@@ -5,8 +5,8 @@ import { Select, FormField } from "~/components/Core";
 import {
   addOccupiedInterface,
   removeOccupiedInterface,
-  getAllOccupiedInterfaces,
-  isInterfaceOccupied
+  getOccupiedInterfacesForRouter,
+  getInterfaceUsage
 } from "../../../../../utils/InterfaceManagementUtils";
 import type { InterfaceType } from "../../../../../StarContext/CommonType";
 
@@ -40,10 +40,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
     const interfaces = getAvailableInterfaces();
 
-    // Get occupied interfaces from all router models
-    const occupiedInterfaces = getAllOccupiedInterfaces(
-      starContext.state.Choose.RouterModels
-    );
+    // Only consider master's occupied interfaces for disabling
+    const occupiedInterfaces = masterRouter
+      ? getOccupiedInterfacesForRouter(masterRouter)
+      : [];
 
     // Check which interface types are available
     const isEthernetAvailable = (interfaces.ethernet || []).length > 0;
@@ -62,52 +62,28 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     const getSelectOptions = () => {
       let options: Array<{ value: string; label: string; disabled?: boolean }> = [];
 
-      const checkIfOccupied = (iface: string) => {
-        // Check if interface is occupied (but not by current link)
-        const isOccupiedElsewhere = isInterfaceOccupied(occupiedInterfaces, iface) &&
-                                   link.interfaceName !== iface;
-        // Check if used by another WAN link
-        const isUsedByOtherWAN = usedInterfaces.includes(iface) &&
-                                link.interfaceName !== iface;
-        return isOccupiedElsewhere || isUsedByOtherWAN;
+      const buildOption = (iface: string) => {
+        const usage = getInterfaceUsage(occupiedInterfaces, iface);
+        const isOccupiedByMaster = Boolean(usage) && link.interfaceName !== iface;
+        const isUsedByOtherWAN = usedInterfaces.includes(iface) && link.interfaceName !== iface;
+        const disabled = isOccupiedByMaster || isUsedByOtherWAN;
+        const reason = isUsedByOtherWAN ? "WAN" : usage;
+
+        return {
+          value: iface,
+          label: disabled ? `${iface} (occupied by ${reason})` : iface,
+          disabled,
+        };
       };
 
       if (link.interfaceType === "Ethernet") {
-        options = (interfaces.ethernet || []).map((iface: string) => {
-          const occupied = checkIfOccupied(iface);
-          return {
-            value: iface,
-            label: occupied ? `${iface} (occupied)` : iface,
-            disabled: occupied
-          };
-        });
+        options = (interfaces.ethernet || []).map((iface: string) => buildOption(iface));
       } else if (link.interfaceType === "Wireless") {
-        options = (interfaces.wireless || []).map((iface: string) => {
-          const occupied = checkIfOccupied(iface);
-          return {
-            value: iface,
-            label: occupied ? `${iface} (occupied)` : iface,
-            disabled: occupied
-          };
-        });
+        options = (interfaces.wireless || []).map((iface: string) => buildOption(iface));
       } else if (link.interfaceType === "SFP") {
-        options = (interfaces.sfp || []).map((iface: string) => {
-          const occupied = checkIfOccupied(iface);
-          return {
-            value: iface,
-            label: occupied ? `${iface} (occupied)` : iface,
-            disabled: occupied
-          };
-        });
+        options = (interfaces.sfp || []).map((iface: string) => buildOption(iface));
       } else if (link.interfaceType === "LTE") {
-        options = (interfaces.lte || []).map((iface: string) => {
-          const occupied = checkIfOccupied(iface);
-          return {
-            value: iface,
-            label: occupied ? `${iface} (occupied)` : iface,
-            disabled: occupied
-          };
-        });
+        options = (interfaces.lte || []).map((iface: string) => buildOption(iface));
       }
 
       return options;

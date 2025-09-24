@@ -6,6 +6,9 @@ import { StarContext } from "../../StarContext/StarContext";
 export const useWirelessForm = () => {
   const starContext = useContext(StarContext);
 
+  // Check if we're in easy mode
+  const isEasyMode = starContext.state.Choose.Mode === "easy";
+
   // Wireless should be enabled by default
   const wirelessEnabled = useSignal(true);
   const isMultiSSID = useSignal(false);
@@ -13,7 +16,8 @@ export const useWirelessForm = () => {
   const password = useSignal("");
   const isHide = useSignal(false);
   const isDisabled = useSignal(false);
-  const splitBand = useSignal(false);
+  // In easy mode, splitBand should default to true
+  const splitBand = useSignal(isEasyMode);
   const isLoading = useSignal<Record<string, boolean>>({});
   const isFormValid = useSignal(false);
 
@@ -23,28 +27,28 @@ export const useWirelessForm = () => {
       password: "",
       isHide: false,
       isDisabled: false,
-      splitBand: false,
+      splitBand: isEasyMode,
     },
     domestic: {
       ssid: "",
       password: "",
       isHide: false,
       isDisabled: false,
-      splitBand: false,
+      splitBand: isEasyMode,
     },
     split: {
       ssid: "",
       password: "",
       isHide: false,
       isDisabled: false,
-      splitBand: false,
+      splitBand: isEasyMode,
     },
     vpn: {
       ssid: "",
       password: "",
       isHide: false,
       isDisabled: false,
-      splitBand: false,
+      splitBand: isEasyMode,
     },
   });
 

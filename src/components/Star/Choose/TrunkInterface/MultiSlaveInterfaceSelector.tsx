@@ -97,100 +97,106 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
       total_slaves: slaveRouters.length,
     });
 
-    // Update the MasterSlaveInterface
-    if (field === "slaveInterface" || field === "masterInterface") {
-      const updatedModels = starContext.state.Choose.RouterModels.map((model, idx) => {
-        const updatedModel = { ...model };
+    // Update only the targeted slave's MasterSlaveInterface in StarContext
+    if (field === "slaveInterface") {
+      const nonMasterIndices = starContext.state.Choose.RouterModels
+        .map((rm, i) => (!rm.isMaster ? i : -1))
+        .filter((i) => i !== -1);
+      const targetIdx = nonMasterIndices[slaveIndex];
 
-        // Update MasterSlaveInterface only
-        if ((field === "masterInterface" && model.isMaster) ||
-            (field === "slaveInterface" && !model.isMaster && idx === slaveIndex + 1)) {
-          updatedModel.MasterSlaveInterface = value as any;
-        }
-
-        return updatedModel;
-      });
-
-      starContext.updateChoose$({
-        RouterModels: updatedModels,
-      });
-
-      // Check if all slaves are configured
-      const allConfigured = slaveRouters.every((_, idx) => {
-        const m = newMappings.find(map => map.slaveRouterIndex === idx);
-        return m && m.masterInterface && m.slaveInterface;
-      });
-
-      if (allConfigured) {
-        // Now update OccupiedInterfaces when configuration is complete
-        const finalModels = updatedModels.map((model, idx) => {
-          const finalModel = { ...model };
-
-          // Start with clean OccupiedInterfaces to prevent accumulation
-          const cleanOccupied: OccupiedInterface[] = [];
-
-          // Each router should only track its own interface
-          // Use explicit interface assignment to prevent cross-contamination
-          if (model.isMaster) {
-            // Master router: For multi-slave, master has multiple interfaces (one per slave)
-            // Collect all master interfaces from mappings
-            const masterInterfaces = newMappings
-              .map(m => m.masterInterface)
-              .filter(Boolean);
-
-            // Add all master interfaces to master router
-            let occupied: OccupiedInterface[] = [...cleanOccupied];
-            masterInterfaces.forEach(intf => {
-              console.log(`Adding ${intf} to master router's OccupiedInterfaces`);
-              occupied = addOccupiedInterface(
-                occupied,
-                intf as InterfaceType,
-                "Trunk",
-                "Master"
-              );
-            });
-            finalModel.Interfaces.OccupiedInterfaces = occupied;
-          } else if (!model.isMaster) {
-            // Slave router: find its specific mapping
-            const slaveIndex = idx - 1; // Slave routers start at index 1
-            const slaveMapping = newMappings.find(m => m.slaveRouterIndex === slaveIndex);
-            const interfaceToAdd = slaveMapping?.slaveInterface;
-
-            if (interfaceToAdd) {
-              console.log(`Adding ${interfaceToAdd} to slave router ${slaveIndex}'s OccupiedInterfaces`);
-              finalModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
-                cleanOccupied,
-                interfaceToAdd as InterfaceType,
-                "Trunk",
-                "Slave"
-              );
-            } else {
-              finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
-            }
-          } else {
-            // Other routers: keep clean/empty OccupiedInterfaces
-            finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
-          }
-
-          // Validation: warn if there's a mismatch
-          if (model.MasterSlaveInterface && !model.isMaster) {
-            const occupied = finalModel.Interfaces.OccupiedInterfaces;
-            const hasInterface = occupied.some(item => item.interface === model.MasterSlaveInterface);
-
-            if (!hasInterface) {
-              console.warn(`Warning: Slave router at index ${idx} has MasterSlaveInterface ${model.MasterSlaveInterface} but it's not in OccupiedInterfaces`);
-            }
-          }
-
-          return finalModel;
+      if (typeof targetIdx === "number") {
+        const updatedModels = starContext.state.Choose.RouterModels.map((model, idx) => {
+          if (idx !== targetIdx) return model;
+          return {
+            ...model,
+            MasterSlaveInterface: value as any,
+          };
         });
 
         starContext.updateChoose$({
-          RouterModels: finalModels,
+          RouterModels: updatedModels,
         });
-
-        props.onComplete$?.();
       }
+    }
+
+    // Check if all slaves are configured
+    const allConfigured = slaveRouters.every((_, idx) => {
+      const m = newMappings.find(map => map.slaveRouterIndex === idx);
+      return m && m.masterInterface && m.slaveInterface;
+    });
+
+    if (allConfigured) {
+      // Now update OccupiedInterfaces when configuration is complete
+      const finalModels = starContext.state.Choose.RouterModels.map((model, idx) => {
+        const finalModel = { ...model };
+
+        // Start with clean OccupiedInterfaces to prevent accumulation
+        const cleanOccupied: OccupiedInterface[] = [];
+
+        // Each router should only track its own interface
+        // Use explicit interface assignment to prevent cross-contamination
+        if (model.isMaster) {
+          // Master router: For multi-slave, master has multiple interfaces (one per slave)
+          // Collect all master interfaces from mappings
+          const masterInterfaces = newMappings
+            .map(m => m.masterInterface)
+            .filter(Boolean);
+
+          // Add all master interfaces to master router
+          let occupied: OccupiedInterface[] = [...cleanOccupied];
+          masterInterfaces.forEach(intf => {
+            console.log(`Adding ${intf} to master router's OccupiedInterfaces`);
+            occupied = addOccupiedInterface(
+              occupied,
+              intf as InterfaceType,
+              "Trunk",
+              "Master"
+            );
+          });
+          finalModel.Interfaces.OccupiedInterfaces = occupied;
+        } else if (!model.isMaster) {
+          // Slave router: find its specific mapping by relative position among slaves
+          const nonMasterIndices = starContext.state.Choose.RouterModels
+            .map((rm, i) => (!rm.isMaster ? i : -1))
+            .filter((i) => i !== -1);
+          const relativeSlaveIndex = nonMasterIndices.indexOf(idx);
+          const slaveMapping = newMappings.find(m => m.slaveRouterIndex === relativeSlaveIndex);
+          const interfaceToAdd = slaveMapping?.slaveInterface;
+
+          if (interfaceToAdd) {
+            console.log(`Adding ${interfaceToAdd} to slave router ${relativeSlaveIndex}'s OccupiedInterfaces`);
+            finalModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
+              cleanOccupied,
+              interfaceToAdd as InterfaceType,
+              "Trunk",
+              "Slave"
+            );
+          } else {
+            finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
+          }
+        } else {
+          // Other routers: keep clean/empty OccupiedInterfaces
+          finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
+        }
+
+        // Validation: warn if there's a mismatch
+        if (model.MasterSlaveInterface && !model.isMaster) {
+          const occupied = finalModel.Interfaces.OccupiedInterfaces;
+          const hasInterface = occupied.some(item => item.interface === model.MasterSlaveInterface);
+
+          if (!hasInterface) {
+            console.warn(`Warning: Slave router at index ${idx} has MasterSlaveInterface ${model.MasterSlaveInterface} but it's not in OccupiedInterfaces`);
+          }
+        }
+
+        return finalModel;
+      });
+
+      starContext.updateChoose$({
+        RouterModels: finalModels,
+      });
+
+      props.onComplete$?.();
     }
   });
 

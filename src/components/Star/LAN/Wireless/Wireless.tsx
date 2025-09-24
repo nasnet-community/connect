@@ -159,6 +159,7 @@ export const Wireless = component$<StepProps>(
                   toggleDisabled={toggleSingleDisabled}
                   toggleSplitBand={toggleSingleSplitBand}
                   isLoading={isLoading}
+                  mode={starContext.state.Choose.Mode}
                 />
               ) : (
                 <MultiSSIDForm
@@ -170,6 +171,7 @@ export const Wireless = component$<StepProps>(
                   toggleNetworkHide={toggleNetworkHide}
                   toggleNetworkDisabled={toggleNetworkDisabled}
                   toggleNetworkSplitBand={toggleNetworkSplitBand}
+                  mode={starContext.state.Choose.Mode}
                 />
               )}
             </>

@@ -131,6 +131,86 @@ export const VPNServerSection = component$(() => {
 
   return (
     <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-teal-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-teal-900 dark:to-blue-900">
+      {/* Server rack pattern */}
+      <div class="absolute inset-0 opacity-10">
+        <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="server-rack" x="0" y="0" width="60" height="80" patternUnits="userSpaceOnUse">
+              <rect x="5" y="5" width="50" height="10" fill="#0891b2" rx="1" />
+              <rect x="5" y="20" width="50" height="10" fill="#06b6d4" rx="1" />
+              <rect x="5" y="35" width="50" height="10" fill="#0891b2" rx="1" />
+              <rect x="5" y="50" width="50" height="10" fill="#06b6d4" rx="1" />
+              <rect x="5" y="65" width="50" height="10" fill="#0891b2" rx="1" />
+              <circle cx="10" cy="10" r="1" fill="#22d3ee" />
+              <circle cx="15" cy="10" r="1" fill="#67e8f9" />
+              <circle cx="10" cy="25" r="1" fill="#67e8f9" />
+              <circle cx="15" cy="25" r="1" fill="#22d3ee" />
+              <circle cx="10" cy="40" r="1" fill="#22d3ee" />
+              <circle cx="15" cy="40" r="1" fill="#67e8f9" />
+              <circle cx="10" cy="55" r="1" fill="#67e8f9" />
+              <circle cx="15" cy="55" r="1" fill="#22d3ee" />
+              <circle cx="10" cy="70" r="1" fill="#22d3ee" />
+              <circle cx="15" cy="70" r="1" fill="#67e8f9" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#server-rack)" />
+        </svg>
+      </div>
+
+      {/* Data center status lights */}
+      <div class="absolute inset-0">
+        <div class="absolute top-1/3 left-1/4 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        <div class="absolute top-1/3 left-1/4 translate-x-4 w-2 h-2 bg-green-500 rounded-full animate-pulse animation-delay-1000" />
+        <div class="absolute top-1/3 left-1/4 translate-x-8 w-2 h-2 bg-yellow-500 rounded-full animate-pulse animation-delay-2000" />
+        <div class="absolute top-2/3 right-1/3 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        <div class="absolute top-2/3 right-1/3 translate-x-4 w-2 h-2 bg-green-500 rounded-full animate-pulse animation-delay-3000" />
+        <div class="absolute bottom-1/3 left-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse animation-delay-4000" />
+      </div>
+
+      {/* Network traffic flow lines */}
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 left-1/3 h-full w-px bg-gradient-to-b from-transparent via-teal-500 to-transparent opacity-30 animate-slide-down" />
+        <div class="absolute top-0 left-2/3 h-full w-px bg-gradient-to-b from-transparent via-cyan-500 to-transparent opacity-30 animate-slide-down animation-delay-2000" />
+        <div class="absolute left-0 top-1/2 w-full h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-30 animate-slide-right" />
+      </div>
+
+      {/* Server monitoring graphs */}
+      <div class="absolute inset-0 opacity-5">
+        <div class="absolute top-20 right-20 w-32 h-20">
+          <svg viewBox="0 0 100 50" class="w-full h-full">
+            <polyline points="0,45 10,40 20,42 30,30 40,35 50,20 60,25 70,15 80,22 90,18 100,20"
+                      fill="none" stroke="#0891b2" stroke-width="2" class="animate-pulse" />
+          </svg>
+        </div>
+        <div class="absolute bottom-32 left-20 w-32 h-20">
+          <svg viewBox="0 0 100 50" class="w-full h-full">
+            <polyline points="0,35 10,30 20,32 30,25 40,28 50,15 60,20 70,12 80,18 90,14 100,16"
+                      fill="none" stroke="#06b6d4" stroke-width="2" class="animate-pulse animation-delay-2000" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Floating server icons */}
+      <div class="absolute inset-0">
+        <div class="absolute top-1/4 right-1/4 animate-float">
+          <svg class="w-8 h-8 text-teal-400 opacity-10" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 2h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm0 6h16m-16 6h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2zm0 6h16" />
+            <circle cx="6" cy="5" r="1" />
+            <circle cx="6" cy="17" r="1" />
+          </svg>
+        </div>
+        <div class="absolute bottom-1/3 left-1/3 animate-float animation-delay-2000">
+          <svg class="w-6 h-6 text-cyan-400 opacity-10" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="4" width="18" height="5" rx="1" />
+            <rect x="3" y="10" width="18" height="5" rx="1" />
+            <rect x="3" y="16" width="18" height="5" rx="1" />
+            <circle cx="6" cy="6.5" r="0.5" />
+            <circle cx="6" cy="12.5" r="0.5" />
+            <circle cx="6" cy="18.5" r="0.5" />
+          </svg>
+        </div>
+      </div>
+
       <div class="max-w-7xl mx-auto relative z-10">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content Side */}
