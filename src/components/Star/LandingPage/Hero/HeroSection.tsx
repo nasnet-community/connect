@@ -3,17 +3,32 @@ import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuPlay, LuArrowRight, LuRouter, LuShield, LuZap } from "@qwikest/icons/lucide";
 import { Button, Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
+import { subscribeToNewsletterSendGrid } from "~/utils/newsletterAPI";
 
 export const HeroSection = component$(() => {
   const location = useLocation();
   const locale = location.params.locale || "en";
 
-  // Newsletter subscription handler
+  // Newsletter subscription handler with SendGrid integration
   const handleNewsletterSubscribe$ = $(async (subscription: NewsletterSubscription) => {
-    console.log("Newsletter subscription for:", subscription.email);
-    // Here you can add your subscription logic (API call, etc.)
-    // For now, we'll just simulate a successful subscription
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const result = await subscribeToNewsletterSendGrid(subscription.email, {
+      source: subscription.source || "homepage-hero",
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || $localize`Subscription failed`);
+    }
+
+    console.log("SendGrid subscription successful! Job ID:", result.jobId);
+
+    // Track with analytics if available
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "newsletter_subscribe", {
+        method: "sendgrid",
+        email: subscription.email,
+        source: "homepage-hero",
+      });
+    }
   });
 
   return (
@@ -46,8 +61,7 @@ export const HeroSection = component$(() => {
 
         {/* Subtitle */}
         <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed animate-fade-in-up animation-delay-500">
-          {$localize`Share, Secure & Optimize Your Starlink
-Unlock the full potential of your Starlink connection with advanced networking powered by MikroTik routers. Seamlessly share your internet, secure it with VPN, and optimize for gaming and enterprise performance, all through NasNet Connect intelligent interface.`}
+          {$localize`Unlock the full potential of your Starlink connection with advanced networking powered by MikroTik routers. Seamlessly share your internet, secure it with VPN, and optimize for gaming and enterprise performance, all through NasNet Connect intelligent interface.`}
         </p>
 
         {/* Key Features Pills */}

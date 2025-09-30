@@ -110,3 +110,123 @@ export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 254 && email.length >= 5;
 }
+
+/**
+ * Twilio SendGrid Newsletter Subscription
+ * 
+ * Subscribes an email to the newsletter using Twilio SendGrid API.
+ * This function calls the server-side API endpoint that handles SendGrid integration.
+ */
+
+export interface SendGridSubscriptionRequest {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  source?: string;
+}
+
+export interface SendGridSubscriptionResponse {
+  success: boolean;
+  message?: string;
+  jobId?: string;
+  error?: string;
+  details?: string;
+}
+
+/**
+ * Subscribe to newsletter using Twilio SendGrid
+ * 
+ * @param email - Email address to subscribe
+ * @param options - Optional subscriber information
+ * @returns Promise with subscription response
+ * 
+ * @example
+ * ```typescript
+ * const result = await subscribeToNewsletterSendGrid('user@example.com', {
+ *   firstName: 'John',
+ *   lastName: 'Doe',
+ *   source: 'homepage-newsletter'
+ * });
+ * ```
+ */
+export async function subscribeToNewsletterSendGrid(
+  email: string,
+  options?: Omit<SendGridSubscriptionRequest, 'email'>
+): Promise<SendGridSubscriptionResponse> {
+  try {
+    // Validate email
+    if (!validateEmail(email)) {
+      return {
+        success: false,
+        error: "Invalid email address",
+        details: "Please enter a valid email address",
+      };
+    }
+
+    // Prepare request body
+    const requestBody: SendGridSubscriptionRequest = {
+      email: email.toLowerCase().trim(),
+      ...options,
+    };
+
+    // In development mode, simulate success if API is not available
+    if (import.meta.env.DEV) {
+      console.log("Development mode: Simulating newsletter subscription for:", email);
+      // Simulate a short delay like a real API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "Successfully subscribed to newsletter (dev mode)",
+        jobId: "dev-" + Date.now(),
+      };
+    }
+
+    // Call the server-side API endpoint
+    const response = await fetch("/api/newsletter/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    // Check if response is ok before trying to parse JSON
+    if (!response.ok) {
+      // Try to parse error response, but handle if it's not JSON
+      let errorData: SendGridSubscriptionResponse | null = null;
+      try {
+        errorData = await response.json() as SendGridSubscriptionResponse;
+      } catch {
+        // Response is not JSON
+        console.warn("API response is not JSON");
+      }
+
+      return {
+        success: false,
+        error: errorData?.error || "Subscription failed",
+        details: errorData?.details || `Server error: ${response.status}`,
+      };
+    }
+
+    // Parse successful response
+    const data = await response.json() as SendGridSubscriptionResponse;
+    return data;
+  } catch (error) {
+    console.error("Newsletter subscription error:", error);
+
+    // Check if it's a network error (endpoint not found)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: "Service unavailable",
+        details: "Newsletter service is currently unavailable. Please try again later.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "Network error",
+      details: "Please check your connection and try again",
+    };
+  }
+}

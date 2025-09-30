@@ -92,7 +92,7 @@ export interface UseNewsletterParams {
   validateEmail?: boolean;
 
   /** Custom validation function */
-  customValidation$?: QRL<(email: string) => Promise<string | null>>;
+  customValidation$?: QRL<(email: string) => Promise<string | null>> | null;
 }
 
 export interface UseNewsletterReturn {
