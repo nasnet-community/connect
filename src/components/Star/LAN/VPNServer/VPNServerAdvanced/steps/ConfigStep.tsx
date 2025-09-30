@@ -15,6 +15,11 @@ import { SSTPServerWrapper } from "../../Protocols/SSTP/SSTPServer.wrapper";
 import { IKEv2ServerWrapper } from "../../Protocols/IKeV2/IKEv2Server.wrapper";
 import { OpenVPNServerWrapper } from "../../Protocols/OpenVPN/OpenVPNServer.wrapper";
 import { WireguardServerWrapper } from "../../Protocols/Wireguard/WireguardServer.wrapper";
+import { Socks5ServerWrapper } from "../../Protocols/Socks5/Socks5Server.wrapper";
+import { SSHServerWrapper } from "../../Protocols/SSH/SSHServer.wrapper";
+import { HTTPProxyServerWrapper } from "../../Protocols/HTTPProxy/HTTPProxyServer.wrapper";
+import { BackToHomeServerWrapper } from "../../Protocols/BackToHome/BackToHomeServer.wrapper";
+import { ZeroTierServerWrapper } from "../../Protocols/ZeroTier/ZeroTierServer.wrapper";
 import { HiCogOutline } from "@qwikest/icons/heroicons";
 import { CertificateStep } from "./CertificateStep";
 
@@ -44,6 +49,11 @@ export const ConfigStep = component$<ConfigStepProps>(
       L2TP: <L2TPServerWrapper />,
       SSTP: <SSTPServerWrapper />,
       IKeV2: <IKEv2ServerWrapper />,
+      Socks5: <Socks5ServerWrapper />,
+      SSH: <SSHServerWrapper />,
+      HTTPProxy: <HTTPProxyServerWrapper />,
+      BackToHome: <BackToHomeServerWrapper />,
+      ZeroTier: <ZeroTierServerWrapper />,
     };
 
     // Check if any protocols requiring certificates are enabled

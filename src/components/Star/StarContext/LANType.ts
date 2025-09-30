@@ -42,13 +42,27 @@ export interface BaseNetworks {
   VPN?: SubnetConfig;
 }
 
-export interface VPNNetworks {
+export interface VPNClientNetworks {
+  Wireguard?: SubnetConfig[];
+  OpenVPN?: SubnetConfig[];
+  L2TP?: SubnetConfig[];
+  PPTP?: SubnetConfig[];
+  SSTP?: SubnetConfig[];
+  IKev2?: SubnetConfig[];
+}
+
+export interface VPNServerNetworks {
   Wireguard?: SubnetConfig[];
   OpenVPN?: SubnetConfig[];
   L2TP?: SubnetConfig;
   PPTP?: SubnetConfig;
   SSTP?: SubnetConfig;
   IKev2?: SubnetConfig;
+  Socks5?: SubnetConfig;
+  SSH?: SubnetConfig;
+  HTTPProxy?: SubnetConfig;
+  BackToHome?: SubnetConfig;
+  ZeroTier?: SubnetConfig;
 }
 
 export interface TunnelNetworks {
@@ -61,8 +75,8 @@ export interface Subnets {
   BaseNetworks: BaseNetworks;
   ForeignNetworks?:SubnetConfig[];
   DomesticNetworks?:SubnetConfig[];
-  VPNClientNetworks?:SubnetConfig[];
-  VPNServerNetworks?:VPNNetworks;
+  VPNClientNetworks?:VPNClientNetworks;
+  VPNServerNetworks?:VPNServerNetworks;
   TunnelNetworks?:TunnelNetworks;
 }
 export interface LANState {

@@ -1,6 +1,6 @@
 import { component$, $ } from "@builder.io/qwik";
-import { LuPlug, LuShare2, LuServer, LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge, Graph, createNode } from "~/components/Core";
+import { LuNetwork, LuServer } from "@qwikest/icons/lucide";
+import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
 
 export const PortForwardingSection = component$(() => {
@@ -155,9 +155,9 @@ export const PortForwardingSection = component$(() => {
 
             <div class="space-y-3">
               {[
-                { icon: LuShare2, name: "UPNP", desc: $localize`Automatic port mapping` },
+                { icon: LuNetwork, name: "UPNP", desc: $localize`Automatic port mapping` },
                 { icon: LuServer, name: "NAT-PMP", desc: $localize`Apple protocol support` },
-                { icon: LuPlug, name: "Manual", desc: $localize`Custom port rules` },
+                { icon: LuNetwork, name: "Manual", desc: $localize`Custom port rules` },
               ].map((feature) => (
                 <div key={feature.name} class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -171,12 +171,6 @@ export const PortForwardingSection = component$(() => {
               ))}
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Configure Port Forwarding`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
 
           {/* Visual Side - Interactive Port Forwarding Graph */}

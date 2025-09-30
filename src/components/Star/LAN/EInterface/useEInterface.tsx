@@ -6,9 +6,11 @@ import {
 import type { Ethernet } from "../../StarContext/CommonType";
 import type { EthernetInterfaceConfig } from "../../StarContext/LANType";
 import type { Networks } from "../../StarContext/CommonType";
+import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 
 export const useEInterface = () => {
   const ctx = useContext<StarContextType>(StarContext);
+  const interfaceManagement = useInterfaceManagement();
   const selectedEInterfaces = useSignal<EthernetInterfaceConfig[]>([]);
 
   // Filter available networks based on DomesticLink
@@ -78,16 +80,22 @@ export const useEInterface = () => {
 
       selectedEInterfaces.value = [...selectedEInterfaces.value, newEInterface];
 
+      // Mark interface as occupied for LAN
+      await interfaceManagement.markInterfaceAsOccupied$(EInterfaceName, "LAN");
+
       ctx.updateLAN$({
         Interface: selectedEInterfaces.value,
       });
     },
   );
 
-  const removeEInterface = $((EInterfaceName: Ethernet) => {
+  const removeEInterface = $(async (EInterfaceName: Ethernet) => {
     selectedEInterfaces.value = selectedEInterfaces.value.filter(
       (intf) => intf.name !== EInterfaceName,
     );
+
+    // Release interface from occupied list
+    await interfaceManagement.releaseInterface$(EInterfaceName);
 
     ctx.updateLAN$({
       Interface: selectedEInterfaces.value,

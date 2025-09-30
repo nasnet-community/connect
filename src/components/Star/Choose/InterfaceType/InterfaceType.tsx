@@ -54,7 +54,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
     {
       type: "wired" as TrunkInterfaceType,
       icon: <LuCable class="h-8 w-8" />,
-      title: $localize`Wired Trunk`,
+      title: $localize`Wired Router + Access Point`,
       description: $localize`High-speed cable-based trunk connection for maximum performance`,
       features: [
         $localize`Up to 10 Gbps throughput`,
@@ -69,7 +69,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
     {
       type: "wireless" as TrunkInterfaceType,
       icon: <LuWifi class="h-8 w-8" />,
-      title: $localize`Wireless Trunk`,
+      title: $localize`Wireless Router + Access Point`,
       description: $localize`Point-to-point wireless trunk for flexible deployments`,
       features: [
         $localize`No cabling required`,
@@ -214,7 +214,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
             <LuAlertCircle class="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
             <div>
               <h4 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-1">
-                {$localize`Wireless Trunk Not Available`}
+                {$localize`Wireless Router + Access Point Not Available`}
               </h4>
               <p class="text-sm text-orange-700 dark:text-orange-300 mb-2">
                 {$localize`The following router(s) don't have Wi-Fi capability required for wireless trunk:`}

@@ -2,11 +2,9 @@ import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import { LuCable, LuWifi, LuRouter } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterfaceType, OccupiedInterface } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
 import { routers } from "../RouterModel/Constants";
-import {
-  addOccupiedInterface,
-} from "../../utils/InterfaceManagementUtils";
+import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
 
 interface InterfaceSelectorProps {
@@ -17,6 +15,7 @@ interface InterfaceSelectorProps {
 
 export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   const starContext = useContext(StarContext);
+  const interfaceManagement = useInterfaceManagement();
   const routerModels = starContext.state.Choose.RouterModels;
   // Get the current master slave interface from the first router model
   const _selectedTrunkInterface = starContext.state.Choose.RouterModels[0]?.MasterSlaveInterface;
@@ -85,7 +84,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   const isTrunkMode = starContext.state.Choose.RouterMode === "Trunk Mode";
 
   const handleInterfaceSelect = $(
-    (interfaceName: string, isSlaveInterface: boolean = false) => {
+    async (interfaceName: string, isSlaveInterface: boolean = false) => {
       // Track interface selection
       track("trunk_interface_port_selected", {
         interface_type: props.interfaceType,
@@ -96,7 +95,24 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
       console.log(`Interface selection: ${interfaceName}, isSlaveInterface: ${isSlaveInterface}`);
 
-      // Update the MasterSlaveInterface and check completion in single state update
+      // Find the router that will be updated
+      const targetRouter = isSlaveInterface
+        ? starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)
+        : starContext.state.Choose.RouterModels.find(rm => rm.isMaster);
+
+      // Only manage occupation for master router interfaces
+      if (!isSlaveInterface) {
+        // Release the old master interface if one was selected
+        if (targetRouter?.MasterSlaveInterface) {
+          await interfaceManagement.releaseInterface$(targetRouter.MasterSlaveInterface as InterfaceType);
+        }
+
+        // Mark the new master interface as occupied for Trunk
+        await interfaceManagement.markInterfaceAsOccupied$(interfaceName as InterfaceType, "Trunk");
+      }
+      // Note: Slave router interfaces are stored locally but not marked globally occupied
+
+      // Update the MasterSlaveInterface
       const updatedModels = starContext.state.Choose.RouterModels.map((model) => {
         const updatedModel = { ...model };
 
@@ -129,60 +145,17 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
       console.log(`After interface selection - Master: ${masterInterface}, Slave: ${slaveInterface}`);
 
-      // Final models with OccupiedInterfaces updated if both interfaces are selected
-      const finalModels = updatedModels.map((model) => {
-        const finalModel = { ...model };
-
-        // Only update OccupiedInterfaces if configuration is complete
-        if (masterInterface && slaveInterface) {
-          // Start with clean OccupiedInterfaces to prevent accumulation
-          const cleanOccupied: OccupiedInterface[] = [];
-
-          // Each router should only track its own interface
-          if (finalModel.MasterSlaveInterface) {
-            const interfaceToAdd = finalModel.MasterSlaveInterface;
-            const role = finalModel.isMaster ? "Master" : "Slave";
-
-            console.log(`Adding ${interfaceToAdd} to ${role} router (${finalModel.Model}) OccupiedInterfaces`);
-            finalModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
-              cleanOccupied,
-              interfaceToAdd as InterfaceType,
-              "Trunk",
-              role
-            );
-          } else {
-            finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
-          }
-
-          // Validation: warn if OccupiedInterfaces doesn't match MasterSlaveInterface
-          if (finalModel.MasterSlaveInterface) {
-            const occupied = finalModel.Interfaces.OccupiedInterfaces;
-            const hasInterface = occupied.some(item => item.interface === finalModel.MasterSlaveInterface);
-
-            const routerType = finalModel.isMaster ? 'Master' : 'Slave';
-            if (!hasInterface) {
-              console.warn(`Warning: ${routerType} router (${finalModel.Model}) has MasterSlaveInterface ${finalModel.MasterSlaveInterface} but it's not in OccupiedInterfaces`);
-              console.warn(`OccupiedInterfaces:`, occupied);
-            } else {
-              console.log(`✓ ${routerType} router (${finalModel.Model}) correctly has ${finalModel.MasterSlaveInterface} in OccupiedInterfaces`);
-            }
-          }
-        } else {
-          // Keep existing OccupiedInterfaces if configuration is not complete
-          // (Don't clear them in case they were set from a previous configuration)
-        }
-
-        return finalModel;
-      });
-
       // Single state update with complete information
       starContext.updateChoose$({
-        RouterModels: finalModels,
+        RouterModels: updatedModels,
       });
 
       // Trigger completion callback if both interfaces are now selected
       if (masterInterface && slaveInterface) {
         console.log(`Configuration complete - Master: ${masterInterface}, Slave: ${slaveInterface}`);
+        props.onComplete$?.();
+      } else if (!isTrunkMode && masterInterface) {
+        // For non-trunk mode, complete when master interface is selected
         props.onComplete$?.();
       }
     }
@@ -384,7 +357,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
                 return masterInterface && slaveInterface ? (
                   <span class="font-medium text-success dark:text-success-light">
-                    {$localize`Trunk ready`}: {masterInterface} ↔ {slaveInterface}
+                    {$localize`Router + Access Point ready`}: {masterInterface} ↔ {slaveInterface}
                   </span>
                 ) : (
                   <span>

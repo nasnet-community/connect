@@ -1,6 +1,6 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { LuLayers, LuBuilding, LuLink, LuArrowRight, LuServer } from "@qwikest/icons/lucide";
-import { Button, Badge } from "~/components/Core";
+import { LuNetwork, LuServer } from "@qwikest/icons/lucide";
+import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
 
@@ -259,18 +259,12 @@ export const NetworkTunnelsSection = component$(() => {
             <div class="grid grid-cols-2 gap-3">
               {["IPIP", "EoIP", "GRE", "VXLAN"].map((protocol) => (
                 <div key={protocol} class="bg-white/50 dark:bg-black/50 rounded-lg p-4 text-center">
-                  <LuLayers class="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                  <LuNetwork class="w-8 h-8 text-gray-600 mx-auto mb-2" />
                   <span class="font-semibold text-gray-900 dark:text-white">{protocol}</span>
                 </div>
               ))}
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Setup Tunnels`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
 
           {/* Visual Side - Interactive Network Tunnels Graph */}
@@ -367,17 +361,17 @@ export const NetworkTunnelsSection = component$(() => {
               {/* Performance Stats */}
               <div class="grid grid-cols-3 gap-3 mt-4">
                 <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuLayers class="w-6 h-6 text-slate-500 mx-auto mb-1" />
+                  <LuNetwork class="w-6 h-6 text-slate-500 mx-auto mb-1" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">4</div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Protocols`}</div>
                 </div>
                 <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuBuilding class="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                  <LuServer class="w-6 h-6 text-gray-500 mx-auto mb-1" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">8</div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Sites`}</div>
                 </div>
                 <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuLink class="w-6 h-6 text-zinc-500 mx-auto mb-1" />
+                  <LuNetwork class="w-6 h-6 text-zinc-500 mx-auto mb-1" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">5</div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Tunnels`}</div>
                 </div>

@@ -39,10 +39,11 @@ export const RouterCard = component$<RouterCardProps>(({ router, index }) => {
           <img
             src={router.image}
             alt={router.name}
-            class="max-w-full max-h-full object-contain filter drop-shadow-lg group-hover:scale-110 transition-transform duration-500"
+            class="w-auto h-32 object-contain filter drop-shadow-lg group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
             onError$={(event) => {
-              (event.target as HTMLImageElement).src = "/images/routers/placeholder.png";
+              // Fallback to a generic router image if the specific one doesn't load
+              (event.target as HTMLImageElement).src = "/images/routers/hap-ax3/hap-ax3-1.png";
             }}
           />
         </div>

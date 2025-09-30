@@ -1,8 +1,11 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuMenu, LuX, LuRouter } from "@qwikest/icons/lucide";
 import { Button } from "~/components/Core";
 
 export const NavigationBar = component$(() => {
+  const location = useLocation();
+  const locale = location.params.locale || "en";
   const isScrolled = useSignal(false);
   const isMobileMenuOpen = useSignal(false);
 
@@ -67,13 +70,15 @@ export const NavigationBar = component$(() => {
             >
               {$localize`Sign In`}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-            >
-              {$localize`Get Started`}
-            </Button>
+            <Link href={`/${locale}/star/`}>
+              <Button
+                variant="primary"
+                size="sm"
+                class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+              >
+                {$localize`Get Started`}
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -110,12 +115,14 @@ export const NavigationBar = component$(() => {
                 >
                   {$localize`Sign In`}
                 </Button>
-                <Button
-                  variant="primary"
-                  class="w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500"
-                >
-                  {$localize`Get Started`}
-                </Button>
+                <Link href={`/${locale}/star/`} class="block">
+                  <Button
+                    variant="primary"
+                    class="w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500"
+                  >
+                    {$localize`Get Started`}
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

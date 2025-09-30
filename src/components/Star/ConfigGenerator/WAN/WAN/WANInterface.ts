@@ -1,180 +1,192 @@
 import type { RouterConfig } from "../../ConfigGenerator";
 import type {
-  InterfaceType,
-  Ethernet,
-  Wireless,
-  Sfp,
-  LTE,
-  WirelessCredentials,
-} from "../../../StarContext/CommonType";
-import type { InterfaceConfig } from "../../../StarContext/WANType";
+    ConnectionConfig,
+    InterfaceConfig,
+    WANLinkConfig,
+    WANLink,
+} from "../../../StarContext/Utils/WANLinkType";
+import { mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
+import { DHCPClient, PPPOEClient, StaticIP, LTE } from "./WANUtils";
+import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "./WANUtils";
+import { WANIfaceList } from "./WANUtils";
 
-export const configureEthernetInterface = (
-  interfaceName: Ethernet | Sfp,
-  comment?: string,
-): RouterConfig => {
-  const config: RouterConfig = {
-    "/interface ethernet": [],
-  };
-
-  const baseCommand = `set [ find default-name=${interfaceName} ]`;
-  const parts = [baseCommand];
-  
-  if (comment) {
-    parts.push(`comment="${comment}"`);
-  }
-
-  config["/interface ethernet"].push(parts.join(" "));
-  
-  return config;
+const requiresAutoMACVLAN = (interfaceName: string): boolean => {
+    const isWireless =
+        interfaceName.startsWith("wifi") || interfaceName.includes("wlan");
+    const isSFP = interfaceName.startsWith("sfp");
+    const isEthernet = interfaceName.startsWith("ether");
+    return isWireless || isSFP || isEthernet;
 };
 
-export const configureWirelessInterface = (
-  interfaceName: Wireless,
-  credentials: WirelessCredentials,
-  comment?: string,
+export const generateConnectionConfig = (
+    connectionConfig: ConnectionConfig,
+    name: string,
+    interfaceName: string,
+    Network: string,
 ): RouterConfig => {
-  const config: RouterConfig = {
-    "/interface wifi": [],
-  };
+    let config: RouterConfig = {};
 
-  const { SSID, Password } = credentials;
-  
-  const parts = [
-    `set ${interfaceName}`,
-    `configuration.mode=station`,
-    `.ssid="${SSID}"`,
-    `disabled=no`,
-    `security.passphrase="${Password}"`,
-  ];
-  
-  if (comment) {
-    parts.splice(1, 0, `comment="${comment}"`);
-  }
+    if (connectionConfig.isDHCP) {
+        const dhcpConfig = DHCPClient(name, Network, interfaceName);
+        config = mergeRouterConfigs(config, dhcpConfig);
+    }
 
-  config["/interface wifi"].push(parts.join(" \\\n    "));
-  
-  return config;
+    if (connectionConfig.pppoe) {
+        const pppoeConfig = PPPOEClient(
+            name,
+            interfaceName,
+            connectionConfig.pppoe,
+        );
+        config = mergeRouterConfigs(config, pppoeConfig);
+    }
+
+    if (connectionConfig.static) {
+        const staticConfig = StaticIP(
+            name,
+            interfaceName,
+            connectionConfig.static,
+        );
+        config = mergeRouterConfigs(config, staticConfig);
+    }
+
+    if (connectionConfig.lteSettings) {
+        const lteConfig = LTE(connectionConfig.lteSettings);
+        config = mergeRouterConfigs(config, lteConfig);
+    }
+
+    return config;
 };
 
-export const configureSFPInterface = (
-  interfaceName: Sfp,
-  comment?: string,
-): RouterConfig => {
-  return configureEthernetInterface(interfaceName, comment);
-};
+export const getInterfaceName = (
+    interfaceConfig: InterfaceConfig,
+    name: string = "WAN",
+): string => {
+    const { InterfaceName, MacAddress, VLANID } = interfaceConfig;
 
-export const configureLTEInterface = (
-  interfaceName: LTE,
-  comment?: string,
-): RouterConfig => {
-  const config: RouterConfig = {
-    "/interface lte": [],
-  };
+    // Handle MACVLAN and VLAN combinations
+    if (MacAddress && VLANID) {
+        // MACVLAN on VLAN: MacVLAN-VLAN{vlanId}-{interfaceName}-{name}-{name}
+        const vlanName = `VLAN${VLANID}-${InterfaceName}-${name}`;
+        return `MacVLAN-${vlanName}-${name}`;
+    } else if (MacAddress) {
+        // MACVLAN only: MacVLAN-{interfaceName}-{name}
+        return `MacVLAN-${InterfaceName}-${name}`;
+    } else if (VLANID) {
+        // MACVLAN on VLAN: MacVLAN-VLAN{vlanId}-{interfaceName}-{name}-{name}
+        const vlanName = `VLAN${VLANID}-${InterfaceName}-${name}`;
+        return `MacVLAN-${vlanName}-${name}`;
+    } else if (requiresAutoMACVLAN(InterfaceName)) {
+        // Auto MACVLAN for wireless, SFP, or Ethernet: MacVLAN-{interfaceName}-{name}
+        return `MacVLAN-${InterfaceName}-${name}`;
+    }
 
-  if (comment) {
-    config["/interface lte"].push(
-      `set [ find default-name=${interfaceName} ] comment="${comment}"`
-    );
-  }
-  
-  return config;
-};
-
-export const setInterfaceComment = (
-  interfaceName: InterfaceType,
-  comment: string,
-): RouterConfig => {
-  const config: RouterConfig = {};
-  
-  const interfaceTypeMap: Record<string, string> = {
-    "ether": "/interface ethernet",
-    "wlan": "/interface wifi",
-    "sfp": "/interface ethernet",
-    "lte": "/interface lte",
-  };
-  
-  const prefix = interfaceName.substring(0, interfaceName.match(/\d/)?.index || interfaceName.length);
-  const section = interfaceTypeMap[prefix] || "/interface";
-  
-  config[section] = [
-    `set [ find default-name=${interfaceName} ] comment="${comment}"`
-  ];
-  
-  return config;
+    // No transformations, return original interface name
+    return InterfaceName;
 };
 
 export const generateInterfaceConfig = (
-  config: InterfaceConfig,
-  comment?: string,
+    interfaceConfig: InterfaceConfig,
+    name: string = "WAN",
 ): RouterConfig => {
-  const { InterfaceName, WirelessCredentials } = config;
-  
-  const finalComment = comment || `WAN-${InterfaceName}`;
-  
-  if (WirelessCredentials) {
-    return configureWirelessInterface(
-      InterfaceName as Wireless,
-      WirelessCredentials,
-      finalComment
-    );
-  }
-  
-  if (InterfaceName.startsWith("lte")) {
-    return configureLTEInterface(InterfaceName as LTE, finalComment);
-  }
-  
-  if (InterfaceName.startsWith("sfp")) {
-    return configureSFPInterface(InterfaceName as Sfp, finalComment);
-  }
-  
-  return configureEthernetInterface(InterfaceName as Ethernet, finalComment);
+    let config: RouterConfig = {};
+
+    const { InterfaceName, WirelessCredentials, MacAddress, VLANID } =
+        interfaceConfig;
+    const currentInterfaceName = InterfaceName;
+
+    // Handle wireless interface configuration
+    if (
+        WirelessCredentials &&
+        (InterfaceName.startsWith("wifi") || InterfaceName.includes("wlan"))
+    ) {
+        const { SSID, Password } = WirelessCredentials;
+        // Determine band from interface name
+        const band = InterfaceName.includes("2.4") ? "2.4" : "5";
+        const wirelessConfig = WirelessWAN(SSID, Password, band, name);
+        config = mergeRouterConfigs(config, wirelessConfig);
+    }
+
+    // Handle MACVLAN and VLAN combinations
+    if (MacAddress && VLANID) {
+        // Create MACVLAN on VLAN
+        const macvlanOnVlanConfig = MACVLANOnVLAN(
+            name,
+            currentInterfaceName,
+            MacAddress,
+            parseInt(VLANID),
+        );
+        config = mergeRouterConfigs(config, macvlanOnVlanConfig);
+    } else if (MacAddress) {
+        // Create MACVLAN only
+        const macvlanConfig = MACVLAN(name, currentInterfaceName, MacAddress);
+        config = mergeRouterConfigs(config, macvlanConfig);
+    } else if (VLANID) {
+        // Create VLAN first, then MACVLAN on top of VLAN
+        const vlanConfig = VLAN(name, currentInterfaceName, parseInt(VLANID));
+        config = mergeRouterConfigs(config, vlanConfig);
+
+        // Create MACVLAN on top of the VLAN interface
+        const vlanInterfaceName = `VLAN${VLANID}-${currentInterfaceName}-${name}`;
+        const macvlanConfig = MACVLAN(name, vlanInterfaceName);
+        config = mergeRouterConfigs(config, macvlanConfig);
+    } else if (requiresAutoMACVLAN(InterfaceName)) {
+        // Auto-create MACVLAN for wireless, SFP, or Ethernet interfaces
+        const autoMacvlanConfig = MACVLAN(name, currentInterfaceName);
+        config = mergeRouterConfigs(config, autoMacvlanConfig);
+    }
+
+    return config;
 };
 
-export const addInterfaceToList = (
-  interfaceName: InterfaceType,
-  listNames: string[],
+export const generateWANLinkConfig = (
+    wanLinkConfig: WANLinkConfig,
 ): RouterConfig => {
-  const config: RouterConfig = {
-    "/interface list member": [],
-  };
-  
-  listNames.forEach(listName => {
-    config["/interface list member"].push(
-      `add interface=${interfaceName} list="${listName}"`
-    );
-  });
-  
-  return config;
+    let config: RouterConfig = {};
+
+    const { name, InterfaceConfig, ConnectionConfig } = wanLinkConfig;
+
+    // 1. Generate interface configuration (VLAN, MACVLAN, Wireless, etc.)
+    const interfaceConfig = generateInterfaceConfig(InterfaceConfig, name);
+    config = mergeRouterConfigs(config, interfaceConfig);
+
+    // 2. Get the final interface name after transformations
+    const finalInterfaceName = getInterfaceName(InterfaceConfig, name);
+
+    // 3. Add interface to WAN list
+    const wanListConfig = WANIfaceList(finalInterfaceName, name);
+    config = mergeRouterConfigs(config, wanListConfig);
+
+    // 4. Generate connection configuration if provided (DHCP, PPPoE, Static, LTE)
+    if (ConnectionConfig) {
+        const connectionConfig = generateConnectionConfig(
+            ConnectionConfig,
+            name,
+            finalInterfaceName,
+            name,
+        );
+        config = mergeRouterConfigs(config, connectionConfig);
+    }
+
+    return config;
 };
 
-export const createInterfaceList = (listName: string): RouterConfig => {
-  return {
-    "/interface list": [
-      `add name="${listName}"`
-    ],
-  };
-};
+export const WANLinks = (wanLinks: WANLink[]): RouterConfig => {
+    let config: RouterConfig = {};
 
-export const setInterfaceState = (
-  interfaceName: InterfaceType,
-  enabled: boolean,
-): RouterConfig => {
-  const disabled = enabled ? "no" : "yes";
-  
-  const interfaceTypeMap: Record<string, string> = {
-    "ether": "/interface ethernet",
-    "wlan": "/interface wifi",
-    "sfp": "/interface ethernet",
-    "lte": "/interface lte",
-  };
-  
-  const prefix = interfaceName.substring(0, interfaceName.match(/\d/)?.index || interfaceName.length);
-  const section = interfaceTypeMap[prefix] || "/interface";
-  
-  return {
-    [section]: [
-      `set [ find default-name=${interfaceName} ] disabled=${disabled}`
-    ],
-  };
+    // Process each WANLink in the array
+    wanLinks.forEach((wanLink) => {
+        // Process each WANConfig within the WANLink
+        wanLink.WANConfigs.forEach((wanLinkConfig) => {
+            const linkConfig = generateWANLinkConfig(wanLinkConfig);
+            config = mergeRouterConfigs(config, linkConfig);
+        });
+
+        // TODO: Handle MultiLinkConfig if present
+        // if (wanLink.MultiLinkConfig) {
+        //   // Process multi-link configuration (load balancing, failover, etc.)
+        //   // This would require additional implementation in MultiWANUtil.ts
+        // }
+    });
+
+    return config;
 };

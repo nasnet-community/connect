@@ -46,4 +46,39 @@ export const VPN_PROTOCOLS: {
     description:
       "Fast, secure, and stable protocol with excellent reconnection capabilities",
   },
+  {
+    id: "Socks5",
+    name: "SOCKS5",
+    logo: "/images/vpn/socks5.svg",
+    description:
+      "Versatile proxy protocol for routing traffic through a secure tunnel",
+  },
+  {
+    id: "SSH",
+    name: "SSH",
+    logo: "/images/vpn/ssh.svg",
+    description:
+      "Secure Shell protocol for encrypted remote access and tunneling",
+  },
+  {
+    id: "HTTPProxy",
+    name: "HTTP Proxy",
+    logo: "/images/vpn/http-proxy.svg",
+    description:
+      "HTTP/HTTPS proxy server for web traffic routing and filtering",
+  },
+  {
+    id: "BackToHome",
+    name: "BackToHome",
+    logo: "/images/vpn/backtohome.svg",
+    description:
+      "Secure remote access solution for connecting to your home network",
+  },
+  {
+    id: "ZeroTier",
+    name: "ZeroTier",
+    logo: "/images/vpn/zerotier.svg",
+    description:
+      "Software-defined networking for creating secure virtual networks",
+  },
 ];

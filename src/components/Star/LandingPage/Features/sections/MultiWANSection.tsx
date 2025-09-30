@@ -1,6 +1,6 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { LuGlobe, LuHome, LuArrowRight, LuActivity } from "@qwikest/icons/lucide";
-import { Button, Badge } from "~/components/Core";
+import { LuGlobe, LuHome, LuActivity } from "@qwikest/icons/lucide";
+import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
 
@@ -188,12 +188,6 @@ export const MultiWANSection = component$(() => {
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Configure WAN Links`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
 
           {/* Visual Side - Interactive Graph Network Topology */}

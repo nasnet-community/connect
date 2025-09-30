@@ -1,6 +1,5 @@
 import { component$, $ } from "@builder.io/qwik";
-import { LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge, Graph, createNode } from "~/components/Core";
+import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
 
 export const WirelessNetworksSection = component$(() => {
@@ -150,12 +149,6 @@ export const WirelessNetworksSection = component$(() => {
               {$localize`Purpose-built networks with intelligent segmentation. Create isolated networks for different purposes with bandwidth control and routing rules.`}
             </p>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Configure Networks`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>

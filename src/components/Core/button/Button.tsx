@@ -70,7 +70,7 @@ export const Button = component$<ButtonProps>(
       if (!ripple || disabled || loading) return;
 
       const button = e.currentTarget as HTMLButtonElement;
-      if (!button) return;
+      if (!button || typeof button.getBoundingClientRect !== 'function') return;
       
       const rect = button.getBoundingClientRect();
       if (!rect) return;

@@ -1,6 +1,5 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge } from "~/components/Core";
+import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
 
@@ -13,6 +12,11 @@ export const VPNServerSection = component$(() => {
     "pptp": false,
     "sstp": false,
     "ikev2": false,
+    "socks5": false,
+    "ssh": false,
+    "httpproxy": false,
+    "backtohome": false,
+    "zerotier": false,
   });
 
   // Graph nodes for VPN server topology
@@ -114,6 +118,11 @@ export const VPNServerSection = component$(() => {
     { name: "PPTP", active: activeConnections.value.pptp, color: "#f59e0b" },
     { name: "SSTP", active: activeConnections.value.sstp, color: "#ef4444" },
     { name: "IKEv2", active: activeConnections.value.ikev2, color: "#10b981" },
+    { name: "SOCKS5", active: activeConnections.value.socks5, color: "#3b82f6" },
+    { name: "SSH", active: activeConnections.value.ssh, color: "#ec4899" },
+    { name: "HTTP Proxy", active: activeConnections.value.httpproxy, color: "#14b8a6" },
+    { name: "BackToHome", active: activeConnections.value.backtohome, color: "#a855f7" },
+    { name: "ZeroTier", active: activeConnections.value.zerotier, color: "#dc2626" },
   ];
 
   // Handle node clicks
@@ -230,11 +239,11 @@ export const VPNServerSection = component$(() => {
             </h2>
 
             <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
-              {$localize`Multi-protocol server supporting 6 VPN types. Enable remote access, content freedom through foreign links, and secure connectivity worldwide.`}
+              {$localize`Multi-protocol server supporting 11 VPN types. Enable remote access, content freedom through foreign links, and secure connectivity worldwide.`}
             </p>
 
             <div class="grid grid-cols-3 gap-3">
-              {["WireGuard", "OpenVPN", "L2TP", "PPTP", "SSTP", "IKEv2"].map((protocol) => (
+              {["WireGuard", "OpenVPN", "L2TP", "PPTP", "SSTP", "IKEv2", "SOCKS5", "SSH", "HTTP Proxy", "BackToHome", "ZeroTier"].map((protocol) => (
                 <div key={protocol} class="bg-white/50 dark:bg-black/50 rounded-lg p-3 text-center">
                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
                     {protocol}
@@ -243,12 +252,6 @@ export const VPNServerSection = component$(() => {
               ))}
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Configure VPN Server`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
 
           {/* Visual Side - Interactive VPN Server Graph */}

@@ -50,7 +50,6 @@ export interface CertificateConfig {
 
 export interface NTPConfig {
   servers: string[];
-  updateInterval: "1h" | "6h" | "12h" | "24h";
 }
 
 export interface GraphingConfig {

@@ -1,9 +1,9 @@
 import { component$ } from "@builder.io/qwik";
 import { Card } from "~/components/Core";
-import { getIcon, type IconName } from "../utils/iconMapper";
+import { LuRouter, LuShield, LuZap, LuGlobe, LuWifi, LuServer } from "@qwikest/icons/lucide";
 
 interface Feature {
-  icon: IconName;
+  icon: string;
   title: string;
   subtitle: string;
   description: string;
@@ -17,7 +17,25 @@ interface FeatureCardProps {
 }
 
 export const FeatureCard = component$<FeatureCardProps>(({ feature, index }) => {
-  const FeatureIcon = getIcon(feature.icon);
+  // Select icon based on the icon name
+  const getFeatureIcon = () => {
+    switch (feature.icon) {
+      case 'LuRouter':
+        return <LuRouter class="h-6 w-6 text-white" />;
+      case 'LuShield':
+        return <LuShield class="h-6 w-6 text-white" />;
+      case 'LuZap':
+        return <LuZap class="h-6 w-6 text-white" />;
+      case 'LuGlobe':
+        return <LuGlobe class="h-6 w-6 text-white" />;
+      case 'LuWifi':
+        return <LuWifi class="h-6 w-6 text-white" />;
+      case 'LuServer':
+        return <LuServer class="h-6 w-6 text-white" />;
+      default:
+        return <LuRouter class="h-6 w-6 text-white" />; // Default fallback
+    }
+  };
 
   return (
     <Card
@@ -39,7 +57,7 @@ export const FeatureCard = component$<FeatureCardProps>(({ feature, index }) => 
         {/* Icon */}
         <div class="mb-4">
           <div class={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
-            <FeatureIcon class="h-6 w-6 text-white" />
+            {getFeatureIcon()}
           </div>
         </div>
 

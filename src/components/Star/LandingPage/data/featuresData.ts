@@ -1,8 +1,6 @@
-import type { IconName } from "../utils/iconMapper";
-
 export const features = [
   {
-    icon: "LuRouter" as IconName,
+    icon: "LuRouter",
     title: $localize`Multi-Router Support`,
     subtitle: $localize`17+ Models Supported`,
     description: $localize`From hAP series to Chateau models, configure any MikroTik router with intelligent model detection and capability mapping.`,
@@ -10,7 +8,7 @@ export const features = [
     features: [$localize`Auto-detection`, $localize`Model-specific configs`, $localize`Capability mapping`]
   },
   {
-    icon: "LuShield" as IconName,
+    icon: "LuShield",
     title: $localize`Advanced VPN`,
     subtitle: $localize`6 Protocol Support`,
     description: $localize`Complete VPN solution with WireGuard, OpenVPN, L2TP, PPTP, SSTP, and IKeV2. Both server and client configurations.`,
@@ -18,7 +16,7 @@ export const features = [
     features: [$localize`WireGuard`, $localize`OpenVPN`, $localize`Enterprise security`]
   },
   {
-    icon: "LuZap" as IconName,
+    icon: "LuZap",
     title: $localize`Gaming Optimization`,
     subtitle: $localize`Zero-Lag Performance`,
     description: $localize`Built-in gaming database with automatic port forwarding and traffic prioritization for popular games.`,
@@ -26,7 +24,7 @@ export const features = [
     features: [$localize`Game database`, $localize`Port forwarding`, $localize`Traffic priority`]
   },
   {
-    icon: "LuGlobe" as IconName,
+    icon: "LuGlobe",
     title: $localize`Multi-WAN Setup`,
     subtitle: $localize`Smart Load Balancing`,
     description: $localize`Configure multiple WAN connections with intelligent routing, failover, and domestic/foreign link separation.`,
@@ -34,7 +32,7 @@ export const features = [
     features: [$localize`Load balancing`, $localize`Failover`, $localize`Smart routing`]
   },
   {
-    icon: "LuWifi" as IconName,
+    icon: "LuWifi",
     title: $localize`Wireless Networks`,
     subtitle: $localize`Professional WiFi`,
     description: $localize`Advanced wireless configuration with multiple SSIDs, guest networks, and enterprise-grade security.`,
@@ -42,7 +40,7 @@ export const features = [
     features: [$localize`Multiple SSIDs`, $localize`Guest access`, $localize`WPA3 security`]
   },
   {
-    icon: "LuServer" as IconName,
+    icon: "LuServer",
     title: $localize`Network Segments`,
     subtitle: $localize`Isolated LANs`,
     description: $localize`Create secure network segments: VPN, Domestic, Foreign, and Split networks with intelligent routing rules.`,

@@ -188,7 +188,7 @@ export const Choose = component$((props: StepProps) => {
       // Add Trunk Interface step after interface type selection
       baseSteps.push({
         id: nextId,
-        title: $localize`Trunk Interface`,
+        title: $localize`Router + Access Point Interface`,
         component: TrunkInterfaceStep,
         isComplete: false,
       });

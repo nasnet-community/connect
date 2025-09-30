@@ -8,13 +8,11 @@ import type {
   Ethernet,
   InterfaceType,
 } from "../../../StarContext/CommonType";
-import {
-  addOccupiedInterface,
-  removeOccupiedInterface,
-} from "../../../utils/InterfaceManagementUtils";
+import { useInterfaceManagement } from "../../../hooks/useInterfaceManagement";
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
+  const interfaceManagement = useInterfaceManagement();
   const selectedInterfaceType = useSignal("");
   const selectedInterface = useSignal("");
   const ssid = useSignal("");
@@ -87,17 +85,8 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
         }
       }
 
-      if (interfaceConfig.lteSettings) {
-        if (interfaceConfig.lteSettings.apn && apn.value === "") {
-          apn.value = interfaceConfig.lteSettings.apn;
-        }
-        if (interfaceConfig.lteSettings.username && lteUsername.value === "") {
-          lteUsername.value = interfaceConfig.lteSettings.username;
-        }
-        if (interfaceConfig.lteSettings.password && ltePassword.value === "") {
-          ltePassword.value = interfaceConfig.lteSettings.password;
-        }
-      }
+      // LTE settings are now in ConnectionConfig, not InterfaceConfig
+      // We'll need to get them from the WANConfigs[0].ConnectionConfig if available
     }
 
     // Run validation whenever state changes
@@ -139,18 +128,25 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       };
     }
 
-    if (selectedInterfaceType.value === "LTE") {
-      modeConfig.lteSettings = {
-        apn: apn.value,
-        username: lteUsername.value || undefined,
-        password: ltePassword.value || undefined,
-      };
-    }
+    // LTE settings will be handled separately in ConnectionConfig
 
     // Create proper WANLink structure
     const currentWANLink = starContext.state.WAN.WANLink[mode] || { WANConfigs: [] };
     const existingConfig = currentWANLink.WANConfigs?.[0] || { name: `${mode} Link`, InterfaceConfig: { InterfaceName: selectedInterface.value } };
     
+    // Prepare ConnectionConfig for LTE if needed
+    let connectionConfig = existingConfig.ConnectionConfig;
+    if (selectedInterfaceType.value === "LTE") {
+      connectionConfig = {
+        ...connectionConfig,
+        lteSettings: {
+          apn: apn.value,
+          username: lteUsername.value || undefined,
+          password: ltePassword.value || undefined,
+        }
+      };
+    }
+
     updateData.WANLink[mode] = {
       ...currentWANLink,
       WANConfigs: [{
@@ -159,8 +155,8 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
           ...existingConfig.InterfaceConfig,
           InterfaceName: modeConfig.InterfaceName,
           WirelessCredentials: modeConfig.WirelessCredentials,
-          lteSettings: modeConfig.lteSettings,
-        }
+        },
+        ConnectionConfig: connectionConfig
       }]
     };
 
@@ -185,41 +181,18 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     validateForm();
   });
 
-  const handleInterfaceSelect = $((value: string) => {
+  const handleInterfaceSelect = $(async (value: string) => {
     const previousInterface = selectedInterface.value;
     selectedInterface.value = value;
     updateStarContext();
     validateForm();
 
-    // Update occupied interfaces in context
-    const updatedModels = starContext.state.Choose.RouterModels.map(model => {
-      if (!model.isMaster) return model;
-
-      const updatedModel = { ...model };
-
-      // Remove previous interface from occupied list
-      if (previousInterface) {
-        updatedModel.Interfaces.OccupiedInterfaces = removeOccupiedInterface(
-          updatedModel.Interfaces.OccupiedInterfaces,
-          previousInterface as InterfaceType
-        );
-      }
-
-      // Add new interface to occupied list
-      if (value) {
-        updatedModel.Interfaces.OccupiedInterfaces = addOccupiedInterface(
-          updatedModel.Interfaces.OccupiedInterfaces,
-          value as InterfaceType,
-          "WAN"
-        );
-      }
-
-      return updatedModel;
-    });
-
-    starContext.updateChoose$({
-      RouterModels: updatedModels,
-    });
+    // Update occupied interfaces using centralized interface management
+    await interfaceManagement.updateInterfaceOccupation$(
+      previousInterface ? (previousInterface as InterfaceType) : null,
+      value ? (value as InterfaceType) : null,
+      "WAN"
+    );
   });
 
   const handleSSIDChange = $((value: string) => {

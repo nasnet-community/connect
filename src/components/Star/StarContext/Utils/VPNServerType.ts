@@ -1,4 +1,4 @@
-import type { AuthMethod, TLSVersion, NetworkProtocol, LayerMode, VPNType } from "../CommonType";
+import type { AuthMethod, TLSVersion, NetworkProtocol, LayerMode, VPNType, Networks } from "../CommonType";
 
 
 
@@ -515,14 +515,48 @@ export interface PppSecret {
     disabled?: boolean;
     limitBytesIn?: number;
     limitBytesOut?: number;
-    localAddress?: string; 
-    name: string; 
+    localAddress?: string;
+    name: string;
     password?: string;
-    profile?: string; 
-    remoteAddress?: string; 
+    profile?: string;
+    remoteAddress?: string;
     remoteIpv6Prefix?: string;
     routes?: string;
     service?: "pptp" | "l2tp" | "sstp" | "ovpn" | "ike2" | "any";
+}
+
+
+// Socks5
+export interface Socks5ServerConfig {
+    enabled: boolean;
+    Port: number;
+    Network: Networks;
+}
+
+// SSH
+export interface SSHServerConfig {
+    enabled: boolean;
+    Network: Networks;
+}
+
+// HTTP Proxy
+export interface HTTPProxyServerConfig {
+    enabled: boolean;
+    Port: number;
+    Network: Networks;
+}
+
+// BackToHome
+export interface BackToHomeServerConfig {
+    enabled: boolean;
+    Network: Networks;
+}
+
+// ZeroTier
+export interface ZeroTierServerConfig {
+    enabled: boolean;
+    Network: Networks;
+    ZeroTierNetworkID: string;
 }
 
 
@@ -541,4 +575,9 @@ export interface VPNServer {
     OpenVpnServer?: OpenVpnServerConfig[];
     Ikev2Server?: Ikev2ServerConfig;
     WireguardServers?: WireguardServerConfig[];
+    Socks5Server?: Socks5ServerConfig;
+    SSHServer?: SSHServerConfig;
+    HTTPProxyServer?: HTTPProxyServerConfig;
+    BackToHomeServer?: BackToHomeServerConfig;
+    ZeroTierServer?: ZeroTierServerConfig;
 }

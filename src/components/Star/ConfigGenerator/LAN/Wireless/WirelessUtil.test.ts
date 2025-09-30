@@ -59,15 +59,15 @@
 //   describe("CheckMasters", () => {
 //     it("should return true for both bands if present in WANLink", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
 //         },
-//         Domestic: { 
-//           WANConfigs: [{ 
+//         Domestic: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi5" } }]
 //         },
 //       };
 
@@ -84,10 +84,10 @@
 
 //     it("should return true for 2.4GHz only", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
 //         },
 //       };
 
@@ -104,10 +104,10 @@
 
 //     it("should return true for 5GHz only", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi5" } }]
 //         },
 //       };
 
@@ -124,10 +124,10 @@
 
 //     it("should return false for both if not wifi interfaces", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "ether1" } }] 
+//             InterfaceConfig: { InterfaceName: "ether1" } }]
 //         },
 //       };
 
@@ -144,15 +144,15 @@
 
 //     it("should handle interface names with wifi pattern variations", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
 //         },
-//         Domestic: { 
-//           WANConfigs: [{ 
+//         Domestic: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi5" } }]
 //         },
 //       };
 
@@ -169,10 +169,10 @@
 
 //     it("should handle undefined domestic interface", () => {
 //       const wanLink: WANLinks = {
-//         Foreign: { 
-//           WANConfigs: [{ 
+//         Foreign: {
+//           WANConfigs: [{
 //             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }] 
+//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
 //         },
 //         // Domestic is undefined
 //       };
@@ -310,9 +310,9 @@
 //     });
 
 //     it("should return empty config if no wireless credentials", () => {
-//       const wanConfig: WANLinkConfig = { 
+//       const wanConfig: WANLinkConfig = {
 //         name: "Test Link",
-//         InterfaceConfig: { InterfaceName: "wifi2.4" } 
+//         InterfaceConfig: { InterfaceName: "wifi2.4" }
 //       };
 
 //       testWithOutput(
@@ -337,17 +337,17 @@
 //       isDisabled: false,
 //     };
 //     const wanLinkWithWifi: WANLinks = {
-//       Foreign: { 
-//         WANConfigs: [{ 
+//       Foreign: {
+//         WANConfigs: [{
 //           name: "Foreign Link",
-//           InterfaceConfig: { InterfaceName: "wifi2.4" } 
-//         }] 
+//           InterfaceConfig: { InterfaceName: "wifi2.4" }
+//         }]
 //       },
-//       Domestic: { 
-//         WANConfigs: [{ 
-//           name: "Domestic Link", 
-//           InterfaceConfig: { InterfaceName: "wifi5" } 
-//         }] 
+//       Domestic: {
+//         WANConfigs: [{
+//           name: "Domestic Link",
+//           InterfaceConfig: { InterfaceName: "wifi5" }
+//         }]
 //       },
 //     };
 

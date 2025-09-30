@@ -13,6 +13,7 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
       name: string;
       description: string;
       recommended?: boolean;
+      disabled?: boolean;
       icon: string;
     }> = [
       {
@@ -26,6 +27,7 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
         type: "OpenVPN",
         name: "OpenVPN",
         description: "Industry standard, highly configurable",
+        disabled: true,
         icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
       },
       {
@@ -83,12 +85,15 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
             <button
               key={protocol.type}
               type="button"
-              onClick$={() => onSelect$(protocol.type)}
+              disabled={protocol.disabled}
+              onClick$={() => !protocol.disabled && onSelect$(protocol.type)}
               class={`
-                group relative overflow-hidden rounded-xl border-2 p-4 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900
-                ${selectedProtocol === protocol.type 
-                  ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20" 
-                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"}
+                group relative overflow-hidden rounded-xl border-2 p-4 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900
+                ${protocol.disabled
+                  ? "opacity-50 cursor-not-allowed border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                  : selectedProtocol === protocol.type
+                  ? "border-primary-500 bg-primary-50 hover:scale-105 dark:border-primary-400 dark:bg-primary-900/20"
+                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md hover:scale-105 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"}
               `}
             >
               {/* Recommended Badge */}
@@ -104,8 +109,10 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
                 {/* Protocol Icon */}
                 <div class={`
                   flex h-12 w-12 items-center justify-center rounded-lg transition-colors
-                  ${selectedProtocol === protocol.type 
-                    ? "bg-primary-500 text-white" 
+                  ${protocol.disabled
+                    ? "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                    : selectedProtocol === protocol.type
+                    ? "bg-primary-500 text-white"
                     : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"}
                 `}>
                   <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,10 +122,23 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
 
                 {/* Protocol Name */}
                 <div>
-                  <h3 class={`font-semibold text-sm ${selectedProtocol === protocol.type ? "text-primary-700 dark:text-primary-300" : "text-gray-900 dark:text-gray-100"}`}>
+                  <h3 class={`font-semibold text-sm ${
+                    protocol.disabled
+                      ? "text-gray-400 dark:text-gray-600"
+                      : selectedProtocol === protocol.type
+                      ? "text-primary-700 dark:text-primary-300"
+                      : "text-gray-900 dark:text-gray-100"
+                  }`}>
                     {protocol.name}
+                    {protocol.disabled && " (Coming Soon)"}
                   </h3>
-                  <p class={`text-xs mt-1 leading-tight ${selectedProtocol === protocol.type ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-400"}`}>
+                  <p class={`text-xs mt-1 leading-tight ${
+                    protocol.disabled
+                      ? "text-gray-400 dark:text-gray-600"
+                      : selectedProtocol === protocol.type
+                      ? "text-primary-600 dark:text-primary-400"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}>
                     {protocol.description}
                   </p>
                 </div>
@@ -132,12 +152,14 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
               )}
 
               {/* Hover Glow Effect */}
-              <div class={`
-                absolute inset-0 rounded-xl opacity-0 transition-opacity group-hover:opacity-100
-                ${selectedProtocol === protocol.type 
-                  ? "bg-primary-500/5" 
-                  : "bg-gray-500/5"}
-              `}></div>
+              {!protocol.disabled && (
+                <div class={`
+                  absolute inset-0 rounded-xl opacity-0 transition-opacity group-hover:opacity-100
+                  ${selectedProtocol === protocol.type
+                    ? "bg-primary-500/5"
+                    : "bg-gray-500/5"}
+                `}></div>
+              )}
             </button>
           ))}
         </div>

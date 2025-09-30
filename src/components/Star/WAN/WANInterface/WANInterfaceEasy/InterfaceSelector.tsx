@@ -4,7 +4,7 @@ import { Select } from "~/components/Core";
 import { StarContext } from "../../../StarContext/StarContext";
 import {
   isInterfaceOccupied,
-  getAllOccupiedInterfaces
+  getMasterOccupiedInterfaces
 } from "../../../utils/InterfaceManagementUtils";
 
 const interfaceDisplayNames: Record<string, string> = {
@@ -57,7 +57,8 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
       if (!currentInterfaces.length) return [];
 
-      const occupiedInterfaces = getAllOccupiedInterfaces(
+      // Only check master router's occupied interfaces
+      const occupiedInterfaces = getMasterOccupiedInterfaces(
         starContext.state.Choose.RouterModels
       );
 

@@ -1,6 +1,6 @@
 import { component$, $ } from "@builder.io/qwik";
-import { LuShield, LuLock, LuEye, LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge, Graph, createNode } from "~/components/Core";
+import { LuShield, LuLock } from "@qwikest/icons/lucide";
+import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
 
 export const VPNClientSection = component$(() => {
@@ -134,7 +134,7 @@ export const VPNClientSection = component$(() => {
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Secure Tunnel`}</span>
               </div>
               <div class="flex items-center gap-2">
-                <LuEye class="w-5 h-5 text-blue-500" />
+                <LuLock class="w-5 h-5 text-blue-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Privacy Protected`}</span>
               </div>
             </div>
@@ -170,12 +170,6 @@ export const VPNClientSection = component$(() => {
               ))}
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Setup VPN Client`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>
