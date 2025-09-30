@@ -8,7 +8,7 @@ export function useNewsletter({
   onSubscribe$,
   initialLoading = false,
   validateEmail = true,
-  customValidation$,
+  customValidation$ = null,
 }: UseNewsletterParams = {}): UseNewsletterReturn {
   // State for the newsletter form
   const email = useSignal("");
@@ -17,13 +17,11 @@ export function useNewsletter({
   const success = useSignal(false);
   const isValid = useSignal(false);
 
-  // Email validation function - wrapped in $() for Qwik serialization
-  const validateEmailFormat = $((emailValue: string): boolean => {
-    if (!validateEmail) return true;
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(emailValue.trim());
-  });
+  // Store validation flag in a signal so it can be accessed in $() functions
+  const shouldValidateEmail = useSignal(validateEmail);
+  
+  // Store custom validation in a signal
+  const customValidator = useSignal(customValidation$);
 
   // Handle email input changes
   const handleEmailInput$ = $(async (event: Event) => {
@@ -36,7 +34,13 @@ export function useNewsletter({
 
     // Validate email format
     if (emailValue.trim()) {
-      isValid.value = await validateEmailFormat(emailValue);
+      // Inline validation logic
+      if (!shouldValidateEmail.value) {
+        isValid.value = true;
+      } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        isValid.value = emailRegex.test(emailValue.trim());
+      }
 
       if (!isValid.value && emailValue.length > 5) {
         error.value = $localize`Please enter a valid email address`;
@@ -57,19 +61,30 @@ export function useNewsletter({
       return false;
     }
 
-    if (!(await validateEmailFormat(emailValue))) {
-      error.value = $localize`Please enter a valid email address`;
-      isValid.value = false;
-      return false;
+    // Inline validation logic
+    if (shouldValidateEmail.value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidFormat = emailRegex.test(emailValue);
+
+      if (!isValidFormat) {
+        error.value = $localize`Please enter a valid email address`;
+        isValid.value = false;
+        return false;
+      }
     }
 
     // Run custom validation if provided
-    if (customValidation$) {
-      const customError = await customValidation$(emailValue);
-      if (customError) {
-        error.value = customError;
-        isValid.value = false;
-        return false;
+    if (customValidator.value !== null) {
+      try {
+        const customError = await customValidator.value(emailValue);
+        if (customError) {
+          error.value = customError;
+          isValid.value = false;
+          return false;
+        }
+      } catch (e) {
+        // Silently skip custom validation if it fails
+        console.warn("Custom validation error:", e);
       }
     }
 
