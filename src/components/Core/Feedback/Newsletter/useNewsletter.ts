@@ -19,9 +19,6 @@ export function useNewsletter({
 
   // Store validation flag in a signal so it can be accessed in $() functions
   const shouldValidateEmail = useSignal(validateEmail);
-  
-  // Store custom validation in a signal
-  const customValidator = useSignal(customValidation$);
 
   // Handle email input changes
   const handleEmailInput$ = $(async (event: Event) => {
@@ -74,9 +71,9 @@ export function useNewsletter({
     }
 
     // Run custom validation if provided
-    if (customValidator.value !== null) {
+    if (customValidation$) {
       try {
-        const customError = await customValidator.value(emailValue);
+        const customError = await customValidation$(emailValue);
         if (customError) {
           error.value = customError;
           isValid.value = false;
