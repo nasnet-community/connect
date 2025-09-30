@@ -1,6 +1,6 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { LuRouter, LuWifi, LuLink, LuArrowRight, LuRadio } from "@qwikest/icons/lucide";
-import { Button, Badge } from "~/components/Core";
+import { LuRouter, LuWifi, LuNetwork } from "@qwikest/icons/lucide";
+import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
 
@@ -208,7 +208,7 @@ export const RouterChainingSection = component$(() => {
                   </button>
                 </div>
                 <div class="flex items-center gap-2">
-                  <LuRadio class="w-4 h-4 text-green-500 animate-pulse" />
+                  <LuWifi class="w-4 h-4 text-green-500 animate-pulse" />
                   <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {$localize`Active Mesh Network`}
                   </span>
@@ -305,7 +305,7 @@ export const RouterChainingSection = component$(() => {
 
               <div class="flex items-start gap-3">
                 <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                  <LuLink class="w-4 h-4 text-emerald-500" />
+                  <LuNetwork class="w-4 h-4 text-emerald-500" />
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
@@ -348,12 +348,6 @@ export const RouterChainingSection = component$(() => {
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Setup Router Chain`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>

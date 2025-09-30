@@ -1,10 +1,13 @@
 import { component$, $ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuPlay, LuArrowRight, LuRouter, LuShield, LuZap } from "@qwikest/icons/lucide";
 import { Button, Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
 
 export const HeroSection = component$(() => {
+  const location = useLocation();
+  const locale = location.params.locale || "en";
+
   // Newsletter subscription handler
   const handleNewsletterSubscribe$ = $(async (subscription: NewsletterSubscription) => {
     console.log("Newsletter subscription for:", subscription.email);
@@ -29,11 +32,11 @@ export const HeroSection = component$(() => {
         {/* Main Headline */}
         <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in-up animation-delay-200">
           <span class="bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
-            {$localize`Configure`}
+            {$localize`Share, Secure & Optimize`}
           </span>
           <br />
           <span class="text-gray-900 dark:text-white">
-            {$localize`Your Network`}
+            {$localize`Your Starlink`}
           </span>
           <br />
           <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
@@ -66,7 +69,7 @@ Unlock the full potential of your Starlink connection with advanced networking p
 
         {/* Action Buttons */}
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animation-delay-1000">
-          <Link href="/star/">
+          <Link href={`/${locale}/star/`}>
             <Button
               variant="primary"
               size="lg"
@@ -77,14 +80,16 @@ Unlock the full potential of your Starlink connection with advanced networking p
             </Button>
           </Link>
 
-          <Button
-            variant="outline"
-            size="lg"
-            class="group bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 hover:bg-white/20 px-8 py-4 text-lg font-semibold text-gray-800 dark:text-white"
-          >
-            <LuPlay class="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-            {$localize`Watch Demo`}
-          </Button>
+          <a href="https://youtube.com/@joinnasnet" target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="lg"
+              class="group bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 hover:bg-white/20 px-8 py-4 text-lg font-semibold text-gray-800 dark:text-white"
+            >
+              <LuPlay class="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+              {$localize`Watch Video`}
+            </Button>
+          </a>
         </div>
 
         {/* Newsletter Card */}

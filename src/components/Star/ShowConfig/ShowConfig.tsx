@@ -133,6 +133,25 @@ def configure_slave_router(host, username, password):
 
   return (
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+      {/* Newsletter Section - Moved to Top */}
+      <div class="container mx-auto px-4 pt-8 pb-4">
+        <Newsletter
+          variant="horizontal"
+          size="lg"
+          title={$localize`Stay Updated with Router Configurations`}
+          description={$localize`Get the latest MikroTik tips, security updates, and configuration best practices delivered to your inbox.`}
+          placeholder={$localize`Enter your email address`}
+          buttonText={$localize`Subscribe Now`}
+          onSubscribe$={handleNewsletterSubscribe}
+          showLogo={true}
+          glassmorphism={true}
+          themeColors={true}
+          theme="branded"
+          animated={true}
+          fullWidth={true}
+        />
+      </div>
+
       <Header title={
         slaveRouters.length > 0
           ? $localize`Master Router Configuration`
@@ -140,25 +159,6 @@ def configure_slave_router(host, username, password):
       } />
 
       <div class="container mx-auto px-4 pb-16">
-        {/* Newsletter Section - Moved to Top */}
-        <div class="mb-12">
-          <Newsletter
-            variant="horizontal"
-            size="lg"
-            title={$localize`Stay Updated with Router Configurations`}
-            description={$localize`Get the latest MikroTik tips, security updates, and configuration best practices delivered to your inbox.`}
-            placeholder={$localize`Enter your email address`}
-            buttonText={$localize`Subscribe Now`}
-            onSubscribe$={handleNewsletterSubscribe}
-            showLogo={true}
-            glassmorphism={true}
-            themeColors={true}
-            theme="branded"
-            animated={true}
-            fullWidth={true}
-          />
-        </div>
-
         {/* Configuration Display - Conditional based on mode */}
         <div class="mb-12">
           {ctx.state.Choose.Mode === "easy" ? (

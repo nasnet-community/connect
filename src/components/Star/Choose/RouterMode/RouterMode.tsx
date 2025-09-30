@@ -45,7 +45,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
     {
       mode: "AP Mode",
       icon: <LuNetwork class="h-8 w-8" />,
-      title: $localize`Access Point Mode`,
+      title: $localize`Single Router Mode`,
       description: $localize`Extend your network coverage seamlessly`,
       features: [
         $localize`Wireless network extension`,
@@ -58,7 +58,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
     {
       mode: "Trunk Mode",
       icon: <LuLink class="h-8 w-8" />,
-      title: $localize`Trunk Mode`,
+      title: $localize`Router + Access Point Mode`,
       description: $localize`Advanced network configuration`,
       features: [
         $localize`VLAN support`,

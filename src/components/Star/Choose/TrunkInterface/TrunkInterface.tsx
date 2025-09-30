@@ -2,7 +2,7 @@ import { $, component$, useContext, useSignal, useTask$, type PropFunction } fro
 import { StarContext } from "../../StarContext/StarContext";
 import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessBandSelector } from "./WirelessBandSelector";
-import { addOccupiedInterface } from "../../utils/InterfaceManagementUtils";
+import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
 
 interface TrunkInterfaceProps {
@@ -12,6 +12,7 @@ interface TrunkInterfaceProps {
 
 export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
   const starContext = useContext(StarContext);
+  const interfaceManagement = useInterfaceManagement();
   const selectedBand = useSignal<"2.4G" | "5G" | null>(null);
 
   // Get interface type from context (set by InterfaceType component)
@@ -44,30 +45,30 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
     }
   });
 
-  const handleBandSelect = $((band: "2.4G" | "5G") => {
+  const handleBandSelect = $(async (band: "2.4G" | "5G") => {
     // Update selected band
     selectedBand.value = band;
 
     // Map band to interface name
     const interfaceName = band === "2.4G" ? "wifi2.4" : "wifi5";
 
-    // Update all router models with the same wireless interface
-    const updatedModels = starContext.state.Choose.RouterModels.map((model) => {
-      // Use the utility to properly add the occupied interface
-      const occupiedInterfaces = addOccupiedInterface(
-        [], // Start with clean array to avoid duplicates
-        interfaceName as InterfaceType,
-        "Trunk",
-        model.isMaster ? "Master" : "Slave"
-      );
+    // Clear any previously selected trunk interfaces (only from master router)
+    const models = starContext.state.Choose.RouterModels;
+    const masterModel = models.find(model => model.isMaster);
 
+    if (masterModel?.MasterSlaveInterface) {
+      await interfaceManagement.releaseInterface$(masterModel.MasterSlaveInterface as InterfaceType);
+    }
+
+    // Mark the new interface as occupied for Trunk (only for master router)
+    // Note: In wireless mode, both routers use the same band, but we only track master's interface
+    await interfaceManagement.markInterfaceAsOccupied$(interfaceName as InterfaceType, "Trunk");
+
+    // Update all router models with the same wireless interface
+    const updatedModels = models.map((model) => {
       return {
         ...model,
         MasterSlaveInterface: interfaceName as any,
-        Interfaces: {
-          ...model.Interfaces,
-          OccupiedInterfaces: occupiedInterfaces
-        }
       };
     });
 
@@ -86,7 +87,7 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
       {/* Header section */}
       <div class="text-center">
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Configure Trunk Interface`}
+          {$localize`Configure Router + Access Point Interface`}
         </h2>
         <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
           {$localize`Select the specific interfaces for your trunk connection`}

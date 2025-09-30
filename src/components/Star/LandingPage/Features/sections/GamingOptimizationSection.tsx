@@ -1,6 +1,6 @@
 import { component$, $ } from "@builder.io/qwik";
-import { LuGamepad2, LuZap, LuTrophy, LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge, Graph, createNode } from "~/components/Core";
+import { LuCpu, LuZap, LuAward } from "@qwikest/icons/lucide";
+import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
 
 export const GamingOptimizationSection = component$(() => {
@@ -125,7 +125,7 @@ export const GamingOptimizationSection = component$(() => {
             </div>
             <div class="mt-4 flex justify-center gap-6">
               <div class="flex items-center gap-2">
-                <LuGamepad2 class="w-5 h-5 text-pink-500" />
+                <LuCpu class="w-5 h-5 text-pink-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`QoS Enabled`}</span>
               </div>
               <div class="flex items-center gap-2">
@@ -133,7 +133,7 @@ export const GamingOptimizationSection = component$(() => {
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Low Latency`}</span>
               </div>
               <div class="flex items-center gap-2">
-                <LuTrophy class="w-5 h-5 text-violet-500" />
+                <LuAward class="w-5 h-5 text-violet-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Priority Routing`}</span>
               </div>
             </div>
@@ -174,12 +174,6 @@ export const GamingOptimizationSection = component$(() => {
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Optimize for Gaming`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>

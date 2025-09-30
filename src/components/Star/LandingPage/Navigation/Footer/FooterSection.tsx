@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
-import { footerSections, socialLinks } from "../../data/footerData";
+import { useLocation } from "@builder.io/qwik-city";
+import { getFooterSections, socialLinks } from "../../data/footerData";
 import { CompanyInfo } from "./CompanyInfo";
 import { FooterLinks } from "./FooterLinks";
 import { NewsletterSignup } from "./NewsletterSignup";
@@ -7,6 +8,10 @@ import { BottomBar } from "./BottomBar";
 import { BackToTopButton } from "./BackToTopButton";
 
 export const FooterSection = component$(() => {
+  const location = useLocation();
+  const locale = location.params.locale || "en";
+  const footerSections = getFooterSections(locale);
+
   return (
     <footer class="relative bg-gradient-to-br from-slate-900 to-purple-900 dark:from-black dark:to-purple-950 text-white">
       {/* Main Footer Content */}

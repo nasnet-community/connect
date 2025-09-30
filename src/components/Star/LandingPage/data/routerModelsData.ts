@@ -4,7 +4,7 @@ export const routerModels = [
   {
     name: "Chateau 5G R17 ax",
     category: "5g",
-    image: "/images/routers/chateau-5g.png",
+    image: "/images/routers/chateau-5g-r17-ax/chateau-5g-r17-ax-1.png",
     isWireless: true,
     isLTE: true,
     specs: { cpu: "ARM Cortex-A53", ram: "1GB", ethernet: "4x Gigabit" },
@@ -13,7 +13,7 @@ export const routerModels = [
   {
     name: "hAP ax3",
     category: "wifi6",
-    image: "/images/routers/hap-ax3.png",
+    image: "/images/routers/hap-ax3/hap-ax3-1.png",
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "512MB", ethernet: "5x Gigabit" },
@@ -22,7 +22,7 @@ export const routerModels = [
   {
     name: "RB5009UPr+S+IN",
     category: "enterprise",
-    image: "/images/routers/rb5009.png",
+    image: "/images/routers/rb5009upr-s-in/rb5009upr-s-in-1.png",
     isWireless: false,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A57", ram: "1GB", ethernet: "8x Gigabit + SFP+" },
@@ -31,7 +31,7 @@ export const routerModels = [
   {
     name: "Chateau LTE18 ax",
     category: "lte",
-    image: "/images/routers/chateau-lte18.png",
+    image: "/images/routers/chateau-lte18-ax/chateau-lte18-ax-1.png",
     isWireless: true,
     isLTE: true,
     specs: { cpu: "ARM Cortex-A53", ram: "512MB", ethernet: "4x Gigabit" },
@@ -40,7 +40,7 @@ export const routerModels = [
   {
     name: "hAP ax2",
     category: "wifi6",
-    image: "/images/routers/hap-ax2.png",
+    image: "/images/routers/hap-ax2/hap-ax2-1.png",
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "256MB", ethernet: "5x Gigabit" },
@@ -49,7 +49,7 @@ export const routerModels = [
   {
     name: "cAP ax",
     category: "wifi6",
-    image: "/images/routers/cap-ax.png",
+    image: "/images/routers/cap-ax/cap-ax-1.png",
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "256MB", ethernet: "2x Gigabit" },

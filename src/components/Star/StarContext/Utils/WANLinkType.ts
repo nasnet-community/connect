@@ -29,12 +29,12 @@ export interface ConnectionConfig {
     isDHCP?: boolean;
     pppoe?: PPPoEConfig;
     static?: StaticIPConfig;
+    lteSettings?: LTESettings;
 }
 
 export interface InterfaceConfig {
     InterfaceName: InterfaceType;
     WirelessCredentials?: WirelessCredentials;
-    lteSettings?: LTESettings;
     VLANID?: string;
     MacAddress?: string;
 }

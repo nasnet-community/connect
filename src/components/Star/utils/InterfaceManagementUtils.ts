@@ -3,7 +3,7 @@ import type { Ethernet, Wireless, Sfp, InterfaceType } from "../StarContext/Comm
 
 export interface OccupiedInterfaceInfo {
   name: string;
-  usedBy: "Trunk" | "WAN" | "VPN" | "Other";
+  usedBy: "Trunk" | "WAN" | "VPN" | "LAN" | "Other";
   routerModel?: string;
 }
 
@@ -20,7 +20,7 @@ export interface OccupiedInterfacesMap {
 export function addOccupiedInterface(
   currentOccupied: OccupiedInterface[],
   interfaceName: InterfaceType,
-  usedBy: "Trunk" | "WAN" | "VPN" | "Other",
+  usedBy: "Trunk" | "WAN" | "VPN" | "LAN" | "Other",
   _routerModel?: string
 ): OccupiedInterface[] {
   const occupied = [...currentOccupied];
@@ -73,7 +73,21 @@ export function getOccupiedInterfacesForRouter(routerModel: RouterModels): Occup
 }
 
 /**
+ * Get occupied interfaces from the master router only
+ * This should be used for checking global interface availability
+ */
+export function getMasterOccupiedInterfaces(routerModels: RouterModels[]): OccupiedInterface[] {
+  const masterRouter = routerModels.find(model => model.isMaster);
+  if (!masterRouter) {
+    return [];
+  }
+  return masterRouter.Interfaces.OccupiedInterfaces || [];
+}
+
+/**
  * Get all occupied interfaces from all router models
+ * Note: This includes interfaces from slave routers. For global availability checking,
+ * use getMasterOccupiedInterfaces instead.
  */
 export function getAllOccupiedInterfaces(routerModels: RouterModels[]): OccupiedInterface[] {
   const interfaceMap = new Map<string, OccupiedInterface>();

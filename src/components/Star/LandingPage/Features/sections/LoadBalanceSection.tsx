@@ -1,6 +1,6 @@
 import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { LuTrendingUp, LuActivity, LuZap, LuArrowRight } from "@qwikest/icons/lucide";
-import { Button, Badge } from "~/components/Core";
+import { LuTrendingUp, LuActivity, LuZap } from "@qwikest/icons/lucide";
+import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
 
@@ -263,12 +263,6 @@ export const LoadBalanceSection = component$(() => {
               </div>
             )}
 
-            <div class="flex flex-wrap gap-4 pt-4">
-              <Button variant="primary" size="lg" class="group">
-                {$localize`Configure Load Balancing`}
-                <LuArrowRight class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
           </div>
 
           {/* Visual Side - Interactive Load Balance Graph */}

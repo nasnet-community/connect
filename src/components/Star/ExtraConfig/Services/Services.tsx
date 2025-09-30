@@ -8,7 +8,7 @@ import {
 } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
-import type { ServiceType } from "../../StarContext/ExtraType";
+import type { ServiceType, services } from "../../StarContext/ExtraType";
 import { Select } from "~/components/Core/Select";
 import {
   Input,
@@ -77,6 +77,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     newPort: number;
   } | null>(null);
 
+  // State for one-time port warning
+  const showInitialWarning = useSignal(false);
+  const hasShownPortWarning = useSignal(false);
+
   // State for temporary input values (to handle editing without immediate state update)
   const tempPortValues = useSignal<Record<ServiceName, string>>({} as Record<ServiceName, string>);
 
@@ -135,7 +139,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   // Initialize services if they don't exist
   useTask$(() => {
     if (!ctx.state.ExtraConfig.services) {
-      const defaultServices = {
+      const defaultServices: services = {
         api: { type: "Local" as ServiceType, port: 8728 },
         apissl: { type: "Local" as ServiceType, port: 8729 },
         ftp: { type: "Local" as ServiceType, port: 21 },
@@ -145,16 +149,18 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         web: { type: "Local" as ServiceType, port: 80 },
         webssl: { type: "Local" as ServiceType, port: 443 },
       };
-      ctx.updateExtraConfig$({ services: defaultServices });
+      ctx.state.ExtraConfig.services = defaultServices;
     }
   });
 
+
   // Initialize temp port values when services are available
-  useTask$(() => {
-    if (ctx.state.ExtraConfig.services) {
+  useTask$(({ track }) => {
+    const currentServices = track(() => ctx.state.ExtraConfig.services);
+    if (currentServices) {
       const newTempValues = {} as Record<ServiceName, string>;
       services.forEach((service) => {
-        const currentConfig = ctx.state.ExtraConfig.services?.[service.name];
+        const currentConfig = currentServices[service.name];
         const currentPort = typeof currentConfig === "string"
           ? service.defaultPort
           : currentConfig?.port || service.defaultPort;
@@ -203,20 +209,65 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     if (currentPort === newPort) return;
 
     // Safeguard: Don't show dialog if it's already open
-    if (showConfirmDialog.value) {
+    if (showConfirmDialog.value || showInitialWarning.value) {
       // Reset temp value to current port if dialog is already showing
       updateTempPortValue(service.name, currentPort.toString());
       return;
     }
 
-    // Store pending change and show confirmation dialog
+    // Store pending change for later
     pendingPortChange.value = {
       serviceName: service.name,
       serviceDescription: service.description,
       oldPort: currentPort,
       newPort: newPort,
     };
-    showConfirmDialog.value = true;
+
+    // Check if we need to show the one-time warning first
+    if (!hasShownPortWarning.value) {
+      showInitialWarning.value = true;
+    } else {
+      // If warning has already been shown, go directly to confirmation dialog
+      showConfirmDialog.value = true;
+    }
+  });
+
+  // Handle port input blur event
+  const handlePortBlur$ = $(async (
+    event: FocusEvent,
+    service: ServiceItem,
+    currentPort: number
+  ) => {
+    const target = event.target as HTMLInputElement;
+    const newPortStr = target.value;
+    const newPort = parseInt(newPortStr);
+
+    // Validate the input
+    if (isNaN(newPort) || newPort < 1 || newPort > 65535) {
+      // Reset invalid input to current port
+      updateTempPortValue(service.name, currentPort.toString());
+      return;
+    }
+
+    // Check if the port actually changed
+    if (newPort !== currentPort) {
+      // Initialize services if they don't exist
+      if (!ctx.state.ExtraConfig.services) {
+        ctx.state.ExtraConfig.services = {
+          api: { type: "Local" as ServiceType, port: 8728 },
+          apissl: { type: "Local" as ServiceType, port: 8729 },
+          ftp: { type: "Local" as ServiceType, port: 21 },
+          ssh: { type: "Enable" as ServiceType, port: 22 },
+          telnet: { type: "Local" as ServiceType, port: 23 },
+          winbox: { type: "Enable" as ServiceType, port: 8291 },
+          web: { type: "Local" as ServiceType, port: 80 },
+          webssl: { type: "Local" as ServiceType, port: 443 },
+        };
+      }
+
+      // Request confirmation for port change
+      await handlePortChangeRequest(service, currentPort, newPort);
+    }
   });
 
   // Apply the confirmed port change
@@ -230,13 +281,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         ? currentService
         : currentService.type;
 
+    // Mutate the existing proxy directly (Qwik best practice)
     ctx.state.ExtraConfig.services[serviceName] = {
       type: type,
       port: newPort,
     };
-
-    // Force re-render by updating the entire services object
-    ctx.state.ExtraConfig.services = { ...ctx.state.ExtraConfig.services };
 
     // Update temp value to match confirmed change
     tempPortValues.value = {
@@ -262,6 +311,35 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
 
     pendingPortChange.value = null;
     showConfirmDialog.value = false;
+  });
+
+  // Handle acknowledging the initial warning
+  const acknowledgeWarning = $(() => {
+    // Mark warning as shown for this session
+    hasShownPortWarning.value = true;
+
+    // Close warning dialog
+    showInitialWarning.value = false;
+
+    // Now show the actual port change confirmation
+    if (pendingPortChange.value) {
+      showConfirmDialog.value = true;
+    }
+  });
+
+  // Cancel initial warning
+  const cancelWarning = $(() => {
+    // Reset temp value to actual value when cancelling
+    if (pendingPortChange.value) {
+      const { serviceName, oldPort } = pendingPortChange.value;
+      tempPortValues.value = {
+        ...tempPortValues.value,
+        [serviceName]: oldPort.toString()
+      };
+    }
+
+    pendingPortChange.value = null;
+    showInitialWarning.value = false;
   });
 
   return (
@@ -383,42 +461,40 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                             value={currentValue}
                             onChange$={(value: string | string[]) => {
                               if (!ctx.state.ExtraConfig.services) {
-                                ctx.updateExtraConfig$({
-                                  services: {
-                                    api: {
-                                      type: "Local" as ServiceType,
-                                      port: 8728,
-                                    },
-                                    apissl: {
-                                      type: "Local" as ServiceType,
-                                      port: 8729,
-                                    },
-                                    ftp: {
-                                      type: "Local" as ServiceType,
-                                      port: 21,
-                                    },
-                                    ssh: {
-                                      type: "Enable" as ServiceType,
-                                      port: 22,
-                                    },
-                                    telnet: {
-                                      type: "Local" as ServiceType,
-                                      port: 23,
-                                    },
-                                    winbox: {
-                                      type: "Enable" as ServiceType,
-                                      port: 8291,
-                                    },
-                                    web: {
-                                      type: "Local" as ServiceType,
-                                      port: 80,
-                                    },
-                                    webssl: {
-                                      type: "Local" as ServiceType,
-                                      port: 443,
-                                    },
+                                ctx.state.ExtraConfig.services = {
+                                  api: {
+                                    type: "Local" as ServiceType,
+                                    port: 8728,
                                   },
-                                });
+                                  apissl: {
+                                    type: "Local" as ServiceType,
+                                    port: 8729,
+                                  },
+                                  ftp: {
+                                    type: "Local" as ServiceType,
+                                    port: 21,
+                                  },
+                                  ssh: {
+                                    type: "Enable" as ServiceType,
+                                    port: 22,
+                                  },
+                                  telnet: {
+                                    type: "Local" as ServiceType,
+                                    port: 23,
+                                  },
+                                  winbox: {
+                                    type: "Enable" as ServiceType,
+                                    port: 8291,
+                                  },
+                                  web: {
+                                    type: "Local" as ServiceType,
+                                    port: 80,
+                                  },
+                                  webssl: {
+                                    type: "Local" as ServiceType,
+                                    port: 443,
+                                  },
+                                };
                               }
 
                               if (ctx.state.ExtraConfig.services) {
@@ -429,6 +505,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                     ? service.defaultPort
                                     : currentService.port ||
                                       service.defaultPort;
+                                
+                                // Mutate the existing proxy directly (Qwik best practice)
                                 ctx.state.ExtraConfig.services[service.name] = {
                                   type: value as ServiceType,
                                   port: port,
@@ -450,40 +528,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           onInput$={(event: Event, value: string) => {
                             updateTempPortValue(service.name, value);
                           }}
-                          onBlur$={(event: FocusEvent) => {
-                            const target = event.target as HTMLInputElement;
-                            const newPortStr = target.value;
-                            const newPort = parseInt(newPortStr);
-
-                            // Validate the input
-                            if (isNaN(newPort) || newPort < 1 || newPort > 65535) {
-                              // Reset invalid input to current port
-                              updateTempPortValue(service.name, currentPort.toString());
-                              return;
-                            }
-
-                            // Check if the port actually changed
-                            if (newPort !== currentPort) {
-                              // Initialize services if they don't exist
-                              if (!ctx.state.ExtraConfig.services) {
-                                ctx.updateExtraConfig$({
-                                  services: {
-                                    api: { type: "Local" as ServiceType, port: 8728 },
-                                    apissl: { type: "Local" as ServiceType, port: 8729 },
-                                    ftp: { type: "Local" as ServiceType, port: 21 },
-                                    ssh: { type: "Enable" as ServiceType, port: 22 },
-                                    telnet: { type: "Local" as ServiceType, port: 23 },
-                                    winbox: { type: "Enable" as ServiceType, port: 8291 },
-                                    web: { type: "Local" as ServiceType, port: 80 },
-                                    webssl: { type: "Local" as ServiceType, port: 443 },
-                                  },
-                                });
-                              }
-
-                              // Request confirmation for port change
-                              handlePortChangeRequest(service, currentPort, newPort);
-                            }
-                          }}
+                          onBlur$={(event: FocusEvent) => handlePortBlur$(event, service, currentPort)}
                           class="w-20"
                           size="sm"
                         />
@@ -525,36 +570,135 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         </div>
       </div>
 
-      {/* Port Change Confirmation Dialog */}
+      {/* Initial Port Warning Dialog - Shows only once */}
       <Dialog
-        isOpen={showConfirmDialog.value}
-        onClose$={cancelPortChange}
-        ariaLabel="Confirm Port Change"
+        isOpen={showInitialWarning}
+        onClose$={cancelWarning}
+        ariaLabel="Port Change Warning"
         size="md"
         isCentered={true}
       >
         <DialogHeader>
-          <div class="flex items-center space-x-2">
-            <svg
-              class="h-6 w-6 text-warning-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <span class="text-lg font-semibold">
-              {$localize`Confirm Port Change`}
+          <div class="flex items-center space-x-3">
+            <div class="rounded-full bg-warning-100 p-2 dark:bg-warning-900/30">
+              <svg
+                class="h-7 w-7 text-warning-600 dark:text-warning-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <span class="text-xl font-semibold text-text dark:text-text-dark-default">
+              {$localize`Important Notice`}
             </span>
           </div>
         </DialogHeader>
         <DialogBody>
-          {pendingPortChange.value && (
+          <div class="space-y-4">
+            <div class="rounded-lg border-2 border-warning-300 bg-warning-50 p-4 dark:border-warning-700 dark:bg-warning-900/20">
+              <div class="flex items-start space-x-3">
+                <svg
+                  class="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-600 dark:text-warning-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <div class="space-y-2">
+                  <p class="font-semibold text-warning-800 dark:text-warning-300">
+                    {$localize`Always remember or write down the new port numbers!`}
+                  </p>
+                  <p class="text-sm text-warning-700 dark:text-warning-400">
+                    {$localize`When you change service ports, you will need the new port numbers to connect to your router. Make sure to document them in a safe place.`}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2 text-text-secondary dark:text-text-dark-secondary">
+              <p class="text-sm">
+                {$localize`This warning will only appear once. Please take note of:`}
+              </p>
+              <ul class="ml-5 list-disc space-y-1 text-sm">
+                <li>{$localize`Write down all custom port numbers`}</li>
+                <li>{$localize`Save them in a secure location`}</li>
+                <li>{$localize`You'll need them to access your router services`}</li>
+                <li>{$localize`Losing port numbers may lock you out of certain services`}</li>
+              </ul>
+            </div>
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <div class="flex justify-end gap-3">
+            <Button variant="outline" onClick$={cancelWarning}>
+              {$localize`Cancel`}
+            </Button>
+            <Button
+              variant="primary"
+              onClick$={acknowledgeWarning}
+              class="bg-warning-500 hover:bg-warning-600 dark:bg-warning-600 dark:hover:bg-warning-700"
+            >
+              <span class="flex items-center space-x-2">
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{$localize`I Understand`}</span>
+              </span>
+            </Button>
+          </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Port Change Confirmation Dialog */}
+      {pendingPortChange.value && (
+        <Dialog
+          isOpen={showConfirmDialog}
+          onClose$={cancelPortChange}
+          ariaLabel="Confirm Port Change"
+          size="md"
+          isCentered={true}
+        >
+          <DialogHeader>
+            <div class="flex items-center space-x-2">
+              <svg
+                class="h-6 w-6 text-warning-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <span class="text-lg font-semibold">
+                {$localize`Confirm Port Change`}
+              </span>
+            </div>
+          </DialogHeader>
+          <DialogBody>
             <div class="space-y-4">
               <p class="text-text dark:text-text-dark-default">
                 {$localize`You are about to change the port for`}{" "}
@@ -612,19 +756,19 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                   </div>
                 )}
             </div>
-          )}
-        </DialogBody>
-        <DialogFooter>
-          <div class="flex justify-end gap-3">
-            <Button variant="outline" onClick$={cancelPortChange}>
-              {$localize`Cancel`}
-            </Button>
-            <Button variant="primary" onClick$={applyPortChange}>
-              {$localize`Confirm Change`}
-            </Button>
-          </div>
-        </DialogFooter>
-      </Dialog>
+          </DialogBody>
+          <DialogFooter>
+            <div class="flex justify-end gap-3">
+              <Button variant="outline" onClick$={cancelPortChange}>
+                {$localize`Cancel`}
+              </Button>
+              <Button variant="primary" onClick$={applyPortChange}>
+                {$localize`Confirm Change`}
+              </Button>
+            </div>
+          </DialogFooter>
+        </Dialog>
+      )}
     </div>
   );
 });

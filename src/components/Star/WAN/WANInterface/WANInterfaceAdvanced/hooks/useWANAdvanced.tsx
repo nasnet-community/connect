@@ -7,6 +7,7 @@ import type {
 import { generateUniqueId } from "~/components/Core/common/utils";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { InterfaceType } from "~/components/Star/StarContext/CommonType";
+import { useInterfaceManagement } from "~/components/Star/hooks/useInterfaceManagement";
 
 export interface UseWANAdvancedReturn {
   state: WANWizardState;
@@ -25,7 +26,8 @@ export interface UseWANAdvancedReturn {
 
 export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
   const starContext = useContext(StarContext);
-  
+  const interfaceManagement = useInterfaceManagement();
+
   // Initialize state with zero links (empty state pattern)
   const state = useStore<WANWizardState>({
     mode: "advanced", // Always use advanced mode
@@ -144,10 +146,16 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   });
 
   // Remove a link
-  const removeLink$ = $((id: string) => {
+  const removeLink$ = $(async (id: string) => {
     if (state.links.length <= 1) {
       console.warn("Cannot remove the last link");
       return;
+    }
+
+    // Release the interface before removing the link
+    const linkToRemove = state.links.find((link) => link.id === id);
+    if (linkToRemove?.interfaceName) {
+      await interfaceManagement.releaseInterface$(linkToRemove.interfaceName as InterfaceType);
     }
 
     state.links = state.links.filter((link) => link.id !== id);
@@ -186,13 +194,22 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   });
 
   // Update a specific link with batching to prevent multiple renders
-  const updateLink$ = $((id: string, updates: Partial<WANLinkConfig>) => {
+  const updateLink$ = $(async (id: string, updates: Partial<WANLinkConfig>) => {
     const linkIndex = state.links.findIndex((link) => link.id === id);
     if (linkIndex === -1) return;
 
     // Create a copy to work with
     const currentLink = state.links[linkIndex];
     const updatedLink = { ...currentLink };
+
+    // Handle interface name changes and update occupied interfaces
+    if (updates.interfaceName !== undefined && updates.interfaceName !== currentLink.interfaceName) {
+      await interfaceManagement.updateInterfaceOccupation$(
+        currentLink.interfaceName ? (currentLink.interfaceName as InterfaceType) : null,
+        updates.interfaceName ? (updates.interfaceName as InterfaceType) : null,
+        "WAN"
+      );
+    }
 
     // Apply updates
     Object.assign(updatedLink, updates);
@@ -202,6 +219,11 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       updates.interfaceType &&
       updates.interfaceType !== currentLink.interfaceType
     ) {
+      // Release the old interface when type changes
+      if (updatedLink.interfaceName) {
+        await interfaceManagement.releaseInterface$(updatedLink.interfaceName as InterfaceType);
+      }
+
       updatedLink.interfaceName = "";
       updatedLink.wirelessCredentials = undefined;
       updatedLink.lteSettings = undefined;
@@ -225,7 +247,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     const newLinks = [...state.links];
     newLinks[linkIndex] = updatedLink;
     state.links = newLinks;
-    
+
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
   });

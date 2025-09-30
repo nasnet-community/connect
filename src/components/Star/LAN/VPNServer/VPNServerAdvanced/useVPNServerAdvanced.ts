@@ -47,6 +47,11 @@ export const useVPNServerAdvanced = () => {
     L2TP: !!vpnServerState.L2tpServer?.enabled || false,
     SSTP: !!vpnServerState.SstpServer?.enabled || false,
     IKeV2: !!vpnServerState.Ikev2Server || false,
+    Socks5: false,
+    SSH: false,
+    HTTPProxy: false,
+    BackToHome: false,
+    ZeroTier: false,
   });
 
   // === UI STATE ===

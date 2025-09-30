@@ -12,9 +12,9 @@ interface DocumentationItem {
 
 const documentationItems: DocumentationItem[] = [
   {
-    title: $localize`RouterOS Documentation`,
-    description: $localize`Official MikroTik RouterOS documentation with comprehensive guides and references`,
-    href: "https://help.mikrotik.com/docs/display/ROS/RouterOS",
+    title: $localize`Our Documentation`,
+    description: $localize`Comprehensive guides and tutorials for router configuration and troubleshooting`,
+    href: "https://www.starlink4iran.com/faqs/mcg/",
     icon: LuBookOpen,
     badge: $localize`Official`,
   },
@@ -32,9 +32,9 @@ const documentationItems: DocumentationItem[] = [
     badge: $localize`Video`,
   },
   {
-    title: $localize`Community Forum`,
-    description: $localize`Get help from the MikroTik community and share your experiences`,
-    href: "https://forum.mikrotik.com/",
+    title: $localize`Telegram Group`,
+    description: $localize`Join our Telegram community for support and discussions`,
+    href: "https://t.me/joinNASNETGroup",
     icon: LuGlobe,
   },
 ];
@@ -196,15 +196,15 @@ export const DocumentSection = component$(() => {
             <Button
               variant="primary"
               size="md"
-              onClick$={() => window.open("https://forum.mikrotik.com/", "_blank")}
+              onClick$={() => window.open("https://t.me/joinNASNETGroup", "_blank")}
             >
               <LuGlobe class="w-4 h-4 mr-2" />
-              {$localize`Visit Forum`}
+              {$localize`Visit Telegram Group`}
             </Button>
             <Button
               variant="secondary"
               size="md"
-              onClick$={() => window.open("https://help.mikrotik.com/", "_blank")}
+              onClick$={() => window.open("https://www.starlink4iran.com/faqs/mcg/", "_blank")}
             >
               <LuBookOpen class="w-4 h-4 mr-2" />
               {$localize`Browse Docs`}

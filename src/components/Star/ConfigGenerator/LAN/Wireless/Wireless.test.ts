@@ -2123,9 +2123,9 @@
 //       });
 
 //       it("should return empty config when no wireless credentials provided", () => {
-//         const wanConfig: WANLinkConfig = { 
+//         const wanConfig: WANLinkConfig = {
 //           name: "Test Link",
-//           InterfaceConfig: { InterfaceName: "wifi2.4" } 
+//           InterfaceConfig: { InterfaceName: "wifi2.4" }
 //         };
 
 //         testWithOutput(

@@ -56,7 +56,6 @@ export const useUsefulServices = (): UseUsefulServicesReturn => {
     },
     ntp: {
       servers: ["pool.ntp.org"],
-      updateInterval: "1h",
     },
     graphing: {
       Interface: false,

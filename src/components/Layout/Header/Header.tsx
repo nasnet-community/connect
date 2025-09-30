@@ -28,7 +28,7 @@ export const Header = component$(() => {
 
           <div class="hidden items-center gap-6 lg:flex">
             <Link
-              href="/star/"
+              href={`/${currentLocale}/star/`}
               class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
             >
               {$localize`Launch App`}
@@ -88,7 +88,7 @@ export const Header = component$(() => {
         >
           <div class="space-y-4">
             <Link
-              href="/star/"
+              href={`/${currentLocale}/star/`}
               class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
             >
               {$localize`Launch App`}

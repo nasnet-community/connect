@@ -13,7 +13,12 @@ export type VPNType =
   | "PPTP"
   | "L2TP"
   | "SSTP"
-  | "IKeV2";
+  | "IKeV2"
+  | "Socks5"
+  | "SSH"
+  | "HTTPProxy"
+  | "BackToHome"
+  | "ZeroTier";
 
 export type Ethernet =
   | "ether1"

@@ -1,10 +1,10 @@
 import type { IconName } from "../utils/iconMapper";
 
-export const footerSections = [
+export const getFooterSections = (locale: string = "en") => [
   {
     title: $localize`Product`,
     links: [
-      { name: $localize`Launch App`, href: "/star/" },
+      { name: $localize`Launch App`, href: `/${locale}/star/` },
       { name: $localize`Features`, href: "#features" },
       { name: $localize`Router Support`, href: "#routers" },
       { name: $localize`VPN Solutions`, href: "#vpn" },
@@ -15,31 +15,31 @@ export const footerSections = [
   {
     title: $localize`Resources`,
     links: [
-      { name: $localize`Documentation`, href: "/docs" },
-      { name: $localize`API Reference`, href: "/api" },
-      { name: $localize`Tutorials`, href: "/tutorials" },
-      { name: $localize`Community`, href: "/community" },
-      { name: $localize`Blog`, href: "/blog" }
+      { name: $localize`Documentation`, href: `/${locale}/docs` },
+      { name: $localize`API Reference`, href: `/${locale}/api` },
+      { name: $localize`Tutorials`, href: `/${locale}/tutorials` },
+      { name: $localize`Community`, href: `/${locale}/community` },
+      { name: $localize`Blog`, href: `/${locale}/blog` }
     ]
   },
   {
     title: $localize`Support`,
     links: [
-      { name: $localize`Help Center`, href: "/help" },
-      { name: $localize`Contact Us`, href: "/contact" },
-      { name: $localize`Status Page`, href: "/status" },
-      { name: $localize`Bug Reports`, href: "/bugs" },
-      { name: $localize`Feature Requests`, href: "/features" }
+      { name: $localize`Help Center`, href: `/${locale}/help` },
+      { name: $localize`Contact Us`, href: `/${locale}/contact` },
+      { name: $localize`Status Page`, href: `/${locale}/status` },
+      { name: $localize`Bug Reports`, href: `/${locale}/bugs` },
+      { name: $localize`Feature Requests`, href: `/${locale}/features` }
     ]
   },
   {
     title: $localize`Company`,
     links: [
-      { name: $localize`About Us`, href: "/about" },
-      { name: $localize`Careers`, href: "/careers" },
-      { name: $localize`Privacy`, href: "/privacy" },
-      { name: $localize`Terms`, href: "/terms" },
-      { name: $localize`Security`, href: "/security" }
+      { name: $localize`About Us`, href: `/${locale}/about` },
+      { name: $localize`Careers`, href: `/${locale}/careers` },
+      { name: $localize`Privacy`, href: `/${locale}/privacy` },
+      { name: $localize`Terms`, href: `/${locale}/terms` },
+      { name: $localize`Security`, href: `/${locale}/security` }
     ]
   }
 ];

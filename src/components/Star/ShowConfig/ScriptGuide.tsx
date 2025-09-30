@@ -1,21 +1,6 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import GifScriptguide from "../../../../public/gifs/ScriptGuide.gif";
 
-const steps = [
-  {
-    title: $localize`Access Router`,
-    description: $localize`Connect to your router using Winbox`,
-  },
-  {
-    title: $localize`Backup Configuration`,
-    description: $localize`Create a backup of your current settings before proceeding use '/system backup save dont-encrypt=yes name="name of the file"'`,
-  },
-  {
-    title: $localize`Reset Configuration and Apply Script`,
-    description: $localize`Use '/system reset-configuration no-defaults=yes run-after-reset="name of the file"' to clear existing settings and apply new configuration`,
-  },
-];
-
 export const ScriptGuide = component$(() => {
   const isFullScreen = useSignal(false);
 
@@ -43,7 +28,7 @@ export const ScriptGuide = component$(() => {
 
       {/* Main Content */}
       <div class="space-y-8 p-6">
-        {/* Demo Section with fullscreen button - MOVED TO TOP */}
+        {/* Demo Section with fullscreen button */}
         <div class="rounded-lg bg-surface p-4 dark:bg-surface-dark">
           <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
             {$localize`Visual Guide`}
@@ -80,142 +65,6 @@ export const ScriptGuide = component$(() => {
               loading="lazy"
               decoding="async"
             />
-          </div>
-        </div>
-        {/* Prerequisites Section */}
-        <div class="max-w-3xl">
-          <div class="rounded-lg bg-surface p-6 shadow-sm dark:bg-surface-dark">
-            <h5 class="text-primary mb-4 flex items-center gap-2 text-lg font-medium">
-              <svg
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {$localize`Prerequisites`}
-            </h5>
-            <ul class="text-text-secondary dark:text-text-dark-secondary space-y-4 text-sm">
-              <li class="flex items-start gap-3">
-                <svg
-                  class="text-primary mt-0.5 h-4 w-4 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-                <div>
-                  <a
-                    href="https://mikrotik.com/download"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-primary hover:text-primary-hover group inline-flex items-center gap-1 font-medium"
-                  >
-                    {$localize`Download Winbox`}
-                    <svg
-                      class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-                  <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
-                    {$localize`Required for router management and configuration`}
-                  </p>
-                </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <svg
-                  class="text-primary mt-0.5 h-4 w-4 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-                <div>
-                  <p class="font-medium text-text dark:text-text-dark-default">
-                    {$localize`Latest RouterOS Version`}
-                  </p>
-                  <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
-                    <a
-                      href="https://www.starlink4iran.com/faqs/mcg/%D8%A8%D9%87%D8%B1%D9%88%D8%B2%D8%B1%D8%B3%D8%A7%D9%86%DB%8C-%D8%B1%D9%88%D8%AA%D8%B1-%D9%85%DB%8C%DA%A9%D8%B1%D9%88%D8%AA%DB%8C%DA%A9/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-primary hover:text-primary-hover group inline-flex items-center gap-1"
-                    >
-                      {$localize`How to update router OS?`}
-                      <svg
-                        class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-Linecap="round"
-                          stroke-Linejoin="round"
-                          stroke-Width={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                    </a>
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Steps Section */}
-        <div class="max-w-3xl">
-          <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
-            {$localize`Configuration Steps`}
-          </h5>
-          <div class="space-y-4">
-            {steps.map((step, index) => (
-              <div
-                key={index}
-                class="rounded-lg bg-surface p-5 shadow-sm transition-shadow hover:shadow-md dark:bg-surface-dark"
-              >
-                <div class="flex gap-4">
-                  <div class="bg-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-medium text-white">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <h6 class="font-medium text-text dark:text-text-dark-default">
-                      {step.title}
-                    </h6>
-                    <p class="text-text-secondary dark:text-text-dark-secondary mt-1 text-sm">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 

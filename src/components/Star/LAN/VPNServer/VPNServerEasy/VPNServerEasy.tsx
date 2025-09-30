@@ -103,6 +103,11 @@ export const VPNServerEasy = component$<StepProps>(
       PPTP: false,
       SSTP: false,
       IKeV2: false,
+      Socks5: false,
+      SSH: false,
+      HTTPProxy: false,
+      BackToHome: false,
+      ZeroTier: false,
     });
 
     // Handle completion of all steps
