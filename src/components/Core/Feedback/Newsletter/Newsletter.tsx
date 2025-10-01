@@ -1,4 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import type { NewsletterProps } from "./Newsletter.types";
 import { useNewsletter } from "./useNewsletter";
 import { NewsletterLogo } from "./NewsletterLogo";
@@ -55,6 +55,15 @@ export const Newsletter = component$<NewsletterProps>(
     animated = true,
     class: className,
   }) => {
+    // Log component initialization
+    console.log("[Newsletter] Component initialized", {
+      variant,
+      size,
+      theme,
+      glassmorphism,
+      hasOnSubscribe: !!onSubscribe$,
+    });
+
     // Internal state management
     const {
       email,
@@ -75,14 +84,43 @@ export const Newsletter = component$<NewsletterProps>(
     // Focus and hover states for enhanced UX
     const isFocused = useSignal(false);
 
+    // Track state changes for debugging
+    useVisibleTask$(({ track }) => {
+      const loading = track(() => isLoading);
+      const success = track(() => isSuccess);
+      const error = track(() => errorMessage);
+      const emailValue = track(() => email.value);
+
+      console.log("[Newsletter] State changed", {
+        loading,
+        success,
+        error,
+        email: emailValue,
+        isValid: isValid.value,
+      });
+
+      if (error) {
+        console.warn("[Newsletter] Error state detected:", error);
+      }
+
+      if (success) {
+        console.log("[Newsletter] Success state detected - subscription completed");
+      }
+    });
+
     // Handle input focus
     const handleFocus$ = $(() => {
       isFocused.value = true;
+      console.log("[Newsletter] Email input focused");
     });
 
     // Handle input blur
     const handleBlur$ = $(() => {
       isFocused.value = false;
+      console.log("[Newsletter] Email input blurred", {
+        email: email.value,
+        isValid: isValid.value,
+      });
     });
 
 
@@ -361,7 +399,6 @@ export const Newsletter = component$<NewsletterProps>(
                 radius="lg"
                 shadow={true}
                 pulse={false}
-                onClick$={$(() => handleSubmit$(new Event('submit')))}
                 aria-label={isSuccess ? $localize`Successfully subscribed` : $localize`Subscribe to newsletter`}
                 class={variant === "hero" ? "!bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700 min-w-[120px]" : "mt-4 !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"}
               >
@@ -416,7 +453,7 @@ export const Newsletter = component$<NewsletterProps>(
                   </div>
                   <div class="space-y-2">
                     <p class="font-bold text-success-700 dark:text-success-300 text-lg">
-                      {$localize`Welcome to the Network!`}
+                      {$localize`Welcome to the NasNet!`}
                     </p>
                     <p class={`text-gray-600 dark:text-gray-400 ${
                       size === "sm" ? "text-xs" : "text-sm"

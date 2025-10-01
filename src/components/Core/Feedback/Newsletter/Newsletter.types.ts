@@ -6,7 +6,8 @@ export type NewsletterTheme = "light" | "dark" | "glass" | "branded";
 
 export interface NewsletterSubscription {
   email: string;
-  timestamp: Date;
+  // Use ISO string for Qwik serialization compatibility
+  timestamp: string;
   source?: string;
 }
 

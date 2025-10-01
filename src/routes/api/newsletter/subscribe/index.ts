@@ -36,6 +36,8 @@ interface SubscriptionRequest {
 }
 
 export const onPost: RequestHandler = async ({ json, env, request }) => {
+  console.log("[SendGrid API] Newsletter subscription request received");
+
   try {
     // Get SendGrid API key from environment
     const apiKey = env.get("SENDGRID_API_KEY");
@@ -51,6 +53,9 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     // Parse request body
     const body = await request.json() as SubscriptionRequest;
     const { email, firstName, lastName, source } = body;
+
+    console.log("[SendGrid API] Subscription request for email:", email);
+    console.log("[SendGrid API] Request source:", source || "web");
 
     // Validate email
     if (!email || !isValidEmail(email)) {
@@ -108,6 +113,9 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     }
 
     // Make request to SendGrid API
+    console.log("[SendGrid API] Making API call to SendGrid with email:", contact.email);
+    console.log("[SendGrid API] Custom fields:", contact.custom_fields);
+
     const response = await fetch("https://api.sendgrid.com/v3/marketing/contacts", {
       method: "PUT",
       headers: {
@@ -116,6 +124,8 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
       },
       body: JSON.stringify(sendGridRequest),
     });
+
+    console.log("[SendGrid API] Response status:", response.status);
 
     // Handle SendGrid response
     if (!response.ok) {
@@ -135,6 +145,9 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     }
 
     const sendGridResponse = await response.json() as SendGridResponse;
+
+    console.log("[SendGrid API] ✅ Success! Job ID:", sendGridResponse.job_id);
+    console.log("[SendGrid API] Email successfully added to SendGrid contacts:", email);
 
     json(202, {
       success: true,

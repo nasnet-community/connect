@@ -80,6 +80,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   // State for one-time port warning
   const showInitialWarning = useSignal(false);
   const hasShownPortWarning = useSignal(false);
+  // Track when the initial warning is closed via acknowledge to avoid cancel reset
+  const warningCloseByAcknowledge = useSignal(false);
 
   // State for temporary input values (to handle editing without immediate state update)
   const tempPortValues = useSignal<Record<ServiceName, string>>({} as Record<ServiceName, string>);
@@ -317,6 +319,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   const acknowledgeWarning = $(() => {
     // Mark warning as shown for this session
     hasShownPortWarning.value = true;
+    // Suppress cancel reset because we're closing via acknowledge
+    warningCloseByAcknowledge.value = true;
 
     // Close warning dialog
     showInitialWarning.value = false;
@@ -329,6 +333,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
 
   // Cancel initial warning
   const cancelWarning = $(() => {
+    // If dialog is closing due to acknowledge, do not reset values
+    if (warningCloseByAcknowledge.value) {
+      warningCloseByAcknowledge.value = false;
+      return;
+    }
     // Reset temp value to actual value when cancelling
     if (pendingPortChange.value) {
       const { serviceName, oldPort } = pendingPortChange.value;
