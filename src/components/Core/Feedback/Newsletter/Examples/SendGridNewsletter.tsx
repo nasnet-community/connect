@@ -19,25 +19,51 @@ import type { NewsletterSubscription } from "../Newsletter.types";
 export const SendGridNewsletter = component$(() => {
   // Handle newsletter subscription with SendGrid
   const handleSubscription$ = $(async (subscription: NewsletterSubscription) => {
-    // Call the SendGrid API
-    const result = await subscribeToNewsletterSendGrid(subscription.email, {
-      source: subscription.source || "newsletter-component",
+    console.log("[SendGrid][INFO] Starting subscription process", {
+      email: subscription.email,
+      source: subscription.source,
+      timestamp: subscription.timestamp,
     });
 
-    if (!result.success) {
-      // Throw error to trigger error state in Newsletter component
-      throw new Error(result.error || $localize`Subscription failed`);
-    }
+    try {
+      // Call the SendGrid API
+      const startTime = Date.now();
+      const result = await subscribeToNewsletterSendGrid(subscription.email, {
+        source: subscription.source || "newsletter-component",
+      });
+      const duration = Date.now() - startTime;
 
-    // Success - the Newsletter component will show success state
-    console.log("SendGrid job ID:", result.jobId);
-    
-    // Optional: Track the subscription in analytics
-    if (typeof window !== "undefined" && (window as any).gtag) {
-      (window as any).gtag("event", "newsletter_subscribe", {
-        method: "sendgrid",
+      console.log("[SendGrid][INFO] API call completed", {
+        duration: `${duration}ms`,
+        success: result.success,
+      });
+
+      if (!result.success) {
+        console.error("[SendGrid][ERROR] Subscription failed", {
+          error: result.error,
+          email: subscription.email,
+        });
+        // Throw error to trigger error state in Newsletter component
+        throw new Error(result.error || $localize`Subscription failed`);
+      }
+
+      // Success - the Newsletter component will show success state
+      console.log("[SendGrid][INFO] Subscription successful", {
+        jobId: result.jobId,
         email: subscription.email,
       });
+      
+      // Optional: Track the subscription in analytics
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        console.log("[SendGrid][INFO] Tracking analytics event");
+        (window as any).gtag("event", "newsletter_subscribe", {
+          method: "sendgrid",
+          email: subscription.email,
+        });
+      }
+    } catch (error) {
+      console.error("[SendGrid][ERROR] Unexpected error during subscription:", error);
+      throw error; // Re-throw to let Newsletter component handle it
     }
   });
 

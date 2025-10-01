@@ -170,18 +170,25 @@ export async function subscribeToNewsletterSendGrid(
     };
 
     // In development mode, simulate success if API is not available
-    if (import.meta.env.DEV) {
-      console.log("Development mode: Simulating newsletter subscription for:", email);
-      // Simulate a short delay like a real API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return {
-        success: true,
-        message: "Successfully subscribed to newsletter (dev mode)",
-        jobId: "dev-" + Date.now(),
-      };
-    }
+    // Temporarily disabled to test actual SendGrid API
+    // if (import.meta.env.DEV) {
+    //   console.log("Development mode: Simulating newsletter subscription for:", email);
+    //   // Simulate a short delay like a real API call
+    //   await new Promise(resolve => setTimeout(resolve, 1000));
+    //   return {
+    //     success: true,
+    //     message: "Successfully subscribed to newsletter (dev mode)",
+    //     jobId: "dev-" + Date.now(),
+    //   };
+    // }
 
     // Call the server-side API endpoint
+    console.log("SendGrid API Request:", {
+      url: "/api/newsletter/subscribe",
+      method: "POST",
+      body: requestBody,
+    });
+
     const response = await fetch("/api/newsletter/subscribe", {
       method: "POST",
       headers: {
@@ -210,6 +217,7 @@ export async function subscribeToNewsletterSendGrid(
 
     // Parse successful response
     const data = await response.json() as SendGridSubscriptionResponse;
+    console.log("SendGrid subscription successful! Job ID:", data.jobId);
     return data;
   } catch (error) {
     console.error("Newsletter subscription error:", error);

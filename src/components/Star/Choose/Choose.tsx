@@ -97,6 +97,12 @@ export const Choose = component$((props: StepProps) => {
   // Handle newsletter subscription for router configuration tips
   const handleNewsletterSubscription$ = $(async (subscription: NewsletterSubscription) => {
     try {
+      // Validate subscription object
+      if (!subscription || !subscription.email) {
+        console.error("Invalid subscription object:", subscription);
+        throw new Error("Invalid subscription: email is required");
+      }
+
       // Track newsletter signup from router configuration flow
       if (typeof track !== 'undefined') {
         track("newsletter_subscription", {
@@ -108,13 +114,20 @@ export const Choose = component$((props: StepProps) => {
         });
       }
 
-      // In a real application, this would send to your newsletter API
       console.log("Router configuration newsletter subscription:", subscription);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the SendGrid API to add email to newsletter
+      const { subscribeToNewsletterSendGrid } = await import('~/utils/newsletterAPI');
+      const result = await subscribeToNewsletterSendGrid(subscription.email, {
+        source: subscription.source || 'router-configuration',
+      });
 
-      // Here you would typically call your newsletter API
+      if (result.success) {
+        console.log("SendGrid subscription successful! Job ID:", result.jobId);
+      } else {
+        console.error("SendGrid subscription failed:", result.error);
+        throw new Error(result.error || "Failed to subscribe to newsletter");
+      }
       // Example: await fetch('/api/newsletter/subscribe', {
       //   method: 'POST',
       //   body: JSON.stringify({
