@@ -1,4 +1,4 @@
-import type { MultiLinkConfig } from "../WANType";
+import type { MultiLinkConfig } from "./MultiLinkType";
 import type {
   //  VPNType,
    AuthMethod,
@@ -28,6 +28,10 @@ import type {
 // Wireguard
 
 export interface WireguardClientConfig {
+  Name: string;
+  priority?: number;
+  weight?: number;
+
   InterfacePrivateKey: string;
   InterfaceAddress: string; 
   InterfaceListenPort?: number;
@@ -58,6 +62,10 @@ ClientKeyContent?: string;
 }
 
 export interface OpenVpnClientConfig {
+  Name: string;
+  priority?: number;
+  weight?: number;
+
   Server: Server;
   Mode?: LayerMode;
   Protocol?: NetworkProtocol;
@@ -81,6 +89,10 @@ export interface OpenVpnClientConfig {
 
 
 export interface PptpClientConfig {
+  Name: string;
+  priority?: number;
+  weight?: number;
+
   ConnectTo: string;
   Credentials: Credentials; 
   AuthMethod?: AuthMethod[];
@@ -98,6 +110,10 @@ export interface PptpClientConfig {
 
 
 export interface L2tpClientConfig {
+  Name: string;
+  priority?: number;
+  weight?: number;
+
   Server: Server;
   Credentials: Credentials;
   UseIPsec?: boolean;
@@ -123,19 +139,23 @@ export interface L2tpClientConfig {
 export type SSTPCiphers= 'aes256-gcm-sha384' | 'aes256-sha' ;
 
 export interface SstpClientConfig {
-Server: Server;
-Credentials: Credentials; 
-AuthMethod?: AuthMethod[];
-Ciphers?: SSTPCiphers[];
-TlsVersion?: TLSVersion;
-Proxy?: Server | null ;
-SNI?: boolean;
-PFS?: 'yes' | 'no' | 'required';
-DialOnDemand?: boolean;
-KeepAlive?: number;
-VerifyServerCertificate?: boolean;
-VerifyServerAddressFromCertificate?: boolean;
-ClientCertificateName?: string;
+  Name: string;
+  priority?: number;
+  weight?: number;
+
+  Server: Server;
+  Credentials: Credentials; 
+  AuthMethod?: AuthMethod[];
+  Ciphers?: SSTPCiphers[];
+  TlsVersion?: TLSVersion;
+  Proxy?: Server | null ;
+  SNI?: boolean;
+  PFS?: 'yes' | 'no' | 'required';
+  DialOnDemand?: boolean;
+  KeepAlive?: number;
+  VerifyServerCertificate?: boolean;
+  VerifyServerAddressFromCertificate?: boolean;
+  ClientCertificateName?: string;
 }
 
 
@@ -159,52 +179,56 @@ export type IkeV2PolicyLevel = 'require' | 'use' | 'unique';
 export type IkeV2GeneratePolicy = 'no' | 'port-strict' | 'port-override';
 
 export interface Ike2ClientConfig {
-ServerAddress: string; 
-AuthMethod: IkeV2AuthMethod;
+  Name: string;
+  priority?: number;
+  weight?: number;
 
-PresharedKey?: string;
-Credentials?: Credentials;
-ClientCertificateName?: string; 
+  ServerAddress: string; 
+  AuthMethod: IkeV2AuthMethod;
 
-CaCertificateName?: string;
+  PresharedKey?: string;
+  Credentials?: Credentials;
+  ClientCertificateName?: string; 
 
-EapMethods?: IkeV2EapMethod[];
+  CaCertificateName?: string;
 
-EncAlgorithm?: IkeV2EncAlgorithm[];
-HashAlgorithm?: IkeV2HashAlgorithm[];
-DhGroup?: IkeV2DhGroup[];
-Lifetime?: string;
-NatTraversal?: boolean; 
-DpdInterval?: string; 
+  EapMethods?: IkeV2EapMethod[];
 
-PfsGroup?: IkeV2PfsGroup; 
-ProposalLifetime?: string; 
+  EncAlgorithm?: IkeV2EncAlgorithm[];
+  HashAlgorithm?: IkeV2HashAlgorithm[];
+  DhGroup?: IkeV2DhGroup[];
+  Lifetime?: string;
+  NatTraversal?: boolean; 
+  DpdInterval?: string; 
 
-PolicySrcAddress?: string; 
-PolicyDstAddress?: string; 
-PolicyAction?: IkeV2PolicyAction; 
-PolicyLevel?: IkeV2PolicyLevel; 
+  PfsGroup?: IkeV2PfsGroup; 
+  ProposalLifetime?: string; 
 
-EnableModeConfig?: boolean; 
-RequestAddressPool?: boolean; 
-SrcAddressList?: string; 
-ConnectionMark?: string; 
+  PolicySrcAddress?: string; 
+  PolicyDstAddress?: string; 
+  PolicyAction?: IkeV2PolicyAction; 
+  PolicyLevel?: IkeV2PolicyLevel; 
 
-MyIdType?: 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | 'key-id';
-MyId?: string; 
-RemoteIdType?: 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | 'key-id';
-RemoteId?: string; 
-GeneratePolicy?: IkeV2GeneratePolicy; 
+  EnableModeConfig?: boolean; 
+  RequestAddressPool?: boolean; 
+  SrcAddressList?: string; 
+  ConnectionMark?: string; 
 
-Port?: number; 
-LocalAddress?: string;
-SendInitialContact?: boolean; 
+  MyIdType?: 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | 'key-id';
+  MyId?: string; 
+  RemoteIdType?: 'auto' | 'fqdn' | 'user-fqdn' | 'ip' | 'asn1dn' | 'key-id';
+  RemoteId?: string; 
+  GeneratePolicy?: IkeV2GeneratePolicy; 
 
-ProfileName?: string; 
-PeerName?: string; 
-ProposalName?: string; 
-PolicyGroupName?: string; 
-ModeConfigName?: string;
+  Port?: number; 
+  LocalAddress?: string;
+  SendInitialContact?: boolean; 
+
+  ProfileName?: string; 
+  PeerName?: string; 
+  ProposalName?: string; 
+  PolicyGroupName?: string; 
+  ModeConfigName?: string;
 }
 
 

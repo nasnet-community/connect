@@ -2,7 +2,7 @@ import type {
     InterfaceType,
     WirelessCredentials,
   } from "../CommonType";
-import type { MultiLinkConfig } from "../WANType";
+import type { MultiLinkConfig } from "../Utils/MultiLinkType";
 
 
 
@@ -53,6 +53,6 @@ export interface WANLink {
 }
 
 export interface WANLinks{
-    Foreign: WANLink;
+    Foreign?: WANLink;
     Domestic?: WANLink;
 }

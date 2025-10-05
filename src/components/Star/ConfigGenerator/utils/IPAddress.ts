@@ -1,4 +1,4 @@
-interface SubnetInfo {
+interface SubnetInfoInterface {
     // Input values
     ipAddress: string;
     prefixLength: number;

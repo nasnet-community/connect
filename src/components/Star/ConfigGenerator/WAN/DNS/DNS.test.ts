@@ -1,4 +1,8 @@
 import { describe, it, expect } from "vitest";
+import {
+    testWithOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
 import { DNSForwarders, DNSmDNSRepeater } from "./DNS";
 import type { DNSConfig } from "../../../StarContext/WANType";
 import type { Networks } from "../../../StarContext/CommonType";

@@ -4,7 +4,7 @@ import { WirelessConfig } from "./Wireless/Wireless";
 import { DisableInterfaces } from "./Wireless/WirelessUtil";
 import type { EthernetInterfaceConfig } from "~/components/Star/StarContext/LANType";
 import { TunnelWrapper } from "./TunnelCG";
-import { VPNServerWrapper } from "./VPNServer/VPNServerWrapper";
+import { VPNServerWrapper } from "./VPNServer";
 import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
 import { hasWirelessInterfaces } from "./Wireless/WirelessUtil";
 import { calculateSubnetInfo } from "../utils/IPAddress";

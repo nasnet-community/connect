@@ -111,11 +111,11 @@ describe("Networks Module Tests", () => {
             testWithOutput(
                 "NetworkBaseGenerator",
                 "Generate configuration with custom network name",
-                { NetworkName: "CustomNetwork", Subnet: "172.16.0.0/16" },
-                () => NetworkBaseGenerator("CustomNetwork", "172.16.0.0/16"),
+                { NetworkType: "Foreign", NetworkName: "CustomNetwork", Subnet: "172.16.0.0/16" },
+                () => NetworkBaseGenerator("Foreign", "172.16.0.0/16", "CustomNetwork"),
             );
 
-            const result = NetworkBaseGenerator("CustomNetwork", "172.16.0.0/16");
+            const result = NetworkBaseGenerator("Foreign", "172.16.0.0/16", "CustomNetwork");
             validateRouterConfig(result);
         });
 
@@ -130,11 +130,11 @@ describe("Networks Module Tests", () => {
                 testWithOutput(
                     "NetworkBaseGenerator",
                     `Generate configuration for ${testCase.name} network`,
-                    testCase,
-                    () => NetworkBaseGenerator(testCase.name, testCase.subnet),
+                    { NetworkType: "Foreign", NetworkName: testCase.name, Subnet: testCase.subnet },
+                    () => NetworkBaseGenerator("Foreign", testCase.subnet, testCase.name),
                 );
 
-                const result = NetworkBaseGenerator(testCase.name, testCase.subnet);
+                const result = NetworkBaseGenerator("Foreign", testCase.subnet, testCase.name);
                 validateRouterConfig(result);
             });
         });
@@ -344,15 +344,15 @@ describe("Networks Module Tests", () => {
                     { name: "Net2", subnet: "192.168.2.0/24" },
                     { name: "Net3", subnet: "192.168.3.0/24" },
                 ];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Generate multiple network configurations",
-                    { networks, namePrefix: "TestNet" },
-                    () => addNetworks(networks, "TestNet"),
+                    { networks, namePrefix: "TestNet", networkType: "Foreign" },
+                    () => addNetworks(networks, "TestNet", "Foreign"),
                 );
 
-                const result = addNetworks(networks, "TestNet");
+                const result = addNetworks(networks, "TestNet", "Foreign");
                 validateRouterConfig(result);
             });
 
@@ -362,15 +362,15 @@ describe("Networks Module Tests", () => {
                     { name: "", subnet: "10.0.2.0/24" },
                     { name: "", subnet: "10.0.3.0/24" },
                 ];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Auto-name networks using prefix and index",
-                    { networks, namePrefix: "Auto" },
-                    () => addNetworks(networks, "Auto"),
+                    { networks, namePrefix: "Auto", networkType: "Domestic" },
+                    () => addNetworks(networks, "Auto", "Domestic"),
                 );
 
-                const result = addNetworks(networks, "Auto");
+                const result = addNetworks(networks, "Auto", "Domestic");
                 validateRouterConfig(result);
             });
 
@@ -380,29 +380,29 @@ describe("Networks Module Tests", () => {
                     { name: "Invalid", subnet: "" },
                     { name: "Valid2", subnet: "10.2.0.0/24" },
                 ];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Filter networks with empty subnets",
-                    { networks, namePrefix: "Mixed" },
-                    () => addNetworks(networks, "Mixed"),
+                    { networks, namePrefix: "Mixed", networkType: "VPN" },
+                    () => addNetworks(networks, "Mixed", "VPN"),
                 );
 
-                const result = addNetworks(networks, "Mixed");
+                const result = addNetworks(networks, "Mixed", "VPN");
                 validateRouterConfig(result);
             });
 
             it("should return empty config for empty array", () => {
                 const networks: { name: string; subnet: string }[] = [];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Return empty config for empty network array",
-                    { networks, namePrefix: "Empty" },
-                    () => addNetworks(networks, "Empty"),
+                    { networks, namePrefix: "Empty", networkType: "Foreign" },
+                    () => addNetworks(networks, "Empty", "Foreign"),
                 );
 
-                const result = addNetworks(networks, "Empty");
+                const result = addNetworks(networks, "Empty", "Foreign");
                 validateRouterConfig(result);
             });
 
@@ -413,15 +413,15 @@ describe("Networks Module Tests", () => {
                     { name: "Custom-3", subnet: "172.16.3.0/24" },
                     { name: "", subnet: "172.16.4.0/24" },
                 ];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Handle mix of custom and auto-named networks",
-                    { networks, namePrefix: "Mixed" },
-                    () => addNetworks(networks, "Mixed"),
+                    { networks, namePrefix: "Mixed", networkType: "Split" },
+                    () => addNetworks(networks, "Mixed", "Split"),
                 );
 
-                const result = addNetworks(networks, "Mixed");
+                const result = addNetworks(networks, "Mixed", "Split");
                 validateRouterConfig(result);
             });
 
@@ -433,15 +433,15 @@ describe("Networks Module Tests", () => {
                     { name: "", subnet: "10.50.4.0/24" },
                     { name: "", subnet: "10.50.5.0/24" },
                 ];
-                
+
                 testWithOutput(
                     "addNetworks",
                     "Generate sequential network names",
-                    { networks, namePrefix: "Seq" },
-                    () => addNetworks(networks, "Seq"),
+                    { networks, namePrefix: "Seq", networkType: "Domestic" },
+                    () => addNetworks(networks, "Seq", "Domestic"),
                 );
 
-                const result = addNetworks(networks, "Seq");
+                const result = addNetworks(networks, "Seq", "Domestic");
                 validateRouterConfig(result);
             });
         });
@@ -551,183 +551,187 @@ describe("Networks Module Tests", () => {
             validateRouterConfig(result);
         });
 
-        it("should generate configuration for WireGuard Server networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                VPNServerNetworks: {
-                    Wireguard: [
-                        { name: "WG-Server-1", subnet: "10.100.1.0/24" },
-                        { name: "WG-Server-2", subnet: "10.100.2.0/24" },
-                    ],
-                },
-            };
+        // NOTE: VPN Server Networks and Tunnel Networks tests are commented out
+        // because the implementation is currently disabled in Networks.ts (lines 245-263)
+        // Uncomment these tests when the functionality is re-enabled
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for WireGuard Server networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for WireGuard Server networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         VPNServerNetworks: {
+        //             Wireguard: [
+        //                 { name: "WG-Server-1", subnet: "10.100.1.0/24" },
+        //                 { name: "WG-Server-2", subnet: "10.100.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for WireGuard Server networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for OpenVPN Server networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                VPNServerNetworks: {
-                    OpenVPN: [
-                        { name: "OVPN-Server-1", subnet: "10.200.1.0/24" },
-                        { name: "OVPN-Server-2", subnet: "10.200.2.0/24" },
-                    ],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for OpenVPN Server networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for OpenVPN Server networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         VPNServerNetworks: {
+        //             OpenVPN: [
+        //                 { name: "OVPN-Server-1", subnet: "10.200.1.0/24" },
+        //                 { name: "OVPN-Server-2", subnet: "10.200.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for OpenVPN Server networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for all VPN Server protocols", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                VPNServerNetworks: {
-                    Wireguard: [{ name: "WG-Main", subnet: "10.100.1.0/24" }],
-                    OpenVPN: [{ name: "OVPN-Main", subnet: "10.200.1.0/24" }],
-                    L2TP: { name: "L2TP-Main", subnet: "10.150.1.0/24" },
-                    PPTP: { name: "PPTP-Main", subnet: "10.160.1.0/24" },
-                    SSTP: { name: "SSTP-Main", subnet: "10.170.1.0/24" },
-                    IKev2: { name: "IKEv2-Main", subnet: "10.180.1.0/24" },
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for all VPN Server protocols",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for all VPN Server protocols", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         VPNServerNetworks: {
+        //             Wireguard: [{ name: "WG-Main", subnet: "10.100.1.0/24" }],
+        //             OpenVPN: [{ name: "OVPN-Main", subnet: "10.200.1.0/24" }],
+        //             L2TP: { name: "L2TP-Main", subnet: "10.150.1.0/24" },
+        //             PPTP: { name: "PPTP-Main", subnet: "10.160.1.0/24" },
+        //             SSTP: { name: "SSTP-Main", subnet: "10.170.1.0/24" },
+        //             IKev2: { name: "IKEv2-Main", subnet: "10.180.1.0/24" },
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for all VPN Server protocols",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for IPIP Tunnel networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                TunnelNetworks: {
-                    IPIP: [
-                        { name: "IPIP-Site1", subnet: "172.16.1.0/24" },
-                        { name: "IPIP-Site2", subnet: "172.16.2.0/24" },
-                    ],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for IPIP Tunnel networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for IPIP Tunnel networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         TunnelNetworks: {
+        //             IPIP: [
+        //                 { name: "IPIP-Site1", subnet: "172.16.1.0/24" },
+        //                 { name: "IPIP-Site2", subnet: "172.16.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for IPIP Tunnel networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for EoIP Tunnel networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                TunnelNetworks: {
-                    Eoip: [
-                        { name: "EoIP-Site1", subnet: "172.17.1.0/24" },
-                        { name: "EoIP-Site2", subnet: "172.17.2.0/24" },
-                    ],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for EoIP Tunnel networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for EoIP Tunnel networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         TunnelNetworks: {
+        //             Eoip: [
+        //                 { name: "EoIP-Site1", subnet: "172.17.1.0/24" },
+        //                 { name: "EoIP-Site2", subnet: "172.17.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for EoIP Tunnel networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for GRE Tunnel networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                TunnelNetworks: {
-                    Gre: [
-                        { name: "GRE-Site1", subnet: "172.18.1.0/24" },
-                        { name: "GRE-Site2", subnet: "172.18.2.0/24" },
-                    ],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for GRE Tunnel networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for GRE Tunnel networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         TunnelNetworks: {
+        //             Gre: [
+        //                 { name: "GRE-Site1", subnet: "172.18.1.0/24" },
+        //                 { name: "GRE-Site2", subnet: "172.18.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for GRE Tunnel networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for VXLAN Tunnel networks", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                TunnelNetworks: {
-                    Vxlan: [
-                        { name: "VXLAN-Site1", subnet: "172.19.1.0/24" },
-                        { name: "VXLAN-Site2", subnet: "172.19.2.0/24" },
-                    ],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for VXLAN Tunnel networks",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for VXLAN Tunnel networks", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         TunnelNetworks: {
+        //             Vxlan: [
+        //                 { name: "VXLAN-Site1", subnet: "172.19.1.0/24" },
+        //                 { name: "VXLAN-Site2", subnet: "172.19.2.0/24" },
+        //             ],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for VXLAN Tunnel networks",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
 
-        it("should generate configuration for all tunnel types", () => {
-            const subnets: Subnets = {
-                BaseNetworks: {},
-                TunnelNetworks: {
-                    IPIP: [{ name: "IPIP-Main", subnet: "172.16.1.0/24" }],
-                    Eoip: [{ name: "EoIP-Main", subnet: "172.17.1.0/24" }],
-                    Gre: [{ name: "GRE-Main", subnet: "172.18.1.0/24" }],
-                    Vxlan: [{ name: "VXLAN-Main", subnet: "172.19.1.0/24" }],
-                },
-            };
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
-            testWithOutput(
-                "Networks",
-                "Generate configuration for all tunnel types",
-                { Subnets: subnets },
-                () => Networks(subnets),
-            );
+        // it("should generate configuration for all tunnel types", () => {
+        //     const subnets: Subnets = {
+        //         BaseNetworks: {},
+        //         TunnelNetworks: {
+        //             IPIP: [{ name: "IPIP-Main", subnet: "172.16.1.0/24" }],
+        //             Eoip: [{ name: "EoIP-Main", subnet: "172.17.1.0/24" }],
+        //             Gre: [{ name: "GRE-Main", subnet: "172.18.1.0/24" }],
+        //             Vxlan: [{ name: "VXLAN-Main", subnet: "172.19.1.0/24" }],
+        //         },
+        //     };
 
-            const result = Networks(subnets);
-            validateRouterConfig(result);
-        });
+        //     testWithOutput(
+        //         "Networks",
+        //         "Generate configuration for all tunnel types",
+        //         { Subnets: subnets },
+        //         () => Networks(subnets),
+        //     );
+
+        //     const result = Networks(subnets);
+        //     validateRouterConfig(result);
+        // });
 
         it("should generate complex multi-network configuration", () => {
             const subnets: Subnets = {

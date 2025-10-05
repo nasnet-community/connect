@@ -641,26 +641,26 @@ export const WireguardServerWrapper = ( wireguardConfigs: WireguardServerConfig[
     const finalConfig = mergeRouterConfigs(...configs);
 
     // Add summary comments
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    // if (!finalConfig[""]) {
+    //     finalConfig[""] = [];
+    // }
 
-    const wireguardUsers = users.filter((user) =>
-        user.VPNType.includes("Wireguard"),
-    );
-    const interfaceNames = wireguardConfigs
-        .filter((config) => config.Interface)
-        .map((config) => config.Interface!.Name)
-        .join(", ");
+    // const wireguardUsers = users.filter((user) =>
+    //     user.VPNType.includes("Wireguard"),
+    // );
+    // const interfaceNames = wireguardConfigs
+    //     .filter((config) => config.Interface)
+    //     .map((config) => config.Interface!.Name)
+    //     .join(", ");
 
-    finalConfig[""].unshift(
-        "# WireGuard Server Configuration Summary:",
-        `# Interfaces: ${interfaceNames}`,
-        `# Total Servers: ${wireguardConfigs.length}`,
-        `# Users: ${wireguardUsers.length}`,
-        `# Client Config Export: Automated via Export-WireGuard-Simple script`,
-        "",
-    );
+    // finalConfig[""].unshift(
+    //     "# WireGuard Server Configuration Summary:",
+    //     `# Interfaces: ${interfaceNames}`,
+    //     `# Total Servers: ${wireguardConfigs.length}`,
+    //     `# Users: ${wireguardUsers.length}`,
+    //     `# Client Config Export: Automated via Export-WireGuard-Simple script`,
+    //     "",
+    // );
 
     return CommandShortner(finalConfig);
 };

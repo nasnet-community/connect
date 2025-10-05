@@ -1,97 +1,79 @@
 import type { RouterConfig } from "../../ConfigGenerator";
 import type {
-    ConnectionConfig,
-    InterfaceConfig,
     WANLinkConfig,
+    WANLinks,
     WANLink,
 } from "../../../StarContext/Utils/WANLinkType";
 import { mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
-import { DHCPClient, PPPOEClient, StaticIP, LTE } from "./WANUtils";
-import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "./WANUtils";
-import { WANIfaceList } from "./WANUtils";
+import { DHCPClient, PPPOEClient, StaticIP, LTE } from "./WANConnectionUtils";
+import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "./WANInterfaceUtils";
+import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment } from "./WANInterfaceUtils";
+import { WANIfaceList, Route } from "./WANUtils";
+export { GetWANInterface, requiresAutoMACVLAN };
+import {
+    convertWANLinkToMultiWAN,
+    FailoverRecursive,
+    LoadBalanceRoute,
+} from "../MultiLink/MultiLinkUtil";
+import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
 
-const requiresAutoMACVLAN = (interfaceName: string): boolean => {
-    const isWireless =
-        interfaceName.startsWith("wifi") || interfaceName.includes("wlan");
-    const isSFP = interfaceName.startsWith("sfp");
-    const isEthernet = interfaceName.startsWith("ether");
-    return isWireless || isSFP || isEthernet;
-};
+type Network = "Foreign" | "Domestic";
 
-export const generateConnectionConfig = (
-    connectionConfig: ConnectionConfig,
-    name: string,
-    interfaceName: string,
-    Network: string,
-): RouterConfig => {
+
+
+
+export const generateConnectionConfig = ( WANLinkConfig: WANLinkConfig, Network: Network ): RouterConfig => {
     let config: RouterConfig = {};
+    const { ConnectionConfig, name } = WANLinkConfig;
 
-    if (connectionConfig.isDHCP) {
-        const dhcpConfig = DHCPClient(name, Network, interfaceName);
+    if (!ConnectionConfig) {
+        return config;
+    }
+
+    // Get the final interface name (e.g., pppoe-client-WAN-1 for PPPoE, MacVLAN-ether1-WAN-1 for others)
+    const finalInterfaceName = GetWANInterface(WANLinkConfig);
+
+    // Get the underlying interface name (for PPPoE creation)
+    const underlyingInterface = getUnderlyingInterface(WANLinkConfig);
+
+    if (ConnectionConfig.isDHCP) {
+        const dhcpConfig = DHCPClient(name, Network, finalInterfaceName);
         config = mergeRouterConfigs(config, dhcpConfig);
     }
 
-    if (connectionConfig.pppoe) {
+    if (ConnectionConfig.pppoe) {
+        // PPPoE needs the underlying interface, not the pppoe-client- name
         const pppoeConfig = PPPOEClient(
             name,
-            interfaceName,
-            connectionConfig.pppoe,
+            underlyingInterface,
+            ConnectionConfig.pppoe,
         );
         config = mergeRouterConfigs(config, pppoeConfig);
     }
 
-    if (connectionConfig.static) {
+    if (ConnectionConfig.static) {
         const staticConfig = StaticIP(
             name,
-            interfaceName,
-            connectionConfig.static,
+            finalInterfaceName,
+            ConnectionConfig.static,
         );
         config = mergeRouterConfigs(config, staticConfig);
     }
 
-    if (connectionConfig.lteSettings) {
-        const lteConfig = LTE(connectionConfig.lteSettings);
+    if (ConnectionConfig.lteSettings) {
+        const lteConfig = LTE(ConnectionConfig.lteSettings);
         config = mergeRouterConfigs(config, lteConfig);
     }
 
     return config;
 };
 
-export const getInterfaceName = (
-    interfaceConfig: InterfaceConfig,
-    name: string = "WAN",
-): string => {
-    const { InterfaceName, MacAddress, VLANID } = interfaceConfig;
-
-    // Handle MACVLAN and VLAN combinations
-    if (MacAddress && VLANID) {
-        // MACVLAN on VLAN: MacVLAN-VLAN{vlanId}-{interfaceName}-{name}-{name}
-        const vlanName = `VLAN${VLANID}-${InterfaceName}-${name}`;
-        return `MacVLAN-${vlanName}-${name}`;
-    } else if (MacAddress) {
-        // MACVLAN only: MacVLAN-{interfaceName}-{name}
-        return `MacVLAN-${InterfaceName}-${name}`;
-    } else if (VLANID) {
-        // MACVLAN on VLAN: MacVLAN-VLAN{vlanId}-{interfaceName}-{name}-{name}
-        const vlanName = `VLAN${VLANID}-${InterfaceName}-${name}`;
-        return `MacVLAN-${vlanName}-${name}`;
-    } else if (requiresAutoMACVLAN(InterfaceName)) {
-        // Auto MACVLAN for wireless, SFP, or Ethernet: MacVLAN-{interfaceName}-{name}
-        return `MacVLAN-${InterfaceName}-${name}`;
-    }
-
-    // No transformations, return original interface name
-    return InterfaceName;
-};
-
-export const generateInterfaceConfig = (
-    interfaceConfig: InterfaceConfig,
-    name: string = "WAN",
-): RouterConfig => {
+export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig ): RouterConfig => {
     let config: RouterConfig = {};
+    const { InterfaceConfig, name } = WANLinkConfig;
 
     const { InterfaceName, WirelessCredentials, MacAddress, VLANID } =
-        interfaceConfig;
+        InterfaceConfig;
     const currentInterfaceName = InterfaceName;
 
     // Handle wireless interface configuration
@@ -138,55 +120,185 @@ export const generateInterfaceConfig = (
     return config;
 };
 
-export const generateWANLinkConfig = (
-    wanLinkConfig: WANLinkConfig,
-): RouterConfig => {
+export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Network ): RouterConfig => {
     let config: RouterConfig = {};
 
-    const { name, InterfaceConfig, ConnectionConfig } = wanLinkConfig;
-
     // 1. Generate interface configuration (VLAN, MACVLAN, Wireless, etc.)
-    const interfaceConfig = generateInterfaceConfig(InterfaceConfig, name);
+    const interfaceConfig = generateInterfaceConfig(wanLinkConfig );
     config = mergeRouterConfigs(config, interfaceConfig);
 
     // 2. Get the final interface name after transformations
-    const finalInterfaceName = getInterfaceName(InterfaceConfig, name);
+    const finalInterfaceName = GetWANInterface(wanLinkConfig);
 
     // 3. Add interface to WAN list
-    const wanListConfig = WANIfaceList(finalInterfaceName, name);
+    const wanListConfig = WANIfaceList(finalInterfaceName, Network);
     config = mergeRouterConfigs(config, wanListConfig);
 
     // 4. Generate connection configuration if provided (DHCP, PPPoE, Static, LTE)
-    if (ConnectionConfig) {
-        const connectionConfig = generateConnectionConfig(
-            ConnectionConfig,
-            name,
-            finalInterfaceName,
-            name,
-        );
-        config = mergeRouterConfigs(config, connectionConfig);
-    }
+    const connectionConfig = generateConnectionConfig(
+        wanLinkConfig,
+        Network,
+    );
+    config = mergeRouterConfigs(config, connectionConfig);
+
+    // 5. Generate routing configuration
+    const routeConfig = Route(wanLinkConfig, Network, 1);
+    config = mergeRouterConfigs(config, routeConfig);
 
     return config;
 };
 
-export const WANLinks = (wanLinks: WANLink[]): RouterConfig => {
-    let config: RouterConfig = {};
+export const DFSingleLink = ( wanLink: WANLink, networkType: "Foreign" | "Domestic" ): RouterConfig => {
+    // Check if there's exactly one WAN link configured
+    if (wanLink.WANConfigs.length !== 1) {
+        return {};
+    }
 
-    // Process each WANLink in the array
-    wanLinks.forEach((wanLink) => {
-        // Process each WANConfig within the WANLink
-        wanLink.WANConfigs.forEach((wanLinkConfig) => {
-            const linkConfig = generateWANLinkConfig(wanLinkConfig);
+    // Convert the single WANLinkConfig to MultiWANInterface format
+    const isDomestic = networkType === "Domestic";
+    const interfaces = convertWANLinkToMultiWAN(
+        wanLink.WANConfigs,
+        isDomestic,
+        networkType
+    );
+
+    if (interfaces.length === 0) {
+        return {};
+    }
+
+    // For a single link, create a simple route configuration
+    // Use the appropriate routing table based on network type
+    const routingTable = isDomestic ? "to-DOM" : "to-FRN";
+    
+    const singleInterface = interfaces[0];
+    
+    const config: RouterConfig = {
+        "/ip route": [
+            `add dst-address=0.0.0.0/0 gateway=${singleInterface.gateway} routing-table=${routingTable} distance=${singleInterface.distance} comment="${networkType} Single Link"`,
+        ],
+    };
+
+    return config;
+};
+
+export const DFMultiLink = ( wanLink: WANLink ): RouterConfig => {
+    const configs: RouterConfig[] = [];
+    
+    // Check if there are multiple WAN links configured
+    if (wanLink.WANConfigs.length === 0) {
+        return {};
+    }
+
+    // If only one WAN link, no multi-link configuration needed
+    if (wanLink.WANConfigs.length === 1) {
+        return {};
+    }
+
+    // Convert WANLinkConfigs to MultiWANInterface format
+    const interfaces = convertWANLinkToMultiWAN(
+        wanLink.WANConfigs,
+        false,
+        "Generic"
+    );
+
+    if (interfaces.length === 0) {
+        return {};
+    }
+
+    // Check if MultiLinkConfig is defined
+    const multiLinkConfig = wanLink.MultiLinkConfig;
+
+    if (!multiLinkConfig) {
+        // Default behavior: use failover with recursive gateway checking
+        return FailoverRecursive(interfaces, "main");
+    }
+
+    // Handle different strategies based on configuration
+    switch (multiLinkConfig.strategy) {
+        case "LoadBalance": {
+            const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
+            // Only PCC and NTH are supported for LoadBalanceRoute
+            if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
+                configs.push(LoadBalanceRoute(interfaces, loadBalanceMethod));
+            } else if (loadBalanceMethod === "ECMP") {
+                // ECMP would be handled differently - for now fallback to PCC
+                configs.push(LoadBalanceRoute(interfaces, "PCC"));
+            }
+            break;
+        }
+
+        case "Failover":
+            // Use recursive failover by default
+            configs.push(FailoverRecursive(interfaces, "main"));
+            break;
+
+        case "RoundRobin":
+            // Round-robin using NTH method
+            configs.push(LoadBalanceRoute(interfaces, "NTH"));
+            break;
+
+        case "Both": {
+            // Combine load balancing with failover
+            const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
+            // Only PCC and NTH are supported for LoadBalanceRoute
+            if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
+                configs.push(LoadBalanceRoute(interfaces, loadBalanceMethod));
+            } else if (loadBalanceMethod === "ECMP") {
+                // ECMP would be handled differently - for now fallback to PCC
+                configs.push(LoadBalanceRoute(interfaces, "PCC"));
+            }
+            configs.push(FailoverRecursive(interfaces, "main"));
+            break;
+        }
+
+        default:
+            configs.push(FailoverRecursive(interfaces, "main"));
+    }
+
+    return mergeMultipleConfigs(...configs);
+}
+
+export const generateWANLinksConfig = (wanLinks: WANLinks): RouterConfig => {
+    let config: RouterConfig = {};
+    const { Foreign, Domestic } = wanLinks;
+
+    // Generate interface configurations for Foreign WAN links
+    if (Foreign) {
+        Foreign.WANConfigs.forEach((wanLinkConfig) => {
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Foreign");
             config = mergeRouterConfigs(config, linkConfig);
         });
 
-        // TODO: Handle MultiLinkConfig if present
-        // if (wanLink.MultiLinkConfig) {
-        //   // Process multi-link configuration (load balancing, failover, etc.)
-        //   // This would require additional implementation in MultiWANUtil.ts
-        // }
-    });
+        // Add Foreign routing configuration (single or multi-link)
+        if (Foreign.WANConfigs.length === 1) {
+            const foreignRoutingConfig = DFSingleLink(Foreign, "Foreign");
+            config = mergeRouterConfigs(config, foreignRoutingConfig);
+        } else if (Foreign.WANConfigs.length > 1) {
+            const foreignRoutingConfig = DFMultiLink(Foreign);
+            config = mergeRouterConfigs(config, foreignRoutingConfig);
+        }
+    }
+
+    // Generate interface configurations for Domestic WAN links
+    if (Domestic) {
+        Domestic.WANConfigs.forEach((wanLinkConfig) => {
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Domestic");
+            config = mergeRouterConfigs(config, linkConfig);
+        });
+
+        // Add Domestic routing configuration (single or multi-link)
+        if (Domestic.WANConfigs.length === 1) {
+            const domesticRoutingConfig = DFSingleLink(Domestic, "Domestic");
+            config = mergeRouterConfigs(config, domesticRoutingConfig);
+        } else if (Domestic.WANConfigs.length > 1) {
+            const domesticRoutingConfig = DFMultiLink(Domestic);
+            config = mergeRouterConfigs(config, domesticRoutingConfig);
+        }
+    }
+
+    // Add interface comments for all physical WAN interfaces
+    const interfaceCommentConfig = InterfaceComment(wanLinks);
+    config = mergeRouterConfigs(config, interfaceCommentConfig);
 
     return config;
 };

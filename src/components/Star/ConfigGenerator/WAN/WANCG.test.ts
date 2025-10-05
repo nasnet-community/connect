@@ -1,4 +1,8 @@
 import { describe, it } from "vitest";
+import {
+    testWithOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
 // import type { RouterConfig } from '../ConfigGenerator';
 import type {
     WANLinkConfig,
@@ -288,8 +292,8 @@ describe("WANCG Module", () => {
             const result = testWithOutput(
                 "WANCG",
                 "WAN with VPN client and domestic link",
-                { wanState, domesticLink: true },
-                () => WANCG(wanState, true),
+                { wanState },
+                () => WANCG(wanState),
             );
 
             validateRouterConfig(result, [
@@ -301,7 +305,7 @@ describe("WANCG Module", () => {
                 "/interface wireguard",
                 "/interface wireguard peers",
                 "/ip address",
-                "/ip firewall nat",
+                "/ip firewall mangle",
             ]);
         });
 
@@ -324,8 +328,8 @@ describe("WANCG Module", () => {
             const result = testWithOutput(
                 "WANCG",
                 "WAN without VPN client",
-                { wanState, domesticLink: false },
-                () => WANCG(wanState, false),
+                { wanState },
+                () => WANCG(wanState),
             );
 
             validateRouterConfig(result, [
@@ -367,15 +371,16 @@ describe("WANCG Module", () => {
             const result = testWithOutput(
                 "WANCG",
                 "WAN with PPTP VPN client",
-                { wanState, domesticLink: false },
-                () => WANCG(wanState, false),
+                { wanState },
+                () => WANCG(wanState),
             );
 
             validateRouterConfig(result, [
                 "/interface ethernet",
                 "/ip dhcp-client",
                 "/interface pptp-client",
-                "/ip firewall nat",
+                "/ip firewall address-list",
+                "/ip firewall mangle",
                 "/interface list member",
                 "/ip route",
             ]);
@@ -435,15 +440,15 @@ describe("WANCG Module", () => {
             const result = testWithOutput(
                 "WANCG",
                 "Complex wireless and OpenVPN configuration",
-                { wanState, domesticLink: true },
-                () => WANCG(wanState, true),
+                { wanState },
+                () => WANCG(wanState),
             );
 
             validateRouterConfig(result, [
                 "/interface wifi",
                 "/interface ovpn-client",
                 "/ip firewall address-list",
-                "/ip firewall nat",
+                "/ip firewall mangle",
             ]);
         });
     });

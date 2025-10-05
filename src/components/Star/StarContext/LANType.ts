@@ -20,7 +20,7 @@ export interface MultiMode {
   VPN?: WirelessConfig;
 }
 
-export interface Wireless {
+export interface WirelessConfig {
   SingleMode?: WirelessConfig;
   MultiMode?: MultiMode;
 }
@@ -80,7 +80,7 @@ export interface Subnets {
   TunnelNetworks?:TunnelNetworks;
 }
 export interface LANState {
-  Wireless?: Wireless;
+  Wireless?: WirelessConfig;
   VPNServer?: VPNServer;
   Tunnel?: Tunnel;
   Interface?: EthernetInterfaceConfig[];

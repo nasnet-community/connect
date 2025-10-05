@@ -1,10 +1,8 @@
-import type { Ikev2ServerConfig } from "../../../../StarContext/Utils/VPNServerType";
-import type { RouterConfig } from "../../../ConfigGenerator";
-import { formatBooleanValue, formatArrayValue } from "../VPNServerUtil";
-import { CommandShortner, mergeRouterConfigs } from "../../../utils/ConfigGeneratorUtil";
-import { generateIPPool } from "../VPNServerUtil";
-import type { Credentials } from "../../../../StarContext/Utils/VPNServerType";
-import type { IPPoolConfig } from "../VPNServerUtil";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator/";
+import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator/";
+import { CommandShortner, mergeRouterConfigs } from "~/components/Star/ConfigGenerator/";
+import { generateIPPool, type IPPoolConfig } from "~/components/Star/ConfigGenerator/";
+import type { VSCredentials, Ikev2ServerConfig } from "~/components/Star/StarContext";
 
 
 
@@ -371,7 +369,7 @@ export const Ikev2Server = (config: Ikev2ServerConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const Ikev2ServerUsers = ( users: Credentials[], ikev2Config?: any ): RouterConfig => {
+export const Ikev2ServerUsers = ( users: VSCredentials[], ikev2Config?: any ): RouterConfig => {
     const config: RouterConfig = {
         "/ip ipsec identity": [],
         "/ip ipsec mode-config": [],
@@ -488,7 +486,7 @@ export const Ikev2ServerUsers = ( users: Credentials[], ikev2Config?: any ): Rou
     return CommandShortner(config);
 };
 
-export const Ikev2ServerWrapper = ( serverConfig: Ikev2ServerConfig, users: Credentials[] = [] ): RouterConfig => {
+export const Ikev2ServerWrapper = ( serverConfig: Ikev2ServerConfig, users: VSCredentials[] = [] ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Generate IKEv2 interface configuration

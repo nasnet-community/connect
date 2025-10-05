@@ -298,7 +298,7 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
 };
 
 // Function to generate inbound traffic marking rules for tunnel protocols
-export const InboundTraffic = (tunnel: Tunnel): RouterConfig => {
+export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall mangle": [],
     };
