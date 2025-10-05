@@ -1,4 +1,9 @@
 import { describe, it, expect } from "vitest";
+import {
+    testWithOutput,
+    testWithGenericOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
 import type { RouterConfig } from "../../ConfigGenerator";
 import type {
     WireguardClientConfig,
@@ -351,88 +356,79 @@ describe("VPNClientCG Module", () => {
     describe("RouteToVPN", () => {
         it("should generate VPN routing configuration with Wireguard interface", () => {
             const interfaceName = "wireguard-client";
-            const endpointAddress = "1.2.3.4";
+            const name = "TestVPN";
 
             const result: RouterConfig = testWithOutput(
                 "RouteToVPN",
                 "VPN routing configuration for Wireguard",
-                { interfaceName, endpointAddress },
-                () => RouteToVPN(interfaceName, endpointAddress),
+                { interfaceName, name },
+                () => RouteToVPN(interfaceName, name),
             );
 
             validateRouterConfig(result, ["/ip route"]);
 
             // Verify specific route configurations
-            expect(result["/ip route"]).toHaveLength(2);
+            expect(result["/ip route"]).toHaveLength(1);
 
-            // Find the VPN route and endpoint route
+            // Find the VPN route
             const vpnRoute = result["/ip route"].find((route) =>
                 route.includes("dst-address=0.0.0.0/0"),
-            );
-            const endpointRoute = result["/ip route"].find((route) =>
-                route.includes(`dst-address=${endpointAddress}`),
             );
 
             expect(vpnRoute).toBeDefined();
             expect(vpnRoute).toContain(`gateway=${interfaceName}`);
-            expect(vpnRoute).toContain("routing-table=to-VPN");
-
-            expect(endpointRoute).toBeDefined();
-            expect(endpointRoute).toContain("gateway=192.168.1.1");
+            expect(vpnRoute).toContain(`routing-table=to-${name}`);
+            expect(vpnRoute).toContain(`comment="Route-to-VPN-${name}"`);
+            expect(vpnRoute).toContain("distance=1");
         });
 
         it("should generate VPN routing configuration with OpenVPN interface", () => {
             const interfaceName = "ovpn-client";
-            const endpointAddress = "vpn.example.com";
+            const name = "OpenVPN-Main";
 
             const result = testWithOutput(
                 "RouteToVPN",
                 "VPN routing configuration for OpenVPN",
-                { interfaceName, endpointAddress },
-                () => RouteToVPN(interfaceName, endpointAddress),
+                { interfaceName, name },
+                () => RouteToVPN(interfaceName, name),
             );
 
             validateRouterConfig(result, ["/ip route"]);
 
-            // Verify route is created (only one route for FQDN endpoints)
+            // Verify route is created with default distance
             expect(result["/ip route"]).toHaveLength(1);
-            expect(result["/ip route"][0]).toContain('comment="Route-to-VPN"');
+            expect(result["/ip route"][0]).toContain(`comment="Route-to-VPN-${name}"`);
+            expect(result["/ip route"][0]).toContain("distance=1");
+            expect(result["/ip route"][0]).toContain(`routing-table=to-${name}`);
         });
 
         it("should handle different interface types", () => {
             const testCases = [
-                { interface: "pptp-client", endpoint: "192.168.100.1" },
-                { interface: "l2tp-client", endpoint: "10.0.0.1" },
-                { interface: "sstp-client", endpoint: "sstp.server.com" },
-                { interface: "ike2-client", endpoint: "172.16.0.1" },
+                { interface: "pptp-client", name: "PPTP-1" },
+                { interface: "l2tp-client", name: "L2TP-1" },
+                { interface: "sstp-client", name: "SSTP-1" },
+                { interface: "ike2-client", name: "IKEv2-1" },
             ];
 
-            testCases.forEach(({ interface: interfaceName, endpoint }) => {
+            testCases.forEach(({ interface: interfaceName, name }) => {
                 const result = testWithOutput(
                     "RouteToVPN",
                     `VPN routing for ${interfaceName}`,
-                    { interfaceName, endpoint },
-                    () => RouteToVPN(interfaceName, endpoint),
+                    { interfaceName, name },
+                    () => RouteToVPN(interfaceName, name),
                 );
 
                 validateRouterConfig(result, ["/ip route"]);
                 expect(result["/ip route"]).toBeDefined();
 
-                // Find VPN route and endpoint route (if exists)
+                // Verify VPN route
                 const vpnRoute = result["/ip route"].find((route) =>
                     route.includes("dst-address=0.0.0.0/0"),
                 );
                 expect(vpnRoute).toBeDefined();
                 expect(vpnRoute).toContain(`gateway=${interfaceName}`);
-
-                // Endpoint route only exists for IP addresses, not FQDNs
-                const endpointRoute = result["/ip route"].find((route) =>
-                    route.includes(`dst-address=${endpoint}`),
-                );
-                if (!endpoint.match(/^[a-zA-Z]/)) {
-                    // If it's an IP address
-                    expect(endpointRoute).toBeDefined();
-                }
+                expect(vpnRoute).toContain(`routing-table=to-${name}`);
+                expect(vpnRoute).toContain("distance=1");
             });
         });
     });
@@ -544,45 +540,29 @@ describe("VPNClientCG Module", () => {
     });
 
     describe("BaseVPNConfig", () => {
-        it("should combine all base VPN configurations with domestic link", () => {
+        it("should combine all base VPN configurations with default distance", () => {
             const interfaceName = "wireguard-client";
             const endpointAddress = "1.2.3.4";
-            const dns = "8.8.8.8";
-            const domesticLink = true;
+            const name = "TestVPN";
 
             const result = testWithOutput(
                 "BaseVPNConfig",
-                "Complete base VPN configuration with domestic link",
-                { interfaceName, endpointAddress, dns, domesticLink },
+                "Complete base VPN configuration with default distance",
+                { interfaceName, endpointAddress, name },
                 () =>
                     BaseVPNConfig(
                         interfaceName,
                         endpointAddress,
-                        dns,
-                        domesticLink,
+                        name,
                     ),
             );
 
             validateRouterConfig(result, [
-                "/ip firewall nat",
                 "/interface list member",
                 "/ip route",
                 "/ip firewall address-list",
                 "/ip firewall mangle",
             ]);
-
-            // Verify DNS NAT rules for domestic link (should have 4 rules)
-            expect(result["/ip firewall nat"]).toHaveLength(4);
-            expect(
-                result["/ip firewall nat"].filter((rule) =>
-                    rule.includes("VPN-LAN"),
-                ),
-            ).toHaveLength(2);
-            expect(
-                result["/ip firewall nat"].filter((rule) =>
-                    rule.includes("Split-LAN"),
-                ),
-            ).toHaveLength(2);
 
             // Verify interface list memberships
             expect(result["/interface list member"]).toHaveLength(2);
@@ -591,118 +571,114 @@ describe("VPNClientCG Module", () => {
                 'list="FRN-WAN"',
             );
 
-            // Verify routing configuration
-            expect(result["/ip route"]).toHaveLength(2);
-            expect(result["/ip route"][0]).toContain("routing-table=to-VPN");
-            expect(result["/ip route"][1]).toContain("gateway=192.168.1.1");
+            // Verify routing configuration with dynamic table name
+            expect(result["/ip route"]).toHaveLength(1);
+            expect(result["/ip route"][0]).toContain(`routing-table=to-${name}`);
+            expect(result["/ip route"][0]).toContain(`comment="Route-to-${name}"`);
+            expect(result["/ip route"][0]).toContain("distance=1");
+
+            // Verify endpoint address list
+            expect(result["/ip firewall address-list"]).toHaveLength(1);
+            expect(result["/ip firewall address-list"][0]).toContain(`address="${endpointAddress}"`);
+            expect(result["/ip firewall address-list"][0]).toContain("list=VPNE");
+
+            // Verify mangle rules
+            expect(result["/ip firewall mangle"]).toHaveLength(3);
         });
 
-        it("should combine all base VPN configurations without domestic link", () => {
+        it("should combine all base VPN configurations with custom distance", () => {
             const interfaceName = "ovpn-client";
             const endpointAddress = "vpn.example.com";
-            const dns = "1.1.1.1";
-            const domesticLink = false;
+            const name = "OpenVPN-Main";
+            const distance = 5;
 
             const result = testWithOutput(
                 "BaseVPNConfig",
-                "Complete base VPN configuration without domestic link",
-                { interfaceName, endpointAddress, dns, domesticLink },
+                "Complete base VPN configuration with custom distance",
+                { interfaceName, endpointAddress, name, distance },
                 () =>
                     BaseVPNConfig(
                         interfaceName,
                         endpointAddress,
-                        dns,
-                        domesticLink,
+                        name,
+                        distance,
                     ),
             );
 
             validateRouterConfig(result, [
-                "/ip firewall nat",
                 "/interface list member",
                 "/ip route",
                 "/ip firewall address-list",
                 "/ip firewall mangle",
             ]);
 
-            // Verify DNS NAT rules without domestic link (should have 2 rules)
-            expect(result["/ip firewall nat"]).toHaveLength(2);
-            expect(
-                result["/ip firewall nat"].filter((rule) =>
-                    rule.includes("VPN-LAN"),
-                ),
-            ).toHaveLength(2);
-            expect(
-                result["/ip firewall nat"].filter((rule) =>
-                    rule.includes("Split-LAN"),
-                ),
-            ).toHaveLength(0);
+            // Verify routing configuration with custom distance
+            expect(result["/ip route"]).toHaveLength(1);
+            expect(result["/ip route"][0]).toContain(`routing-table=to-${name}`);
+            expect(result["/ip route"][0]).toContain(`distance=${distance}`);
         });
 
-        it("should handle different DNS servers", () => {
+        it("should handle different VPN client names", () => {
             const testCases = [
-                { dns: "8.8.8.8", name: "Google DNS" },
-                { dns: "1.1.1.1", name: "Cloudflare DNS" },
-                { dns: "208.67.222.222", name: "OpenDNS" },
-                { dns: "192.168.1.1", name: "Local DNS" },
+                { name: "Primary", desc: "Primary VPN" },
+                { name: "Backup", desc: "Backup VPN" },
+                { name: "Test-VPN-1", desc: "Test VPN with dashes" },
+                { name: "VPN123", desc: "VPN with numbers" },
             ];
 
-            testCases.forEach(({ dns, name }) => {
+            testCases.forEach(({ name, desc }) => {
                 const result = testWithOutput(
                     "BaseVPNConfig",
-                    `Base VPN config with ${name}`,
+                    `Base VPN config for ${desc}`,
                     {
                         interfaceName: "test-client",
                         endpointAddress: "1.2.3.4",
-                        dns,
-                        domesticLink: false,
+                        name,
                     },
-                    () => BaseVPNConfig("test-client", "1.2.3.4", dns, false),
+                    () => BaseVPNConfig("test-client", "1.2.3.4", name),
                 );
 
                 validateRouterConfig(result, [
-                    "/ip firewall nat",
+                    "/interface list member",
+                    "/ip route",
                     "/ip firewall address-list",
                     "/ip firewall mangle",
                 ]);
 
-                // Verify DNS server is used in NAT rules
-                result["/ip firewall nat"].forEach((rule) => {
-                    expect(rule).toContain(`to-addresses=${dns}`);
-                });
+                // Verify dynamic naming in routing table
+                expect(result["/ip route"][0]).toContain(`routing-table=to-${name}`);
+                expect(result["/ip route"][0]).toContain(`comment="Route-to-${name}"`);
             });
         });
 
         it("should use correct interface names for different VPN types", () => {
             const vpnTypes = [
-                { interface: "wireguard-client", type: "Wireguard" },
-                { interface: "ovpn-client", type: "OpenVPN" },
-                { interface: "pptp-client", type: "PPTP" },
-                { interface: "l2tp-client", type: "L2TP" },
-                { interface: "sstp-client", type: "SSTP" },
-                { interface: "ike2-client", type: "IKeV2" },
+                { interface: "wireguard-client", type: "Wireguard", name: "WG-1" },
+                { interface: "ovpn-client", type: "OpenVPN", name: "OVPN-1" },
+                { interface: "pptp-client", type: "PPTP", name: "PPTP-1" },
+                { interface: "l2tp-client", type: "L2TP", name: "L2TP-1" },
+                { interface: "sstp-client", type: "SSTP", name: "SSTP-1" },
+                { interface: "ike2-client", type: "IKeV2", name: "IKE-1" },
             ];
 
-            vpnTypes.forEach(({ interface: interfaceName, type }) => {
+            vpnTypes.forEach(({ interface: interfaceName, type, name }) => {
                 const result = testWithOutput(
                     "BaseVPNConfig",
                     `Base config for ${type} interface`,
                     {
                         interfaceName,
                         endpointAddress: "test.example.com",
-                        dns: "8.8.8.8",
-                        domesticLink: true,
+                        name,
                     },
                     () =>
                         BaseVPNConfig(
                             interfaceName,
                             "test.example.com",
-                            "8.8.8.8",
-                            true,
+                            name,
                         ),
                 );
 
                 validateRouterConfig(result, [
-                    "/ip firewall nat",
                     "/interface list member",
                     "/ip route",
                     "/ip firewall address-list",
@@ -715,6 +691,9 @@ describe("VPNClientCG Module", () => {
                 );
                 expect(result["/ip route"][0]).toContain(
                     `gateway=${interfaceName}`,
+                );
+                expect(result["/ip route"][0]).toContain(
+                    `routing-table=to-${name}`,
                 );
             });
         });

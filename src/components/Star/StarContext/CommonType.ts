@@ -20,6 +20,28 @@ export type VPNType =
   | "BackToHome"
   | "ZeroTier";
 
+export type VPNClientType =
+  | "Wireguard"
+  | "OpenVPN"
+  | "PPTP"
+  | "L2TP"
+  | "SSTP"
+  | "IKeV2"
+
+
+export type VPNServerType =
+  | "Wireguard"
+  | "OpenVPN"
+  | "PPTP"
+  | "L2TP"
+  | "SSTP"
+  | "IKeV2"
+  | "Socks5"
+  | "SSH"
+  | "HTTPProxy"
+  | "BackToHome"
+  | "ZeroTier";
+
 export type Ethernet =
   | "ether1"
   | "ether2"

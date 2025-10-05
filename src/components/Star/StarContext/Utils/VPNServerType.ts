@@ -390,7 +390,7 @@ export interface WireguardServerConfig {
 // Users Credentials
 
 
-export interface Credentials {
+export interface VSCredentials {
     Username: string;
     Password: string;
     VPNType: VPNType[];
@@ -568,7 +568,7 @@ export interface ZeroTierServerConfig {
 
 
 export interface VPNServer {
-    Users: Credentials[];
+    Users: VSCredentials[];
     PptpServer?: PptpServerConfig;
     L2tpServer?: L2tpServerConfig;
     SstpServer?: SstpServerConfig;

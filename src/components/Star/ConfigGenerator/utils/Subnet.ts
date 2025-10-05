@@ -210,7 +210,7 @@ export const ValidateSubnet = (subnet: string): boolean => {
 /**
  * Get subnet information summary
  */
-export const SubnetInfo = (subnet: string) => {
+export const SSubnetInfo = (subnet: string) => {
     if (!ValidateSubnet(subnet)) {
         throw new Error(`Invalid subnet format: ${subnet}`);
     }

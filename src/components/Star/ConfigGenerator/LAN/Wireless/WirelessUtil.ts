@@ -12,6 +12,10 @@ import type { RouterConfig } from "../../ConfigGenerator";
 import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
 import type { RouterModels } from "../../../StarContext/ChooseType";
 
+export const DefaultBandToInterfaceName = (band: Band): string => {
+    return band === "2.4" ? "wifi2" : "wifi1";
+};
+
 export const hasWirelessInterfaces = (
     routerModels: RouterModels[],
 ): boolean => {
@@ -75,7 +79,7 @@ export function Hide(command: string, Hide: boolean) {
     return command;
 }
 
-export function GetNetworks(MultiMode: MultiMode): Networks[] {
+export function GetWirelessNetworks(MultiMode: MultiMode): Networks[] {
     const networks: Networks[] = [];
     if (MultiMode.Split) {
         networks.push("Split");
@@ -114,13 +118,15 @@ export function Passphrase(passphrase: string, command: string) {
 export function StationMode(
     SSID: string,
     Password: string,
-    Band: string,
+    Band: Band,
     name?: string,
 ): RouterConfig {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
-    const command = `set [ find default-name=${Band} ] comment="${name} ${Band}WAN" configuration.mode=station .ssid="${SSID}" security.passphrase="${Password}" disabled=no`;
+
+    const DInterfaceName = DefaultBandToInterfaceName(Band);
+    const command = `set [ find default-name=${DInterfaceName} ] comment="${name} ${Band}WAN" configuration.mode=station .ssid="${SSID}" security.passphrase="${Password}" disabled=no`;
     config["/interface wifi"].push(command);
     return config;
 }
@@ -288,7 +294,7 @@ export const WirelessInterfaceListMulti = (
         return config;
     }
 
-    const networks = GetNetworks(wireless.MultiMode);
+    const networks = GetWirelessNetworks(wireless.MultiMode);
 
     for (const network of networks) {
         // Convert network names to their appropriate list names and full interface names

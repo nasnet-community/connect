@@ -1,4 +1,8 @@
 import { describe, it, expect } from "vitest";
+import {
+    testWithOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
 import { GenerateOpenVPNCertificateScript } from "./VPNClientScripts";
 import type {
     OpenVpnClientConfig,
