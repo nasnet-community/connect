@@ -1,11 +1,11 @@
-import type { RouterConfig } from "../../../ConfigGenerator";
-import type { SstpClientConfig, } from "../../../../StarContext/Utils/VPNClientType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { SstpClientConfig } from "~/components/Star/StarContext";
 import {
     CommandShortner,
     mergeConfigurations,
     mergeMultipleConfigs,
-} from "../../../utils/ConfigGeneratorUtil";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "./../VPNClientUtils";
+} from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 
 // SSTP Client

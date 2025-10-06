@@ -1,21 +1,19 @@
-import type { RouterConfig } from "../../ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     WANLinkConfig,
     WANLinks,
     WANLink,
-} from "../../../StarContext/Utils/WANLinkType";
-import { mergeRouterConfigs } from "../../utils/ConfigGeneratorUtil";
-import { DHCPClient, PPPOEClient, StaticIP, LTE } from "./WANConnectionUtils";
-import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "./WANInterfaceUtils";
-import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment } from "./WANInterfaceUtils";
-import { WANIfaceList, Route } from "./WANUtils";
-export { GetWANInterface, requiresAutoMACVLAN };
+} from "~/components/Star/StarContext";
+import { mergeRouterConfigs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+import { DHCPClient, PPPOEClient, StaticIP, LTE } from "~/components/Star/ConfigGenerator";
+import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "~/components/Star/ConfigGenerator";
+import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment } from "~/components/Star/ConfigGenerator";
+import { WANIfaceList, Route } from "~/components/Star/ConfigGenerator";
 import {
     convertWANLinkToMultiWAN,
     FailoverRecursive,
     LoadBalanceRoute,
-} from "../MultiLink/MultiLinkUtil";
-import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
+} from "~/components/Star/ConfigGenerator";
 
 type Network = "Foreign" | "Domestic";
 

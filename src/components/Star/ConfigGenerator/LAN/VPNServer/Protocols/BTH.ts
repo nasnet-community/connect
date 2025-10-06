@@ -1,8 +1,8 @@
-import type { RouterConfig } from "../../../ConfigGenerator";
-import type { 
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type {
     BackToHomeServerConfig,
-    Credentials 
-} from "~/components/Star/StarContext/Utils/VPNServerType";
+    Credentials
+} from "~/components/Star/StarContext";
 // import type { Networks } from "~/components/Star/StarContext/CommonType";
 // import { mergeMultipleConfigs } from "../../../utils/ConfigGeneratorUtil";
 

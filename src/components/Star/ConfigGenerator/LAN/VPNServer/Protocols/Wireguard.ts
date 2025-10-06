@@ -1,10 +1,6 @@
-import type { WireguardInterfaceConfig } from "../../../../StarContext/Utils/VPNServerType";
-import type { RouterConfig } from "../../../ConfigGenerator";
-import { CommandShortner, mergeRouterConfigs } from "../../../utils/ConfigGeneratorUtil";
-import type { Credentials } from "../../../../StarContext/Utils/VPNServerType";
-import { calculateNetworkAddress } from "../../../utils/IPAddress";
-import type { WireguardServerConfig } from "../../../../StarContext/Utils/VPNServerType";
-import { OneTimeScript } from "../../../utils/ScriptSchedule";
+import type { WireguardInterfaceConfig, Credentials, WireguardServerConfig } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { CommandShortner, mergeRouterConfigs, calculateNetworkAddress, OneTimeScript } from "~/components/Star/ConfigGenerator";
 
 
 export const ExportWireGuard = (): RouterConfig => {

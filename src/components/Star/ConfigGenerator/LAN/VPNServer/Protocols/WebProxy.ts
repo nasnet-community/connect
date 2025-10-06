@@ -1,5 +1,5 @@
-import type { RouterConfig } from "../../../ConfigGenerator";
-import type { HTTPProxyServerConfig } from "~/components/Star/StarContext/Utils/VPNServerType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { HTTPProxyServerConfig } from "~/components/Star/StarContext";
 
 
 

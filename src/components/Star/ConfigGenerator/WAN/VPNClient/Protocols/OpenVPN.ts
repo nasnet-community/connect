@@ -1,12 +1,12 @@
-import type { RouterConfig } from "../../../ConfigGenerator";
-import type { OpenVpnClientConfig } from "../../../../StarContext/Utils/VPNClientType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { OpenVpnClientConfig } from "~/components/Star/StarContext";
 import {
     CommandShortner,
     mergeConfigurations,
     mergeMultipleConfigs,
-} from "../../../utils/ConfigGeneratorUtil";
-import { GenerateOpenVPNCertificateScript } from "./../VPNClientScripts";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "./../VPNClientUtils";
+} from "~/components/Star/ConfigGenerator";
+import { GenerateOpenVPNCertificateScript } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 
 // OpenVPN Client

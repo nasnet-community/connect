@@ -2,7 +2,7 @@ import type { RouterConfig } from "~/components/Star/ConfigGenerator/";
 import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator/";
 import { CommandShortner, mergeRouterConfigs } from "~/components/Star/ConfigGenerator/";
 import { generateIPPool, type IPPoolConfig } from "~/components/Star/ConfigGenerator/";
-import type { VSCredentials, Ikev2ServerConfig } from "~/components/Star/StarContext";
+import type { VSCredentials, Ikev2ServerConfig } from "~/components/Star/StarContext/";
 
 
 

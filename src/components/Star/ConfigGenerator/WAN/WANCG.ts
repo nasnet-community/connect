@@ -1,9 +1,9 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import type { WANState } from "../../StarContext/WANType";
-import { VPNClientWrapper } from "./VPNClient/VPNClientCG";
-import { generateWANLinksConfig } from "./WAN/WANInterface";
-import { MainTableRoute } from "./MultiLink/MultiLink";
-import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { WANState } from "~/components/Star/StarContext";
+import { VPNClientWrapper } from "~/components/Star/ConfigGenerator";
+import { generateWANLinksConfig } from "~/components/Star/ConfigGenerator";
+import { MainTableRoute } from "~/components/Star/ConfigGenerator";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
 
 export const WANCG = (WANState: WANState): RouterConfig => {

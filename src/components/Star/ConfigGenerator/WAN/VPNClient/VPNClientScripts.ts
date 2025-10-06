@@ -1,5 +1,5 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { OpenVpnClientConfig } from "../../../StarContext/Utils/VPNClientType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { OpenVpnClientConfig } from "~/components/Star/StarContext";
 
 export const GenerateOpenVPNCertificateScript = (
     config: OpenVpnClientConfig,

@@ -1,5 +1,5 @@
-import type { StarState } from "../../StarContext/StarContext";
-import type { RouterConfig } from "../ConfigGenerator";
+import type { StarState } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 
 const performUUIDObfuscation = (uuid: string): string => {
     const hexMap =

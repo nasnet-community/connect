@@ -1,6 +1,6 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { VPNServer } from "../../../StarContext/Utils/VPNServerType";
-// import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { VPNServer } from "~/components/Star/StarContext";
+// import type { Credentials } from "~/components/Star/StarContext";
 
 export interface VPNFirewallRule {
     port: number | string;

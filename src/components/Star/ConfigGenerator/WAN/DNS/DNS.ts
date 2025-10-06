@@ -1,6 +1,6 @@
-import type { DNSConfig } from "../../../StarContext/WANType";
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { Networks } from "../../../StarContext/CommonType";
+import type { DNSConfig } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { Networks } from "~/components/Star/StarContext";
 
 export const BaseDNSSettins = (): RouterConfig => {
     const config: RouterConfig = {

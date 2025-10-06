@@ -1,9 +1,9 @@
-import type { RouterConfig } from "../../ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     WANLinkConfig,
     WANLink,
-} from "../../../StarContext/Utils/WANLinkType";
-import { GetWANInterface } from "./WANInterfaceUtils";
+} from "~/components/Star/StarContext";
+import { GetWANInterface } from "~/components/Star/ConfigGenerator";
 
 export const WANIfaceList = ( InterfaceName: string, Network: string ): RouterConfig => {
     const config: RouterConfig = {

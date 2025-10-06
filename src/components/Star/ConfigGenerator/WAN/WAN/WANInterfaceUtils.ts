@@ -1,12 +1,12 @@
 
-import type { RouterConfig } from "../../ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     WANLinkConfig,
     WANLink,
     WANLinks,
-} from "../../../StarContext/Utils/WANLinkType";
-import type { Band } from "../../../StarContext/CommonType";
-import { StationMode } from "../../LAN/Wireless/WirelessUtil";
+} from "~/components/Star/StarContext";
+import type { Band } from "~/components/Star/StarContext";
+import { StationMode } from "~/components/Star/ConfigGenerator";
 
 
 

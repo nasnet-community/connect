@@ -1,10 +1,10 @@
-import type { RouterConfig } from "../../../ConfigGenerator";
-import type { 
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type {
     SSHServerConfig,
-    Credentials 
-} from "~/components/Star/StarContext/Utils/VPNServerType";
-import type { Networks } from "~/components/Star/StarContext/CommonType";
-import { mergeMultipleConfigs } from "../../../utils/ConfigGeneratorUtil";
+    Credentials,
+    Networks
+} from "~/components/Star/StarContext";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
 
 export const SSHServer = (config: SSHServerConfig): RouterConfig => {

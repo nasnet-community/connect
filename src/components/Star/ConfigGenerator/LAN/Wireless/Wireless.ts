@@ -2,13 +2,13 @@ import type {
     WirelessConfig,
     MultiMode,
     Wireless,
-} from "../../../StarContext/LANType";
-import type { WANLinks } from "../../../StarContext/WANType";
-import type { RouterConfig } from "../../ConfigGenerator";
+} from "~/components/Star/StarContext";
+import type { WANLinks } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import {
     CommandShortner,
     mergeMultipleConfigs,
-} from "../../utils/ConfigGeneratorUtil";
+} from "~/components/Star/ConfigGenerator";
 import {
     CheckMasters,
     DisableInterfaces,
@@ -20,7 +20,7 @@ import {
     WirelessBridgePortsMulti,
     WirelessInterfaceListMulti,
     CheckWireless,
-} from "./WirelessUtil";
+} from "~/components/Star/ConfigGenerator";
 
 export const SingleSSID = (
     SingleMode: WirelessConfig,

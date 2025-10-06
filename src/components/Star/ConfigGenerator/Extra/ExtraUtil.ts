@@ -1,5 +1,5 @@
-import { generateDomesticIPScript } from "./DomesticIPS";
-import type { RouterConfig } from "../ConfigGenerator";
+import { generateDomesticIPScript } from "~/components/Star/ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     IntervalConfig,
     CertificateConfig,
@@ -8,15 +8,15 @@ import type {
     DDNSEntry,
     UPNPConfig,
     NATPMPConfig,
-} from "~/components/Star/StarContext/ExtraType";
-import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
-// import { OneTimeScript, ScriptAndScheduler } from "../utils/ScriptSchedule";
-import type { WANLinkType } from "~/components/Star/StarContext/ChooseType";
-import { LetsEncrypt, PrivateCert, ExportCert } from "../utils/Certificate";
-import type { Subnets } from "../../StarContext/LANType";
-import { GetNetworks } from "../utils/utils";
-// import { GetWANInterfaceWName, GetWANInterfaces } from "../WAN/WAN/WANUtils";
-import type { WANLinks } from "~/components/Star/StarContext/WANType";
+} from "~/components/Star/StarContext";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+// import { OneTimeScript, ScriptAndScheduler } from "~/components/Star/ConfigGenerator";
+import type { WANLinkType } from "~/components/Star/StarContext";
+import { LetsEncrypt, PrivateCert, ExportCert } from "~/components/Star/ConfigGenerator";
+import type { Subnets } from "~/components/Star/StarContext";
+import { GetNetworks } from "~/components/Star/ConfigGenerator";
+// import { GetWANInterfaceWName, GetWANInterfaces } from "~/components/Star/ConfigGenerator";
+import type { WANLinks } from "~/components/Star/StarContext";
 
 // Base Extra Utils
 export const Clock = (): RouterConfig => {

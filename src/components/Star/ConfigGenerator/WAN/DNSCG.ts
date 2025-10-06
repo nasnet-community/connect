@@ -1,5 +1,5 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import type { DNSConfig } from "../../StarContext/WANType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { DNSConfig } from "~/components/Star/StarContext";
 
 /**
  * Generate DNS configuration for MikroTik RouterOS

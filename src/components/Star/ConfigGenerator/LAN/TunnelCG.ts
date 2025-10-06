@@ -1,15 +1,15 @@
-import type { RouterConfig } from "../ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     IpipTunnelConfig,
     EoipTunnelConfig,
     GreTunnelConfig,
     VxlanInterfaceConfig,
     Tunnel,
-} from "~/components/Star/StarContext/Utils/TunnelType";
+} from "~/components/Star/StarContext";
 import {
     CommandShortner,
     mergeRouterConfigs,
-} from "../utils/ConfigGeneratorUtil";
+} from "~/components/Star/ConfigGenerator";
 
 // Utility function to generate IP address configuration
 export const generateIPAddress = (

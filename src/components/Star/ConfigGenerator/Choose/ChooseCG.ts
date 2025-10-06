@@ -1,5 +1,5 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import { mergeRouterConfigs } from "../utils/ConfigGeneratorUtil";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { mergeRouterConfigs } from "~/components/Star/ConfigGenerator";
 
 export const BaseConfig = (): RouterConfig => {
     const config: RouterConfig = {
