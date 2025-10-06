@@ -1,4 +1,4 @@
-import type { RouterConfig } from "../ConfigGenerator";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     services,
     RouterIdentityRomon,
@@ -6,7 +6,7 @@ import type {
     ExtraConfigState,
     RUIConfig,
     UsefulServicesConfig,
-} from "~/components/Star/StarContext/ExtraType";
+} from "~/components/Star/StarContext";
 import {
     Timezone,
     AReboot,
@@ -18,8 +18,8 @@ import {
     // Graph,
     // DDNS,
 } from "./ExtraUtil";
-import { PublicCert } from "../utils/Certificate";
-import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
+import { PublicCert } from "~/components/Star/ConfigGenerator";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
 export const BaseExtra = (): RouterConfig => {
     const configs: RouterConfig[] = [];

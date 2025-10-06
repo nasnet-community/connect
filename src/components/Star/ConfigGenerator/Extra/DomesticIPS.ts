@@ -1,6 +1,6 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import { ScriptAndScheduler } from "../utils/ScriptSchedule";
-import type { FrequencyValue } from "~/components/Core/DataDisplay/FrequencySelector/FrequencySelector.types";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { ScriptAndScheduler } from "~/components/Star/ConfigGenerator";
+import type { FrequencyValue } from "~/components/Star/StarContext/";
 
 /**
  * Generates a simple UUID v4

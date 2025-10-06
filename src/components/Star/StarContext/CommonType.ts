@@ -190,3 +190,6 @@ export type RouterModel =
   | "hAP AX3";
 
 export type InterfaceType = Ethernet | Wireless | Sfp | LTE;
+
+
+export type FrequencyValue = "Daily" | "Weekly" | "Monthly";

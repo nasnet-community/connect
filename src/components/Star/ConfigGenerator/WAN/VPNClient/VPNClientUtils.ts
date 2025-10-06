@@ -1,6 +1,6 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { VPNClientType } from "../../../StarContext/CommonType";
-// import type { WANLinkType } from "../../../StarContext/ChooseType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { VPNClientType } from "~/components/Star/StarContext";
+// import type { WANLinkType } from "~/components/Star/StarContext";
 
 
 export const GenerateVCInterfaceName = (Name: string, protocol: VPNClientType): string => {

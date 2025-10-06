@@ -1,7 +1,7 @@
-import type { BondingConfig } from "../../../StarContext/Utils/MultiLinkType";
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { WANLinkConfig, WANLinks } from "../../../StarContext/Utils/WANLinkType";
-import type { VPNClient } from "../../../StarContext/Utils/VPNClientType";
+import type { BondingConfig } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { WANLinkConfig, WANLinks } from "~/components/Star/StarContext";
+import type { VPNClient } from "~/components/Star/StarContext";
 
 // Common interface for Multi-WAN and Failover functions
 // Used by both WAN links and VPN clients

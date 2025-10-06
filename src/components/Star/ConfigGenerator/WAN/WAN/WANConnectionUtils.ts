@@ -1,5 +1,5 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { LTESettings, PPPoEConfig, StaticIPConfig } from "../../../StarContext/Utils/WANLinkType";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { LTESettings, PPPoEConfig, StaticIPConfig } from "~/components/Star/StarContext";
 
 
 

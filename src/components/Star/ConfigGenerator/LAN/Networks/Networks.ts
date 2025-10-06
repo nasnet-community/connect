@@ -1,6 +1,6 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { Subnets, SubnetConfig } from "../../../StarContext/LANType";
-import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { Subnets, SubnetConfig } from "~/components/Star/StarContext";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import {
     SubnetToRange,
     SubnetToFirstIP,
@@ -8,7 +8,7 @@ import {
     SubnetToTunnelGateway,
     SubnetToTunnelGatewayIP,
     SubnetToTunnelDHCPRange
-} from "../../utils/Subnet";
+} from "~/components/Star/ConfigGenerator";
 
 type NetworkType = "Domestic" | "Foreign" | "VPN" | "Split";
 

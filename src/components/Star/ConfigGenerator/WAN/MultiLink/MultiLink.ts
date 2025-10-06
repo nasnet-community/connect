@@ -1,18 +1,16 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { VPNClient } from "../../../StarContext/Utils/VPNClientType";
-import type { WANLinks } from "../../../StarContext/Utils/WANLinkType";
-import { 
-    PCCMangle, 
-    NTHMangle, 
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { VPNClient, WANLinks } from "~/components/Star/StarContext";
+import {
+    PCCMangle,
+    NTHMangle,
     LoadBalanceRoute,
     FailoverRecursive,
     combineMultiWANInterfaces,
-    type MultiWANInterface, 
-} from "./MultiLinkUtil";
-import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
+    type MultiWANInterface,
+} from "~/components/Star/ConfigGenerator";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
 
-export { ECMP } from "./MultiLinkUtil";
 
 
 export const PCC = ( interfaces: MultiWANInterface[], addressList: string, routingMark: string ): RouterConfig => {

@@ -1,13 +1,13 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
-import type { RouterConfig } from "../ConfigGenerator";
-import { WirelessConfig } from "./Wireless/Wireless";
-import { DisableInterfaces } from "./Wireless/WirelessUtil";
-import type { EthernetInterfaceConfig } from "~/components/Star/StarContext/LANType";
-import { TunnelWrapper } from "./TunnelCG";
-import { VPNServerWrapper } from "./VPNServer";
-import { mergeMultipleConfigs } from "../utils/ConfigGeneratorUtil";
-import { hasWirelessInterfaces } from "./Wireless/WirelessUtil";
-import { calculateSubnetInfo } from "../utils/IPAddress";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { WirelessConfig } from "~/components/Star/ConfigGenerator";
+import { DisableInterfaces } from "~/components/Star/ConfigGenerator";
+import type { EthernetInterfaceConfig } from "~/components/Star/StarContext";
+import { TunnelWrapper } from "~/components/Star/ConfigGenerator";
+import { VPNServerWrapper } from "~/components/Star/ConfigGenerator";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+import { hasWirelessInterfaces } from "~/components/Star/ConfigGenerator";
+import { calculateSubnetInfo } from "~/components/Star/ConfigGenerator";
 
 export const IPv6 = (): RouterConfig => {
     const config: RouterConfig = {

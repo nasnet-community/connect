@@ -1,11 +1,11 @@
-import type { RouterConfig } from "../../ConfigGenerator";
-import type { VPNClient } from "../../../StarContext/Utils/VPNClientType";
-import { mergeMultipleConfigs } from "../../utils/ConfigGeneratorUtil";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import type { VPNClient } from "~/components/Star/StarContext";
+import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import {
     convertVPNClientToMultiWAN,
     FailoverRecursive,
     LoadBalanceRoute,
-} from "../MultiLink/MultiLinkUtil";
+} from "~/components/Star/ConfigGenerator";
 import {
     WireguardClientWrapper,
     OpenVPNClientWrapper,
@@ -13,7 +13,7 @@ import {
     L2TPClientWrapper,
     SSTPClientWrapper,
     IKeV2ClientWrapper,
-} from "./Protocols";
+} from "~/components/Star/ConfigGenerator";
 
 
 

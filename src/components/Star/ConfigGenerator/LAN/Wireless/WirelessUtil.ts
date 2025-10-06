@@ -2,15 +2,15 @@ import type {
     WirelessConfig,
     MultiMode,
     Wireless,
-} from "../../../StarContext/LANType";
+} from "~/components/Star/StarContext";
 import type {
     WANLinks,
     // WANLinkConfig
-} from "../../../StarContext/WANType";
-import type { Networks, Band } from "../../../StarContext/CommonType";
-import type { RouterConfig } from "../../ConfigGenerator";
-import { CommandShortner } from "../../utils/ConfigGeneratorUtil";
-import type { RouterModels } from "../../../StarContext/ChooseType";
+} from "~/components/Star/StarContext";
+import type { Networks, Band } from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { CommandShortner } from "~/components/Star/ConfigGenerator";
+import type { RouterModels } from "~/components/Star/StarContext";
 
 export const DefaultBandToInterfaceName = (band: Band): string => {
     return band === "2.4" ? "wifi2" : "wifi1";
