@@ -7,6 +7,6 @@ export * from "./Choose";
 export * from "./Extra";
 export * from "./LAN";
 export * from "./Show";
-export * from "./Slave";
+export * from "./Trunk";
 export * from "./utils";
 export * from "./WAN";

@@ -43,7 +43,7 @@ interface SubnetInfoInterface {
 function calculateSubnetInfo(
     ip: string,
     prefix: string | number,
-): SubnetInfo | null {
+): SubnetInfoInterface | null {
     if (!ip || prefix === undefined || prefix === null) return null;
 
     try {
@@ -196,7 +196,7 @@ function calculateSubnets(
     networkIP: string,
     currentPrefix: number,
     newPrefix: number,
-): SubnetInfo[] {
+): SubnetInfoInterface[] {
     if (newPrefix <= currentPrefix) {
         throw new Error(
             "New prefix must be larger than current prefix for subnetting",
@@ -208,7 +208,7 @@ function calculateSubnets(
         throw new Error("Invalid base network");
     }
 
-    const subnets: SubnetInfo[] = [];
+    const subnets: SubnetInfoInterface[] = [];
     const subnetCount = Math.pow(2, newPrefix - currentPrefix);
     const subnetSize = Math.pow(2, 32 - newPrefix);
 
@@ -356,7 +356,7 @@ function subnetMaskToCIDR(subnetMask: string): number | null {
 function calculateVLSM(
     baseNetwork: string,
     hostRequirements: number[],
-): SubnetInfo[] {
+): SubnetInfoInterface[] {
     const [networkIP, prefixStr] = baseNetwork.split("/");
     const basePrefix = parseInt(prefixStr, 10);
 
@@ -368,7 +368,7 @@ function calculateVLSM(
     // Sort requirements in descending order for optimal allocation
     const sortedRequirements = [...hostRequirements].sort((a, b) => b - a);
 
-    const subnets: SubnetInfo[] = [];
+    const subnets: SubnetInfoInterface[] = [];
     const baseParts = baseSubnet.networkAddress.split(".").map(Number);
     let baseInt = 0;
     for (let i = 0; i < 4; i++) {
@@ -427,5 +427,5 @@ export {
     findSmallestSubnet,
     subnetMaskToCIDR,
     calculateVLSM,
-    type SubnetInfo,
+    type SubnetInfoInterface,
 };

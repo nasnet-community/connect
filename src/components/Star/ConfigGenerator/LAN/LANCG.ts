@@ -21,9 +21,7 @@ export const IPv6 = (): RouterConfig => {
     return config;
 };
 
-export const EthernetBridgePorts = (
-    Ethernet: EthernetInterfaceConfig[],
-): RouterConfig => {
+export const EthernetBridgePorts = ( Ethernet: EthernetInterfaceConfig[] ): RouterConfig => {
     const config: RouterConfig = {
         "/interface bridge port": [],
     };
@@ -46,9 +44,7 @@ export const EthernetBridgePorts = (
     return config;
 };
 
-export const SubnetIPConfigurations = (
-    subnets: Record<string, string> | undefined,
-): RouterConfig => {
+export const SubnetIPConfigurations = ( subnets: Record<string, string> | undefined ): RouterConfig => {
     if (!subnets) return {};
 
     const config: RouterConfig = {
@@ -87,21 +83,16 @@ export const SubnetIPConfigurations = (
 export const LANCG = (state: StarState): RouterConfig => {
     const configs: RouterConfig[] = [IPv6()];
 
-    // Use helper function for backwards compatibility
-    const hasDomesticLink =
-        state.Choose.WANLinkType === "domestic" ||
-        state.Choose.WANLinkType === "both";
-
     // Only configure wireless if router models have wireless interfaces AND LAN.Wireless is defined
     const hasWireless = hasWirelessInterfaces(state.Choose.RouterModels);
 
     if (hasWireless) {
-        if (state.LAN.Wireless) {
+        if (state.LAN.Wireless && Array.isArray(state.LAN.Wireless)) {
             configs.push(
                 WirelessConfig(
                     state.LAN.Wireless,
                     state.WAN.WANLink,
-                    hasDomesticLink,
+                    state.Choose.RouterModels,
                 ),
             );
         } else {
@@ -111,12 +102,14 @@ export const LANCG = (state: StarState): RouterConfig => {
     }
 
     if (state.LAN.Tunnel) {
-        configs.push(TunnelWrapper(state.LAN.Tunnel));
+        configs.push(TunnelWrapper(state.LAN.Tunnel, state.LAN.Subnets?.TunnelNetworks));
     }
 
     if (state.LAN.VPNServer) {
-        configs.push(VPNServerWrapper(state.LAN.VPNServer));
+        configs.push(VPNServerWrapper(state.LAN.VPNServer, (state.LAN.Subnets?.VPNServerNetworks || {}) as any));
     }
+
+
 
     // Only add Ethernet bridge ports if LAN.Interface exists
     if (state.LAN.Interface && Array.isArray(state.LAN.Interface)) {

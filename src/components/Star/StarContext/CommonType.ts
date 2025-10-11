@@ -117,7 +117,7 @@ export interface WirelessCredentials {
   SSID: string;
   Password: string;
 }
-export type Networks = "VPN" | "Domestic" | "Foreign" | "Split";
+export type BaseNetworksType = "VPN" | "Domestic" | "Foreign" | "Split";
 
 export interface Server {
   Address: string;

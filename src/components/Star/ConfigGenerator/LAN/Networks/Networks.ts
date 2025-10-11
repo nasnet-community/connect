@@ -1,5 +1,5 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { Subnets, SubnetConfig } from "~/components/Star/StarContext";
+import type { Subnets, SubnetConfig, WANLinks, VPNClient } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import {
     SubnetToRange,
@@ -11,6 +11,35 @@ import {
 } from "~/components/Star/ConfigGenerator";
 
 type NetworkType = "Domestic" | "Foreign" | "VPN" | "Split";
+
+// Helper function to check if PCC or NTH load balancing is used
+const shouldSkipMangleRules = (wanLinks?: WANLinks, vpnClient?: VPNClient): boolean => {
+    // Check Foreign WAN Link
+    if (wanLinks?.Foreign?.MultiLinkConfig?.loadBalanceMethod) {
+        const method = wanLinks.Foreign.MultiLinkConfig.loadBalanceMethod;
+        if (method === "PCC" || method === "NTH") {
+            return true;
+        }
+    }
+    
+    // Check Domestic WAN Link
+    if (wanLinks?.Domestic?.MultiLinkConfig?.loadBalanceMethod) {
+        const method = wanLinks.Domestic.MultiLinkConfig.loadBalanceMethod;
+        if (method === "PCC" || method === "NTH") {
+            return true;
+        }
+    }
+    
+    // Check VPN Client MultiLink Config
+    if (vpnClient?.MultiLinkConfig?.loadBalanceMethod) {
+        const method = vpnClient.MultiLinkConfig.loadBalanceMethod;
+        if (method === "PCC" || method === "NTH") {
+            return true;
+        }
+    }
+    
+    return false;
+};
 
 // Network Base Generator
 export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, NetworkName?: string ): RouterConfig => {
@@ -67,9 +96,14 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
 };
 
 // Base Networks
-export const DomesticBase = (NetworkName: string, Subnet: string): RouterConfig => {
+export const DomesticBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "Domestic"
     const baseConfig = NetworkBaseGenerator("Domestic", Subnet);
+    
+    if (skipMangle) {
+        return baseConfig;
+    }
+    
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -83,10 +117,14 @@ export const DomesticBase = (NetworkName: string, Subnet: string): RouterConfig 
     return mergeMultipleConfigs(baseConfig, mangleConfig);
 };
 
-export const ForeignBase = (NetworkName: string, Subnet: string): RouterConfig => {
+export const ForeignBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "Foreign"
     const baseConfig = NetworkBaseGenerator("Foreign", Subnet);
     
+    if (skipMangle) {
+        return baseConfig;
+    }
+    
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -100,9 +138,13 @@ export const ForeignBase = (NetworkName: string, Subnet: string): RouterConfig =
     return mergeMultipleConfigs(baseConfig, mangleConfig);
 };
 
-export const VPNBase = (NetworkName: string, Subnet: string): RouterConfig => {
+export const VPNBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "VPN"
     const baseConfig = NetworkBaseGenerator("VPN", Subnet);
+    
+    if (skipMangle) {
+        return baseConfig;
+    }
     
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
@@ -191,9 +233,14 @@ export const TunnelNetworkBaseGenerator = (NetworkName: string, Subnet: string):
 };
 
 // Helper Functions
-export const addNetwork = ( network: SubnetConfig , defaultName: string, generator: (name: string, subnet: string) => RouterConfig ): RouterConfig => {
+export const addNetwork = ( 
+    network: SubnetConfig, 
+    defaultName: string, 
+    generator: (name: string, subnet: string, skipMangle?: boolean) => RouterConfig,
+    skipMangle: boolean = false
+): RouterConfig => {
     if (!network.subnet) return {};
-    return generator(network.name || defaultName, network.subnet);
+    return generator(network.name || defaultName, network.subnet, skipMangle);
 };
 
 export const addNetworks = ( networks: SubnetConfig[], namePrefix: string, networkType: NetworkType ): RouterConfig => {
@@ -218,14 +265,17 @@ export const addTunnelNetworks = ( networks: SubnetConfig[], namePrefix: string 
 };
 
 // Main Networks Function
-export const Networks = (subnets: Subnets): RouterConfig => {
+export const Networks = (subnets: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient): RouterConfig => {
     const configs: RouterConfig[] = [];
+    
+    // Check if PCC or NTH load balancing is used
+    const skipMangle = shouldSkipMangleRules(wanLinks, vpnClient);
 
     // Base Networks
     if (subnets.BaseNetworks.Split) configs.push(addNetwork(subnets.BaseNetworks.Split, "Split", SplitBase));
-    if (subnets.BaseNetworks.Domestic) configs.push(addNetwork(subnets.BaseNetworks.Domestic, "Domestic", DomesticBase));
-    if (subnets.BaseNetworks.Foreign) configs.push(addNetwork(subnets.BaseNetworks.Foreign, "Foreign", ForeignBase));
-    if (subnets.BaseNetworks.VPN) configs.push(addNetwork(subnets.BaseNetworks.VPN, "VPN", VPNBase));
+    if (subnets.BaseNetworks.Domestic) configs.push(addNetwork(subnets.BaseNetworks.Domestic, "Domestic", DomesticBase, skipMangle));
+    if (subnets.BaseNetworks.Foreign) configs.push(addNetwork(subnets.BaseNetworks.Foreign, "Foreign", ForeignBase, skipMangle));
+    if (subnets.BaseNetworks.VPN) configs.push(addNetwork(subnets.BaseNetworks.VPN, "VPN", VPNBase, skipMangle));
 
     // Additional Networks
     configs.push(addNetworks(subnets.ForeignNetworks ?? [], "Foreign", "Foreign"));

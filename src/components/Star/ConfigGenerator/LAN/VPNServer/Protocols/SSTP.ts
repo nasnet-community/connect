@@ -1,18 +1,27 @@
-import type { SstpServerConfig, VSCredentials } from "~/components/Star/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator";
-import { CommandShortner, mergeRouterConfigs } from "~/components/Star/ConfigGenerator";
+import type { SstpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    CommandShortner,
+    mergeRouterConfigs,
+    formatBooleanValue,
+    VSAddressList,
+    VSInterfaceList,
+    generateIPPool,
+    VSPorfile,
+    SubnetToRange,
+} from "~/components/Star/ConfigGenerator";
 
 
 
 
-export const SstpServer = (config: SstpServerConfig): RouterConfig => {
+export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
         "/interface sstp-server server": [],
         "/ip firewall filter": [],
         "/ip firewall address-list": [],
+        "": [],
     };
 
     const {
@@ -20,7 +29,6 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
         // Certificate,
         Port = 4443,
         Authentication,
-        DefaultProfile = "sstp-profile",
         KeepaliveTimeout = 30,
         PacketSize,
         // ForceAes,
@@ -30,46 +38,41 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
         TlsVersion,
     } = config;
 
-    // Create IP pool for SSTP clients
+    // Use provided subnet configuration
+    const { subnet } = subnetConfig;
+    const ranges = SubnetToRange(subnet);
+    const name = "sstp"; // SSTP server name
+
+    // Generate IP pool for SSTP clients
     routerConfig["/ip pool"].push(
-        `add name=sstp-pool ranges=192.168.90.5-192.168.90.250`,
+        ...generateIPPool({ name, ranges, comment: `SSTP ${name} client pool` })
     );
 
-    // Create PPP profile for SSTP
-    const profileParams: string[] = [
-        `name=sstp-profile`,
-        "dns-server=1.1.1.1",
-        "local-address=192.168.90.1",
-        "remote-address=sstp-pool",
-        "use-encryption=yes",
-    ];
+    // Create PPP profile using shared helper (profile name: `${name}-profile`)
+    const profileCfg = VSPorfile(subnet, String(vsNetwork), name);
+    Object.entries(profileCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
-    routerConfig["/ppp profile"].push(`add ${profileParams.join(" ")}`);
+    // Add VPN subnet to address list using shared helper
+    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} SSTP subnet`);
+    Object.entries(addrCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
     // Configure SSTP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
 
-    // if (Certificate) {
-    //     serverParams.push(`certificate=${Certificate}`);
-
-    //     if (Certificate === 'none') {
-    //         routerConfig["/interface sstp-server server"].push(
-    //             "# WARNING: SSTP server configured with certificate=none is insecure and incompatible with Windows clients."
-    //         );
-    //     }
-    // }
 
     if (Port) {
         serverParams.push(`port=${Port}`);
     }
 
     if (Authentication) {
-        serverParams.push(`authentication=${formatArrayValue(Authentication)}`);
+        serverParams.push(`authentication=mschap1,mschap2`);
     }
 
-    if (DefaultProfile) {
-        serverParams.push(`default-profile=${DefaultProfile}`);
-    }
+    serverParams.push(`default-profile=${name}-profile`);
 
     if (KeepaliveTimeout) {
         serverParams.push(`keepalive-timeout=${KeepaliveTimeout}`);
@@ -87,55 +90,39 @@ export const SstpServer = (config: SstpServerConfig): RouterConfig => {
         serverParams.push(`mrru=${PacketSize.mrru}`);
     }
 
-    // if (ForceAes !== undefined) {
-    //     serverParams.push(`force-aes=${formatBooleanValue(ForceAes)}`);
-    // }
-
     if (Pfs !== undefined) {
         serverParams.push(`pfs=${formatBooleanValue(Pfs)}`);
     }
 
     if (Ciphers) {
-        serverParams.push(`ciphers=${Ciphers}`);
+        serverParams.push(`ciphers=ciphers=aes256-sha,aes256-gcm-sha384`);
     }
 
     if (VerifyClientCertificate !== undefined) {
         serverParams.push(
-            `verify-client-certificate=${formatBooleanValue(VerifyClientCertificate)}`,
+            `verify-client-certificate=no`,
         );
 
-        if (VerifyClientCertificate) {
-            routerConfig["/interface sstp-server server"].push(
-                "# WARNING: SSTP verify-client-certificate=yes is incompatible with Windows clients.",
-            );
-        }
     }
 
     if (TlsVersion) {
-        serverParams.push(`tls-version=${TlsVersion}`);
+        serverParams.push(`tls-version=any`);
     }
 
     routerConfig["/interface sstp-server server"].push(
         `set ${serverParams.join(" ")}`,
     );
 
-    // Add firewall rule for SSTP
-    routerConfig["/ip firewall filter"].push(
-        `add action=accept chain=input comment="SSTP Server" dst-port=${Port} in-interface-list=DOM-WAN protocol=tcp`,
-    );
-
-    // Add address list for SSTP network
-    routerConfig["/ip firewall address-list"].push(
-        "add address=192.168.90.0/24 list=VPN-LAN",
-    );
-
     return CommandShortner(routerConfig);
 };
 
-export const SstpServerUsers = (users: VSCredentials[]): RouterConfig => {
+export const SstpServerUsers = (serverConfig: SstpServerConfig, users: VSCredentials[]): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
+
+    // Get the profile name from server config (matches the profile created in SstpServer)
+    const profileName = "sstp-profile";
 
     // Filter users who have SSTP in their VPNType array
     const sstpUsers = users.filter((user) => user.VPNType.includes("SSTP"));
@@ -144,7 +131,7 @@ export const SstpServerUsers = (users: VSCredentials[]): RouterConfig => {
         const secretParams: string[] = [
             `name="${user.Username}"`,
             `password="${user.Password}"`,
-            "profile=sstp-profile",
+            `profile=${profileName}`,
             "service=sstp",
         ];
 
@@ -158,12 +145,9 @@ export const SstpServerUsers = (users: VSCredentials[]): RouterConfig => {
     return CommandShortner(config);
 };
 
-export const SSTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
+export const SSTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
     const config: RouterConfig = {
-        "/interface l2tp-server": [],
-        "/interface pptp-server": [],
         "/interface sstp-server": [],
-        "/interface ovpn-server": [],
         "/interface list member": [],
         "": [],
     };
@@ -174,20 +158,20 @@ export const SSTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
     }
 
     // Filter users for supported VPN types only
-    const supportedVpnTypes = ["L2TP", "PPTP", "SSTP", "OpenVPN"];
+    const supportedVpnTypes = ["SSTP"];
     const filteredCredentials = credentials.filter((user) =>
         user.VPNType.some((vpnType) => supportedVpnTypes.includes(vpnType)),
     );
 
     if (filteredCredentials.length === 0) {
         config[""].push(
-            "# No users configured for supported VPN binding types (L2TP, PPTP, SSTP, OpenVPN)",
+            "# No users configured for supported VPN binding types (SSTP)",
         );
         return config;
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: Credentials[] } = {};
+    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
@@ -200,55 +184,9 @@ export const SSTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         });
     });
 
-    // Add general comments
-    config[""].push(
-        "# VPN Server Binding Configuration",
-        `# Total users: ${filteredCredentials.length}`,
-        `# Supported VPN types: ${Object.keys(usersByVpnType).join(", ")}`,
-        "# Each binding interface is added to LAN and VPN-LAN interface lists for proper network management",
-        "",
-    );
 
     // Keep track of created interfaces for interface list membership
     const createdInterfaces: string[] = [];
-
-    // L2TP Static Interface Bindings
-    if (usersByVpnType["L2TP"]) {
-        config[""].push("# L2TP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each L2TP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["L2TP"].forEach((user) => {
-            const staticBindingName = `l2tp-${user.Username}`;
-
-            config["/interface l2tp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // PPTP Static Interface Bindings
-    if (usersByVpnType["PPTP"]) {
-        config[""].push("# PPTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each PPTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["PPTP"].forEach((user) => {
-            const staticBindingName = `pptp-${user.Username}`;
-
-            config["/interface pptp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
 
     // SSTP Static Interface Bindings
     if (usersByVpnType["SSTP"]) {
@@ -269,62 +207,25 @@ export const SSTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         config[""].push("");
     }
 
-    // OpenVPN Static Interface Bindings
-    if (usersByVpnType["OpenVPN"]) {
-        config[""].push("# OpenVPN Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each OpenVPN user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["OpenVPN"].forEach((user) => {
-            const staticBindingName = `ovpn-${user.Username}`;
-
-            config["/interface ovpn-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // Add all created interfaces to LAN and VPN-LAN interface lists
+    // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
     if (createdInterfaces.length > 0) {
-        config[""].push("# Adding VPN binding interfaces to interface lists");
-        config[""].push(
-            "# This enables proper network segmentation and management",
-        );
-
         createdInterfaces.forEach((interfaceName) => {
-            // Add to LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="LAN" comment="VPN binding interface for network management"`,
+            // Use VSInterfaceList helper to add interface to proper lists
+            const interfaceListCfg = VSInterfaceList(
+                interfaceName, 
+                String(VSNetwork), 
+                `VPN binding interface for ${interfaceName}`
             );
-
-            // Add to VPN-LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="VPN-LAN" comment="VPN binding interface for VPN-specific rules"`,
-            );
+            
+            // Merge the interface list configuration
+            Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
+                config[section] = (config[section] ?? []).concat(cmds);
+            });
         });
         config[""].push("");
     }
-
-    // Advanced Binding Information
-    config[""].push("# Static Interface Binding Benefits:");
-    config[""].push("# 1. Predictable interface names for firewall rules");
-    config[""].push("# 2. Per-user queue management capabilities");
-    config[""].push("# 3. Individual user traffic monitoring");
-    config[""].push("# 4. User-specific interface list assignments");
-    config[""].push("# 5. Proper network segmentation through interface lists");
-    config[""].push("# 6. Simplified management via LAN and VPN-LAN lists");
-    config[""].push("");
-    config[""].push(
-        "# Note: Users must still be configured in /ppp secret for authentication",
-    );
-    config[""].push("");
 
     // Summary
-    config[""].push("# VPN Server Binding Summary:");
     Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
         config[""].push(
             `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
@@ -333,26 +234,56 @@ export const SSTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
 
     if (createdInterfaces.length > 0) {
         config[""].push("");
-        config[""].push("# Interface List Memberships:");
-        config[""].push(
-            `# ${createdInterfaces.length} interfaces added to both LAN and VPN-LAN lists`,
-        );
-        config[""].push(`# Interface names: ${createdInterfaces.join(", ")}`);
     }
 
     return config;
 };
 
-export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCredentials[] = [] ): RouterConfig => {
+export const SSTPServerFirewall = (serverConfigs: SstpServerConfig[]): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall filter": [],
+        "/ip firewall mangle": [],
+    };
+
+    serverConfigs.forEach((serverConfig) => {
+        const { Port = 4443 } = serverConfig;
+
+        config["/ip firewall filter"].push(
+            `add action=accept chain=input comment="SSTP Server (tcp)" dst-port=${Port} in-interface-list=Domestic-WAN protocol=tcp`,
+        );
+
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound SSTP Connections" \\
+                connection-state=new in-interface-list=Domestic-WAN protocol=tcp dst-port=${Port} \\
+                new-connection-mark=conn-vpn-server passthrough=yes`,
+        );
+    });
+
+    return config;
+}
+
+export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Generate SSTP interface configuration
-    configs.push(SstpServer(serverConfig));
+    // Get VSNetwork from server config or default to "VPN"
+    const vsNetwork: VSNetwork = serverConfig.VSNetwork || "VPN";
+
+    // Fallback to default subnet if no match found
+    const effectiveSubnet: SubnetConfig = subnetConfig || {
+        name: "sstp",
+        subnet: "192.168.90.0/24", // Default SSTP network
+    };
+
+    // Generate SSTP server configuration
+    configs.push(SstpServer(serverConfig, vsNetwork, effectiveSubnet));
 
     // Generate SSTP users configuration if users are provided
     if (users.length > 0) {
-        configs.push(SstpServerUsers(users));
+        configs.push(SstpServerUsers(serverConfig, users));
     }
+
+    // Generate firewall rules
+    configs.push(SSTPServerFirewall([serverConfig]));
 
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
@@ -362,18 +293,7 @@ export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCred
         finalConfig[""] = [];
     }
 
-    const sstpUsers = users.filter((user) => user.VPNType.includes("SSTP"));
-
-    finalConfig[""].unshift(
-        "# SSTP Server Configuration Summary:",
-        `# Enabled: ${serverConfig.enabled}`,
-        `# Certificate: ${serverConfig.Certificate}`,
-        `# Port: ${serverConfig.Port || 4443}`,
-        `# Default Profile: ${serverConfig.DefaultProfile || "sstp-profile"}`,
-        `# Users: ${sstpUsers.length}`,
-        "",
-    );
-
     return CommandShortner(finalConfig);
 };
+
 

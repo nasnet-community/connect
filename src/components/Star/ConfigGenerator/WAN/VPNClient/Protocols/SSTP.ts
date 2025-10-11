@@ -34,7 +34,7 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
 
     const interfaceName = GenerateVCInterfaceName(Name, "SSTP");
 
-    let command = `add name=${interfaceName} connect-to=${Server.Address}`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}"`;
 
     // if (Server.Port) {
     //     command += ` port=${Server.Port}`;
@@ -84,7 +84,7 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
     }
 
     if (ClientCertificateName) {
-        command += ` certificate=${ClientCertificateName}`;
+        command += ` certificate="${ClientCertificateName}"`;
     }
 
     command += ` disabled=no`;

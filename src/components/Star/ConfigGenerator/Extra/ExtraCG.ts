@@ -1,4 +1,3 @@
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     services,
     RouterIdentityRomon,
@@ -6,6 +5,10 @@ import type {
     ExtraConfigState,
     RUIConfig,
     UsefulServicesConfig,
+    WANLinks,
+    Subnets,
+    VPNClient,
+    WANLinkType,
 } from "~/components/Star/StarContext";
 import {
     Timezone,
@@ -14,12 +17,18 @@ import {
     IPAddressUpdateFunc,
     Clock,
     update,
-    // NTP,
-    // Graph,
-    // DDNS,
-} from "./ExtraUtil";
-import { PublicCert } from "~/components/Star/ConfigGenerator";
-import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+    UPNP,
+    NATPMP,
+    PublicCert,
+    mergeMultipleConfigs,
+    type RouterConfig,
+    CloudDDNS,
+    Certificate,
+    NTP,
+    Graph,
+    DDNS,
+} from "~/components/Star/ConfigGenerator";
+
 
 export const BaseExtra = (): RouterConfig => {
     const configs: RouterConfig[] = [];
@@ -37,9 +46,7 @@ export const BaseExtra = (): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const IdentityRomon = (
-    RouterIdentityRomon: RouterIdentityRomon,
-): RouterConfig => {
+export const IdentityRomon = ( RouterIdentityRomon: RouterIdentityRomon ): RouterConfig => {
     const config: RouterConfig = {
         "/system identity": [],
         "/tool romon": [],
@@ -137,18 +144,46 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const UsefulServices = (
-    _usefulServicesConfig: UsefulServicesConfig,
-): RouterConfig => {
-    const config: RouterConfig = {};
+export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+    const configs: RouterConfig[] = [];
 
-    return config;
+    // Handle Certificate configuration
+    if (usefulServicesConfig.certificate) {
+        configs.push(Certificate(usefulServicesConfig.certificate));
+    }
+
+    // Handle NTP configuration
+    if (usefulServicesConfig.ntp) {
+        configs.push(NTP(usefulServicesConfig.ntp));
+    }
+
+    // Handle Graphing configuration
+    if (usefulServicesConfig.graphing) {
+        configs.push(Graph(usefulServicesConfig.graphing));
+    }
+
+    // Handle Cloud DDNS configuration
+    if (usefulServicesConfig.cloudDDNS) {
+        // Process each DDNS entry
+        usefulServicesConfig.cloudDDNS.ddnsEntries.forEach(entry => {
+            configs.push(DDNS(entry));
+        });
+    }
+
+    // Handle UPNP configuration
+    if (usefulServicesConfig.upnp && subnets && wanLinks) {
+        configs.push(UPNP(usefulServicesConfig.upnp, subnets, wanLinks, vpnClient));
+    }
+
+    // Handle NAT-PMP configuration
+    if (usefulServicesConfig.natpmp && subnets && wanLinks) {
+        configs.push(NATPMP(usefulServicesConfig.natpmp, subnets, wanLinks, vpnClient));
+    }
+
+    return mergeMultipleConfigs(...configs);
 };
 
-export const Game = (
-    Game: GameConfig[],
-    DomesticLink: boolean,
-): RouterConfig => {
+export const Game = ( Game: GameConfig[], DomesticLink: boolean ): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall raw": [],
         "/ip firewall mangle": [],
@@ -241,6 +276,10 @@ export const Firewall = (): RouterConfig => {
 export const ExtraCG = (
     ExtraConfigState: ExtraConfigState,
     DomesticLink: boolean,
+    wanLinkType: WANLinkType,
+    subnets?: Subnets,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
 ): RouterConfig => {
     const configs: RouterConfig[] = [
         BaseExtra(),
@@ -264,9 +303,13 @@ export const ExtraCG = (
         configs.push(Game(ExtraConfigState.Games, DomesticLink));
     }
 
-    if (ExtraConfigState.usefulServices?.certificate !== undefined) {
-        configs.push(PublicCert());
+    // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)
+    if (ExtraConfigState.usefulServices) {
+        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient));
     }
+
+    // Add Cloud DDNS configuration
+    configs.push(CloudDDNS(wanLinkType));
 
     return mergeMultipleConfigs(...configs);
 };

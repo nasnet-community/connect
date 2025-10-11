@@ -8,14 +8,14 @@ import type {
     DDNSEntry,
     UPNPConfig,
     NATPMPConfig,
+    VPNClient,
 } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 // import { OneTimeScript, ScriptAndScheduler } from "~/components/Star/ConfigGenerator";
 import type { WANLinkType } from "~/components/Star/StarContext";
 import { LetsEncrypt, PrivateCert, ExportCert } from "~/components/Star/ConfigGenerator";
 import type { Subnets } from "~/components/Star/StarContext";
-import { GetNetworks } from "~/components/Star/ConfigGenerator";
-// import { GetWANInterfaceWName, GetWANInterfaces } from "~/components/Star/ConfigGenerator";
+import { GetNetworks, GetWANInterfaces, GetAllVPNInterfaceNames } from "~/components/Star/ConfigGenerator";
 import type { WANLinks } from "~/components/Star/StarContext";
 
 // Base Extra Utils
@@ -152,9 +152,7 @@ export const AUpdate = (updateConfig: IntervalConfig): RouterConfig => {
     return config;
 };
 
-export const IPAddressUpdateFunc = (
-    ipAddressConfig: IntervalConfig,
-): RouterConfig => {
+export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterConfig => {
     const { time, interval } = ipAddressConfig;
 
     if (!time || !interval) {
@@ -176,9 +174,7 @@ export const IPAddressUpdateFunc = (
 };
 
 // Useful Services Utils
-export const Certificate = (
-    certificateConfig: CertificateConfig,
-): RouterConfig => {
+export const Certificate = ( certificateConfig: CertificateConfig ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Self-Signed (Private) Certificate
@@ -247,33 +243,100 @@ export const DDNS = (_DDNSEntry: DDNSEntry): RouterConfig => {
     return config;
 };
 
-export const UPNP = (
-    UPNPConfig: UPNPConfig,
-    _subnets: Subnets,
-    _WANLinks: WANLinks,
-): RouterConfig => {
+export const UPNP = ( UPNPConfig: UPNPConfig, subnets: Subnets, WANLinks: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
     const config: RouterConfig = {
         "/ip upnp": ["set enabled=yes"],
+        "/ip upnp interfaces": [],
     };
 
-    // Get External Interfaces Networks
-    const _LType = UPNPConfig.linkType;
+    const linkType = UPNPConfig.linkType;
 
-    // Get Internal Interfaces Networks
+    // Return if no link type specified
+    if (!linkType) {
+        return config;
+    }
+
+    // Add external (WAN) interfaces
+    if (linkType === "foreign" && WANLinks.Foreign) {
+        const interfaces = GetWANInterfaces(WANLinks.Foreign);
+        interfaces.forEach(iface => {
+            config["/ip upnp interfaces"].push(
+                `add interface=${iface} type=external comment="UPnP External - Foreign"`
+            );
+        });
+    } else if (linkType === "domestic" && WANLinks.Domestic) {
+        const interfaces = GetWANInterfaces(WANLinks.Domestic);
+        interfaces.forEach(iface => {
+            config["/ip upnp interfaces"].push(
+                `add interface=${iface} type=external comment="UPnP External - Domestic"`
+            );
+        });
+    } else if (linkType === "vpn" && vpnClient) {
+        const interfaces = GetAllVPNInterfaceNames(vpnClient);
+        interfaces.forEach(iface => {
+            config["/ip upnp interfaces"].push(
+                `add interface=${iface} type=external comment="UPnP External - VPN"`
+            );
+        });
+    }
+
+    // Add internal (LAN bridge) interfaces
+    const networks = GetNetworks(subnets);
+    networks.forEach(networkName => {
+        const bridgeName = `LANBridge${networkName}`;
+        config["/ip upnp interfaces"].push(
+            `add interface=${bridgeName} type=internal comment="UPnP Internal - ${networkName}"`
+        );
+    });
 
     return config;
 };
 
-export const NATPMP = (
-    NATPMPConfig: NATPMPConfig,
-    subnets: Subnets,
-    _WANLinks: WANLinks,
-): RouterConfig => {
+export const NATPMP = ( NATPMPConfig: NATPMPConfig, subnets: Subnets, WANLinks: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
     const config: RouterConfig = {
         "/ip nat-pmp": ["set enabled=yes"],
+        "/ip nat-pmp interfaces": [],
     };
 
-    const _Networks = GetNetworks(subnets);
+    const linkType = NATPMPConfig.linkType;
+
+    // Return if no link type specified
+    if (!linkType) {
+        return config;
+    }
+
+    // Add external (WAN) interfaces
+    if (linkType === "foreign" && WANLinks.Foreign) {
+        const interfaces = GetWANInterfaces(WANLinks.Foreign);
+        interfaces.forEach(iface => {
+            config["/ip nat-pmp interfaces"].push(
+                `add interface=${iface} type=external comment="NAT-PMP External - Foreign"`
+            );
+        });
+    } else if (linkType === "domestic" && WANLinks.Domestic) {
+        const interfaces = GetWANInterfaces(WANLinks.Domestic);
+        interfaces.forEach(iface => {
+            config["/ip nat-pmp interfaces"].push(
+                `add interface=${iface} type=external comment="NAT-PMP External - Domestic"`
+            );
+        });
+    } else if (linkType === "vpn" && vpnClient) {
+        const interfaces = GetAllVPNInterfaceNames(vpnClient);
+        interfaces.forEach(iface => {
+            config["/ip nat-pmp interfaces"].push(
+                `add interface=${iface} type=external comment="NAT-PMP External - VPN"`
+            );
+        });
+    }
+
+    // Add internal (LAN bridge) interfaces
+    const networks = GetNetworks(subnets);
+    networks.forEach(networkName => {
+        const bridgeName = `LANBridge${networkName}`;
+        config["/ip nat-pmp interfaces"].push(
+            `add interface=${bridgeName} type=internal comment="NAT-PMP Internal - ${networkName}"`
+        );
+    });
 
     return config;
 };

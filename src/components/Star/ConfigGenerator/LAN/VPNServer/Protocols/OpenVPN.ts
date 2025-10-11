@@ -1,7 +1,16 @@
-import type { OpenVpnServerConfig, VSCredentials } from "~/components/Star/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator";
-import { CommandShortner, mergeRouterConfigs, OneTimeScript } from "~/components/Star/ConfigGenerator";
+import type { OpenVpnServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    CommandShortner, 
+    mergeRouterConfigs, 
+    OneTimeScript,
+    formatBooleanValue,
+    VSAddressList,
+    VSInterfaceList,
+    generateIPPool,
+    VSPorfile,
+    SubnetToRange,
+} from "~/components/Star/ConfigGenerator";
 
 
 export const ExportOpenVPN = (): RouterConfig => {
@@ -330,13 +339,14 @@ export const ExportOpenVPN = (): RouterConfig => {
     });
 };
 
-export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
+export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig ): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
         "/interface ovpn-server server": [],
         "/ip firewall filter": [],
         "/ip firewall address-list": [],
+        "": [],
     };
 
     const {
@@ -349,39 +359,38 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
         Encryption,
         // IPV6,
         Address,
-        DefaultProfile = "ovpn-profile",
         KeepaliveTimeout = 60,
         RedirectGetway = "disabled",
         PushRoutes,
     } = config;
 
-    // // Determine the pool name to use consistently
-    // const poolName = Address?.AddressPool || 'ovpn-pool';
 
-    // // Create IP pool for OpenVPN clients - always create the pool
-    // routerConfig["/ip pool"].push(
-    //     `add name=${poolName} ranges=192.168.60.5-192.168.60.250`
-    // );
+    // Use provided subnet configuration
+    const { subnet } = subnetConfig;
+    const ranges = SubnetToRange(subnet);
 
-    // // Create PPP profile
-    // const profileParams: string[] = [
-    //     // `name=${DefaultProfile}`,
-    //     `name=ovpn-profile`,
-    //     'dns-server=1.1.1.1',
-    //     'local-address=192.168.60.1',
-    //     `remote-address=${poolName}`,
-    //     'use-encryption=yes'
-    // ];
+    // Generate IP pool for OpenVPN clients
+    routerConfig["/ip pool"].push(
+        ...generateIPPool({ name, ranges, comment: `OpenVPN ${name} client pool` })
+    );
 
-    // routerConfig["/ppp profile"].push(
-    //     `add ${profileParams.join(' ')}`
-    // );
+    // Create PPP profile using shared helper (profile name: `${name}-profile`)
+    const profileCfg = VSPorfile(subnet, String(vsNetwork), name);
+    Object.entries(profileCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
+
+    // Add VPN subnet to address list using shared helper
+    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} OpenVPN subnet`);
+    Object.entries(addrCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
+
 
     // Create OpenVPN server instance
     const serverParams: string[] = [
         `name=${name}`,
-        // `certificate=${Certificate.Certificate}`,
-        `default-profile=${DefaultProfile}`,
+        `default-profile=${name}-profile`,
         `disabled=${formatBooleanValue(!enabled)}`,
         `port=${Port}`,
         `protocol=${Protocol}`,
@@ -390,16 +399,16 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
 
     if (Certificate.RequireClientCertificate !== undefined) {
         serverParams.push(
-            `require-client-certificate=${formatBooleanValue(Certificate.RequireClientCertificate)}`,
+            `require-client-certificate=no`,
         );
     }
 
     if (Encryption.Auth) {
-        serverParams.push(`auth=${formatArrayValue(Encryption.Auth)}`);
+        serverParams.push(`auth=sha1,md5,sha256,sha384,sha512`);
     }
 
     if (Encryption.Cipher) {
-        serverParams.push(`cipher=${formatArrayValue(Encryption.Cipher)}`);
+        serverParams.push(`cipher=blowfish128,aes128-cbc,aes192-cbc,aes256-cbc,aes128-gcm,aes192-gcm,aes256-gcm`);
     }
 
     if (Encryption.UserAuthMethod) {
@@ -427,17 +436,18 @@ export const OVPNServer = (config: OpenVpnServerConfig): RouterConfig => {
     );
 
     // Add firewall rules
-    routerConfig["/ip firewall filter"].push(
-        `add action=accept chain=input comment="OpenVPN Server ${Protocol}" dst-port=${Port} in-interface-list=DOM-WAN protocol=${Protocol}`,
-    );
+
 
     return CommandShortner(routerConfig);
 };
 
-export const OVPNServerUsers = (users: VSCredentials[]): RouterConfig => {
+export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCredentials[]): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
+
+    // Get the profile name from server config (matches the profile created in OVPNServer)
+    const profileName = `${serverConfig.name}-profile`;
 
     // Filter users who have OpenVPN in their VPNType array
     const ovpnUsers = users.filter((user) => user.VPNType.includes("OpenVPN"));
@@ -446,7 +456,7 @@ export const OVPNServerUsers = (users: VSCredentials[]): RouterConfig => {
         const secretParams: string[] = [
             `name="${user.Username}"`,
             `password="${user.Password}"`,
-            "profile=ovpn-profile",
+            `profile=${profileName}`,
             "service=ovpn",
         ];
 
@@ -460,11 +470,8 @@ export const OVPNServerUsers = (users: VSCredentials[]): RouterConfig => {
     return CommandShortner(config);
 };
 
-export const OVPNVSBinding = (credentials: VSCredentials[]): RouterConfig => {
+export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
     const config: RouterConfig = {
-        "/interface l2tp-server": [],
-        "/interface pptp-server": [],
-        "/interface sstp-server": [],
         "/interface ovpn-server": [],
         "/interface list member": [],
         "": [],
@@ -476,20 +483,17 @@ export const OVPNVSBinding = (credentials: VSCredentials[]): RouterConfig => {
     }
 
     // Filter users for supported VPN types only
-    const supportedVpnTypes = ["L2TP", "PPTP", "SSTP", "OpenVPN"];
+    const supportedVpnTypes = ["OpenVPN"];
     const filteredCredentials = credentials.filter((user) =>
         user.VPNType.some((vpnType) => supportedVpnTypes.includes(vpnType)),
     );
 
     if (filteredCredentials.length === 0) {
-        config[""].push(
-            "# No users configured for supported VPN binding types (L2TP, PPTP, SSTP, OpenVPN)",
-        );
         return config;
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: Credentials[] } = {};
+    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
@@ -502,81 +506,11 @@ export const OVPNVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         });
     });
 
-    // Add general comments
-    config[""].push(
-        "# VPN Server Binding Configuration",
-        `# Total users: ${filteredCredentials.length}`,
-        `# Supported VPN types: ${Object.keys(usersByVpnType).join(", ")}`,
-        "# Each binding interface is added to LAN and VPN-LAN interface lists for proper network management",
-        "",
-    );
-
     // Keep track of created interfaces for interface list membership
     const createdInterfaces: string[] = [];
 
-    // L2TP Static Interface Bindings
-    if (usersByVpnType["L2TP"]) {
-        config[""].push("# L2TP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each L2TP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["L2TP"].forEach((user) => {
-            const staticBindingName = `l2tp-${user.Username}`;
-
-            config["/interface l2tp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // PPTP Static Interface Bindings
-    if (usersByVpnType["PPTP"]) {
-        config[""].push("# PPTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each PPTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["PPTP"].forEach((user) => {
-            const staticBindingName = `pptp-${user.Username}`;
-
-            config["/interface pptp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // SSTP Static Interface Bindings
-    if (usersByVpnType["SSTP"]) {
-        config[""].push("# SSTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each SSTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["SSTP"].forEach((user) => {
-            const staticBindingName = `sstp-${user.Username}`;
-
-            config["/interface sstp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
     // OpenVPN Static Interface Bindings
     if (usersByVpnType["OpenVPN"]) {
-        config[""].push("# OpenVPN Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each OpenVPN user for advanced firewall/queue rules",
-        );
 
         usersByVpnType["OpenVPN"].forEach((user) => {
             const staticBindingName = `ovpn-${user.Username}`;
@@ -590,43 +524,26 @@ export const OVPNVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         config[""].push("");
     }
 
-    // Add all created interfaces to LAN and VPN-LAN interface lists
+    // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
     if (createdInterfaces.length > 0) {
-        config[""].push("# Adding VPN binding interfaces to interface lists");
-        config[""].push(
-            "# This enables proper network segmentation and management",
-        );
 
         createdInterfaces.forEach((interfaceName) => {
-            // Add to LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="LAN" comment="VPN binding interface for network management"`,
+            // Use VSInterfaceList helper to add interface to proper lists
+            const interfaceListCfg = VSInterfaceList(
+                interfaceName, 
+                String(VSNetwork), 
+                `VPN binding interface for ${interfaceName}`
             );
-
-            // Add to VPN-LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="VPN-LAN" comment="VPN binding interface for VPN-specific rules"`,
-            );
+            
+            // Merge the interface list configuration
+            Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
+                config[section] = (config[section] ?? []).concat(cmds);
+            });
         });
         config[""].push("");
     }
 
-    // Advanced Binding Information
-    config[""].push("# Static Interface Binding Benefits:");
-    config[""].push("# 1. Predictable interface names for firewall rules");
-    config[""].push("# 2. Per-user queue management capabilities");
-    config[""].push("# 3. Individual user traffic monitoring");
-    config[""].push("# 4. User-specific interface list assignments");
-    config[""].push("# 5. Proper network segmentation through interface lists");
-    config[""].push("# 6. Simplified management via LAN and VPN-LAN lists");
-    config[""].push("");
-    config[""].push(
-        "# Note: Users must still be configured in /ppp secret for authentication",
-    );
-    config[""].push("");
-
     // Summary
-    config[""].push("# VPN Server Binding Summary:");
     Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
         config[""].push(
             `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
@@ -635,42 +552,78 @@ export const OVPNVSBinding = (credentials: VSCredentials[]): RouterConfig => {
 
     if (createdInterfaces.length > 0) {
         config[""].push("");
-        config[""].push("# Interface List Memberships:");
-        config[""].push(
-            `# ${createdInterfaces.length} interfaces added to both LAN and VPN-LAN lists`,
-        );
-        config[""].push(`# Interface names: ${createdInterfaces.join(", ")}`);
     }
 
     return config;
 };
 
-export const OVPNServerWrapper = ( serverConfigs: OpenVpnServerConfig[], users: VSCredentials[] = [] ): RouterConfig => {
+export const OVPNServerFirewall = ( serverConfigs: OpenVpnServerConfig[] ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall filter": [],
+        "/ip firewall mangle": [],
+    };
+
+    serverConfigs.forEach((serverConfig) => {
+        const { name, Port = 1194, Protocol = "tcp" } = serverConfig;
+
+        config["/ip firewall filter"].push(
+            `add action=accept chain=input comment="OpenVPN Server ${name} (${Protocol})" dst-port=${Port} in-interface-list=Domestic-WAN protocol=${Protocol}`,
+        );
+
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound OpenVPN Connections (${name})" \\
+                connection-state=new in-interface-list=Domestic-WAN protocol=${Protocol} dst-port=${Port} \\
+                new-connection-mark=conn-vpn-server passthrough=yes`,
+        );
+    });
+
+    return config;
+}
+
+export const SingleOVPNWrapper = (  serverConfig: OpenVpnServerConfig,  users: VSCredentials[],  vsNetwork: VSNetwork,  subnetConfig: SubnetConfig ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Create basic OpenVPN configuration (pool and profile)
-    const poolName = "ovpn-pool";
-    const basicConfig: RouterConfig = {
-        "/ip pool": [`add name=${poolName} ranges=192.168.60.5-192.168.60.250`],
-        "/ppp profile": [
-            `add name=ovpn-profile dns-server=1.1.1.1 local-address=192.168.60.1 remote-address=${poolName} use-encryption=yes`,
-        ],
-        "/ip firewall address-list": [
-            "add address=192.168.60.0/24 list=VPN-LAN",
-        ],
-    };
-    configs.push(basicConfig);
-
-    // Process each OpenVPN server configuration
-    serverConfigs.forEach((serverConfig) => {
-        // Generate OpenVPN interface configuration
-        configs.push(OVPNServer(serverConfig));
-    });
+    // Generate OpenVPN server configuration
+    configs.push(OVPNServer(serverConfig, vsNetwork, subnetConfig));
 
     // Generate OpenVPN users configuration if users are provided
     if (users.length > 0) {
-        configs.push(OVPNServerUsers(users));
+        configs.push(OVPNServerUsers(serverConfig, users));
     }
+
+    // Generate firewall rules
+    configs.push(OVPNServerFirewall([serverConfig]));
+
+    // Merge configurations
+    const finalConfig = mergeRouterConfigs(...configs);
+
+    return CommandShortner(finalConfig);
+}
+
+export const OVPNServerWrapper = (  serverConfigs: OpenVpnServerConfig[],  users: VSCredentials[] = [],  subnetConfigs: SubnetConfig[] ): RouterConfig => {
+    const configs: RouterConfig[] = [];
+
+    // Process each OpenVPN server configuration
+    serverConfigs.forEach((serverConfig, index) => {
+        // Get VSNetwork from server config or default to "VPN"
+        const vsNetwork: VSNetwork = serverConfig.VSNetwork || "VPN";
+        
+        // Try to find matching subnet by name
+        const serverName = serverConfig.name;
+        let matchedSubnet = subnetConfigs.find((s) => s.name === serverName);
+        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name.toLowerCase() === serverName.toLowerCase());
+        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name === `ovpn-${serverName}`);
+        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name.toLowerCase() === `ovpn-${serverName}`.toLowerCase());
+        
+        // Fallback to default subnet if no match found
+        const effectiveSubnet: SubnetConfig = matchedSubnet || {
+            name: serverName,
+            subnet: `192.168.${60 + index}.0/24`, // Default: 192.168.60.0/24, 192.168.61.0/24, etc.
+        };
+
+        // Use SingleOVPNWrapper for full server setup
+        configs.push(SingleOVPNWrapper(serverConfig, users, vsNetwork, effectiveSubnet));
+    });
 
     // Add OpenVPN client configuration export functionality (only once)
     if (configs.length > 0) {
@@ -706,6 +659,7 @@ export const OVPNServerWrapper = ( serverConfigs: OpenVpnServerConfig[], users: 
 
     return CommandShortner(finalConfig);
 };
+
 
 
 

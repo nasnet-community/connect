@@ -1,579 +1,680 @@
-// import { describe, it } from "vitest";
-// import {
-//     L2tpServer,
-//     L2tpServerUsers,
-//     L2tpServerWrapper,
-// } from "./L2TP";
-// import { testWithOutput, validateRouterConfig } from "~/test-utils/test-helpers";
-// import type {
-//     L2tpServerConfig,
-//     Credentials,
-// } from "~/components/Star/StarContext/Utils/VPNServerType";
+import { describe, it } from "vitest";
+import {
+    L2tpServer,
+    L2tpServerUsers,
+    L2TPVSBinding,
+    L2TPServerFirewall,
+    L2tpServerWrapper,
+} from "./L2TP";
+import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import type {
+    L2tpServerConfig,
+    VSCredentials,
+    VSNetwork,
+    SubnetConfig,
+} from "~/components/Star/StarContext";
 
-// describe("L2TP Protocol Tests", () => {
-//     describe("L2tpServer Function", () => {
-//         it("should generate basic L2TP server configuration", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "mysecretkey123",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "l2tp-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "l2tp-cert",
-//                 },
-//             };
+describe("L2TP Protocol Tests", () => {
+    // Common test data
+    const vsNetwork: VSNetwork = "VPN";
+    const subnetConfig: SubnetConfig = {
+        name: "l2tp",
+        subnet: "192.168.80.0/24",
+    };
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "Basic L2TP server configuration",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+    describe("L2tpServer Function", () => {
+        it("should generate basic L2TP server configuration", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "sharedsecret123",
+                },
+                Authentication: ["mschap2"],
+                KeepaliveTimeout: 30,
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result, [
-//                 "/interface l2tp-server server",
-//                 "/ip pool",
-//                 "/ppp profile",
-//                 "/ip ipsec profile",
-//                 "/ip ipsec proposal",
-//             ]);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "Basic L2TP server configuration",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//         it("should generate L2TP server with custom port", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1702,
-//                 IPsecSecret: "customsecret456",
-//                 Encryption: {
-//                     Auth: ["sha512"],
-//                     Cipher: ["aes128"],
-//                 },
-//                 Address: {
-//                     AddressPool: "custom-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "custom-cert",
-//                 },
-//             };
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfig(result, [
+                "/ip pool",
+                "/ppp profile",
+                "/interface l2tp-server server",
+            ]);
+        });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP server with custom port",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+        it("should configure L2TP with IPsec required", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "MyStrongSecret2024!",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with IPsec required",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//         it("should handle disabled L2TP server", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: false,
-//                 Port: 1701,
-//                 IPsecSecret: "disabledsecret",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "disabled-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "disabled-cert",
-//                 },
-//             };
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "Disabled L2TP server",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+        it("should configure L2TP without IPsec", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                Authentication: ["pap", "chap", "mschap1", "mschap2"],
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "L2TP without IPsec",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//         it("should handle multiple encryption algorithms", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "multialgo789",
-//                 Encryption: {
-//                     Auth: ["sha256", "sha384", "sha512"],
-//                     Cipher: ["aes256", "aes192", "aes128"],
-//                 },
-//                 Address: {
-//                     AddressPool: "multi-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "multi-cert",
-//                 },
-//             };
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with multiple encryption algorithms",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+        it("should handle custom MTU/MRU packet sizes", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                PacketSize: {
+                    MaxMtu: 1400,
+                    MaxMru: 1400,
+                    mrru: 1600,
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with custom packet sizes",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//         it("should handle L2TP with strong IPSec configuration", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "strongipsec999",
-//                 Encryption: {
-//                     Auth: ["sha512"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "strong-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "strong-cert",
-//                 },
-//             };
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with strong IPSec settings",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+        it("should configure fast path and session limits", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                allowFastPath: true,
+                maxSessions: 100,
+                OneSessionPerHost: true,
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result, [
-//                 "/interface l2tp-server server",
-//                 "/ip ipsec profile",
-//                 "/ip ipsec proposal",
-//             ]);
-//         });
-//     });
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with fast path and session limits",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//     describe("L2tpServerUsers Function", () => {
-//         it("should generate L2TP user credentials", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "l2tpuser1",
-//                     Password: "l2tppass1",
-//                     VPNType: ["L2TP"],
-//                 },
-//                 {
-//                     Username: "l2tpuser2",
-//                     Password: "l2tppass2",
-//                     VPNType: ["L2TP"],
-//                 },
-//                 {
-//                     Username: "l2tpuser3",
-//                     Password: "l2tppass3",
-//                     VPNType: ["L2TP"],
-//                 },
-//             ];
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServerUsers",
-//                 "L2TP users configuration",
-//                 { users },
-//                 () => L2tpServerUsers(users),
-//             );
+        it("should handle disabled L2TP server", () => {
+            const config: L2tpServerConfig = {
+                enabled: false,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "Disabled L2TP server",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
 
-//         it("should handle single user configuration", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "admin",
-//                     Password: "adminpass",
-//                     VPNType: ["L2TP"],
-//                 },
-//             ];
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServerUsers",
-//                 "Single L2TP user",
-//                 { users },
-//                 () => L2tpServerUsers(users),
-//             );
+        it("should handle different network types", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "domesticsecret",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+            const domesticSubnet: SubnetConfig = {
+                name: "l2tp-domestic",
+                subnet: "192.168.20.0/24",
+            };
 
-//             const result = L2tpServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with Domestic network",
+                { config, vsNetwork: "Domestic", domesticSubnet },
+                () => L2tpServer(config, "Domestic", domesticSubnet),
+            );
 
-//         it("should handle empty users array", () => {
-//             const users: Credentials[] = [];
+            const result = L2tpServer(config, "Domestic", domesticSubnet);
+            validateRouterConfigStructure(result);
+        });
+    });
 
-//             testWithOutput(
-//                 "L2tpServerUsers",
-//                 "L2TP with no users",
-//                 { users },
-//                 () => L2tpServerUsers(users),
-//             );
+    describe("L2tpServerUsers Function", () => {
+        it("should generate L2TP user credentials", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServerUsers(users);
-//             validateRouterConfig(result);
-//         });
+            const users: VSCredentials[] = [
+                {
+                    Username: "l2tpuser1",
+                    Password: "l2tppass1",
+                    VPNType: ["L2TP"],
+                },
+                {
+                    Username: "l2tpuser2",
+                    Password: "l2tppass2",
+                    VPNType: ["L2TP"],
+                },
+            ];
 
-//         it("should handle many users", () => {
-//             const users: Credentials[] = Array.from({ length: 25 }, (_, i) => ({
-//                 Username: `l2tp_user${i + 1}`,
-//                 Password: `l2tp_pass${i + 1}`,
-//                 VPNType: ["L2TP"],
-//             }));
+            testWithOutput(
+                "L2tpServerUsers",
+                "L2TP users configuration",
+                { config, users },
+                () => L2tpServerUsers(config, users),
+            );
 
-//             testWithOutput(
-//                 "L2tpServerUsers",
-//                 "L2TP with multiple users",
-//                 { users: `Array of ${users.length} users` },
-//                 () => L2tpServerUsers(users),
-//             );
+            const result = L2tpServerUsers(config, users);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
 
-//             const result = L2tpServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
+        it("should filter only L2TP users", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//         it("should handle users with special characters", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "user-test.01",
-//                     Password: "P@ssw0rd!L2TP",
-//                     VPNType: ["L2TP"],
-//                 },
-//                 {
-//                     Username: "admin_l2tp",
-//                     Password: "Str0ng#L2TP#Pass",
-//                     VPNType: ["L2TP"],
-//                 },
-//             ];
+            const users: VSCredentials[] = [
+                {
+                    Username: "l2tpuser",
+                    Password: "pass1",
+                    VPNType: ["L2TP"],
+                },
+                {
+                    Username: "pptpuser",
+                    Password: "pass2",
+                    VPNType: ["PPTP"],
+                },
+                {
+                    Username: "multiuser",
+                    Password: "pass3",
+                    VPNType: ["L2TP", "OpenVPN"],
+                },
+            ];
 
-//             testWithOutput(
-//                 "L2tpServerUsers",
-//                 "L2TP users with special characters",
-//                 { users },
-//                 () => L2tpServerUsers(users),
-//             );
+            testWithOutput(
+                "L2tpServerUsers",
+                "Filter only L2TP users",
+                { config, users },
+                () => L2tpServerUsers(config, users),
+            );
 
-//             const result = L2tpServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-//     });
+            const result = L2tpServerUsers(config, users);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
 
-//     describe("L2tpServerWrapper Function", () => {
-//         it("should generate complete L2TP configuration", () => {
-//             const serverConfig: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "completesecret123",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "complete-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "complete-cert",
-//                 },
-//             };
+        it("should handle empty users array", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+            const users: VSCredentials[] = [];
 
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "user1",
-//                     Password: "pass1",
-//                     VPNType: ["L2TP"],
-//                 },
-//                 {
-//                     Username: "user2",
-//                     Password: "pass2",
-//                     VPNType: ["L2TP"],
-//                 },
-//             ];
+            testWithOutput(
+                "L2tpServerUsers",
+                "L2TP with no users",
+                { config, users },
+                () => L2tpServerUsers(config, users),
+            );
 
-//             testWithOutput(
-//                 "L2tpServerWrapper",
-//                 "Complete L2TP server setup",
-//                 { serverConfig, users },
-//                 () => L2tpServerWrapper(serverConfig, users),
-//             );
+            const result = L2tpServerUsers(config, users);
+            validateRouterConfigStructure(result);
+        });
 
-//             const result = L2tpServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
+        it("should handle many L2TP users", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "sharedsecret",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//         it("should handle configuration with no users", () => {
-//             const serverConfig: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "nousersecret456",
-//                 Encryption: {
-//                     Auth: ["sha384"],
-//                     Cipher: ["aes192"],
-//                 },
-//                 Address: {
-//                     AddressPool: "nouser-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "nouser-cert",
-//                 },
-//             };
+            const users: VSCredentials[] = Array.from({ length: 30 }, (_, i) => ({
+                Username: `l2tp_user${i + 1}`,
+                Password: `l2tp_pass${i + 1}`,
+                VPNType: ["L2TP"],
+            }));
 
-//             testWithOutput(
-//                 "L2tpServerWrapper",
-//                 "L2TP server without users",
-//                 { serverConfig },
-//                 () => L2tpServerWrapper(serverConfig, []),
-//             );
+            testWithOutput(
+                "L2tpServerUsers",
+                "L2TP with multiple users",
+                { config, users: `Array of ${users.length} users` },
+                () => L2tpServerUsers(config, users),
+            );
 
-//             const result = L2tpServerWrapper(serverConfig, []);
-//             validateRouterConfig(result);
-//         });
+            const result = L2tpServerUsers(config, users);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
+    });
 
-//         it("should handle disabled server with users", () => {
-//             const serverConfig: L2tpServerConfig = {
-//                 enabled: false,
-//                 Port: 1701,
-//                 IPsecSecret: "disabledwithusers",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "disabled-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "disabled-cert",
-//                 },
-//             };
+    describe("L2TPVSBinding Function", () => {
+        it("should generate L2TP interface bindings", () => {
+            const credentials: VSCredentials[] = [
+                {
+                    Username: "binduser1",
+                    Password: "bindpass1",
+                    VPNType: ["L2TP"],
+                },
+                {
+                    Username: "binduser2",
+                    Password: "bindpass2",
+                    VPNType: ["L2TP"],
+                },
+            ];
 
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "disableduser1",
-//                     Password: "disabledpass1",
-//                     VPNType: ["L2TP"],
-//                 },
-//             ];
+            testWithOutput(
+                "L2TPVSBinding",
+                "L2TP interface bindings",
+                { credentials, VSNetwork: vsNetwork },
+                () => L2TPVSBinding(credentials, vsNetwork),
+            );
 
-//             testWithOutput(
-//                 "L2tpServerWrapper",
-//                 "Disabled L2TP server with users",
-//                 { serverConfig, users },
-//                 () => L2tpServerWrapper(serverConfig, users),
-//             );
+            const result = L2TPVSBinding(credentials, vsNetwork);
+            validateRouterConfig(result, ["/interface l2tp-server"]);
+        });
 
-//             const result = L2tpServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
+        it("should handle different network types for binding", () => {
+            const credentials: VSCredentials[] = [
+                {
+                    Username: "foreignuser",
+                    Password: "foreignpass",
+                    VPNType: ["L2TP"],
+                },
+            ];
 
-//         it("should handle complex configuration with many users", () => {
-//             const serverConfig: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "complexsecret999",
-//                 Encryption: {
-//                     Auth: ["sha512", "sha384", "sha256"],
-//                     Cipher: ["aes256", "aes192", "aes128"],
-//                 },
-//                 Address: {
-//                     AddressPool: "complex-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "complex-cert",
-//                 },
-//             };
+            testWithOutput(
+                "L2TPVSBinding",
+                "L2TP bindings for Foreign network",
+                { credentials, VSNetwork: "Foreign" },
+                () => L2TPVSBinding(credentials, "Foreign"),
+            );
 
-//             const users: Credentials[] = Array.from({ length: 30 }, (_, i) => ({
-//                 Username: `l2tpuser${i + 1}`,
-//                 Password: `l2tppass${i + 1}`,
-//                 VPNType: ["L2TP"],
-//             }));
+            const result = L2TPVSBinding(credentials, "Foreign");
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServerWrapper",
-//                 "Complex L2TP setup with many users",
-//                 {
-//                     serverConfig,
-//                     users: `Array of ${users.length} users`,
-//                 },
-//                 () => L2tpServerWrapper(serverConfig, users),
-//             );
+        it("should handle empty credentials", () => {
+            const credentials: VSCredentials[] = [];
 
-//             const result = L2tpServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
-//     });
+            testWithOutput(
+                "L2TPVSBinding",
+                "L2TP bindings with no credentials",
+                { credentials, VSNetwork: vsNetwork },
+                () => L2TPVSBinding(credentials, vsNetwork),
+            );
 
-//     describe("Edge Cases and Error Scenarios", () => {
-//         it("should handle very long IPSec secrets", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "ThisIsAVeryLongIPSecSecretKeyThatShouldStillWorkProperly1234567890ABCDEFGHIJ",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "longsecret-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "longsecret-cert",
-//                 },
-//             };
+            const result = L2TPVSBinding(credentials, vsNetwork);
+            validateRouterConfigStructure(result);
+        });
+    });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with very long IPSec secret",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+    describe("L2TPServerFirewall Function", () => {
+        it("should generate firewall rules for L2TP server", () => {
+            const serverConfigs: L2tpServerConfig[] = [
+                {
+                    enabled: true,
+                    IPsec: {
+                        UseIpsec: "required",
+                    },
+                    L2TPV3: {
+                        l2tpv3EtherInterfaceList: "LAN",
+                    },
+                },
+            ];
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            testWithOutput(
+                "L2TPServerFirewall",
+                "Firewall rules for L2TP",
+                { serverConfigs },
+                () => L2TPServerFirewall(serverConfigs),
+            );
 
-//         it("should handle non-standard ports", () => {
-//             const configs = [
-//                 {
-//                     enabled: true,
-//                     Port: 1700,
-//                     IPsecSecret: "lowport",
-//                     Encryption: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                     },
-//                     Address: {
-//                         AddressPool: "lowport-pool",
-//                     },
-//                     Certificate: {
-//                         Certificate: "lowport-cert",
-//                     },
-//                 },
-//                 {
-//                     enabled: true,
-//                     Port: 65000,
-//                     IPsecSecret: "highport",
-//                     Encryption: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes128"],
-//                     },
-//                     Address: {
-//                         AddressPool: "highport-pool",
-//                     },
-//                     Certificate: {
-//                         Certificate: "highport-cert",
-//                     },
-//                 },
-//             ];
+            const result = L2TPServerFirewall(serverConfigs);
+            validateRouterConfig(result, ["/ip firewall filter", "/ip firewall mangle"]);
+        });
 
-//             configs.forEach((config) => {
-//                 testWithOutput(
-//                     "L2tpServer",
-//                     `L2TP with port ${config.Port}`,
-//                     { config },
-//                     () => L2tpServer(config),
-//                 );
+        it("should handle multiple L2TP servers", () => {
+            const serverConfigs: L2tpServerConfig[] = [
+                {
+                    enabled: true,
+                    IPsec: {
+                        UseIpsec: "required",
+                    },
+                    L2TPV3: {
+                        l2tpv3EtherInterfaceList: "LAN",
+                    },
+                },
+                {
+                    enabled: true,
+                    IPsec: {
+                        UseIpsec: "no",
+                    },
+                    L2TPV3: {
+                        l2tpv3EtherInterfaceList: "LAN",
+                    },
+                },
+            ];
 
-//                 const result = L2tpServer(config);
-//                 validateRouterConfig(result);
-//             });
-//         });
+            testWithOutput(
+                "L2TPServerFirewall",
+                "Firewall rules for multiple L2TP servers",
+                { serverConfigs },
+                () => L2TPServerFirewall(serverConfigs),
+            );
 
-//         it("should handle minimal encryption configuration", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "minimalsecret",
-//                 Encryption: {
-//                     Auth: ["md5"],
-//                     Cipher: ["des"],
-//                 },
-//                 Address: {
-//                     AddressPool: "minimal-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "minimal-cert",
-//                 },
-//             };
+            const result = L2TPServerFirewall(serverConfigs);
+            validateRouterConfigStructure(result);
+        });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with minimal encryption",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+        it("should handle empty server configs", () => {
+            const serverConfigs: L2tpServerConfig[] = [];
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            testWithOutput(
+                "L2TPServerFirewall",
+                "Firewall with no L2TP servers",
+                { serverConfigs },
+                () => L2TPServerFirewall(serverConfigs),
+            );
 
-//         it("should handle IPSec secret with special characters", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "S3cr3t!@#$%^&*()_+Key",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "special-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "special-cert",
-//                 },
-//             };
+            const result = L2TPServerFirewall(serverConfigs);
+            validateRouterConfigStructure(result);
+        });
+    });
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with special characters in IPSec secret",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+    describe("L2tpServerWrapper Function", () => {
+        it("should generate complete L2TP configuration", () => {
+            const serverConfig: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "MyL2TPSecret2024!",
+                },
+                Authentication: ["mschap2"],
+                KeepaliveTimeout: 30,
+                PacketSize: {
+                    MaxMtu: 1460,
+                    MaxMru: 1460,
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
+            const users: VSCredentials[] = [
+                {
+                    Username: "user1",
+                    Password: "pass1",
+                    VPNType: ["L2TP"],
+                },
+                {
+                    Username: "user2",
+                    Password: "pass2",
+                    VPNType: ["L2TP"],
+                },
+            ];
 
-//         it("should handle duplicate pool names", () => {
-//             const config: L2tpServerConfig = {
-//                 enabled: true,
-//                 Port: 1701,
-//                 IPsecSecret: "duplicatepool",
-//                 Encryption: {
-//                     Auth: ["sha256"],
-//                     Cipher: ["aes256"],
-//                 },
-//                 Address: {
-//                     AddressPool: "common-pool",
-//                 },
-//                 Certificate: {
-//                     Certificate: "common-cert",
-//                 },
-//             };
+            testWithOutput(
+                "L2tpServerWrapper",
+                "Complete L2TP server setup",
+                { serverConfig, users, subnetConfig },
+                () => L2tpServerWrapper(serverConfig, users, subnetConfig),
+            );
 
-//             testWithOutput(
-//                 "L2tpServer",
-//                 "L2TP with common pool name",
-//                 { config },
-//                 () => L2tpServer(config),
-//             );
+            const result = L2tpServerWrapper(serverConfig, users, subnetConfig);
+            validateRouterConfig(result);
+        });
 
-//             const result = L2tpServer(config);
-//             validateRouterConfig(result);
-//         });
-//     });
-// });
+        it("should use default subnet when not provided", () => {
+            const serverConfig: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "defaultuser",
+                    Password: "defaultpass",
+                    VPNType: ["L2TP"],
+                },
+            ];
+
+            testWithOutput(
+                "L2tpServerWrapper",
+                "L2TP with default subnet",
+                { serverConfig, users },
+                () => L2tpServerWrapper(serverConfig, users),
+            );
+
+            const result = L2tpServerWrapper(serverConfig, users);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle configuration with no users", () => {
+            const serverConfig: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "secret123",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+
+            testWithOutput(
+                "L2tpServerWrapper",
+                "L2TP server without users",
+                { serverConfig, subnetConfig },
+                () => L2tpServerWrapper(serverConfig, [], subnetConfig),
+            );
+
+            const result = L2tpServerWrapper(serverConfig, [], subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should integrate server, users, and firewall", () => {
+            const serverConfig: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "ComplexSecret!2024",
+                },
+                Authentication: ["pap", "chap", "mschap1", "mschap2"],
+                allowFastPath: false,
+                maxSessions: 50,
+                OneSessionPerHost: true,
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+
+            const users: VSCredentials[] = Array.from({ length: 20 }, (_, i) => ({
+                Username: `l2tpuser${i + 1}`,
+                Password: `l2tppass${i + 1}`,
+                VPNType: ["L2TP"],
+            }));
+
+            testWithOutput(
+                "L2tpServerWrapper",
+                "Complete L2TP setup with many users",
+                {
+                    serverConfig,
+                    users: `Array of ${users.length} users`,
+                    subnetConfig,
+                },
+                () => L2tpServerWrapper(serverConfig, users, subnetConfig),
+            );
+
+            const result = L2tpServerWrapper(serverConfig, users, subnetConfig);
+            validateRouterConfig(result);
+        });
+    });
+
+    describe("Edge Cases and Error Scenarios", () => {
+        it("should handle special characters in IPsec secret", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "required",
+                    IpsecSecret: "Complex!@#Secret$%^2024&*()_+",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with special characters in secret",
+                { config, vsNetwork, subnetConfig },
+                () => L2tpServer(config, vsNetwork, subnetConfig),
+            );
+
+            const result = L2tpServer(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle users with special characters", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "user-l2tp.01",
+                    Password: "P@ssw0rd!L2TP#2024",
+                    VPNType: ["L2TP"],
+                },
+            ];
+
+            testWithOutput(
+                "L2tpServerUsers",
+                "L2TP users with special characters",
+                { config, users },
+                () => L2tpServerUsers(config, users),
+            );
+
+            const result = L2tpServerUsers(config, users);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
+
+        it("should handle very small subnet", () => {
+            const config: L2tpServerConfig = {
+                enabled: true,
+                IPsec: {
+                    UseIpsec: "no",
+                },
+                L2TPV3: {
+                    l2tpv3EtherInterfaceList: "LAN",
+                },
+            };
+            const smallSubnet: SubnetConfig = {
+                name: "l2tp-small",
+                subnet: "10.10.10.0/30",
+            };
+
+            testWithOutput(
+                "L2tpServer",
+                "L2TP with /30 subnet",
+                { config, vsNetwork, smallSubnet },
+                () => L2tpServer(config, vsNetwork, smallSubnet),
+            );
+
+            const result = L2tpServer(config, vsNetwork, smallSubnet);
+            validateRouterConfigStructure(result);
+        });
+    });
+});

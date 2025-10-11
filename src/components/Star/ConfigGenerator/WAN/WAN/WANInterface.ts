@@ -13,6 +13,8 @@ import {
     convertWANLinkToMultiWAN,
     FailoverRecursive,
     LoadBalanceRoute,
+    PCCMangle,
+    NTHMangle,
 } from "~/components/Star/ConfigGenerator";
 
 type Network = "Foreign" | "Domestic";
@@ -152,34 +154,44 @@ export const DFSingleLink = ( wanLink: WANLink, networkType: "Foreign" | "Domest
         return {};
     }
 
-    // Convert the single WANLinkConfig to MultiWANInterface format
-    const isDomestic = networkType === "Domestic";
-    const interfaces = convertWANLinkToMultiWAN(
-        wanLink.WANConfigs,
-        isDomestic,
-        networkType
-    );
-
-    if (interfaces.length === 0) {
-        return {};
+    const wanLinkConfig = wanLink.WANConfigs[0];
+    const linkName = wanLinkConfig.name;
+    const { ConnectionConfig } = wanLinkConfig;
+    
+    // Get the final interface name after transformations
+    const finalInterfaceName = GetWANInterface(wanLinkConfig);
+    
+    // Determine the gateway based on connection type
+    let gateway: string;
+    
+    if (ConnectionConfig?.pppoe) {
+        // PPPoE: Use interface name only as gateway
+        gateway = finalInterfaceName;
+    } else if (ConnectionConfig?.lteSettings || wanLinkConfig.InterfaceConfig.InterfaceName.startsWith("lte")) {
+        // LTE: Use interface name only as gateway
+        gateway = finalInterfaceName;
+    } else if (ConnectionConfig?.static) {
+        // Static: Use gateway from static config + interface
+        gateway = `${ConnectionConfig.static.gateway}%${finalInterfaceName}`;
+    } else {
+        // DHCP (default): Use default IPs based on network type
+        const defaultGateway = networkType === "Foreign" ? "100.64.0.1" : "192.168.2.1";
+        gateway = `${defaultGateway}%${finalInterfaceName}`;
     }
 
-    // For a single link, create a simple route configuration
-    // Use the appropriate routing table based on network type
-    const routingTable = isDomestic ? "to-DOM" : "to-FRN";
-    
-    const singleInterface = interfaces[0];
+    // Use full network name for routing table to match Networks.ts
+    const routingTable = `to-${networkType}`;
     
     const config: RouterConfig = {
         "/ip route": [
-            `add dst-address=0.0.0.0/0 gateway=${singleInterface.gateway} routing-table=${routingTable} distance=${singleInterface.distance} comment="${networkType} Single Link"`,
+            `add dst-address="0.0.0.0/0" gateway="${gateway}" routing-table="${routingTable}" comment="Route-to-${networkType}-${linkName}"`,
         ],
     };
 
     return config;
 };
 
-export const DFMultiLink = ( wanLink: WANLink ): RouterConfig => {
+export const DFMultiLink = ( wanLink: WANLink, networkType: "Foreign" | "Domestic" ): RouterConfig => {
     const configs: RouterConfig[] = [];
     
     // Check if there are multiple WAN links configured
@@ -195,20 +207,31 @@ export const DFMultiLink = ( wanLink: WANLink ): RouterConfig => {
     // Convert WANLinkConfigs to MultiWANInterface format
     const interfaces = convertWANLinkToMultiWAN(
         wanLink.WANConfigs,
-        false,
-        "Generic"
+        networkType === "Domestic",
+        networkType
     );
 
     if (interfaces.length === 0) {
         return {};
     }
 
+    // Use full network name for routing table to match Networks.ts
+    const routingTable = `to-${networkType}`;
+    
+    // Get actual WAN interface names for mangle rules
+    const wanInterfaceNames = wanLink.WANConfigs.map(config => GetWANInterface(config));
+    const linkCount = wanInterfaceNames.length;
+    
+    // Address list and routing mark for mangle rules
+    const addressList = `${networkType}-LAN`;
+    const routingMark = routingTable;
+
     // Check if MultiLinkConfig is defined
     const multiLinkConfig = wanLink.MultiLinkConfig;
 
     if (!multiLinkConfig) {
         // Default behavior: use failover with recursive gateway checking
-        return FailoverRecursive(interfaces, "main");
+        return FailoverRecursive(interfaces, routingTable);
     }
 
     // Handle different strategies based on configuration
@@ -216,41 +239,56 @@ export const DFMultiLink = ( wanLink: WANLink ): RouterConfig => {
         case "LoadBalance": {
             const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
             // Only PCC and NTH are supported for LoadBalanceRoute
-            if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
-                configs.push(LoadBalanceRoute(interfaces, loadBalanceMethod));
+            if (loadBalanceMethod === "PCC") {
+                // Generate PCC mangle rules
+                configs.push(PCCMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                // Generate PCC routing rules
+                configs.push(LoadBalanceRoute(interfaces, "PCC", routingTable));
+            } else if (loadBalanceMethod === "NTH") {
+                // Generate NTH mangle rules
+                configs.push(NTHMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                // Generate NTH routing rules
+                configs.push(LoadBalanceRoute(interfaces, "NTH", routingTable));
             } else if (loadBalanceMethod === "ECMP") {
                 // ECMP would be handled differently - for now fallback to PCC
-                configs.push(LoadBalanceRoute(interfaces, "PCC"));
+                configs.push(PCCMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                configs.push(LoadBalanceRoute(interfaces, "PCC", routingTable));
             }
             break;
         }
 
         case "Failover":
-            // Use recursive failover by default
-            configs.push(FailoverRecursive(interfaces, "main"));
+            // Use recursive failover with correct routing table
+            configs.push(FailoverRecursive(interfaces, routingTable));
             break;
 
         case "RoundRobin":
             // Round-robin using NTH method
-            configs.push(LoadBalanceRoute(interfaces, "NTH"));
+            configs.push(NTHMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+            configs.push(LoadBalanceRoute(interfaces, "NTH", routingTable));
             break;
 
         case "Both": {
             // Combine load balancing with failover
             const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
             // Only PCC and NTH are supported for LoadBalanceRoute
-            if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
-                configs.push(LoadBalanceRoute(interfaces, loadBalanceMethod));
+            if (loadBalanceMethod === "PCC") {
+                configs.push(PCCMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                configs.push(LoadBalanceRoute(interfaces, "PCC", routingTable));
+            } else if (loadBalanceMethod === "NTH") {
+                configs.push(NTHMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                configs.push(LoadBalanceRoute(interfaces, "NTH", routingTable));
             } else if (loadBalanceMethod === "ECMP") {
                 // ECMP would be handled differently - for now fallback to PCC
-                configs.push(LoadBalanceRoute(interfaces, "PCC"));
+                configs.push(PCCMangle(linkCount, wanInterfaceNames, addressList, routingMark));
+                configs.push(LoadBalanceRoute(interfaces, "PCC", routingTable));
             }
-            configs.push(FailoverRecursive(interfaces, "main"));
+            configs.push(FailoverRecursive(interfaces, routingTable));
             break;
         }
 
         default:
-            configs.push(FailoverRecursive(interfaces, "main"));
+            configs.push(FailoverRecursive(interfaces, routingTable));
     }
 
     return mergeMultipleConfigs(...configs);
@@ -272,7 +310,7 @@ export const generateWANLinksConfig = (wanLinks: WANLinks): RouterConfig => {
             const foreignRoutingConfig = DFSingleLink(Foreign, "Foreign");
             config = mergeRouterConfigs(config, foreignRoutingConfig);
         } else if (Foreign.WANConfigs.length > 1) {
-            const foreignRoutingConfig = DFMultiLink(Foreign);
+            const foreignRoutingConfig = DFMultiLink(Foreign, "Foreign");
             config = mergeRouterConfigs(config, foreignRoutingConfig);
         }
     }
@@ -289,7 +327,7 @@ export const generateWANLinksConfig = (wanLinks: WANLinks): RouterConfig => {
             const domesticRoutingConfig = DFSingleLink(Domestic, "Domestic");
             config = mergeRouterConfigs(config, domesticRoutingConfig);
         } else if (Domestic.WANConfigs.length > 1) {
-            const domesticRoutingConfig = DFMultiLink(Domestic);
+            const domesticRoutingConfig = DFMultiLink(Domestic, "Domestic");
             config = mergeRouterConfigs(config, domesticRoutingConfig);
         }
     }

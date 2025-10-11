@@ -2,6 +2,7 @@ import type { BondingConfig } from "~/components/Star/StarContext";
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { WANLinkConfig, WANLinks } from "~/components/Star/StarContext";
 import type { VPNClient } from "~/components/Star/StarContext";
+import { GetWANInterface, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 // Common interface for Multi-WAN and Failover functions
 // Used by both WAN links and VPN clients
@@ -110,10 +111,32 @@ export const convertWANLinkToMultiWAN = (
         // Assign unique checkIP for each link by cycling through available IPs
         const uniqueCheckIP = checkIPArray[index % checkIPArray.length];
         
+        // Get the final interface name after all transformations (VLAN, MACVLAN, PPPoE, etc.)
+        const finalInterfaceName = GetWANInterface(config);
+        
+        // Determine the gateway based on connection type (matching DFSingleLink logic)
+        let gateway: string;
+        const { ConnectionConfig, InterfaceConfig } = config;
+        
+        if (ConnectionConfig?.pppoe) {
+            // PPPoE: Use interface name only as gateway
+            gateway = finalInterfaceName;
+        } else if (ConnectionConfig?.lteSettings || InterfaceConfig.InterfaceName.startsWith("lte")) {
+            // LTE: Use interface name only as gateway
+            gateway = finalInterfaceName;
+        } else if (ConnectionConfig?.static) {
+            // Static: Use gateway from static config + interface
+            gateway = `${ConnectionConfig.static.gateway}%${finalInterfaceName}`;
+        } else {
+            // DHCP (default): Use default IPs based on network type
+            const defaultGateway = isDomestic ? "192.168.2.1" : "100.64.0.1";
+            gateway = `${defaultGateway}%${finalInterfaceName}`;
+        }
+        
         return {
             name: config.name,
             network: network,
-            gateway: config.ConnectionConfig?.static?.gateway || "dhcp",
+            gateway: gateway,
             distance: config.priority || (index + 1),
             weight: config.weight,
             checkIP: uniqueCheckIP,
@@ -126,13 +149,16 @@ export const convertWANLinkToMultiWAN = (
 };
 
 // Helper function to convert VPN Client configs to MultiWANInterface
-export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterface[] => {
+// checkIPOffset: Offset to use when selecting check IPs (to avoid conflicts with WAN links)
+export const convertVPNClientToMultiWAN = (vpnClient: VPNClient, checkIPOffset: number = 0): MultiWANInterface[] => {
     const interfaces: MultiWANInterface[] = [];
     // VPN clients typically route to foreign servers, use foreign check IPs
-    const checkIPs = ForeignCheckIPs.slice(0, 5) as unknown as string[];
+    // Start from offset + 5 to use different IPs than those used for checkIPs array
+    const checkIPs = ForeignCheckIPs.slice(checkIPOffset + 5, checkIPOffset + 10) as unknown as string[];
     
     // Counter to assign unique checkIPs across all VPN types
-    let interfaceIndex = 0;
+    // Start from offset to avoid conflict with Foreign WAN check IPs
+    let interfaceIndex = checkIPOffset;
 
     // Convert Wireguard clients
     if (vpnClient.Wireguard) {
@@ -140,10 +166,10 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.InterfaceAddress.split('/')[0], // Extract IP from CIDR
+                gateway: GenerateVCInterfaceName(config.Name, "Wireguard"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
-                checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length], // Unique check IP
+                checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length], // Unique check IP with offset
                 interval: "10s",
                 timeout: "5s",
                 checkIPs: checkIPs,
@@ -159,7 +185,7 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.Server.Address,
+                gateway: GenerateVCInterfaceName(config.Name, "OpenVPN"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
                 checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length],
@@ -178,7 +204,7 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.ConnectTo,
+                gateway: GenerateVCInterfaceName(config.Name, "PPTP"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
                 checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length],
@@ -197,7 +223,7 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.Server.Address,
+                gateway: GenerateVCInterfaceName(config.Name, "L2TP"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
                 checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length],
@@ -216,7 +242,7 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.Server.Address,
+                gateway: GenerateVCInterfaceName(config.Name, "SSTP"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
                 checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length],
@@ -235,7 +261,7 @@ export const convertVPNClientToMultiWAN = (vpnClient: VPNClient): MultiWANInterf
             interfaces.push({
                 name: config.Name,
                 network: "VPN",
-                gateway: config.ServerAddress,
+                gateway: GenerateVCInterfaceName(config.Name, "IKeV2"), // Use interface name
                 distance: config.priority || 1,
                 weight: config.weight,
                 checkIP: ForeignCheckIPs[interfaceIndex % ForeignCheckIPs.length],
@@ -260,9 +286,14 @@ export const combineMultiWANInterfaces = (
 ): MultiWANInterface[] => {
     const allInterfaces: MultiWANInterface[] = [];
 
+    // Calculate offset for VPN check IPs to avoid conflicts with Foreign WAN
+    // If there are Foreign WAN links, offset VPN by their count
+    const foreignWANCount = wanLinks?.Foreign?.WANConfigs ? wanLinks.Foreign.WANConfigs.length : 0;
+    const vpnCheckIPOffset = foreignWANCount;
+
     // 1. Add VPN clients first (highest priority)
     if (vpnClient) {
-        const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient);
+        const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient, vpnCheckIPOffset);
         allInterfaces.push(...vpnInterfaces);
     }
 
@@ -303,7 +334,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     wanInterfaces.forEach((iface, _index) => {
         mangleRules.push(
             `add action=mark-connection chain=input in-interface="${iface}" new-connection-mark="${iface}-conn" \\
-            passthrough=yes comment="// PCC LOAD BALANCING - Mark ${iface} connections"`,
+            passthrough=yes comment=" PCC LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -311,7 +342,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=output connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes comment="// PCC LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes comment=" PCC LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -320,7 +351,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
         mangleRules.push(
             `add action=mark-connection chain=prerouting new-connection-mark="${iface}-conn" passthrough=yes \\
             per-connection-classifier=both-addresses-and-ports:${linkCount}/${index} dst-address-type=!local \\
-            dst-address-list="!LOCAL-IP" src-address-list="${AddressList} comment="// PCC LOAD BALANCING - Mark ${iface} connections"`,
+            dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment=" PCC LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -328,7 +359,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=prerouting connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment="// PCC LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment=" PCC LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -347,7 +378,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-connection chain=prerouting in-interface="${iface}" new-connection-mark="${iface}-conn" \\
-            passthrough=yes comment="// NTH LOAD BALANCING - Mark ${iface} connections"`,
+            passthrough=yes comment=" NTH LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -355,7 +386,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=output connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes comment="// NTH LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes comment=" NTH LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -365,7 +396,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
         mangleRules.push(
             `add action=mark-connection chain=prerouting new-connection-mark="${iface}-conn" passthrough=yes \\
             connection-state=new dst-address-list="!LOCAL-IP" src-address-list="${localNetwork}" \\
-            nth=${linkCount},${nthIndex} comment="// NTH LOAD BALANCING - Mark ${iface} connections"`,
+            nth=${linkCount},${nthIndex} comment=" NTH LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -374,7 +405,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
         mangleRules.push(
             `add action=mark-routing chain=prerouting connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
             passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${localNetwork}" \\
-            comment="// NTH LOAD BALANCING - Mark ${iface} routing"`,
+            comment=" NTH LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -383,19 +414,20 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
 
 // Load Balancing Route - Routing configuration for PCC/NTH Load Balancing
 // This function generates the routing configuration needed for both PCC and NTH load balancing
-export const LoadBalanceRoute = ( interfaces: MultiWANInterface[],  method: "PCC" | "NTH" = "PCC" ): RouterConfig => {
+export const LoadBalanceRoute = ( interfaces: MultiWANInterface[],  _method: "PCC" | "NTH" = "PCC", routingTable: string = "main" ): RouterConfig => {
     const config: RouterConfig = {
         "/ip route": [],
     };
 
     const routes = config["/ip route"];
+    const tableParam = routingTable ? `routing-table="${routingTable}"` : "";
 
     // 1. Create recursive check routes (dst-address with real gateway)
     // These routes are used to check if the ISP gateway is reachable
     interfaces.forEach((wan) => {
         routes.push(
-            `add check-gateway=ping dst-address="${wan.checkIP}" distance=1 gateway=${wan.gateway} \\
-            target-scope="10" scope="10" comment="${method} Recursive Check ${wan.name}"`
+            `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+            ${tableParam} target-scope="10" scope="10" comment="Route-to-${wan.network}-${wan.name}"`
         );
     });
 
@@ -403,18 +435,18 @@ export const LoadBalanceRoute = ( interfaces: MultiWANInterface[],  method: "PCC
     // These routes are used by the mangle rules to route traffic to specific ISPs
     interfaces.forEach((wan) => {
         routes.push(
-            `add check-gateway=ping distance=1 gateway=${wan.checkIP} scope="30" target-scope="30" \\
-            routing-table="to-${wan.name}" comment="${method} Routing Mark to ${wan.name}"`
+            `add check-gateway=ping gateway="${wan.checkIP}" scope="30" target-scope="30" \\
+            routing-table="to-${wan.network}-${wan.name}" comment="Route-to-${wan.network}-${wan.name}"`
         );
     });
 
-    // 3. Create main table default routes with increasing distance for failover
+    // 3. Create default routes with increasing distance for failover
     // These provide automatic failover if primary routes fail
     interfaces.forEach((wan, index) => {
         const distance = index + 1; // 1, 2, 3, 4...
         routes.push(
-            `add check-gateway=ping distance=${distance} gateway=${wan.checkIP} scope="30" target-scope="30" \\
-            routing-table=main comment="${method} Default Route to ${wan.name}"`
+            `add check-gateway=ping gateway="${wan.checkIP}" ${tableParam} distance=${distance} \\
+            scope="30" target-scope="30" comment="Route-to-${wan.network}-${wan.name}"`
         );
     });
 
@@ -435,10 +467,10 @@ export const FailoverGateway = ( interfaces: MultiWANInterface[], Table: string 
     // Create main default routes with check-gateway=ping
     // Routes automatically disable when gateway is unreachable
     interfaces.forEach((wan) => {
-        const routingTable = Table ? `routing-table=${Table}` : "";
+        const routingTable = Table ? `routing-table="${Table}"` : "";
         routes.push(
-            `add dst-address="0.0.0.0/0" check-gateway=ping distance=${wan.distance} gateway=${wan.gateway} \\
-            ${routingTable} target-scope="30" scope="30" comment="Failover Gateway - ${wan.name}"`,
+            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.gateway}"  ${routingTable} distance=${wan.distance} \\
+            target-scope="30" scope="30" comment="Failover Gateway - ${wan.name}"`,
         );
     });
 
@@ -452,23 +484,25 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
     };
 
     const routes = config["/ip route"];
-    const routingTable = Table ? `routing-table=${Table}` : "";
+    const routingTable = Table ? `routing-table="${Table}"` : "";
 
     // 1. Create recursive host routes
     // These monitor connectivity to public IPs via ISP gateways
     interfaces.forEach((wan) => {
+        const routeComment = `Route-to-${wan.network}-${wan.name}`;
         routes.push(
-            `add check-gateway=ping dst-address="${wan.checkIP}" distance=1 gateway=${wan.gateway} \\
-            ${routingTable} target-scope="10" scope="10" comment="Failover Recursive Check - ${wan.name}"`,
+            `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+            ${routingTable} target-scope="10" scope="10" comment="${routeComment}"`,
         );
     });
 
     // 2. Create main default routes pointing to the check IPs
     // These use the recursive routes to determine availability
     interfaces.forEach((wan) => {
+        const routeComment = `Route-to-${wan.network}-${wan.name}`;
         routes.push(
-            `add dst-address="0.0.0.0/0" check-gateway=ping distance=${wan.distance} gateway=${wan.checkIP} \\
-            ${routingTable} target-scope="10" scope="30" comment="Failover Recursive - ${wan.name}"`,
+            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
+            distance=${wan.distance} target-scope="10" scope="30" comment="${routeComment}"`,
         );
     });
 
@@ -484,12 +518,12 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
 
     const routes = config["/ip route"];
     const netwatchRules = config["/tool netwatch"];
-    const routingTable = Table ? `routing-table=${Table}` : "";
+    const routingTable = Table ? `routing-table="${Table}"` : "";
 
     // 1. Create main default routes (controlled by Netwatch)
     interfaces.forEach((wan) => {
         routes.push(
-            `add dst-address="0.0.0.0/0" distance=${wan.distance} gateway=${wan.gateway} ${routingTable} \\
+            `add dst-address="0.0.0.0/0" gateway="${wan.gateway}" ${routingTable} distance=${wan.distance} \\
             comment="${wan.name}_DEFAULT_ROUTE" target-scope="10" scope="30"`,
         );
     });
@@ -498,7 +532,7 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
     // Ensures checks go through correct ISP even if main route is disabled
     interfaces.forEach((wan) => {
         routes.push(
-            `add dst-address="${wan.checkIP}" distance=1 gateway=${wan.gateway} ${routingTable} \\
+            `add dst-address="${wan.checkIP}" gateway="${wan.gateway}" ${routingTable} \\
             comment="${wan.name}_CHECK_ROUTE" target-scope="10" scope="30"`,
         );
     });
@@ -530,13 +564,13 @@ export const FailoverScheduled = ( interfaces: MultiWANInterface[], Table: strin
     const routes = config["/ip route"];
     const scripts = config["/system script"];
     const schedulers = config["/system scheduler"];
-    const routingTable = Table ? `routing-table=${Table}` : "";
+    const routingTable = Table ? `routing-table="${Table}"` : "";
 
     // 1. Create main default routes (controlled by scheduled scripts)
     interfaces.forEach((wan) => {
         routes.push(
-            `add dst-address="0.0.0.0/0" distance=${wan.distance} gateway=${wan.gateway} ${routingTable} \\
-            comment="${wan.name}_route"`,
+            `add dst-address="0.0.0.0/0" gateway="${wan.gateway}" ${routingTable} \\
+            distance=${wan.distance} comment="${wan.name}_route"`,
         );
     });
 
@@ -544,7 +578,7 @@ export const FailoverScheduled = ( interfaces: MultiWANInterface[], Table: strin
     interfaces.forEach((wan) => {
         wan.checkIPs?.forEach((ip, index) => {
             routes.push(
-                `add dst-address="${ip}" distance=1 gateway=${wan.gateway} ${routingTable} \\
+                `add dst-address="${ip}" gateway="${wan.gateway}" ${routingTable} \\
                 comment="${wan.name}_CHECK_ROUTE_${index + 1}" target-scope="10" scope="30"`,
             );
         });
@@ -611,7 +645,7 @@ export const ECMP = ( interfaces: MultiWANInterface[], Table: string ): RouterCo
     };
 
     const routes = config["/ip route"];
-    const routingTable = Table ? `routing-table=${Table}` : "";
+    const routingTable = Table ? `routing-table="${Table}"` : "";
 
     // Create recursive routes if check IPs are provided
     interfaces.forEach((wan) => {
@@ -628,8 +662,7 @@ export const ECMP = ( interfaces: MultiWANInterface[], Table: string ): RouterCo
         .map((wan) => wan.checkIP || wan.gateway)
         .join(",");
     routes.push(
-        `add dst-address="0.0.0.0/0" gateway=${gateways} ${routingTable} \\
-        check-gateway=ping comment="ECMP Load Balancing"`,
+        `add check-gateway=ping dst-address="0.0.0.0/0" gateway=${gateways} ${routingTable} comment="ECMP Load Balancing"`,
     );
 
     return config;

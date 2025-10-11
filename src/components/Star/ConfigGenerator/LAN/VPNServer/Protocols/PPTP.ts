@@ -1,52 +1,64 @@
-import type { PptpServerConfig, VSCredentials } from "~/components/Star/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator";
-import { CommandShortner, mergeRouterConfigs } from "~/components/Star/ConfigGenerator";
+import type { PptpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    CommandShortner,
+    mergeRouterConfigs,
+    formatBooleanValue,
+    VSAddressList,
+    VSInterfaceList,
+    generateIPPool,
+    VSPorfile,
+    SubnetToRange,
+} from "~/components/Star/ConfigGenerator";
 
 
-export const PptpServer = (config: PptpServerConfig): RouterConfig => {
+export const PptpServer = (config: PptpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
         "/interface pptp-server server": [],
         "/ip firewall filter": [],
         "/ip firewall address-list": [],
+        "": [],
     };
 
     const {
         enabled,
         Authentication,
-        DefaultProfile = "pptp-profile",
         KeepaliveTimeout = 30,
         PacketSize,
     } = config;
 
-    // Create IP pool for PPTP clients
+    // Use provided subnet configuration
+    const { subnet } = subnetConfig;
+    const ranges = SubnetToRange(subnet);
+    const name = "pptp"; // PPTP server name
+
+    // Generate IP pool for PPTP clients
     routerConfig["/ip pool"].push(
-        `add name=pptp-pool ranges=192.168.70.5-192.168.70.250`,
+        ...generateIPPool({ name, ranges, comment: `PPTP ${name} client pool` })
     );
 
-    // Create PPP profile for PPTP
-    const profileParams: string[] = [
-        `name=pptp-profile`,
-        "dns-server=1.1.1.1",
-        "local-address=192.168.70.1",
-        "remote-address=pptp-pool",
-        "use-encryption=yes",
-    ];
+    // Create PPP profile using shared helper (profile name: `${name}-profile`)
+    const profileCfg = VSPorfile(subnet, String(vsNetwork), name);
+    Object.entries(profileCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
-    routerConfig["/ppp profile"].push(`add ${profileParams.join(" ")}`);
+    // Add VPN subnet to address list using shared helper
+    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} PPTP subnet`);
+    Object.entries(addrCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
     // Configure PPTP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
 
     if (Authentication) {
-        serverParams.push(`authentication=${formatArrayValue(Authentication)}`);
+        serverParams.push(`authentication=mschap1,mschap2`);
     }
 
-    if (DefaultProfile) {
-        serverParams.push(`default-profile=${DefaultProfile}`);
-    }
+    serverParams.push(`default-profile=${name}-profile`);
 
     if (KeepaliveTimeout) {
         serverParams.push(`keepalive-timeout=${KeepaliveTimeout}`);
@@ -68,23 +80,16 @@ export const PptpServer = (config: PptpServerConfig): RouterConfig => {
         `set ${serverParams.join(" ")}`,
     );
 
-    // Add firewall rule for PPTP
-    routerConfig["/ip firewall filter"].push(
-        `add action=accept chain=input comment="PPTP Server" dst-port=1723 in-interface-list=DOM-WAN protocol=tcp`,
-    );
-
-    // Add address list for PPTP network
-    routerConfig["/ip firewall address-list"].push(
-        "add address=192.168.70.0/24 list=VPN-LAN",
-    );
-
     return CommandShortner(routerConfig);
 };
 
-export const PptpServerUsers = (users: VSCredentials[]): RouterConfig => {
+export const PptpServerUsers = (serverConfig: PptpServerConfig, users: VSCredentials[]): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
+
+    // Get the profile name from server config (matches the profile created in PptpServer)
+    const profileName = "pptp-profile";
 
     // Filter users who have PPTP in their VPNType array
     const pptpUsers = users.filter((user) => user.VPNType.includes("PPTP"));
@@ -93,7 +98,7 @@ export const PptpServerUsers = (users: VSCredentials[]): RouterConfig => {
         const secretParams: string[] = [
             `name="${user.Username}"`,
             `password="${user.Password}"`,
-            "profile=pptp-profile",
+            `profile=${profileName}`,
             "service=pptp",
         ];
 
@@ -107,12 +112,9 @@ export const PptpServerUsers = (users: VSCredentials[]): RouterConfig => {
     return CommandShortner(config);
 };
 
-export const PPTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
+export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
     const config: RouterConfig = {
-        "/interface l2tp-server": [],
         "/interface pptp-server": [],
-        "/interface sstp-server": [],
-        "/interface ovpn-server": [],
         "/interface list member": [],
         "": [],
     };
@@ -123,20 +125,20 @@ export const PPTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
     }
 
     // Filter users for supported VPN types only
-    const supportedVpnTypes = ["L2TP", "PPTP", "SSTP", "OpenVPN"];
+    const supportedVpnTypes = ["PPTP"];
     const filteredCredentials = credentials.filter((user) =>
         user.VPNType.some((vpnType) => supportedVpnTypes.includes(vpnType)),
     );
 
     if (filteredCredentials.length === 0) {
         config[""].push(
-            "# No users configured for supported VPN binding types (L2TP, PPTP, SSTP, OpenVPN)",
+            "# No users configured for supported VPN binding types (PPTP)",
         );
         return config;
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: Credentials[] } = {};
+    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
@@ -149,36 +151,8 @@ export const PPTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         });
     });
 
-    // Add general comments
-    config[""].push(
-        "# VPN Server Binding Configuration",
-        `# Total users: ${filteredCredentials.length}`,
-        `# Supported VPN types: ${Object.keys(usersByVpnType).join(", ")}`,
-        "# Each binding interface is added to LAN and VPN-LAN interface lists for proper network management",
-        "",
-    );
-
     // Keep track of created interfaces for interface list membership
     const createdInterfaces: string[] = [];
-
-    // L2TP Static Interface Bindings
-    if (usersByVpnType["L2TP"]) {
-        config[""].push("# L2TP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each L2TP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["L2TP"].forEach((user) => {
-            const staticBindingName = `l2tp-${user.Username}`;
-
-            config["/interface l2tp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
 
     // PPTP Static Interface Bindings
     if (usersByVpnType["PPTP"]) {
@@ -199,81 +173,25 @@ export const PPTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         config[""].push("");
     }
 
-    // SSTP Static Interface Bindings
-    if (usersByVpnType["SSTP"]) {
-        config[""].push("# SSTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each SSTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["SSTP"].forEach((user) => {
-            const staticBindingName = `sstp-${user.Username}`;
-
-            config["/interface sstp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // OpenVPN Static Interface Bindings
-    if (usersByVpnType["OpenVPN"]) {
-        config[""].push("# OpenVPN Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each OpenVPN user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["OpenVPN"].forEach((user) => {
-            const staticBindingName = `ovpn-${user.Username}`;
-
-            config["/interface ovpn-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // Add all created interfaces to LAN and VPN-LAN interface lists
+    // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
     if (createdInterfaces.length > 0) {
-        config[""].push("# Adding VPN binding interfaces to interface lists");
-        config[""].push(
-            "# This enables proper network segmentation and management",
-        );
-
         createdInterfaces.forEach((interfaceName) => {
-            // Add to LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="LAN" comment="VPN binding interface for network management"`,
+            // Use VSInterfaceList helper to add interface to proper lists
+            const interfaceListCfg = VSInterfaceList(
+                interfaceName, 
+                String(VSNetwork), 
+                `VPN binding interface for ${interfaceName}`
             );
-
-            // Add to VPN-LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="VPN-LAN" comment="VPN binding interface for VPN-specific rules"`,
-            );
+            
+            // Merge the interface list configuration
+            Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
+                config[section] = (config[section] ?? []).concat(cmds);
+            });
         });
         config[""].push("");
     }
-
-    // Advanced Binding Information
-    config[""].push("# Static Interface Binding Benefits:");
-    config[""].push("# 1. Predictable interface names for firewall rules");
-    config[""].push("# 2. Per-user queue management capabilities");
-    config[""].push("# 3. Individual user traffic monitoring");
-    config[""].push("# 4. User-specific interface list assignments");
-    config[""].push("# 5. Proper network segmentation through interface lists");
-    config[""].push("# 6. Simplified management via LAN and VPN-LAN lists");
-    config[""].push("");
-    config[""].push(
-        "# Note: Users must still be configured in /ppp secret for authentication",
-    );
-    config[""].push("");
 
     // Summary
-    config[""].push("# VPN Server Binding Summary:");
     Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
         config[""].push(
             `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
@@ -282,26 +200,54 @@ export const PPTPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
 
     if (createdInterfaces.length > 0) {
         config[""].push("");
-        config[""].push("# Interface List Memberships:");
-        config[""].push(
-            `# ${createdInterfaces.length} interfaces added to both LAN and VPN-LAN lists`,
-        );
-        config[""].push(`# Interface names: ${createdInterfaces.join(", ")}`);
     }
 
     return config;
 };
 
-export const PptpServerWrapper = ( serverConfig: PptpServerConfig, users: VSCredentials[] = [] ): RouterConfig => {
+export const PPTPServerFirewall = (serverConfigs: PptpServerConfig[]): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall filter": [],
+        "/ip firewall mangle": [],
+    };
+
+    serverConfigs.forEach(() => {
+        config["/ip firewall filter"].push(
+            `add action=accept chain=input comment="PPTP Server (tcp)" dst-port=1723 in-interface-list=Domestic-WAN protocol=tcp`,
+        );
+
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
+                connection-state=new in-interface-list=Domestic-WAN protocol=tcp dst-port=1723 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`,
+        );
+    });
+
+    return config;
+}
+
+export const PptpServerWrapper = (serverConfig: PptpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Generate PPTP interface configuration
-    configs.push(PptpServer(serverConfig));
+    // Get VSNetwork from server config or default to "VPN"
+    const vsNetwork: VSNetwork = serverConfig.VSNetwork || "VPN";
+
+    // Fallback to default subnet if no match found
+    const effectiveSubnet: SubnetConfig = subnetConfig || {
+        name: "pptp",
+        subnet: "192.168.70.0/24", // Default PPTP network
+    };
+
+    // Generate PPTP server configuration
+    configs.push(PptpServer(serverConfig, vsNetwork, effectiveSubnet));
 
     // Generate PPTP users configuration if users are provided
     if (users.length > 0) {
-        configs.push(PptpServerUsers(users));
+        configs.push(PptpServerUsers(serverConfig, users));
     }
+
+    // Generate firewall rules
+    configs.push(PPTPServerFirewall([serverConfig]));
 
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
@@ -311,16 +257,19 @@ export const PptpServerWrapper = ( serverConfig: PptpServerConfig, users: VSCred
         finalConfig[""] = [];
     }
 
-    const pptpUsers = users.filter((user) => user.VPNType.includes("PPTP"));
-
-    finalConfig[""].unshift(
-        "# PPTP Server Configuration Summary:",
-        `# Enabled: ${serverConfig.enabled}`,
-        `# Default Profile: ${serverConfig.DefaultProfile || "pptp-profile"}`,
-        `# Users: ${pptpUsers.length}`,
-        "",
-    );
-
     return CommandShortner(finalConfig);
 };
+
+
+
+
+
+    // // Check for PPTP Server
+    // if (vpnServer.PptpServer) {
+    //     config["/ip firewall mangle"].push(
+    //         `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
+    //             connection-state=new in-interface-list=${interfaceList} protocol=tcp dst-port=1723 \\
+    //             new-connection-mark=conn-vpn-server passthrough=yes`,
+    //     );
+    // }
 
