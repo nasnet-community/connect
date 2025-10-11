@@ -1,3 +1,3 @@
-export * from "./Slave";
-export * from "./SlaveWireless";
+// Slave module exports
 export * from "./SlaveUtils";
+export * from "./Slave";

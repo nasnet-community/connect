@@ -193,7 +193,7 @@ export const ConfigGenerator = (state: StarState): string => {
 
         // Generate configurations from each module
         const chooseConfig = ChooseCG();
-        const wanConfig = WANCG(state.WAN, domesticLinkEnabled);
+        const wanConfig = WANCG(state.WAN);
         const lanConfig = LANCG(state);
         const extraConfig = ExtraCG(
             state.ExtraConfig,

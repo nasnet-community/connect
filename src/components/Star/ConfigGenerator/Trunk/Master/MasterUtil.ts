@@ -1,43 +1,17 @@
 import { CommandShortner, type RouterConfig } from "~/components/Star/ConfigGenerator";
-import { type ChooseState, type WirelessConfig } from "~/components/Star/StarContext";
+import { type ChooseState, type WirelessConfig, type Subnets } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
 
 
-
-
-
-
-const VLAN_IDS = {
-    Split: 10,
-    Domestic: 20,
-    Foreign: 30,
-    VPN: 40,
-    // VPN Client base IDs
-    Wireguard: 50,
-    OpenVPN: 60,
-    L2TP: 70,
-    PPTP: 75,
-    SSTP: 80,
-    IKev2: 85,
-    // VPN Server base IDs
-    WireguardServer: 100,
-    OpenVPNServer: 110,
-    L2TPServer: 120,
-    PPTPServer: 121,
-    SSTPServer: 122,
-    IKev2Server: 123,
-    Socks5: 124,
-    SSH: 125,
-    HTTPProxy: 126,
-    BackToHome: 127,
-    ZeroTier: 128,
-    // Tunnel base IDs
-    IPIP: 130,
-    Eoip: 140,
-    Gre: 150,
-    Vxlan: 160,
-} as const;
+/**
+ * Extract the third octet from a subnet string to use as VLAN ID
+ * Example: "192.168.10.0/24" → 10
+ */
+const extractThirdOctet = (subnet: string): number => {
+    const parts = subnet.split('/')[0].split('.');
+    return parseInt(parts[2], 10);
+};
 
 
 
@@ -66,13 +40,13 @@ export const addVLANToBridge = ( vlanInterfaceName: string, bridgeName: string, 
 };
 
 
-export const generateBaseNetworkVLANs = ( choose: ChooseState, trunkInterface: string ): RouterConfig => {
+export const generateBaseNetworkVLANs = ( subnets: Subnets, trunkInterface: string ): RouterConfig => {
     const configs: RouterConfig[] = [];
-    const networks = choose.Networks.BaseNetworks;
+    const baseNetworks = subnets.BaseNetworks;
 
     // Split Network
-    if (networks.Split) {
-        const vlanId = VLAN_IDS.Split;
+    if (baseNetworks.Split?.subnet) {
+        const vlanId = extractThirdOctet(baseNetworks.Split.subnet);
         const networkName = "Split";
         const vlanName = `VLAN${vlanId}-${trunkInterface}-${networkName}`;
 
@@ -81,8 +55,8 @@ export const generateBaseNetworkVLANs = ( choose: ChooseState, trunkInterface: s
     }
 
     // Domestic Network
-    if (networks.Domestic) {
-        const vlanId = VLAN_IDS.Domestic;
+    if (baseNetworks.Domestic?.subnet) {
+        const vlanId = extractThirdOctet(baseNetworks.Domestic.subnet);
         const networkName = "Domestic";
         const vlanName = `VLAN${vlanId}-${trunkInterface}-${networkName}`;
 
@@ -91,8 +65,8 @@ export const generateBaseNetworkVLANs = ( choose: ChooseState, trunkInterface: s
     }
 
     // Foreign Network
-    if (networks.Foreign) {
-        const vlanId = VLAN_IDS.Foreign;
+    if (baseNetworks.Foreign?.subnet) {
+        const vlanId = extractThirdOctet(baseNetworks.Foreign.subnet);
         const networkName = "Foreign";
         const vlanName = `VLAN${vlanId}-${trunkInterface}-${networkName}`;
 
@@ -101,8 +75,8 @@ export const generateBaseNetworkVLANs = ( choose: ChooseState, trunkInterface: s
     }
 
     // VPN Network
-    if (networks.VPN) {
-        const vlanId = VLAN_IDS.VPN;
+    if (baseNetworks.VPN?.subnet) {
+        const vlanId = extractThirdOctet(baseNetworks.VPN.subnet);
         const networkName = "VPN";
         const vlanName = `VLAN${vlanId}-${trunkInterface}-${networkName}`;
 
@@ -114,31 +88,30 @@ export const generateBaseNetworkVLANs = ( choose: ChooseState, trunkInterface: s
 };
 
 
-export const generateAdditionalNetworkVLANs = ( choose: ChooseState, trunkInterface: string ): RouterConfig => {
+export const generateAdditionalNetworkVLANs = ( subnets: Subnets, trunkInterface: string ): RouterConfig => {
     const configs: RouterConfig[] = [];
-    const networks = choose.Networks;
 
-    // Foreign Networks (Foreign-1, Foreign-2, etc.)
-    if (networks.ForeignNetworks && networks.ForeignNetworks.length > 0) {
-        networks.ForeignNetworks.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.Foreign + index + 1;
-            const fullNetworkName = `Foreign-${networkName}`;
+    // Foreign Networks
+    if (subnets.ForeignNetworks && subnets.ForeignNetworks.length > 0) {
+        subnets.ForeignNetworks.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `Foreign-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeForeign-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeForeign-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
-    // Domestic Networks (Domestic-1, Domestic-2, etc.)
-    if (networks.DomesticNetworks && networks.DomesticNetworks.length > 0) {
-        networks.DomesticNetworks.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.Domestic + index + 1;
-            const fullNetworkName = `Domestic-${networkName}`;
+    // Domestic Networks
+    if (subnets.DomesticNetworks && subnets.DomesticNetworks.length > 0) {
+        subnets.DomesticNetworks.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `Domestic-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeDomestic-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeDomestic-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -146,81 +119,81 @@ export const generateAdditionalNetworkVLANs = ( choose: ChooseState, trunkInterf
 };
 
 
-export const generateVPNClientNetworkVLANs = ( choose: ChooseState, trunkInterface: string ): RouterConfig => {
+export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface: string ): RouterConfig => {
     const configs: RouterConfig[] = [];
-    const vpnClient = choose.Networks.VPNClientNetworks;
+    const vpnClient = subnets.VPNClientNetworks;
 
     if (!vpnClient) return {};
 
     // Wireguard Client
     if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
-        vpnClient.Wireguard.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.Wireguard + index;
-            const fullNetworkName = `WG-Client-${networkName}`;
+        vpnClient.Wireguard.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `WG-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-WG-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-WG-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
     // OpenVPN Client
     if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
-        vpnClient.OpenVPN.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.OpenVPN + index;
-            const fullNetworkName = `OVPN-Client-${networkName}`;
+        vpnClient.OpenVPN.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `OVPN-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-OVPN-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-OVPN-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
     // L2TP Client
     if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
-        vpnClient.L2TP.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.L2TP + index;
-            const fullNetworkName = `L2TP-Client-${networkName}`;
+        vpnClient.L2TP.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `L2TP-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-L2TP-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-L2TP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
     // PPTP Client
     if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
-        vpnClient.PPTP.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.PPTP + index;
-            const fullNetworkName = `PPTP-Client-${networkName}`;
+        vpnClient.PPTP.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `PPTP-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-PPTP-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-PPTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
     // SSTP Client
     if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
-        vpnClient.SSTP.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.SSTP + index;
-            const fullNetworkName = `SSTP-Client-${networkName}`;
+        vpnClient.SSTP.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `SSTP-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-SSTP-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-SSTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
     // IKEv2 Client
     if (vpnClient.IKev2 && vpnClient.IKev2.length > 0) {
-        vpnClient.IKev2.forEach((networkName, index) => {
-            const vlanId = VLAN_IDS.IKev2 + index;
-            const fullNetworkName = `IKEv2-Client-${networkName}`;
+        vpnClient.IKev2.forEach((subnetConfig) => {
+            const vlanId = extractThirdOctet(subnetConfig.subnet);
+            const fullNetworkName = `IKEv2-Client-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-IKEv2-Client-${networkName}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-IKEv2-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -265,9 +238,9 @@ export const addTrunkInterfaceToBridge = (choose: ChooseState, trunkInterface: s
     
     // Determine which bridge to use (Split takes priority)
     let bridgeName: string | null = null;
-    if (baseNetworks.Split) {
+    if (baseNetworks?.Split) {
         bridgeName = "LANBridgeSplit";
-    } else if (baseNetworks.VPN) {
+    } else if (baseNetworks?.VPN) {
         bridgeName = "LANBridgeVPN";
     }
     

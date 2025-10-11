@@ -1,554 +1,298 @@
+/**
+ * SlaveCG Integration Tests
+ *
+ * This file contains integration tests for the main SlaveCG function,
+ * focusing on end-to-end configuration generation and complex scenarios.
+ *
+ * For detailed unit tests of individual utility functions, see:
+ * @see SlaveUtils.test.ts - Unit tests for utility functions like:
+ *   - createBridgesForNetworks
+ *   - commentTrunkInterface
+ *   - createVLANsOnTrunkInterface
+ *   - addVLANsToBridges
+ *   - createDHCPClientsOnBridges
+ *   - SlaveExtraCG
+ *   - addSlaveInterfacesToBridge
+ *   - configureSlaveWireless
+ */
 import { describe, it, expect } from "vitest";
 import { SlaveCG } from "./Slave";
 import { testWithOutput, validateRouterConfig } from "~/test-utils/test-helpers";
-import type { ChooseState, WirelessConfig, Networks } from "~/components/Star/StarContext";
+import type {
+    RouterModels,
+    WirelessConfig,
+    Subnets,
+    ExtraConfigState
+} from "~/components/Star/StarContext";
 
-describe("Slave Router Configuration Generator", () => {
-    const baseMasterRouter = {
-        isMaster: true,
-        Model: "RB5009UPr+S+IN" as const,
-        MasterSlaveInterface: "ether1" as const,
-        Interfaces: {
-            Interfaces: {
-                ethernet: ["ether1" as const, "ether2" as const],
-            },
-            OccupiedInterfaces: [],
-        },
-    };
+describe("SlaveCG - Slave Router Configuration Generator (Integration Tests)", () => {
+    // ============================================================================
+    // Helper Functions
+    // ============================================================================
 
-    const baseSlaveRouter = {
+    /**
+     * Creates a base slave router configuration
+     */
+    const createSlaveRouter = (overrides?: Partial<RouterModels>): RouterModels => ({
         isMaster: false,
-        Model: "hAP ax3" as const,
-        MasterSlaveInterface: "ether1" as const,
+        Model: "hAP ax3",
+        MasterSlaveInterface: "ether1",
         Interfaces: {
             Interfaces: {
-                ethernet: ["ether1" as const, "ether2" as const, "ether3" as const, "ether4" as const, "ether5" as const],
-                wireless: ["wifi5" as const, "wifi2.4" as const],
+                ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+                wireless: ["wifi5", "wifi2.4"],
             },
             OccupiedInterfaces: [],
         },
-    };
+        ...overrides,
+    });
 
-    const baseNetworks: Networks = {
+    /**
+     * Creates base subnets configuration with actual subnet addresses
+     */
+    const createBaseSubnets = (): Subnets => ({
         BaseNetworks: {
-            Split: true,
-            Domestic: true,
-            Foreign: true,
-            VPN: true,
+            Split: { name: "Split", subnet: "192.168.10.0/24" },
+            Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+            Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+            VPN: { name: "VPN", subnet: "192.168.40.0/24" },
         },
-    };
+    });
 
-    const baseWirelessConfig: WirelessConfig = {
-        SSID: "TestSSID",
-        Password: "password123",
+    /**
+     * Creates a minimal ExtraConfig state
+     */
+    const _createBaseExtraConfig = (): ExtraConfigState => ({
+        RUI: {
+            Timezone: "Asia/Tehran",
+            IPAddressUpdate: {
+                interval: "",
+                time: "",
+            },
+        },
+    });
+
+    /**
+     * Creates a wireless config for testing
+     */
+    const createWirelessConfig = (overrides?: Partial<WirelessConfig>): WirelessConfig => ({
+        SSID: "TestNetwork",
+        Password: "TestPassword123",
         isHide: false,
         isDisabled: false,
         SplitBand: false,
         WifiTarget: "Split",
         NetworkName: "",
-    };
+        ...overrides,
+    });
 
-    describe("Mode Validation", () => {
-        it("should return empty config when not in Trunk Mode", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "AP Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
+    // ============================================================================
+    // Validation Tests
+    // ============================================================================
 
-            const result = SlaveCG(choose, baseNetworks, []);
-            expect(Object.keys(result).length).toBe(0);
-        });
+    describe("Validation", () => {
+        it("should throw error when router is master (isMaster === true)", () => {
+            const masterRouter = createSlaveRouter({ isMaster: true });
 
-        it("should return empty config when no slave router exists", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [
-                    baseMasterRouter,
-                    { ...baseSlaveRouter, isMaster: true },
-                ],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            expect(Object.keys(result).length).toBe(0);
+            expect(() => SlaveCG(masterRouter)).toThrow(
+                "SlaveCG can only generate configuration for slave routers (isMaster must be false)"
+            );
         });
 
         it("should return empty config when slave has no trunk interface", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [
-                    baseMasterRouter,
-                    { ...baseSlaveRouter, MasterSlaveInterface: undefined },
-                ],
-                Networks: baseNetworks,
-            };
+            const slaveRouter = createSlaveRouter({ MasterSlaveInterface: undefined });
 
-            const result = SlaveCG(choose, baseNetworks, []);
+            const result = SlaveCG(slaveRouter);
             expect(Object.keys(result).length).toBe(0);
         });
-    });
 
-    describe("Bridge Configuration", () => {
-        it("should create bridges for all base networks", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
+        it("should generate config when valid slave router with trunk interface", () => {
+            const slaveRouter = createSlaveRouter();
+            const subnets = createBaseSubnets();
 
-            testWithOutput(
-                "SlaveCG",
-                "Create bridges for all base networks",
-                { NetworkTypes: "Split, Domestic, Foreign, VPN" },
-                () => SlaveCG(choose, baseNetworks, [])
-            );
+            const result = SlaveCG(slaveRouter, subnets);
 
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/interface bridge"]);
-            expect(result["/interface bridge"].length).toBe(4);
-            expect(result["/interface bridge"]).toContain("add name=LANBridgeSplit comment=\"Split\"");
-            expect(result["/interface bridge"]).toContain("add name=LANBridgeDomestic comment=\"Domestic\"");
-            expect(result["/interface bridge"]).toContain("add name=LANBridgeForeign comment=\"Foreign\"");
-            expect(result["/interface bridge"]).toContain("add name=LANBridgeVPN comment=\"VPN\"");
+            // Should have at least basic configuration
+            expect(Object.keys(result).length).toBeGreaterThan(0);
         });
     });
 
-    describe("VLAN Configuration", () => {
-        it("should create VLANs for all base networks on trunk interface", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            testWithOutput(
-                "SlaveCG",
-                "Create VLANs on trunk interface",
-                { TrunkInterface: "ether1" },
-                () => SlaveCG(choose, baseNetworks, [])
-            );
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/interface vlan"]);
-            expect(result["/interface vlan"].length).toBe(4);
-            expect(result["/interface vlan"][0]).toContain("vlan-id=10");
-            expect(result["/interface vlan"][0]).toContain("interface=ether1");
-            expect(result["/interface vlan"][1]).toContain("vlan-id=20");
-            expect(result["/interface vlan"][2]).toContain("vlan-id=30");
-            expect(result["/interface vlan"][3]).toContain("vlan-id=40");
-        });
-
-        it("should use correct VLAN naming convention", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: {
-                    BaseNetworks: {
-                        Split: true,
-                    },
-                },
-            };
-
-            const result = SlaveCG(choose, choose.Networks, []);
-            expect(result["/interface vlan"][0]).toContain("name=vlan10-Split");
-        });
-    });
-
-    describe("Bridge Port Configuration", () => {
-        it("should add VLANs to bridges", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/interface bridge port"]);
-
-            // Should have VLAN bridge ports + ethernet bridge ports
-            const vlanPorts = result["/interface bridge port"].filter(p => p.includes("vlan"));
-            expect(vlanPorts.length).toBe(4);
-            expect(vlanPorts[0]).toContain("bridge=LANBridgeSplit");
-            expect(vlanPorts[0]).toContain("interface=vlan10-Split");
-        });
-
-        it("should add ethernet interfaces to bridges", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            testWithOutput(
-                "SlaveCG",
-                "Add ethernet interfaces to bridges",
-                { AvailableEthernets: "ether2-ether5" },
-                () => SlaveCG(choose, baseNetworks, [])
-            );
-
-            const result = SlaveCG(choose, baseNetworks, []);
-
-            // Should have ethernet ports (ether2-ether5, excluding trunk ether1)
-            const ethernetPorts = result["/interface bridge port"].filter(p => p.includes("ether"));
-            expect(ethernetPorts.length).toBe(4); // ether2, ether3, ether4, ether5
-        });
-    });
-
-    describe("DHCP Client Configuration", () => {
-        it("should create DHCP clients for all bridges", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            testWithOutput(
-                "SlaveCG",
-                "Create DHCP clients for all bridges",
-                { Bridges: "Split, Domestic, Foreign, VPN" },
-                () => SlaveCG(choose, baseNetworks, [])
-            );
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/ip dhcp-client"]);
-            expect(result["/ip dhcp-client"].length).toBe(4);
-            expect(result["/ip dhcp-client"]).toContain("add interface=LANBridgeSplit");
-            expect(result["/ip dhcp-client"]).toContain("add interface=LANBridgeDomestic");
-            expect(result["/ip dhcp-client"]).toContain("add interface=LANBridgeForeign");
-            expect(result["/ip dhcp-client"]).toContain("add interface=LANBridgeVPN");
-        });
-    });
-
-    describe("System Configuration", () => {
-        it("should include DNS configuration", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/ip dns"]);
-            expect(result["/ip dns"]).toContain("set allow-remote-requests=yes");
-        });
-
-        it("should include system package update configuration", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/system package update"]);
-            expect(result["/system package update"]).toContain("set channel=stable");
-        });
-
-        it("should include routerboard settings", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/system routerboard settings"]);
-            expect(result["/system routerboard settings"]).toContain("set auto-upgrade=yes");
-        });
-
-        it("should include romon configuration", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const result = SlaveCG(choose, baseNetworks, []);
-            validateRouterConfig(result, ["/tool romon"]);
-            expect(result["/tool romon"]).toContain("set enabled=yes");
-        });
-    });
-
-    describe("Wireless Configuration", () => {
-        it("should configure WiFi interfaces when wireless configs provided", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const wirelessConfigs: WirelessConfig[] = [baseWirelessConfig];
-
-            testWithOutput(
-                "SlaveCG",
-                "Configure WiFi with wireless configs",
-                { WirelessConfigs: 1 },
-                () => SlaveCG(choose, baseNetworks, wirelessConfigs)
-            );
-
-            const result = SlaveCG(choose, baseNetworks, wirelessConfigs);
-            validateRouterConfig(result, ["/interface wifi", "/interface wifi security"]);
-        });
-
-        it("should configure multiple WiFi networks", () => {
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: baseNetworks,
-            };
-
-            const wirelessConfigs: WirelessConfig[] = [
-                { ...baseWirelessConfig, WifiTarget: "Split", NetworkName: "" },
-                { ...baseWirelessConfig, WifiTarget: "Domestic", NetworkName: "" },
-            ];
-
-            const result = SlaveCG(choose, baseNetworks, wirelessConfigs);
-            validateRouterConfig(result, ["/interface wifi"]);
-
-            // Should have WiFi bridge ports
-            const wifiBridgePorts = result["/interface bridge port"].filter(p => p.includes("wifi"));
-            expect(wifiBridgePorts.length).toBeGreaterThan(0);
-        });
-    });
-
-    describe("Additional Networks", () => {
-        it("should create VLANs for additional Foreign networks", () => {
-            const networks: Networks = {
-                BaseNetworks: {},
-                ForeignNetworks: ["FRN-1", "FRN-2"],
-            };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: networks,
-            };
-
-            testWithOutput(
-                "SlaveCG",
-                "Create VLANs for additional Foreign networks",
-                { ForeignNetworks: ["FRN-1", "FRN-2"] },
-                () => SlaveCG(choose, networks, [])
-            );
-
-            const result = SlaveCG(choose, networks, []);
-            expect(result["/interface vlan"].length).toBe(2);
-            expect(result["/interface vlan"][0]).toContain("vlan-id=31");
-            expect(result["/interface vlan"][1]).toContain("vlan-id=32");
-        });
-
-        it("should create VLANs for additional Domestic networks", () => {
-            const networks: Networks = {
-                BaseNetworks: {},
-                DomesticNetworks: ["DOM-1", "DOM-2"],
-            };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: networks,
-            };
-
-            const result = SlaveCG(choose, networks, []);
-            expect(result["/interface vlan"].length).toBe(2);
-            expect(result["/interface vlan"][0]).toContain("vlan-id=21");
-            expect(result["/interface vlan"][1]).toContain("vlan-id=22");
-        });
-    });
-
-    describe("VPN Client Networks", () => {
-        it("should create VLANs for Wireguard client networks", () => {
-            const networks: Networks = {
-                BaseNetworks: {},
-                VPNClientNetworks: {
-                    Wireguard: ["WG-1", "WG-2"],
-                },
-            };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: networks,
-            };
-
-            testWithOutput(
-                "SlaveCG",
-                "Create VLANs for Wireguard client networks",
-                { WireguardNetworks: ["WG-1", "WG-2"] },
-                () => SlaveCG(choose, networks, [])
-            );
-
-            const result = SlaveCG(choose, networks, []);
-            expect(result["/interface vlan"].length).toBe(2);
-            expect(result["/interface vlan"][0]).toContain("vlan-id=50");
-            expect(result["/interface vlan"][1]).toContain("vlan-id=51");
-        });
-
-        it("should handle all VPN client types", () => {
-            const networks: Networks = {
-                BaseNetworks: {},
-                VPNClientNetworks: {
-                    Wireguard: ["WG-1"],
-                    OpenVPN: ["OVPN-1"],
-                    L2TP: ["L2TP-1"],
-                    PPTP: ["PPTP-1"],
-                    SSTP: ["SSTP-1"],
-                    IKev2: ["IKEv2-1"],
-                },
-            };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: networks,
-            };
-
-            const result = SlaveCG(choose, networks, []);
-            expect(result["/interface vlan"].length).toBe(6);
-        });
-    });
+    // ============================================================================
+    // Complex Scenario Tests
+    // ============================================================================
 
     describe("Complex Scenarios", () => {
-        it("should generate complete configuration for mixed networks", () => {
-            const networks: Networks = {
+        it("should generate complete configuration with all network types", () => {
+            const slaveRouter = createSlaveRouter();
+            const subnets: Subnets = {
                 BaseNetworks: {
-                    Split: true,
-                    Domestic: true,
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                    Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
                 },
-                ForeignNetworks: ["FRN-1"],
+                ForeignNetworks: [
+                    { name: "Gaming", subnet: "192.168.31.0/24" },
+                ],
                 VPNClientNetworks: {
-                    Wireguard: ["WG-1"],
+                    Wireguard: [
+                        { name: "WG-US", subnet: "192.168.50.0/24" },
+                    ],
                 },
             };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                RouterModels: [baseMasterRouter, baseSlaveRouter],
-                Networks: networks,
-            };
-
-            const wirelessConfigs: WirelessConfig[] = [
-                { ...baseWirelessConfig, WifiTarget: "Split" },
-            ];
+            const wirelessConfigs = [createWirelessConfig({ WifiTarget: "Split" })];
 
             testWithOutput(
                 "SlaveCG",
-                "Complete configuration with mixed networks and WiFi",
-                { Scenario: "Complex mixed configuration" },
-                () => SlaveCG(choose, networks, wirelessConfigs)
+                "Complete configuration with mixed network types and wireless",
+                {
+                    BaseNetworks: ["Split", "Domestic"],
+                    ForeignNetworks: ["Gaming"],
+                    VPNClientNetworks: ["Wireguard WG-US"],
+                    Wireless: "1 SSID",
+                },
+                () => SlaveCG(slaveRouter, subnets, wirelessConfigs)
             );
 
-            const result = SlaveCG(choose, networks, wirelessConfigs);
+            const result = SlaveCG(slaveRouter, subnets, wirelessConfigs);
 
-            // Validate all major sections exist
+            // Validate all major sections
             validateRouterConfig(result, [
                 "/interface bridge",
                 "/interface vlan",
                 "/interface bridge port",
                 "/ip dhcp-client",
-                "/ip dns",
-                "/system package update",
-                "/system routerboard settings",
-                "/tool romon",
             ]);
 
-            // 2 base + 1 foreign + 1 VPN client = 4 networks
+            // 2 base + 1 foreign + 1 VPN = 4 bridges
             expect(result["/interface bridge"].length).toBe(4);
+            // 2 base + 1 foreign + 1 VPN = 4 VLANs
             expect(result["/interface vlan"].length).toBe(4);
         });
-    });
 
-    describe("Wireless Trunk Interface", () => {
-        it("should work with wireless trunk interface", () => {
-            const wirelessSlaveRouter = {
-                ...baseSlaveRouter,
-                MasterSlaveInterface: "wifi5" as const,
-            };
-
-            const choose: ChooseState = {
-                Mode: "easy" as const,
-                Firmware: "MikroTik" as const,
-                WANLinkType: "both" as const,
-                RouterMode: "Trunk Mode" as const,
-                TrunkInterfaceType: "wireless" as const,
-                RouterModels: [baseMasterRouter, wirelessSlaveRouter],
-                Networks: {
-                    BaseNetworks: {
-                        Domestic: true,
+        it("should handle maximum configuration complexity", () => {
+            const slaveRouter = createSlaveRouter({
+                Interfaces: {
+                    Interfaces: {
+                        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5"],
+                        wireless: ["wifi5", "wifi2.4"],
+                        sfp: ["sfp1", "sfp2"],
                     },
+                    OccupiedInterfaces: [],
+                },
+            });
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                    Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+                    Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+                    VPN: { name: "VPN", subnet: "192.168.40.0/24" },
+                },
+                ForeignNetworks: [
+                    { name: "Gaming", subnet: "192.168.31.0/24" },
+                    { name: "Streaming", subnet: "192.168.32.0/24" },
+                ],
+                DomesticNetworks: [
+                    { name: "Office", subnet: "192.168.21.0/24" },
+                ],
+                VPNClientNetworks: {
+                    Wireguard: [{ name: "WG1", subnet: "192.168.50.0/24" }],
+                    OpenVPN: [{ name: "OVPN1", subnet: "192.168.60.0/24" }],
+                },
+            };
+            const wirelessConfigs = [
+                createWirelessConfig({ SSID: "Network1", WifiTarget: "Split" }),
+                createWirelessConfig({ SSID: "Network2", WifiTarget: "Split" }),
+            ];
+            const extraConfig: ExtraConfigState = {
+                RouterIdentityRomon: {
+                    RouterIdentity: "SlaveRouter",
+                    isRomon: true,
+                },
+                services: {
+                    api: { type: "Disable" },
+                    apissl: { type: "Disable" },
+                    ftp: { type: "Disable" },
+                    ssh: { type: "Enable", port: 22 },
+                    telnet: { type: "Disable" },
+                    winbox: { type: "Enable", port: 8291 },
+                    web: { type: "Local", port: 80 },
+                    webssl: { type: "Enable", port: 443 },
+                },
+                RUI: {
+                    Timezone: "Asia/Tehran",
+                    Reboot: {
+                        interval: "Weekly",
+                        time: "03:00:00",
+                    },
+                    Update: {
+                        interval: "Weekly",
+                        time: "04:00:00",
+                    },
+                    IPAddressUpdate: { interval: "", time: "" },
                 },
             };
 
             testWithOutput(
                 "SlaveCG",
-                "Configuration with wireless trunk",
-                { TrunkInterface: "wifi5" },
-                () => SlaveCG(choose, choose.Networks, [])
+                "Maximum complexity: All features enabled",
+                {
+                    BaseNetworks: 4,
+                    ForeignNetworks: 2,
+                    DomesticNetworks: 1,
+                    VPNClientNetworks: 2,
+                    WirelessSSIDs: 2,
+                    EthernetPorts: 4,
+                    SFPPorts: 2,
+                    ExtraServices: "All configured",
+                },
+                () => SlaveCG(slaveRouter, subnets, wirelessConfigs, extraConfig)
             );
 
-            const result = SlaveCG(choose, choose.Networks, []);
-            expect(result["/interface vlan"][0]).toContain("interface=wifi5");
+            const result = SlaveCG(slaveRouter, subnets, wirelessConfigs, extraConfig);
+
+            // Validate comprehensive configuration
+            validateRouterConfig(result, [
+                "/interface bridge",
+                "/interface vlan",
+                "/interface bridge port",
+                "/ip dhcp-client",
+                "/system identity",
+                "/tool romon",
+            ]);
+
+            // 4 base + 2 foreign + 1 domestic + 2 VPN = 9 bridges
+            expect(result["/interface bridge"].length).toBe(9);
+            // Same for VLANs
+            expect(result["/interface vlan"].length).toBe(9);
+        });
+
+        it("should handle minimal configuration (only Split network)", () => {
+            const slaveRouter = createSlaveRouter();
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                },
+            };
+
+            const result = SlaveCG(slaveRouter, subnets);
+
+            // Minimal but complete configuration
+            expect(result["/interface bridge"].length).toBe(1);
+            expect(result["/interface vlan"].length).toBe(1);
+            expect(result["/ip dhcp-client"].length).toBe(1);
+        });
+
+        it("should handle configuration with no subnets", () => {
+            const slaveRouter = createSlaveRouter();
+
+            const result = SlaveCG(slaveRouter);
+
+            // Should only have trunk interface comment
+            expect(result["/interface ethernet"]).toBeDefined();
+            expect(result["/interface ethernet"]).toContain('comment="Trunk Interface"');
+
+            // But no network-specific configuration
+            expect(result["/interface bridge"]).toBeUndefined();
+            expect(result["/interface vlan"]).toBeUndefined();
         });
     });
 });

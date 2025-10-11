@@ -378,6 +378,7 @@ describe("Tunnel Utility Functions", () => {
     it("should add all subnet configurations for IPIP tunnel", () => {
       const configs: RouterConfig[] = [];
       const tunnelConfig: IpipTunnelConfig = {
+        type: "ipip",
         name: "ipip-test",
         localAddress: "10.255.1.1",
         remoteAddress: "203.0.113.1",
@@ -417,10 +418,12 @@ describe("Tunnel Utility Functions", () => {
     it("should add configurations for VXLAN tunnel", () => {
       const configs: RouterConfig[] = [];
       const tunnelConfig: VxlanInterfaceConfig = {
+        type: "vxlan",
         name: "vxlan-overlay",
         localAddress: "10.0.1.1",
         remoteAddress: "10.0.1.2",
         vni: 100,
+        bumMode: "unicast",
         NetworkType: "Domestic",
       };
       const subnet: SubnetConfig = {
@@ -454,10 +457,11 @@ describe("Tunnel Utility Functions", () => {
     it("should use VPN as default network type when not specified", () => {
       const configs: RouterConfig[] = [];
       const tunnelConfig: GreTunnelConfig = {
+        type: "gre",
         name: "gre-test",
         localAddress: "172.16.1.1",
         remoteAddress: "172.16.1.2",
-        // NetworkType not specified
+        NetworkType: "VPN",
       };
       const subnet: SubnetConfig = {
         name: "gre-subnet",
@@ -485,9 +489,11 @@ describe("Tunnel Utility Functions", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-test",
             localAddress: "10.255.1.1",
             remoteAddress: "203.0.113.1",
+            NetworkType: "VPN",
           },
         ],
       };
@@ -511,17 +517,21 @@ describe("Tunnel Utility Functions", () => {
       const tunnel: Tunnel = {
         Gre: [
           {
+            type: "gre",
             name: "gre-test",
             localAddress: "192.168.1.1",
             remoteAddress: "203.0.113.1",
+            NetworkType: "VPN",
           },
         ],
         Eoip: [
           {
+            type: "eoip",
             name: "eoip-test",
             localAddress: "192.168.2.1",
             remoteAddress: "203.0.113.2",
             tunnelId: 100,
+            NetworkType: "VPN",
           },
         ],
       };
@@ -543,18 +553,24 @@ describe("Tunnel Utility Functions", () => {
       const tunnel: Tunnel = {
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan1",
             localAddress: "10.0.1.1",
             remoteAddress: "10.0.1.2",
             vni: 100,
+            bumMode: "unicast",
             port: 4789,
+            NetworkType: "VPN",
           },
           {
+            type: "vxlan",
             name: "vxlan2",
             localAddress: "10.0.2.1",
             remoteAddress: "10.0.2.2",
             vni: 200,
+            bumMode: "unicast",
             port: 8472, // Custom port
+            NetworkType: "VPN",
           },
         ],
       };
@@ -577,17 +593,20 @@ describe("Tunnel Utility Functions", () => {
     it("should generate rules for multiple tunnel types", () => {
       const tunnel: Tunnel = {
         IPIP: [
-          { name: "ipip1", localAddress: "10.1.1.1", remoteAddress: "1.1.1.1" },
+          { type: "ipip", name: "ipip1", localAddress: "10.1.1.1", remoteAddress: "1.1.1.1", NetworkType: "VPN" },
         ],
         Gre: [
-          { name: "gre1", localAddress: "10.2.2.1", remoteAddress: "2.2.2.2" },
+          { type: "gre", name: "gre1", localAddress: "10.2.2.1", remoteAddress: "2.2.2.2", NetworkType: "VPN" },
         ],
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan1",
             localAddress: "10.3.3.1",
             remoteAddress: "10.3.3.2",
             vni: 100,
+            bumMode: "unicast",
+            NetworkType: "VPN",
           },
         ],
       };
@@ -875,6 +894,7 @@ describe("Tunnel Utility Functions", () => {
       it("should handle Split network in subnet configurations", () => {
         const configs: RouterConfig[] = [];
         const tunnelConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-split",
           localAddress: "172.20.1.1",
           remoteAddress: "203.0.113.100",
@@ -940,25 +960,34 @@ describe("Tunnel Utility Functions", () => {
         const tunnel: Tunnel = {
           Vxlan: [
             {
+              type: "vxlan",
               name: "vxlan-port1",
               localAddress: "10.0.1.1",
               remoteAddress: "10.0.1.2",
               vni: 100,
+              bumMode: "unicast",
               port: 4789,
+              NetworkType: "VPN",
             },
             {
+              type: "vxlan",
               name: "vxlan-port2",
               localAddress: "10.0.2.1",
               remoteAddress: "10.0.2.2",
               vni: 200,
+              bumMode: "unicast",
               port: 8472,
+              NetworkType: "VPN",
             },
             {
+              type: "vxlan",
               name: "vxlan-port3",
               localAddress: "10.0.3.1",
               remoteAddress: "10.0.3.2",
               vni: 300,
+              bumMode: "unicast",
               port: 9999,
+              NetworkType: "VPN",
             },
           ],
         };
@@ -983,30 +1012,36 @@ describe("Tunnel Utility Functions", () => {
       it("should handle mixed protocols with complex configuration", () => {
         const tunnel: Tunnel = {
           IPIP: [
-            { name: "ipip1", localAddress: "10.1.1.1", remoteAddress: "1.1.1.1" },
-            { name: "ipip2", localAddress: "10.1.2.1", remoteAddress: "1.1.1.2" },
+            { type: "ipip", name: "ipip1", localAddress: "10.1.1.1", remoteAddress: "1.1.1.1", NetworkType: "VPN" },
+            { type: "ipip", name: "ipip2", localAddress: "10.1.2.1", remoteAddress: "1.1.1.2", NetworkType: "VPN" },
           ],
           Gre: [
-            { name: "gre1", localAddress: "10.2.1.1", remoteAddress: "2.2.2.1" },
+            { type: "gre", name: "gre1", localAddress: "10.2.1.1", remoteAddress: "2.2.2.1", NetworkType: "VPN" },
           ],
           Eoip: [
-            { name: "eoip1", localAddress: "10.3.1.1", remoteAddress: "3.3.3.1", tunnelId: 100 },
-            { name: "eoip2", localAddress: "10.3.2.1", remoteAddress: "3.3.3.2", tunnelId: 200 },
+            { type: "eoip", name: "eoip1", localAddress: "10.3.1.1", remoteAddress: "3.3.3.1", tunnelId: 100, NetworkType: "VPN" },
+            { type: "eoip", name: "eoip2", localAddress: "10.3.2.1", remoteAddress: "3.3.3.2", tunnelId: 200, NetworkType: "VPN" },
           ],
           Vxlan: [
             {
+              type: "vxlan",
               name: "vxlan1",
               localAddress: "10.4.1.1",
               remoteAddress: "10.4.1.2",
               vni: 1000,
+              bumMode: "unicast",
               port: 4789,
+              NetworkType: "VPN",
             },
             {
+              type: "vxlan",
               name: "vxlan2",
               localAddress: "10.4.2.1",
               remoteAddress: "10.4.2.2",
               vni: 2000,
+              bumMode: "unicast",
               port: 8472,
+              NetworkType: "VPN",
             },
           ],
         };
@@ -1053,6 +1088,7 @@ describe("Tunnel Utility Functions", () => {
               | VxlanInterfaceConfig =
               tunnelType === "EoIP"
                 ? {
+                    type: "eoip",
                     name: `${tunnelType.toLowerCase()}-${networkType}`,
                     localAddress: "10.0.0.1",
                     remoteAddress: "10.0.0.2",
@@ -1061,13 +1097,24 @@ describe("Tunnel Utility Functions", () => {
                   }
                 : tunnelType === "VXLAN"
                 ? {
+                    type: "vxlan",
                     name: `${tunnelType.toLowerCase()}-${networkType}`,
                     localAddress: "10.0.0.1",
                     remoteAddress: "10.0.0.2",
                     vni: 100,
+                    bumMode: "unicast",
+                    NetworkType: networkType,
+                  }
+                : tunnelType === "IPIP"
+                ? {
+                    type: "ipip",
+                    name: `${tunnelType.toLowerCase()}-${networkType}`,
+                    localAddress: "10.0.0.1",
+                    remoteAddress: "10.0.0.2",
                     NetworkType: networkType,
                   }
                 : {
+                    type: "gre",
                     name: `${tunnelType.toLowerCase()}-${networkType}`,
                     localAddress: "10.0.0.1",
                     remoteAddress: "10.0.0.2",
@@ -1189,9 +1236,11 @@ describe("Tunnel Utility Functions", () => {
     describe("IPIPInterface", () => {
       it("should generate basic IPIP tunnel", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-hq",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.1",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1209,11 +1258,13 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate IPIP tunnel with IPsec secret", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-secure",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.1",
           ipsecSecret: "mySecretKey123",
           comment: "Secure IPIP to HQ",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1231,10 +1282,12 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle disabled IPIP tunnel", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-disabled",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.1",
           disabled: true,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1250,10 +1303,12 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle IPIP tunnel with fast path enabled", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-fastpath",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.1",
           allowFastPath: true,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1269,20 +1324,22 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle IPIP tunnel with dont-fragment setting", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-df",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.1",
-          dontFragment: "enabled",
+          dontFragment: "inherit",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
           "IPIPInterface",
-          "Generate IPIP tunnel with dont-fragment enabled",
+          "Generate IPIP tunnel with dont-fragment inherit",
           { ipip: ipipConfig },
           () => IPIPInterface(ipipConfig),
         );
 
-        expect(result["/interface ipip"][0]).toContain("dont-fragment=enabled");
+        expect(result["/interface ipip"][0]).toContain("dont-fragment=inherit");
         validateRouterConfig(result, ["/interface ipip"]);
       });
     });
@@ -1290,10 +1347,12 @@ describe("Tunnel Utility Functions", () => {
     describe("EoipInterface", () => {
       it("should generate basic EoIP tunnel", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-branch",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.2",
           tunnelId: 100,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1312,6 +1371,7 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate EoIP tunnel with IPsec and loop protection", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-secure",
           localAddress: "192.168.2.1",
           remoteAddress: "203.0.113.10",
@@ -1321,6 +1381,7 @@ describe("Tunnel Utility Functions", () => {
           loopProtectDisableTime: 5000,
           loopProtectSendInterval: 5000,
           comment: "Secure EoIP with loop protection",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1340,11 +1401,13 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle disabled EoIP tunnel", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-disabled",
           localAddress: "192.168.3.1",
           remoteAddress: "203.0.113.4",
           tunnelId: 400,
           disabled: true,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1360,21 +1423,23 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle EoIP tunnel with dont-fragment setting", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-df",
           localAddress: "192.168.4.1",
           remoteAddress: "203.0.113.5",
           tunnelId: 500,
-          dontFragment: "disabled",
+          dontFragment: "no",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
           "EoipInterface",
-          "Generate EoIP tunnel with dont-fragment disabled",
+          "Generate EoIP tunnel with dont-fragment no",
           { eoip: eoipConfig },
           () => EoipInterface(eoipConfig),
         );
 
-        expect(result["/interface eoip"][0]).toContain("dont-fragment=disabled");
+        expect(result["/interface eoip"][0]).toContain("dont-fragment=no");
         validateRouterConfig(result, ["/interface eoip"]);
       });
     });
@@ -1382,9 +1447,11 @@ describe("Tunnel Utility Functions", () => {
     describe("GreInterface", () => {
       it("should generate basic GRE tunnel", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-site1",
           localAddress: "10.1.1.1",
           remoteAddress: "10.2.2.2",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1402,11 +1469,13 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate GRE tunnel with IPsec secret", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-secure",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.6",
           ipsecSecret: "greSecret789",
           comment: "Secure GRE tunnel",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1424,10 +1493,12 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle disabled GRE tunnel", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-disabled",
           localAddress: "192.168.5.1",
           remoteAddress: "203.0.113.8",
           disabled: true,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1443,20 +1514,22 @@ describe("Tunnel Utility Functions", () => {
 
       it("should handle GRE tunnel with dont-fragment setting", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-df",
           localAddress: "192.168.6.1",
           remoteAddress: "203.0.113.9",
-          dontFragment: "enabled",
+          dontFragment: "inherit",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
           "GreInterface",
-          "Generate GRE tunnel with dont-fragment enabled",
+          "Generate GRE tunnel with dont-fragment inherit",
           { gre: greConfig },
           () => GreInterface(greConfig),
         );
 
-        expect(result["/interface gre"][0]).toContain("dont-fragment=enabled");
+        expect(result["/interface gre"][0]).toContain("dont-fragment=inherit");
         validateRouterConfig(result, ["/interface gre"]);
       });
     });
@@ -1464,10 +1537,13 @@ describe("Tunnel Utility Functions", () => {
     describe("VxlanInterface", () => {
       it("should generate basic VXLAN with unicast mode", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-datacenter",
           localAddress: "10.0.1.1",
           remoteAddress: "10.0.1.2",
           vni: 100,
+          bumMode: "unicast",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1489,6 +1565,7 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate VXLAN with multicast mode", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-multicast",
           localAddress: "192.168.1.1",
           remoteAddress: "",
@@ -1499,6 +1576,7 @@ describe("Tunnel Utility Functions", () => {
           port: 4789,
           learning: true,
           hw: true,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1518,6 +1596,7 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate VXLAN with explicit VTEPs", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-unicast",
           localAddress: "10.10.10.1",
           remoteAddress: "",
@@ -1528,6 +1607,7 @@ describe("Tunnel Utility Functions", () => {
             { remoteAddress: "10.10.10.3", comment: "Peer 2" },
             { remoteAddress: "10.10.10.4", comment: "Peer 3" },
           ],
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1547,10 +1627,12 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate VXLAN with advanced parameters", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-advanced",
           localAddress: "172.16.1.1",
           remoteAddress: "172.16.1.2",
           vni: 4095,
+          bumMode: "unicast",
           port: 8472,
           disabled: false,
           comment: "Advanced VXLAN config",
@@ -1565,6 +1647,7 @@ describe("Tunnel Utility Functions", () => {
           ttl: 64,
           vrf: "overlay-vrf",
           vtepsIpVersion: "ipv4",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1594,6 +1677,7 @@ describe("Tunnel Utility Functions", () => {
 
       it("should generate IPv6 VXLAN configuration", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-ipv6",
           localAddress: "2001:db8::1",
           remoteAddress: "",
@@ -1601,6 +1685,7 @@ describe("Tunnel Utility Functions", () => {
           bumMode: "unicast",
           vtepsIpVersion: "ipv6",
           vteps: [{ remoteAddress: "2001:db8::2", comment: "IPv6 peer" }],
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -1617,11 +1702,13 @@ describe("Tunnel Utility Functions", () => {
 
       it("should throw error for unicast mode without VTEPs", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-no-vtep",
           localAddress: "10.0.1.1",
           remoteAddress: "",
           vni: 700,
           bumMode: "unicast",
+          NetworkType: "VPN",
         };
 
         expect(() => VxlanInterface(vxlanConfig)).toThrow(

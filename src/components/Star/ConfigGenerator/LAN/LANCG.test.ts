@@ -84,6 +84,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "both",
                     RouterMode: "AP Mode",
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -167,6 +170,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "foreign",
                     RouterMode: "AP Mode",
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -222,6 +228,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "foreign",
                     RouterMode: "AP Mode",
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -270,6 +279,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "both",
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -364,6 +376,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "both",
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -421,6 +436,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "foreign",
                     RouterMode: "AP Mode",
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {
@@ -488,6 +506,9 @@ describe("LANCG Module Tests", () => {
                     WANLinkType: "both",
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
+                    Networks: {
+                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
+                    }
                 },
                 WAN: {
                     WANLink: {

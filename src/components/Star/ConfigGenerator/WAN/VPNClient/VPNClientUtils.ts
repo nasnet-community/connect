@@ -2,6 +2,21 @@ import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { VPNClientType, VPNClient } from "~/components/Star/StarContext";
 // import type { WANLinkType } from "~/components/Star/StarContext";
 
+// Check if a string is a Fully Qualified Domain Name (FQDN) vs an IP address
+export const isFQDN = (address: string): boolean => {
+    // Regular expression to match IPv4 address
+    const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    // Regular expression to match IPv6 address (simplified)
+    const ipv6Regex = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
+
+    // If it matches an IP pattern, it's not an FQDN
+    if (ipv4Regex.test(address) || ipv6Regex.test(address)) {
+        return false;
+    }
+
+    // If it contains a dot and doesn't match IP pattern, likely an FQDN
+    return address.includes('.');
+};
 
 export const GenerateVCInterfaceName = (Name: string, protocol: VPNClientType): string => {
     switch (protocol) {
