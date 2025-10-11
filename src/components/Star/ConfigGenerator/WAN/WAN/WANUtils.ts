@@ -3,15 +3,15 @@ import type {
     WANLinkConfig,
     WANLink,
 } from "~/components/Star/StarContext";
-import { GetWANInterface } from "~/components/Star/ConfigGenerator";
+import { CommandShortner, GetWANInterface } from "~/components/Star/ConfigGenerator";
 
 export const WANIfaceList = ( InterfaceName: string, Network: string ): RouterConfig => {
     const config: RouterConfig = {
         "/interface list member": [],
     };
     config["/interface list member"].push(
-        `add interface=${InterfaceName} list="WAN"`,
-        `add interface=${InterfaceName} list="${Network}-WAN"`,
+        `add interface="${InterfaceName}" list="WAN"`,
+        `add interface="${InterfaceName}" list="${Network}-WAN"`,
     );
     return config;
 };
@@ -33,22 +33,22 @@ export const Geteway = ( gateway: string | undefined, interfaceName: string | un
         gatewayValue = "";
     }
     
-    let routeCommand = `add dst-address=0.0.0.0/0 gateway=${gatewayValue}`;
+    let routeCommand = `add dst-address="0.0.0.0/0" gateway="${gatewayValue}"`;
 
+    
+    // Add routing table
+    routeCommand += ` routing-table="${table}"`;
+    
     // Add distance if not default
     if (distance !== 1) {
         routeCommand += ` distance=${distance}`;
     }
-
-    // Add routing table
-    routeCommand += ` routing-table=${table}`;
-
     // Add comment with standard format
     routeCommand += ` comment="Route-to-${network}-${name}"`;
 
     config["/ip route"].push(routeCommand);
 
-    return config;
+    return CommandShortner(config);
 };
 
 export const Route = ( wanLinkConfig: WANLinkConfig, networkType: "Foreign" | "Domestic", distance: number ): RouterConfig => {

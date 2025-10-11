@@ -1,799 +1,614 @@
-// import { describe, it } from "vitest";
-// import {
-//     Ikev2Server,
-//     Ikev2ServerUsers,
-//     Ikev2ServerWrapper,
-// } from "./IKEv2";
-// import { testWithOutput, validateRouterConfig } from "~/test-utils/test-helpers";
-// import type {
-//     Ikev2ServerConfig,
-//     Credentials,
-// } from "~/components/Star/StarContext/Utils/VPNServerType";
-
-// describe("IKEv2 Protocol Tests", () => {
-//     describe("Ikev2Server Function", () => {
-//         it("should generate basic IKEv2 server configuration", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "ikev2-server-cert",
-//                     CACertificate: "ikev2-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "ikev2-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "Basic IKEv2 server configuration",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result, [
-//                 "/ip ipsec mode-config",
-//                 "/ip ipsec policy group",
-//                 "/ip ipsec profile",
-//                 "/ip ipsec peer",
-//                 "/ip ipsec proposal",
-//                 "/ip ipsec identity",
-//                 "/ip ipsec policy",
-//             ]);
-//         });
-
-//         it("should generate IKEv2 server with custom port", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 4500,
-//                 Certificate: {
-//                     ServerCertificate: "custom-server-cert",
-//                     CACertificate: "custom-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp3072"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha384"],
-//                         Cipher: ["aes192"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "custom-ikev2-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 server with custom port",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle disabled IKEv2 server", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: false,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "disabled-server-cert",
-//                     CACertificate: "disabled-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "disabled-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "Disabled IKEv2 server",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle multiple encryption algorithms for Phase 1", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "multi-server-cert",
-//                     CACertificate: "multi-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256", "sha384", "sha512"],
-//                         Cipher: ["aes128", "aes192", "aes256"],
-//                         DhGroup: ["modp1024", "modp2048", "modp3072", "modp4096"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "multi-phase1-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with multiple Phase 1 algorithms",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle multiple encryption algorithms for Phase 2", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "multi2-server-cert",
-//                     CACertificate: "multi2-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256", "sha384", "sha512"],
-//                         Cipher: ["aes128", "aes192", "aes256"],
-//                         PfsGroup: ["modp1024", "modp2048", "modp3072"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "multi-phase2-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with multiple Phase 2 algorithms",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle strong encryption configuration", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "strong-server-cert",
-//                     CACertificate: "strong-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp4096", "modp8192"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp4096", "modp8192"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "strong-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with strong encryption settings",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-//     });
-
-//     describe("Ikev2ServerUsers Function", () => {
-//         it("should generate IKEv2 user credentials", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "ikev2user1",
-//                     Password: "ikev2pass1",
-//                     VPNType: ["IKEv2"],
-//                 },
-//                 {
-//                     Username: "ikev2user2",
-//                     Password: "ikev2pass2",
-//                     VPNType: ["IKEv2"],
-//                 },
-//                 {
-//                     Username: "ikev2user3",
-//                     Password: "ikev2pass3",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "IKEv2 users configuration",
-//                 { users },
-//                 () => Ikev2ServerUsers(users),
-//             );
-
-//             const result = Ikev2ServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-
-//         it("should handle single user configuration", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "admin",
-//                     Password: "adminpass",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "Single IKEv2 user",
-//                 { users },
-//                 () => Ikev2ServerUsers(users),
-//             );
-
-//             const result = Ikev2ServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-
-//         it("should handle empty users array", () => {
-//             const users: Credentials[] = [];
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "IKEv2 with no users",
-//                 { users },
-//                 () => Ikev2ServerUsers(users),
-//             );
-
-//             const result = Ikev2ServerUsers(users);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle many users", () => {
-//             const users: Credentials[] = Array.from({ length: 30 }, (_, i) => ({
-//                 Username: `ikev2_user${i + 1}`,
-//                 Password: `ikev2_pass${i + 1}`,
-//                 VPNType: ["IKEv2"],
-//             }));
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "IKEv2 with multiple users",
-//                 { users: `Array of ${users.length} users` },
-//                 () => Ikev2ServerUsers(users),
-//             );
-
-//             const result = Ikev2ServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-
-//         it("should handle users with special characters", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "user-ikev2.01",
-//                     Password: "P@ssw0rd!IKEv2#2024",
-//                     VPNType: ["IKEv2"],
-//                 },
-//                 {
-//                     Username: "admin_ikev2_secure",
-//                     Password: "Str0ng&IKEv2*Pass",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "IKEv2 users with special characters",
-//                 { users },
-//                 () => Ikev2ServerUsers(users),
-//             );
-
-//             const result = Ikev2ServerUsers(users);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-
-//         it("should handle IKEv2 users with config parameter", () => {
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "configuser1",
-//                     Password: "configpass1",
-//                     VPNType: ["IKEv2"],
-//                 },
-//                 {
-//                     Username: "configuser2",
-//                     Password: "configpass2",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             const ikev2Config = {
-//                 modeConfig: "ikev2-mode-config",
-//                 policyGroup: "ikev2-policy-group",
-//             };
-
-//             testWithOutput(
-//                 "Ikev2ServerUsers",
-//                 "IKEv2 users with additional config",
-//                 { users, ikev2Config },
-//                 () => Ikev2ServerUsers(users, ikev2Config),
-//             );
-
-//             const result = Ikev2ServerUsers(users, ikev2Config);
-//             validateRouterConfig(result, ["/ppp secret"]);
-//         });
-//     });
-
-//     describe("Ikev2ServerWrapper Function", () => {
-//         it("should generate complete IKEv2 configuration", () => {
-//             const serverConfig: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "complete-server-cert",
-//                     CACertificate: "complete-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "complete-ikev2-pool",
-//                 },
-//             };
-
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "user1",
-//                     Password: "pass1",
-//                     VPNType: ["IKEv2"],
-//                 },
-//                 {
-//                     Username: "user2",
-//                     Password: "pass2",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             testWithOutput(
-//                 "Ikev2ServerWrapper",
-//                 "Complete IKEv2 server setup",
-//                 { serverConfig, users },
-//                 () => Ikev2ServerWrapper(serverConfig, users),
-//             );
-
-//             const result = Ikev2ServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle configuration with no users", () => {
-//             const serverConfig: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "nouser-server-cert",
-//                     CACertificate: "nouser-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha384"],
-//                         Cipher: ["aes192"],
-//                         DhGroup: ["modp3072"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha384"],
-//                         Cipher: ["aes192"],
-//                         PfsGroup: ["modp3072"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "nouser-ikev2-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2ServerWrapper",
-//                 "IKEv2 server without users",
-//                 { serverConfig },
-//                 () => Ikev2ServerWrapper(serverConfig, []),
-//             );
-
-//             const result = Ikev2ServerWrapper(serverConfig, []);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle disabled server with users", () => {
-//             const serverConfig: Ikev2ServerConfig = {
-//                 enabled: false,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "disabled-server-cert",
-//                     CACertificate: "disabled-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "disabled-ikev2-pool",
-//                 },
-//             };
-
-//             const users: Credentials[] = [
-//                 {
-//                     Username: "disableduser1",
-//                     Password: "disabledpass1",
-//                     VPNType: ["IKEv2"],
-//                 },
-//             ];
-
-//             testWithOutput(
-//                 "Ikev2ServerWrapper",
-//                 "Disabled IKEv2 server with users",
-//                 { serverConfig, users },
-//                 () => Ikev2ServerWrapper(serverConfig, users),
-//             );
-
-//             const result = Ikev2ServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle complex configuration with many users", () => {
-//             const serverConfig: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "complex-server-cert",
-//                     CACertificate: "complex-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256", "sha384", "sha512"],
-//                         Cipher: ["aes128", "aes192", "aes256"],
-//                         DhGroup: ["modp1024", "modp2048", "modp3072", "modp4096"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256", "sha384", "sha512"],
-//                         Cipher: ["aes128", "aes192", "aes256"],
-//                         PfsGroup: ["modp1024", "modp2048", "modp3072"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "complex-ikev2-pool",
-//                 },
-//             };
-
-//             const users: Credentials[] = Array.from({ length: 40 }, (_, i) => ({
-//                 Username: `ikev2user${i + 1}`,
-//                 Password: `ikev2pass${i + 1}`,
-//                 VPNType: ["IKEv2"],
-//             }));
-
-//             testWithOutput(
-//                 "Ikev2ServerWrapper",
-//                 "Complex IKEv2 setup with many users",
-//                 {
-//                     serverConfig,
-//                     users: `Array of ${users.length} users`,
-//                 },
-//                 () => Ikev2ServerWrapper(serverConfig, users),
-//             );
-
-//             const result = Ikev2ServerWrapper(serverConfig, users);
-//             validateRouterConfig(result);
-//         });
-//     });
-
-//     describe("Edge Cases and Error Scenarios", () => {
-//         it("should handle non-standard ports", () => {
-//             const configs = [
-//                 {
-//                     enabled: true,
-//                     Port: 499,
-//                     Certificate: {
-//                         ServerCertificate: "lowport-server-cert",
-//                         CACertificate: "lowport-ca-cert",
-//                     },
-//                     Encryption: {
-//                         Phase1: {
-//                             Auth: ["sha256"],
-//                             Cipher: ["aes256"],
-//                             DhGroup: ["modp2048"],
-//                         },
-//                         Phase2: {
-//                             Auth: ["sha256"],
-//                             Cipher: ["aes256"],
-//                             PfsGroup: ["modp2048"],
-//                         },
-//                     },
-//                     Address: {
-//                         AddressPool: "lowport-pool",
-//                     },
-//                 },
-//                 {
-//                     enabled: true,
-//                     Port: 65000,
-//                     Certificate: {
-//                         ServerCertificate: "highport-server-cert",
-//                         CACertificate: "highport-ca-cert",
-//                     },
-//                     Encryption: {
-//                         Phase1: {
-//                             Auth: ["sha256"],
-//                             Cipher: ["aes256"],
-//                             DhGroup: ["modp2048"],
-//                         },
-//                         Phase2: {
-//                             Auth: ["sha256"],
-//                             Cipher: ["aes256"],
-//                             PfsGroup: ["modp2048"],
-//                         },
-//                     },
-//                     Address: {
-//                         AddressPool: "highport-pool",
-//                     },
-//                 },
-//             ];
-
-//             configs.forEach((config) => {
-//                 testWithOutput(
-//                     "Ikev2Server",
-//                     `IKEv2 with port ${config.Port}`,
-//                     { config },
-//                     () => Ikev2Server(config),
-//                 );
-
-//                 const result = Ikev2Server(config);
-//                 validateRouterConfig(result);
-//             });
-//         });
-
-//         it("should handle minimal DH group configuration", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "minimal-server-cert",
-//                     CACertificate: "minimal-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["md5"],
-//                         Cipher: ["des"],
-//                         DhGroup: ["modp768"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["md5"],
-//                         Cipher: ["des"],
-//                         PfsGroup: ["modp768"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "minimal-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with minimal encryption",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle certificate names with special characters", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "ikev2-server_cert.2024",
-//                     CACertificate: "ikev2-ca_cert.root",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "special-cert-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with special characters in certificate names",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle elliptic curve DH groups", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "ecc-server-cert",
-//                     CACertificate: "ecc-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["ecp256", "ecp384", "ecp521"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["ecp256", "ecp384", "ecp521"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "ecc-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with elliptic curve DH groups",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle maximum encryption strength", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "max-server-cert",
-//                     CACertificate: "max-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes256-gcm", "aes256-cbc"],
-//                         DhGroup: ["modp8192", "ecp521"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha512"],
-//                         Cipher: ["aes256-gcm", "aes256-cbc"],
-//                         PfsGroup: ["modp8192", "ecp521"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "max-strength-pool",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with maximum encryption strength",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-
-//         it("should handle long pool names", () => {
-//             const config: Ikev2ServerConfig = {
-//                 enabled: true,
-//                 Port: 500,
-//                 Certificate: {
-//                     ServerCertificate: "longpool-server-cert",
-//                     CACertificate: "longpool-ca-cert",
-//                 },
-//                 Encryption: {
-//                     Phase1: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         DhGroup: ["modp2048"],
-//                     },
-//                     Phase2: {
-//                         Auth: ["sha256"],
-//                         Cipher: ["aes256"],
-//                         PfsGroup: ["modp2048"],
-//                     },
-//                 },
-//                 Address: {
-//                     AddressPool: "very-long-pool-name-for-ikev2-server-testing-purposes-2024",
-//                 },
-//             };
-
-//             testWithOutput(
-//                 "Ikev2Server",
-//                 "IKEv2 with long pool name",
-//                 { config },
-//                 () => Ikev2Server(config),
-//             );
-
-//             const result = Ikev2Server(config);
-//             validateRouterConfig(result);
-//         });
-//     });
-// });
+import { describe, it } from "vitest";
+import {
+    Ikev2Server,
+    Ikev2ServerUsers,
+    Ikev2ServerWrapper,
+    IKEv2ServerFirewall,
+} from "./IKEv2";
+import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import type {
+    Ikev2ServerConfig,
+    VSCredentials,
+    VSNetwork,
+    SubnetConfig,
+} from "~/components/Star/StarContext";
+
+describe("IKEv2 Protocol Tests", () => {
+    // Common test data
+    const vsNetwork: VSNetwork = "VPN";
+    const subnetConfig: SubnetConfig = {
+        name: "ikev2",
+        subnet: "10.10.10.0/24",
+    };
+
+    describe("Ikev2Server Function", () => {
+        it("should generate basic IKEv2 server configuration", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {
+                    name: "ikev2",
+                    lifetime: "24h",
+                    dpdInterval: "30s",
+                    dpdMaximumFailures: 3,
+                    natTraversal: true,
+                },
+                proposal: {
+                    name: "ikev2",
+                    lifetime: "8h",
+                },
+                policyGroup: {
+                    name: "ikev2-policies",
+                },
+                modeConfigs: {
+                    name: "ikev2-conf",
+                    systemDns: true,
+                },
+                peer: {
+                    name: "ikev2",
+                },
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "Basic IKEv2 server configuration",
+                { config, vsNetwork, subnetConfig },
+                () => Ikev2Server(config, vsNetwork, subnetConfig),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, subnetConfig);
+            validateRouterConfig(result, [
+                "/ip pool",
+                "/ip ipsec profile",
+                "/ip ipsec proposal",
+                "/ip ipsec policy group",
+                "/ip ipsec policy",
+                "/ip ipsec peer",
+                "/ip ipsec mode-config",
+            ]);
+        });
+
+        it("should handle different VSNetwork types", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "Domestic",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+            const domesticSubnet: SubnetConfig = {
+                name: "ikev2-domestic",
+                subnet: "192.168.20.0/24",
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 server with Domestic network",
+                { config, vsNetwork: "Domestic", domesticSubnet },
+                () => Ikev2Server(config, "Domestic", domesticSubnet),
+            );
+
+            const result = Ikev2Server(config, "Domestic", domesticSubnet);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should generate configuration with custom subnet", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "Foreign",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+            const customSubnet: SubnetConfig = {
+                name: "ikev2-foreign",
+                subnet: "172.16.0.0/24",
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 with custom subnet",
+                { config, vsNetwork: "Foreign", customSubnet },
+                () => Ikev2Server(config, "Foreign", customSubnet),
+            );
+
+            const result = Ikev2Server(config, "Foreign", customSubnet);
+            validateRouterConfig(result, ["/ip pool"]);
+        });
+
+        it("should configure split DNS when specified", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+                modeConfigs: {
+                    name: "ikev2-conf",
+                    systemDns: false,
+                    staticDns: "1.1.1.1,8.8.8.8",
+                },
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 with static DNS",
+                { config, vsNetwork, subnetConfig },
+                () => Ikev2Server(config, vsNetwork, subnetConfig),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle split tunneling configuration", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+                modeConfigs: {
+                    name: "ikev2-conf",
+                    systemDns: true,
+                    splitInclude: "192.168.0.0/16,10.0.0.0/8",
+                },
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 with split tunneling",
+                { config, vsNetwork, subnetConfig },
+                () => Ikev2Server(config, vsNetwork, subnetConfig),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+    });
+
+    describe("Ikev2ServerUsers Function", () => {
+        it("should generate IKEv2 user credentials with EAP authentication", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "eap",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "ikev2user1",
+                    Password: "ikev2pass1",
+                    VPNType: ["IKeV2"],
+                },
+                {
+                    Username: "ikev2user2",
+                    Password: "ikev2pass2",
+                    VPNType: ["IKeV2"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "IKEv2 users with EAP authentication",
+                { config, users, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfig(result, ["/ppp secret", "/ip ipsec identity"]);
+        });
+
+        it("should generate users with pre-shared key authentication", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "pre-shared-key",
+                    secret: "MySecretKey2024!",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "pskuser1",
+                    Password: "pskpass1",
+                    VPNType: ["IKeV2"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "IKEv2 users with PSK authentication",
+                { config, users, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfig(result, ["/ip ipsec identity"]);
+        });
+
+        it("should handle empty users array", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+            const users: VSCredentials[] = [];
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "IKEv2 with no users",
+                { config, users, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should filter only IKeV2 users", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "eap",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "ikev2user",
+                    Password: "pass1",
+                    VPNType: ["IKeV2"],
+                },
+                {
+                    Username: "wireguarduser",
+                    Password: "pass2",
+                    VPNType: ["Wireguard"],
+                },
+                {
+                    Username: "multiuser",
+                    Password: "pass3",
+                    VPNType: ["IKeV2", "OpenVPN"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "Filter only IKeV2 users",
+                { config, users, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
+
+        it("should handle many users efficiently", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "eap",
+                },
+            };
+
+            const users: VSCredentials[] = Array.from({ length: 25 }, (_, i) => ({
+                Username: `ikev2_user${i + 1}`,
+                Password: `ikev2_pass${i + 1}`,
+                VPNType: ["IKeV2"],
+            }));
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "IKEv2 with multiple users",
+                { config, users: `Array of ${users.length} users`, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
+    });
+
+    describe("IKEv2ServerFirewall Function", () => {
+        it("should generate firewall rules for IKEv2 server", () => {
+            const serverConfigs: Ikev2ServerConfig[] = [
+                {
+                    VSNetwork: "VPN",
+                },
+            ];
+
+            testWithOutput(
+                "IKEv2ServerFirewall",
+                "Firewall rules for IKEv2",
+                { serverConfigs },
+                () => IKEv2ServerFirewall(serverConfigs),
+            );
+
+            const result = IKEv2ServerFirewall(serverConfigs);
+            validateRouterConfig(result, ["/ip firewall filter", "/ip firewall mangle"]);
+        });
+
+        it("should generate rules for multiple IKEv2 servers", () => {
+            const serverConfigs: Ikev2ServerConfig[] = [
+                {
+                    VSNetwork: "VPN",
+                },
+                {
+                    VSNetwork: "Domestic",
+                },
+            ];
+
+            testWithOutput(
+                "IKEv2ServerFirewall",
+                "Firewall rules for multiple IKEv2 servers",
+                { serverConfigs },
+                () => IKEv2ServerFirewall(serverConfigs),
+            );
+
+            const result = IKEv2ServerFirewall(serverConfigs);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle empty server configs array", () => {
+            const serverConfigs: Ikev2ServerConfig[] = [];
+
+            testWithOutput(
+                "IKEv2ServerFirewall",
+                "Firewall with no IKEv2 servers",
+                { serverConfigs },
+                () => IKEv2ServerFirewall(serverConfigs),
+            );
+
+            const result = IKEv2ServerFirewall(serverConfigs);
+            validateRouterConfigStructure(result);
+        });
+    });
+
+    describe("Ikev2ServerWrapper Function", () => {
+        it("should generate complete IKEv2 configuration", () => {
+            const serverConfig: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {
+                    name: "ikev2-profile",
+                    lifetime: "24h",
+                },
+                proposal: {
+                    name: "ikev2-proposal",
+                    lifetime: "8h",
+                },
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "user1",
+                    Password: "pass1",
+                    VPNType: ["IKeV2"],
+                },
+                {
+                    Username: "user2",
+                    Password: "pass2",
+                    VPNType: ["IKeV2"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerWrapper",
+                "Complete IKEv2 server setup",
+                { serverConfig, users, subnetConfig },
+                () => Ikev2ServerWrapper(serverConfig, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerWrapper(serverConfig, users, subnetConfig);
+            validateRouterConfig(result);
+        });
+
+        it("should use default subnet when not provided", () => {
+            const serverConfig: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "defaultuser",
+                    Password: "defaultpass",
+                    VPNType: ["IKeV2"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerWrapper",
+                "IKEv2 with default subnet",
+                { serverConfig, users },
+                () => Ikev2ServerWrapper(serverConfig, users),
+            );
+
+            const result = Ikev2ServerWrapper(serverConfig, users);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle configuration with no users", () => {
+            const serverConfig: Ikev2ServerConfig = {
+                VSNetwork: "Foreign",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+
+            testWithOutput(
+                "Ikev2ServerWrapper",
+                "IKEv2 server without users",
+                { serverConfig, subnetConfig },
+                () => Ikev2ServerWrapper(serverConfig, [], subnetConfig),
+            );
+
+            const result = Ikev2ServerWrapper(serverConfig, [], subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should integrate server, users, and firewall", () => {
+            const serverConfig: Ikev2ServerConfig = {
+                VSNetwork: "Split",
+                profile: {
+                    name: "ikev2-split",
+                },
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "pre-shared-key",
+                    secret: "SplitNetworkKey123!",
+                },
+            };
+
+            const users: VSCredentials[] = Array.from({ length: 15 }, (_, i) => ({
+                Username: `splituser${i + 1}`,
+                Password: `splitpass${i + 1}`,
+                VPNType: ["IKeV2"],
+            }));
+
+            const customSubnet: SubnetConfig = {
+                name: "ikev2-split",
+                subnet: "192.168.50.0/24",
+            };
+
+            testWithOutput(
+                "Ikev2ServerWrapper",
+                "Complete IKEv2 setup for Split network with many users",
+                {
+                    serverConfig,
+                    users: `Array of ${users.length} users`,
+                    customSubnet,
+                },
+                () => Ikev2ServerWrapper(serverConfig, users, customSubnet),
+            );
+
+            const result = Ikev2ServerWrapper(serverConfig, users, customSubnet);
+            validateRouterConfig(result);
+        });
+    });
+
+    describe("Edge Cases and Error Scenarios", () => {
+        it("should handle minimal configuration", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "Minimal IKEv2 configuration",
+                { config, vsNetwork, subnetConfig },
+                () => Ikev2Server(config, vsNetwork, subnetConfig),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, subnetConfig);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle users with special characters in credentials", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: {
+                    authMethod: "eap",
+                },
+            };
+
+            const users: VSCredentials[] = [
+                {
+                    Username: "user-ikev2.01",
+                    Password: "P@ssw0rd!IKEv2#2024",
+                    VPNType: ["IKeV2"],
+                },
+                {
+                    Username: "admin_ikev2_secure",
+                    Password: "Str0ng&IKEv2*Pass",
+                    VPNType: ["IKeV2"],
+                },
+            ];
+
+            testWithOutput(
+                "Ikev2ServerUsers",
+                "IKEv2 users with special characters",
+                { config, users, subnetConfig },
+                () => Ikev2ServerUsers(config, users, subnetConfig),
+            );
+
+            const result = Ikev2ServerUsers(config, users, subnetConfig);
+            validateRouterConfig(result, ["/ppp secret"]);
+        });
+
+        it("should handle very small subnet", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+            const smallSubnet: SubnetConfig = {
+                name: "ikev2-small",
+                subnet: "10.10.10.0/30",
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 with /30 subnet",
+                { config, vsNetwork, smallSubnet },
+                () => Ikev2Server(config, vsNetwork, smallSubnet),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, smallSubnet);
+            validateRouterConfigStructure(result);
+        });
+
+        it("should handle large subnet", () => {
+            const config: Ikev2ServerConfig = {
+                VSNetwork: "VPN",
+                profile: {},
+                proposal: {},
+                peer: {},
+                identities: { authMethod: "eap" },
+            };
+            const largeSubnet: SubnetConfig = {
+                name: "ikev2-large",
+                subnet: "10.0.0.0/16",
+            };
+
+            testWithOutput(
+                "Ikev2Server",
+                "IKEv2 with /16 subnet",
+                { config, vsNetwork, largeSubnet },
+                () => Ikev2Server(config, vsNetwork, largeSubnet),
+            );
+
+            const result = Ikev2Server(config, vsNetwork, largeSubnet);
+            validateRouterConfigStructure(result);
+        });
+    });
+});

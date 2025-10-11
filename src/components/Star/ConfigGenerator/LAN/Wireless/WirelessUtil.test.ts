@@ -1,2082 +1,909 @@
-// import { describe, it, expect } from "vitest";
-// import {
-//   DisableInterfaces,
-//   CheckMasters,
-//   Hide,
-//   GetNetworks,
-//   SSIDListGenerator,
-//   Passphrase,
-//   StationMode,
-//   Slave,
-//   Master,
-//   WirelessBridgePortsSingle,
-//   WirelessBridgePortsMulti,
-//   CheckWireless,
-// } from "./WirelessUtil";
-// import type {
-//   Wireless,
-//   WirelessConfig as WirelessConfigType,
-//   MultiMode,
-// } from "~/components/Star/StarContext/LANType";
-// import type { WANLinks, WANLinkConfig } from "~/components/Star/StarContext/WANType";
-// import type { RouterConfig } from "../../ConfigGenerator";
-// import type { Networks, Band } from "~/components/Star/StarContext/CommonType";
-// import {
-//   testWithOutput,
-//   testWithGenericOutput,
-//   validateRouterConfig,
-// } from "~/test-utils/test-helpers";
-
-// describe("Wireless Helper Function Tests", () => {
-//   describe("DisableInterfaces", () => {
-//     it("should generate commands to disable both wifi interfaces", () => {
-//       testWithOutput(
-//         "DisableInterfaces",
-//         "Disable all wireless interfaces when no wireless config is needed",
-//         {},
-//         () => DisableInterfaces(),
-//       );
-
-//       const result = DisableInterfaces();
-//       const expectedConfig: RouterConfig = {
-//         "/interface wifi": [
-//           `set [ find default-name=wifi1 ] disabled=yes`,
-//           `set [ find default-name=wifi2 ] disabled=yes`,
-//         ],
-//       };
-//       expect(result).toEqual(expectedConfig);
-//       validateRouterConfig(result, ["/interface wifi"]);
-//     });
-
-//     it("should return valid RouterConfig structure", () => {
-//       const result = DisableInterfaces();
-//       expect(result).toHaveProperty("/interface wifi");
-//       expect(Array.isArray(result["/interface wifi"])).toBe(true);
-//       expect(result["/interface wifi"]).toHaveLength(2);
-//     });
-//   });
-
-//   describe("CheckMasters", () => {
-//     it("should return true for both bands if present in WANLink", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
-//         },
-//         Domestic: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }]
-//         },
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces when both wifi bands are in use",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: true, isWifi5: true });
-//     });
-
-//     it("should return true for 2.4GHz only", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
-//         },
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces when only 2.4GHz wifi is in use",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: true, isWifi5: false });
-//     });
-
-//     it("should return true for 5GHz only", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }]
-//         },
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces when only 5GHz wifi is in use",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: false, isWifi5: true });
-//     });
-
-//     it("should return false for both if not wifi interfaces", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "ether1" } }]
-//         },
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces when no wifi interfaces are in use",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: false, isWifi5: false });
-//     });
-
-//     it("should handle interface names with wifi pattern variations", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
-//         },
-//         Domestic: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi5" } }]
-//         },
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces with standard wifi interface names",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: true, isWifi5: true });
-//     });
-
-//     it("should handle undefined domestic interface", () => {
-//       const wanLink: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [{
-//             name: "Test Link",
-//             InterfaceConfig: { InterfaceName: "wifi2.4" } }]
-//         },
-//         // Domestic is undefined
-//       };
-
-//       testWithGenericOutput(
-//         "CheckMasters",
-//         "Check master interfaces when domestic interface is undefined",
-//         { wanLink },
-//         () => CheckMasters(wanLink),
-//       );
-
-//       const result = CheckMasters(wanLink);
-//       expect(result).toEqual({ isWifi2_4: true, isWifi5: false });
-//     });
-//   });
-
-//   describe("Hide", () => {
-//     it("should add configuration.hide-ssid=yes when Hide is true", () => {
-//       testWithGenericOutput(
-//         "Hide",
-//         "Add hide SSID configuration when enabled",
-//         { command: "base command", Hide: true },
-//         () => Hide("base command", true),
-//       );
-
-//       const result = Hide("base command", true);
-//       expect(result).toBe("base command configuration.hide-ssid=yes");
-//     });
-
-//     it("should add configuration.hide-ssid=no when Hide is false", () => {
-//       testWithGenericOutput(
-//         "Hide",
-//         "Add visible SSID configuration when disabled",
-//         { command: "base command", Hide: false },
-//         () => Hide("base command", false),
-//       );
-
-//       const result = Hide("base command", false);
-//       expect(result).toBe("base command configuration.hide-ssid=no");
-//     });
-
-//     it("should handle empty command", () => {
-//       testWithGenericOutput(
-//         "Hide",
-//         "Handle empty command string",
-//         { command: "", Hide: true },
-//         () => Hide("", true),
-//       );
-
-//       const result = Hide("", true);
-//       expect(result).toBe(" configuration.hide-ssid=yes");
-//     });
-//   });
-
-//   describe("GetNetworks", () => {
-//     it("should return all networks if they exist", () => {
-//       const multiMode: MultiMode = {
-//         Split: {} as WirelessConfigType,
-//         Foreign: {} as WirelessConfigType,
-//         Domestic: {} as WirelessConfigType,
-//         VPN: {} as WirelessConfigType,
-//       };
-//       expect(GetNetworks(multiMode)).toEqual([
-//         "Split",
-//         "Foreign",
-//         "Domestic",
-//         "VPN",
-//       ]);
-//     });
-
-//     it("should return a subset of networks", () => {
-//       const multiMode: MultiMode = {
-//         Foreign: {} as WirelessConfigType,
-//         VPN: {} as WirelessConfigType,
-//       };
-//       expect(GetNetworks(multiMode)).toEqual(["Foreign", "VPN"]);
-//     });
-
-//     it("should return an empty array for an empty multimode config", () => {
-//       const multiMode: MultiMode = {};
-//       expect(GetNetworks(multiMode)).toEqual([]);
-//     });
-//   });
-
-//   describe("SSIDListGenerator", () => {
-//     it("should generate split SSIDs when SplitBand is true", () => {
-//       const result = SSIDListGenerator("MyWiFi", true);
-//       expect(result).toEqual({ "2.4": "MyWiFi 2.4", "5": "MyWiFi 5" });
-//     });
-
-//     it("should generate same SSIDs when SplitBand is false", () => {
-//       const result = SSIDListGenerator("MyWiFi", false);
-//       expect(result).toEqual({ "2.4": "MyWiFi", "5": "MyWiFi" });
-//     });
-//   });
-
-//   describe("Passphrase", () => {
-//     it("should append security settings to the command", () => {
-//       const command = "base command";
-//       const passphrase = "password123";
-//       const expected = `${command} security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${passphrase}" disabled=no`;
-//       expect(Passphrase(passphrase, command)).toBe(expected);
-//     });
-//   });
-
-//   describe("StationMode", () => {
-//     it("should generate station mode command with credentials", () => {
-//       const wanConfig: WANLinkConfig = {
-//         name: "Test Link",
-//         InterfaceConfig: {
-//           InterfaceName: "wifi2.4",
-//           WirelessCredentials: { SSID: "TargetSSID", Password: "TargetPassword" },
-//         }
-//       };
-
-//       testWithOutput(
-//         "StationMode",
-//         "Generate station mode configuration with wireless credentials",
-//         { wanConfig, Link: "Foreign" },
-//         () => StationMode(wanConfig, "Foreign"),
-//       );
-
-//       const result = StationMode(wanConfig, "Foreign");
-//       const commands = result["/interface wifi"];
-
-//       // Since CommandShortner may add line breaks, check that the command contains key parts
-//       expect(commands).toHaveLength(1);
-//       expect(commands[0]).toContain(
-//         "set [ find default-name=wifi2 ] comment=ForeignWAN",
-//       );
-//       expect(commands[0]).toContain("configuration.mode=station");
-//       expect(commands[0]).toContain('.ssid="TargetSSID"');
-//       expect(commands[0]).toContain('security.passphrase="TargetPassword"');
-//       validateRouterConfig(result, ["/interface wifi"]);
-//     });
-
-//     it("should return empty config if no wireless credentials", () => {
-//       const wanConfig: WANLinkConfig = {
-//         name: "Test Link",
-//         InterfaceConfig: { InterfaceName: "wifi2.4" }
-//       };
-
-//       testWithOutput(
-//         "StationMode",
-//         "Handle missing wireless credentials by returning empty config",
-//         { wanConfig, Link: "Foreign" },
-//         () => StationMode(wanConfig, "Foreign"),
-//       );
-
-//       const result = StationMode(wanConfig, "Foreign");
-//       expect(result["/interface wifi"]).toEqual([]);
-//       validateRouterConfig(result);
-//     });
-//   });
-
-//   describe("Slave", () => {
-//     const baseWirelessConfig: WirelessConfigType = {
-//       SSID: "TestNetwork",
-//       Password: "testpass123",
-//       isHide: false,
-//       SplitBand: false,
-//       isDisabled: false,
-//     };
-//     const wanLinkWithWifi: WANLinks = {
-//       Foreign: {
-//         WANConfigs: [{
-//           name: "Foreign Link",
-//           InterfaceConfig: { InterfaceName: "wifi2.4" }
-//         }]
-//       },
-//       Domestic: {
-//         WANConfigs: [{
-//           name: "Domestic Link",
-//           InterfaceConfig: { InterfaceName: "wifi5" }
-//         }]
-//       },
-//     };
-
-//     describe("Basic Slave Interface Generation", () => {
-//       it("should generate basic slave interface configuration for Domestic network", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Generate basic slave interface configuration for Domestic network",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () => Slave("Domestic" as Networks, "5" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "Domestic" as Networks,
-//           "5" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("add configuration.mode=ap");
-//         expect(commands).toContain('.ssid="TestNetwork"');
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi1 ]",
-//         );
-//         expect(commands).toContain('name="wifi5-DomesticLAN"');
-//         expect(commands).toContain('comment="DomesticLAN"');
-//         expect(commands).toContain("configuration.hide-ssid=no");
-//         expect(commands).toContain(
-//           "security.authentication-types=wpa2-psk,wpa3-psk",
-//         );
-//         expect(commands).toContain('.passphrase="testpass123"');
-//         expect(commands).toContain("disabled=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface for 2.4GHz band", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface configuration for 2.4GHz band",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () => Slave("Foreign" as Networks, "2.4" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi2 ]",
-//         );
-//         expect(commands).toContain('name="wifi2.4-ForeignLAN"');
-//         expect(commands).toContain('comment="ForeignLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface for VPN network", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface configuration for VPN network",
-//           {
-//             Network: "VPN",
-//             Band: "5",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () => Slave("VPN" as Networks, "5" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "VPN" as Networks,
-//           "5" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi1 ]",
-//         );
-//         expect(commands).toContain('name="wifi5-VPNLAN"');
-//         expect(commands).toContain('comment="VPNLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface for Split network", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface configuration for Split network",
-//           {
-//             Network: "Split",
-//             Band: "2.4",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () => Slave("Split" as Networks, "2.4" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "Split" as Networks,
-//           "2.4" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi2 ]",
-//         );
-//         expect(commands).toContain('name="wifi2.4-SplitLAN"');
-//         expect(commands).toContain('comment="SplitLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Hidden SSID Configuration", () => {
-//       it("should generate slave interface with hidden SSID", () => {
-//         const hiddenConfig: WirelessConfigType = {
-//           ...baseWirelessConfig,
-//           isHide: true,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface with hidden SSID configuration",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: hiddenConfig,
-//           },
-//           () => Slave("Domestic" as Networks, "5" as Band, hiddenConfig),
-//         );
-
-//         const result = Slave("Domestic" as Networks, "5" as Band, hiddenConfig);
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         expect(commands).toContain('.ssid="TestNetwork"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface with visible SSID", () => {
-//         const visibleConfig: WirelessConfigType = {
-//           ...baseWirelessConfig,
-//           isHide: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface with visible SSID configuration",
-//           {
-//             Network: "VPN",
-//             Band: "2.4",
-//             WirelessConfig: visibleConfig,
-//           },
-//           () => Slave("VPN" as Networks, "2.4" as Band, visibleConfig),
-//         );
-
-//         const result = Slave("VPN" as Networks, "2.4" as Band, visibleConfig);
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("configuration.hide-ssid=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Split Band SSID Configuration", () => {
-//       it("should generate slave interface with split band enabled for 2.4GHz", () => {
-//         const splitBandConfig: WirelessConfigType = {
-//           SSID: "CorporateWiFi",
-//           Password: "corp2024!",
-//           isHide: false,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface with split band SSID for 2.4GHz",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: splitBandConfig,
-//           },
-//           () => Slave("Foreign" as Networks, "2.4" as Band, splitBandConfig),
-//         );
-
-//         const result = Slave(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           splitBandConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="CorporateWiFi 2.4"');
-//         expect(commands).toContain('.passphrase="corp2024!"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface with split band enabled for 5GHz", () => {
-//         const splitBandConfig: WirelessConfigType = {
-//           SSID: "CorporateWiFi",
-//           Password: "corp2024!",
-//           isHide: false,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface with split band SSID for 5GHz",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: splitBandConfig,
-//           },
-//           () => Slave("Domestic" as Networks, "5" as Band, splitBandConfig),
-//         );
-
-//         const result = Slave(
-//           "Domestic" as Networks,
-//           "5" as Band,
-//           splitBandConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="CorporateWiFi 5"');
-//         expect(commands).toContain('.passphrase="corp2024!"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate slave interface with unified SSID when split band disabled", () => {
-//         const unifiedConfig: WirelessConfigType = {
-//           SSID: "UnifiedWiFi",
-//           Password: "unified123",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate slave interface with unified SSID when split band disabled",
-//           {
-//             Network: "VPN",
-//             Band: "5",
-//             WirelessConfig: unifiedConfig,
-//           },
-//           () => Slave("VPN" as Networks, "5" as Band, unifiedConfig),
-//         );
-
-//         const result = Slave("VPN" as Networks, "5" as Band, unifiedConfig);
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="UnifiedWiFi"');
-//         expect(commands).not.toContain('.ssid="UnifiedWiFi 5"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Complex Password and SSID Handling", () => {
-//       it("should handle special characters in SSID and password", () => {
-//         const specialConfig: WirelessConfigType = {
-//           SSID: "Test-Network_2024@Company!",
-//           Password: "P@ssw0rd#123$%^&*()",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Handle special characters in SSID and password",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: specialConfig,
-//           },
-//           () => Slave("Foreign" as Networks, "2.4" as Band, specialConfig),
-//         );
-
-//         const result = Slave(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           specialConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="Test-Network_2024@Company!"');
-//         expect(commands).toContain('.passphrase="P@ssw0rd#123$%^&*()"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should handle long SSID and password strings", () => {
-//         const longConfig: WirelessConfigType = {
-//           SSID: "VeryLongSSIDNameForTestingPurposesOnly",
-//           Password:
-//             "VeryLongPasswordForTestingComplexConfigurationHandling123456789",
-//           isHide: true,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Handle long SSID and password strings",
-//           {
-//             Network: "VPN",
-//             Band: "5",
-//             WirelessConfig: longConfig,
-//           },
-//           () => Slave("VPN" as Networks, "5" as Band, longConfig),
-//         );
-
-//         const result = Slave("VPN" as Networks, "5" as Band, longConfig);
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           '.ssid="VeryLongSSIDNameForTestingPurposesOnly 5"',
-//         );
-//         expect(commands).toContain(
-//           '.passphrase="VeryLongPasswordForTestingComplexConfigurationHandling123456789"',
-//         );
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should handle empty or minimal configurations", () => {
-//         const minimalConfig: WirelessConfigType = {
-//           SSID: "A",
-//           Password: "12345678",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Handle minimal SSID and password configurations",
-//           {
-//             Network: "Split",
-//             Band: "2.4",
-//             WirelessConfig: minimalConfig,
-//           },
-//           () => Slave("Split" as Networks, "2.4" as Band, minimalConfig),
-//         );
-
-//         const result = Slave("Split" as Networks, "2.4" as Band, minimalConfig);
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="A"');
-//         expect(commands).toContain('.passphrase="12345678"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Master Interface Integration", () => {
-//       it("should correctly reference master interface for all networks", () => {
-//         const testCases = [
-//           { Network: "Domestic", Band: "2.4" },
-//           { Network: "VPN", Band: "5" },
-//           { Network: "Split", Band: "2.4" },
-//           { Network: "Foreign", Band: "5" },
-//         ] as const;
-
-//         for (const testCase of testCases) {
-//           testWithOutput(
-//             "Slave",
-//             `Basic slave interface configuration for ${testCase.Network} on ${testCase.Band}GHz`,
-//             testCase,
-//             () =>
-//               Slave(
-//                 testCase.Network,
-//                 testCase.Band as Band,
-//                 baseWirelessConfig,
-//               ),
-//           );
-
-//           const result = Slave(
-//             testCase.Network,
-//             testCase.Band as Band,
-//             baseWirelessConfig,
-//           );
-//           const commands = result["/interface wifi"].join(" ");
-//           expect(commands).toContain("add configuration.mode=ap");
-//           expect(commands).toContain(
-//             `name="wifi${testCase.Band}-${testCase.Network}LAN"`,
-//           );
-//           expect(commands).toContain(`comment="${testCase.Network}LAN"`);
-
-//           // Check correct master interface reference
-//           const expectedMaster = testCase.Band === "2.4" ? "wifi2" : "wifi1";
-//           expect(commands).toContain(
-//             `master-interface=[ find default-name=${expectedMaster} ]`,
-//           );
-
-//           validateRouterConfig(result, ["/interface wifi"]);
-//         }
-//       });
-
-//       it("should handle different WAN link configurations", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Handle slave interface configuration for Domestic network",
-//           {
-//             Network: "Domestic",
-//             Band: "2.4",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () =>
-//             Slave("Domestic" as Networks, "2.4" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "Domestic" as Networks,
-//           "2.4" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi2 ]",
-//         );
-//         expect(commands).toContain('name="wifi2.4-DomesticLAN"');
-//         expect(commands).toContain('comment="DomesticLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Command Structure Validation", () => {
-//       it("should generate complete and properly formatted command", () => {
-//         const completeConfig: WirelessConfigType = {
-//           SSID: "Enterprise-WiFi",
-//           Password: "Enterprise2024!",
-//           isHide: true,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Slave",
-//           "Generate complete and properly formatted slave interface command",
-//           {
-//             Network: "Foreign",
-//             Band: "5",
-//             WirelessConfig: completeConfig,
-//           },
-//           () => Slave("Foreign" as Networks, "5" as Band, completeConfig),
-//         );
-
-//         const result = Slave(
-//           "Foreign" as Networks,
-//           "5" as Band,
-//           completeConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-
-//         // Verify all required components are present
-//         expect(commands).toMatch(/add configuration\.mode=ap/);
-//         expect(commands).toContain('.ssid="Enterprise-WiFi 5"');
-//         expect(commands).toContain(
-//           "master-interface=[ find default-name=wifi1 ]",
-//         );
-//         expect(commands).toContain('name="wifi5-ForeignLAN"');
-//         expect(commands).toContain('comment="ForeignLAN"');
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         expect(commands).toContain(
-//           "security.authentication-types=wpa2-psk,wpa3-psk",
-//         );
-//         expect(commands).toContain('.passphrase="Enterprise2024!"');
-//         expect(commands).toContain("disabled=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should maintain proper command order and syntax", () => {
-//         testWithOutput(
-//           "Slave",
-//           "Validate command order and syntax for slave interface",
-//           {
-//             Network: "VPN",
-//             Band: "2.4",
-//             WirelessConfig: baseWirelessConfig,
-//           },
-//           () => Slave("VPN" as Networks, "2.4" as Band, baseWirelessConfig),
-//         );
-
-//         const result = Slave(
-//           "VPN" as Networks,
-//           "2.4" as Band,
-//           baseWirelessConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-
-//         // Check that the command follows MikroTik syntax
-//         expect(commands.split(" ").length).toBeGreaterThan(5); // Should be a substantial command
-//         expect(commands).not.toContain('""'); // No empty quoted strings
-//         // Note: Commands may contain double spaces due to line break formatting in CommandShortner
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Edge Cases and Error Scenarios", () => {
-//       it("should handle all network types consistently", () => {
-//         const networks: Networks[] = ["Foreign", "Domestic", "VPN", "Split"];
-//         const results: Record<string, RouterConfig> = {};
-
-//         for (const network of networks) {
-//           results[network] = Slave(network, "2.4" as Band, baseWirelessConfig);
-//         }
-
-//         testWithGenericOutput(
-//           "Slave",
-//           "Handle all network types consistently",
-//           { networks, baseWirelessConfig, wanLinkWithWifi },
-//           () => results,
-//         );
-
-//         for (const [network, result] of Object.entries(results)) {
-//           const commands = result["/interface wifi"].join(" ");
-//           expect(commands).toContain(
-//             "master-interface=[ find default-name=wifi2 ]",
-//           );
-//           expect(commands).toContain(`name="wifi2.4-${network}LAN"`);
-//           expect(commands).toContain(`comment="${network}LAN"`);
-//           validateRouterConfig(result, ["/interface wifi"]);
-//         }
-//       });
-
-//       it("should handle both bands consistently", () => {
-//         const bands: Band[] = ["2.4", "5"];
-//         const results: Record<string, RouterConfig> = {};
-
-//         for (const band of bands) {
-//           results[band] = Slave(
-//             "Domestic" as Networks,
-//             band,
-//             baseWirelessConfig,
-//           );
-//         }
-
-//         testWithGenericOutput(
-//           "Slave",
-//           "Handle both wireless bands consistently",
-//           { bands, baseWirelessConfig, wanLinkWithWifi },
-//           () => results,
-//         );
-
-//         const commands24 = results["2.4"]["/interface wifi"].join(" ");
-//         const commands5 = results["5"]["/interface wifi"].join(" ");
-
-//         expect(commands24).toContain(
-//           "master-interface=[ find default-name=wifi2 ]",
-//         );
-//         expect(commands24).toContain('name="wifi2.4-DomesticLAN"');
-//         expect(commands5).toContain(
-//           "master-interface=[ find default-name=wifi1 ]",
-//         );
-//         expect(commands5).toContain('name="wifi5-DomesticLAN"');
-
-//         validateRouterConfig(results["2.4"], ["/interface wifi"]);
-//         validateRouterConfig(results["5"], ["/interface wifi"]);
-//       });
-//     });
-//   });
-
-//   describe("Master", () => {
-//     const baseMasterConfig: WirelessConfigType = {
-//       SSID: "MasterNetwork",
-//       Password: "masterpass123",
-//       isHide: false,
-//       SplitBand: false,
-//       isDisabled: false,
-//     };
-
-//     describe("Basic Master Interface Generation", () => {
-//       it("should generate basic master interface configuration for Foreign network", () => {
-//         testWithOutput(
-//           "Master",
-//           "Generate basic master interface configuration for Foreign network",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Foreign" as Networks, "2.4" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("set [ find default-name=wifi2 ]");
-//         expect(commands).toContain("configuration.country=Japan");
-//         expect(commands).toContain(".mode=ap");
-//         expect(commands).toContain('.ssid="MasterNetwork"');
-//         expect(commands).toContain('name="wifi2.4-ForeignLAN"');
-//         expect(commands).toContain('comment="ForeignLAN"');
-//         expect(commands).toContain("configuration.hide-ssid=no");
-//         expect(commands).toContain(
-//           "security.authentication-types=wpa2-psk,wpa3-psk",
-//         );
-//         expect(commands).toContain('.passphrase="masterpass123"');
-//         expect(commands).toContain("disabled=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface for 5GHz band", () => {
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface configuration for 5GHz band",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Domestic" as Networks, "5" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Domestic" as Networks,
-//           "5" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("set [ find default-name=wifi1 ]");
-//         expect(commands).toContain('name="wifi5-DomesticLAN"');
-//         expect(commands).toContain('comment="DomesticLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface for VPN network", () => {
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface configuration for VPN network",
-//           {
-//             Network: "VPN",
-//             Band: "2.4",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("VPN" as Networks, "2.4" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "VPN" as Networks,
-//           "2.4" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("set [ find default-name=wifi2 ]");
-//         expect(commands).toContain('name="wifi2.4-VPNLAN"');
-//         expect(commands).toContain('comment="VPNLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface for Split network", () => {
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface configuration for Split network",
-//           {
-//             Network: "Split",
-//             Band: "5",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Split" as Networks, "5" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Split" as Networks,
-//           "5" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("set [ find default-name=wifi1 ]");
-//         expect(commands).toContain('name="wifi5-SplitLAN"');
-//         expect(commands).toContain('comment="SplitLAN"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Hidden SSID Configuration", () => {
-//       it("should generate master interface with hidden SSID", () => {
-//         const hiddenMasterConfig: WirelessConfigType = {
-//           ...baseMasterConfig,
-//           isHide: true,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface with hidden SSID configuration",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: hiddenMasterConfig,
-//           },
-//           () =>
-//             Master("Foreign" as Networks, "2.4" as Band, hiddenMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           hiddenMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         expect(commands).toContain('.ssid="MasterNetwork"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface with visible SSID", () => {
-//         const visibleMasterConfig: WirelessConfigType = {
-//           ...baseMasterConfig,
-//           isHide: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface with visible SSID configuration",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: visibleMasterConfig,
-//           },
-//           () =>
-//             Master("Domestic" as Networks, "5" as Band, visibleMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Domestic" as Networks,
-//           "5" as Band,
-//           visibleMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("configuration.hide-ssid=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Split Band SSID Configuration", () => {
-//       it("should generate master interface with split band enabled for 2.4GHz", () => {
-//         const splitBandMasterConfig: WirelessConfigType = {
-//           SSID: "EnterpriseWiFi",
-//           Password: "enterprise2024!",
-//           isHide: false,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface with split band SSID for 2.4GHz",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: splitBandMasterConfig,
-//           },
-//           () =>
-//             Master("Foreign" as Networks, "2.4" as Band, splitBandMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           splitBandMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="EnterpriseWiFi 2.4"');
-//         expect(commands).toContain('.passphrase="enterprise2024!"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface with split band enabled for 5GHz", () => {
-//         const splitBandMasterConfig: WirelessConfigType = {
-//           SSID: "EnterpriseWiFi",
-//           Password: "enterprise2024!",
-//           isHide: false,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface with split band SSID for 5GHz",
-//           {
-//             Network: "VPN",
-//             Band: "5",
-//             WirelessConfig: splitBandMasterConfig,
-//           },
-//           () => Master("VPN" as Networks, "5" as Band, splitBandMasterConfig),
-//         );
-
-//         const result = Master(
-//           "VPN" as Networks,
-//           "5" as Band,
-//           splitBandMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="EnterpriseWiFi 5"');
-//         expect(commands).toContain('.passphrase="enterprise2024!"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should generate master interface with unified SSID when split band disabled", () => {
-//         const unifiedMasterConfig: WirelessConfigType = {
-//           SSID: "UnifiedMasterWiFi",
-//           Password: "unified456",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface with unified SSID when split band disabled",
-//           {
-//             Network: "Split",
-//             Band: "2.4",
-//             WirelessConfig: unifiedMasterConfig,
-//           },
-//           () => Master("Split" as Networks, "2.4" as Band, unifiedMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Split" as Networks,
-//           "2.4" as Band,
-//           unifiedMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="UnifiedMasterWiFi"');
-//         expect(commands).not.toContain('.ssid="UnifiedMasterWiFi 2.4"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Complex Password and SSID Handling", () => {
-//       it("should handle special characters in SSID and password", () => {
-//         const specialMasterConfig: WirelessConfigType = {
-//           SSID: "Master-Network_2024@Corp!",
-//           Password: "M@st3rP@ssw0rd#123$%^&*()",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Handle special characters in SSID and password for master interface",
-//           {
-//             Network: "Foreign",
-//             Band: "5",
-//             WirelessConfig: specialMasterConfig,
-//           },
-//           () => Master("Foreign" as Networks, "5" as Band, specialMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "5" as Band,
-//           specialMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="Master-Network_2024@Corp!"');
-//         expect(commands).toContain('.passphrase="M@st3rP@ssw0rd#123$%^&*()"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should handle long SSID and password strings", () => {
-//         const longMasterConfig: WirelessConfigType = {
-//           SSID: "VeryLongMasterSSIDNameForTestingPurposesOnly",
-//           Password:
-//             "VeryLongMasterPasswordForTestingComplexConfigurationHandling123456789",
-//           isHide: true,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Handle long SSID and password strings for master interface",
-//           {
-//             Network: "Domestic",
-//             Band: "2.4",
-//             WirelessConfig: longMasterConfig,
-//           },
-//           () => Master("Domestic" as Networks, "2.4" as Band, longMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Domestic" as Networks,
-//           "2.4" as Band,
-//           longMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(
-//           '.ssid="VeryLongMasterSSIDNameForTestingPurposesOnly 2.4"',
-//         );
-//         expect(commands).toContain(
-//           '.passphrase="VeryLongMasterPasswordForTestingComplexConfigurationHandling123456789"',
-//         );
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should handle minimal configurations", () => {
-//         const minimalMasterConfig: WirelessConfigType = {
-//           SSID: "M",
-//           Password: "87654321",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Handle minimal SSID and password configurations for master interface",
-//           {
-//             Network: "VPN",
-//             Band: "5",
-//             WirelessConfig: minimalMasterConfig,
-//           },
-//           () => Master("VPN" as Networks, "5" as Band, minimalMasterConfig),
-//         );
-
-//         const result = Master(
-//           "VPN" as Networks,
-//           "5" as Band,
-//           minimalMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain('.ssid="M"');
-//         expect(commands).toContain('.passphrase="87654321"');
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("MikroTik WiFi Configuration Standards", () => {
-//       it("should generate master interface following MikroTik WiFi documentation", () => {
-//         const mikrotikStandardConfig: WirelessConfigType = {
-//           SSID: "MikroTik",
-//           Password: "diceware makes good passwords",
-//           isHide: false,
-//           SplitBand: false,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate master interface following MikroTik WiFi documentation standards",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: mikrotikStandardConfig,
-//           },
-//           () =>
-//             Master(
-//               "Foreign" as Networks,
-//               "2.4" as Band,
-//               mikrotikStandardConfig,
-//             ),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           mikrotikStandardConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-
-//         // Verify MikroTik standard compliance
-//         expect(commands).toContain("configuration.country=Japan");
-//         expect(commands).toContain(".mode=ap");
-//         expect(commands).toContain('.ssid="MikroTik"');
-//         expect(commands).toContain(
-//           "security.authentication-types=wpa2-psk,wpa3-psk",
-//         );
-//         expect(commands).toContain(
-//           '.passphrase="diceware makes good passwords"',
-//         );
-//         expect(commands).toContain("disabled=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should set proper country configuration", () => {
-//         testWithOutput(
-//           "Master",
-//           "Verify proper country configuration in master interface",
-//           {
-//             Network: "Domestic",
-//             Band: "5",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Domestic" as Networks, "5" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Domestic" as Networks,
-//           "5" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain("configuration.country=Japan");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should set proper access point mode", () => {
-//         testWithOutput(
-//           "Master",
-//           "Verify proper access point mode configuration",
-//           {
-//             Network: "VPN",
-//             Band: "2.4",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("VPN" as Networks, "2.4" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "VPN" as Networks,
-//           "2.4" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-//         expect(commands).toContain(".mode=ap");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Command Structure Validation", () => {
-//       it("should generate complete and properly formatted command", () => {
-//         const completeConfig: WirelessConfigType = {
-//           SSID: "Complete-Master-WiFi",
-//           Password: "CompletePassword2024!",
-//           isHide: true,
-//           SplitBand: true,
-//           isDisabled: false,
-//         };
-
-//         testWithOutput(
-//           "Master",
-//           "Generate complete and properly formatted master interface command",
-//           {
-//             Network: "Split",
-//             Band: "5",
-//             WirelessConfig: completeConfig,
-//           },
-//           () => Master("Split" as Networks, "5" as Band, completeConfig),
-//         );
-
-//         const result = Master("Split" as Networks, "5" as Band, completeConfig);
-//         const commands = result["/interface wifi"].join(" ");
-
-//         // Verify all required components are present
-//         expect(commands).toMatch(/^set \[ find name=wifi5 \]/);
-//         expect(commands).toContain("configuration.country=Japan");
-//         expect(commands).toContain(".mode=ap");
-//         expect(commands).toContain('.ssid="Complete-Master-WiFi 5"');
-//         expect(commands).toContain('name="wifi5-SplitLAN"');
-//         expect(commands).toContain('comment="SplitLAN"');
-//         expect(commands).toContain("configuration.hide-ssid=yes");
-//         expect(commands).toContain(
-//           "security.authentication-types=wpa2-psk,wpa3-psk",
-//         );
-//         expect(commands).toContain('.passphrase="CompletePassword2024!"');
-//         expect(commands).toContain("disabled=no");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-
-//       it("should maintain proper command order and syntax", () => {
-//         testWithOutput(
-//           "Master",
-//           "Validate command order and syntax for master interface",
-//           {
-//             Network: "Foreign",
-//             Band: "2.4",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Foreign" as Networks, "2.4" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Foreign" as Networks,
-//           "2.4" as Band,
-//           baseMasterConfig,
-//         );
-//         const commands = result["/interface wifi"].join(" ");
-
-//         // Check that the command follows MikroTik syntax
-//         expect(commands.split(" ").length).toBeGreaterThan(5); // Should be a substantial command
-//         expect(commands).not.toContain('""'); // No empty quoted strings
-//         // Note: Commands may contain double spaces due to line break formatting in CommandShortner
-//         expect(commands).toMatch(/^set \[ find name=wifi\d+\.?\d* \]/); // Proper set command format
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-
-//     describe("Edge Cases and Error Scenarios", () => {
-//       it("should handle all network types consistently", () => {
-//         const networks: Networks[] = ["Foreign", "Domestic", "VPN", "Split"];
-//         const results: Record<string, RouterConfig> = {};
-
-//         for (const network of networks) {
-//           results[network] = Master(network, "5" as Band, baseMasterConfig);
-//         }
-
-//         testWithGenericOutput(
-//           "Master",
-//           "Handle all network types consistently",
-//           { networks, baseMasterConfig },
-//           () => results,
-//         );
-
-//         for (const [network, result] of Object.entries(results)) {
-//           const commands = result["/interface wifi"].join(" ");
-//           expect(commands).toContain("set [ find name=wifi5 ]");
-//           expect(commands).toContain(`name="wifi5-${network}LAN"`);
-//           expect(commands).toContain(`comment="${network}LAN"`);
-//           validateRouterConfig(result, ["/interface wifi"]);
-//         }
-//       });
-
-//       it("should handle both bands consistently", () => {
-//         const bands: Band[] = ["2.4", "5"];
-//         const results: Record<string, RouterConfig> = {};
-
-//         for (const band of bands) {
-//           results[band] = Master("Foreign" as Networks, band, baseMasterConfig);
-//         }
-
-//         testWithGenericOutput(
-//           "Master",
-//           "Handle both wireless bands consistently",
-//           { bands, baseMasterConfig },
-//           () => results,
-//         );
-
-//         const commands24 = results["2.4"]["/interface wifi"].join(" ");
-//         const commands5 = results["5"]["/interface wifi"].join(" ");
-
-//         expect(commands24).toContain("set [ find name=wifi2.4 ]");
-//         expect(commands24).toContain('name="wifi2.4-ForeignLAN"');
-//         expect(commands5).toContain("set [ find name=wifi5 ]");
-//         expect(commands5).toContain('name="wifi5-ForeignLAN"');
-
-//         validateRouterConfig(results["2.4"], ["/interface wifi"]);
-//         validateRouterConfig(results["5"], ["/interface wifi"]);
-//       });
-
-//       it("should generate consistent configuration structure", () => {
-//         testWithOutput(
-//           "Master",
-//           "Ensure consistent RouterConfig structure across all master interface generations",
-//           {
-//             Network: "Domestic",
-//             Band: "2.4",
-//             WirelessConfig: baseMasterConfig,
-//           },
-//           () => Master("Domestic" as Networks, "2.4" as Band, baseMasterConfig),
-//         );
-
-//         const result = Master(
-//           "Domestic" as Networks,
-//           "2.4" as Band,
-//           baseMasterConfig,
-//         );
-
-//         // Verify RouterConfig structure
-//         expect(result).toHaveProperty("/interface wifi");
-//         expect(Array.isArray(result["/interface wifi"])).toBe(true);
-//         expect(result["/interface wifi"]).toHaveLength(1);
-//         expect(typeof result["/interface wifi"][0]).toBe("string");
-//         validateRouterConfig(result, ["/interface wifi"]);
-//       });
-//     });
-//   });
-
-//   describe("WirelessBridgePortsSingle", () => {
-//     describe("Domestic Link Configuration", () => {
-//       it("should generate split bridge ports for domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Generate split bridge ports for domestic link configuration",
-//           { WANLinkType: "both" },
-//           () => WirelessBridgePortsSingle(true),
-//         );
-
-//         const result = WirelessBridgePortsSingle(true);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeSplit interface=wifi2.4-SplitLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-SplitLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(expectedPorts);
-//         expect(result["/interface bridge port"]).toHaveLength(2);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should use LANBridgeSplit bridge for domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Verify LANBridgeSplit bridge usage for domestic link",
-//           { WANLinkType: "both" },
-//           () => WirelessBridgePortsSingle(true),
-//         );
-
-//         const result = WirelessBridgePortsSingle(true);
-//         const commands = result["/interface bridge port"];
-
-//         for (const command of commands) {
-//           expect(command).toContain("bridge=LANBridgeSplit");
-//           expect(command).not.toContain("bridge=LANBridgeVPN");
-//         }
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should configure both 2.4GHz and 5GHz interfaces for split LAN", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Configure both wireless bands for split LAN",
-//           { WANLinkType: "both" },
-//           () => WirelessBridgePortsSingle(true),
-//         );
-
-//         const result = WirelessBridgePortsSingle(true);
-//         const commands = result["/interface bridge port"];
-
-//         expect(
-//           commands.some((cmd: string) => cmd.includes("wifi2.4-SplitLAN")),
-//         ).toBe(true);
-//         expect(
-//           commands.some((cmd: string) => cmd.includes("wifi5-SplitLAN")),
-//         ).toBe(true);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-
-//     describe("Non-Domestic Link Configuration", () => {
-//       it("should generate VPN bridge ports for non-domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Generate VPN bridge ports for non-domestic link configuration",
-//           { WANLinkType: "foreign-only" },
-//           () => WirelessBridgePortsSingle(false),
-//         );
-
-//         const result = WirelessBridgePortsSingle(false);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeVPN interface=wifi2.4-VPNLAN",
-//           "add bridge=LANBridgeVPN interface=wifi5-VPNLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(expectedPorts);
-//         expect(result["/interface bridge port"]).toHaveLength(2);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should use LANBridgeVPN bridge for non-domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Verify LANBridgeVPN bridge usage for non-domestic link",
-//           { WANLinkType: "foreign-only" },
-//           () => WirelessBridgePortsSingle(false),
-//         );
-
-//         const result = WirelessBridgePortsSingle(false);
-//         const commands = result["/interface bridge port"];
-
-//         for (const command of commands) {
-//           expect(command).toContain("bridge=LANBridgeVPN");
-//           expect(command).not.toContain("bridge=LANBridgeSplit");
-//         }
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should configure both 2.4GHz and 5GHz interfaces for VPN LAN", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Configure both wireless bands for VPN LAN",
-//           { WANLinkType: "foreign-only" },
-//           () => WirelessBridgePortsSingle(false),
-//         );
-
-//         const result = WirelessBridgePortsSingle(false);
-//         const commands = result["/interface bridge port"];
-
-//         expect(
-//           commands.some((cmd: string) => cmd.includes("wifi2.4-VPNLAN")),
-//         ).toBe(true);
-//         expect(
-//           commands.some((cmd: string) => cmd.includes("wifi5-VPNLAN")),
-//         ).toBe(true);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-
-//     describe("Router Config Structure Validation", () => {
-//       it("should return valid RouterConfig structure for domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Validate RouterConfig structure for domestic link",
-//           { WANLinkType: "both" },
-//           () => WirelessBridgePortsSingle(true),
-//         );
-
-//         const result = WirelessBridgePortsSingle(true);
-
-//         expect(result).toHaveProperty("/interface bridge port");
-//         expect(Array.isArray(result["/interface bridge port"])).toBe(true);
-//         expect(
-//           result["/interface bridge port"].every(
-//             (cmd: string) => typeof cmd === "string",
-//           ),
-//         ).toBe(true);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should return valid RouterConfig structure for non-domestic link", () => {
-//         testWithOutput(
-//           "WirelessBridgePortsSingle",
-//           "Validate RouterConfig structure for non-domestic link",
-//           { WANLinkType: "foreign-only" },
-//           () => WirelessBridgePortsSingle(false),
-//         );
-
-//         const result = WirelessBridgePortsSingle(false);
-
-//         expect(result).toHaveProperty("/interface bridge port");
-//         expect(Array.isArray(result["/interface bridge port"])).toBe(true);
-//         expect(
-//           result["/interface bridge port"].every(
-//             (cmd: string) => typeof cmd === "string",
-//           ),
-//         ).toBe(true);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should generate consistent command format", () => {
-//         const domesticResult = WirelessBridgePortsSingle(true);
-//         const vpnResult = WirelessBridgePortsSingle(false);
-
-//         testWithGenericOutput(
-//           "WirelessBridgePortsSingle",
-//           "Verify consistent command format across configurations",
-//           { domesticResult, vpnResult },
-//           () => ({ domesticResult, vpnResult }),
-//         );
-
-//         // Both should have same number of commands
-//         expect(domesticResult["/interface bridge port"]).toHaveLength(2);
-//         expect(vpnResult["/interface bridge port"]).toHaveLength(2);
-
-//         // All commands should start with 'add'
-//         const allCommands = [
-//           ...domesticResult["/interface bridge port"],
-//           ...vpnResult["/interface bridge port"],
-//         ];
-
-//         for (const command of allCommands) {
-//           expect(command).toMatch(/^add bridge=/);
-//           expect(command).toContain("interface=wifi");
-//         }
-//       });
-//     });
-//   });
-
-//   describe("WirelessBridgePortsMulti", () => {
-//     describe("MultiMode Network Configurations", () => {
-//       it("should generate bridge ports for all networks in multimode", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             Domestic: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Generate bridge ports for all configured networks in multimode",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeSplit interface=wifi2.4-FRNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-FRNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi2.4-DOMLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-DOMLAN",
-//           "add bridge=LANBridgeSplit interface=wifi2.4-VPNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-VPNLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(
-//           expect.arrayContaining(expectedPorts),
-//         );
-//         expect(result["/interface bridge port"]).toHaveLength(6);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should generate bridge ports for Foreign and VPN networks only", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Generate bridge ports for subset of networks (Foreign and VPN)",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeSplit interface=wifi2.4-FRNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-FRNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi2.4-VPNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-VPNLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(
-//           expect.arrayContaining(expectedPorts),
-//         );
-//         expect(result["/interface bridge port"]).toHaveLength(4);
-
-//         // Should not contain Domestic or Split networks
-//         const commands = result["/interface bridge port"].join(" ");
-//         expect(commands).not.toContain("DOMLAN");
-//         expect(commands).not.toContain("SplitLAN");
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should generate bridge ports for Split network only", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Split: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Generate bridge ports for single Split network",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeSplit interface=wifi2.4-SplitLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-SplitLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(expectedPorts);
-//         expect(result["/interface bridge port"]).toHaveLength(2);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should generate bridge ports for Domestic network only", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Domestic: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Generate bridge ports for single Domestic network",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const expectedPorts = [
-//           "add bridge=LANBridgeSplit interface=wifi2.4-DOMLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-DOMLAN",
-//         ];
-
-//         expect(result["/interface bridge port"]).toEqual(expectedPorts);
-//         expect(result["/interface bridge port"]).toHaveLength(2);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-
-//     describe("Edge Cases and Error Handling", () => {
-//       it("should return empty config if no multimode", () => {
-//         const wireless: Wireless = { SingleMode: {} as WirelessConfigType };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Handle wireless configuration without MultiMode",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         expect(result["/interface bridge port"]).toEqual([]);
-//         expect(result["/interface bridge port"]).toHaveLength(0);
-//         validateRouterConfig(result);
-//       });
-
-//       it("should return empty config if MultiMode is undefined", () => {
-//         const wireless: Wireless = {};
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Handle wireless configuration with undefined MultiMode",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         expect(result["/interface bridge port"]).toEqual([]);
-//         validateRouterConfig(result);
-//       });
-
-//       it("should return empty config if MultiMode is empty object", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {},
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Handle empty MultiMode configuration",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         expect(result["/interface bridge port"]).toEqual([]);
-//         expect(result["/interface bridge port"]).toHaveLength(0);
-//         validateRouterConfig(result);
-//       });
-
-//       it("should handle wireless configuration with both SingleMode and MultiMode", () => {
-//         const wireless: Wireless = {
-//           SingleMode: {} as WirelessConfigType,
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Handle wireless configuration with both SingleMode and MultiMode",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         // Should only process MultiMode and ignore SingleMode
-//         expect(result["/interface bridge port"]).toHaveLength(2);
-//         expect(result["/interface bridge port"]).toEqual([
-//           "add bridge=LANBridgeSplit interface=wifi2.4-FRNLAN",
-//           "add bridge=LANBridgeSplit interface=wifi5-FRNLAN",
-//         ]);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-
-//     describe("Network Naming Convention Validation", () => {
-//       it("should use correct abbreviated network names", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             Domestic: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//             Split: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Validate network name abbreviation conventions",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const commands = result["/interface bridge port"].join(" ");
-
-//         // Verify abbreviated forms are used
-//         expect(commands).toContain("FRNLAN"); // Foreign -> FRN
-//         expect(commands).toContain("DOMLAN"); // Domestic -> DOM
-//         expect(commands).toContain("VPNLAN"); // VPN -> VPN
-//         expect(commands).toContain("SplitLAN"); // Split -> Split
-
-//         // Verify full names are not used
-//         expect(commands).not.toContain("ForeignLAN");
-//         expect(commands).not.toContain("DomesticLAN");
-
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should configure both 2.4GHz and 5GHz for each network", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Ensure both wireless bands are configured for each network",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const commands = result["/interface bridge port"];
-
-//         // Each network should have both 2.4GHz and 5GHz interfaces
-//         expect(
-//           commands.filter((cmd: string) => cmd.includes("wifi2.4-FRNLAN")),
-//         ).toHaveLength(1);
-//         expect(
-//           commands.filter((cmd: string) => cmd.includes("wifi5-FRNLAN")),
-//         ).toHaveLength(1);
-//         expect(
-//           commands.filter((cmd: string) => cmd.includes("wifi2.4-VPNLAN")),
-//         ).toHaveLength(1);
-//         expect(
-//           commands.filter((cmd: string) => cmd.includes("wifi5-VPNLAN")),
-//         ).toHaveLength(1);
-
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should always use LANBridgeSplit bridge for all networks", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             Domestic: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//             Split: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Verify all networks use LANBridgeSplit bridge",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const commands = result["/interface bridge port"];
-
-//         for (const command of commands) {
-//           expect(command).toContain("bridge=LANBridgeSplit");
-//           expect(command).not.toContain("bridge=LANBridgeVPN");
-//         }
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-
-//     describe("Router Config Structure Validation", () => {
-//       it("should return valid RouterConfig structure", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             VPN: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Validate RouterConfig structure for multimode configuration",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-
-//         expect(result).toHaveProperty("/interface bridge port");
-//         expect(Array.isArray(result["/interface bridge port"])).toBe(true);
-//         expect(
-//           result["/interface bridge port"].every(
-//             (cmd: string) => typeof cmd === "string",
-//           ),
-//         ).toBe(true);
-//         expect(
-//           result["/interface bridge port"].every((cmd: string) =>
-//             cmd.startsWith("add bridge="),
-//           ),
-//         ).toBe(true);
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-
-//       it("should generate commands in consistent format", () => {
-//         const wireless: Wireless = {
-//           MultiMode: {
-//             Foreign: {} as WirelessConfigType,
-//             Domestic: {} as WirelessConfigType,
-//           },
-//         };
-
-//         testWithOutput(
-//           "WirelessBridgePortsMulti",
-//           "Verify consistent command format across all generated commands",
-//           { wireless },
-//           () => WirelessBridgePortsMulti(wireless),
-//         );
-
-//         const result = WirelessBridgePortsMulti(wireless);
-//         const commands = result["/interface bridge port"];
-
-//         for (const command of commands) {
-//           // Each command should follow the pattern: add bridge=<bridge> interface=<interface>
-//           expect(command).toMatch(
-//             /^add bridge=LANBridgeSplit interface=wifi(2\.4|5)-\w+LAN$/,
-//           );
-//         }
-//         validateRouterConfig(result, ["/interface bridge port"]);
-//       });
-//     });
-//   });
-
-//   describe("CheckWireless", () => {
-//     it("should return false for undefined or empty config", () => {
-//       expect(CheckWireless(undefined as any)).toBe(false);
-//       expect(CheckWireless({})).toBe(false);
-//     });
-
-//     it("should return true if SingleMode is present", () => {
-//       expect(CheckWireless({ SingleMode: {} as WirelessConfigType })).toBe(
-//         true,
-//       );
-//     });
-
-//     it("should return true if MultiMode is present", () => {
-//       expect(CheckWireless({ MultiMode: {} })).toBe(true);
-//     });
-//   });
-// });
+import { describe, it, expect } from "vitest";
+import {
+  DefaultBandToInterfaceName,
+  hasWirelessInterfaces,
+  CheckWireless,
+  DisableInterfaces,
+  CheckWANMaster,
+  CheckTrunkMaster,
+  CheckMasters,
+  Hide,
+  SSIDListGenerator,
+  Passphrase,
+  StationMode,
+  Slave,
+  Master,
+  WirelessBridge,
+  WirelessInterfaceList,
+} from "./WirelessUtil";
+import type {
+  WirelessConfig,
+  WifiTarget,
+  Band,
+  RouterModels,
+  WANLinks,
+} from "~/components/Star/StarContext";
+import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import {
+  testWithOutput,
+  testWithGenericOutput,
+  validateRouterConfig,
+  validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
+
+describe("Wireless Utility Functions", () => {
+  describe("DefaultBandToInterfaceName", () => {
+    it("should return wifi2 for 2.4GHz band", () => {
+      const result = testWithGenericOutput(
+        "DefaultBandToInterfaceName",
+        "Convert 2.4GHz band to default interface name",
+        { band: "2.4" },
+        () => DefaultBandToInterfaceName("2.4" as Band),
+      );
+
+      expect(result).toBe("wifi2");
+    });
+
+    it("should return wifi1 for 5GHz band", () => {
+      const result = testWithGenericOutput(
+        "DefaultBandToInterfaceName",
+        "Convert 5GHz band to default interface name",
+        { band: "5" },
+        () => DefaultBandToInterfaceName("5" as Band),
+      );
+
+      expect(result).toBe("wifi1");
+    });
+  });
+
+  describe("hasWirelessInterfaces", () => {
+    it("should return true when router has wireless interfaces", () => {
+      const routerModels: RouterModels[] = [
+        {
+          id: "test-router",
+          model: "hEX",
+          isMaster: true,
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1", "ether2"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "hasWirelessInterfaces",
+        "Check router with wireless interfaces",
+        { routerModels },
+        () => hasWirelessInterfaces(routerModels),
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when router has no wireless interfaces", () => {
+      const routerModels: RouterModels[] = [
+        {
+          id: "test-router",
+          model: "hEX",
+          isMaster: true,
+          Interfaces: {
+            Interfaces: {
+              wireless: [],
+              ethernet: ["ether1", "ether2"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "hasWirelessInterfaces",
+        "Check router without wireless interfaces",
+        { routerModels },
+        () => hasWirelessInterfaces(routerModels),
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("CheckWireless", () => {
+    it("should return false for empty wireless configs array", () => {
+      const result = testWithGenericOutput(
+        "CheckWireless",
+        "Check empty wireless configurations",
+        { wirelessConfigs: [] },
+        () => CheckWireless([]),
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true when at least one config is enabled", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "TestNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckWireless",
+        "Check with one enabled wireless configuration",
+        { wirelessConfigs },
+        () => CheckWireless(wirelessConfigs),
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when all configs are disabled", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "TestNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: true,
+        },
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckWireless",
+        "Check with all disabled wireless configurations",
+        { wirelessConfigs },
+        () => CheckWireless(wirelessConfigs),
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("DisableInterfaces", () => {
+    it("should generate commands to disable both wifi interfaces", () => {
+      const result = testWithOutput(
+        "DisableInterfaces",
+        "Disable all wireless interfaces",
+        {},
+        () => DisableInterfaces(),
+      );
+
+      expect(result["/interface wifi"]).toContain(
+        "set [ find default-name=wifi1 ] disabled=yes",
+      );
+      expect(result["/interface wifi"]).toContain(
+        "set [ find default-name=wifi2 ] disabled=yes",
+      );
+      expect(result["/interface wifi"]).toHaveLength(2);
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+  });
+
+  describe("CheckWANMaster", () => {
+    it("should return '2.4' when wifi2.4 is used as WAN", () => {
+      const wanLinks: WANLinks = {
+        Foreign: {
+          WANConfigs: [
+            {
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi2.4",
+              },
+            },
+          ],
+        },
+      };
+
+      const result = testWithGenericOutput(
+        "CheckWANMaster",
+        "Check WAN master when wifi2.4 is used",
+        { wanLinks },
+        () => CheckWANMaster(wanLinks),
+      );
+
+      expect(result).toBe("2.4");
+    });
+
+    it("should return '5' when wifi5 is used as WAN", () => {
+      const wanLinks: WANLinks = {
+        Domestic: {
+          WANConfigs: [
+            {
+              name: "Domestic-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi5",
+              },
+            },
+          ],
+        },
+      };
+
+      const result = testWithGenericOutput(
+        "CheckWANMaster",
+        "Check WAN master when wifi5 is used",
+        { wanLinks },
+        () => CheckWANMaster(wanLinks),
+      );
+
+      expect(result).toBe("5");
+    });
+
+    it("should return 'none' when no wifi interfaces are used as WAN", () => {
+      const wanLinks: WANLinks = {
+        Foreign: {
+          WANConfigs: [
+            {
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "ether1",
+              },
+            },
+          ],
+        },
+      };
+
+      const result = testWithGenericOutput(
+        "CheckWANMaster",
+        "Check WAN master when ethernet is used",
+        { wanLinks },
+        () => CheckWANMaster(wanLinks),
+      );
+
+      expect(result).toBe("none");
+    });
+  });
+
+  describe("CheckTrunkMaster", () => {
+    it("should return '2.4' when wifi2.4 is used as trunk master", () => {
+      const routerModels: RouterModels[] = [
+        {
+          id: "master-router",
+          model: "hEX",
+          isMaster: true,
+          MasterSlaveInterface: "wifi2.4",
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckTrunkMaster",
+        "Check trunk master when wifi2.4 is used",
+        { routerModels },
+        () => CheckTrunkMaster(routerModels),
+      );
+
+      expect(result).toBe("2.4");
+    });
+
+    it("should return '5' when wifi5 is used as trunk master", () => {
+      const routerModels: RouterModels[] = [
+        {
+          id: "master-router",
+          model: "hEX",
+          isMaster: true,
+          MasterSlaveInterface: "wifi5",
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckTrunkMaster",
+        "Check trunk master when wifi5 is used",
+        { routerModels },
+        () => CheckTrunkMaster(routerModels),
+      );
+
+      expect(result).toBe("5");
+    });
+
+    it("should return 'none' when no master router configured", () => {
+      const routerModels: RouterModels[] = [
+        {
+          id: "router",
+          model: "hEX",
+          isMaster: false,
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckTrunkMaster",
+        "Check trunk master when no master router",
+        { routerModels },
+        () => CheckTrunkMaster(routerModels),
+      );
+
+      expect(result).toBe("none");
+    });
+  });
+
+  describe("CheckMasters", () => {
+    it("should detect wifi2.4 as WAN master", () => {
+      const wanLinks: WANLinks = {
+        Foreign: {
+          WANConfigs: [
+            {
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi2.4",
+              },
+            },
+          ],
+        },
+      };
+      const routerModels: RouterModels[] = [];
+
+      const result = testWithGenericOutput(
+        "CheckMasters",
+        "Check masters with wifi2.4 as WAN",
+        { wanLinks, routerModels },
+        () => CheckMasters(wanLinks, routerModels),
+      );
+
+      expect(result.isWifi2_4).toBe(true);
+      expect(result.isWifi5).toBe(false);
+    });
+
+    it("should detect wifi5 as trunk master", () => {
+      const wanLinks: WANLinks = {};
+      const routerModels: RouterModels[] = [
+        {
+          id: "master-router",
+          model: "hEX",
+          isMaster: true,
+          MasterSlaveInterface: "wifi5",
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckMasters",
+        "Check masters with wifi5 as trunk",
+        { wanLinks, routerModels },
+        () => CheckMasters(wanLinks, routerModels),
+      );
+
+      expect(result.isWifi2_4).toBe(false);
+      expect(result.isWifi5).toBe(true);
+    });
+
+    it("should detect both bands in use", () => {
+      const wanLinks: WANLinks = {
+        Foreign: {
+          WANConfigs: [
+            {
+              name: "Foreign-WAN",
+              InterfaceConfig: {
+                InterfaceName: "wifi2.4",
+              },
+            },
+          ],
+        },
+      };
+      const routerModels: RouterModels[] = [
+        {
+          id: "master-router",
+          model: "hEX",
+          isMaster: true,
+          MasterSlaveInterface: "wifi5",
+          Interfaces: {
+            Interfaces: {
+              wireless: ["wifi1", "wifi2"],
+              ethernet: ["ether1"],
+            },
+          },
+        } as RouterModels,
+      ];
+
+      const result = testWithGenericOutput(
+        "CheckMasters",
+        "Check masters with both bands in use",
+        { wanLinks, routerModels },
+        () => CheckMasters(wanLinks, routerModels),
+      );
+
+      expect(result.isWifi2_4).toBe(true);
+      expect(result.isWifi5).toBe(true);
+    });
+  });
+
+  describe("Hide", () => {
+    it("should add hide-ssid=yes when Hide is true", () => {
+      const result = testWithGenericOutput(
+        "Hide",
+        "Add hide SSID configuration",
+        { command: "base command", Hide: true },
+        () => Hide("base command", true),
+      );
+
+      expect(result).toBe("base command configuration.hide-ssid=yes");
+    });
+
+    it("should add hide-ssid=no when Hide is false", () => {
+      const result = testWithGenericOutput(
+        "Hide",
+        "Add visible SSID configuration",
+        { command: "base command", Hide: false },
+        () => Hide("base command", false),
+      );
+
+      expect(result).toBe("base command configuration.hide-ssid=no");
+    });
+  });
+
+  describe("SSIDListGenerator", () => {
+    it("should generate split SSIDs when SplitBand is true", () => {
+      const result = testWithGenericOutput(
+        "SSIDListGenerator",
+        "Generate split band SSIDs",
+        { SSID: "MyNetwork", SplitBand: true },
+        () => SSIDListGenerator("MyNetwork", true),
+      );
+
+      expect(result).toEqual({
+        "2.4": "MyNetwork 2.4",
+        "5": "MyNetwork 5",
+      });
+    });
+
+    it("should generate same SSID when SplitBand is false", () => {
+      const result = testWithGenericOutput(
+        "SSIDListGenerator",
+        "Generate unified band SSID",
+        { SSID: "MyNetwork", SplitBand: false },
+        () => SSIDListGenerator("MyNetwork", false),
+      );
+
+      expect(result).toEqual({
+        "2.4": "MyNetwork",
+        "5": "MyNetwork",
+      });
+    });
+  });
+
+  describe("Passphrase", () => {
+    it("should append WPA2/WPA3 security settings", () => {
+      const result = testWithGenericOutput(
+        "Passphrase",
+        "Add security passphrase configuration",
+        { passphrase: "MyPassword123", command: "base command" },
+        () => Passphrase("MyPassword123", "base command"),
+      );
+
+      expect(result).toBe(
+        'base command security.authentication-types=wpa2-psk,wpa3-psk .passphrase="MyPassword123" disabled=no',
+      );
+    });
+
+    it("should handle special characters in passphrase", () => {
+      const passphrase = "P@ssw0rd#123$%";
+      const result = testWithGenericOutput(
+        "Passphrase",
+        "Handle special characters in passphrase",
+        { passphrase, command: "base command" },
+        () => Passphrase(passphrase, "base command"),
+      );
+
+      expect(result).toContain(`.passphrase="${passphrase}"`);
+    });
+  });
+
+  describe("StationMode", () => {
+    it("should generate station mode configuration for 2.4GHz", () => {
+      const result = testWithOutput(
+        "StationMode",
+        "Generate station mode config for 2.4GHz band",
+        { SSID: "UpstreamAP", Password: "upstream123", Band: "2.4", name: "Foreign" },
+        () => StationMode("UpstreamAP", "upstream123", "2.4" as Band, "Foreign"),
+      );
+
+      const commands = result["/interface wifi"];
+      expect(commands).toHaveLength(1);
+      expect(commands[0]).toContain("set [ find default-name=wifi2 ]");
+      expect(commands[0]).toContain('comment="Foreign 2.4WAN"');
+      expect(commands[0]).toContain("configuration.mode=station");
+      expect(commands[0]).toContain('.ssid="UpstreamAP"');
+      expect(commands[0]).toContain('security.passphrase="upstream123"');
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+
+    it("should generate station mode configuration for 5GHz", () => {
+      const result = testWithOutput(
+        "StationMode",
+        "Generate station mode config for 5GHz band",
+        { SSID: "UpstreamAP5", Password: "password5", Band: "5", name: "Domestic" },
+        () => StationMode("UpstreamAP5", "password5", "5" as Band, "Domestic"),
+      );
+
+      const commands = result["/interface wifi"];
+      expect(commands).toHaveLength(1);
+      expect(commands[0]).toContain("set [ find default-name=wifi1 ]");
+      expect(commands[0]).toContain('comment="Domestic 5WAN"');
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+  });
+
+  describe("Slave", () => {
+    const baseWirelessConfig: WirelessConfig = {
+      WifiTarget: "Domestic",
+      SSID: "TestNetwork",
+      Password: "password123",
+      isHide: false,
+      SplitBand: false,
+      isDisabled: false,
+    };
+
+    it("should generate slave interface for Domestic network", () => {
+      const result = testWithOutput(
+        "Slave",
+        "Generate slave interface for Domestic network",
+        { Network: "Domestic", Band: "2.4", WirelessConfig: baseWirelessConfig },
+        () => Slave("Domestic" as WifiTarget, "2.4" as Band, baseWirelessConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain("add configuration.mode=ap");
+      expect(commands).toContain('.ssid="TestNetwork"');
+      expect(commands).toContain("master-interface=[ find default-name=wifi2 ]");
+      expect(commands).toContain('name="wifi2.4-DomesticLAN"');
+      expect(commands).toContain('comment="DomesticLAN"');
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+
+    it("should generate slave interface with split band SSID", () => {
+      const splitConfig: WirelessConfig = {
+        ...baseWirelessConfig,
+        SSID: "SplitNetwork",
+        SplitBand: true,
+      };
+
+      const result = testWithOutput(
+        "Slave",
+        "Generate slave interface with split band SSID",
+        { Network: "Foreign", Band: "5", WirelessConfig: splitConfig },
+        () => Slave("Foreign" as WifiTarget, "5" as Band, splitConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain('.ssid="SplitNetwork 5"');
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+
+    it("should generate slave interface with hidden SSID", () => {
+      const hiddenConfig: WirelessConfig = {
+        ...baseWirelessConfig,
+        isHide: true,
+      };
+
+      const result = testWithOutput(
+        "Slave",
+        "Generate slave interface with hidden SSID",
+        { Network: "VPNClient", Band: "2.4", WirelessConfig: hiddenConfig },
+        () => Slave("VPNClient" as WifiTarget, "2.4" as Band, hiddenConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain("configuration.hide-ssid=yes");
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+  });
+
+  describe("Master", () => {
+    const baseMasterConfig: WirelessConfig = {
+      WifiTarget: "Domestic",
+      SSID: "MasterNetwork",
+      Password: "masterpass123",
+      isHide: false,
+      SplitBand: false,
+      isDisabled: false,
+    };
+
+    it("should generate master interface for Domestic network", () => {
+      const result = testWithOutput(
+        "Master",
+        "Generate master interface for Domestic network",
+        { Network: "Domestic", Band: "2.4", WirelessConfig: baseMasterConfig },
+        () => Master("Domestic" as WifiTarget, "2.4" as Band, baseMasterConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain("set [ find default-name=wifi2 ]");
+      expect(commands).toContain("configuration.country=Japan");
+      expect(commands).toContain(".mode=ap");
+      expect(commands).toContain('.ssid="MasterNetwork"');
+      expect(commands).toContain('name="wifi2.4-DomesticLAN"');
+      expect(commands).toContain('comment="DomesticLAN"');
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+
+    it("should generate master interface with split band SSID", () => {
+      const splitConfig: WirelessConfig = {
+        ...baseMasterConfig,
+        SSID: "SplitMaster",
+        SplitBand: true,
+      };
+
+      const result = testWithOutput(
+        "Master",
+        "Generate master interface with split band SSID",
+        { Network: "Foreign", Band: "5", WirelessConfig: splitConfig },
+        () => Master("Foreign" as WifiTarget, "5" as Band, splitConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain('.ssid="SplitMaster 5"');
+      expect(commands).toContain("set [ find default-name=wifi1 ]");
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+
+    it("should generate master interface with hidden SSID", () => {
+      const hiddenConfig: WirelessConfig = {
+        ...baseMasterConfig,
+        isHide: true,
+      };
+
+      const result = testWithOutput(
+        "Master",
+        "Generate master interface with hidden SSID",
+        { Network: "Split", Band: "2.4", WirelessConfig: hiddenConfig },
+        () => Master("Split" as WifiTarget, "2.4" as Band, hiddenConfig),
+      );
+
+      const commands = result["/interface wifi"].join(" ");
+      expect(commands).toContain("configuration.hide-ssid=yes");
+      validateRouterConfig(result, ["/interface wifi"]);
+    });
+  });
+
+  describe("WirelessBridge", () => {
+    it("should generate bridge ports for single wireless config", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "TestNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessBridge",
+        "Generate bridge ports for single wireless configuration",
+        { wirelessConfigs },
+        () => WirelessBridge(wirelessConfigs),
+      );
+
+      expect(result["/interface bridge port"]).toContain(
+        "add bridge=LANBridgeDomestic interface=wifi2.4-DomesticLAN comment=\"DomesticLAN\"",
+      );
+      expect(result["/interface bridge port"]).toContain(
+        "add bridge=LANBridgeDomestic interface=wifi5-DomesticLAN comment=\"DomesticLAN\"",
+      );
+      validateRouterConfig(result, ["/interface bridge port"]);
+    });
+
+    it("should generate bridge ports for named network", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          NetworkName: "Guest",
+          SSID: "GuestNetwork",
+          Password: "guest123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessBridge",
+        "Generate bridge ports for named network",
+        { wirelessConfigs },
+        () => WirelessBridge(wirelessConfigs),
+      );
+
+      expect(result["/interface bridge port"]).toContain(
+        "add bridge=LANBridgeDomestic-Guest interface=wifi2.4-Domestic-GuestLAN comment=\"Domestic-GuestLAN\"",
+      );
+      expect(result["/interface bridge port"]).toContain(
+        "add bridge=LANBridgeDomestic-Guest interface=wifi5-Domestic-GuestLAN comment=\"Domestic-GuestLAN\"",
+      );
+      validateRouterConfig(result, ["/interface bridge port"]);
+    });
+
+    it("should skip disabled wireless configs", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "EnabledNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+        {
+          WifiTarget: "Foreign",
+          SSID: "DisabledNetwork",
+          Password: "password456",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: true,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessBridge",
+        "Skip disabled wireless configurations",
+        { wirelessConfigs },
+        () => WirelessBridge(wirelessConfigs),
+      );
+
+      const commands = result["/interface bridge port"].join(" ");
+      expect(commands).toContain("DomesticLAN");
+      expect(commands).not.toContain("ForeignLAN");
+      validateRouterConfig(result, ["/interface bridge port"]);
+    });
+  });
+
+  describe("WirelessInterfaceList", () => {
+    it("should generate interface list for single wireless config", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "TestNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessInterfaceList",
+        "Generate interface list for single wireless configuration",
+        { wirelessConfigs },
+        () => WirelessInterfaceList(wirelessConfigs),
+      );
+
+      // Should add to specific network list
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi2.4-DomesticLAN list=Domestic-LAN comment=\"DomesticLAN\"",
+      );
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi5-DomesticLAN list=Domestic-LAN comment=\"DomesticLAN\"",
+      );
+      // Should add to general LAN list
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi2.4-DomesticLAN list=LAN comment=\"DomesticLAN\"",
+      );
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi5-DomesticLAN list=LAN comment=\"DomesticLAN\"",
+      );
+      validateRouterConfig(result, ["/interface list member"]);
+    });
+
+    it("should generate interface list for named network", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Foreign",
+          NetworkName: "Office",
+          SSID: "OfficeNetwork",
+          Password: "office123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessInterfaceList",
+        "Generate interface list for named network",
+        { wirelessConfigs },
+        () => WirelessInterfaceList(wirelessConfigs),
+      );
+
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi2.4-Foreign-OfficeLAN list=Foreign-Office-LAN comment=\"Foreign-OfficeLAN\"",
+      );
+      expect(result["/interface list member"]).toContain(
+        "add interface=wifi5-Foreign-OfficeLAN list=Foreign-Office-LAN comment=\"Foreign-OfficeLAN\"",
+      );
+      validateRouterConfig(result, ["/interface list member"]);
+    });
+
+    it("should skip disabled wireless configs", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "EnabledNetwork",
+          Password: "password123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+        {
+          WifiTarget: "VPNClient",
+          SSID: "DisabledNetwork",
+          Password: "password456",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: true,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessInterfaceList",
+        "Skip disabled wireless configurations in interface list",
+        { wirelessConfigs },
+        () => WirelessInterfaceList(wirelessConfigs),
+      );
+
+      const commands = result["/interface list member"].join(" ");
+      expect(commands).toContain("DomesticLAN");
+      expect(commands).not.toContain("VPNLAN");
+      validateRouterConfig(result, ["/interface list member"]);
+    });
+
+    it("should handle multiple wireless configs", () => {
+      const wirelessConfigs: WirelessConfig[] = [
+        {
+          WifiTarget: "Domestic",
+          SSID: "DomesticWiFi",
+          Password: "domestic123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+        {
+          WifiTarget: "Foreign",
+          SSID: "ForeignWiFi",
+          Password: "foreign123",
+          isHide: false,
+          SplitBand: false,
+          isDisabled: false,
+        },
+      ];
+
+      const result = testWithOutput(
+        "WirelessInterfaceList",
+        "Handle multiple wireless configurations",
+        { wirelessConfigs },
+        () => WirelessInterfaceList(wirelessConfigs),
+      );
+
+      const commands = result["/interface list member"].join(" ");
+      expect(commands).toContain("DomesticLAN");
+      expect(commands).toContain("ForeignLAN");
+      expect(result["/interface list member"]).toHaveLength(8); // 2 configs × 2 bands × 2 lists (specific + LAN)
+      validateRouterConfig(result, ["/interface list member"]);
+    });
+  });
+});

@@ -3,6 +3,8 @@ export * from "./Utils/VPNClientType";
 export * from "./Utils/WANLinkType";
 export * from "./Utils/MultiLinkType";
 export * from "./Utils/TunnelType";
+export * from "./Utils/Subnets";
+export * from "./Utils/Networks";
 export * from "./ChooseType";
 export * from "./CommonType";
 export * from "./ExtraType";
@@ -11,3 +13,4 @@ export * from "./LANType";
 export * from "./WANType";
 export * from "./StarContext";
 export * from "./StarProvider";
+

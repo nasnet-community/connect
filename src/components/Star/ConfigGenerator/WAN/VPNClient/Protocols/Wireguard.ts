@@ -33,21 +33,21 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
 
     const interfaceName = GenerateVCInterfaceName(Name, "Wireguard");
 
-    let interfaceCommand = `add name=${interfaceName} private-key="${InterfacePrivateKey}"`;
+    let interfaceCommand = `add name="${interfaceName}" private-key="${InterfacePrivateKey}" comment="wg-client-${Name}"`;
 
     if (InterfaceListenPort) {
-        interfaceCommand += ` listen-port=${InterfaceListenPort}`;
+        interfaceCommand += ` listen-port="${InterfaceListenPort}"`;
     }
 
     if (InterfaceMTU) {
-        interfaceCommand += ` mtu=${InterfaceMTU}`;
+        interfaceCommand += ` mtu="${InterfaceMTU}"`;
     }
 
     routerConfig["/interface wireguard"].push(interfaceCommand);
 
-    let peerCommand = `add interface=${interfaceName} public-key="${PeerPublicKey}" \\
-         endpoint-address=${PeerEndpointAddress} endpoint-port=${PeerEndpointPort} \\
-         allowed-address=${PeerAllowedIPs}`;
+    let peerCommand = `add interface="${interfaceName}" public-key="${PeerPublicKey}" \\
+         endpoint-address="${PeerEndpointAddress}" endpoint-port="${PeerEndpointPort}" \\
+         allowed-address="${PeerAllowedIPs}" comment="wg-client-peer-${Name}"`;
 
     if (PeerPresharedKey) {
         peerCommand += ` preshared-key="${PeerPresharedKey}"`;
@@ -60,7 +60,7 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
     routerConfig["/interface wireguard peers"].push(peerCommand);
 
     routerConfig["/ip address"].push(
-        `add address=${InterfaceAddress} interface=${interfaceName}`,
+        `add address="${InterfaceAddress}" interface="${interfaceName}" comment="VPN-client-${Name}"`,
     );
 
     // routerConfig["/ip route"].push(
@@ -68,10 +68,10 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
     //      comment="WireGuard endpoint route"`
     // );
 
-    routerConfig["/ip route"].push(
-        `add dst-address=0.0.0.0/0 gateway=${interfaceName} routing-table=to-VPN \\
-         comment="WireGuard endpoint route"`,
-    );
+    // routerConfig["/ip route"].push(
+    //     `add dst-address=0.0.0.0/0 gateway=${interfaceName} routing-table=to-VPN \\
+    //      comment="WireGuard endpoint route"`,
+    // );
 
     return routerConfig;
 };

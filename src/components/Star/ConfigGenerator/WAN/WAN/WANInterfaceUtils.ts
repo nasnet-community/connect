@@ -29,8 +29,8 @@ export const getInterfaceConfigPath = (interfaceType: "ethernet" | "wifi" | "sfp
 
 export type InterfaceInfo = {
     type: "ethernet" | "wifi" | "sfp" | "lte";
-    networkType: "Foreign" | "Domestic";
-    linkNames: string[];
+    networkTypes: Set<"Foreign" | "Domestic">;
+    links: Array<{ name: string; networkType: "Foreign" | "Domestic" }>;
 };
 
 export const collectInterfaceInfo = (
@@ -44,14 +44,16 @@ export const collectInterfaceInfo = (
     if (!interfaceType) return;  // Skip non-physical interfaces
 
     if (interfaceMap.has(interfaceName)) {
-        // Interface already exists, add the link name
-        interfaceMap.get(interfaceName)!.linkNames.push(linkName);
+        // Interface already exists, add the link with its network type
+        const info = interfaceMap.get(interfaceName)!;
+        info.links.push({ name: linkName, networkType });
+        info.networkTypes.add(networkType);
     } else {
         // New interface, create entry
         interfaceMap.set(interfaceName, {
             type: interfaceType,
-            networkType,
-            linkNames: [linkName],
+            networkTypes: new Set([networkType]),
+            links: [{ name: linkName, networkType }],
         });
     }
 };
@@ -70,6 +72,10 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
     if (wanLinks.Foreign?.WANConfigs) {
         wanLinks.Foreign.WANConfigs.forEach((wanConfig) => {
             const interfaceName = wanConfig.InterfaceConfig.InterfaceName;
+            // Skip wireless interfaces with credentials - they already get comments in wireless config
+            if (wanConfig.InterfaceConfig.WirelessCredentials) {
+                return;
+            }
             collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Foreign");
         });
     }
@@ -78,15 +84,22 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
     if (wanLinks.Domestic?.WANConfigs) {
         wanLinks.Domestic.WANConfigs.forEach((wanConfig) => {
             const interfaceName = wanConfig.InterfaceConfig.InterfaceName;
+            // Skip wireless interfaces with credentials - they already get comments in wireless config
+            if (wanConfig.InterfaceConfig.WirelessCredentials) {
+                return;
+            }
             collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Domestic");
         });
     }
 
     // Generate comments for each interface
     interfaceMap.forEach((info, interfaceName) => {
-        // Combine link names with "--" separator
-        const combinedLinkNames = info.linkNames.join(" -- ");
-        const comment = `${info.networkType} WAN - ${combinedLinkNames}`;
+        // Format each link with its network type
+        const linkInfo = info.links
+            .map(link => `${link.name}(${link.networkType})`)
+            .join(", ");
+        
+        const comment = `WAN - ${linkInfo}`;
         
         const configPath = getInterfaceConfigPath(info.type);
 
@@ -120,7 +133,7 @@ export const MACVLAN = ( name: string, interfaceName: string, macAddress?: strin
     ];
 
     if (macAddress) {
-        parts.push(`mac-address=${macAddress}`);
+        parts.push(`mac-address="${macAddress}"`);
     }
 
     config["/interface macvlan"].push(parts.join(" "));

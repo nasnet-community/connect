@@ -195,7 +195,14 @@ export const ConfigGenerator = (state: StarState): string => {
         const chooseConfig = ChooseCG();
         const wanConfig = WANCG(state.WAN, domesticLinkEnabled);
         const lanConfig = LANCG(state);
-        const extraConfig = ExtraCG(state.ExtraConfig, domesticLinkEnabled);
+        const extraConfig = ExtraCG(
+            state.ExtraConfig,
+            domesticLinkEnabled,
+            state.Choose.WANLinkType,
+            state.LAN.Subnets,
+            state.WAN.WANLink,
+            state.WAN.VPNClient
+        );
         const showConfig = ShowCG(state);
 
         // Merge all configurations

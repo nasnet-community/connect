@@ -1,23 +1,32 @@
-import type { L2tpServerConfig, VSCredentials } from "~/components/Star/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import { formatBooleanValue, formatArrayValue } from "~/components/Star/ConfigGenerator";
-import { CommandShortner, mergeRouterConfigs } from "~/components/Star/ConfigGenerator";
+import type { L2tpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    CommandShortner,
+    mergeRouterConfigs,
+    formatBooleanValue,
+    formatArrayValue,
+    VSAddressList,
+    VSInterfaceList,
+    generateIPPool,
+    VSPorfile,
+    SubnetToRange,
+} from "~/components/Star/ConfigGenerator";
 
 
-export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
+export const L2tpServer = (config: L2tpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
         "/interface l2tp-server server": [],
         "/ip firewall filter": [],
         "/ip firewall address-list": [],
+        "": [],
     };
 
     const {
         enabled,
         IPsec,
         Authentication,
-        DefaultProfile = "l2tp-profile",
         KeepaliveTimeout = 30,
         PacketSize,
         allowFastPath,
@@ -28,26 +37,32 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
         L2TPV3,
     } = config;
 
-    // Create IP pool for L2TP clients
+    // Use provided subnet configuration
+    const { subnet } = subnetConfig;
+    const ranges = SubnetToRange(subnet);
+    const name = "l2tp"; // L2TP server name
+
+    // Generate IP pool for L2TP clients
     routerConfig["/ip pool"].push(
-        `add name=l2tp-pool ranges=192.168.80.5-192.168.80.250`,
+        ...generateIPPool({ name, ranges, comment: `L2TP ${name} client pool` })
     );
 
-    // Create PPP profile for L2TP
-    const profileParams: string[] = [
-        `name=l2tp-profile`,
-        "dns-server=1.1.1.1",
-        "local-address=192.168.80.1",
-        "remote-address=l2tp-pool",
-        "use-encryption=yes",
-    ];
+    // Create PPP profile using shared helper (profile name: `${name}-profile`)
+    const profileCfg = VSPorfile(subnet, String(vsNetwork), name);
+    Object.entries(profileCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
-    routerConfig["/ppp profile"].push(`add ${profileParams.join(" ")}`);
+    // Add VPN subnet to address list using shared helper
+    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} L2TP subnet`);
+    Object.entries(addrCfg).forEach(([section, cmds]) => {
+        routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
+    });
 
     // Configure L2TP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
 
-    if (IPsec.UseIpsec !== undefined) {
+    if (IPsec.UseIpsec) {
         serverParams.push(`use-ipsec=${IPsec.UseIpsec}`);
     }
 
@@ -59,9 +74,7 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
         serverParams.push(`authentication=${formatArrayValue(Authentication)}`);
     }
 
-    if (DefaultProfile) {
-        serverParams.push(`default-profile=${DefaultProfile}`);
-    }
+    serverParams.push(`default-profile=${name}-profile`);
 
     if (KeepaliveTimeout) {
         serverParams.push(`keepalive-timeout=${KeepaliveTimeout}`);
@@ -121,33 +134,16 @@ export const L2tpServer = (config: L2tpServerConfig): RouterConfig => {
         `set ${serverParams.join(" ")}`,
     );
 
-    // Add firewall rules for L2TP
-    routerConfig["/ip firewall filter"].push(
-        `add action=accept chain=input comment="L2TP Server" dst-port=1701 in-interface-list=DOM-WAN protocol=udp`,
-    );
-
-    // Add IPsec firewall rules if IPsec is enabled
-    if (IPsec.UseIpsec !== "no") {
-        routerConfig["/ip firewall filter"].push(
-            `add action=accept chain=input comment="L2TP IPsec ESP" in-interface-list=DOM-WAN protocol=ipsec-esp`,
-            `add action=accept chain=input comment="L2TP IPsec AH" in-interface-list=DOM-WAN protocol=ipsec-ah`,
-            `add action=accept chain=input comment="L2TP IPsec UDP 500" dst-port=500 in-interface-list=DOM-WAN protocol=udp`,
-            `add action=accept chain=input comment="L2TP IPsec UDP 4500" dst-port=4500 in-interface-list=DOM-WAN protocol=udp`,
-        );
-    }
-
-    // Add address list for L2TP network
-    routerConfig["/ip firewall address-list"].push(
-        "add address=192.168.80.0/24 list=VPN-LAN",
-    );
-
     return CommandShortner(routerConfig);
 };
 
-export const L2tpServerUsers = (users: VSCredentials[]): RouterConfig => {
+export const L2tpServerUsers = (serverConfig: L2tpServerConfig, users: VSCredentials[]): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
+
+    // Get the profile name from server config (matches the profile created in L2tpServer)
+    const profileName = "l2tp-profile";
 
     // Filter users who have L2TP in their VPNType array
     const l2tpUsers = users.filter((user) => user.VPNType.includes("L2TP"));
@@ -156,7 +152,7 @@ export const L2tpServerUsers = (users: VSCredentials[]): RouterConfig => {
         const secretParams: string[] = [
             `name="${user.Username}"`,
             `password="${user.Password}"`,
-            "profile=l2tp-profile",
+            `profile=${profileName}`,
             "service=l2tp",
         ];
 
@@ -170,36 +166,33 @@ export const L2tpServerUsers = (users: VSCredentials[]): RouterConfig => {
     return CommandShortner(config);
 };
 
-export const L2TPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
+export const L2TPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
     const config: RouterConfig = {
         "/interface l2tp-server": [],
-        "/interface pptp-server": [],
-        "/interface sstp-server": [],
-        "/interface ovpn-server": [],
         "/interface list member": [],
         "": [],
     };
 
-    if (!credentials || credentials.length === 0) {
+    if (credentials.length === 0) {
         config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
 
     // Filter users for supported VPN types only
-    const supportedVpnTypes = ["L2TP", "PPTP", "SSTP", "OpenVPN"];
+    const supportedVpnTypes = ["L2TP"];
     const filteredCredentials = credentials.filter((user) =>
         user.VPNType.some((vpnType) => supportedVpnTypes.includes(vpnType)),
     );
 
     if (filteredCredentials.length === 0) {
         config[""].push(
-            "# No users configured for supported VPN binding types (L2TP, PPTP, SSTP, OpenVPN)",
+            "# No users configured for supported VPN binding types (L2TP)",
         );
         return config;
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: Credentials[] } = {};
+    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
@@ -211,15 +204,6 @@ export const L2TPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
             }
         });
     });
-
-    // Add general comments
-    config[""].push(
-        "# VPN Server Binding Configuration",
-        `# Total users: ${filteredCredentials.length}`,
-        `# Supported VPN types: ${Object.keys(usersByVpnType).join(", ")}`,
-        "# Each binding interface is added to LAN and VPN-LAN interface lists for proper network management",
-        "",
-    );
 
     // Keep track of created interfaces for interface list membership
     const createdInterfaces: string[] = [];
@@ -243,100 +227,25 @@ export const L2TPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
         config[""].push("");
     }
 
-    // PPTP Static Interface Bindings
-    if (usersByVpnType["PPTP"]) {
-        config[""].push("# PPTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each PPTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["PPTP"].forEach((user) => {
-            const staticBindingName = `pptp-${user.Username}`;
-
-            config["/interface pptp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // SSTP Static Interface Bindings
-    if (usersByVpnType["SSTP"]) {
-        config[""].push("# SSTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each SSTP user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["SSTP"].forEach((user) => {
-            const staticBindingName = `sstp-${user.Username}`;
-
-            config["/interface sstp-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // OpenVPN Static Interface Bindings
-    if (usersByVpnType["OpenVPN"]) {
-        config[""].push("# OpenVPN Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each OpenVPN user for advanced firewall/queue rules",
-        );
-
-        usersByVpnType["OpenVPN"].forEach((user) => {
-            const staticBindingName = `ovpn-${user.Username}`;
-
-            config["/interface ovpn-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
-            );
-
-            createdInterfaces.push(staticBindingName);
-        });
-        config[""].push("");
-    }
-
-    // Add all created interfaces to LAN and VPN-LAN interface lists
+    // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
     if (createdInterfaces.length > 0) {
-        config[""].push("# Adding VPN binding interfaces to interface lists");
-        config[""].push(
-            "# This enables proper network segmentation and management",
-        );
-
         createdInterfaces.forEach((interfaceName) => {
-            // Add to LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="LAN" comment="VPN binding interface for network management"`,
+            // Use VSInterfaceList helper to add interface to proper lists
+            const interfaceListCfg = VSInterfaceList(
+                interfaceName, 
+                String(VSNetwork), 
+                `VPN binding interface for ${interfaceName}`
             );
-
-            // Add to VPN-LAN interface list
-            config["/interface list member"].push(
-                `add interface="${interfaceName}" list="VPN-LAN" comment="VPN binding interface for VPN-specific rules"`,
-            );
+            
+            // Merge the interface list configuration
+            Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
+                config[section] = (config[section] ?? []).concat(cmds);
+            });
         });
         config[""].push("");
     }
-
-    // Advanced Binding Information
-    config[""].push("# Static Interface Binding Benefits:");
-    config[""].push("# 1. Predictable interface names for firewall rules");
-    config[""].push("# 2. Per-user queue management capabilities");
-    config[""].push("# 3. Individual user traffic monitoring");
-    config[""].push("# 4. User-specific interface list assignments");
-    config[""].push("# 5. Proper network segmentation through interface lists");
-    config[""].push("# 6. Simplified management via LAN and VPN-LAN lists");
-    config[""].push("");
-    config[""].push(
-        "# Note: Users must still be configured in /ppp secret for authentication",
-    );
-    config[""].push("");
 
     // Summary
-    config[""].push("# VPN Server Binding Summary:");
     Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
         config[""].push(
             `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
@@ -345,50 +254,69 @@ export const L2TPVSBinding = (credentials: VSCredentials[]): RouterConfig => {
 
     if (createdInterfaces.length > 0) {
         config[""].push("");
-        config[""].push("# Interface List Memberships:");
-        config[""].push(
-            `# ${createdInterfaces.length} interfaces added to both LAN and VPN-LAN lists`,
-        );
-        config[""].push(`# Interface names: ${createdInterfaces.join(", ")}`);
     }
 
     return config;
 };
 
-export const L2tpServerWrapper = ( serverConfig: L2tpServerConfig, users: VSCredentials[] = [] ): RouterConfig => {
+export const L2TPServerFirewall = (serverConfigs: L2tpServerConfig[]): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall filter": [],
+        "/ip firewall mangle": [],
+    };
+
+    serverConfigs.forEach((serverConfig) => {
+        const { IPsec } = serverConfig;
+
+        config["/ip firewall filter"].push(
+            `add action=accept chain=input comment="L2TP Server (udp)" dst-port=1701 in-interface-list=Domestic-WAN protocol=udp`,
+        );
+
+        config["/ip firewall mangle"].push(
+            `add action=mark-connection chain=input comment="Mark Inbound L2TP Connections" \\
+                connection-state=new in-interface-list=Domestic-WAN protocol=udp dst-port=1701 \\
+                new-connection-mark=conn-vpn-server passthrough=yes`,
+        );
+
+        // Add IPsec firewall rules if IPsec is enabled
+        if (IPsec.UseIpsec !== "no") {
+            config["/ip firewall filter"].push(
+                `add action=accept chain=input comment="L2TP IPsec ESP" in-interface-list=Domestic-WAN protocol=ipsec-esp`,
+                `add action=accept chain=input comment="L2TP IPsec AH" in-interface-list=Domestic-WAN protocol=ipsec-ah`,
+                `add action=accept chain=input comment="L2TP IPsec UDP 500" dst-port=500 in-interface-list=Domestic-WAN protocol=udp`,
+                `add action=accept chain=input comment="L2TP IPsec UDP 4500" dst-port=4500 in-interface-list=Domestic-WAN protocol=udp`,
+            );
+        }
+    });
+
+    return config;
+}
+
+export const L2tpServerWrapper = ( serverConfig: L2tpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Generate L2TP interface configuration
-    configs.push(L2tpServer(serverConfig));
+    // Get VSNetwork from server config or default to "VPN"
+    const vsNetwork: VSNetwork = serverConfig.VSNetwork || "VPN";
+
+    // Fallback to default subnet if no match found
+    const effectiveSubnet: SubnetConfig = subnetConfig || {
+        name: "l2tp",
+        subnet: "192.168.80.0/24", // Default L2TP network
+    };
+
+    // Generate L2TP server configuration
+    configs.push(L2tpServer(serverConfig, vsNetwork, effectiveSubnet));
 
     // Generate L2TP users configuration if users are provided
     if (users.length > 0) {
-        configs.push(L2tpServerUsers(users));
+        configs.push(L2tpServerUsers(serverConfig, users));
     }
+
+    // Generate firewall rules
+    configs.push(L2TPServerFirewall([serverConfig]));
 
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
 
-    // Add summary comments
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
-
-    const l2tpUsers = users.filter((user) => user.VPNType.includes("L2TP"));
-
-    finalConfig[""].unshift(
-        "# L2TP Server Configuration Summary:",
-        `# Enabled: ${serverConfig.enabled}`,
-        `# IPsec: ${serverConfig.IPsec.UseIpsec}`,
-        `# Default Profile: ${serverConfig.DefaultProfile || "l2tp-profile"}`,
-        `# Users: ${l2tpUsers.length}`,
-        "",
-    );
-
     return CommandShortner(finalConfig);
 };
-
-
-
-
-

@@ -1,4 +1,6 @@
 import type { Ethernet, Wireless, Sfp, LTE, RouterModel } from "./CommonType";
+import type { Networks } from "./Utils/Networks";
+
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 export type FirmwareType = "MikroTik" | "OpenWRT";
@@ -39,4 +41,5 @@ export interface ChooseState {
   RouterMode: RouterModeType;
   RouterModels: RouterModels[];
   TrunkInterfaceType?: TrunkInterfaceType;
+  Networks: Networks;
 }

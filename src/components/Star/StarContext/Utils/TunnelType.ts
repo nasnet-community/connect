@@ -1,4 +1,4 @@
-import type { ARPState } from "../CommonType";
+import type { ARPState, BaseNetworksType } from "../CommonType";
 
 export type TunnelType = "ipip" | "eoip" | "gre" | "vxlan";
 
@@ -13,6 +13,7 @@ export  interface BaseTunnelConfig {
     mtu?: number;
     disabled?: boolean;
     comment?: string;
+    NetworkType: BaseNetworksType;
   }
     
   export  interface IpipTunnelConfig extends BaseTunnelConfig {

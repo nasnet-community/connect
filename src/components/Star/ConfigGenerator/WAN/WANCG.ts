@@ -15,8 +15,9 @@ export const WANCG = (WANState: WANState): RouterConfig => {
     configs.push(generateWANLinksConfig(WANLink));
 
     // 2. Generate VPN Client Configuration (all VPN protocols)
+    // Pass WANLink to calculate proper check IP offset
     if (VPNClient) {
-        configs.push(VPNClientWrapper(VPNClient));
+        configs.push(VPNClientWrapper(VPNClient, WANLink));
     }
 
     // 3. Generate Main Table Routes (failover routing for all WAN links and VPN clients)

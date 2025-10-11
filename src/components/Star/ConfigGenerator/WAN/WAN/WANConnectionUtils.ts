@@ -14,10 +14,10 @@ export const LTE = (LTESettings: LTESettings): RouterConfig => {
     const { apn } = LTESettings;
 
     config["/interface lte"].push(
-        `set [ find default-name=lte1 ] allow-roaming=yes apn-profiles=${apn} band=""`,
+        `set [ find default-name=lte1 ] allow-roaming=yes apn-profiles="${apn}" band=""`,
     );
     config["/interface lte apn"].push(
-        `add add-default-route=no apn=${apn} name=${apn} use-network-apn=yes use-peer-dns=no`,
+        `add add-default-route=no apn="${apn}" name="${apn}" use-network-apn=yes use-peer-dns=no`,
     );
 
     return config;
@@ -54,8 +54,8 @@ export const PPPOEClient = ( name: string, interfaceName: string, pppoeConfig: P
     const { username, password } = pppoeConfig;
 
     config["/interface pppoe-client"].push(
-        `add name="pppoe-client-${name}" comment="PPPoE client for ${name}" interface=${interfaceName} user=${username} \\
-        password=${password} dial-on-demand=yes add-default-route=no allow=chap,pap,mschap1,mschap2 disabled=no`,
+        `add name="pppoe-client-${name}" comment="PPPoE client for ${name}" interface="${interfaceName}" user="${username}" \\
+        password="${password}" dial-on-demand=yes add-default-route=no allow=chap,pap,mschap1,mschap2 disabled=no`,
     );
 
     return config;
@@ -97,7 +97,7 @@ export const StaticIP = ( name: string, interfaceName: string, staticIPConfig: S
     const cidr = calculateCIDR(subnet);
 
     config["/ip address"].push(
-        `add address=${ipAddress}/${cidr} interface=${interfaceName} comment="${name}"`,
+        `add address="${ipAddress}/${cidr}" interface="${interfaceName}" comment="${name}"`,
     );
 
     return config;

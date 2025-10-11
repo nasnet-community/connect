@@ -33,7 +33,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig => {
 
     const interfaceName = GenerateVCInterfaceName(Name, "OpenVPN");
 
-    let command = `add name=${interfaceName} connect-to="${Server.Address}"`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}"`;
 
     if (Server.Port) {
         command += ` port=${Server.Port}`;
@@ -65,7 +65,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig => {
         !Certificates?.ClientCertificateContent &&
         Certificates?.ClientCertificateName
     ) {
-        command += ` certificate=${Certificates.ClientCertificateName}`;
+        command += ` certificate="${Certificates.ClientCertificateName}"`;
     }
 
     if (VerifyServerCertificate !== undefined) {

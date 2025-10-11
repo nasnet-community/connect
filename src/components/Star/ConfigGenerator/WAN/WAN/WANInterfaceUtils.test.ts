@@ -841,7 +841,7 @@ describe("WANInterfaceUtils Module", () => {
             expect(result["/interface ethernet"][0]).toContain("Foreign WAN - Foreign-1 -- Foreign-2");
         });
 
-        it("should handle WiFi interfaces", () => {
+        it("should skip WiFi interfaces with wireless credentials (already commented in wireless config)", () => {
             const wanLinks: WANLinks = {
                 Foreign: {
                     WANConfigs: [
@@ -861,13 +861,14 @@ describe("WANInterfaceUtils Module", () => {
 
             const result = testWithOutput(
                 "InterfaceComment",
-                "Generate comment for WiFi interface",
+                "Skip WiFi interface with credentials (already has comment in wireless config)",
                 { wanLinks },
                 () => InterfaceComment(wanLinks),
             );
 
-            validateRouterConfig(result, ["/interface wifi"]);
-            expect(result["/interface wifi"][0]).toContain("Foreign WAN - WiFi-WAN");
+            // Wireless interfaces with credentials should not have a separate comment command
+            // They already get comments during wireless station mode configuration
+            expect(Object.keys(result)).toHaveLength(0);
         });
 
         it("should return empty config for no WAN links", () => {

@@ -691,309 +691,6 @@ describe("WANInterface Module", () => {
         });
     });
 
-    describe("generateWANLinksConfig", () => {
-        it("should generate configuration for single WAN link", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [
-                        {
-                            name: "WAN-1",
-                            InterfaceConfig: {
-                                InterfaceName: "ether1",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                    ],
-                },
-            };
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "Single WAN link with DHCP",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, [
-                "/interface macvlan",
-                "/interface ethernet", // Added: Interface comment
-                "/interface list member",
-                "/ip dhcp-client",
-            ]);
-
-            // Verify interface comment is present
-            expect(result["/interface ethernet"]).toBeDefined();
-            expect(result["/interface ethernet"][0]).toContain("Foreign WAN - WAN-1");
-        });
-
-        it("should generate configuration for multiple WAN links", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [
-                        {
-                            name: "WAN-1",
-                            InterfaceConfig: {
-                                InterfaceName: "ether1",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                        {
-                            name: "WAN-2",
-                            InterfaceConfig: {
-                                InterfaceName: "ether2",
-                            },
-                            ConnectionConfig: {
-                                pppoe: {
-                                    username: "user2",
-                                    password: "pass2",
-                                },
-                            },
-                        },
-                    ],
-                },
-            };
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "Two WAN links: DHCP and PPPoE",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, [
-                "/interface macvlan",
-                "/interface ethernet", // Added: Interface comments
-                "/interface list member",
-                "/ip dhcp-client",
-                "/interface pppoe-client",
-            ]);
-
-            // Verify interface comments are present for both interfaces
-            expect(result["/interface ethernet"]).toBeDefined();
-            expect(result["/interface ethernet"]).toHaveLength(2);
-        });
-
-        it("should handle multiple WANLink groups", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [
-                        {
-                            name: "Foreign-1",
-                            InterfaceConfig: {
-                                InterfaceName: "ether1",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                    ],
-                },
-                Domestic: {
-                    WANConfigs: [
-                        {
-                            name: "Domestic-1",
-                            InterfaceConfig: {
-                                InterfaceName: "ether2",
-                            },
-                            ConnectionConfig: {
-                                static: {
-                                    ipAddress: "192.168.1.100",
-                                    subnet: "255.255.255.0",
-                                    gateway: "192.168.1.1",
-                                },
-                            },
-                        },
-                    ],
-                },
-            };
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "Multiple WANLink groups: Foreign and Domestic",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, [
-                "/interface macvlan",
-                "/interface ethernet", // Added: Interface comments for both Foreign and Domestic
-                "/interface list member",
-                "/ip dhcp-client",
-                "/ip address",
-            ]);
-
-            // Verify interface comments for both Foreign and Domestic
-            expect(result["/interface ethernet"]).toBeDefined();
-            expect(result["/interface ethernet"]).toHaveLength(2);
-            expect(result["/interface ethernet"][0]).toContain("Foreign WAN");
-            expect(result["/interface ethernet"][1]).toContain("Domestic WAN");
-        });
-
-        it("should handle empty WAN links object", () => {
-            const wanLinks: WANLinks = {};
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "Empty WAN links object",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, []);
-        });
-
-        it("should handle WANLink with empty WANConfigs", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [],
-                },
-            };
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "WANLink with empty WANConfigs",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, []);
-        });
-
-        it("should generate complex multi-WAN scenario", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [
-                        {
-                            name: "WAN-Ethernet",
-                            InterfaceConfig: {
-                                InterfaceName: "ether1",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                        {
-                            name: "WAN-VLAN",
-                            InterfaceConfig: {
-                                InterfaceName: "ether2",
-                                VLANID: "100",
-                            },
-                            ConnectionConfig: {
-                                pppoe: {
-                                    username: "vlanuser",
-                                    password: "vlanpass",
-                                },
-                            },
-                        },
-                        {
-                            name: "WAN-WiFi",
-                            InterfaceConfig: {
-                                InterfaceName: "wifi5",
-                                WirelessCredentials: {
-                                    SSID: "BackupWiFi",
-                                    Password: "wifipass",
-                                },
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                        {
-                            name: "WAN-LTE",
-                            InterfaceConfig: {
-                                InterfaceName: "lte1",
-                            },
-                            ConnectionConfig: {
-                                lteSettings: {
-                                    apn: "mobile.internet",
-                                },
-                            },
-                        },
-                    ],
-                },
-            };
-
-            const result = testWithOutput(
-                "generateWANLinksConfig",
-                "Complex multi-WAN: Ethernet, VLAN+PPPoE, WiFi, LTE",
-                { wanLinks },
-                () => generateWANLinksConfig(wanLinks),
-            );
-
-            validateRouterConfig(result, [
-                "/interface macvlan",
-                "/interface vlan",
-                "/interface ethernet", // Added: Interface comments for ethernet
-                "/interface wifi", // Interface comment for wifi
-                "/interface lte", // Interface comment for LTE
-                "/interface list member",
-                "/ip dhcp-client",
-                "/interface pppoe-client",
-                "/interface lte apn",
-            ]);
-
-            // Verify interface comments for all interface types
-            expect(result["/interface ethernet"]).toBeDefined();
-            expect(result["/interface ethernet"]).toHaveLength(2); // ether1 and ether2
-            expect(result["/interface wifi"]).toBeDefined();
-            expect(result["/interface wifi"]).toHaveLength(2); // wifi5 wireless config + interface comment
-            expect(result["/interface lte"]).toBeDefined();
-            expect(result["/interface lte"]).toHaveLength(2); // LTE APN config + interface comment
-            expect(result["/interface lte"][1]).toContain("Foreign WAN - WAN-LTE");
-        });
-
-        it("should generate interface comments for all physical interfaces", () => {
-            const wanLinks: WANLinks = {
-                Foreign: {
-                    WANConfigs: [
-                        {
-                            name: "Ether-1",
-                            InterfaceConfig: {
-                                InterfaceName: "ether1",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                    ],
-                },
-                Domestic: {
-                    WANConfigs: [
-                        {
-                            name: "Ether-2",
-                            InterfaceConfig: {
-                                InterfaceName: "ether2",
-                            },
-                            ConnectionConfig: {
-                                isDHCP: true,
-                            },
-                        },
-                    ],
-                },
-            };
-
-            const result = generateWANLinksConfig(wanLinks);
-
-            // Verify both Foreign and Domestic comments are present
-            expect(result["/interface ethernet"]).toBeDefined();
-            expect(result["/interface ethernet"]).toHaveLength(2);
-            
-            const foreignComment = result["/interface ethernet"].find(cmd => 
-                cmd.includes("Foreign WAN")
-            );
-            expect(foreignComment).toContain("Foreign WAN - Ether-1");
-            
-            const domesticComment = result["/interface ethernet"].find(cmd => 
-                cmd.includes("Domestic WAN")
-            );
-            expect(domesticComment).toContain("Domestic WAN - Ether-2");
-        });
-    });
-
     describe("DFSingleLink", () => {
         it("should generate routing config for single Foreign link", () => {
             const wanLink: WANLink = {
@@ -1024,8 +721,9 @@ describe("WANInterface Module", () => {
 
             validateRouterConfig(result, ["/ip route"]);
             expect(result["/ip route"]).toHaveLength(1);
-            expect(result["/ip route"][0]).toContain("routing-table=to-FRN");
-            expect(result["/ip route"][0]).toContain('comment="Foreign Single Link"');
+            expect(result["/ip route"][0]).toContain("routing-table=to-Foreign");
+            expect(result["/ip route"][0]).toContain("gateway=203.0.113.1%");
+            expect(result["/ip route"][0]).toContain('comment="Route-to-Foreign-Foreign-1"');
         });
 
         it("should generate routing config for single Domestic link", () => {
@@ -1057,8 +755,9 @@ describe("WANInterface Module", () => {
 
             validateRouterConfig(result, ["/ip route"]);
             expect(result["/ip route"]).toHaveLength(1);
-            expect(result["/ip route"][0]).toContain("routing-table=to-DOM");
-            expect(result["/ip route"][0]).toContain('comment="Domestic Single Link"');
+            expect(result["/ip route"][0]).toContain("routing-table=to-Domestic");
+            expect(result["/ip route"][0]).toContain("gateway=192.168.1.1%");
+            expect(result["/ip route"][0]).toContain('comment="Route-to-Domestic-Domestic-1"');
         });
 
         it("should return empty config for multiple WANConfigs", () => {
@@ -1153,6 +852,8 @@ describe("WANInterface Module", () => {
 
             validateRouterConfig(result, ["/ip route"]);
             expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip route"][0]).toContain("routing-table=to-Foreign");
+            expect(result["/ip route"][0]).toContain("gateway=100.64.0.1%MacVLAN-ether1-DHCP-WAN");
         });
     });
 
@@ -1197,11 +898,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with PCC load balancing",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
             expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // PCC should generate 8 mangle rules (4 per interface)
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
 
         it("should generate load balancing config with NTH strategy", () => {
@@ -1230,10 +934,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with NTH load balancing",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
+            expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // NTH should generate mangle rules
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
 
         it("should generate failover config with recursive gateway checking", () => {
@@ -1263,7 +971,7 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with failover strategy",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
             validateRouterConfig(result, ["/ip route"]);
@@ -1294,10 +1002,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with round-robin strategy",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
+            expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // RoundRobin uses NTH, should generate mangle rules
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
 
         it("should generate both load balancing and failover config", () => {
@@ -1326,10 +1038,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with both load balancing and failover",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
+            expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // Both strategy uses PCC, should generate mangle rules
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
 
         it("should use default failover when no MultiLinkConfig provided", () => {
@@ -1354,7 +1070,7 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Multi-link with default failover (no MultiLinkConfig)",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
             validateRouterConfig(result, ["/ip route"]);
@@ -1376,7 +1092,7 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Single WAN link should return empty config",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
             expect(result).toEqual({});
@@ -1391,7 +1107,7 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Empty WANConfigs should return empty config",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
             expect(result).toEqual({});
@@ -1423,10 +1139,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "ECMP method should fallback to PCC",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
+            expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // ECMP falls back to PCC, should generate mangle rules
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
 
         it("should handle 3 WAN links with load balancing", () => {
@@ -1461,10 +1181,14 @@ describe("WANInterface Module", () => {
                 "DFMultiLink",
                 "Three WAN links with NTH load balancing",
                 { wanLink },
-                () => DFMultiLink(wanLink),
+                () => DFMultiLink(wanLink, "Foreign"),
             );
 
-            validateRouterConfig(result, ["/ip route"]);
+            validateRouterConfig(result, ["/ip route", "/ip firewall mangle"]);
+            expect(result["/ip route"]).toBeDefined();
+            expect(result["/ip firewall mangle"]).toBeDefined();
+            // NTH with 3 WAN links should generate mangle rules
+            expect(result["/ip firewall mangle"].length).toBeGreaterThan(0);
         });
     });
 });

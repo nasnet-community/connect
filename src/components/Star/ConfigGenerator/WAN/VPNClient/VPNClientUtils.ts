@@ -1,5 +1,5 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { VPNClientType } from "~/components/Star/StarContext";
+import type { VPNClientType, VPNClient } from "~/components/Star/StarContext";
 // import type { WANLinkType } from "~/components/Star/StarContext";
 
 
@@ -31,8 +31,7 @@ export const RouteToVPN = ( InterfaceName: string, name: string ): RouterConfig 
     const comment = `Route-to-VPN-${name}`;
 
     config["/ip route"].push(
-        `add comment="${comment}" disabled=no distance=1 dst-address=0.0.0.0/0 gateway=${InterfaceName} \\
-        pref-src="" routing-table=${tableName} scope=30 suppress-hw-offload=no target-scope=10`,
+        `add dst-address="0.0.0.0/0" gateway="${InterfaceName}" routing-table="${tableName}" scope=30 target-scope=10  comment="${comment}"`,
     );
 
     return config;
@@ -51,25 +50,43 @@ export const InterfaceList = (InterfaceName: string): RouterConfig => {
     return config;
 };
 
-export const AddressList = (Address: string): RouterConfig => {
+export const AddressListEntry = (Address: string): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall address-list": [],
-        "/ip firewall mangle": [],
     };
 
     config["/ip firewall address-list"].push(
         `add address="${Address}" list=VPNE comment="VPN-${Address} Endpoint for routing"`,
     );
+
+    return config;
+};
+
+export const VPNEndpointMangle = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall mangle": [],
+    };
+
     config["/ip firewall mangle"].push(
         `add action=mark-connection chain=output comment="VPN Endpoint" \\
         dst-address-list=VPNE new-connection-mark=conn-VPNE passthrough=yes`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-FRN passthrough=no`,
+        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-Foreign passthrough=no`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        dst-address-list=VPNE new-routing-mark=to-FRN passthrough=no`,
+        dst-address-list=VPNE new-routing-mark=to-Foreign passthrough=no`,
     );
 
     return config;
+};
+
+export const AddressList = (Address: string): RouterConfig => {
+    const addressConfig = AddressListEntry(Address);
+    const mangleConfig = VPNEndpointMangle();
+    
+    return {
+        "/ip firewall address-list": addressConfig["/ip firewall address-list"],
+        "/ip firewall mangle": mangleConfig["/ip firewall mangle"],
+    };
 };
 
 export const IPAddress = ( InterfaceName: string, Address: string ): RouterConfig => {
@@ -78,7 +95,7 @@ export const IPAddress = ( InterfaceName: string, Address: string ): RouterConfi
     };
 
     config["/ip address"].push(
-        `add address=${Address} interface=${InterfaceName} comment="VPN-${InterfaceName}"`,
+        `add address="${Address}" interface="${InterfaceName}" comment="VPN-${InterfaceName}"`,
     );
 
     return config;
@@ -137,13 +154,62 @@ export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, n
     const routeConfig = RouteToVPN(InterfaceName, name);
     config["/ip route"].push(...routeConfig["/ip route"]);
 
-    const addressListConfig = AddressList(EndpointAddress);
+    const addressListConfig = AddressListEntry(EndpointAddress);
     config["/ip firewall address-list"].push(
         ...addressListConfig["/ip firewall address-list"],
     );
-    config["/ip firewall mangle"].push(
-        ...addressListConfig["/ip firewall mangle"],
-    );
 
     return config;
+};
+
+export const GetAllVPNInterfaceNames = (vpnClient: VPNClient): string[] => {
+    const interfaceNames: string[] = [];
+    
+    // Process Wireguard configs
+    if (vpnClient.Wireguard) {
+        vpnClient.Wireguard.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "Wireguard"));
+        });
+    }
+    
+    // Process OpenVPN configs
+    if (vpnClient.OpenVPN) {
+        vpnClient.OpenVPN.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "OpenVPN"));
+        });
+    }
+    
+    // Process PPTP configs
+    if (vpnClient.PPTP) {
+        vpnClient.PPTP.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "PPTP"));
+        });
+    }
+    
+    // Process L2TP configs
+    if (vpnClient.L2TP) {
+        vpnClient.L2TP.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "L2TP"));
+        });
+    }
+    
+    // Process SSTP configs
+    if (vpnClient.SSTP) {
+        vpnClient.SSTP.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "SSTP"));
+        });
+    }
+    
+    // Process IKeV2 configs
+    if (vpnClient.IKeV2) {
+        vpnClient.IKeV2.forEach(config => {
+            interfaceNames.push(GenerateVCInterfaceName(config.Name, "IKeV2"));
+        });
+    }
+    
+    return interfaceNames;
+};
+
+export const GetVPNInterfaceName = (name: string, protocol: VPNClientType): string => {
+    return GenerateVCInterfaceName(name, protocol);
 };

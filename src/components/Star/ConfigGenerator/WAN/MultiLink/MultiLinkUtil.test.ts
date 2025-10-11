@@ -85,7 +85,7 @@ describe("MultiLink Module", () => {
 
             expect(result).toHaveLength(2);
             expect(result[0].name).toBe("Dom-WAN-1");
-            expect(result[0].gateway).toBe("192.168.1.1");
+            expect(result[0].gateway).toBe("192.168.1.1%MacVLAN-ether1-Dom-WAN-1");
             expect(result[0].distance).toBe(1);
             expect(result[0].weight).toBe(2);
             expect(result[0].checkIP).toBe(DomesticCheckIPs[0]);
@@ -120,7 +120,7 @@ describe("MultiLink Module", () => {
                 {
                     name: "DHCP-WAN",
                     InterfaceConfig: { InterfaceName: "ether1" },
-                    ConnectionConfig: { dhcp: true },
+                    ConnectionConfig: { isDHCP: true },
                     priority: 1,
                 },
             ];
@@ -133,7 +133,7 @@ describe("MultiLink Module", () => {
             );
 
             expect(result).toHaveLength(1);
-            expect(result[0].gateway).toBe("dhcp");
+            expect(result[0].gateway).toBe("100.64.0.1%MacVLAN-ether1-DHCP-WAN");
         });
     });
 
@@ -162,7 +162,7 @@ describe("MultiLink Module", () => {
 
             expect(result).toHaveLength(1);
             expect(result[0].name).toBe("WG-VPN-1");
-            expect(result[0].gateway).toBe("10.0.0.2");
+            expect(result[0].gateway).toBe("wireguard-client-WG-VPN-1");
             expect(result[0].distance).toBe(1);
             expect(result[0].weight).toBe(2);
             expect(result[0].checkIP).toBe(ForeignCheckIPs[0]);
@@ -191,7 +191,7 @@ describe("MultiLink Module", () => {
 
             expect(result).toHaveLength(1);
             expect(result[0].name).toBe("OVPN-1");
-            expect(result[0].gateway).toBe("vpn.server.com");
+            expect(result[0].gateway).toBe("ovpn-client-OVPN-1");
         });
 
         it("should convert mixed VPN client types", () => {
@@ -600,14 +600,14 @@ describe("MultiLink Module", () => {
 
             const result = combineMultiWANInterfaces(vpnClient, wanLinks);
 
-            // VPN uses Foreign check IPs
-            expect(result[0].checkIP).toBe(ForeignCheckIPs[0]);
+            // VPN uses Foreign check IPs with offset (foreignWANCount=1, so VPN uses ForeignCheckIPs[1])
+            expect(result[0].checkIP).toBe(ForeignCheckIPs[1]);
 
             // Domestic links use Domestic check IPs (unique per link)
             expect(result[1].checkIP).toBe(DomesticCheckIPs[0]);
             expect(result[2].checkIP).toBe(DomesticCheckIPs[1]);
 
-            // Foreign links use Foreign check IPs (unique per link)
+            // Foreign links use Foreign check IPs (unique per link, starting from index 0)
             expect(result[3].checkIP).toBe(ForeignCheckIPs[0]);
         });
     });

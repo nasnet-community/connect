@@ -1,4 +1,5 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { SubnetToFirstIP } from "~/components/Star/ConfigGenerator";
 import type { VPNServer } from "~/components/Star/StarContext";
 // import type { Credentials } from "~/components/Star/StarContext";
 
@@ -174,22 +175,7 @@ export function formatBooleanValue(value: boolean): string {
 //     return config;
 // };
 
-export const generateIPPool = (poolConfig: IPPoolConfig): string[] => {
-    const poolParams: string[] = [
-        `name=${poolConfig.name}`,
-        `ranges=${poolConfig.ranges}`,
-    ];
 
-    if (poolConfig.nextPool) {
-        poolParams.push(`next-pool=${poolConfig.nextPool}`);
-    }
-
-    if (poolConfig.comment) {
-        poolParams.push(`comment="${poolConfig.comment}"`);
-    }
-
-    return [`add ${poolParams.join(" ")}`];
-};
 
 // export function addCommonVPNConfiguration( config: RouterConfig, vpnServer: VPNServer ): void {
 //     const { Users } = vpnServer;
@@ -413,115 +399,11 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
         return config;
     }
 
-    // Default to DOM-WAN for VPN server connections
-    // TODO: Add network selection support in VPNServer type if needed
-    const interfaceList = "DOM-WAN";
-
-    // Add comment header
-    config["/ip firewall mangle"].push(
-        "# --- VPN Server Inbound Traffic Marking ---",
-        "# Mark inbound VPN connections and route outbound replies",
-    );
-
-    // Check for OpenVPN Server(s) - handle both single and potential multiple servers
-    if (vpnServer.OpenVpnServer) {
-        const openVpnServers = Array.isArray(vpnServer.OpenVpnServer)
-            ? vpnServer.OpenVpnServer
-            : [vpnServer.OpenVpnServer];
-
-        openVpnServers.forEach((openVpnConfig) => {
-            const port = openVpnConfig.Port || 1194;
-            const protocol = openVpnConfig.Protocol || "udp";
-            const serverName = openVpnConfig.name || "OpenVPN";
-
-            config["/ip firewall mangle"].push(
-                `add action=mark-connection chain=input comment="Mark Inbound OpenVPN Connections (${serverName})" \\
-                    connection-state=new in-interface-list=${interfaceList} protocol=${protocol} dst-port=${port} \\
-                    new-connection-mark=conn-vpn-server passthrough=yes`,
-            );
-        });
-    }
-
-    // Check for SSTP Server
-    if (vpnServer.SstpServer) {
-        const port = vpnServer.SstpServer.Port || 4443;
-
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound SSTP Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=tcp dst-port=${port} \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-    }
-
-    // Check for PPTP Server
-    if (vpnServer.PptpServer) {
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=tcp dst-port=1723 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-    }
-
-    // Check for L2TP Server
-    if (vpnServer.L2tpServer) {
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound L2TP Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=udp dst-port=1701 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-    }
-
-    // Check for WireGuard Servers - already handles multiple servers
-    if (vpnServer.WireguardServers && vpnServer.WireguardServers.length > 0) {
-        vpnServer.WireguardServers.forEach((wireguardConfig) => {
-            const port = wireguardConfig.Interface.ListenPort || 13231;
-            const interfaceName = wireguardConfig.Interface.Name;
-
-            config["/ip firewall mangle"].push(
-                `add action=mark-connection chain=input comment="Mark Inbound WireGuard Connections (${interfaceName})" \\
-                    connection-state=new in-interface-list=${interfaceList} protocol=udp dst-port=${port} \\
-                    new-connection-mark=conn-vpn-server passthrough=yes`,
-            );
-        });
-    }
-
-    // Check for IKEv2/IPsec Server
-    if (vpnServer.Ikev2Server) {
-        // IKE main mode (UDP/500)
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound IPsec/IKE Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=udp dst-port=500 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-
-        // IKE NAT-T (UDP/4500)
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound IPsec/IKE NAT-T Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=udp dst-port=4500 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-
-        // IPsec ESP (protocol 50)
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound IPsec ESP Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=ipsec-esp \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-
-        // IPsec AH (protocol 51)
-        config["/ip firewall mangle"].push(
-            `add action=mark-connection chain=input comment="Mark Inbound IPsec AH Connections" \\
-                connection-state=new in-interface-list=${interfaceList} protocol=ipsec-ah \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
-        );
-    }
-
     // Add routing rule for outbound VPN replies
     if (config["/ip firewall mangle"].length > 2) {
         // More than just comments
         config["/ip firewall mangle"].push(
             "",
-            "# Route outbound VPN server replies via Domestic WAN",
             `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
                 connection-mark=conn-vpn-server new-routing-mark=to-DOM passthrough=no`,
         );
@@ -530,4 +412,64 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
     return config;
 };
 
+export const VSInterfaceList = ( interfaceName: string, VSNetwork: string, comment?: string ): RouterConfig => {
+    const config: RouterConfig = {
+        "/interface list member": [],
+    };
+    
+    config["/interface list member"].push(
+        `add interface="${interfaceName}" list="LAN" ${comment ? `comment="${comment}"` : ""}`,
+        `add interface="${interfaceName}" list="${VSNetwork}-LAN" ${comment ? `comment="${comment}"` : ""}`,
+    );
 
+    return config;
+}
+
+export const VSAddressList = ( subnet: string, VSNetwork: string, comment?: string ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall address-list": [],
+    };
+
+    config["/ip firewall address-list"].push(
+        `add address="${subnet}" list="${VSNetwork}-LAN" ${comment ? `comment="${comment}"` : ""}`,
+    );
+
+    return config;
+}
+
+export const generateIPPool = (poolConfig: IPPoolConfig): string[] => {
+    const poolParams: string[] = [
+        `name="${poolConfig.name}-pool"`,
+        `ranges=${poolConfig.ranges}`,
+    ];
+
+    if (poolConfig.nextPool) {
+        poolParams.push(`next-pool=${poolConfig.nextPool}`);
+    }
+
+    if (poolConfig.comment) {
+        poolParams.push(`comment="${poolConfig.comment}"`);
+    }
+
+    return [`add ${poolParams.join(" ")}`];
+};
+
+export const VSPorfile = (subnet: string, VSNetwork: string, name: string ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ppp profile": [],
+    };
+
+    const PoolName = name + "-pool";
+    const ProfileName = name + "-profile";
+    // LocalAddress and DNS Must be the first IP of the subnet use the functions in the Subnet
+    const LocalAddress = SubnetToFirstIP(subnet);
+
+
+
+    config["/ppp profile"].push(
+        `add address-list="${VSNetwork}-LAN" dns-server="${LocalAddress}" interface-list="${VSNetwork}-LAN" local-address="${LocalAddress}" name="${ProfileName}" \\
+        remote-address="${PoolName}" use-encryption=yes use-ipv6=no use-upnp=yes`,
+    );
+
+    return config;
+}

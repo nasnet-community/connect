@@ -1,5 +1,7 @@
-import type { AuthMethod, TLSVersion, NetworkProtocol, LayerMode, VPNType, Networks } from "../CommonType";
+import type { AuthMethod, TLSVersion, NetworkProtocol, LayerMode, VPNType } from "../CommonType";
 
+
+export type VSNetwork = "Domestic" | "Split" | "Foreign" | "VPN";
 
 
 
@@ -23,6 +25,7 @@ export interface BaseVPNServerConfig {
     KeepaliveTimeout?: number;
     Authentication?: AuthMethod[];
     PacketSize?: PacketSize;
+    VSNetwork?: VSNetwork;
 }
 
 
@@ -346,6 +349,7 @@ export interface Ikev2ServerConfig {
     peer: IPsecPeer;
     identities: IpsecIdentityConfig;
     modeConfigs?: IpsecModeConfigItem;
+    VSNetwork?: VSNetwork;
 }
 
 
@@ -359,6 +363,8 @@ export interface WireguardInterfaceConfig {
     InterfaceAddress: string;
     ListenPort?: number;
     Mtu?: number;
+    VSNetwork?: VSNetwork;
+
 }
 
 export interface WireguardPeerClient {
@@ -530,33 +536,38 @@ export interface PppSecret {
 export interface Socks5ServerConfig {
     enabled: boolean;
     Port: number;
-    Network: Networks;
+    Network: VSNetwork;
+    VSNetwork?: VSNetwork;
 }
 
 // SSH
 export interface SSHServerConfig {
     enabled: boolean;
-    Network: Networks;
+    Network: VSNetwork;
+    VSNetwork?: VSNetwork;
 }
 
 // HTTP Proxy
 export interface HTTPProxyServerConfig {
     enabled: boolean;
     Port: number;
-    Network: Networks;
+    Network: VSNetwork;
+    VSNetwork?: VSNetwork;
 }
 
 // BackToHome
 export interface BackToHomeServerConfig {
     enabled: boolean;
-    Network: Networks;
+    Network: VSNetwork;
+    VSNetwork?: VSNetwork;
 }
 
 // ZeroTier
 export interface ZeroTierServerConfig {
     enabled: boolean;
-    Network: Networks;
+    Network: VSNetwork;
     ZeroTierNetworkID: string;
+    VSNetwork?: VSNetwork;
 }
 
 

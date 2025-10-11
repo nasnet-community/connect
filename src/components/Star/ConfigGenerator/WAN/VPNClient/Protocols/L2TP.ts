@@ -39,7 +39,7 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
     // }
 
     // let command = `add name=l2tp-client connect-to=${ServerAddress}`;
-    let command = `add name=${interfaceName} connect-to=${Server.Address}`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}"`;
 
     command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
 
