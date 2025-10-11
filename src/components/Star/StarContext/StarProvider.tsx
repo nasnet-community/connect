@@ -20,6 +20,7 @@ export const StarContextProvider = component$(() => {
       RouterMode: "" as RouterModeType,
       WANLinkType: "" as WANLinkType,
       RouterModels: [],
+      Networks: {}
     },
     WAN: {
       WANLink: {
