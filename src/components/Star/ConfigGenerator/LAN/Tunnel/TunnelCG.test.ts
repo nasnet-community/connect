@@ -25,6 +25,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
     describe("IPIPInterfaceWrapper", () => {
       it("should generate IPIP with subnet configuration", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-wrapper1",
           localAddress: "10.255.10.1",
           remoteAddress: "203.0.113.100",
@@ -54,9 +55,11 @@ describe("Tunnel Configuration Wrapper Generator", () => {
 
       it("should generate IPIP without subnet", () => {
         const ipipConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-no-subnet",
           localAddress: "192.168.1.1",
           remoteAddress: "203.0.113.101",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -79,6 +82,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
         };
 
         const domesticConfig: IpipTunnelConfig = {
+          type: "ipip",
           name: "ipip-domestic",
           localAddress: "172.16.1.1",
           remoteAddress: "203.0.113.102",
@@ -110,6 +114,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
     describe("EoipInterfaceWrapper", () => {
       it("should generate EoIP with subnet configuration", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-wrapper1",
           localAddress: "10.255.20.1",
           remoteAddress: "203.0.113.200",
@@ -142,10 +147,12 @@ describe("Tunnel Configuration Wrapper Generator", () => {
 
       it("should generate EoIP without subnet", () => {
         const eoipConfig: EoipTunnelConfig = {
+          type: "eoip",
           name: "eoip-no-subnet",
           localAddress: "192.168.2.1",
           remoteAddress: "203.0.113.201",
           tunnelId: 2000,
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -164,6 +171,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
     describe("GreInterfaceWrapper", () => {
       it("should generate GRE with subnet configuration", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-wrapper1",
           localAddress: "10.255.30.1",
           remoteAddress: "203.0.113.300",
@@ -194,9 +202,11 @@ describe("Tunnel Configuration Wrapper Generator", () => {
 
       it("should generate GRE without subnet", () => {
         const greConfig: GreTunnelConfig = {
+          type: "gre",
           name: "gre-no-subnet",
           localAddress: "192.168.3.1",
           remoteAddress: "203.0.113.301",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -215,10 +225,12 @@ describe("Tunnel Configuration Wrapper Generator", () => {
     describe("VxlanInterfaceWrapper", () => {
       it("should generate VXLAN with subnet configuration", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-wrapper1",
           localAddress: "10.255.40.1",
           remoteAddress: "10.255.40.2",
           vni: 5000,
+          bumMode: "unicast",
           NetworkType: "VPN",
         };
         const subnet: SubnetConfig = {
@@ -246,10 +258,13 @@ describe("Tunnel Configuration Wrapper Generator", () => {
 
       it("should generate VXLAN without subnet", () => {
         const vxlanConfig: VxlanInterfaceConfig = {
+          type: "vxlan",
           name: "vxlan-no-subnet",
           localAddress: "10.0.10.1",
           remoteAddress: "10.0.10.2",
           vni: 6000,
+          bumMode: "unicast",
+          NetworkType: "VPN",
         };
 
         const result = testWithOutput(
@@ -275,9 +290,11 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-site1",
             localAddress: "192.168.1.1",
             remoteAddress: "203.0.113.1",
+            NetworkType: "VPN",
           },
         ],
       };
@@ -299,32 +316,41 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-test",
             localAddress: "192.168.1.1",
             remoteAddress: "203.0.113.1",
+            NetworkType: "VPN",
           },
         ],
         Eoip: [
           {
+            type: "eoip",
             name: "eoip-test",
             localAddress: "192.168.2.1",
             remoteAddress: "203.0.113.2",
             tunnelId: 100,
+            NetworkType: "VPN",
           },
         ],
         Gre: [
           {
+            type: "gre",
             name: "gre-test",
             localAddress: "192.168.3.1",
             remoteAddress: "203.0.113.3",
+            NetworkType: "VPN",
           },
         ],
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan-test",
             localAddress: "10.0.1.1",
             remoteAddress: "10.0.1.2",
             vni: 100,
+            bumMode: "unicast",
+            NetworkType: "VPN",
           },
         ],
       };
@@ -356,6 +382,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-wan",
             localAddress: "10.255.1.1",
             remoteAddress: "203.0.113.1",
@@ -364,6 +391,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
         ],
         Gre: [
           {
+            type: "gre",
             name: "gre-lan",
             localAddress: "172.16.1.1",
             remoteAddress: "203.0.113.2",
@@ -421,19 +449,25 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-site1",
             localAddress: "10.1.1.1",
             remoteAddress: "203.0.113.1",
+            NetworkType: "VPN",
           },
           {
+            type: "ipip",
             name: "ipip-site2",
             localAddress: "10.2.2.1",
             remoteAddress: "203.0.113.2",
+            NetworkType: "VPN",
           },
           {
+            type: "ipip",
             name: "ipip-site3",
             localAddress: "10.3.3.1",
             remoteAddress: "203.0.113.3",
+            NetworkType: "VPN",
           },
         ],
       };
@@ -457,6 +491,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-secure",
             localAddress: "10.255.1.1",
             remoteAddress: "203.0.113.1",
@@ -466,6 +501,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
         ],
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan-datacenter",
             localAddress: "10.0.1.1",
             remoteAddress: "",
@@ -528,7 +564,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
         "Network Types",
         "Test Split network type",
         { NetworkType: "Split" },
-        () => IPIPInterfaceWrapper({ name: "ipip-split", localAddress: "10.1.1.1", remoteAddress: "10.1.1.2", NetworkType: "Split" }, subnet)
+        () => IPIPInterfaceWrapper({ type: "ipip", name: "ipip-split", localAddress: "10.1.1.1", remoteAddress: "10.1.1.2", NetworkType: "Split" }, subnet)
       );
 
       expect(splitConfig["/interface list member"].join(" ")).toContain("Split-LAN");
@@ -539,10 +575,10 @@ describe("Tunnel Configuration Wrapper Generator", () => {
   describe("Integration Tests", () => {
     it("should generate complete site-to-site VPN with all protocols", () => {
       const tunnel: Tunnel = {
-        IPIP: [{ name: "ipip-site1", localAddress: "10.1.1.1", remoteAddress: "203.0.113.1", NetworkType: "VPN", ipsecSecret: "secret1" }],
-        Eoip: [{ name: "eoip-site1", localAddress: "10.2.2.1", remoteAddress: "203.0.113.2", tunnelId: 100, NetworkType: "Domestic", loopProtect: "on", loopProtectDisableTime: 5000, loopProtectSendInterval: 5000 }],
-        Gre: [{ name: "gre-site1", localAddress: "10.3.3.1", remoteAddress: "203.0.113.3", NetworkType: "Foreign", ipsecSecret: "secret2" }],
-        Vxlan: [{ name: "vxlan-site1", localAddress: "10.4.4.1", remoteAddress: "10.4.4.2", vni: 100, NetworkType: "VPN" }],
+        IPIP: [{ type: "ipip", name: "ipip-site1", localAddress: "10.1.1.1", remoteAddress: "203.0.113.1", NetworkType: "VPN", ipsecSecret: "secret1" }],
+        Eoip: [{ type: "eoip", name: "eoip-site1", localAddress: "10.2.2.1", remoteAddress: "203.0.113.2", tunnelId: 100, NetworkType: "Domestic", loopProtect: "on", loopProtectDisableTime: 5000, loopProtectSendInterval: 5000 }],
+        Gre: [{ type: "gre", name: "gre-site1", localAddress: "10.3.3.1", remoteAddress: "203.0.113.3", NetworkType: "Foreign", ipsecSecret: "secret2" }],
+        Vxlan: [{ type: "vxlan", name: "vxlan-site1", localAddress: "10.4.4.1", remoteAddress: "10.4.4.2", vni: 100, bumMode: "unicast", NetworkType: "VPN" }],
       };
 
       const tunnelSubnets: TunnelNetworksSubnets = {
@@ -591,6 +627,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan-compute",
             localAddress: "10.0.1.1",
             remoteAddress: "",
@@ -608,6 +645,7 @@ describe("Tunnel Configuration Wrapper Generator", () => {
             hw: true,
           },
           {
+            type: "vxlan",
             name: "vxlan-storage",
             localAddress: "10.0.2.1",
             remoteAddress: "",
@@ -644,12 +682,12 @@ describe("Tunnel Configuration Wrapper Generator", () => {
     it("should generate multi-site branch office network", () => {
       const tunnel: Tunnel = {
         IPIP: [
-          { name: "ipip-branch1", localAddress: "10.255.1.1", remoteAddress: "203.0.113.1", NetworkType: "VPN", ipsecSecret: "branch1-secret" },
-          { name: "ipip-branch2", localAddress: "10.255.2.1", remoteAddress: "203.0.113.2", NetworkType: "VPN", ipsecSecret: "branch2-secret" },
+          { type: "ipip", name: "ipip-branch1", localAddress: "10.255.1.1", remoteAddress: "203.0.113.1", NetworkType: "VPN", ipsecSecret: "branch1-secret" },
+          { type: "ipip", name: "ipip-branch2", localAddress: "10.255.2.1", remoteAddress: "203.0.113.2", NetworkType: "VPN", ipsecSecret: "branch2-secret" },
         ],
         Gre: [
-          { name: "gre-branch1", localAddress: "10.255.3.1", remoteAddress: "203.0.113.3", NetworkType: "Domestic" },
-          { name: "gre-branch2", localAddress: "10.255.4.1", remoteAddress: "203.0.113.4", NetworkType: "Domestic" },
+          { type: "gre", name: "gre-branch1", localAddress: "10.255.3.1", remoteAddress: "203.0.113.3", NetworkType: "Domestic" },
+          { type: "gre", name: "gre-branch2", localAddress: "10.255.4.1", remoteAddress: "203.0.113.4", NetworkType: "Domestic" },
         ],
       };
 
@@ -689,17 +727,19 @@ describe("Tunnel Configuration Wrapper Generator", () => {
       const tunnel: Tunnel = {
         IPIP: [
           {
+            type: "ipip",
             name: "ipip-max",
             localAddress: "10.1.1.1",
             remoteAddress: "203.0.113.1",
             NetworkType: "VPN",
             ipsecSecret: "maxSecret",
-            dontFragment: "enabled",
+            dontFragment: "inherit",
             comment: "Maximum IPIP config",
           },
         ],
         Eoip: [
           {
+            type: "eoip",
             name: "eoip-max",
             localAddress: "10.2.2.1",
             remoteAddress: "203.0.113.2",
@@ -709,23 +749,25 @@ describe("Tunnel Configuration Wrapper Generator", () => {
             loopProtect: "on",
             loopProtectDisableTime: 30000,
             loopProtectSendInterval: 3000,
-            dontFragment: "disabled",
+            dontFragment: "no",
             comment: "Maximum EoIP config",
           },
         ],
         Gre: [
           {
+            type: "gre",
             name: "gre-max",
             localAddress: "10.3.3.1",
             remoteAddress: "203.0.113.3",
             NetworkType: "Foreign",
             ipsecSecret: "maxGreSecret",
-            dontFragment: "enabled",
+            dontFragment: "inherit",
             comment: "Maximum GRE config",
           },
         ],
         Vxlan: [
           {
+            type: "vxlan",
             name: "vxlan-max",
             localAddress: "10.4.4.1",
             remoteAddress: "",

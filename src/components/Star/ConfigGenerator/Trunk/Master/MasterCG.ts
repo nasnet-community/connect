@@ -1,5 +1,5 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { ChooseState, WirelessConfig } from "~/components/Star/StarContext";
+import type { ChooseState, WirelessConfig, Subnets } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import { generateBaseNetworkVLANs, generateAdditionalNetworkVLANs, generateVPNClientNetworkVLANs, generateWirelessTrunkInterface, addTrunkInterfaceToBridge } from "./MasterUtil";
 
@@ -7,7 +7,7 @@ import { generateBaseNetworkVLANs, generateAdditionalNetworkVLANs, generateVPNCl
 
 
 
-export const MasterCG = (choose: ChooseState, wirelessConfigs?: WirelessConfig[] ): RouterConfig => {
+export const MasterCG = (choose: ChooseState, subnets: Subnets, wirelessConfigs?: WirelessConfig[] ): RouterConfig => {
     // Only generate for Trunk Mode
     if (choose.RouterMode !== "Trunk Mode") {
         return {};
@@ -37,18 +37,18 @@ export const MasterCG = (choose: ChooseState, wirelessConfigs?: WirelessConfig[]
         const wirelessInterfaces = ["wifi2.4-Trunk", "wifi5-Trunk"];
         
         for (const wifiInterface of wirelessInterfaces) {
-            configs.push(generateBaseNetworkVLANs(choose, wifiInterface));
-            configs.push(generateAdditionalNetworkVLANs(choose, wifiInterface));
-            configs.push(generateVPNClientNetworkVLANs(choose, wifiInterface));
+            configs.push(generateBaseNetworkVLANs(subnets, wifiInterface));
+            configs.push(generateAdditionalNetworkVLANs(subnets, wifiInterface));
+            configs.push(generateVPNClientNetworkVLANs(subnets, wifiInterface));
         }
         
         // Add trunk wireless interfaces to Split or VPN bridge
         configs.push(addTrunkInterfaceToBridge(choose, trunkInterface));
     } else {
         // For wired trunk, generate VLANs on the single trunk interface
-        configs.push(generateBaseNetworkVLANs(choose, trunkInterface));
-        configs.push(generateAdditionalNetworkVLANs(choose, trunkInterface));
-        configs.push(generateVPNClientNetworkVLANs(choose, trunkInterface));
+        configs.push(generateBaseNetworkVLANs(subnets, trunkInterface));
+        configs.push(generateAdditionalNetworkVLANs(subnets, trunkInterface));
+        configs.push(generateVPNClientNetworkVLANs(subnets, trunkInterface));
         
         // Add trunk wired interface to Split or VPN bridge
         configs.push(addTrunkInterfaceToBridge(choose, trunkInterface));

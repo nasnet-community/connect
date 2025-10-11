@@ -1,5 +1,5 @@
 // import type { RouterConfig } from "../ConfigGenerator";
-import type { Subnets } from "../../StarContext/LANType";
+import type { Subnets } from "~/components/Star/StarContext";
 
 export const GetNetworks = (subnets: Subnets): string[] => {
     const networks: string[] = [];
