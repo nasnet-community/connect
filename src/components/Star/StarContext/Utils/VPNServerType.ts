@@ -551,6 +551,7 @@ export interface SSHServerConfig {
 export interface HTTPProxyServerConfig {
     enabled: boolean;
     Port: number;
+    AllowedIPAddresses: string[];
     Network: VSNetwork;
     VSNetwork?: VSNetwork;
 }

@@ -1,12 +1,12 @@
 export type NetworkName = string;
-  
+
   export interface BaseNetworks {
     Split?: boolean;
     Domestic?: boolean;
     Foreign?: boolean;
     VPN?: boolean;
   }
-  
+
   export interface VPNClientNetworks {
     Wireguard?: NetworkName[];
     OpenVPN?: NetworkName[];
@@ -15,7 +15,7 @@ export type NetworkName = string;
     SSTP?: NetworkName[];
     IKev2?: NetworkName[];
   }
-  
+
   export interface VPNServerNetworks {
     Wireguard?: NetworkName[];
     OpenVPN?: NetworkName[];
@@ -37,7 +37,7 @@ export type NetworkName = string;
     Vxlan?: NetworkName[];
   }
  export interface Networks {
-    BaseNetworks: BaseNetworks;
+    BaseNetworks?: BaseNetworks;
     ForeignNetworks?: NetworkName[];
     DomesticNetworks?: NetworkName[];
     VPNClientNetworks?: VPNClientNetworks;
