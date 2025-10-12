@@ -9,6 +9,7 @@ import type {
   IkeV2DhGroup,
   IkeV2PfsGroup,
 } from "../../../../StarContext/Utils/VPNClientType";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UseIKEv2ConfigResult {
   serverAddress: { value: string };
@@ -41,6 +42,7 @@ export const useIKEv2Config = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseIKEv2ConfigResult => {
   const starContext = useContext(StarContext);
+  const networks = useNetworks();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -59,42 +61,42 @@ export const useIKEv2Config = (
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.IKeV2) {
     const existingConfig = starContext.state.WAN.VPNClient.IKeV2[0];
-    serverAddress.value = existingConfig?.ServerAddress || "";
+    serverAddress.value = existingConfig.ServerAddress || "";
 
-    if (existingConfig?.AuthMethod) {
+    if (existingConfig.AuthMethod) {
       authMethod.value = existingConfig.AuthMethod;
     }
 
-    if (existingConfig?.PresharedKey) {
+    if (existingConfig.PresharedKey) {
       presharedKey.value = existingConfig.PresharedKey;
     }
 
-    if (existingConfig?.Credentials) {
+    if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig?.PolicyDstAddress) {
+    if (existingConfig.PolicyDstAddress) {
       policyDstAddress.value = existingConfig.PolicyDstAddress;
     }
 
     // Map algorithm values if they exist
     if (
-      existingConfig?.HashAlgorithm &&
+      existingConfig.HashAlgorithm &&
       existingConfig.HashAlgorithm.length > 0
     ) {
       phase1HashAlgorithm.value = existingConfig.HashAlgorithm[0];
     }
 
-    if (existingConfig?.EncAlgorithm && existingConfig.EncAlgorithm.length > 0) {
+    if (existingConfig.EncAlgorithm && existingConfig.EncAlgorithm.length > 0) {
       phase1EncryptionAlgorithm.value = existingConfig.EncAlgorithm[0];
     }
 
-    if (existingConfig?.DhGroup && existingConfig.DhGroup.length > 0) {
+    if (existingConfig.DhGroup && existingConfig.DhGroup.length > 0) {
       phase1DHGroup.value = existingConfig.DhGroup[0];
     }
 
-    if (existingConfig?.PfsGroup) {
+    if (existingConfig.PfsGroup) {
       phase2PFSGroup.value = existingConfig.PfsGroup;
     }
 
@@ -237,12 +239,16 @@ export const useIKEv2Config = (
         IKeV2: [parsedConfig],
       },
     });
+
+    // Update Networks state to reflect VPN availability
+    networks.generateCurrentNetworks$();
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
 
     const manualConfig: Ike2ClientConfig = {
+      Name: "IKeV2-Client",
       ServerAddress: serverAddress.value,
       AuthMethod: authMethod.value,
       PresharedKey:

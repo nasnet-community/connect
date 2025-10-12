@@ -25,6 +25,7 @@ export const EOIPTunnelStep = component$(() => {
       localAddress: "",
       remoteAddress: "",
       tunnelId: stepper.data.eoip.length + 1,
+      NetworkType: "VPN",
     };
 
     stepper.data.eoip.push(newTunnel);

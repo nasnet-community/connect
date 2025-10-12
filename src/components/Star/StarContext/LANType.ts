@@ -9,7 +9,7 @@ export type WirelessInterfaceType = "Master" | "Slave";
 export type WifiTarget =
   | "Domestic" 
   | "Foreign" 
-  | "VPNClient"
+  | "VPN"
   | "Split"  
   | "SingleDomestic" 
   | "SingleForeign" 

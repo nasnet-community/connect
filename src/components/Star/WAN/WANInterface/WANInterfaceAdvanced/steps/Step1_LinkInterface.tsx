@@ -10,7 +10,7 @@ import { SearchBar } from "../components/common/SearchBar";
 import { EmptyState } from "../components/common/EmptyState";
 import { LinkStatistics } from "../components/common/LinkStatistics";
 import { LinkCard } from "../components/cards/LinkCard";
-import { getLinkStatus, filterLinks, getUsedInterfaces, getLinkStatistics } from "../utils/linkHelpers";
+import { getLinkStatus, filterLinks, getLinkStatistics } from "../utils/linkHelpers";
 import { getLinkErrors, getFieldErrors } from "../utils/validationUtils";
 
 export interface Step1Props {
@@ -24,8 +24,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const viewMode = useSignal<"grid" | "list">("grid");
-    
-    const usedInterfaces = getUsedInterfaces(wizardState.links);
+
     const getFilteredLinks = () => filterLinks(wizardState.links, searchQuery.value);
     
     const toggleLinkExpanded = $((linkId: string) => {
@@ -159,7 +158,6 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 onUpdate$={$((updates) =>
                   handleInterfaceUpdate(singleLink.id, updates)
                 )}
-                usedInterfaces={usedInterfaces}
                 mode={wizardState.mode}
               />
 
@@ -196,7 +194,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 </div>
               )}
 
-              {wizardState.mode === "advanced" && (
+              {wizardState.mode === "advanced" && singleLink.interfaceType !== "LTE" && (
                 <div class="mt-6">
                   <VLANMACFields
                     vlanConfig={wizardState.links[0]?.vlanConfig}
@@ -341,7 +339,6 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       onUpdate$={$((updates) =>
                         handleInterfaceUpdate(link.id, updates)
                       )}
-                      usedInterfaces={usedInterfaces}
                       mode={wizardState.mode}
                     />
 
@@ -374,7 +371,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       />
                     )}
 
-                    {wizardState.mode === "advanced" && (
+                    {wizardState.mode === "advanced" && link.interfaceType !== "LTE" && (
                       <VLANMACFields
                         vlanConfig={link.vlanConfig}
                         macAddress={link.macAddress}

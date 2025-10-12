@@ -1,12 +1,12 @@
 import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
-import type { Credentials } from "../../../../StarContext/Utils/VPNServerType";
+import type { VSCredentials } from "../../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../../StarContext/CommonType";
 import { UserCredential } from "../../UserCredential/UserCredential";
 
 interface EasyUsersStepProps {
-  users: Credentials[];
+  users: VSCredentials[];
   usernameErrors: Record<number, string>;
   passwordErrors: Record<number, string>;
   addUser: QRL<() => void>;

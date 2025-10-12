@@ -11,10 +11,10 @@ export const PPTPServerAdvanced = component$(() => {
   } = usePPTPServer();
   
   // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<string>("PPTP");
-  
+  const selectedNetwork = useSignal<ExtendedNetworks>("PPTP" as const);
+
   // Local handler for network updates
-  const updateNetwork$ = $((network: string) => {
+  const updateNetwork$ = $((network: ExtendedNetworks) => {
     selectedNetwork.value = network;
   });
 

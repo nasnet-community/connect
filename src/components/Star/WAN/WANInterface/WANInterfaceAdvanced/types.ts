@@ -8,7 +8,8 @@ import type {
   StaticIPConfig,
   WANLink,
 } from "../../../StarContext/Utils/WANLinkType";
-import type { WANState, MultiLinkConfig } from "../../../StarContext/WANType";
+import type { WANState } from "../../../StarContext/WANType";
+import type { MultiLinkConfig } from "../../../StarContext/Utils/MultiLinkType";
 
 // Re-export core types that are used directly
 export type {
@@ -59,6 +60,7 @@ export interface WANLinkConfig extends Omit<CoreWANLinkConfig, "name"> {
     isDHCP?: boolean;
     pppoe?: PPPoEConfig;
     static?: StaticIPConfig;
+    lteSettings?: LTESettings;
   };
 }
 

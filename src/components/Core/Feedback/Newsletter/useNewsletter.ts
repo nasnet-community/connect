@@ -8,7 +8,7 @@ export function useNewsletter({
   onSubscribe$,
   initialLoading = false,
   validateEmail = true,
-  customValidation$ = null,
+  // _customValidation$ = null,
 }: UseNewsletterParams = {}): UseNewsletterReturn {
   // State for the newsletter form
   const email = useSignal("");

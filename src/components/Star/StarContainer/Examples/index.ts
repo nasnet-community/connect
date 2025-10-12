@@ -1,1 +1,0 @@
-export { StarContainerWithHelp } from './StarContainerWithHelp';

@@ -9,17 +9,17 @@ import type {
   InterfaceType,
 } from "../../../StarContext/CommonType";
 import { useInterfaceManagement } from "../../../hooks/useInterfaceManagement";
+import { useNetworks } from "~/utils/useNetworks";
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
+  const networks = useNetworks();
   const selectedInterfaceType = useSignal("");
   const selectedInterface = useSignal("");
   const ssid = useSignal("");
   const password = useSignal("");
   const apn = useSignal("");
-  const lteUsername = useSignal("");
-  const ltePassword = useSignal("");
   const isValid = useSignal(false);
 
   // Define validateForm first before using it in useTask$
@@ -54,7 +54,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
 
     // Initialize values from context if they exist
     const interfaceData = starContext.state.WAN.WANLink[mode];
-    if (interfaceData && interfaceData.WANConfigs?.[0]) {
+    if (interfaceData && interfaceData.WANConfigs[0]) {
       const interfaceConfig = interfaceData.WANConfigs[0].InterfaceConfig;
       
       if (interfaceConfig.InterfaceName && selectedInterface.value === "") {
@@ -94,26 +94,9 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   });
 
   const updateStarContext = $(() => {
-    const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
-    const otherInterface =
-      starContext.state.WAN.WANLink[otherMode]?.WANConfigs?.[0]?.InterfaceConfig.InterfaceName || "";
-
-    const isCurrentWifi2_4 =
-      selectedInterface.value.includes("2.4") ||
-      selectedInterface.value.includes("2ghz");
-    const isCurrentWifi5 =
-      selectedInterface.value.includes("5") ||
-      selectedInterface.value.includes("5ghz");
-    const isOtherWifi2_4 =
-      otherInterface.includes("2.4") || otherInterface.includes("2ghz");
-    const isOtherWifi5 =
-      otherInterface.includes("5") || otherInterface.includes("5ghz");
-
     const updateData = {
       WANLink: {
         ...starContext.state.WAN.WANLink,
-        isWifi2_4: isCurrentWifi2_4 || isOtherWifi2_4,
-        isWifi5: isCurrentWifi5 || isOtherWifi5,
       },
     };
 
@@ -128,22 +111,23 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       };
     }
 
-    // LTE settings will be handled separately in ConnectionConfig
-
     // Create proper WANLink structure
     const currentWANLink = starContext.state.WAN.WANLink[mode] || { WANConfigs: [] };
-    const existingConfig = currentWANLink.WANConfigs?.[0] || { name: `${mode} Link`, InterfaceConfig: { InterfaceName: selectedInterface.value } };
-    
-    // Prepare ConnectionConfig for LTE if needed
-    let connectionConfig = existingConfig.ConnectionConfig;
+    const existingConfig = currentWANLink.WANConfigs[0] || { name: `${mode} Link`, InterfaceConfig: { InterfaceName: selectedInterface.value } };
+
+    // Prepare ConnectionConfig based on interface type
+    // Easy mode defaults: LTE uses lteSettings, all others use DHCP
+    let connectionConfig;
     if (selectedInterfaceType.value === "LTE") {
       connectionConfig = {
-        ...connectionConfig,
         lteSettings: {
           apn: apn.value,
-          username: lteUsername.value || undefined,
-          password: ltePassword.value || undefined,
         }
+      };
+    } else {
+      // For Ethernet, Wireless, SFP - use DHCP in easy mode
+      connectionConfig = {
+        isDHCP: true
       };
     }
 
@@ -161,6 +145,9 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     };
 
     starContext.updateWAN$(updateData);
+
+    // Update Networks configuration
+    networks.generateCurrentNetworks$();
   });
 
   const handleInterfaceTypeSelect = $((type: string) => {
@@ -174,8 +161,6 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     }
     if (type !== "LTE") {
       apn.value = "";
-      lteUsername.value = "";
-      ltePassword.value = "";
     }
     
     validateForm();
@@ -213,26 +198,12 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     validateForm();
   });
 
-  const handleLTEUsernameChange = $((value: string) => {
-    lteUsername.value = value;
-    updateStarContext();
-    validateForm();
-  });
-
-  const handleLTEPasswordChange = $((value: string) => {
-    ltePassword.value = value;
-    updateStarContext();
-    validateForm();
-  });
-
   return {
     selectedInterfaceType,
     selectedInterface,
     ssid,
     password,
     apn,
-    lteUsername,
-    ltePassword,
     isValid,
     validateForm,
     handleInterfaceTypeSelect,
@@ -240,7 +211,5 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     handleSSIDChange,
     handlePasswordChange,
     handleAPNChange,
-    handleLTEUsernameChange,
-    handleLTEPasswordChange,
   };
 };

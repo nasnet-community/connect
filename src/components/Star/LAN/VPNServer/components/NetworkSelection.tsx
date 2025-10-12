@@ -1,9 +1,9 @@
 import { component$, type QRL, useContext } from "@builder.io/qwik";
-import type { Networks } from "../../../StarContext/CommonType";
+import type { BaseNetworksType } from "~/components/Star/StarContext";
 import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
-import { StarContext } from "../../../StarContext/StarContext";
+import { StarContext } from "~/components/Star/StarContext";
 
-export type ExtendedNetworks = Networks | "Wireguard" | "OpenVPN" | "L2TP" | "PPTP" | "SSTP" | "IKev2";
+export type ExtendedNetworks = BaseNetworksType | "Wireguard" | "OpenVPN" | "L2TP" | "PPTP" | "SSTP" | "IKev2";
 
 interface NetworkDropdownProps {
   selectedNetwork: ExtendedNetworks;
@@ -113,7 +113,7 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
         )}
         <Select
           options={networkOptions}
-          value={selectedNetwork}
+          value={selectedNetwork as string}
           onChange$={(value) => {
             const network = Array.isArray(value) ? value[0] as ExtendedNetworks : value as ExtendedNetworks;
             onNetworkChange$(network);

@@ -1,7 +1,7 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     BackToHomeServerConfig,
-    Credentials
+    VSCredentials
 } from "~/components/Star/StarContext";
 // import type { Networks } from "~/components/Star/StarContext/CommonType";
 // import { mergeMultipleConfigs } from "../../../utils/ConfigGeneratorUtil";
@@ -29,7 +29,7 @@ export const BTHServer = (config: BackToHomeServerConfig): RouterConfig => {
     return routerConfig;
 };
 
-export const BTHServerUsers = ( users: Credentials[], _config?: BackToHomeServerConfig ): RouterConfig => {
+export const BTHServerUsers = ( users: VSCredentials[], _config?: BackToHomeServerConfig ): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip cloud back-to-home-user": [],
     };

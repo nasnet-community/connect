@@ -91,9 +91,10 @@ export const useL2TPServer = () => {
       }
     }
 
+    const current = (starContext.state.LAN.VPNServer || {}) as any;
     starContext.updateLAN$({
       VPNServer: {
-        ...vpnServerState,
+        ...current,
         L2tpServer: config.DefaultProfile === "" ? undefined : newConfig,
       },
     });

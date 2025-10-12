@@ -4,18 +4,18 @@ import { useZeroTierServer } from "./useZeroTierServer";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { SectionTitle } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
-import { Input } from "~/components/Core";
-import type { Networks } from "../../../../StarContext/CommonType";
+import { Input, Alert } from "~/components/Core";
+import type { BaseNetworksType } from "~/components/Star/StarContext";
 
 export const ZeroTierServerAdvanced = component$(() => {
   const { advancedFormState } = useZeroTierServer();
 
   // Local state for form fields
-  const selectedNetwork = useSignal<Networks>("Split");
+  const selectedNetwork = useSignal<BaseNetworksType>("Split");
   const networkId = useSignal<string>("");
 
   // Local handlers
-  const updateNetwork$ = $((network: Networks) => {
+  const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
     if (advancedFormState) {
@@ -43,7 +43,7 @@ export const ZeroTierServerAdvanced = component$(() => {
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
-              updateNetwork$(network as Networks);
+              updateNetwork$(network as BaseNetworksType);
             }}
             label={$localize`Network`}
           />
@@ -69,6 +69,16 @@ export const ZeroTierServerAdvanced = component$(() => {
             </p>
           </div>
         </div>
+
+        {/* ZeroTier Package Warning */}
+        <Alert
+          status="warning"
+          title={$localize`Package Installation Required`}
+        >
+          <p class="text-sm">
+            {$localize`You must install the ZeroTier package on your MikroTik router before importing this configuration. Visit the MikroTik package repository to download and install the zerotier package.`}
+          </p>
+        </Alert>
 
         {/* ZeroTier Information */}
         <div class="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">

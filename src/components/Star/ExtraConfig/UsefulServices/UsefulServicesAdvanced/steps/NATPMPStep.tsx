@@ -26,7 +26,7 @@ export const NATPMPStep = component$(() => {
   const { servicesData } = context.data;
 
   // Initialize NAT-PMP config from StarContext if exists, otherwise use defaults
-  const existingConfig = starContext.state.ExtraConfig?.usefulServices?.natpmp;
+  const existingConfig = starContext.state.ExtraConfig.usefulServices?.natpmp;
   
   // Create local signals for form state
   const natpmpEnabled = useSignal(existingConfig?.linkType !== "" || false);
@@ -40,7 +40,7 @@ export const NATPMPStep = component$(() => {
     const wanLink = starContext.state.WAN.WANLink;
     
     // Add domestic links
-    if (wanLink?.Domestic?.WANConfigs) {
+    if (wanLink.Domestic?.WANConfigs) {
       wanLink.Domestic.WANConfigs.forEach((config, index) => {
         interfaces.push({
           type: 'domestic',
@@ -53,7 +53,7 @@ export const NATPMPStep = component$(() => {
     }
     
     // Add foreign links
-    if (wanLink?.Foreign?.WANConfigs) {
+    if (wanLink.Foreign?.WANConfigs) {
       wanLink.Foreign.WANConfigs.forEach((config, index) => {
         interfaces.push({
           type: 'foreign',

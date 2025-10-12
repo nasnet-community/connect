@@ -27,7 +27,7 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
   // In advanced mode, we need to check the WAN configuration
   const calculateMinVPNCount = () => {
     // Get Foreign WAN configs count from WANLink structure
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign.WANConfigs || [];
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     return foreignWANConfigs.length || 1; // At least 1 VPN required, or match Foreign WAN configs count
   };
 

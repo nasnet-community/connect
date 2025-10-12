@@ -211,7 +211,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                       key={config.type}
                       config={config}
                       error={validationErrors[config.type]}
-                      availablePresets={availablePresetsMap.value?.[config.type] || []}
+                      availablePresets={availablePresetsMap.value[config.type] || []}
                       onDNSChange$={updateDNS}
                       onCopyDNS$={copyDNSConfig}
                       onApplyPreset$={applyDNSPreset}

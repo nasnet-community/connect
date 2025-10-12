@@ -9,7 +9,7 @@ import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { generateUniqueId } from "~/components/Core/common/utils";
 import { useNetworks } from "~/utils/useNetworks";
 import type { VPNClient } from "~/components/Star/StarContext/Utils/VPNClientType";
-import type { MultiLinkConfig } from "~/components/Star/StarContext/WANType";
+import type { MultiLinkConfig } from "~/components/Star/StarContext/Utils/MultiLinkType";
 
 export interface UseVPNClientAdvancedReturn {
   state: VPNClientAdvancedState;
@@ -41,8 +41,8 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   // Calculate Foreign WAN count from StarContext (non-reactive to prevent loops)
   const getForeignWANCount = $(() => {
-    // Get Foreign WAN configs count from WANLink structure  
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign.WANConfigs || [];
+    // Get Foreign WAN configs count from WANLink structure
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs:', foreignWANConfigs);
     console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs length:', foreignWANConfigs.length);
     
@@ -172,7 +172,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     state.vpnConfigs = [...state.vpnConfigs, newVPNClient as VPNConfig];
 
     // Auto-assign to available Foreign WAN link
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign.WANConfigs || [];
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     const foreignLinks = foreignWANConfigs.map((config, index) => ({
       id: config.name || `foreign-${index}`,
       name: config.name || `Foreign Link ${index + 1}`,

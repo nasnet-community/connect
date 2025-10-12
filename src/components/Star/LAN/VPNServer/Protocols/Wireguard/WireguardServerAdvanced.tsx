@@ -19,7 +19,7 @@ export const WireguardServerAdvanced = component$(() => {
   } = useWireguardServer();
 
   // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<string>("Wireguard");
+  const selectedNetwork = useSignal<ExtendedNetworks>("Wireguard" as const);
 
   // Tab management for multiple interfaces
   const activeTab = useSignal("interface-1");

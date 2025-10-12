@@ -27,7 +27,7 @@ export const L2TPServerEasy = component$(() => {
           {/* Network Selection */}
           <ServerFormField label={$localize`Network`}>
             <NetworkDropdown
-              selectedNetwork="VPN"
+              selectedNetwork={"VPN" as const}
               onNetworkChange$={(network) => {
                 console.log("L2TP Easy network changed to:", network);
               }}

@@ -8,8 +8,6 @@ import type { MultiLinkConfig } from "../Utils/MultiLinkType";
 
 export interface LTESettings {
     apn: string;
-    username?: string;
-    password?: string;
 }
 
 

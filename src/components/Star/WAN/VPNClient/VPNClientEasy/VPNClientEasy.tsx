@@ -6,6 +6,8 @@ import { VPNSelector } from "../VPNSelector";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { ActionFooter } from "../ActionFooter";
 import { PromoL2TPBanner } from "../PromoL2TPBanner";
+import { SegmentedControl } from "~/components/Core";
+import { useVPNClientEnabled } from "../useVPNClientEnabled";
 
 import { WireguardConfig } from "../Protocols/Wireguard/WireguardConfig";
 import { OpenVPNConfig } from "../Protocols/OpenVPN/OpenVPNConfig";
@@ -26,6 +28,9 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
 
     const isSaving = useSignal(false);
 
+    // VPNClient enabled/disabled state
+    const { enabled, hasForeignLink, handleToggle$ } = useVPNClientEnabled();
+
     const handleVPNTypeChange = $((value: VPNType) => {
       // Track VPN type selection
       track("vpn_type_selected", {
@@ -43,6 +48,14 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
     });
 
     const handleComplete = $(async () => {
+      // If VPNClient is disabled, allow immediate completion
+      if (enabled.value === "false") {
+        if (onComplete$) {
+          await onComplete$();
+        }
+        return;
+      }
+
       if (!vpnType.value) {
         isValid.value = false;
         errorMessage.value = "Please select a VPN type";
@@ -94,34 +107,53 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
         <div class="rounded-lg bg-surface p-6 shadow-md transition-all dark:bg-surface-dark">
           <div class="space-y-6">
             {/* Header */}
-            <div class="flex items-center space-x-4">
-              <div class="rounded-full bg-primary-100 p-3 dark:bg-primary-900">
-                <svg
-                  class="h-6 w-6 text-primary-600 dark:text-primary-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div class="rounded-full bg-primary-100 p-3 dark:bg-primary-900">
+                  <svg
+                    class="h-6 w-6 text-primary-600 dark:text-primary-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-text-default text-xl font-semibold dark:text-text-dark-default">
+                    {$localize`VPN Client Configuration`}
+                  </h2>
+                  <p class="text-text-muted dark:text-text-dark-muted">
+                    {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please configure a VPN to conceal your Starlink IP.`}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 class="text-text-default text-xl font-semibold dark:text-text-dark-default">
-                  {$localize`VPN Client Configuration`}
-                </h2>
-                <p class="text-text-muted dark:text-text-dark-muted">
-                  {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please configure a VPN to conceal your Starlink IP.`}
-                </p>
-              </div>
+
+              {/* VPN Client Enable/Disable Toggle (only shown when no Foreign Link) */}
+              {!hasForeignLink.value && (
+                <SegmentedControl
+                  value={enabled}
+                  options={[
+                    { value: "false", label: $localize`Disabled` },
+                    { value: "true", label: $localize`Enabled` }
+                  ]}
+                  onChange$={handleToggle$}
+                  size="sm"
+                  color="primary"
+                />
+              )}
             </div>
 
-            {/* Promotional L2TP Banner */}
-            <PromoL2TPBanner onVPNTypeChange$={handleVPNTypeChange} />
+            {/* Show content based on enabled state */}
+            {enabled.value === "true" ? (
+              <>
+                {/* Promotional L2TP Banner */}
+                <PromoL2TPBanner onVPNTypeChange$={handleVPNTypeChange} />
 
             <VPNSelector
               selectedType={vpnType.value}
@@ -170,13 +202,50 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
               />
             )}
 
-            <ErrorMessage message={errorMessage.value} />
+                <ErrorMessage message={errorMessage.value} />
 
-            <ActionFooter
-              isComplete={isComplete || false}
-              isValid={isValid.value}
-              onComplete$={handleComplete}
-            />
+                <ActionFooter
+                  isComplete={isComplete || false}
+                  isValid={isValid.value}
+                  onComplete$={handleComplete}
+                />
+              </>
+            ) : (
+              <>
+                {/* Disabled state message */}
+                <div class="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 p-8 text-center">
+                  <div class="flex justify-center mb-4">
+                    <div class="rounded-full bg-gray-200 dark:bg-gray-700 p-4">
+                      <svg
+                        class="h-8 w-8 text-gray-400 dark:text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    {$localize`VPN Client is Disabled`}
+                  </h3>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    {$localize`Enable VPN Client above to configure your VPN connection settings.`}
+                  </p>
+                </div>
+
+                <ActionFooter
+                  isComplete={isComplete || false}
+                  isValid={true}
+                  onComplete$={handleComplete}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

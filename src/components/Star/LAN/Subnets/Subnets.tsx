@@ -292,7 +292,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {starContext.state.LAN.VPNServer.WireguardServers?.map((server, index) => (
                             <div key={index} class="flex justify-between text-sm">
-                              <span class="text-gray-600 dark:text-gray-400">{server.Interface?.Name || `WireGuard${index + 1}`}:</span>
+                              <span class="text-gray-600 dark:text-gray-400">{server.Interface.Name || `WireGuard${index + 1}`}:</span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{110 + index}.0/24</span>
                             </div>
                           ))}

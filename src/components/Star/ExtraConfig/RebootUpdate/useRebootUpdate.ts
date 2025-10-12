@@ -25,7 +25,7 @@ export const useRebootUpdate = () => {
           time: "03:00",
         },
       };
-      
+
       ctx.updateExtraConfig$({
         RUI: updatedRUI
       });
@@ -79,24 +79,24 @@ export const useRebootUpdate = () => {
 
 
   const rebootTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.RUI.Reboot?.time?.split(":")[0] || "02",
-    minute: ctx.state.ExtraConfig.RUI.Reboot?.time?.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.Reboot?.time.split(":")[0] || "02",
+    minute: ctx.state.ExtraConfig.RUI.Reboot?.time.split(":")[1] || "00",
   });
 
   const updateTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.RUI.Update?.time?.split(":")[0] || "03",
-    minute: ctx.state.ExtraConfig.RUI.Update?.time?.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.Update?.time.split(":")[0] || "03",
+    minute: ctx.state.ExtraConfig.RUI.Update?.time.split(":")[1] || "00",
   });
 
   const ipAddressUpdateTime = useStore<TimeConfig>({
-    hour: ctx.state.ExtraConfig.RUI.IPAddressUpdate?.time?.split(":")[0] || "03",
-    minute: ctx.state.ExtraConfig.RUI.IPAddressUpdate?.time?.split(":")[1] || "00",
+    hour: ctx.state.ExtraConfig.RUI.IPAddressUpdate.time.split(":")[0] || "03",
+    minute: ctx.state.ExtraConfig.RUI.IPAddressUpdate.time.split(":")[1] || "00",
   });
 
   const ipAddressUpdateInterval = useSignal<FrequencyValue | undefined>(
-    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Daily" || 
-    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Weekly" || 
-    ctx.state.ExtraConfig.RUI.IPAddressUpdate?.interval === "Monthly"
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Daily" || 
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Weekly" || 
+    ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Monthly"
       ? ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval as FrequencyValue
       : "Daily",
   );

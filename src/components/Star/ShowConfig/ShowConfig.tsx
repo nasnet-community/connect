@@ -14,6 +14,7 @@ import { Code } from "./Code";
 import { ScriptGuide } from "./ScriptGuide";
 // import { TutorialCard } from './TutorialCard';
 import { useConfigGenerator } from "./useShow";
+import { useEasyModeDefaults } from "./useEasyModeDefaults";
 // import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
 import { Newsletter } from "~/components/Core";
 import { DocumentSection } from "./DocumentSection/DocumentSection";
@@ -28,6 +29,9 @@ export const ShowConfig = component$<StepProps>(() => {
   // Get slave routers from context
   const slaveRouters = ctx.state.Choose.RouterModels.filter(rm => !rm.isMaster);
 
+  // Get easy mode defaults hook
+  const { applyEasyModeDefaults } = useEasyModeDefaults();
+
   const {
     downloadFile,
     generatePythonScript,
@@ -39,6 +43,12 @@ export const ShowConfig = component$<StepProps>(() => {
   } = useConfigGenerator(ctx.state);
 
   useTask$(async () => {
+    // Apply easy-mode defaults before generating config
+    const isEasyMode = ctx.state.Choose.Mode === "easy";
+    if (isEasyMode) {
+      await applyEasyModeDefaults(ctx);
+    }
+
     configPreview.value = await generateConfigPreview();
 
     // Generate slave router configurations
@@ -111,7 +121,7 @@ def configure_slave_router(host, username, password):
     await downloadSlaveRouterFile(content, slaveRouter, index, "py");
   });
 
-  const handleNewsletterSubscribe = $(async (subscription: { email: string; timestamp: Date; source?: string }) => {
+  const handleNewsletterSubscribe = $(async (subscription: { email: string; timestamp: string; source?: string }) => {
     // Track newsletter subscription
     track("newsletter_subscribed", {
       location: "show_config",

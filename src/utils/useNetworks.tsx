@@ -11,16 +11,22 @@ export const useNetworks = () => {
   
   /**
    * Generates the Networks configuration based on current state
-   * @returns NetworksConfig object with current network configuration
+   * and saves it to StarContext
+   * @returns Networks object with current network configuration
    */
   const generateCurrentNetworks$ = $(() => {
-    return generateNetworks(
+    const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
       starContext.state.WAN.VPNClient
     );
+
+    // Update StarContext with generated networks
+    starContext.updateChoose$({ Networks: networks });
+
+    return networks;
   });
-  
+
   /**
    * Gets the current Networks configuration
    * @returns Current Networks configuration generated from current state
@@ -43,21 +49,21 @@ export const useNetworks = () => {
   });
   
   /**
-   * Gets the current VPN network names
-   * @returns Array of VPN network names or empty array
+   * Gets the current VPN client networks grouped by protocol
+   * @returns VPNClientNetworks object with protocol-specific arrays or empty object
    */
-  const getVPNNetworkNames$ = $(() => {
+  const getVPNClientNetworks$ = $(() => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
       starContext.state.WAN.VPNClient
     );
-    return networks.VPNNetworks || [];
+    return networks.VPNClientNetworks || {};
   });
   
   /**
    * Gets the current base networks
-   * @returns Array of base network names
+   * @returns BaseNetworks object with availability flags
    */
   const getBaseNetworks$ = $(() => {
     const networks = generateNetworks(
@@ -97,7 +103,7 @@ export const useNetworks = () => {
   /**
    * Generates a preview of what the Networks configuration would be
    * based on current state
-   * @returns NetworksConfig configuration preview
+   * @returns Networks configuration preview
    */
   const previewNetworks$ = $(() => {
     return generateNetworks(
@@ -106,12 +112,12 @@ export const useNetworks = () => {
       starContext.state.WAN.VPNClient
     );
   });
-  
+
   return {
     generateCurrentNetworks$,
     getCurrentNetworks$,
     hasDomesticLink$,
-    getVPNNetworkNames$,
+    getVPNClientNetworks$,
     getBaseNetworks$,
     getForeignNetworkNames$,
     getDomesticNetworkNames$,

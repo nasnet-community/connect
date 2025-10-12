@@ -1,5 +1,5 @@
 import { $, component$, useContext } from "@builder.io/qwik";
-import { useWirelessForm } from "./useWireless";
+import { useWirelessForm, determineWirelessNetwork } from "./useWireless";
 import { WirelessHeader } from "./WirelessHeader";
 import { SSIDModeSelector } from "./SSIDModeSelector";
 import { SingleSSIDForm } from "./SingleSSIDForm";
@@ -7,6 +7,7 @@ import { MultiSSIDForm } from "./MultiSSIDForm";
 import { ActionButtons } from "./ActionButtons";
 import { StarContext } from "../../StarContext/StarContext";
 import type { StepProps } from "~/types/step";
+import { determineWifiTarget } from "./networkUtils";
 
 export const Wireless = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
@@ -33,6 +34,13 @@ export const Wireless = component$<StepProps>(
       toggleSingleHide,
       toggleSingleDisabled,
       toggleSingleSplitBand,
+      extraInterfaces,
+      addExtraInterface,
+      removeExtraInterface,
+      updateExtraInterfaceField,
+      selectExtraNetwork,
+      generateExtraSSID,
+      generateExtraPassword,
     } = useWirelessForm();
 
     const handleSave = $(async () => {
@@ -42,75 +50,95 @@ export const Wireless = component$<StepProps>(
           Wireless: undefined,
         });
       } else if (!isMultiSSID.value) {
+        // Determine network based on enabled base networks
+        const { wifiTarget, networkName } = determineWirelessNetwork(starContext.state.Choose.Networks);
+
         starContext.updateLAN$({
-          Wireless: {
-            SingleMode: {
-              SSID: ssid.value,
-              Password: password.value,
-              isHide: isHide.value,
-              isDisabled: isDisabled.value,
-              SplitBand: splitBand.value,
-            },
-          },
+          Wireless: [{
+            SSID: ssid.value,
+            Password: password.value,
+            isHide: isHide.value,
+            isDisabled: isDisabled.value,
+            SplitBand: splitBand.value,
+            WifiTarget: wifiTarget,
+            NetworkName: networkName,
+          }],
         });
       } else {
         const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
-        const enabledNetworks: Record<
-          string,
-          {
-            SSID: string;
-            Password: string;
-            isHide: boolean;
-            isDisabled: boolean;
-            SplitBand: boolean;
-          }
-        > = {};
+        const enabledNetworks: import("~/components/Star/StarContext").WirelessConfig[] = [];
 
         if (!networks.foreign.isDisabled) {
-          enabledNetworks.Foreign = {
+          enabledNetworks.push({
             SSID: networks.foreign.ssid,
             Password: networks.foreign.password,
             isHide: networks.foreign.isHide,
             isDisabled: networks.foreign.isDisabled,
             SplitBand: networks.foreign.splitBand,
-          };
+            WifiTarget: "Foreign",
+            NetworkName: "Foreign",
+          });
         }
 
         // Only include domestic and split networks if DomesticLink is enabled
         if (isDomesticLinkEnabled && !networks.domestic.isDisabled) {
-          enabledNetworks.Domestic = {
+          enabledNetworks.push({
             SSID: networks.domestic.ssid,
             Password: networks.domestic.password,
             isHide: networks.domestic.isHide,
             isDisabled: networks.domestic.isDisabled,
             SplitBand: networks.domestic.splitBand,
-          };
+            WifiTarget: "Domestic",
+            NetworkName: "Domestic",
+          });
         }
 
         if (isDomesticLinkEnabled && !networks.split.isDisabled) {
-          enabledNetworks.Split = {
+          enabledNetworks.push({
             SSID: networks.split.ssid,
             Password: networks.split.password,
             isHide: networks.split.isHide,
             isDisabled: networks.split.isDisabled,
             SplitBand: networks.split.splitBand,
-          };
+            WifiTarget: "Split",
+            NetworkName: "Split",
+          });
         }
 
         if (!networks.vpn.isDisabled) {
-          enabledNetworks.VPN = {
+          enabledNetworks.push({
             SSID: networks.vpn.ssid,
             Password: networks.vpn.password,
             isHide: networks.vpn.isHide,
             isDisabled: networks.vpn.isDisabled,
             SplitBand: networks.vpn.splitBand,
-          };
+            WifiTarget: "VPN",
+            NetworkName: "VPN",
+          });
         }
 
+        // Add extra wireless interfaces
+        extraInterfaces.forEach((extraInterface) => {
+          if (!extraInterface.isDisabled && extraInterface.targetNetworkName) {
+            const wifiTarget = determineWifiTarget(
+              extraInterface.targetNetworkName,
+              starContext.state.Choose.Networks
+            );
+
+            enabledNetworks.push({
+              SSID: extraInterface.ssid,
+              Password: extraInterface.password,
+              isHide: extraInterface.isHide,
+              isDisabled: extraInterface.isDisabled,
+              SplitBand: extraInterface.splitBand,
+              WifiTarget: wifiTarget,
+              NetworkName: extraInterface.targetNetworkName,
+            });
+          }
+        });
+
         starContext.updateLAN$({
-          Wireless: {
-            MultiMode: enabledNetworks,
-          },
+          Wireless: enabledNetworks,
         });
       }
 
@@ -172,6 +200,13 @@ export const Wireless = component$<StepProps>(
                   toggleNetworkDisabled={toggleNetworkDisabled}
                   toggleNetworkSplitBand={toggleNetworkSplitBand}
                   mode={starContext.state.Choose.Mode}
+                  extraInterfaces={extraInterfaces}
+                  addExtraInterface={addExtraInterface}
+                  removeExtraInterface={removeExtraInterface}
+                  updateExtraInterfaceField={updateExtraInterfaceField}
+                  selectExtraNetwork={selectExtraNetwork}
+                  generateExtraSSID={generateExtraSSID}
+                  generateExtraPassword={generateExtraPassword}
                 />
               )}
             </>

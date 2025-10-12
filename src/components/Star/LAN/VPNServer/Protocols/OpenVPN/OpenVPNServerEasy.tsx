@@ -11,8 +11,8 @@ export const OpenVPNServerEasy = component$(() => {
     useOpenVPNServer();
   
   // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<ExtendedNetworks>("VPN");
-  
+  const selectedNetwork = useSignal<ExtendedNetworks>("VPN" as const);
+
   // Local handler for network updates
   const updateNetwork$ = $((network: ExtendedNetworks) => {
     selectedNetwork.value = network;

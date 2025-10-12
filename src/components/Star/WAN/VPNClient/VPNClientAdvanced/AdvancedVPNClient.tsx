@@ -7,8 +7,10 @@ import {
   type QRL,
 } from "@builder.io/qwik";
 import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
+import { SegmentedControl } from "~/components/Core";
 import { useVPNClientAdvanced } from "./hooks/useVPNClientAdvanced";
 import { useVPNClientValidation } from "./hooks/useVPNClientValidation";
+import { useVPNClientEnabled } from "../useVPNClientEnabled";
 import { Step1_VPNProtocols } from "./steps/Step1_VPNProtocols";
 import { StepPriorities } from "./steps/StepPriorities";
 import { Step2_VPNConfiguration } from "./steps/Step2_VPNConfiguration";
@@ -29,6 +31,9 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // Initialize hooks
     const advancedHooks = useVPNClientAdvanced();
     const validation = useVPNClientValidation();
+
+    // VPNClient enabled/disabled state
+    const { enabled, hasForeignLink, handleToggle$ } = useVPNClientEnabled();
 
     // Initialize steps signal early
     const steps = useSignal<CStepMeta[]>([]);
@@ -127,6 +132,15 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     const applyConfiguration$ = $(async () => {
       console.log('[VPNClientAdvanced] Starting applyConfiguration');
 
+      // If VPNClient is disabled, allow immediate completion
+      if (enabled.value === "false") {
+        console.log('[VPNClientAdvanced] VPNClient disabled, completing immediately');
+        if (onComplete$) {
+          await onComplete$();
+        }
+        return;
+      }
+
       try {
         const validationResult = await validation.validateAdvanced$(advancedHooks.state);
         console.log('[VPNClientAdvanced] Full validation result:', validationResult);
@@ -172,7 +186,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
       // Check if we already have a promotional L2TP VPN
       const hasPromoL2TP = advancedHooks.state.vpnConfigs.some(vpn =>
-        vpn.type === "L2TP" && vpn.name?.includes("Promotional")
+        vpn.type === "L2TP" && vpn.name.includes("Promotional")
       );
 
       if (hasPromoL2TP) {
@@ -190,6 +204,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         priority: 1, // Give it highest priority
         weight: 50,
         config: {
+          Name: "NASnetConnect",
           Server: {
             Address: credentials.server,
             Port: 1701
@@ -525,7 +540,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                
+
                 <div>
                   <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     {$localize`Advanced VPN Client Configuration`}
@@ -536,28 +551,79 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                 </div>
               </div>
 
-              {onCancel$ && (
-                <button
-                  onClick$={onCancel$}
-                  class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  {$localize`Cancel`}
-                </button>
-              )}
+              {/* Right side: Toggle + Cancel button */}
+              <div class="flex items-center gap-4">
+                {/* VPN Client Enable/Disable Toggle (only shown when no Foreign Link) */}
+                {!hasForeignLink.value && (
+                  <SegmentedControl
+                    value={enabled}
+                    options={[
+                      { value: "false", label: $localize`Disabled` },
+                      { value: "true", label: $localize`Enabled` }
+                    ]}
+                    onChange$={handleToggle$}
+                    size="sm"
+                    color="primary"
+                  />
+                )}
+
+                {onCancel$ && (
+                  <button
+                    onClick$={onCancel$}
+                    class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    {$localize`Cancel`}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Stepper Container */}
+          {/* Stepper Container or Disabled Message */}
           <div class="rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-            <CStepper
-              steps={steps.value}
-              activeStep={activeStep.value}
-              onStepChange$={handleStepChange$}
-              onStepComplete$={handleStepComplete$}
-              onComplete$={applyConfiguration$}
-              hideStepHeader={true}
-              disableAutoFocus={true}
-            />
+            {enabled.value === "true" ? (
+              <CStepper
+                steps={steps.value}
+                activeStep={activeStep.value}
+                onStepChange$={handleStepChange$}
+                onStepComplete$={handleStepComplete$}
+                onComplete$={applyConfiguration$}
+                hideStepHeader={true}
+                disableAutoFocus={true}
+              />
+            ) : (
+              <div class="p-12 text-center">
+                <div class="flex justify-center mb-6">
+                  <div class="rounded-full bg-gray-200 dark:bg-gray-700 p-6">
+                    <svg
+                      class="h-12 w-12 text-gray-400 dark:text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  {$localize`VPN Client is Disabled`}
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+                  {$localize`Enable VPN Client above to configure multiple VPN connections with advanced features.`}
+                </p>
+                <button
+                  onClick$={applyConfiguration$}
+                  class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                >
+                  {$localize`Continue`}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

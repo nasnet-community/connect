@@ -28,3 +28,13 @@ export interface WirelessNetworkConfig {
 export type MultiModeConfig = Partial<
   Record<"Foreign" | "Domestic" | "Split" | "VPN", WirelessNetworkConfig>
 >;
+
+export interface ExtraWirelessInterface {
+  id: string;
+  targetNetworkName: string;
+  ssid: string;
+  password: string;
+  isHide: boolean;
+  isDisabled: boolean;
+  splitBand: boolean;
+}

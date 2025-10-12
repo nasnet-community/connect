@@ -4,16 +4,16 @@ import { useSSHServer } from "./useSSHServer";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { SectionTitle } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
-import type { Networks } from "../../../../StarContext/CommonType";
+import type { BaseNetworksType } from "~/components/Star/StarContext";
 
 export const SSHServerAdvanced = component$(() => {
   const { advancedFormState } = useSSHServer();
 
   // Local state for form fields
-  const selectedNetwork = useSignal<Networks>("Split");
+  const selectedNetwork = useSignal<BaseNetworksType>("Split");
 
   // Local handlers
-  const updateNetwork$ = $((network: Networks) => {
+  const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
     if (advancedFormState) {
@@ -33,7 +33,7 @@ export const SSHServerAdvanced = component$(() => {
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
-              updateNetwork$(network as Networks);
+              updateNetwork$(network as BaseNetworksType);
             }}
             label={$localize`Network`}
           />

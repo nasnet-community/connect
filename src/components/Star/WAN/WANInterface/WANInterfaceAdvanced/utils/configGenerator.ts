@@ -105,11 +105,6 @@ export function generateRouterOSCommands(
       commands.push(
         `/interface lte apn add name=wan${index + 1}-apn apn="${link.lteSettings.apn}"`,
       );
-      if (link.lteSettings.username) {
-        commands.push(
-          `/interface lte apn set wan${index + 1}-apn user="${link.lteSettings.username}" password="${link.lteSettings.password || ""}"`,
-        );
-      }
       commands.push(
         `/interface lte set ${link.interfaceName} apn-profile=wan${index + 1}-apn`,
       );

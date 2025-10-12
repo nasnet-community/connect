@@ -1,27 +1,32 @@
-import { useContext } from "@builder.io/qwik";
-import { StarContext } from "../../../../StarContext/StarContext";
-import type { Networks } from "../../../../StarContext/CommonType";
+import { useContext, $ } from "@builder.io/qwik";
+import { StarContext } from "~/components/Star/StarContext";
 
 export const useZeroTierServer = () => {
   const starContext = useContext(StarContext);
   const vpnServer = starContext.state.LAN.VPNServer;
 
-  // Initialize ZeroTier server config if not exists
-  if (!vpnServer?.ZeroTierServer) {
-    if (vpnServer) {
-      vpnServer.ZeroTierServer = {
-        enabled: false,
-        Network: "Split" as Networks,
-        ZeroTierNetworkID: "",
-      };
-    }
-  }
+  // Do not mutate StarContext during render; provide ephemeral defaults instead
 
   return {
     advancedFormState: vpnServer?.ZeroTierServer || {
       enabled: false,
-      Network: "Split" as Networks,
+      Network: "Split",
       ZeroTierNetworkID: "",
     },
+    ensureDefaultConfig: $(async () => {
+      const current = starContext.state.LAN.VPNServer || {} as any;
+      if (!current.ZeroTierServer) {
+        await starContext.updateLAN$({
+          VPNServer: {
+            ...current,
+            ZeroTierServer: {
+              enabled: true,
+              Network: "Split",
+              ZeroTierNetworkID: "",
+            },
+          },
+        });
+      }
+    }),
   };
 };

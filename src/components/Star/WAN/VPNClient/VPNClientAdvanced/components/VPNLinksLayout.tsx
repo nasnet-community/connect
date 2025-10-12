@@ -6,7 +6,7 @@ export const VPNLinksLayout = component$(() => {
 
   const foreignWANLinks = useComputed$(() => {
     // Get Foreign WAN configs from the WANLink structure
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign.WANConfigs || [];
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     return foreignWANConfigs.map((config, index) => ({
       id: config.name || `foreign-${index}`,
       name: config.name || `Foreign Link ${index + 1}`,
