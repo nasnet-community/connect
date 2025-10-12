@@ -3,7 +3,6 @@ import { component$, useResource$, Resource, useContext } from "@builder.io/qwik
 import { Select } from "~/components/Core";
 import { StarContext } from "../../../StarContext/StarContext";
 import {
-  isInterfaceOccupied,
   getMasterOccupiedInterfaces
 } from "../../../utils/InterfaceManagementUtils";
 
@@ -29,20 +28,19 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     selectedInterfaceType,
     availableInterfaces,
     onSelect,
-    isInterfaceSelectedInOtherMode,
     mode,
   }) => {
     const starContext = useContext(StarContext);
     const getInterfacesForType = () => {
       switch (selectedInterfaceType.toLowerCase()) {
         case "ethernet":
-          return availableInterfaces.Interfaces?.ethernet || [];
+          return availableInterfaces.Interfaces.ethernet || [];
         case "wireless":
-          return availableInterfaces.Interfaces?.wireless || [];
+          return availableInterfaces.Interfaces.wireless || [];
         case "sfp":
-          return availableInterfaces.Interfaces?.sfp || [];
+          return availableInterfaces.Interfaces.sfp || [];
         case "lte":
-          return availableInterfaces.Interfaces?.lte || [];
+          return availableInterfaces.Interfaces.lte || [];
         default:
           return [];
       }
@@ -64,19 +62,17 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
       return Promise.all(
         currentInterfaces.map(async (iface) => {
-          // Check if interface is selected in other mode (WAN)
-          const isSelectedElsewhere = await isInterfaceSelectedInOtherMode(iface);
-          // Check if interface is occupied (Trunk, etc.)
-          const isOccupied = isInterfaceOccupied(occupiedInterfaces, iface) &&
-                           selectedInterface !== iface;
-          return isSelectedElsewhere || isOccupied;
+          // Check if interface is occupied by Trunk (always block Trunk interfaces)
+          const usage = occupiedInterfaces.find(item => item.interface === iface)?.UsedFor;
+          const isTrunk = usage === "Trunk";
+          return isTrunk;
         }),
       );
     });
 
     const getDisplayName = (iface: string, isDisabled: boolean) => {
       const baseName = interfaceDisplayNames[iface] || iface;
-      return isDisabled ? `${baseName} (occupied)` : baseName;
+      return isDisabled ? `${baseName} (Trunk)` : baseName;
     };
 
     if (!selectedInterfaceType || !currentInterfaces.length) {

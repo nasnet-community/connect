@@ -14,6 +14,23 @@ export const WebProxyServer = (config: HTTPProxyServerConfig): RouterConfig => {
         ],
     };
 
+    // Add access list configuration if AllowedIPAddresses are specified
+    if (config.AllowedIPAddresses && config.AllowedIPAddresses.length > 0) {
+        const accessCommands = config.AllowedIPAddresses
+            .filter(ip => ip.trim() !== "") // Filter out empty strings
+            .map((ip, index) =>
+                `add action=allow comment="Allowed IP ${index + 1}" \\
+    dst-port=${config.Port} src-address=${ip.trim()}`
+            );
+
+        if (accessCommands.length > 0) {
+            routerConfig["/ip proxy access"] = [
+                "# Configure allowed IP addresses for HTTP Proxy",
+                ...accessCommands
+            ];
+        }
+    }
+
     return routerConfig;
 };
 

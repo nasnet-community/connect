@@ -80,9 +80,10 @@ export const useWireguardServer = () => {
       isValid ||
       (config.Interface?.PrivateKey && config.Interface.PrivateKey === "")
     ) {
+      const current = (starContext.state.LAN.VPNServer || {}) as any;
       starContext.updateLAN$({
         VPNServer: {
-          ...vpnServerState,
+          ...current,
           WireguardServers:
             config.Interface?.PrivateKey && config.Interface.PrivateKey === ""
               ? undefined

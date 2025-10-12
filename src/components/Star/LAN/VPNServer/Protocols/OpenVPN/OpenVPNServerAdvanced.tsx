@@ -23,11 +23,12 @@ export const OpenVPNServerAdvanced = component$(() => {
     updatePort$,
     updateTcpPort$,
     updateUdpPort$,
+    updateName$,
   } = useOpenVPNServer();
 
   // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<ExtendedNetworks>("VPN");
-  
+  const selectedNetwork = useSignal<ExtendedNetworks>("VPN" as const);
+
   // Local handler for network updates
   const updateNetwork$ = $((network: ExtendedNetworks) => {
     selectedNetwork.value = network;
@@ -51,11 +52,12 @@ export const OpenVPNServerAdvanced = component$(() => {
 
   // Update interface suffix
   const updateInterfaceSuffix$ = $((interfaceId: string, newSuffix: string) => {
-    interfaces.value = interfaces.value.map(iface => 
-      iface.id === interfaceId 
-        ? { ...iface, suffix: newSuffix || "1" }
-        : iface
+    interfaces.value = interfaces.value.map((iface) =>
+      iface.id === interfaceId ? { ...iface, suffix: newSuffix || "1" } : iface,
     );
+    // Update server base name so generated instances (tcp/udp) are named accordingly
+    const suffix = (newSuffix || "1").trim();
+    updateName$(`ovpn-server-${suffix}`);
   });
 
   // Remove interface

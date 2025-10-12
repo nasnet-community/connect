@@ -1,12 +1,12 @@
 import { createStepperContext } from "~/components/Core/Stepper/CStepper";
 import type { VPNType } from "../../../StarContext/CommonType";
-import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
+import type { VSCredentials } from "../../../StarContext/Utils/VPNServerType";
 
 // Context data for VPN Server settings
 export interface VPNServerContextData {
   enabledProtocols: Record<VPNType, boolean>;
   expandedSections: Record<string, boolean>;
-  users: Credentials[];
+  users: VSCredentials[];
   isValid: { value: boolean };
   stepState: {
     protocols: boolean;

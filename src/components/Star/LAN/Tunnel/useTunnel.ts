@@ -62,6 +62,32 @@ export const useTunnel = () => {
           Vxlan: vxlanTunnels.length > 0 ? [...vxlanTunnels] : undefined,
         },
       });
+
+      // Update Networks state with Tunnel network assignments
+      const tunnelNetworks: Record<string, string[]> = {};
+
+      if (ipipTunnels.length > 0) {
+        tunnelNetworks.IPIP = ipipTunnels.map((tunnel) => tunnel.name);
+      }
+
+      if (eoipTunnels.length > 0) {
+        tunnelNetworks.Eoip = eoipTunnels.map((tunnel) => tunnel.name);
+      }
+
+      if (greTunnels.length > 0) {
+        tunnelNetworks.Gre = greTunnels.map((tunnel) => tunnel.name);
+      }
+
+      if (vxlanTunnels.length > 0) {
+        tunnelNetworks.Vxlan = vxlanTunnels.map((tunnel) => tunnel.name);
+      }
+
+      starContext.updateChoose$({
+        Networks: {
+          ...starContext.state.Choose.Networks,
+          TunnelNetworks: tunnelNetworks,
+        },
+      });
     } else {
       starContext.updateLAN$({
         Tunnel: {
@@ -69,6 +95,14 @@ export const useTunnel = () => {
           Eoip: undefined,
           Gre: undefined,
           Vxlan: undefined,
+        },
+      });
+
+      // Clear TunnelNetworks from Choose.Networks
+      starContext.updateChoose$({
+        Networks: {
+          ...starContext.state.Choose.Networks,
+          TunnelNetworks: undefined,
         },
       });
     }
@@ -88,6 +122,7 @@ export const useTunnel = () => {
       mtu: 1500,
       dscp: 0,
       keepalive: "",
+      NetworkType: "VPN",
     });
   });
 
@@ -120,6 +155,7 @@ export const useTunnel = () => {
       mtu: 1500,
       arp: "enabled",
       clampTcpMss: false,
+      NetworkType: "VPN",
     });
   });
 
@@ -151,6 +187,7 @@ export const useTunnel = () => {
       mtu: 1476,
       dscp: 0,
       keepalive: "",
+      NetworkType: "VPN",
     });
   });
 
@@ -183,6 +220,7 @@ export const useTunnel = () => {
       port: 4789,
       mtu: 1450,
       bumMode: "unicast",
+      NetworkType: "VPN",
     });
   });
 

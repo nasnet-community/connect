@@ -157,9 +157,10 @@ export const useIKEv2Server = () => {
     }
 
     if (isValid || (config.ipPools && config.ipPools.Ranges === "")) {
+      const current = (starContext.state.LAN.VPNServer || {}) as any;
       starContext.updateLAN$({
         VPNServer: {
-          ...vpnServerState,
+          ...current,
           Ikev2Server:
             config.ipPools && config.ipPools.Ranges === ""
               ? undefined

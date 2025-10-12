@@ -77,7 +77,7 @@ export const useOpenVPNServer = () => {
     udpPort: 1195, // Default UDP port
     protocol: openVpnState.Protocol || "udp",
     mode: openVpnState.Mode || "ip",
-    addressPool: openVpnState.Address?.AddressPool || "192.168.78.0/24",
+    addressPool: openVpnState.Address.AddressPool || "192.168.78.0/24",
     requireClientCertificate:
       openVpnState.Certificate.RequireClientCertificate !== undefined
         ? openVpnState.Certificate.RequireClientCertificate
@@ -181,9 +181,10 @@ export const useOpenVPNServer = () => {
 
         // Update context regardless of validation to preserve user input.
         // The `isValid` flag can be used later to prevent advancing in a stepper.
+        const current = (starContext.state.LAN.VPNServer || {}) as any;
         starContext.updateLAN$({
           VPNServer: {
-            ...vpnServerState,
+            ...current,
             OpenVpnServer: configOrConfigs,
           },
         });
@@ -195,43 +196,32 @@ export const useOpenVPNServer = () => {
           ...config,
         };
 
-        let isValid = true;
-
-        // Validate certificate
+        // Validate (for UX) but do not block persisting; certificate is configured in separate step
         if (config.Certificate?.Certificate !== undefined) {
-          if (
-            !newConfig.Certificate.Certificate ||
-            !newConfig.Certificate.Certificate.trim()
-          ) {
+          if (!newConfig.Certificate.Certificate || !newConfig.Certificate.Certificate.trim()) {
             certificateError.value = $localize`Certificate is required`;
-            isValid = false;
           } else {
             certificateError.value = "";
           }
         }
-
-        // Validate passphrase
         if (config.Certificate?.CertificateKeyPassphrase !== undefined) {
           if (
             newConfig.Certificate.CertificateKeyPassphrase &&
             newConfig.Certificate.CertificateKeyPassphrase.length < 10
           ) {
             passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-            isValid = false;
           } else {
             passphraseError.value = "";
           }
         }
 
-        if (isValid || (config.name && config.name === "")) {
-          starContext.updateLAN$({
-            VPNServer: {
-              ...vpnServerState,
-              OpenVpnServer:
-                config.name && config.name === "" ? undefined : [newConfig],
-            },
-          });
-        }
+        const current = (starContext.state.LAN.VPNServer || {}) as any;
+        starContext.updateLAN$({
+          VPNServer: {
+            ...current,
+            OpenVpnServer: config.name && config.name === "" ? undefined : [newConfig],
+          },
+        });
       }
     },
   );
@@ -244,7 +234,7 @@ export const useOpenVPNServer = () => {
     // Handle "Both" protocol case - create two servers (check if protocol is not tcp or udp)
     if (formState.protocol !== "tcp" && formState.protocol !== "udp") {
       const baseConfig = {
-        name: formState.name,
+        name: formState.name || "openvpn",
         enabled: formState.enabled,
         Mode: formState.mode as LayerMode,
         DefaultProfile: formState.defaultProfile,
@@ -302,7 +292,7 @@ export const useOpenVPNServer = () => {
     } else {
       // Single protocol case
       updateOpenVPNServer$({
-        name: formState.name,
+        name: formState.name || "openvpn",
         enabled: formState.enabled,
         Port: formState.port,
         Protocol: formState.protocol as NetworkProtocol,
@@ -483,11 +473,9 @@ export const useOpenVPNServer = () => {
   });
 
   // Function to ensure default configuration when protocol is enabled
-  const ensureDefaultConfig = $(() => {
-    if (
-      !vpnServerState.OpenVpnServer ||
-      vpnServerState.OpenVpnServer.length === 0
-    ) {
+  const ensureDefaultConfig = $(async () => {
+    const current = (starContext.state.LAN.VPNServer || {}) as any;
+    if (!current.OpenVpnServer || current.OpenVpnServer.length === 0) {
       const baseConfig = {
         Certificate: {
           Certificate: "server-cert",
@@ -523,23 +511,24 @@ export const useOpenVPNServer = () => {
         },
       };
 
-      // Create two servers - one UDP and one TCP with different ports
+      // Create two servers - one UDP and one TCP using base name
+      const baseName = (formState.name && formState.name.trim()) || "ovpn-server-1";
       const servers = [
         {
           ...baseConfig,
-          name: "openvpn-udp",
+          name: `${baseName}-udp`,
           Protocol: "udp" as const,
-          Port: 1194, // Standard OpenVPN UDP port
+          Port: 1194,
         },
         {
           ...baseConfig,
-          name: "openvpn-tcp",
+          name: `${baseName}-tcp`,
           Protocol: "tcp" as const,
           Port: 1195,
         },
       ];
 
-      updateOpenVPNServer$(servers);
+      await updateOpenVPNServer$(servers);
     }
   });
 

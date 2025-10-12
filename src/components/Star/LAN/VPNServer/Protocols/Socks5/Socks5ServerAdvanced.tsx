@@ -5,17 +5,17 @@ import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { SectionTitle } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 import { Input } from "~/components/Core";
-import type { Networks } from "../../../../StarContext/CommonType";
+import type { BaseNetworksType } from "~/components/Star/StarContext";
 
 export const Socks5ServerAdvanced = component$(() => {
   const { advancedFormState } = useSocks5Server();
 
   // Local state for form fields
-  const selectedNetwork = useSignal<Networks>("Split");
+  const selectedNetwork = useSignal<BaseNetworksType>("Split");
   const port = useSignal<number>(1080);
 
   // Local handlers
-  const updateNetwork$ = $((network: Networks) => {
+  const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
     if (advancedFormState) {
@@ -43,7 +43,7 @@ export const Socks5ServerAdvanced = component$(() => {
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
-              updateNetwork$(network as Networks);
+              updateNetwork$(network as BaseNetworksType);
             }}
             label={$localize`Network`}
           />

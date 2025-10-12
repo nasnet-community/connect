@@ -67,9 +67,10 @@ export const usePPTPServer = () => {
     }
 
     if (isValid || (config.DefaultProfile && config.DefaultProfile === "")) {
+      const current = (starContext.state.LAN.VPNServer || {}) as any;
       starContext.updateLAN$({
         VPNServer: {
-          ...vpnServerState,
+          ...current,
           PptpServer:
             config.DefaultProfile && config.DefaultProfile === ""
               ? undefined

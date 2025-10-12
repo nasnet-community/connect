@@ -1,6 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { LTESettings } from "../../types";
-import { Input, FormField, PasswordField } from "~/components/Core";
+import { Input, FormField } from "~/components/Core";
 
 export interface LTEFieldsProps {
   settings?: LTESettings;
@@ -29,47 +29,10 @@ export const LTEFields = component$<LTEFieldsProps>(
             onInput$={(event: Event, value: string) => {
               onUpdate$({
                 apn: value,
-                username: settings?.username,
-                password: settings?.password,
               });
             }}
             placeholder="Enter APN"
-            
-          />
-        </FormField>
 
-        <FormField
-          label={$localize`Username`}
-          helperText={$localize`(Optional)`}
-        >
-          <Input
-            type="text"
-            value={settings?.username || ""}
-            onInput$={(event: Event, value: string) => {
-              onUpdate$({
-                apn: settings?.apn || "",
-                username: value,
-                password: settings?.password,
-              });
-            }}
-            placeholder="LTE username"
-          />
-        </FormField>
-
-        <FormField
-          label={$localize`Password`}
-          helperText={$localize`(Optional)`}
-        >
-          <PasswordField
-            value={settings?.password || ""}
-            onInput$={(event: Event, element: HTMLInputElement) => {
-              onUpdate$({
-                apn: settings?.apn || "",
-                username: settings?.username,
-                password: element.value,
-              });
-            }}
-            placeholder="LTE password"
           />
         </FormField>
       </div>

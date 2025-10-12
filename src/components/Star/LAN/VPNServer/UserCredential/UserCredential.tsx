@@ -1,6 +1,6 @@
-import { component$, useContext } from "@builder.io/qwik";
+import { $, component$, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
-import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
+import type { VSCredentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { VPN_PROTOCOLS } from "../Protocols/constants";
 import { Card } from "~/components/Core/Card";
@@ -14,10 +14,11 @@ import {
   HiTrashOutline,
   HiExclamationTriangleOutline,
   HiCheckCircleOutline,
+  HiCheckOutline,
 } from "@qwikest/icons/heroicons";
 
 interface UserCredentialProps {
-  user: Credentials;
+  user: VSCredentials;
   index: number;
   canDelete: boolean;
   usernameError?: string;
@@ -61,6 +62,37 @@ export const UserCredential = component$<UserCredentialProps>(
       onPasswordChange$,
       onProtocolToggle$,
       onDelete$,
+    });
+
+    // Calculate enabled protocols for Select All functionality
+    const enabledProtocolsList = VPN_PROTOCOLS.filter(
+      (protocol) => enabledProtocols && enabledProtocols[protocol.id]
+    ).map((p) => p.id);
+
+    // Check if all enabled protocols are selected
+    const allProtocolsSelected =
+      enabledProtocolsList.length > 0 &&
+      enabledProtocolsList.every((protocol) =>
+        (user.VPNType || []).includes(protocol)
+      );
+
+    // Handle Select All / Deselect All
+    const handleSelectAll = $(async () => {
+      if (allProtocolsSelected) {
+        // Deselect all protocols
+        for (const protocol of enabledProtocolsList) {
+          if ((user.VPNType || []).includes(protocol)) {
+            await handleProtocolToggle(protocol);
+          }
+        }
+      } else {
+        // Select all enabled protocols
+        for (const protocol of enabledProtocolsList) {
+          if (!(user.VPNType || []).includes(protocol)) {
+            await handleProtocolToggle(protocol);
+          }
+        }
+      }
     });
 
     return (
@@ -170,6 +202,58 @@ export const UserCredential = component$<UserCredentialProps>(
               }
             >
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+                {/* Select All / Deselect All Card */}
+                <div
+                  onClick$={handleSelectAll}
+                  class={`
+                    relative cursor-pointer rounded-lg border transition-all hover:shadow-md
+                    ${
+                      allProtocolsSelected
+                        ? "border-primary-400 bg-primary-50 shadow-sm dark:border-primary-500 dark:bg-primary-900/20"
+                        : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+                    }
+                  `}
+                >
+                  {/* Selected indicator */}
+                  {allProtocolsSelected && (
+                    <div class="absolute -right-1 -top-1 rounded-full bg-primary-500 p-0.5 shadow-sm dark:bg-primary-600">
+                      <HiCheckCircleOutline class="h-3 w-3 text-white" />
+                    </div>
+                  )}
+
+                  <div class="flex flex-col items-center gap-1 p-2">
+                    {/* Icon */}
+                    <div
+                      class={`flex h-6 w-6 items-center justify-center rounded ${
+                        allProtocolsSelected
+                          ? "bg-primary-500 dark:bg-primary-600"
+                          : "bg-gray-300 dark:bg-gray-600"
+                      }`}
+                    >
+                      <HiCheckOutline
+                        class={`h-4 w-4 ${
+                          allProtocolsSelected
+                            ? "text-white"
+                            : "text-gray-600 dark:text-gray-300"
+                        }`}
+                      />
+                    </div>
+
+                    {/* Text */}
+                    <span
+                      class={`text-center text-xs font-medium ${
+                        allProtocolsSelected
+                          ? "text-primary-700 dark:text-primary-300"
+                          : "text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      {allProtocolsSelected
+                        ? $localize`Deselect All`
+                        : $localize`Select All`}
+                    </span>
+                  </div>
+                </div>
+
                 {VPN_PROTOCOLS.map((protocol) => {
                   // Only show enabled protocols
                   if (enabledProtocols && !enabledProtocols[protocol.id]) {

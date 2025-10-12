@@ -1,7 +1,7 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     Socks5ServerConfig,
-    Credentials
+    VSCredentials
 } from "~/components/Star/StarContext";
 // import type { Networks } from "~/components/Star/StarContext/CommonType";
 // import { mergeMultipleConfigs } from "../../../utils/ConfigGeneratorUtil";
@@ -20,7 +20,7 @@ export const Socks5Server = (config: Socks5ServerConfig): RouterConfig => {
     return routerConfig;
 };
 
-export const Socks5ServerUsers = ( users: Credentials[], _config?: Socks5ServerConfig ): RouterConfig => {
+export const Socks5ServerUsers = ( users: VSCredentials[], _config?: Socks5ServerConfig ): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip socks users": [],
     };

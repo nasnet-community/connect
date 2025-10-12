@@ -37,7 +37,7 @@ export const SSTPServerAdvanced = component$(() => {
 
             <FormField label={$localize`Network`}>
               <NetworkDropdown
-                selectedNetwork="VPN"
+                selectedNetwork={"VPN" as const}
                 onNetworkChange$={(network) => {
                   console.log("SSTP network changed to:", network);
                 }}

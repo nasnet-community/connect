@@ -3,6 +3,7 @@ import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { L2tpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UseL2TPConfigResult {
   serverAddress: { value: string };
@@ -27,6 +28,7 @@ export const useL2TPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseL2TPConfigResult => {
   const starContext = useContext(StarContext);
+  const networks = useNetworks();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -38,18 +40,18 @@ export const useL2TPConfig = (
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.L2TP) {
     const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
-    serverAddress.value = existingConfig?.Server.Address || "";
+    serverAddress.value = existingConfig.Server.Address || "";
 
-    if (existingConfig?.Credentials) {
+    if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig?.UseIPsec !== undefined) {
+    if (existingConfig.UseIPsec !== undefined) {
       useIPsec.value = existingConfig.UseIPsec;
     }
 
-    if (existingConfig?.IPsecSecret) {
+    if (existingConfig.IPsecSecret) {
       ipsecSecret.value = existingConfig.IPsecSecret;
     }
 
@@ -110,12 +112,16 @@ export const useL2TPConfig = (
         L2TP: [parsedConfig],
       },
     });
+
+    // Update Networks state to reflect VPN availability
+    networks.generateCurrentNetworks$();
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
 
     const manualConfig: L2tpClientConfig = {
+      Name: "L2TP-Client",
       Server: {
         Address: serverAddress.value,
       },

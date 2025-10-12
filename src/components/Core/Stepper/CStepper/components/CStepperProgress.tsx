@@ -1,4 +1,4 @@
-import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, $, useVisibleTask$ } from "@builder.io/qwik";
 import type { CStepMeta } from "../types";
 import type { QRL } from "@builder.io/qwik";
 import type { JSX } from "@builder.io/qwik";
@@ -16,6 +16,8 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   const { steps, activeStep, onStepClick$, customIcons = {}, useNumbers = false, allowSkipSteps = false } = props;
 
   const containerRef = useSignal<Element>();
+  const scrollContainerRef = useSignal<HTMLDivElement>();
+  const hasShownScrollHint = useSignal(false);
 
   // Calculate which steps to show - always show all steps
   const visibleSteps = useSignal<number[]>([]);
@@ -26,6 +28,47 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
 
     // Always show all steps
     visibleSteps.value = steps.map((_, i) => i);
+  });
+
+  // Auto-scroll to active step for 6+ steps
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    track(() => activeStep);
+
+    // Only apply scroll behavior if we have more than 5 steps
+    if (steps.length > 5 && scrollContainerRef.value) {
+      const activeStepEl = scrollContainerRef.value.querySelector(`[data-step-index="${activeStep}"]`);
+      if (activeStepEl) {
+        activeStepEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  });
+
+  // Show scroll hint animation on mount (only once for 6+ steps)
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => {
+    if (steps.length > 5 && scrollContainerRef.value && !hasShownScrollHint.value) {
+      hasShownScrollHint.value = true;
+
+      // Delay to ensure component is fully rendered
+      setTimeout(() => {
+        if (scrollContainerRef.value) {
+          // Subtle scroll right to hint scrollability
+          scrollContainerRef.value.scrollBy({ left: 100, behavior: 'smooth' });
+
+          // Scroll back after a brief pause
+          setTimeout(() => {
+            if (scrollContainerRef.value) {
+              scrollContainerRef.value.scrollBy({ left: -100, behavior: 'smooth' });
+            }
+          }, 800);
+        }
+      }, 500);
+    }
   });
   
   // Function to render step indicator content
@@ -115,100 +158,186 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
 
       {/* Desktop view: horizontal stepper */}
       <div class="hidden sm:flex justify-center w-full px-2">
-        {/* Full width container for stepper */}
-        <div class="relative w-full" style={{ minHeight: "80px" }}>
-          {/* Progress line that spans full width */}
-          <div class="absolute top-[18px] left-0 right-0 h-1 z-0">
-            {/* Progress track (background) */}
-            <div 
-              class="h-1 bg-gray-200 dark:bg-gray-700 w-full"
-              aria-hidden="true"
-            ></div>
-            
-            {/* Progress bar (filled part) */}
-            <div 
-              class="absolute top-0 left-0 h-1 bg-yellow-500 dark:bg-yellow-400 transition-all duration-500"
-              style={{ width: `${Math.min(100, (activeStep / (steps.length - 1)) * 100)}%` }}
-              aria-hidden="true"
-            ></div>
-          </div>
-          
-          {/* Step nodes container */}
-          <div class="flex justify-between items-start w-full px-4 pt-0 relative z-10" style={{ minHeight: "80px" }}>
-            {visibleSteps.value.map((stepIndex, displayIndex) => {
-              const step = steps[stepIndex];
-              const isComplete = activeStep > stepIndex;
-              const isCurrent = activeStep === stepIndex;
-              const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
-              
-              
-              
-              // Ensure unique keys by combining step.id with displayIndex
-              return (
-                <div key={`step-${step.id}-display-${displayIndex}`} class="flex flex-col items-center">
-                  
-                  {/* Step button */}
-                  <button
-                    class={`flex items-center justify-center outline-none rounded-full w-9 h-9 transition-all duration-200
-                          ${step.isDisabled 
-                            ? 'cursor-not-allowed opacity-60' 
-                            : allowSkipSteps || isCurrent
-                              ? 'cursor-pointer hover:scale-110'
-                              : 'cursor-not-allowed opacity-60'}`}
-                    onClick$={step.isDisabled ? undefined : $(() => {
-                      // When allowSkipSteps is true, allow clicking on any step
-                      // Otherwise, only allow clicking the current step
-                      if (allowSkipSteps || isCurrent) {
-                        onStepClick$(stepIndex);
-                      }
-                    })}
-                    disabled={step.isDisabled}
-                    aria-disabled={step.isDisabled}
-                    aria-current={isCurrent ? 'step' : undefined}
-                    aria-label={`Go to step ${stepIndex + 1}: ${step.title}`}
-                    type="button"
-                  >
-                    {/* Step indicator circle */}
-                    <div 
-                      class={`w-9 h-9 rounded-full transition-all duration-300 flex items-center justify-center
-                            ${hasErrors
-                              ? 'bg-red-100 border border-red-300 dark:bg-red-900/20 dark:border-red-700'
-                              : isComplete
-                                ? 'bg-yellow-500 dark:bg-yellow-400'
-                                : isCurrent
-                                  ? 'bg-white dark:bg-gray-900 border-4 border-yellow-500 dark:border-yellow-400'
-                                  : 'bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600'
-                            }`}
+        {/* For 5 or fewer steps: use existing full-width layout */}
+        {steps.length <= 5 ? (
+          <div class="relative w-full" style={{ minHeight: "80px" }}>
+            {/* Progress line that spans full width */}
+            <div class="absolute top-[18px] left-0 right-0 h-1 z-0">
+              {/* Progress track (background) */}
+              <div
+                class="h-1 bg-gray-200 dark:bg-gray-700 w-full"
+                aria-hidden="true"
+              ></div>
+
+              {/* Progress bar (filled part) */}
+              <div
+                class="absolute top-0 left-0 h-1 bg-yellow-500 dark:bg-yellow-400 transition-all duration-500"
+                style={{ width: `${Math.min(100, (activeStep / (steps.length - 1)) * 100)}%` }}
+                aria-hidden="true"
+              ></div>
+            </div>
+
+            {/* Step nodes container */}
+            <div class="flex justify-between items-start w-full px-4 pt-0 relative z-10" style={{ minHeight: "80px" }}>
+              {visibleSteps.value.map((stepIndex, displayIndex) => {
+                const step = steps[stepIndex];
+                const isComplete = activeStep > stepIndex;
+                const isCurrent = activeStep === stepIndex;
+                const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
+
+                return (
+                  <div key={`step-${step.id}-display-${displayIndex}`} class="flex flex-col items-center">
+                    {/* Step button */}
+                    <button
+                      class={`flex items-center justify-center outline-none rounded-full w-9 h-9 transition-all duration-200
+                            ${step.isDisabled
+                              ? 'cursor-not-allowed opacity-60'
+                              : allowSkipSteps || isCurrent
+                                ? 'cursor-pointer hover:scale-110'
+                                : 'cursor-not-allowed opacity-60'}`}
+                      onClick$={step.isDisabled ? undefined : $(() => {
+                        if (allowSkipSteps || isCurrent) {
+                          onStepClick$(stepIndex);
+                        }
+                      })}
+                      disabled={step.isDisabled}
+                      aria-disabled={step.isDisabled}
+                      aria-current={isCurrent ? 'step' : undefined}
+                      aria-label={`Go to step ${stepIndex + 1}: ${step.title}`}
+                      type="button"
                     >
-                      {/* Icon or number inside the circle */}
-                      {renderStepIndicator(stepIndex, isComplete, isCurrent, hasErrors)}
-                    </div>
-                  </button>
-                  
-                  {/* Step title */}
-                  <div class={`text-center mt-4 ${isCurrent ? 'font-medium' : ''}`}>
-                    <div 
-                      class={`text-xs max-w-[90px] break-words hyphens-auto leading-tight
-                            ${isCurrent 
-                              ? 'text-yellow-700 dark:text-yellow-300' 
-                              : isComplete 
-                                ? 'text-gray-800 dark:text-gray-200' 
-                                : 'text-gray-500 dark:text-gray-400'
-                            }`}
-                    >
-                      {step.title}
-                    </div>
-                    {step.isOptional && (
-                      <div class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">
-                        (Optional)
+                      {/* Step indicator circle */}
+                      <div
+                        class={`w-9 h-9 rounded-full transition-all duration-300 flex items-center justify-center
+                              ${hasErrors
+                                ? 'bg-red-100 border border-red-300 dark:bg-red-900/20 dark:border-red-700'
+                                : isComplete
+                                  ? 'bg-yellow-500 dark:bg-yellow-400'
+                                  : isCurrent
+                                    ? 'bg-white dark:bg-gray-900 border-4 border-yellow-500 dark:border-yellow-400'
+                                    : 'bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600'
+                              }`}
+                      >
+                        {renderStepIndicator(stepIndex, isComplete, isCurrent, hasErrors)}
                       </div>
-                    )}
+                    </button>
+
+                    {/* Step title */}
+                    <div class={`text-center mt-4 ${isCurrent ? 'font-medium' : ''}`}>
+                      <div
+                        class={`text-xs max-w-[90px] break-words hyphens-auto leading-tight
+                              ${isCurrent
+                                ? 'text-yellow-700 dark:text-yellow-300'
+                                : isComplete
+                                  ? 'text-gray-800 dark:text-gray-200'
+                                  : 'text-gray-500 dark:text-gray-400'
+                              }`}
+                      >
+                        {step.title}
+                      </div>
+                      {step.isOptional && (
+                        <div class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">
+                          (Optional)
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* For 6+ steps: use scrollable container */
+          <div class="relative w-full" style={{ minHeight: "80px" }}>
+            {/* Scrollable container with snap */}
+            <div
+              ref={scrollContainerRef}
+              class="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor: "rgb(209 213 219) transparent"
+              }}
+            >
+              {/* Inner flex container with consistent gaps */}
+              <div class="flex gap-8 px-8 pt-0 relative" style={{ minHeight: "80px", minWidth: "min-content" }}>
+                {/* Progress line (decorative, not full width) */}
+                <div class="absolute top-[18px] left-0 right-0 h-1 z-0 pointer-events-none">
+                  <div class="h-1 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></div>
+                </div>
+
+                {visibleSteps.value.map((stepIndex, displayIndex) => {
+                  const step = steps[stepIndex];
+                  const isComplete = activeStep > stepIndex;
+                  const isCurrent = activeStep === stepIndex;
+                  const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
+
+                  return (
+                    <div
+                      key={`step-${step.id}-display-${displayIndex}`}
+                      data-step-index={stepIndex}
+                      class="flex flex-col items-center snap-center flex-shrink-0 relative z-10"
+                    >
+                      {/* Step button */}
+                      <button
+                        class={`flex items-center justify-center outline-none rounded-full w-9 h-9 transition-all duration-200
+                              ${step.isDisabled
+                                ? 'cursor-not-allowed opacity-60'
+                                : allowSkipSteps || isCurrent
+                                  ? 'cursor-pointer hover:scale-110'
+                                  : 'cursor-not-allowed opacity-60'}`}
+                        onClick$={step.isDisabled ? undefined : $(() => {
+                          if (allowSkipSteps || isCurrent) {
+                            onStepClick$(stepIndex);
+                          }
+                        })}
+                        disabled={step.isDisabled}
+                        aria-disabled={step.isDisabled}
+                        aria-current={isCurrent ? 'step' : undefined}
+                        aria-label={`Go to step ${stepIndex + 1}: ${step.title}`}
+                        type="button"
+                      >
+                        {/* Step indicator circle */}
+                        <div
+                          class={`w-9 h-9 rounded-full transition-all duration-300 flex items-center justify-center
+                                ${hasErrors
+                                  ? 'bg-red-100 border border-red-300 dark:bg-red-900/20 dark:border-red-700'
+                                  : isComplete
+                                    ? 'bg-yellow-500 dark:bg-yellow-400'
+                                    : isCurrent
+                                      ? 'bg-white dark:bg-gray-900 border-4 border-yellow-500 dark:border-yellow-400'
+                                      : 'bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600'
+                                }`}
+                        >
+                          {renderStepIndicator(stepIndex, isComplete, isCurrent, hasErrors)}
+                        </div>
+                      </button>
+
+                      {/* Step title */}
+                      <div class={`text-center mt-4 ${isCurrent ? 'font-medium' : ''}`}>
+                        <div
+                          class={`text-xs max-w-[90px] break-words hyphens-auto leading-tight
+                                ${isCurrent
+                                  ? 'text-yellow-700 dark:text-yellow-300'
+                                  : isComplete
+                                    ? 'text-gray-800 dark:text-gray-200'
+                                    : 'text-gray-500 dark:text-gray-400'
+                                }`}
+                        >
+                          {step.title}
+                        </div>
+                        {step.isOptional && (
+                          <div class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">
+                            (Optional)
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

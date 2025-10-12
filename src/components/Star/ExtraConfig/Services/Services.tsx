@@ -145,7 +145,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         api: { type: "Local" as ServiceType, port: 8728 },
         apissl: { type: "Local" as ServiceType, port: 8729 },
         ftp: { type: "Local" as ServiceType, port: 21 },
-        ssh: { type: "Local" as ServiceType, port: 22 },
+        ssh: { type: "Enable" as ServiceType, port: 22 },
         telnet: { type: "Local" as ServiceType, port: 23 },
         winbox: { type: "Enable" as ServiceType, port: 8291 },
         web: { type: "Local" as ServiceType, port: 80 },
@@ -165,7 +165,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         const currentConfig = currentServices[service.name];
         const currentPort = typeof currentConfig === "string"
           ? service.defaultPort
-          : currentConfig?.port || service.defaultPort;
+          : currentConfig.port || service.defaultPort;
         newTempValues[service.name] = currentPort.toString();
       });
       tempPortValues.value = newTempValues;

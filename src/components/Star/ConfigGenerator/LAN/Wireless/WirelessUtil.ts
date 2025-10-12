@@ -187,7 +187,7 @@ export function WirelessBridge( WirelessConfig: WirelessConfig[] ): RouterConfig
     const networkMap: Record<WifiTarget, string> = {
         Domestic: "Domestic",
         Foreign: "Foreign",
-        VPNClient: "VPN",
+        VPN: "VPN",
         Split: "Split",
         SingleDomestic: "Domestic",
         SingleForeign: "Foreign",
@@ -234,7 +234,7 @@ export function WirelessInterfaceList( WirelessConfig: WirelessConfig[] ): Route
     const networkMap: Record<WifiTarget, string> = {
         Domestic: "Domestic",
         Foreign: "Foreign",
-        VPNClient: "VPN",
+        VPN: "VPN",
         Split: "Split",
         SingleDomestic: "Domestic",
         SingleForeign: "Foreign",

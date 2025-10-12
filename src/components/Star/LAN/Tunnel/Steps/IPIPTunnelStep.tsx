@@ -24,6 +24,7 @@ export const IPIPTunnelStep = component$(() => {
       name: `ipip-tunnel-${stepper.data.ipip.length + 1}`,
       localAddress: "",
       remoteAddress: "",
+      NetworkType: "VPN",
     };
 
     stepper.data.ipip.push(newTunnel);

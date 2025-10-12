@@ -13,12 +13,11 @@ import type { InterfaceType } from "../../../../../StarContext/CommonType";
 export interface InterfaceSelectorProps {
   link: WANLinkConfig;
   onUpdate$: QRL<(updates: Partial<WANLinkConfig>) => void>;
-  usedInterfaces: string[];
   mode: "easy" | "advanced";
 }
 
 export const InterfaceSelector = component$<InterfaceSelectorProps>(
-  ({ link, onUpdate$, usedInterfaces }) => {
+  ({ link, onUpdate$ }) => {
     const starContext = useContext(StarContext);
 
     // Get available interfaces from master router
@@ -64,14 +63,13 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
       const buildOption = (iface: string) => {
         const usage = getInterfaceUsage(occupiedInterfaces, iface);
-        const isOccupiedByMaster = Boolean(usage) && link.interfaceName !== iface;
-        const isUsedByOtherWAN = usedInterfaces.includes(iface) && link.interfaceName !== iface;
-        const disabled = isOccupiedByMaster || isUsedByOtherWAN;
-        const reason = isUsedByOtherWAN ? "WAN" : usage;
+        // Only block Trunk interfaces - allow WAN reuse
+        const isTrunk = usage === "Trunk";
+        const disabled = isTrunk;
 
         return {
           value: iface,
-          label: disabled ? `${iface} (occupied by ${reason})` : iface,
+          label: disabled ? `${iface} (Trunk)` : iface,
           disabled,
         };
       };

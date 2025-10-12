@@ -116,9 +116,10 @@ export const useSSTPServer = () => {
     }
 
     if (isValid || (config.Certificate && config.Certificate === "")) {
+      const current = (starContext.state.LAN.VPNServer || {}) as any;
       starContext.updateLAN$({
         VPNServer: {
-          ...vpnServerState,
+          ...current,
           SstpServer:
             config.Certificate && config.Certificate === ""
               ? undefined

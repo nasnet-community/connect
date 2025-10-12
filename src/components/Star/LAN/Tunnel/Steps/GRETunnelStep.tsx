@@ -24,6 +24,7 @@ export const GRETunnelStep = component$(() => {
       name: `gre-tunnel-${stepper.data.gre.length + 1}`,
       localAddress: "",
       remoteAddress: "",
+      NetworkType: "VPN",
     };
 
     stepper.data.gre.push(newTunnel);

@@ -23,7 +23,7 @@ export const IKEv2ServerEasy = component$(() => {
         {/* Network Selection */}
         <ServerFormField label={$localize`Network`}>
           <NetworkDropdown
-            selectedNetwork="VPN"
+            selectedNetwork={"VPN" as const}
             onNetworkChange$={(network) => {
               console.log("IKEv2 Easy network changed to:", network);
             }}

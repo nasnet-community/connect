@@ -3,6 +3,7 @@ import { track } from "@vercel/analytics";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { QRL } from "@builder.io/qwik";
 import type { WireguardClientConfig } from "../../../../StarContext/Utils/VPNClientType";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UseWireguardConfigResult {
   config: { value: string };
@@ -41,6 +42,7 @@ export const useWireguardConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseWireguardConfigResult => {
   const starContext = useContext(StarContext);
+  const networks = useNetworks();
 
   const config = useSignal("");
   const errorMessage = useSignal("");
@@ -60,18 +62,18 @@ export const useWireguardConfig = (
 
   if (starContext.state.WAN.VPNClient?.Wireguard) {
     const existingConfig = starContext.state.WAN.VPNClient.Wireguard[0];
-    privateKey.value = existingConfig?.InterfacePrivateKey || "";
-    address.value = existingConfig?.InterfaceAddress || "";
-    listeningPort.value = existingConfig?.InterfaceListenPort?.toString() || "";
-    mtu.value = existingConfig?.InterfaceMTU?.toString() || "1420";
-    dns.value = existingConfig?.InterfaceDNS || "";
-    publicKey.value = existingConfig?.PeerPublicKey || "";
-    serverAddress.value = existingConfig?.PeerEndpointAddress || "";
-    serverPort.value = existingConfig?.PeerEndpointPort.toString() || "51820";
-    allowedIPs.value = existingConfig?.PeerAllowedIPs || "0.0.0.0/0, ::/0";
-    preSharedKey.value = existingConfig?.PeerPresharedKey || "";
+    privateKey.value = existingConfig.InterfacePrivateKey || "";
+    address.value = existingConfig.InterfaceAddress || "";
+    listeningPort.value = existingConfig.InterfaceListenPort?.toString() || "";
+    mtu.value = existingConfig.InterfaceMTU?.toString() || "1420";
+    dns.value = existingConfig.InterfaceDNS || "";
+    publicKey.value = existingConfig.PeerPublicKey || "";
+    serverAddress.value = existingConfig.PeerEndpointAddress || "";
+    serverPort.value = existingConfig.PeerEndpointPort.toString() || "51820";
+    allowedIPs.value = existingConfig.PeerAllowedIPs || "0.0.0.0/0, ::/0";
+    preSharedKey.value = existingConfig.PeerPresharedKey || "";
     persistentKeepalive.value =
-      existingConfig?.PeerPersistentKeepalive?.toString() || "25";
+      existingConfig.PeerPersistentKeepalive?.toString() || "25";
 
     const isConfigValid =
       privateKey.value &&
@@ -124,6 +126,9 @@ export const useWireguardConfig = (
           Wireguard: [parsedConfig],
         },
       });
+
+      // Update Networks state to reflect VPN availability
+      networks.generateCurrentNetworks$();
 
       const { isValid } = await validateWireguardConfig(parsedConfig);
       if (onIsValidChange$) {
@@ -379,6 +384,7 @@ export const useWireguardConfig = (
 
   const handleManualFormSubmit$ = $(async () => {
     const manualConfig: WireguardClientConfig = {
+      Name: "Wireguard-Client",
       InterfacePrivateKey: privateKey.value,
       InterfaceAddress: address.value,
       InterfaceListenPort: listeningPort.value
@@ -431,6 +437,9 @@ export const useWireguardConfig = (
         Wireguard: [manualConfig],
       },
     });
+
+    // Update Networks state to reflect VPN availability
+    networks.generateCurrentNetworks$();
 
     errorMessage.value = "";
     if (onIsValidChange$) {

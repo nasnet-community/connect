@@ -2,10 +2,8 @@ import { useContext, $, useSignal } from "@builder.io/qwik";
 import {
   StarContext,
   type StarContextType,
-} from "../../StarContext/StarContext";
-import type { Ethernet } from "../../StarContext/CommonType";
-import type { EthernetInterfaceConfig } from "../../StarContext/LANType";
-import type { Networks } from "../../StarContext/CommonType";
+} from "~/components/Star/StarContext";
+import type { Ethernet, EthernetInterfaceConfig, BaseNetworksType } from "~/components/Star/StarContext";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 
 export const useEInterface = () => {
@@ -18,11 +16,11 @@ export const useEInterface = () => {
   // - When true: We offer Domestic, Foreign, Split, and VPN options
   // - When false: We restrict options to Foreign and VPN only
   const isDomesticLinkEnabled = (ctx.state.Choose.WANLinkType === "domestic" || ctx.state.Choose.WANLinkType === "both");
-  const networkOptions: Networks[] = isDomesticLinkEnabled
+  const networkOptions: BaseNetworksType[] = isDomesticLinkEnabled
     ? ["Domestic", "Foreign", "Split", "VPN"]
     : ["Foreign", "VPN"];
 
-  const availableNetworks = useSignal<Networks[]>(networkOptions);
+  const availableNetworks = useSignal<BaseNetworksType[]>(networkOptions);
 
   // Set default network based on DomesticLink status
   // This is critical for proper network configuration:
@@ -37,7 +35,7 @@ export const useEInterface = () => {
     const usedInterfaces: string[] = [];
 
     // Access interface name through WANConfigs structure
-    const foreignInterfaceName = ctx.state.WAN.WANLink.Foreign.WANConfigs[0]?.InterfaceConfig.InterfaceName;
+    const foreignInterfaceName = ctx.state.WAN.WANLink.Foreign?.WANConfigs[0]?.InterfaceConfig.InterfaceName;
     if (foreignInterfaceName) {
       usedInterfaces.push(foreignInterfaceName);
     }
@@ -69,7 +67,7 @@ export const useEInterface = () => {
   });
 
   const addEInterface = $(
-    async (EInterfaceName: Ethernet, bridgeNetwork?: Networks) => {
+    async (EInterfaceName: Ethernet, bridgeNetwork?: BaseNetworksType) => {
       // If bridge network not specified, use default based on DomesticLink
       const network = bridgeNetwork || (await getDefaultNetwork());
 
@@ -103,7 +101,7 @@ export const useEInterface = () => {
   });
 
   const updateEInterface = $(
-    (EInterfaceName: Ethernet, bridgeNetwork: Networks) => {
+    (EInterfaceName: Ethernet, bridgeNetwork: BaseNetworksType) => {
       selectedEInterfaces.value = selectedEInterfaces.value.map((intf) => {
         if (intf.name === EInterfaceName) {
           return { ...intf, bridge: bridgeNetwork };

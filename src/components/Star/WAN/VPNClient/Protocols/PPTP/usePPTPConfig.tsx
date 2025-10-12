@@ -3,6 +3,7 @@ import type { QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { PptpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UsePPTPConfigResult {
   serverAddress: { value: string };
@@ -27,6 +28,7 @@ export const usePPTPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UsePPTPConfigResult => {
   const starContext = useContext(StarContext);
+  const networks = useNetworks();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -37,14 +39,14 @@ export const usePPTPConfig = (
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.PPTP) {
     const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
-    serverAddress.value = existingConfig?.ConnectTo || "";
+    serverAddress.value = existingConfig.ConnectTo || "";
 
-    if (existingConfig?.Credentials) {
+    if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig?.KeepaliveTimeout !== undefined) {
+    if (existingConfig.KeepaliveTimeout !== undefined) {
       keepaliveTimeout.value = existingConfig.KeepaliveTimeout.toString();
     }
 
@@ -92,12 +94,16 @@ export const usePPTPConfig = (
         PPTP: [parsedConfig],
       },
     });
+
+    // Update Networks state to reflect VPN availability
+    networks.generateCurrentNetworks$();
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
 
     const manualConfig: PptpClientConfig = {
+      Name: "PPTP-Client",
       ConnectTo: serverAddress.value,
       Credentials: {
         Username: username.value,

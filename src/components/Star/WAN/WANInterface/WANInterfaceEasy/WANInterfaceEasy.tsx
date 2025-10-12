@@ -18,8 +18,6 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
       ssid,
       password,
       apn,
-      lteUsername,
-      ltePassword,
       isValid,
       validateForm,
       handleInterfaceTypeSelect,
@@ -27,8 +25,6 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
       handleSSIDChange,
       handlePasswordChange,
       handleAPNChange,
-      handleLTEUsernameChange,
-      handleLTEPasswordChange,
     } = useWANInterface(mode);
 
     const masterRouter = starContext.state.Choose.RouterModels.find(
@@ -46,12 +42,6 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
           },
           OccupiedInterfaces: [],
         };
-
-    const isInterfaceSelectedInOtherMode = $((iface: string) => {
-      const otherMode = mode === "Foreign" ? "Domestic" : "Foreign";
-      const otherInterfaceName = starContext.state.WAN.WANLink[otherMode]?.WANConfigs?.[0]?.InterfaceConfig.InterfaceName;
-      return otherInterfaceName === iface;
-    });
 
     const handleComplete = $(async () => {
       if (await validateForm()) {
@@ -77,7 +67,6 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
                 selectedInterfaceType={selectedInterfaceType.value}
                 availableInterfaces={availableInterfaces}
                 onSelect={handleInterfaceSelect}
-                isInterfaceSelectedInOtherMode={isInterfaceSelectedInOtherMode}
                 mode={mode}
               />
             )}
@@ -94,11 +83,7 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
             {selectedInterfaceType.value === "LTE" && selectedInterface.value && (
               <LTESettings
                 apn={apn.value}
-                username={lteUsername.value}
-                password={ltePassword.value}
                 onAPNChange$={handleAPNChange}
-                onUsernameChange$={handleLTEUsernameChange}
-                onPasswordChange$={handleLTEPasswordChange}
               />
             )}
 

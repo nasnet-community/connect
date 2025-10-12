@@ -77,9 +77,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
     // Update wireless state
     if (selectedRouter) {
       starContext.updateLAN$({
-        Wireless: {
-          ...starContext.state.LAN.Wireless,
-        },
+        Wireless: starContext.state.LAN.Wireless || [],
       });
     }
 

@@ -17,7 +17,7 @@ import {
   SSTPClient,
   IKeV2Client,
   isFQDN,
-} from "../../../../ConfigGenerator/WAN/VPNClient/VPNClientCG";
+} from "../../../../ConfigGenerator/WAN/VPNClient";
 import { GenerateOpenVPNCertificateScript } from "../../../../ConfigGenerator/WAN/VPNClient/VPNClientScripts";
 import { mergeMultipleConfigs } from "../../../../ConfigGenerator/utils/ConfigGeneratorUtil";
 

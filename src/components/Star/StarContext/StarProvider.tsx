@@ -33,10 +33,8 @@ export const StarContextProvider = component$(() => {
     LAN: {},
     ExtraConfig: {
       RUI: {
-        Timezone: "UTC",
-        Reboot: { interval: "", time: "" },
-        Update: { interval: "", time: "" },
-        IPAddressUpdate: { interval: "", time: "" },
+        Timezone: "Asia/Tehran",
+        IPAddressUpdate: { interval: "Daily", time: "03:00" },
       },
     },
     ShowConfig: {},

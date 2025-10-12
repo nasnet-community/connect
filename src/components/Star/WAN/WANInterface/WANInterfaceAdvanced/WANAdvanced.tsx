@@ -54,7 +54,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       const existingConfig = starContext.state.WAN.WANLink[mode];
 
       // If we have existing config and no links, initialize with it
-      if (existingConfig?.WANConfigs?.[0] && advancedHooks.state.links.length === 0) {
+      if (existingConfig?.WANConfigs[0] && advancedHooks.state.links.length === 0) {
         const interfaceConfig = existingConfig.WANConfigs[0].InterfaceConfig;
         advancedHooks.state.links = [{
           id: `${mode.toLowerCase()}-1`,
@@ -274,7 +274,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       
       // Update Review step (last step) if it exists
       const lastStepIndex = steps.value.length - 1;
-      if (steps.value[lastStepIndex] && steps.value[lastStepIndex].title?.includes('Review')) {
+      if (steps.value[lastStepIndex] && steps.value[lastStepIndex].title.includes('Review')) {
         steps.value[lastStepIndex].isDisabled = !allLinksHaveInterfaces || !allLinksHaveConnectionConfirmed;
       }
       
@@ -288,7 +288,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         if (stepsInitialized.value) {
           // Check if we need to add/remove the multi-link step
           const hasMultipleLinks = advancedHooks.state.links.length > 1;
-          const currentHasMultiLink = steps.value.some(s => s.title?.includes('LoadBalance'));
+          const currentHasMultiLink = steps.value.some(s => s.title.includes('LoadBalance'));
           
           // Only recreate steps if structure changes (multi-link step added/removed)
           if (hasMultipleLinks !== currentHasMultiLink) {

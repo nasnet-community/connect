@@ -1,7 +1,7 @@
 import { useContext, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
-import { StarContext } from "../../../StarContext/StarContext";
-import type { VPNType, Networks } from "../../../StarContext/CommonType";
+import { StarContext } from "~/components/Star/StarContext";
+import type { VPNType, BaseNetworksType } from "~/components/Star/StarContext";
 import type { QRL } from "@builder.io/qwik";
 
 // Import protocol hooks for default configuration
@@ -11,6 +11,11 @@ import { useSSTPServer } from "../Protocols/SSTP/useSSTPServer";
 import { useOpenVPNServer } from "../Protocols/OpenVPN/useOpenVPNServer";
 import { useIKEv2Server } from "../Protocols/IKeV2/useIKEv2Server";
 import { useWireguardServer } from "../Protocols/Wireguard/useWireguardServer";
+import { useSocks5Server } from "../Protocols/Socks5/useSocks5Server";
+import { useHTTPProxyServer } from "../Protocols/HTTPProxy/useHTTPProxyServer";
+import { useSSHServer } from "../Protocols/SSH/useSSHServer";
+import { useBackToHomeServer } from "../Protocols/BackToHome/useBackToHomeServer";
+import { useZeroTierServer } from "../Protocols/ZeroTier/useZeroTierServer";
 
 // Import the new user management hook
 import { useUserManagement } from "../UserCredential/useUserCredential";
@@ -28,6 +33,11 @@ export const useVPNServerAdvanced = () => {
   const openVpnHook = useOpenVPNServer();
   const ikev2Hook = useIKEv2Server();
   const wireguardHook = useWireguardServer();
+  const socks5Hook = useSocks5Server();
+  const httpProxyHook = useHTTPProxyServer();
+  const sshHook = useSSHServer();
+  const backToHomeHook = useBackToHomeServer();
+  const zeroTierHook = useZeroTierServer();
 
   // === USER MANAGEMENT (delegated to useUserManagement hook) ===
   const userManagement = useUserManagement();
@@ -37,7 +47,7 @@ export const useVPNServerAdvanced = () => {
   const isValid = useSignal(true);
 
   // === NETWORK SELECTION STATE ===
-  const selectedNetworks = useStore<Networks[]>(["VPN"]);
+  const selectedNetworks = useStore<BaseNetworksType[]>(["VPN"]);
 
   // === PROTOCOL ENABLING/DISABLING ===
   const enabledProtocols = useStore<Record<VPNType, boolean>>({
@@ -98,7 +108,7 @@ export const useVPNServerAdvanced = () => {
     expandedSections[section] = !expandedSections[section];
   });
 
-  const toggleNetwork = $((network: Networks) => {
+  const toggleNetwork = $((network: BaseNetworksType) => {
     const index = selectedNetworks.indexOf(network);
     if (index >= 0) {
       // Don't allow removing the last network
@@ -143,6 +153,21 @@ export const useVPNServerAdvanced = () => {
           case "Wireguard":
             await wireguardHook.ensureDefaultConfig();
             break;
+          case "Socks5":
+            await socks5Hook.ensureDefaultConfig();
+            break;
+          case "HTTPProxy":
+            await httpProxyHook.ensureDefaultConfig();
+            break;
+          case "SSH":
+            await sshHook.ensureDefaultConfig();
+            break;
+          case "BackToHome":
+            await backToHomeHook.ensureDefaultConfig();
+            break;
+          case "ZeroTier":
+            await zeroTierHook.ensureDefaultConfig();
+            break;
         }
       }
     }
@@ -153,7 +178,7 @@ export const useVPNServerAdvanced = () => {
   });
 
   // === SAVE SETTINGS ===
-  const saveSettings = $((onComplete$?: QRL<() => void>) => {
+  const saveSettings = $(async (onComplete$?: QRL<() => void>) => {
     if (vpnServerEnabled.value) {
       // Save users first using the user management hook
       userManagement.saveUsers();
@@ -168,9 +193,12 @@ export const useVPNServerAdvanced = () => {
         .filter(([, enabled]) => enabled)
         .map(([protocol]) => protocol);
 
-      // Start with latest config and update users and selected networks
+      // Start with latest config and update users
       latestConfig.Users = userManagement.users;
-      latestConfig.SelectedNetworks = selectedNetworks;
+      // Remove SelectedNetworks (not part of StarContext types)
+      if (latestConfig.SelectedNetworks) {
+        delete latestConfig.SelectedNetworks;
+      }
 
       // Conditionally include or exclude each protocol based on toggle state
       if (!enabledProtocols.PPTP) {
@@ -191,7 +219,17 @@ export const useVPNServerAdvanced = () => {
         latestConfig.SstpServer = sstpHook.sstpState;
       }
 
-      // Always preserve any existing OpenVPN configuration. The OpenVPN hook keeps this up-to-date.
+      if (!enabledProtocols.OpenVPN) {
+        latestConfig.OpenVpnServer = undefined;
+      } else {
+        // Ensure a default OpenVPN config exists when enabled but not yet persisted
+        let currentOpenVpn = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer;
+        if (!currentOpenVpn || currentOpenVpn.length === 0) {
+          await openVpnHook.ensureDefaultConfig();
+          currentOpenVpn = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer;
+        }
+        latestConfig.OpenVpnServer = currentOpenVpn || [];
+      }
 
       if (!enabledProtocols.IKeV2) {
         latestConfig.Ikev2Server = undefined;
@@ -203,6 +241,37 @@ export const useVPNServerAdvanced = () => {
         latestConfig.WireguardServers = undefined;
       } else {
         latestConfig.WireguardServers = [wireguardHook.wireguardState];
+      }
+
+      // Additional protocols persistence
+      if (!enabledProtocols.Socks5) {
+        latestConfig.Socks5Server = undefined;
+      } else {
+        latestConfig.Socks5Server = (starContext.state.LAN.VPNServer as any)?.Socks5Server || socks5Hook.advancedFormState;
+      }
+
+      if (!enabledProtocols.SSH) {
+        latestConfig.SSHServer = undefined;
+      } else {
+        latestConfig.SSHServer = (starContext.state.LAN.VPNServer as any)?.SSHServer || sshHook.advancedFormState;
+      }
+
+      if (!enabledProtocols.HTTPProxy) {
+        latestConfig.HTTPProxyServer = undefined;
+      } else {
+        latestConfig.HTTPProxyServer = (starContext.state.LAN.VPNServer as any)?.HTTPProxyServer || httpProxyHook.advancedFormState;
+      }
+
+      if (!enabledProtocols.BackToHome) {
+        latestConfig.BackToHomeServer = undefined;
+      } else {
+        latestConfig.BackToHomeServer = (starContext.state.LAN.VPNServer as any)?.BackToHomeServer || backToHomeHook.advancedFormState;
+      }
+
+      if (!enabledProtocols.ZeroTier) {
+        latestConfig.ZeroTierServer = undefined;
+      } else {
+        latestConfig.ZeroTierServer = (starContext.state.LAN.VPNServer as any)?.ZeroTierServer || zeroTierHook.advancedFormState;
       }
 
       // Track VPN server configuration completion
@@ -219,6 +288,67 @@ export const useVPNServerAdvanced = () => {
 
       // Finally persist into StarContext
       starContext.updateLAN$({ VPNServer: latestConfig });
+
+      // Update Networks state with VPN Server interface names and enabled status
+      const vpnServerNetworks: Record<string, boolean | string[]> = {};
+
+      // Multi-instance protocols: Store interface names
+      if (enabledProtocols.Wireguard && latestConfig.WireguardServers) {
+        vpnServerNetworks.Wireguard = latestConfig.WireguardServers
+          .map((server: any) => server.Interface?.Name)
+          .filter((name: string) => name);
+      }
+
+      if (enabledProtocols.OpenVPN && latestConfig.OpenVpnServer && latestConfig.OpenVpnServer.length > 0) {
+        vpnServerNetworks.OpenVPN = latestConfig.OpenVpnServer
+          .map((server: any) => server.name)
+          .filter((name: string) => !!name);
+      }
+
+      // Single-instance protocols: Store enabled status (boolean)
+      if (enabledProtocols.PPTP && latestConfig.PptpServer) {
+        vpnServerNetworks.PPTP = true;
+      }
+
+      if (enabledProtocols.L2TP && latestConfig.L2tpServer) {
+        vpnServerNetworks.L2TP = true;
+      }
+
+      if (enabledProtocols.SSTP && latestConfig.SstpServer) {
+        vpnServerNetworks.SSTP = true;
+      }
+
+      if (enabledProtocols.IKeV2 && latestConfig.Ikev2Server) {
+        vpnServerNetworks.IKev2 = true;
+      }
+
+      if (enabledProtocols.Socks5 && latestConfig.Socks5Server) {
+        vpnServerNetworks.Socks5 = true;
+      }
+
+      if (enabledProtocols.SSH && latestConfig.SSHServer) {
+        vpnServerNetworks.SSH = true;
+      }
+
+      if (enabledProtocols.HTTPProxy && latestConfig.HTTPProxyServer) {
+        vpnServerNetworks.HTTPProxy = true;
+      }
+
+      if (enabledProtocols.BackToHome && latestConfig.BackToHomeServer) {
+        vpnServerNetworks.BackToHome = true;
+      }
+
+      if (enabledProtocols.ZeroTier && latestConfig.ZeroTierServer) {
+        vpnServerNetworks.ZeroTier = true;
+      }
+
+      // Update Choose.Networks with VPNServerNetworks
+      starContext.updateChoose$({
+        Networks: {
+          ...starContext.state.Choose.Networks,
+          VPNServerNetworks: vpnServerNetworks,
+        },
+      });
     } else {
       // Track VPN server disabled
       track("vpn_server_configured", {
@@ -244,10 +374,18 @@ export const useVPNServerAdvanced = () => {
           WireguardServers: undefined,
         },
       });
+
+      // Clear VPNServerNetworks from Choose.Networks
+      starContext.updateChoose$({
+        Networks: {
+          ...starContext.state.Choose.Networks,
+          VPNServerNetworks: undefined,
+        },
+      });
     }
 
     if (onComplete$) {
-      onComplete$();
+      await onComplete$();
     }
   });
 

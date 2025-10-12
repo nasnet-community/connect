@@ -33,6 +33,7 @@ export const VXLANTunnelStep = component$(() => {
       remoteAddress: "",
       vni: stepper.data.vxlan.length + 1,
       bumMode: "unicast",
+      NetworkType: "VPN",
     };
 
     stepper.data.vxlan.push(newTunnel);

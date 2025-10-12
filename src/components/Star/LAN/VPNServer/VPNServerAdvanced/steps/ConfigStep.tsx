@@ -41,20 +41,20 @@ export const ConfigStep = component$<ConfigStepProps>(
       hasCertificateStep: false,
     });
 
-    // Create protocol component map for easier lookup using exact VPNType enum values
-    const protocolComponents = {
-      Wireguard: <WireguardServerWrapper />,
-      OpenVPN: <OpenVPNServerWrapper />,
-      PPTP: <PPTPServerWrapper />,
-      L2TP: <L2TPServerWrapper />,
-      SSTP: <SSTPServerWrapper />,
-      IKeV2: <IKEv2ServerWrapper />,
-      Socks5: <Socks5ServerWrapper />,
-      SSH: <SSHServerWrapper />,
-      HTTPProxy: <HTTPProxyServerWrapper />,
-      BackToHome: <BackToHomeServerWrapper />,
-      ZeroTier: <ZeroTierServerWrapper />,
-    };
+    // Create lazy protocol component factories (QRLs) so they render only when needed
+    const protocolFactories = {
+      Wireguard: $(() => <WireguardServerWrapper />),
+      OpenVPN: $(() => <OpenVPNServerWrapper />),
+      PPTP: $(() => <PPTPServerWrapper />),
+      L2TP: $(() => <L2TPServerWrapper />),
+      SSTP: $(() => <SSTPServerWrapper />),
+      IKeV2: $(() => <IKEv2ServerWrapper />),
+      Socks5: $(() => <Socks5ServerWrapper />),
+      SSH: $(() => <SSHServerWrapper />),
+      HTTPProxy: $(() => <HTTPProxyServerWrapper />),
+      BackToHome: $(() => <BackToHomeServerWrapper />),
+      ZeroTier: $(() => <ZeroTierServerWrapper />),
+    } as const;
 
     // Check if any protocols requiring certificates are enabled
     const requiresCertificateStep = $(() => {
@@ -159,9 +159,9 @@ export const ConfigStep = component$<ConfigStepProps>(
       const protocolInfo = VPN_PROTOCOLS.find((p) => p.id === protocol);
       if (!protocolInfo) return -1;
 
-      const component =
-        protocolComponents[protocol as keyof typeof protocolComponents];
-      if (!component) return -1;
+      const componentQrl =
+        protocolFactories[protocol as keyof typeof protocolFactories];
+      if (!componentQrl) return -1;
 
       // Find the config step position
       const configStepIndex = context.steps.value.findIndex((step) =>
@@ -187,7 +187,7 @@ export const ConfigStep = component$<ConfigStepProps>(
           id: Date.now(), // Unique ID based on timestamp
           title: `Configure ${protocolInfo.name}`,
           description: `Configure settings for the ${protocolInfo.name} VPN protocol`,
-          component,
+          component: componentQrl,
           isComplete: true, // Mark as complete by default since configuration is optional
         },
         insertPosition,

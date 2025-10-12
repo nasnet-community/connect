@@ -19,15 +19,15 @@ export type NetworkName = string;
   export interface VPNServerNetworks {
     Wireguard?: NetworkName[];
     OpenVPN?: NetworkName[];
-    L2TP?: NetworkName;
-    PPTP?: NetworkName;
-    SSTP?: NetworkName;
-    IKev2?: NetworkName;
-    Socks5?: NetworkName;
-    SSH?: NetworkName;
-    HTTPProxy?: NetworkName;
-    BackToHome?: NetworkName;
-    ZeroTier?: NetworkName;
+    L2TP?: boolean;
+    PPTP?: boolean;
+    SSTP?: boolean;
+    IKev2?: boolean;
+    Socks5?: boolean;
+    SSH?: boolean;
+    HTTPProxy?: boolean;
+    BackToHome?: boolean;
+    ZeroTier?: boolean;
   }
   
   export interface TunnelNetworks {

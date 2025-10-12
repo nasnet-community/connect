@@ -7,14 +7,14 @@ import {
 } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
-import type { Credentials } from "../../../StarContext/Utils/VPNServerType";
+import type { VSCredentials } from "../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { StarContext } from "../../../StarContext/StarContext";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerAdvanced/VPNServerContext";
 
 interface UseUserCredentialProps {
-  user: Credentials;
+  user: VSCredentials;
   index: number;
   onUsernameChange$: QRL<(value: string, index: number) => void>;
   onPasswordChange$: QRL<(value: string, index: number) => void>;
@@ -122,13 +122,17 @@ export const useUserCredential = ({
 // New hook for managing all users (moved from useVPNServer)
 export const useUserManagement = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = (starContext.state.LAN.VPNServer || {}) as any;
   const isEasyMode = starContext.state.Choose.Mode === "easy";
 
   // === USER MANAGEMENT STATE ===
-  const users = useStore<Credentials[]>(
-    vpnServerState.Users.length
-      ? [...vpnServerState.Users]
+  const initialUsers: VSCredentials[] = Array.isArray(vpnServerState.Users)
+    ? (vpnServerState.Users as VSCredentials[])
+    : [];
+
+  const users = useStore<VSCredentials[]>(
+    initialUsers.length
+      ? [...initialUsers]
       : [{ Username: "", Password: "", VPNType: [] }],
   );
 

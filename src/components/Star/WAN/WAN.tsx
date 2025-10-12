@@ -1,6 +1,6 @@
 import { component$, useStore, useContext, $ } from "@builder.io/qwik";
 import { VPNClient } from "./VPNClient/VPNClient";
-import { DNS } from "./DNS/DNS";
+// import { DNS } from "./DNS/DNS";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
@@ -30,15 +30,15 @@ const VPNClientStep = component$((props: StepProps) => (
   <VPNClient isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
 
-const DNSStep = component$((props: StepProps) => (
-  <DNS isComplete={props.isComplete} onComplete$={props.onComplete$} />
-));
+// const DNSStep = component$((props: StepProps) => (
+//   <DNS isComplete={props.isComplete} onComplete$={props.onComplete$} />
+// ));
 
 
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
-  const isAdvancedMode = starContext.state.Choose.Mode === "advance";
+  // const isAdvancedMode = starContext.state.Choose.Mode === "advance";
 
   const steps: StepItem[] = [];
 
@@ -69,15 +69,15 @@ export const WAN = component$((props: StepProps) => {
     isComplete: false,
   });
 
-  // Only add DNS Configuration step in advanced mode
-  if (isAdvancedMode) {
-    steps.push({
-      id: steps.length + 1,
-      title: $localize`DNS Configuration`,
-      component: DNSStep,
-      isComplete: false,
-    });
-  }
+  // // Only add DNS Configuration step in advanced mode
+  // if (isAdvancedMode) {
+  //   steps.push({
+  //     id: steps.length + 1,
+  //     title: $localize`DNS Configuration`,
+  //     component: DNSStep,
+  //     isComplete: false,
+  //   });
+  // }
 
   const stepsStore = useStore({
     activeStep: 0,

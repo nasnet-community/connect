@@ -130,13 +130,13 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
     if (!ctx.state.ExtraConfig.usefulServices) {
       const defaultUsefulServices = {
         certificate: { SelfSigned: false, LetsEncrypt: false },
-        ntp: { servers: [], updateInterval: "1h" as const },
+        ntp: { servers: [] },
         graphing: { Interface: false, Queue: false, Resources: false },
         cloudDDNS: { ddnsEntries: [] },
         upnp: { linkType: "" as const },
         natpmp: { linkType: "" as const },
       };
-      
+
       ctx.updateExtraConfig$({
         usefulServices: defaultUsefulServices
       });
@@ -145,9 +145,9 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
 
   const serviceStates = useStore<ServiceState>({
     certificate: ctx.state.ExtraConfig.usefulServices?.certificate?.SelfSigned ?? false,
-    ntp: ctx.state.ExtraConfig.usefulServices?.ntp?.servers?.length ? true : false,
+    ntp: ctx.state.ExtraConfig.usefulServices?.ntp?.servers.length ? true : false,
     graphing: ctx.state.ExtraConfig.usefulServices?.graphing?.Interface ?? false,
-    DDNS: ctx.state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries?.length ? true : false,
+    DDNS: ctx.state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries.length ? true : false,
     letsEncrypt: ctx.state.ExtraConfig.usefulServices?.certificate?.LetsEncrypt ?? false,
   });
 
@@ -155,23 +155,23 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
     // Update usefulServices structure
     const usefulServicesConfig = {
       ...ctx.state.ExtraConfig.usefulServices,
-      certificate: { 
-        SelfSigned: serviceStates.certificate, 
-        LetsEncrypt: serviceStates.letsEncrypt 
+      certificate: {
+        SelfSigned: serviceStates.certificate,
+        LetsEncrypt: serviceStates.letsEncrypt
       },
-      ntp: serviceStates.ntp ? 
-        { servers: ["pool.ntp.org"], updateInterval: "1h" as const } : 
-        { servers: [], updateInterval: "1h" as const },
-      graphing: { 
-        Interface: serviceStates.graphing, 
-        Queue: serviceStates.graphing, 
-        Resources: serviceStates.graphing 
+      ntp: serviceStates.ntp ?
+        { servers: ["pool.ntp.org"] } :
+        { servers: [] },
+      graphing: {
+        Interface: serviceStates.graphing,
+        Queue: serviceStates.graphing,
+        Resources: serviceStates.graphing
       },
-      cloudDDNS: serviceStates.DDNS ? 
-        { ddnsEntries: [] } : 
+      cloudDDNS: serviceStates.DDNS ?
+        { ddnsEntries: [] } :
         { ddnsEntries: [] },
     };
-    
+
     ctx.updateExtraConfig$({
       usefulServices: usefulServicesConfig
     });

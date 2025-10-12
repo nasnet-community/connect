@@ -1,9 +1,8 @@
 import { component$, useVisibleTask$, $, useSignal, useContext } from "@builder.io/qwik";
 import { useEInterface } from "./useEInterface";
-import type { Ethernet } from "../../StarContext/CommonType";
-import type { Networks } from "../../StarContext/CommonType";
+import type { Ethernet, BaseNetworksType } from "~/components/Star/StarContext";
 import type { StepProps } from "~/types/step";
-import { StarContext } from "../../StarContext/StarContext";
+import { StarContext } from "~/components/Star/StarContext";
 import {
   isInterfaceOccupied,
   getOccupiedInterfacesForRouter,
@@ -32,12 +31,12 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
       inUse: boolean;
       usedBy: string;
       selected: boolean;
-      network: Networks;
+      network: BaseNetworksType;
     }[]
   >([]);
 
   const updateInterfacesList = $(async () => {
-    const currentlySelected = new Map<string, Networks>();
+    const currentlySelected = new Map<string, BaseNetworksType>();
     selectedEInterfaces.value.forEach((intf) => {
       currentlySelected.set(intf.name, intf.bridge);
     });
@@ -78,7 +77,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
           inUse: true,
           usedBy: "WAN",
           selected: false,
-          network: "Foreign" as Networks,
+          network: "Foreign" as BaseNetworksType,
         });
       }
     });
@@ -113,7 +112,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
         if (currentInterface.inUse) return;
 
         const wasSelected = currentInterface.selected;
-        const newNetwork = newNetworkValue as Networks;
+        const newNetwork = newNetworkValue as BaseNetworksType;
 
         updatedInterfaces[interfaceIndex] = {
           ...currentInterface,
@@ -152,10 +151,10 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
 
         if (!existingInterface) {
           // Add new interface
-          await addEInterface(intf.name as Ethernet, networkToAssign);
+          await addEInterface(intf.name as Ethernet, networkToAssign as BaseNetworksType);
         } else if (existingInterface.bridge !== networkToAssign) {
           // Update existing interface if network changed
-          await updateEInterface(intf.name as Ethernet, networkToAssign);
+          await updateEInterface(intf.name as Ethernet, networkToAssign as BaseNetworksType);
         }
       }
     }
@@ -276,7 +275,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                                   bg-surface px-4 py-2.5 text-text focus:border-primary-500 focus:outline-none
                                   focus:ring-2 focus:ring-primary-500/50 dark:border-border-dark dark:bg-surface-dark
                                   dark:text-text-dark-default"
-                            value={intf.network}
+                            value={intf.network as string}
                             onChange$={(e) =>
                               handleNetworkChange(
                                 intf.name,
@@ -285,8 +284,8 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                             }
                           >
                             {availableNetworks.value.map((network) => (
-                              <option key={network} value={network}>
-                                {network}
+                              <option key={network as string} value={network as string}>
+                                {network as string}
                               </option>
                             ))}
                           </select>

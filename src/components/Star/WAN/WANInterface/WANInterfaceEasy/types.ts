@@ -24,6 +24,5 @@ export interface InterfaceSelectorProps {
   selectedInterfaceType: string;
   availableInterfaces: RouterInterfaces;
   onSelect: QRL<(value: string) => void>;
-  isInterfaceSelectedInOtherMode: QRL<(iface: string) => boolean>;
   mode: "Foreign" | "Domestic";
 }

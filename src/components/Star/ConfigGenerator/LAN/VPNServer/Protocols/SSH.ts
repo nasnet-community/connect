@@ -1,8 +1,8 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     SSHServerConfig,
-    Credentials,
-    Networks
+    VSCredentials,
+    VSNetwork
 } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
@@ -22,7 +22,7 @@ export const SSHServer = (config: SSHServerConfig): RouterConfig => {
 };
 
 
-export const SSHServerUsers = ( users: Credentials[], _config?: SSHServerConfig ): RouterConfig => {
+export const SSHServerUsers = ( users: VSCredentials[], _config?: SSHServerConfig ): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/user group": [],
         "/user": [],
@@ -66,14 +66,14 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
     };
 
     // Map network types to bridge/interface names
-    const networkToBridge: Record<Networks, string> = {
+    const networkToBridge: Record<VSNetwork, string> = {
         "VPN": "LANBridgeVPN",
         "Domestic": "LANBridgeDOM",
         "Foreign": "LANBridgeFRN",
         "Split": "LANBridgeSplit",
     };
 
-    const bridgeInterface = networkToBridge[config.Network];
+    const bridgeInterface = networkToBridge[config.Network!];
 
     // Mangle rules for connection marking and routing
     routerConfig["/ip firewall mangle"].push(
@@ -105,7 +105,7 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
     return routerConfig;
 };
 
-export const SSHServerWrapper = ( serverConfig: SSHServerConfig, users: Credentials[] ): RouterConfig => {
+export const SSHServerWrapper = ( serverConfig: SSHServerConfig, users: VSCredentials[] ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Add base SSH server configuration

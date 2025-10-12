@@ -27,7 +27,7 @@ export const useSubnets = (): UseSubnetsReturn => {
   // Extract WAN Static Route subnets for conflict detection
   const getWANStaticSubnets = useComputed$(() => {
     const wanSubnets: Array<{ value: number; name: string }> = [];
-    const wanLinks = starContext.state.WAN?.WANLink;
+    const wanLinks = starContext.state.WAN.WANLink;
 
     if (!wanLinks) return wanSubnets;
 
@@ -45,8 +45,8 @@ export const useSubnets = (): UseSubnetsReturn => {
         if (m) return parseInt(m[1], 10);
       }
 
-      const ipParts = ip?.split('.').map(p => parseInt(p, 10));
-      const maskParts = mask?.split('.').map(p => parseInt(p, 10));
+      const ipParts = ip.split('.').map(p => parseInt(p, 10));
+      const maskParts = mask.split('.').map(p => parseInt(p, 10));
       if (!ipParts || !maskParts || ipParts.length !== 4 || maskParts.length !== 4) return null;
       if (ipParts.some(n => isNaN(n)) || maskParts.some(n => isNaN(n))) return null;
 
@@ -200,7 +200,7 @@ export const useSubnets = (): UseSubnetsReturn => {
     // Multiple WireGuard servers - each gets its own subnet
     if (vpnServers?.WireguardServers?.length) {
       vpnServers.WireguardServers.forEach((server, index) => {
-        const serverName = server.Interface?.Name || `WireGuard${index + 1}`;
+        const serverName = server.Interface.Name || `WireGuard${index + 1}`;
         const key = serverName;
         configs.push({
           key,
@@ -364,7 +364,7 @@ export const useSubnets = (): UseSubnetsReturn => {
     }
 
     // Multiple Domestic WAN Links - only show if there are 2+ domestic links
-    const domesticLinks = starContext.state.WAN.WANLink?.Domestic?.WANConfigs;
+    const domesticLinks = starContext.state.WAN.WANLink.Domestic?.WANConfigs;
     if (domesticLinks && domesticLinks.length >= 2) {
       domesticLinks.forEach((link, index) => {
         const key = `Domestic${index + 1}`;
@@ -383,7 +383,7 @@ export const useSubnets = (): UseSubnetsReturn => {
     }
 
     // Multiple Foreign WAN Links - only show if there are 2+ foreign links
-    const foreignLinks = starContext.state.WAN.WANLink?.Foreign?.WANConfigs;
+    const foreignLinks = starContext.state.WAN.WANLink.Foreign?.WANConfigs;
     if (foreignLinks && foreignLinks.length >= 2) {
       foreignLinks.forEach((link, index) => {
         const key = `Foreign${index + 1}`;
@@ -693,12 +693,12 @@ export const useSubnets = (): UseSubnetsReturn => {
     const tabs: SubnetCategory[] = [];
     const groups = groupedConfigs.value;
 
-    if (groups.base?.length > 0) tabs.push("base");
-    if (groups["wan-domestic"]?.length > 0) tabs.push("wan-domestic");
-    if (groups["wan-foreign"]?.length > 0) tabs.push("wan-foreign");
-    if (groups["vpn-client"]?.length > 0) tabs.push("vpn-client");
-    if (groups.vpn?.length > 0) tabs.push("vpn");
-    if (groups.tunnel?.length > 0) tabs.push("tunnel");
+    if (groups.base.length > 0) tabs.push("base");
+    if (groups["wan-domestic"].length > 0) tabs.push("wan-domestic");
+    if (groups["wan-foreign"].length > 0) tabs.push("wan-foreign");
+    if (groups["vpn-client"].length > 0) tabs.push("vpn-client");
+    if (groups.vpn.length > 0) tabs.push("vpn");
+    if (groups.tunnel.length > 0) tabs.push("tunnel");
 
     return tabs;
   });

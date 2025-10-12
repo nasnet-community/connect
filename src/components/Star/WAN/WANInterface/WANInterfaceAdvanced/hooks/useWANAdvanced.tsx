@@ -8,6 +8,7 @@ import { generateUniqueId } from "~/components/Core/common/utils";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { InterfaceType } from "~/components/Star/StarContext/CommonType";
 import { useInterfaceManagement } from "~/components/Star/hooks/useInterfaceManagement";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UseWANAdvancedReturn {
   state: WANWizardState;
@@ -27,6 +28,7 @@ export interface UseWANAdvancedReturn {
 export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
+  const networks = useNetworks();
 
   // Initialize state with zero links (empty state pattern)
   const state = useStore<WANWizardState>({
@@ -52,9 +54,8 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     const wanConfigs = state.links.map(link => {
       // Build InterfaceConfig with proper type mapping
       const interfaceConfig = {
-        InterfaceName: (link.interfaceName || link.InterfaceConfig?.InterfaceName || "ether1") as InterfaceType,
+        InterfaceName: (link.interfaceName || link.InterfaceConfig.InterfaceName || "ether1") as InterfaceType,
         WirelessCredentials: link.wirelessCredentials,
-        lteSettings: link.lteSettings,
         VLANID: link.vlanConfig?.enabled ? String(link.vlanConfig.id) : undefined,
         MacAddress: link.macAddress?.enabled ? link.macAddress.address : undefined,
       };
@@ -67,6 +68,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         connectionConfig = { pppoe: link.pppoe };
       } else if (link.connectionType === "Static" && link.staticIP) {
         connectionConfig = { static: link.staticIP };
+      } else if (link.connectionType === "LTE" || link.interfaceType === "LTE") {
+        // LTE: Add lteSettings to ConnectionConfig
+        connectionConfig = link.lteSettings ? { lteSettings: link.lteSettings } : undefined;
       } else if (link.connectionConfig) {
         // Use existing connectionConfig if available
         connectionConfig = link.connectionConfig;
@@ -140,9 +144,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         weight: index === 0 ? equalWeight + remainder : equalWeight,
       }));
     }
-    
+
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
+    networks.generateCurrentNetworks$();
   });
 
   // Remove a link
@@ -188,9 +193,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       }
     });
     state.validationErrors = newErrors;
-    
+
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
+    networks.generateCurrentNetworks$();
   });
 
   // Update a specific link with batching to prevent multiple renders
@@ -250,6 +256,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
 
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
+    networks.generateCurrentNetworks$();
   });
 
   // Batch update multiple links in a single operation to prevent multiple renders
@@ -298,9 +305,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
 
     // Update state once with all changes
     state.links = newLinks;
-    
+
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
+    networks.generateCurrentNetworks$();
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)

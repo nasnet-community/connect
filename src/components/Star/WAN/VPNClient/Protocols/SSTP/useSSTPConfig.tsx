@@ -6,6 +6,7 @@ import type {
   AuthMethod,
   TLSVersion,
 } from "../../../../StarContext/CommonType";
+import { useNetworks } from "~/utils/useNetworks";
 
 export interface UseSSTPConfigResult {
   serverAddress: { value: string };
@@ -32,6 +33,7 @@ export const useSSTPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseSSTPConfigResult => {
   const starContext = useContext(StarContext);
+  const networks = useNetworks();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -44,19 +46,19 @@ export const useSSTPConfig = (
   // Initialize with existing config if available
   if (starContext.state.WAN.VPNClient?.SSTP) {
     const existingConfig = starContext.state.WAN.VPNClient.SSTP[0];
-    serverAddress.value = existingConfig?.Server.Address || "";
-    port.value = existingConfig?.Server.Port?.toString() || "443";
+    serverAddress.value = existingConfig.Server.Address || "";
+    port.value = existingConfig.Server.Port?.toString() || "443";
 
-    if (existingConfig?.Credentials) {
+    if (existingConfig.Credentials) {
       username.value = existingConfig.Credentials.Username || "";
       password.value = existingConfig.Credentials.Password || "";
     }
 
-    if (existingConfig?.VerifyServerCertificate !== undefined) {
+    if (existingConfig.VerifyServerCertificate !== undefined) {
       verifyServerCertificate.value = existingConfig.VerifyServerCertificate;
     }
 
-    if (existingConfig?.TlsVersion) {
+    if (existingConfig.TlsVersion) {
       tlsVersion.value = existingConfig.TlsVersion;
     }
 
@@ -104,12 +106,16 @@ export const useSSTPConfig = (
         SSTP: [parsedConfig],
       },
     });
+
+    // Update Networks state to reflect VPN availability
+    networks.generateCurrentNetworks$();
   });
 
   const handleManualFormSubmit$ = $(async () => {
     errorMessage.value = "";
 
     const manualConfig: SstpClientConfig = {
+      Name: "SSTP-Client",
       Server: {
         Address: serverAddress.value,
         Port: parseInt(port.value) || 443,
