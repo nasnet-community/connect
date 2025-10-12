@@ -1,11 +1,13 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { Select, Card, CardHeader, CardBody, Input, FormField, Toggle, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export const CloudDDNSStep = component$(() => {
-  // Get stepper context
+  // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
+  const starCtx = useContext(StarContext);
 
   // Access servicesData from context
   const { servicesData } = context.data;
@@ -73,11 +75,26 @@ export const CloudDDNSStep = component$(() => {
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
-    // Update context data
+    // Update context data with only ddnsEntries
+    const entries = enableDDNS.value ? ddnsEntries.value : [];
     servicesData.cloudDDNS = {
-      enableDDNS: enableDDNS.value,
-      ddnsEntries: ddnsEntries.value,
+      ddnsEntries: entries,
     };
+
+    // Update StarContext - explicit property assignment to avoid spread operator issues
+    const currentServices = starCtx.state.ExtraConfig.usefulServices || {};
+    starCtx.updateExtraConfig$({
+      usefulServices: {
+        certificate: currentServices.certificate,
+        ntp: currentServices.ntp,
+        graphing: currentServices.graphing,
+        cloudDDNS: {
+          ddnsEntries: entries,
+        },
+        upnp: currentServices.upnp,
+        natpmp: currentServices.natpmp,
+      }
+    });
 
     // Validate: DDNS is disabled or at least one valid entry exists
     const isComplete = !enableDDNS.value || ddnsEntries.value.length > 0;

@@ -23,6 +23,7 @@ interface CompactNetworkCardProps {
   generateNetworkPassword: QRL<() => Promise<void>>;
   isLoading: Record<string, boolean>;
   mode?: Mode;
+  isBaseNetworkDisabled?: boolean;
 }
 
 export const CompactNetworkCard = component$<CompactNetworkCardProps>(
@@ -42,15 +43,18 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
     generateNetworkPassword,
     isLoading,
     mode = "advance",
+    isBaseNetworkDisabled = false,
   }) => {
     const displayName =
       networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
 
     return (
       <div
-        class={`rounded-lg border border-gray-200 bg-white shadow-sm 
-                transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800
-                ${isDisabled ? "opacity-60" : ""}`}
+        class={`rounded-lg border shadow-sm transition-all duration-200
+                ${isBaseNetworkDisabled
+                  ? "border-gray-300 bg-gray-50 opacity-50 dark:border-gray-600 dark:bg-gray-900"
+                  : "border-gray-200 bg-white hover:shadow-md dark:border-gray-700 dark:bg-gray-800"}
+                ${isDisabled && !isBaseNetworkDisabled ? "opacity-60" : ""}`}
       >
         {/* Compact Header */}
         <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
@@ -71,16 +75,30 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
             <Toggle
               checked={!isDisabled}
               onChange$={$((checked: boolean) => {
-                // checked represents enabled state, so invert for disabled
-                onDisabledToggle(!checked);
+                // Prevent toggling if base network is disabled
+                if (!isBaseNetworkDisabled) {
+                  onDisabledToggle(!checked);
+                }
               })}
               label={!isDisabled ? $localize`On` : $localize`Off`}
               labelPosition="left"
               size="sm"
               color="primary"
+              disabled={isBaseNetworkDisabled}
             />
           </div>
         </div>
+
+        {/* Warning message when base network is disabled */}
+        {isBaseNetworkDisabled && (
+          <div class="mx-3 mt-3 rounded-md bg-yellow-50 border border-yellow-200 p-2 dark:bg-yellow-900/20 dark:border-yellow-800">
+            <p class="text-xs text-yellow-800 dark:text-yellow-200">
+              <span class="font-semibold">{$localize`Network disabled:`}</span>
+              {' '}
+              {$localize`This base network is disabled. Enable it in the network configuration first.`}
+            </p>
+          </div>
+        )}
 
         {/* Content */}
         <div class="px-3 pb-3 space-y-3 pt-3">
@@ -98,7 +116,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                     })}
                     label={!isHide ? $localize`Show` : $localize`Hide`}
                     labelPosition="left"
-                    disabled={isDisabled}
+                    disabled={isDisabled || isBaseNetworkDisabled}
                     size="sm"
                     color="primary"
                   />
@@ -118,7 +136,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                   })}
                   label={splitBand ? $localize`Split` : $localize`Single`}
                   labelPosition="left"
-                  disabled={isDisabled || mode === "easy"}
+                  disabled={isDisabled || mode === "easy" || isBaseNetworkDisabled}
                   size="sm"
                   color="primary"
                 />
@@ -129,22 +147,22 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
             <div class="space-y-1">
               <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {$localize`SSID`}
-                {!isDisabled && <span class="ml-1 text-red-500">*</span>}
+                {!isDisabled && !isBaseNetworkDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex gap-2">
                 <Input
                   value={ssid}
                   onChange$={(e, value) => onSSIDChange(value)}
                   type="text"
-                  disabled={isDisabled}
+                  disabled={isDisabled || isBaseNetworkDisabled}
                   placeholder={$localize`Network name`}
-                  required={!isDisabled}
+                  required={!isDisabled && !isBaseNetworkDisabled}
                   size="sm"
                   class="flex-1"
                 />
                 <Button
                   onClick$={generateNetworkSSID}
-                  disabled={isLoading[`${networkKey}SSID`] || isDisabled}
+                  disabled={isLoading[`${networkKey}SSID`] || isDisabled || isBaseNetworkDisabled}
                   loading={isLoading[`${networkKey}SSID`]}
                   variant="outline"
                   size="sm"
@@ -160,22 +178,22 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
             <div class="space-y-1">
               <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {$localize`Password`}
-                {!isDisabled && <span class="ml-1 text-red-500">*</span>}
+                {!isDisabled && !isBaseNetworkDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex gap-2">
                 <Input
                   value={password}
                   onChange$={(e, value) => onPasswordChange(value)}
                   type="text"
-                  disabled={isDisabled}
+                  disabled={isDisabled || isBaseNetworkDisabled}
                   placeholder={$localize`Password`}
-                  required={!isDisabled}
+                  required={!isDisabled && !isBaseNetworkDisabled}
                   size="sm"
                   class="flex-1"
                 />
                 <Button
                   onClick$={generateNetworkPassword}
-                  disabled={isLoading[`${networkKey}Password`] || isDisabled}
+                  disabled={isLoading[`${networkKey}Password`] || isDisabled || isBaseNetworkDisabled}
                   loading={isLoading[`${networkKey}Password`]}
                   variant="outline"
                   size="sm"

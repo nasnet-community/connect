@@ -17,11 +17,6 @@ export const useGameLogic = () => {
       },
       value: string,
     ) => {
-      if (!["foreign", "domestic", "vpn", "none"].includes(value)) {
-        console.error("Invalid link type");
-        return;
-      }
-
       const serializedPorts = {
         tcp: game.tcp?.map(String),
         udp: game.udp?.map(String),
@@ -32,6 +27,7 @@ export const useGameLogic = () => {
         context.updateExtraConfig$({ Games: [] });
       }
 
+      // If "none" is selected, remove the game from the list
       if (value === "none") {
         const updatedGames = (context.state.ExtraConfig.Games || []).filter(
           (g) => g.name !== game.name,
@@ -41,7 +37,7 @@ export const useGameLogic = () => {
 
       const newGame: GameConfig = {
         name: game.name,
-        link: value as "foreign" | "domestic" | "vpn",
+        network: value,
         ports: serializedPorts,
       };
 

@@ -1,11 +1,13 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { SelectionCard } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export const GraphingStep = component$(() => {
-  // Get stepper context
+  // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
+  const starCtx = useContext(StarContext);
 
   // Access servicesData from context
   const { servicesData } = context.data;
@@ -65,12 +67,29 @@ export const GraphingStep = component$(() => {
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
-    // Update context data
+    // Update context data with correct property names
     servicesData.graphing = {
-      enableInterface: enableInterface.value,
-      enableQueue: enableQueue.value,
-      enableResources: enableResources.value,
+      Interface: enableInterface.value,
+      Queue: enableQueue.value,
+      Resources: enableResources.value,
     };
+
+    // Update StarContext - explicit property assignment to avoid spread operator issues
+    const currentServices = starCtx.state.ExtraConfig.usefulServices || {};
+    starCtx.updateExtraConfig$({
+      usefulServices: {
+        certificate: currentServices.certificate,
+        ntp: currentServices.ntp,
+        graphing: {
+          Interface: enableInterface.value,
+          Queue: enableQueue.value,
+          Resources: enableResources.value,
+        },
+        cloudDDNS: currentServices.cloudDDNS,
+        upnp: currentServices.upnp,
+        natpmp: currentServices.natpmp,
+      }
+    });
 
     // Validate: At least one graphing option must be selected
     const isComplete = enableInterface.value || enableQueue.value || enableResources.value;

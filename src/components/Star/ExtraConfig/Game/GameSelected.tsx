@@ -24,7 +24,7 @@ export const GameSelected = component$<{ context: StarContextType }>(
         <div class="space-y-2">
           {context.state.ExtraConfig.Games.map((game, index) => (
             <div
-              key={`${game.name}-${game.link}-${index}`}
+              key={`${game.name}-${game.network}-${index}`}
               class="bg-surface-secondary dark:bg-surface-dark-secondary flex items-center justify-between rounded-lg p-3"
             >
               <div class="flex items-center space-x-3">
@@ -32,7 +32,7 @@ export const GameSelected = component$<{ context: StarContextType }>(
                   {game.name}
                 </span>
                 <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
-                  ({game.link})
+                  ({game.network})
                 </span>
                 <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
                   {formatPorts(game.ports)}

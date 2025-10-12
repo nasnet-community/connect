@@ -53,6 +53,23 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     const isDomesticLinkEnabled =
       (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
 
+    // Helper function to check if base network is disabled
+    const isBaseNetworkDisabled = (networkKey: NetworkKey): boolean => {
+      const baseNetworks = starContext.state.Choose.Networks?.BaseNetworks;
+      if (!baseNetworks) return false;  // If undefined, treat as enabled
+
+      // Map networkKey to BaseNetworks property
+      const networkMap: Record<NetworkKey, keyof typeof baseNetworks> = {
+        foreign: "Foreign",
+        domestic: "Domestic",
+        split: "Split",
+        vpn: "VPN",
+      };
+
+      const baseNetworkKey = networkMap[networkKey];
+      return baseNetworks[baseNetworkKey] === false;  // Only false means disabled
+    };
+
     // Filter network keys based on DomesticLink value
     const filteredNetworkKeys = NETWORK_KEYS.filter(
       (key) => isDomesticLinkEnabled || (key !== "domestic" && key !== "split"),
@@ -78,32 +95,51 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
           columns={{ base: "1", lg: "2" }}
           gap="md"
         >
-          {filteredNetworkKeys.map((networkKey) => (
-            <CompactNetworkCard
-              key={networkKey}
-              networkKey={networkKey}
-              ssid={networks[networkKey].ssid}
-              password={networks[networkKey].password}
-              isHide={networks[networkKey].isHide}
-              isDisabled={networks[networkKey].isDisabled}
-              splitBand={networks[networkKey].splitBand}
-              onSSIDChange={$((value: string) => {
-                networks[networkKey].ssid = value;
-              })}
-              onPasswordChange={$((value: string) => {
-                networks[networkKey].password = value;
-              })}
-              onHideToggle={$((value?: boolean) => toggleNetworkHide(networkKey, value))}
-              onDisabledToggle={$((value?: boolean) => toggleNetworkDisabled(networkKey, value))}
-              onSplitBandToggle={$((value?: boolean) => toggleNetworkSplitBand(networkKey, value))}
-              generateNetworkSSID={$(() => generateNetworkSSID(networkKey))}
-              generateNetworkPassword={$(() =>
-                generateNetworkPassword(networkKey),
-              )}
-              isLoading={isLoading}
-              mode={mode}
-            />
-          ))}
+          {filteredNetworkKeys.map((networkKey) => {
+            const baseNetworkDisabled = isBaseNetworkDisabled(networkKey);
+
+            return (
+              <CompactNetworkCard
+                key={networkKey}
+                networkKey={networkKey}
+                ssid={networks[networkKey].ssid}
+                password={networks[networkKey].password}
+                isHide={networks[networkKey].isHide}
+                isDisabled={networks[networkKey].isDisabled || baseNetworkDisabled}
+                splitBand={networks[networkKey].splitBand}
+                isBaseNetworkDisabled={baseNetworkDisabled}
+                onSSIDChange={$((value: string) => {
+                  if (!baseNetworkDisabled) {
+                    networks[networkKey].ssid = value;
+                  }
+                })}
+                onPasswordChange={$((value: string) => {
+                  if (!baseNetworkDisabled) {
+                    networks[networkKey].password = value;
+                  }
+                })}
+                onHideToggle={$((value?: boolean) => {
+                  if (!baseNetworkDisabled) toggleNetworkHide(networkKey, value);
+                })}
+                onDisabledToggle={$((value?: boolean) => {
+                  if (!baseNetworkDisabled) toggleNetworkDisabled(networkKey, value);
+                })}
+                onSplitBandToggle={$((value?: boolean) => {
+                  if (!baseNetworkDisabled) toggleNetworkSplitBand(networkKey, value);
+                })}
+                generateNetworkSSID={$(() => {
+                  if (!baseNetworkDisabled) return generateNetworkSSID(networkKey);
+                  return Promise.resolve();
+                })}
+                generateNetworkPassword={$(() => {
+                  if (!baseNetworkDisabled) return generateNetworkPassword(networkKey);
+                  return Promise.resolve();
+                })}
+                isLoading={isLoading}
+                mode={mode}
+              />
+            );
+          })}
         </Grid>
 
         {/* Extra Wireless Interfaces Section - Advanced Mode Only */}
@@ -127,9 +163,12 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
               </div>
             )}
 
-            {/* Extra interface cards */}
+            {/* Extra interface cards - Grid layout like main networks */}
             {extraInterfaces.length > 0 && (
-              <div class="space-y-3">
+              <Grid
+                columns={{ base: "1", lg: "2" }}
+                gap="md"
+              >
                 {extraInterfaces.map((extraInterface) => (
                   <ExtraWirelessCard
                     key={extraInterface.id}
@@ -145,7 +184,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                     mode={mode}
                   />
                 ))}
-              </div>
+              </Grid>
             )}
 
             {/* Add button - only show if networks available */}

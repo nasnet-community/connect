@@ -109,7 +109,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     {
       name: "ssh",
       description: $localize`Secure Shell`,
-      recommended: true,
+      recommended: false,
       defaultPort: 22,
     },
     {
@@ -145,7 +145,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         api: { type: "Local" as ServiceType, port: 8728 },
         apissl: { type: "Local" as ServiceType, port: 8729 },
         ftp: { type: "Local" as ServiceType, port: 21 },
-        ssh: { type: "Enable" as ServiceType, port: 22 },
+        ssh: { type: "Local" as ServiceType, port: 22 },
         telnet: { type: "Local" as ServiceType, port: 23 },
         winbox: { type: "Enable" as ServiceType, port: 8291 },
         web: { type: "Local" as ServiceType, port: 80 },
@@ -259,7 +259,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
           api: { type: "Local" as ServiceType, port: 8728 },
           apissl: { type: "Local" as ServiceType, port: 8729 },
           ftp: { type: "Local" as ServiceType, port: 21 },
-          ssh: { type: "Enable" as ServiceType, port: 22 },
+          ssh: { type: "Local" as ServiceType, port: 22 },
           telnet: { type: "Local" as ServiceType, port: 23 },
           winbox: { type: "Enable" as ServiceType, port: 8291 },
           web: { type: "Local" as ServiceType, port: 80 },
@@ -484,7 +484,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                     port: 21,
                                   },
                                   ssh: {
-                                    type: "Enable" as ServiceType,
+                                    type: "Local" as ServiceType,
                                     port: 22,
                                   },
                                   telnet: {

@@ -1,14 +1,21 @@
-import { $, component$ } from "@builder.io/qwik";
+import { $, component$, useComputed$ } from "@builder.io/qwik";
 import { games } from "./GameData";
 import { useGameLogic } from "./useGame";
 import type { GameTableProps } from "./type";
+import { buildNetworkOptions, groupNetworkOptions } from "./NetworkOptionsHelper";
 
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
     const { handleGameSelection } = useGameLogic();
 
-    // Check if DomesticLink is enabled
-    const isDomesticLinkEnabled = (context.state.Choose.WANLinkType === "domestic" || context.state.Choose.WANLinkType === "both");
+    // Build network options from StarContext Networks
+    const networkOptions = useComputed$(() =>
+      buildNetworkOptions(context.state.Choose.Networks)
+    );
+
+    const groupedOptions = useComputed$(() =>
+      groupNetworkOptions(networkOptions.value)
+    );
 
     return (
       <div class="overflow-hidden rounded-xl border border-border dark:border-border-dark">
@@ -44,7 +51,7 @@ export const GameTable = component$<GameTableProps>(
                     <td class="px-6 py-4">{game.udp?.join(", ") || "-"}</td>
                     <td class="px-6 py-4">
                       <select
-                        value={selectedGame?.link || "none"}
+                        value={selectedGame?.network || "none"}
                         onChange$={$((e) => {
                           const serializedGame = {
                             name: String(game.name),
@@ -62,12 +69,16 @@ export const GameTable = component$<GameTableProps>(
                         })}
                         class="w-full rounded-lg border border-border bg-surface px-3 py-2 dark:border-border-dark dark:bg-surface-dark"
                       >
-                        <option value="none">{$localize`Select Route`}</option>
-                        <option value="foreign">{$localize`Foreign`}</option>
-                        {isDomesticLinkEnabled && (
-                          <option value="domestic">{$localize`Domestic`}</option>
-                        )}
-                        <option value="vpn">{$localize`VPN`}</option>
+                        <option value="none">{$localize`Select Network`}</option>
+                        {Object.entries(groupedOptions.value).map(([category, options]) => (
+                          <optgroup key={category} label={category}>
+                            {options.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
                       </select>
                     </td>
                   </tr>

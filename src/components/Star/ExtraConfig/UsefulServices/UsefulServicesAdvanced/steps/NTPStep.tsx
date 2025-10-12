@@ -1,11 +1,13 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { Card, CardHeader, CardBody, Input, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export const NTPStep = component$(() => {
-  // Get stepper context
+  // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
+  const starCtx = useContext(StarContext);
 
   // Access servicesData from context
   const { servicesData } = context.data;
@@ -51,12 +53,25 @@ export const NTPStep = component$(() => {
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
-    // Update context data
+    // Update context data with only servers property
     servicesData.ntp = {
       servers: ntpServers.value,
-      timeZone: "UTC",
-      updateInterval: "1h",
     };
+
+    // Update StarContext - explicit property assignment to avoid spread operator issues
+    const currentServices = starCtx.state.ExtraConfig.usefulServices || {};
+    starCtx.updateExtraConfig$({
+      usefulServices: {
+        certificate: currentServices.certificate,
+        ntp: {
+          servers: [...ntpServers.value],  // Create new array copy
+        },
+        graphing: currentServices.graphing,
+        cloudDDNS: currentServices.cloudDDNS,
+        upnp: currentServices.upnp,
+        natpmp: currentServices.natpmp,
+      }
+    });
 
     // Validate: At least one NTP server must be configured
     const isComplete = ntpServers.value.length > 0 && ntpServers.value.every(server => server.trim() !== "");
