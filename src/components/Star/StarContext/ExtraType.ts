@@ -31,7 +31,7 @@ export interface services {
 
 export interface GameConfig {
   name: string;
-  link: "foreign" | "domestic" | "vpn";
+  network: string; // NetworkName from Networks structure
   ports: {
     tcp?: string[];
     udp?: string[];

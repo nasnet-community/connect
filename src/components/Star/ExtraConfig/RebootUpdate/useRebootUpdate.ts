@@ -7,37 +7,12 @@ import type { FrequencyValue } from "~/components/Core";
 export const useRebootUpdate = () => {
   const ctx = useContext(StarContext);
 
-  // Initialize defaults if needed
-  useTask$(() => {
-    const needsUpdate =
-      !ctx.state.ExtraConfig.RUI.Reboot ||
-      !ctx.state.ExtraConfig.RUI.Update;
-
-    if (needsUpdate) {
-      const updatedRUI = {
-        ...ctx.state.ExtraConfig.RUI,
-        Reboot: ctx.state.ExtraConfig.RUI.Reboot || {
-          interval: "",
-          time: "02:00",
-        },
-        Update: ctx.state.ExtraConfig.RUI.Update || {
-          interval: "",
-          time: "03:00",
-        },
-      };
-
-      ctx.updateExtraConfig$({
-        RUI: updatedRUI
-      });
-    }
-  });
-
   const autoRebootEnabled = useSignal(
-    (ctx.state.ExtraConfig.RUI.Reboot?.interval !== "") || false,
+    !!ctx.state.ExtraConfig.RUI.Reboot?.interval,
   );
 
   const autoUpdateEnabled = useSignal(
-    (ctx.state.ExtraConfig.RUI.Update?.interval !== "") || false,
+    !!ctx.state.ExtraConfig.RUI.Update?.interval,
   );
 
   const ipAddressUpdateEnabled = useSignal(true);

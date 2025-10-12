@@ -55,29 +55,40 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800
                 ${isDisabled ? "opacity-60" : ""}`}
       >
-        {/* Header with network selector and delete button */}
-        <div class="flex items-center justify-between gap-3 p-3 border-b border-gray-100 dark:border-gray-700">
-          <div class="flex-1">
-            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">
-              {$localize`Network`}
-              <span class="ml-1 text-red-500">*</span>
-            </label>
-            <Select
-              options={networkOptions}
-              value={extraInterface.targetNetworkName}
-              onChange$={$((value: string | string[]) => {
-                const selectedValue = Array.isArray(value) ? value[0] : value;
-                onNetworkSelect$(extraInterface.id, selectedValue);
-              })}
-              placeholder={$localize`Select network...`}
-              size="sm"
-              class="w-full"
-            />
+        {/* Compact Header with network selector, status, enable toggle and delete button */}
+        <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div class="flex-1 min-w-0">
+              <label class="text-xs text-gray-600 dark:text-gray-400 block mb-1">
+                {$localize`Network`}<span class="ml-1 text-red-500">*</span>
+              </label>
+              <Select
+                options={networkOptions}
+                value={extraInterface.targetNetworkName}
+                onChange$={$((value: string | string[]) => {
+                  const selectedValue = Array.isArray(value) ? value[0] : value;
+                  onNetworkSelect$(extraInterface.id, selectedValue);
+                })}
+                placeholder={$localize`Select network...`}
+                size="sm"
+                class="w-full"
+              />
+            </div>
+            <div class={`w-2 h-2 rounded-full flex-shrink-0 mt-5 ${isDisabled ? 'bg-gray-400' : 'bg-green-500'}`} />
           </div>
 
-          {/* Delete button and status indicator */}
-          <div class="flex items-center gap-2 pt-5">
-            <div class={`w-2 h-2 rounded-full ${isDisabled ? 'bg-gray-400' : 'bg-green-500'}`} />
+          {/* Enable toggle and delete button */}
+          <div class="flex items-center gap-2 ml-2 mt-5">
+            <Toggle
+              checked={!isDisabled}
+              onChange$={$((checked: boolean) => {
+                onFieldChange$(extraInterface.id, "isDisabled", !checked);
+              })}
+              label={!isDisabled ? $localize`On` : $localize`Off`}
+              labelPosition="left"
+              size="sm"
+              color="primary"
+            />
             <button
               type="button"
               onClick$={async () => {
@@ -95,20 +106,6 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
         <div class="px-3 pb-3 space-y-3 pt-3">
           {/* Quick Toggles */}
           <div class="flex flex-col gap-3 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Enable:`}</span>
-              <Toggle
-                checked={!isDisabled}
-                onChange$={$((checked: boolean) => {
-                  onFieldChange$(extraInterface.id, "isDisabled", !checked);
-                })}
-                label={!isDisabled ? $localize`On` : $localize`Off`}
-                labelPosition="left"
-                size="sm"
-                color="primary"
-              />
-            </div>
-
             {/* Only show visibility toggle in advance mode */}
             {mode === "advance" && (
               <div class="flex items-center justify-between">

@@ -34,11 +34,27 @@ export const CertificateStep = component$(() => {
       enableSelfSigned.value = true;
     }
 
-    // Update context data
+    // Update context data with correct property names
     servicesData.certificate = {
-      enableSelfSigned: enableSelfSigned.value,
-      enableLetsEncrypt: enableLetsEncrypt.value,
+      SelfSigned: enableSelfSigned.value,
+      LetsEncrypt: enableLetsEncrypt.value,
     };
+
+    // Update StarContext - explicit property assignment to avoid spread operator issues
+    const currentServices = starCtx.state.ExtraConfig.usefulServices || {};
+    starCtx.updateExtraConfig$({
+      usefulServices: {
+        certificate: {
+          SelfSigned: enableSelfSigned.value,
+          LetsEncrypt: enableLetsEncrypt.value,
+        },
+        ntp: currentServices.ntp,
+        graphing: currentServices.graphing,
+        cloudDDNS: currentServices.cloudDDNS,
+        upnp: currentServices.upnp,
+        natpmp: currentServices.natpmp,
+      }
+    });
 
     // Validate - step is complete when either certificate type is enabled or none are required
     const isComplete = !requiresCertificate.value || (enableSelfSigned.value || enableLetsEncrypt.value);

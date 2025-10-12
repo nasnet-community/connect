@@ -36,6 +36,29 @@ export const StarContextProvider = component$(() => {
         Timezone: "Asia/Tehran",
         IPAddressUpdate: { interval: "Daily", time: "03:00" },
       },
+      usefulServices: {
+        certificate: {
+          SelfSigned: false,
+          LetsEncrypt: false,
+        },
+        ntp: {
+          servers: [],
+        },
+        graphing: {
+          Interface: false,
+          Queue: false,
+          Resources: false,
+        },
+        cloudDDNS: {
+          ddnsEntries: [],
+        },
+        upnp: {
+          linkType: "",
+        },
+        natpmp: {
+          linkType: "",
+        },
+      },
     },
     ShowConfig: {},
   });

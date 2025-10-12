@@ -212,3 +212,50 @@ export function getInterfacesByUsage(
     .filter(item => item.UsedFor === usedFor)
     .map(item => item.interface);
 }
+
+/**
+ * Get all LTE interfaces currently in use across all WAN links
+ * @param wanLinks - The WANLinks object containing Foreign and/or Domestic links
+ * @param excludeLinkName - Optional link name to exclude (for editing current link)
+ * @returns Array of LTE interface names currently in use (e.g., ["lte1", "lte2"])
+ */
+export function getUsedLTEInterfaces(
+  wanLinks: { Foreign?: { WANConfigs: Array<{ name: string; InterfaceConfig: { InterfaceName: string } }> }; Domestic?: { WANConfigs: Array<{ name: string; InterfaceConfig: { InterfaceName: string } }> } },
+  excludeLinkName?: string
+): string[] {
+  const usedLTEInterfaces = new Set<string>();
+
+  // Check Foreign links
+  if (wanLinks.Foreign?.WANConfigs) {
+    wanLinks.Foreign.WANConfigs.forEach(config => {
+      // Skip if this is the link being edited
+      if (excludeLinkName && config.name === excludeLinkName) {
+        return;
+      }
+
+      const interfaceName = config.InterfaceConfig.InterfaceName;
+      // Check if interface is LTE (starts with "lte")
+      if (interfaceName && interfaceName.startsWith("lte")) {
+        usedLTEInterfaces.add(interfaceName);
+      }
+    });
+  }
+
+  // Check Domestic links
+  if (wanLinks.Domestic?.WANConfigs) {
+    wanLinks.Domestic.WANConfigs.forEach(config => {
+      // Skip if this is the link being edited
+      if (excludeLinkName && config.name === excludeLinkName) {
+        return;
+      }
+
+      const interfaceName = config.InterfaceConfig.InterfaceName;
+      // Check if interface is LTE (starts with "lte")
+      if (interfaceName && interfaceName.startsWith("lte")) {
+        usedLTEInterfaces.add(interfaceName);
+      }
+    });
+  }
+
+  return Array.from(usedLTEInterfaces);
+}

@@ -60,7 +60,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
       options.push({
         name: networkName,
         category: "Foreign",
-        wifiTarget: "Foreign",
+        wifiTarget: "SingleForeign",
         displayName: networkName,
       });
     });
@@ -72,7 +72,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
       options.push({
         name: networkName,
         category: "Domestic",
-        wifiTarget: "Domestic",
+        wifiTarget: "SingleDomestic",
         displayName: networkName,
       });
     });
@@ -87,7 +87,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (Wireguard)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (WireGuard)`,
         });
       });
@@ -98,7 +98,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (OpenVPN)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (OpenVPN)`,
         });
       });
@@ -109,7 +109,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (L2TP)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (L2TP)`,
         });
       });
@@ -120,7 +120,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (PPTP)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (PPTP)`,
         });
       });
@@ -131,7 +131,7 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (SSTP)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (SSTP)`,
         });
       });
@@ -142,84 +142,8 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
         options.push({
           name: networkName,
           category: "VPN Client (IKEv2)",
-          wifiTarget: "VPN",
+          wifiTarget: "SingleVPN",
           displayName: `${networkName} (IKEv2)`,
-        });
-      });
-    }
-  }
-
-  // Add VPN Server networks (Wireguard and OpenVPN support multiple instances)
-  if (networks.VPNServerNetworks) {
-    const vpnServer = networks.VPNServerNetworks;
-
-    if (vpnServer.Wireguard && Array.isArray(vpnServer.Wireguard)) {
-      vpnServer.Wireguard.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "VPN Server (Wireguard)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (WireGuard Server)`,
-        });
-      });
-    }
-
-    if (vpnServer.OpenVPN && Array.isArray(vpnServer.OpenVPN)) {
-      vpnServer.OpenVPN.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "VPN Server (OpenVPN)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (OpenVPN Server)`,
-        });
-      });
-    }
-  }
-
-  // Add Tunnel networks
-  if (networks.TunnelNetworks) {
-    const tunnel = networks.TunnelNetworks;
-
-    if (tunnel.IPIP && Array.isArray(tunnel.IPIP)) {
-      tunnel.IPIP.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "Tunnel (IPIP)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (IPIP)`,
-        });
-      });
-    }
-
-    if (tunnel.Eoip && Array.isArray(tunnel.Eoip)) {
-      tunnel.Eoip.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "Tunnel (EoIP)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (EoIP)`,
-        });
-      });
-    }
-
-    if (tunnel.Gre && Array.isArray(tunnel.Gre)) {
-      tunnel.Gre.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "Tunnel (GRE)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (GRE)`,
-        });
-      });
-    }
-
-    if (tunnel.Vxlan && Array.isArray(tunnel.Vxlan)) {
-      tunnel.Vxlan.forEach((networkName) => {
-        options.push({
-          name: networkName,
-          category: "Tunnel (VXLAN)",
-          wifiTarget: "VPN",
-          displayName: `${networkName} (VXLAN)`,
         });
       });
     }
@@ -265,7 +189,7 @@ export function determineWifiTarget(
     networks.ForeignNetworks &&
     networks.ForeignNetworks.includes(networkName)
   ) {
-    return "Foreign";
+    return "SingleForeign";
   }
 
   // Check Domestic networks
@@ -273,7 +197,7 @@ export function determineWifiTarget(
     networks.DomesticNetworks &&
     networks.DomesticNetworks.includes(networkName)
   ) {
-    return "Domestic";
+    return "SingleDomestic";
   }
 
   // Check VPN Client networks
@@ -281,28 +205,7 @@ export function determineWifiTarget(
     const vpnClient = networks.VPNClientNetworks;
     for (const protocol of Object.values(vpnClient)) {
       if (Array.isArray(protocol) && protocol.includes(networkName)) {
-        return "VPN";
-      }
-    }
-  }
-
-  // Check VPN Server networks
-  if (networks.VPNServerNetworks) {
-    const vpnServer = networks.VPNServerNetworks;
-    if (vpnServer.Wireguard && vpnServer.Wireguard.includes(networkName)) {
-      return "VPN";
-    }
-    if (vpnServer.OpenVPN && vpnServer.OpenVPN.includes(networkName)) {
-      return "VPN";
-    }
-  }
-
-  // Check Tunnel networks
-  if (networks.TunnelNetworks) {
-    const tunnel = networks.TunnelNetworks;
-    for (const protocol of Object.values(tunnel)) {
-      if (Array.isArray(protocol) && protocol.includes(networkName)) {
-        return "VPN";
+        return "SingleVPN";
       }
     }
   }

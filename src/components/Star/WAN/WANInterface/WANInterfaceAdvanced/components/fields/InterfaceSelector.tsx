@@ -6,7 +6,8 @@ import {
   addOccupiedInterface,
   removeOccupiedInterface,
   getOccupiedInterfacesForRouter,
-  getInterfaceUsage
+  getInterfaceUsage,
+  getUsedLTEInterfaces
 } from "../../../../../utils/InterfaceManagementUtils";
 import type { InterfaceType } from "../../../../../StarContext/CommonType";
 
@@ -61,15 +62,33 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     const getSelectOptions = () => {
       let options: Array<{ value: string; label: string; disabled?: boolean }> = [];
 
+      // Get list of LTE interfaces currently in use (excluding current link)
+      const usedLTEInterfaces = getUsedLTEInterfaces(
+        starContext.state.WAN.WANLink,
+        link.name // Exclude current link being edited
+      );
+
       const buildOption = (iface: string) => {
         const usage = getInterfaceUsage(occupiedInterfaces, iface);
-        // Only block Trunk interfaces - allow WAN reuse
         const isTrunk = usage === "Trunk";
-        const disabled = isTrunk;
+
+        // Check if this is an LTE interface and if it's already in use
+        const isLTEInUse = link.interfaceType === "LTE" &&
+                          usedLTEInterfaces.includes(iface);
+
+        const disabled = isTrunk || isLTEInUse;
+
+        // Determine label based on why it's disabled
+        let label = iface;
+        if (isTrunk) {
+          label = `${iface} (Trunk)`;
+        } else if (isLTEInUse) {
+          label = `${iface} (In Use)`;
+        }
 
         return {
           value: iface,
-          label: disabled ? `${iface} (Trunk)` : iface,
+          label,
           disabled,
         };
       };

@@ -1,11 +1,13 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { SelectionCard, Card, CardHeader, Toggle, Alert } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
+import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export const UPNPStep = component$(() => {
-  // Get stepper context
+  // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
+  const starCtx = useContext(StarContext);
 
   // Access servicesData from context
   const { servicesData } = context.data;
@@ -66,11 +68,26 @@ export const UPNPStep = component$(() => {
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
-    // Update context data
+    // Update context data with only linkType
+    const selectedLinkType = upnpEnabled.value ? linkType.value : "";
     servicesData.upnp = {
-      enabled: upnpEnabled.value,
-      linkType: linkType.value,
+      linkType: selectedLinkType,
     };
+
+    // Update StarContext - explicit property assignment to avoid spread operator issues
+    const currentServices = starCtx.state.ExtraConfig.usefulServices || {};
+    starCtx.updateExtraConfig$({
+      usefulServices: {
+        certificate: currentServices.certificate,
+        ntp: currentServices.ntp,
+        graphing: currentServices.graphing,
+        cloudDDNS: currentServices.cloudDDNS,
+        upnp: {
+          linkType: selectedLinkType,
+        },
+        natpmp: currentServices.natpmp,
+      }
+    });
 
     // Validate: Step is complete when UPNP is disabled or when enabled with a link type selected
     const isComplete = !upnpEnabled.value || (upnpEnabled.value && linkType.value);

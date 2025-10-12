@@ -3,7 +3,8 @@ import { component$, useResource$, Resource, useContext } from "@builder.io/qwik
 import { Select } from "~/components/Core";
 import { StarContext } from "../../../StarContext/StarContext";
 import {
-  getMasterOccupiedInterfaces
+  getMasterOccupiedInterfaces,
+  getUsedLTEInterfaces
 } from "../../../utils/InterfaceManagementUtils";
 
 const interfaceDisplayNames: Record<string, string> = {
@@ -48,10 +49,11 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
     const currentInterfaces = getInterfacesForType();
 
-    const disabledStates = useResource$<boolean[]>(async ({ track }) => {
+    const disabledStates = useResource$<Array<{ disabled: boolean; reason?: string }>>(async ({ track }) => {
       track(() => selectedInterfaceType);
       track(() => availableInterfaces);
       track(() => starContext.state.Choose.RouterModels);
+      track(() => starContext.state.WAN.WANLink);
 
       if (!currentInterfaces.length) return [];
 
@@ -60,19 +62,37 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
         starContext.state.Choose.RouterModels
       );
 
+      // Get list of LTE interfaces currently in use (excluding current link)
+      const linkName = `${mode} Link`; // Easy mode uses consistent naming: "Foreign Link" or "Domestic Link"
+      const usedLTEInterfaces = getUsedLTEInterfaces(
+        starContext.state.WAN.WANLink,
+        linkName
+      );
+
       return Promise.all(
         currentInterfaces.map(async (iface) => {
           // Check if interface is occupied by Trunk (always block Trunk interfaces)
           const usage = occupiedInterfaces.find(item => item.interface === iface)?.UsedFor;
           const isTrunk = usage === "Trunk";
-          return isTrunk;
+
+          // Check if this is an LTE interface and if it's already in use
+          const isLTEInUse = selectedInterfaceType.toLowerCase() === "lte" &&
+                            usedLTEInterfaces.includes(iface);
+
+          const disabled = isTrunk || isLTEInUse;
+          const reason = isTrunk ? "Trunk" : isLTEInUse ? "In Use" : undefined;
+
+          return { disabled, reason };
         }),
       );
     });
 
-    const getDisplayName = (iface: string, isDisabled: boolean) => {
+    const getDisplayName = (iface: string, state: { disabled: boolean; reason?: string }) => {
       const baseName = interfaceDisplayNames[iface] || iface;
-      return isDisabled ? `${baseName} (Trunk)` : baseName;
+      if (state.disabled && state.reason) {
+        return `${baseName} (${state.reason})`;
+      }
+      return baseName;
     };
 
     if (!selectedInterfaceType || !currentInterfaces.length) {
@@ -106,7 +126,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 { value: "", label: $localize`Select interface` },
                 ...currentInterfaces.map((iface) => ({
                   value: iface,
-                  label: getDisplayName(iface, true),
+                  label: getDisplayName(iface, { disabled: true }),
                   disabled: true,
                 })),
               ]}
@@ -121,7 +141,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 ...currentInterfaces.map((iface, index) => ({
                   value: iface,
                   label: getDisplayName(iface, states[index]),
-                  disabled: states[index],
+                  disabled: states[index].disabled,
                 })),
               ]}
             />
