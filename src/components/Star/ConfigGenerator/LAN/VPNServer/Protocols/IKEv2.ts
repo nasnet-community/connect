@@ -158,7 +158,7 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
 
     // For EAP authentication, we need PPP secrets
     if (authMethod === "eap") {
-        config[""].push("# PPP Secrets for EAP-MSCHAPv2 authentication");
+        // config[""].push("# PPP Secrets for EAP-MSCHAPv2 authentication");
         ikev2Users.forEach((user) => {
             const secretParams: string[] = [
                 `name="${user.Username}"`,
@@ -167,7 +167,7 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
             ];
             config["/ppp secret"].push(`add ${secretParams.join(" ")}`);
         });
-    config[""].push("");
+    // config[""].push("");
 
         // Single EAP identity for all users
         const identityParams: string[] = [
@@ -189,7 +189,7 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
         config["/ip ipsec identity"].push(`add ${identityParams.join(" ")}`);
     } else if (authMethod === "pre-shared-key") {
         // PSK identity for simple devices
-        config[""].push("# Pre-Shared Key authentication (fallback for simple devices)");
+        // config[""].push("# Pre-Shared Key authentication (fallback for simple devices)");
         const secret = serverConfig.identities.secret || "DefaultPSK2024!";
         const identityParams: string[] = [
             `peer=${peerName}`,

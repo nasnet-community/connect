@@ -400,14 +400,14 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
     }
 
     // Add routing rule for outbound VPN replies
-    if (config["/ip firewall mangle"].length > 2) {
+    // if (config["/ip firewall mangle"].length > 2) {
         // More than just comments
-        config["/ip firewall mangle"].push(
-            "",
-            `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
-                connection-mark=conn-vpn-server new-routing-mark=to-DOM passthrough=no`,
-        );
-    }
+    config["/ip firewall mangle"].push(
+        "",
+        `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
+            connection-mark=conn-vpn-server new-routing-mark=to-Domestic passthrough=no`,
+    );
+    // }
 
     return config;
 };

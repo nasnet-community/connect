@@ -5,3 +5,4 @@ export * from "./IPAddress";
 export * from "./ScriptSchedule";
 export * from "./Subnet";
 export * from "./utils";
+export * from "./sorter";

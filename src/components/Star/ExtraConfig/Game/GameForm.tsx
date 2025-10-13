@@ -12,7 +12,7 @@ export const GameForm = component$<{ context: StarContextType }>(
 
     // Build network options from StarContext Networks
     const networkOptions = useComputed$(() => {
-      const options = buildNetworkOptions(context.state.Choose.Networks);
+      const options = buildNetworkOptions(context.state.Choose.Networks, context.state.WAN);
       return [
         { value: "none", label: $localize`Select Network` },
         ...options.map((opt) => ({ value: opt.value, label: opt.label })),

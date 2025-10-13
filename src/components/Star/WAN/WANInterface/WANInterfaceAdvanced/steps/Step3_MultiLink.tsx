@@ -34,23 +34,29 @@ export const Step3_MultiLink = component$<Step3Props>(
     const handleStrategyChange = $((value: string) => {
       const newStrategy = value as "LoadBalance" | "Failover" | "RoundRobin" | "Both";
       strategy.value = newStrategy;
-      
-      // Build the complete strategy configuration
-      const strategyConfig: MultiLinkUIConfig = { 
+
+      // Build the complete strategy configuration - only include properties relevant to the selected strategy
+      const strategyConfig: MultiLinkUIConfig = {
         strategy: newStrategy,
-        // Keep existing values or set defaults
-        loadBalanceMethod: wizardState.multiLinkStrategy?.loadBalanceMethod || 
-          ((newStrategy === "LoadBalance" || newStrategy === "Both") ? "PCC" : undefined),
-        failoverCheckInterval: wizardState.multiLinkStrategy?.failoverCheckInterval || 
-          ((newStrategy === "Failover" || newStrategy === "Both") ? 10 : undefined),
-        failoverTimeout: wizardState.multiLinkStrategy?.failoverTimeout || 
-          ((newStrategy === "Failover" || newStrategy === "Both") ? 30 : undefined),
-        roundRobinInterval: wizardState.multiLinkStrategy?.roundRobinInterval || 
-          (newStrategy === "RoundRobin" ? 60 : undefined),
-        packetMode: wizardState.multiLinkStrategy?.packetMode || 
-          (newStrategy === "RoundRobin" ? "connection" : undefined),
       };
-      
+
+      // Add loadBalanceMethod only for LoadBalance or Both strategies
+      if (newStrategy === "LoadBalance" || newStrategy === "Both") {
+        strategyConfig.loadBalanceMethod = wizardState.multiLinkStrategy?.loadBalanceMethod || "PCC";
+      }
+
+      // Add failover settings only for Failover or Both strategies
+      if (newStrategy === "Failover" || newStrategy === "Both") {
+        strategyConfig.failoverCheckInterval = wizardState.multiLinkStrategy?.failoverCheckInterval || 10;
+        strategyConfig.failoverTimeout = wizardState.multiLinkStrategy?.failoverTimeout || 30;
+      }
+
+      // Add round robin settings only for RoundRobin strategy
+      if (newStrategy === "RoundRobin") {
+        strategyConfig.roundRobinInterval = wizardState.multiLinkStrategy?.roundRobinInterval || 60;
+        strategyConfig.packetMode = wizardState.multiLinkStrategy?.packetMode || "connection";
+      }
+
       // Use setMultiLinkStrategy$ which handles initialization
       wizardActions.setMultiLinkStrategy$(strategyConfig);
     });

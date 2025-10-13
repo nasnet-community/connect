@@ -300,6 +300,7 @@ export const useWireguardConfig = (
         if (!config.PeerAllowedIPs) {
           config.PeerAllowedIPs = "0.0.0.0/0";
         }
+        config.Name = "wg-client";
 
         const { isValid, emptyFields } = await validateWireguardConfig(
           config as WireguardClientConfig,
@@ -384,7 +385,7 @@ export const useWireguardConfig = (
 
   const handleManualFormSubmit$ = $(async () => {
     const manualConfig: WireguardClientConfig = {
-      Name: "Wireguard-Client",
+      Name: "wg-client",
       InterfacePrivateKey: privateKey.value,
       InterfaceAddress: address.value,
       InterfaceListenPort: listeningPort.value

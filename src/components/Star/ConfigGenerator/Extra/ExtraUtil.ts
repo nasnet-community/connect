@@ -60,10 +60,10 @@ export const CloudDDNS = (WANLinkType: WANLinkType): RouterConfig => {
         ];
         config["/ip firewall mangle"] = [
             `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
-        new-routing-mark=to-DOM passthrough=no \\
+        new-routing-mark=to-Domestic passthrough=no \\
         comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
             `add action=mark-routing chain=output dst-address-list=MikroTik-Cloud-Services \\
-        protocol=udp dst-port=15252 new-routing-mark=to-DOM passthrough=no \\
+        protocol=udp dst-port=15252 new-routing-mark=to-Domestic passthrough=no \\
         comment="Force IP/Cloud DDNS traffic via Domestic WAN"`,
         ];
     }
@@ -165,7 +165,7 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
     // Add S4I routing rule
     const s4iConfig: RouterConfig = {
         "/ip firewall mangle": [
-            `add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-routing-mark=to-FRN passthrough=no`,
+            `add action=mark-routing chain=output comment="S4I Route" content=s4i.co new-routing-mark=to-Foreign passthrough=no`,
         ],
     };
 

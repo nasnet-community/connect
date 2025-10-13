@@ -9,6 +9,7 @@ import type {
     Subnets,
     VPNClient,
     WANLinkType,
+    Networks,
 } from "~/components/Star/StarContext";
 import {
     Timezone,
@@ -27,6 +28,7 @@ import {
     NTP,
     Graph,
     DDNS,
+    mapNetworkToRoutingTable,
 } from "~/components/Star/ConfigGenerator";
 
 
@@ -183,81 +185,150 @@ export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subn
     return mergeMultipleConfigs(...configs);
 };
 
-export const Game = ( Game: GameConfig[], DomesticLink: boolean ): RouterConfig => {
+const extractRoutingTablesFromNetworks = (networks: Networks): string[] => {
+    const tableNames: string[] = [];
+
+    // Base Networks
+    if (networks.BaseNetworks) {
+        if (networks.BaseNetworks.Domestic) {
+            tableNames.push("to-Domestic");
+        }
+        if (networks.BaseNetworks.Foreign) {
+            tableNames.push("to-Foreign");
+        }
+        if (networks.BaseNetworks.VPN) {
+            tableNames.push("to-VPN");
+        }
+    }
+
+    // Additional Foreign Networks
+    if (networks.ForeignNetworks && networks.ForeignNetworks.length > 0) {
+        networks.ForeignNetworks.forEach((networkName) => {
+            tableNames.push(`to-Foreign-${networkName}`);
+        });
+    }
+
+    // Additional Domestic Networks
+    if (networks.DomesticNetworks && networks.DomesticNetworks.length > 0) {
+        networks.DomesticNetworks.forEach((networkName) => {
+            tableNames.push(`to-Domestic-${networkName}`);
+        });
+    }
+
+    // VPN Client Networks
+    if (networks.VPNClientNetworks) {
+        const vpnClient = networks.VPNClientNetworks;
+
+        // Wireguard
+        if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
+            vpnClient.Wireguard.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+
+        // OpenVPN
+        if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
+            vpnClient.OpenVPN.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+
+        // L2TP
+        if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
+            vpnClient.L2TP.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+
+        // PPTP
+        if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
+            vpnClient.PPTP.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+
+        // SSTP
+        if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
+            vpnClient.SSTP.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+
+        // IKev2
+        if (vpnClient.IKev2 && vpnClient.IKev2.length > 0) {
+            vpnClient.IKev2.forEach((networkName) => {
+                tableNames.push(`to-VPN-${networkName}`);
+            });
+        }
+    }
+
+    return tableNames;
+};
+
+export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall raw": [],
         "/ip firewall mangle": [],
     };
 
-    // Check if Games array has any items
-    if (!Game || Game.length === 0) {
-        return config;
-    }
+    // Only generate game routing rules if games are configured
+    if (games && games.length > 0) {
+        // Determine source address list based on Split network availability
+        // If Split network exists, use "Split-LAN", otherwise use "VPN-LAN"
+        const sourceAddressList = networks.BaseNetworks?.Split ? "Split-LAN" : "VPN-LAN";
 
-    // Only add mangle rules if there are games configured
-    const mangleRules = [
-        // Split Game FRN Traffic
-        `add action=mark-connection chain=prerouting comment=Split-Game-FRN dst-address-list=FRN-IP-Games \\
-           new-connection-mark=conn-game-FRN passthrough=yes src-address-list=Split-LAN`,
-        `add action=mark-routing chain=prerouting comment=Split-Game-FRN connection-mark=conn-game-FRN \\
-           new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
-    ];
+        // Extract all routing tables from networks
+        const routingTables = extractRoutingTablesFromNetworks(networks);
 
-    // Only add DOM traffic rules if DomesticLink is true
-    if (DomesticLink) {
-        mangleRules.push(
-            // Split Game DOM Traffic
-            `add action=mark-connection chain=prerouting comment=Split-Game-DOM dst-address-list=DOM-IP-Games \\
-             new-connection-mark=conn-game-DOM passthrough=yes src-address-list=Split-LAN`,
-            `add action=mark-routing chain=prerouting comment=Split-Game-DOM connection-mark=conn-game-DOM \\
-             new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
-        );
-    }
-
-    // Add VPN traffic rules
-    mangleRules.push(
-        // Split Game VPN Traffic
-        `add action=mark-connection chain=prerouting comment=Split-Game-VPN dst-address-list=VPN-IP-Games \\
-           new-connection-mark=conn-game-VPN passthrough=yes src-address-list=Split-LAN`,
-        `add action=mark-routing chain=prerouting comment=Split-Game-VPN connection-mark=conn-game-VPN \\
-           new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
-    );
-
-    config["/ip firewall mangle"] = mangleRules;
-
-    const Games = Game;
-
-    type BaseLinkType = "foreign" | "domestic" | "vpn" | "none";
-    type MappedLinkType = "FRN" | "DOM" | "VPN" | "NONE";
-
-    const displayMapping: Record<BaseLinkType, MappedLinkType> = {
-        foreign: "FRN",
-        domestic: "DOM",
-        vpn: "VPN",
-        none: "NONE",
-    };
-
-    Games.forEach((game: GameConfig) => {
-        // if (game.link === "none") return;
-
-        if (
-            game.ports.tcp?.length &&
-            game.ports.tcp.some((port) => port !== "")
-        ) {
-            config["/ip firewall raw"].push(
-                `add action=add-dst-to-address-list address-list="${displayMapping[game.link]}-IP-Games" address-list-timeout=1d chain=prerouting comment="${game.name}" dst-address-list=!LOCAL-IP dst-port=${game.ports.tcp.join(",")} protocol=tcp`,
+        // Generate mangle rules for each routing table (Base Networks + Additional Networks)
+        routingTables.forEach((routingTable) => {
+            // Extract the network name from routing table (e.g., "to-Foreign" -> "Foreign")
+            const networkName = routingTable.replace("to-", "");
+            
+            config["/ip firewall mangle"].push(
+                `add action=mark-connection chain=prerouting dst-address-list="${networkName}-IP-Games" \\
+        new-connection-mark="${networkName}-conn-Games" passthrough=yes src-address-list="${sourceAddressList}" \\
+        comment="Routing Games to ${networkName}"`,
+                `add action=mark-routing chain=prerouting connection-mark="${networkName}-conn-Games" \\
+        new-routing-mark="${routingTable}" passthrough=no src-address-list="${sourceAddressList}" \\
+        comment="Routing Games to ${networkName}"`,
             );
-        }
+        });
 
-        if (
-            game.ports.udp?.length &&
-            game.ports.udp.some((port) => port !== "")
-        ) {
-            config["/ip firewall raw"].push(
-                `add action=add-dst-to-address-list address-list="${displayMapping[game.link]}-IP-Games" address-list-timeout=1d chain=prerouting comment="${game.name}" dst-address-list=!LOCAL-IP dst-port=${game.ports.udp.join(",")} protocol=udp`,
-            );
-        }
-    });
+        // Generate raw rules for each game
+        games.forEach((game: GameConfig) => {
+            // Map network name to routing table
+            const routingTable = mapNetworkToRoutingTable(game.network, networks);
+            
+            // Skip if network mapping failed
+            if (!routingTable) {
+                return;
+            }
+
+            // Extract network name from routing table for address list
+            const networkName = routingTable.replace("to-", "");
+
+            // Add TCP port rules
+            if (game.ports.tcp?.length && game.ports.tcp.some((port) => port !== "")) {
+                const tcpPorts = game.ports.tcp.filter((port) => port !== "").join(",");
+                config["/ip firewall raw"].push(
+                    `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
+        chain=prerouting dst-address-list=!LOCAL-IP dst-port=${tcpPorts} protocol=tcp \\
+        comment="${game.name} - TCP"`,
+                );
+            }
+
+            // Add UDP port rules
+            if (game.ports.udp?.length && game.ports.udp.some((port) => port !== "")) {
+                const udpPorts = game.ports.udp.filter((port) => port !== "").join(",");
+                config["/ip firewall raw"].push(
+                    `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
+        chain=prerouting dst-address-list=!LOCAL-IP dst-port=${udpPorts} protocol=udp \\
+        comment="${game.name} - UDP"`,
+                );
+            }
+        });
+    }
 
     return config;
 };
@@ -275,11 +346,11 @@ export const Firewall = (): RouterConfig => {
 
 export const ExtraCG = (
     ExtraConfigState: ExtraConfigState,
-    DomesticLink: boolean,
     wanLinkType: WANLinkType,
     subnets?: Subnets,
     wanLinks?: WANLinks,
     vpnClient?: VPNClient,
+    networks?: Networks,
 ): RouterConfig => {
     const configs: RouterConfig[] = [
         BaseExtra(),
@@ -299,8 +370,9 @@ export const ExtraCG = (
         configs.push(RUI(ExtraConfigState.RUI));
     }
 
-    if (ExtraConfigState.Games) {
-        configs.push(Game(ExtraConfigState.Games, DomesticLink));
+    // Generate Game mangle and raw rules only if Games are configured
+    if (networks && ExtraConfigState.Games && ExtraConfigState.Games.length > 0) {
+        configs.push(Game(ExtraConfigState.Games, networks));
     }
 
     // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)

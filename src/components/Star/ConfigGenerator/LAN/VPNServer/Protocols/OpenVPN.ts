@@ -478,7 +478,7 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     };
 
     if (!credentials || credentials.length === 0) {
-        config[""].push("# No credentials provided for VPN server binding");
+        // config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
 
@@ -521,7 +521,7 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
 
             createdInterfaces.push(staticBindingName);
         });
-        config[""].push("");
+        // config[""].push("");
     }
 
     // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
@@ -540,19 +540,19 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
                 config[section] = (config[section] ?? []).concat(cmds);
             });
         });
-        config[""].push("");
+        // config[""].push("");
     }
 
     // Summary
-    Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
-        config[""].push(
-            `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
-        );
-    });
+    // Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
+    //     config[""].push(
+    //         `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
+    //     );
+    // });
 
-    if (createdInterfaces.length > 0) {
-        config[""].push("");
-    }
+    // if (createdInterfaces.length > 0) {
+    //     config[""].push("");
+    // }
 
     return config;
 };
@@ -645,17 +645,17 @@ export const OVPNServerWrapper = (  serverConfigs: OpenVpnServerConfig[],  users
         finalConfig[""] = [];
     }
 
-    const ovpnUsers = users.filter((user) => user.VPNType.includes("OpenVPN"));
-    const serverNames = serverConfigs.map((config) => config.name).join(", ");
+    // const ovpnUsers = users.filter((user) => user.VPNType.includes("OpenVPN"));
+    // const serverNames = serverConfigs.map((config) => config.name).join(", ");
 
-    finalConfig[""].unshift(
-        "# OpenVPN Server Configuration Summary:",
-        `# Servers: ${serverNames}`,
-        `# Total Servers: ${serverConfigs.length}`,
-        `# Users: ${ovpnUsers.length}`,
-        `# Client Config Export: Automated via Export-OpenVPN-Config script`,
-        "",
-    );
+    // finalConfig[""].unshift(
+    //     "# OpenVPN Server Configuration Summary:",
+    //     `# Servers: ${serverNames}`,
+    //     `# Total Servers: ${serverConfigs.length}`,
+    //     `# Users: ${ovpnUsers.length}`,
+    //     `# Client Config Export: Automated via Export-OpenVPN-Config script`,
+    //     "",
+    // );
 
     return CommandShortner(finalConfig);
 };

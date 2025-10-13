@@ -53,10 +53,10 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
           )}
 
           <Toggle
-            checked={mode === "easy" ? true : splitBand.value}
+            checked={mode === "easy" ? false : splitBand.value}
             onChange$={$((checked: boolean) => {
-              // In easy mode, always keep split band
-              splitBand.value = mode === "easy" ? true : checked;
+              // In easy mode, always keep split band false
+              splitBand.value = mode === "easy" ? false : checked;
             })}
             label={$localize`Split 2.4/5GHz`}
             labelPosition="left"

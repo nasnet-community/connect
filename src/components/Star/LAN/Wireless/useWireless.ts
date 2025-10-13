@@ -46,8 +46,8 @@ export const useWirelessForm = () => {
   const password = useSignal("");
   const isHide = useSignal(false);
   const isDisabled = useSignal(false);
-  // In easy mode, splitBand should default to true
-  const splitBand = useSignal(isEasyMode);
+  // In easy mode (Single SSID), splitBand should default to false
+  const splitBand = useSignal(false);
   const isLoading = useSignal<Record<string, boolean>>({});
   const isFormValid = useSignal(false);
 

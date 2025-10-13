@@ -120,7 +120,7 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     };
 
     if (!credentials || credentials.length === 0) {
-        config[""].push("# No credentials provided for VPN server binding");
+        // config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
 
@@ -131,9 +131,9 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     );
 
     if (filteredCredentials.length === 0) {
-        config[""].push(
-            "# No users configured for supported VPN binding types (PPTP)",
-        );
+        // config[""].push(
+        //     "# No users configured for supported VPN binding types (PPTP)",
+        // );
         return config;
     }
 
@@ -156,10 +156,10 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
 
     // PPTP Static Interface Bindings
     if (usersByVpnType["PPTP"]) {
-        config[""].push("# PPTP Static Interface Bindings");
-        config[""].push(
-            "# Creates static interface for each PPTP user for advanced firewall/queue rules",
-        );
+        // config[""].push("# PPTP Static Interface Bindings");
+        // config[""].push(
+        //     "# Creates static interface for each PPTP user for advanced firewall/queue rules",
+        // );
 
         usersByVpnType["PPTP"].forEach((user) => {
             const staticBindingName = `pptp-${user.Username}`;
@@ -170,7 +170,7 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
 
             createdInterfaces.push(staticBindingName);
         });
-        config[""].push("");
+        // config[""].push("");
     }
 
     // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
@@ -188,19 +188,19 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
                 config[section] = (config[section] ?? []).concat(cmds);
             });
         });
-        config[""].push("");
+        // config[""].push("");
     }
 
     // Summary
-    Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
-        config[""].push(
-            `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
-        );
-    });
+    // Object.entries(usersByVpnType).forEach(([vpnType, users]) => {
+    //     config[""].push(
+    //         `# ${vpnType}: ${users.length} users - ${users.map((u) => u.Username).join(", ")}`,
+    //     );
+    // });
 
-    if (createdInterfaces.length > 0) {
-        config[""].push("");
-    }
+    // if (createdInterfaces.length > 0) {
+    //     config[""].push("");
+    // }
 
     return config;
 };

@@ -7,39 +7,13 @@ import {
     SubnetToNetwork,
     SubnetToTunnelGateway,
     SubnetToTunnelGatewayIP,
-    SubnetToTunnelDHCPRange
+    SubnetToTunnelDHCPRange,
+    shouldSkipMangleRules,
 } from "~/components/Star/ConfigGenerator";
 
 type NetworkType = "Domestic" | "Foreign" | "VPN" | "Split";
 
-// Helper function to check if PCC or NTH load balancing is used
-const shouldSkipMangleRules = (wanLinks?: WANLinks, vpnClient?: VPNClient): boolean => {
-    // Check Foreign WAN Link
-    if (wanLinks?.Foreign?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = wanLinks.Foreign.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
-        }
-    }
-    
-    // Check Domestic WAN Link
-    if (wanLinks?.Domestic?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = wanLinks.Domestic.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
-        }
-    }
-    
-    // Check VPN Client MultiLink Config
-    if (vpnClient?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = vpnClient.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
-        }
-    }
-    
-    return false;
-};
+
 
 // Network Base Generator
 export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, NetworkName?: string ): RouterConfig => {
@@ -175,14 +149,14 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
             `add action=mark-routing chain=prerouting comment="Split-DOM" dst-address-list=SplitDOMAddList \\
                 new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
             // Split DOM Traffic
-            `add action=mark-connection chain=forward comment=Split-DOM dst-address-list=DOMAddList \\
+            `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list=DOMAddList \\
                 new-connection-mark=conn-Split-DOM passthrough=yes src-address-list=Split-LAN`,
-            `add action=mark-routing chain=prerouting comment=Split-DOM connection-mark=conn-Split-DOM \\
+            `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark=conn-Split-DOM \\
                 dst-address-list=DOMAddList new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
             // Split FRN Traffic
-            `add action=mark-connection chain=forward comment=Split-!DOM dst-address-list=!DOMAddList\\
+            `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list=!DOMAddList\\
                 new-connection-mark=conn-Split-!DOM passthrough=yes src-address-list=Split-LAN`,
-            `add action=mark-routing chain=prerouting comment=Split-!DOM connection-mark=conn-Split-!DOM\\
+            `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark=conn-Split-!DOM\\
                 dst-address-list=!DOMAddList new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
         ],
     };

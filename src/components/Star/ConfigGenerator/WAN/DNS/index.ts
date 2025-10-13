@@ -1,2 +1,2 @@
-// // DNS module exports
-// export * from "./DNS";
+// DNS module exports
+export * from "./DNS";

@@ -1,4 +1,5 @@
 import type { Networks } from "~/components/Star/StarContext/Utils/Networks";
+import type { WANState } from "~/components/Star/StarContext/WANType";
 
 export interface NetworkOption {
   value: string;
@@ -7,25 +8,44 @@ export interface NetworkOption {
 }
 
 /**
+ * Helper to check if LoadBalance is enabled for a link type
+ */
+const isLoadBalanceEnabled = (strategy?: string): boolean => {
+  return strategy === "LoadBalance" || strategy === "Both";
+};
+
+/**
  * Builds network options from the Networks structure for game routing selection
  * Excludes Split network as per requirements
+ * Excludes Base Networks when LoadBalance is enabled for that link type
  */
-export const buildNetworkOptions = (networks?: Networks): NetworkOption[] => {
+export const buildNetworkOptions = (networks?: Networks, wanState?: WANState): NetworkOption[] => {
   const options: NetworkOption[] = [];
 
   if (!networks) {
     return options;
   }
 
-  // Add Base Networks (exclude Split)
+  // Check if LoadBalance is enabled for each link type
+  const domesticLoadBalance = isLoadBalanceEnabled(
+    wanState?.WANLink?.Domestic?.MultiLinkConfig?.strategy
+  );
+  const foreignLoadBalance = isLoadBalanceEnabled(
+    wanState?.WANLink?.Foreign?.MultiLinkConfig?.strategy
+  );
+  const vpnLoadBalance = isLoadBalanceEnabled(
+    wanState?.VPNClient?.MultiLinkConfig?.strategy
+  );
+
+  // Add Base Networks (exclude Split and LoadBalance-enabled networks)
   if (networks.BaseNetworks) {
-    if (networks.BaseNetworks.Domestic) {
+    if (networks.BaseNetworks.Domestic && !domesticLoadBalance) {
       options.push({ value: "Domestic", label: $localize`Domestic`, category: "Base" });
     }
-    if (networks.BaseNetworks.Foreign) {
+    if (networks.BaseNetworks.Foreign && !foreignLoadBalance) {
       options.push({ value: "Foreign", label: $localize`Foreign`, category: "Base" });
     }
-    if (networks.BaseNetworks.VPN) {
+    if (networks.BaseNetworks.VPN && !vpnLoadBalance) {
       options.push({ value: "VPN", label: $localize`VPN`, category: "Base" });
     }
   }

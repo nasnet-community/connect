@@ -1,12 +1,13 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { WANState } from "~/components/Star/StarContext";
+import type { WANState, Networks, Subnets } from "~/components/Star/StarContext";
 import { VPNClientWrapper } from "~/components/Star/ConfigGenerator";
 import { generateWANLinksConfig } from "~/components/Star/ConfigGenerator";
 import { MainTableRoute } from "~/components/Star/ConfigGenerator";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+import { DNS } from "~/components/Star/ConfigGenerator";
 
 
-export const WANCG = (WANState: WANState): RouterConfig => {
+export const WANCG = (WANState: WANState, networks: Networks, subnets?: Subnets): RouterConfig => {
     const { WANLink, VPNClient } = WANState;
 
     const configs: RouterConfig[] = [];
@@ -22,6 +23,10 @@ export const WANCG = (WANState: WANState): RouterConfig => {
 
     // 3. Generate Main Table Routes (failover routing for all WAN links and VPN clients)
     configs.push(MainTableRoute(VPNClient, WANLink));
+
+    // 4. Generate DNS Configuration (forwarders, mDNS, IRTLD, blocking, DOH)
+    // Pass WANLink and VPNClient to ensure DNS forwarders use same CheckIPs as routing
+    configs.push(DNS(networks, subnets, WANLink, VPNClient));
 
     return mergeMultipleConfigs(...configs);
 };

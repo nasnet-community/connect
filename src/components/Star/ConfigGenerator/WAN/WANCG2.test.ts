@@ -3,8 +3,28 @@
 //     testWithOutput,
 //     validateRouterConfig,
 // } from "~/test-utils/test-helpers";
-// import type { WANState } from "~/components/Star/StarContext";
+// import type { WANState, Networks, Subnets } from "~/components/Star/StarContext";
 // import { WANCG } from "./WANCG";
+
+// // Helper function to create default Networks configuration
+// const createDefaultNetworks = (): Networks => ({
+//     BaseNetworks: {
+//         Split: true,
+//         Domestic: true,
+//         Foreign: true,
+//         VPN: true,
+//     },
+// });
+
+// // Helper function to create default Subnets configuration
+// const createDefaultSubnets = (): Subnets => ({
+//     BaseNetworks: {
+//         Split: { name: "Split", subnet: "192.168.10.0/24" },
+//         Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+//         Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+//         VPN: { name: "VPN", subnet: "192.168.40.0/24" },
+//     },
+// });
 
 // describe("WANCG Module - Complex Integration Test Suite", () => {
 //     describe("All tests include Foreign + Domestic + VPN Client configurations", () => {
@@ -55,11 +75,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 1: Minimal Complete - 1F + 1D + 1VPN",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -71,6 +93,8 @@
 //                 "/interface wireguard peers",
 //                 "/ip address",
 //                 "/interface ethernet",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -163,11 +187,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 2: Balanced Multi-Link - 2F + 2D + 2VPN Failover",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -179,6 +205,8 @@
 //                 "/interface wireguard peers",
 //                 "/ip address",
 //                 "/interface ethernet",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -291,11 +319,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 3: Mixed Connection Types - 2F + 2D + 2VPN",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -309,6 +339,8 @@
 //                 "/interface wireguard peers",
 //                 "/interface ovpn-client",
 //                 "/interface ethernet",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -444,11 +476,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 4: Advanced Strategies - 3F (PCC) + 3D (NTH) + 3VPN (PCC)",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -461,6 +495,8 @@
 //                 "/interface wireguard peers",
 //                 "/ip address",
 //                 "/interface ethernet",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -572,11 +608,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 5: Wireless+Wired - 2F (WiFi) + 2D (Fiber+Cable) + 2VPN",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -588,6 +626,8 @@
 //                 "/interface wireguard",
 //                 "/interface wireguard peers",
 //                 "/interface l2tp-client",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -686,11 +726,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 6: VLAN/MACVLAN - 2F (VLAN) + 2D (MACVLAN) + 2VPN",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -703,6 +745,8 @@
 //                 "/interface wireguard peers",
 //                 "/ip address",
 //                 "/interface pptp-client",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -872,11 +916,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 7: Maximum Load Balancing - 4F + 4D + 4VPN (All Both strategy)",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -889,6 +935,8 @@
 //                 "/interface wireguard peers",
 //                 "/ip address",
 //                 "/interface ethernet",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -1054,11 +1102,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 8: Enterprise HA - 3F (DHCP+PPPoE+LTE) + 3D + 3VPN",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -1072,6 +1122,8 @@
 //                 "/interface wireguard peers",
 //                 "/interface ovpn-client",
 //                 "/interface l2tp-client",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -1236,11 +1288,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 9: All VPN Protocols - 2F + 2D + 6VPN (WG+OVPN+L2TP+PPTP+SSTP+IKeV2)",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -1255,6 +1309,8 @@
 //                 "/interface l2tp-client",
 //                 "/interface pptp-client",
 //                 "/interface sstp-client",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 
@@ -1377,11 +1433,13 @@
 //                 },
 //             };
 
+//             const networks = createDefaultNetworks();
+
 //             const result = testWithOutput(
 //                 "WANCG",
 //                 "Test 10: Edge Cases - 2F (LTE+WiFi) + 2D (Static+VLAN) + 2VPN (Cert+Advanced)",
-//                 { wanState },
-//                 () => WANCG(wanState),
+//                 { wanState, networks },
+//                 () => WANCG(wanState, networks),
 //             );
 
 //             validateRouterConfig(result, [
@@ -1396,6 +1454,309 @@
 //                 "/interface ovpn-client",
 //                 "/interface wireguard",
 //                 "/interface wireguard peers",
+//                 "/ip dns",
+//                 "/ip dns static",
+//             ]);
+//         });
+
+//         it("Test 11: Network Configuration Variations - Different Base Networks", () => {
+//             const wanState: WANState = {
+//                 WANLink: {
+//                     Foreign: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Foreign-Net-Test",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether1",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                     Domestic: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Domestic-Net-Test",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether2",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                 },
+//                 VPNClient: {
+//                     Wireguard: [
+//                         {
+//                             Name: "WG-Net-Test",
+//                             InterfacePrivateKey: "WGNetTestKey=",
+//                             InterfaceAddress: "10.200.0.2/24",
+//                             InterfaceDNS: "10.200.0.1",
+//                             PeerPublicKey: "WGNetTestPublicKey=",
+//                             PeerEndpointAddress: "nettest.vpn.com",
+//                             PeerEndpointPort: 51820,
+//                             PeerAllowedIPs: "0.0.0.0/0",
+//                             priority: 1,
+//                         },
+//                     ],
+//                 },
+//             };
+
+//             // Test with only Split and Foreign networks (no Domestic, no VPN)
+//             const minimalNetworks: Networks = {
+//                 BaseNetworks: {
+//                     Split: true,
+//                     Foreign: true,
+//                 },
+//             };
+
+//             const result = testWithOutput(
+//                 "WANCG",
+//                 "Test 11: Network Variations - Split+Foreign Only",
+//                 { wanState, networks: minimalNetworks },
+//                 () => WANCG(wanState, minimalNetworks),
+//             );
+
+//             validateRouterConfig(result, [
+//                 "/interface macvlan",
+//                 "/interface list member",
+//                 "/ip dhcp-client",
+//                 "/ip route",
+//                 "/interface wireguard",
+//                 "/interface wireguard peers",
+//                 "/ip address",
+//                 "/ip dns",
+//                 "/ip dns static",
+//             ]);
+//         });
+
+//         it("Test 12: Subnets Integration - Custom Subnet Configuration", () => {
+//             const wanState: WANState = {
+//                 WANLink: {
+//                     Foreign: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Foreign-Subnet-Test",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether1",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                     Domestic: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Domestic-Subnet-Test",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether2",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                 },
+//                 VPNClient: {
+//                     Wireguard: [
+//                         {
+//                             Name: "WG-Subnet-Test",
+//                             InterfacePrivateKey: "WGSubnetTestKey=",
+//                             InterfaceAddress: "10.210.0.2/24",
+//                             InterfaceDNS: "10.210.0.1",
+//                             PeerPublicKey: "WGSubnetTestPublicKey=",
+//                             PeerEndpointAddress: "subnet.vpn.com",
+//                             PeerEndpointPort: 51820,
+//                             PeerAllowedIPs: "0.0.0.0/0",
+//                             priority: 1,
+//                         },
+//                     ],
+//                 },
+//             };
+
+//             const networks = createDefaultNetworks();
+//             const subnets = createDefaultSubnets();
+
+//             const result = testWithOutput(
+//                 "WANCG",
+//                 "Test 12: Subnets Integration - Custom Subnets",
+//                 { wanState, networks, subnets },
+//                 () => WANCG(wanState, networks, subnets),
+//             );
+
+//             validateRouterConfig(result, [
+//                 "/interface macvlan",
+//                 "/interface list member",
+//                 "/ip dhcp-client",
+//                 "/ip route",
+//                 "/interface wireguard",
+//                 "/interface wireguard peers",
+//                 "/ip address",
+//                 "/ip dns",
+//                 "/ip dns static",
+//             ]);
+//         });
+
+//         it("Test 13: Minimal Configuration - Single WAN Link Only", () => {
+//             const wanState: WANState = {
+//                 WANLink: {
+//                     Foreign: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Foreign-Minimal",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether1",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                 },
+//                 // No VPNClient - testing without VPN
+//             };
+
+//             const minimalNetworks: Networks = {
+//                 BaseNetworks: {
+//                     Split: true,
+//                 },
+//             };
+
+//             const result = testWithOutput(
+//                 "WANCG",
+//                 "Test 13: Minimal Config - Single Foreign WAN, No VPN",
+//                 { wanState, networks: minimalNetworks },
+//                 () => WANCG(wanState, minimalNetworks),
+//             );
+
+//             validateRouterConfig(result, [
+//                 "/interface macvlan",
+//                 "/interface list member",
+//                 "/ip dhcp-client",
+//                 "/ip route",
+//                 "/ip dns",
+//                 "/ip dns static",
+//             ]);
+//         });
+
+//         it("Test 14: Network-VPN Protocol Correlation - WG with Custom Networks", () => {
+//             const wanState: WANState = {
+//                 WANLink: {
+//                     Foreign: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Foreign-Correlation",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether1",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                     Domestic: {
+//                         WANConfigs: [
+//                             {
+//                                 name: "Domestic-Correlation",
+//                                 InterfaceConfig: {
+//                                     InterfaceName: "ether2",
+//                                 },
+//                                 ConnectionConfig: {
+//                                     isDHCP: true,
+//                                 },
+//                             },
+//                         ],
+//                     },
+//                 },
+//                 VPNClient: {
+//                     Wireguard: [
+//                         {
+//                             Name: "WG-Network-1",
+//                             InterfacePrivateKey: "WGNet1Key=",
+//                             InterfaceAddress: "10.220.0.2/24",
+//                             InterfaceDNS: "10.220.0.1",
+//                             PeerPublicKey: "WGNet1PublicKey=",
+//                             PeerEndpointAddress: "net1.vpn.com",
+//                             PeerEndpointPort: 51820,
+//                             PeerAllowedIPs: "0.0.0.0/0",
+//                             priority: 1,
+//                         },
+//                         {
+//                             Name: "WG-Network-2",
+//                             InterfacePrivateKey: "WGNet2Key=",
+//                             InterfaceAddress: "10.221.0.2/24",
+//                             InterfaceDNS: "10.221.0.1",
+//                             PeerPublicKey: "WGNet2PublicKey=",
+//                             PeerEndpointAddress: "net2.vpn.com",
+//                             PeerEndpointPort: 51820,
+//                             PeerAllowedIPs: "0.0.0.0/0",
+//                             priority: 2,
+//                         },
+//                     ],
+//                     OpenVPN: [
+//                         {
+//                             Name: "OpenVPN-Network",
+//                             Server: {
+//                                 Address: "network.ovpn.com",
+//                                 Port: 1194,
+//                             },
+//                             AuthType: "Credentials",
+//                             Credentials: {
+//                                 Username: "ovpn-net-user",
+//                                 Password: "ovpn-net-pass",
+//                             },
+//                             Auth: "sha256",
+//                             Protocol: "udp",
+//                             Cipher: "aes256-cbc",
+//                             priority: 3,
+//                         },
+//                     ],
+//                     MultiLinkConfig: {
+//                         strategy: "Failover",
+//                     },
+//                 },
+//             };
+
+//             const networksWithVPN: Networks = {
+//                 BaseNetworks: {
+//                     Split: true,
+//                     Domestic: true,
+//                     Foreign: true,
+//                     VPN: true,
+//                 },
+//                 VPNClientNetworks: {
+//                     Wireguard: ["WG-Network-1", "WG-Network-2"],
+//                     OpenVPN: ["OpenVPN-Network"],
+//                 },
+//             };
+
+//             const result = testWithOutput(
+//                 "WANCG",
+//                 "Test 14: Network-VPN Correlation - Multiple VPNs with Named Networks",
+//                 { wanState, networks: networksWithVPN },
+//                 () => WANCG(wanState, networksWithVPN),
+//             );
+
+//             validateRouterConfig(result, [
+//                 "/interface macvlan",
+//                 "/interface list member",
+//                 "/ip dhcp-client",
+//                 "/ip route",
+//                 "/interface wireguard",
+//                 "/interface wireguard peers",
+//                 "/ip address",
+//                 "/interface ovpn-client",
+//                 "/ip dns",
+//                 "/ip dns static",
 //             ]);
 //         });
 //     });

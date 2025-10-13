@@ -1,261 +1,653 @@
-// import { describe, it, expect } from "vitest";
-// import {
-//     testWithOutput,
-//     validateRouterConfig,
-// } from "~/test-utils/test-helpers";
-// import { DNSForwarders, DNSmDNSRepeater } from "./DNS";
-// import type { DNSConfig } from "../../../StarContext/WANType";
-// import type { Networks } from "../../../StarContext/CommonType";
+import { describe, it, expect } from "vitest";
+import {
+    testWithOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
+import {
+    BaseDNSSettins,
+    DNSForwarders,
+    MDNS,
+    IRTLDRegex,
+    BlockWANDNS,
+    DOH,
+    DNSForeward,
+    FRNDNSFWD,
+    DNS,
+} from "./DNS";
+import type { Networks, Subnets } from "~/components/Star/StarContext";
 
-// describe("DNS Configuration Tests", () => {
-//     describe("DNSForwarders", () => {
-//         it("should create DNS forwarders for configured networks", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 VPNDNS: "8.8.8.8",
-//                 DomesticDNS: "178.22.122.100",
-//                 SplitDNS: "4.2.2.4",
-//                 DOH: {
-//                     domain: "cloudflare-dns.com",
-//                     bindingIP: "178.22.122.100",
-//                 },
-//             };
+describe("DNS Configuration Module", () => {
+    describe("BaseDNSSettins", () => {
+        it("should configure base DNS settings", () => {
+            const result = testWithOutput(
+                "BaseDNSSettins",
+                "Base DNS configuration",
+                {},
+                () => BaseDNSSettins(),
+            );
 
-//             const baseNetworks: Networks[] = [
-//                 "Foreign",
-//                 "VPN",
-//                 "Domestic",
-//                 "Split",
-//             ];
+            validateRouterConfig(result, ["/ip dns"]);
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            // Verify DNS settings
+            expect(result["/ip dns"][0]).toContain("allow-remote-requests=yes");
+            expect(result["/ip dns"][0]).toContain("max-concurrent-queries=200");
+            expect(result["/ip dns"][0]).toContain("cache-size=51200KiB");
+            expect(result["/ip dns"][0]).toContain("cache-max-ttl=7d");
+        });
+    });
 
-//             // Verify DNS forwarders are created
-//             expect(result["/ip dns forwarders"]).toBeDefined();
-//             expect(result["/ip dns forwarders"].length).toBe(4);
+    describe("DNSForwarders", () => {
+        it("should return empty forwarders when networks is undefined", () => {
+            const result = testWithOutput(
+                "DNSForwarders",
+                "Undefined networks",
+                { networks: undefined },
+                () => DNSForwarders(undefined),
+            );
 
-//             // Check specific forwarders
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=FOREIGN dns-servers=1.1.1.1",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=VPN dns-servers=8.8.8.8",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=DOMESTIC dns-servers=178.22.122.100 doh-servers=https://cloudflare-dns.com/dns-query verify-doh-cert=yes",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=SPLIT dns-servers=4.2.2.4",
-//             );
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(0);
+        });
 
-//             // Verify only DNS forwarders are configured (no additional DNS settings)
-//             expect(result["/ip dns forwarders"]).toBeDefined();
-//             expect(result["/ip dns"]).toBeUndefined();
-//         });
+        it("should return empty forwarders when BaseNetworks is undefined", () => {
+            const networks: Networks = {};
 
-//         it("should handle empty DNS configurations", () => {
-//             const dnsConfig: DNSConfig = {};
-//             const baseNetworks: Networks[] = ["Foreign", "VPN"];
+            const result = testWithOutput(
+                "DNSForwarders",
+                "No BaseNetworks defined",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(0);
+        });
 
-//             expect(result["/ip dns forwarders"]).toBeDefined();
-//             expect(result["/ip dns forwarders"].length).toBe(0);
-//             expect(result["/ip dns"]).toBeUndefined();
-//         });
+        it("should configure Domestic DNS forwarder", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Domestic: true,
+                },
+            };
 
-//         it("should only create forwarders for networks with DNS servers", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 // VPN DNS is not configured
-//                 DomesticDNS: "178.22.122.100",
-//             };
-//             const baseNetworks: Networks[] = ["Foreign", "VPN", "Domestic"];
+            const result = testWithOutput(
+                "DNSForwarders",
+                "Domestic network only",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(1);
+            expect(result["/ip dns forwarders"][0]).toContain("name=Domestic");
+            expect(result["/ip dns forwarders"][0]).toContain("dns-servers=");
+            // Should use first 5 Domestic CheckIPs
+            expect(result["/ip dns forwarders"][0]).toContain("10.202.10.10");
+        });
 
-//             expect(result["/ip dns forwarders"].length).toBe(2);
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=FOREIGN dns-servers=1.1.1.1",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=DOMESTIC dns-servers=178.22.122.100",
-//             );
+        it("should configure Foreign DNS forwarder", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Foreign: true,
+                },
+            };
 
-//             // Should not create VPN forwarder
-//             expect(
-//                 result["/ip dns forwarders"].some((cmd) => cmd.includes("VPN")),
-//             ).toBe(false);
+            const result = testWithOutput(
+                "DNSForwarders",
+                "Foreign network only",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             // No additional DNS settings should be configured
-//             expect(result["/ip dns"]).toBeUndefined();
-//         });
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(1);
+            expect(result["/ip dns forwarders"][0]).toContain("name=Foreign");
+            expect(result["/ip dns forwarders"][0]).toContain("dns-servers=");
+            // Should use first 5 Foreign CheckIPs (Google, Cloudflare, etc.)
+            expect(result["/ip dns forwarders"][0]).toContain("8.8.8.8");
+            expect(result["/ip dns forwarders"][0]).toContain("1.1.1.1");
+        });
 
-//         it("should handle DoH configuration correctly", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 DomesticDNS: "178.22.122.100",
-//                 DOH: {
-//                     domain: "dns.google",
-//                     bindingIP: "8.8.8.8",
-//                 },
-//             };
-//             const baseNetworks: Networks[] = ["Foreign", "Domestic"];
+        it("should configure VPN DNS forwarder", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    VPN: true,
+                },
+            };
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            const result = testWithOutput(
+                "DNSForwarders",
+                "VPN network only",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             // Foreign should NOT have DoH - only regular DNS
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=FOREIGN dns-servers=1.1.1.1",
-//             );
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(1);
+            expect(result["/ip dns forwarders"][0]).toContain("name=VPN");
+            expect(result["/ip dns forwarders"][0]).toContain("dns-servers=");
+            // Should use different Foreign CheckIPs (offset by 5)
+            expect(result["/ip dns forwarders"][0]).toContain("9.9.9.9");
+        });
 
-//             // Domestic should use DoH domain (DoH is only configured for Domestic)
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=DOMESTIC dns-servers=178.22.122.100 doh-servers=https://dns.google/dns-query verify-doh-cert=yes",
-//             );
-//         });
+        it("should configure all three DNS forwarders", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Domestic: true,
+                    Foreign: true,
+                    VPN: true,
+                },
+            };
 
-//         it("should only configure DoH for Domestic network", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 VPNDNS: "8.8.8.8",
-//                 SplitDNS: "4.2.2.4",
-//                 DomesticDNS: "178.22.122.100",
-//                 DOH: {
-//                     domain: "cloudflare-dns.com",
-//                     bindingIP: "178.22.122.100",
-//                 },
-//             };
-//             const baseNetworks: Networks[] = [
-//                 "Foreign",
-//                 "VPN",
-//                 "Split",
-//                 "Domestic",
-//             ];
+            const result = testWithOutput(
+                "DNSForwarders",
+                "All networks enabled",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            expect(result["/ip dns forwarders"].length).toBe(3);
 
-//             // Only Domestic should have DoH configured
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=DOMESTIC dns-servers=178.22.122.100 doh-servers=https://cloudflare-dns.com/dns-query verify-doh-cert=yes",
-//             );
+            // Check all three forwarders exist
+            const hasDomestic = result["/ip dns forwarders"].some(
+                (cmd) => cmd.includes("name=Domestic"),
+            );
+            const hasForeign = result["/ip dns forwarders"].some(
+                (cmd) => cmd.includes("name=Foreign"),
+            );
+            const hasVPN = result["/ip dns forwarders"].some((cmd) => cmd.includes("name=VPN"));
 
-//             // All other networks should NOT have DoH
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=FOREIGN dns-servers=1.1.1.1",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=VPN dns-servers=8.8.8.8",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=SPLIT dns-servers=4.2.2.4",
-//             );
+            expect(hasDomestic).toBe(true);
+            expect(hasForeign).toBe(true);
+            expect(hasVPN).toBe(true);
+        });
 
-//             // Verify no DoH configuration in non-domestic forwarders
-//             const nonDomesticForwarders = result["/ip dns forwarders"].filter(
-//                 (cmd) => !cmd.includes("DOMESTIC"),
-//             );
-//             nonDomesticForwarders.forEach((forwarder) => {
-//                 expect(forwarder).not.toContain("doh-servers");
-//                 expect(forwarder).not.toContain("verify-doh-cert");
-//             });
-//         });
+        it("should configure Split network (no DNS forwarder)", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                },
+            };
 
-//         it("should work with no base networks provided", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 VPNDNS: "8.8.8.8",
-//             };
+            const result = testWithOutput(
+                "DNSForwarders",
+                "Split network only",
+                { networks },
+                () => DNSForwarders(networks),
+            );
 
-//             const result = DNSForwarders(dnsConfig);
+            validateRouterConfig(result, ["/ip dns forwarders"]);
+            // Split doesn't create a DNS forwarder
+            expect(result["/ip dns forwarders"].length).toBe(0);
+        });
+    });
 
-//             expect(result["/ip dns forwarders"]).toBeDefined();
-//             expect(result["/ip dns forwarders"].length).toBe(0);
-//             expect(result["/ip dns"]).toBeUndefined();
-//         });
+    describe("MDNS", () => {
+        it("should return empty config when no bridge interfaces exist", () => {
+            const networks: Networks = {
+                BaseNetworks: {},
+            };
 
-//         it("should ignore empty or whitespace DNS servers", () => {
-//             const dnsConfig: DNSConfig = {
-//                 ForeignDNS: "1.1.1.1",
-//                 VPNDNS: "   ", // whitespace only
-//                 DomesticDNS: "", // empty string
-//                 SplitDNS: "4.2.2.4",
-//             };
-//             const baseNetworks: Networks[] = [
-//                 "Foreign",
-//                 "VPN",
-//                 "Domestic",
-//                 "Split",
-//             ];
+            const result = testWithOutput(
+                "MDNS",
+                "No bridge interfaces",
+                { networks },
+                () => MDNS(networks),
+            );
 
-//             const result = DNSForwarders(dnsConfig, baseNetworks);
+            validateRouterConfig(result, ["/ip dns"]);
+            expect(result["/ip dns"].length).toBe(0);
+        });
 
-//             expect(result["/ip dns forwarders"].length).toBe(2);
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=FOREIGN dns-servers=1.1.1.1",
-//             );
-//             expect(result["/ip dns forwarders"]).toContain(
-//                 "add name=SPLIT dns-servers=4.2.2.4",
-//             );
+        it("should configure mDNS for single bridge", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                },
+            };
 
-//             // No additional DNS settings should be configured
-//             expect(result["/ip dns"]).toBeUndefined();
-//         });
-//     });
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: {
+                        name: "Split",
+                        subnet: "192.168.10.0/24",
+                    },
+                },
+            };
 
-//     describe("DNSmDNSRepeater", () => {
-//         it("should create mDNS repeater configuration for base networks", () => {
-//             const baseNetworks: Networks[] = [
-//                 "Foreign",
-//                 "VPN",
-//                 "Domestic",
-//                 "Split",
-//             ];
+            const result = testWithOutput(
+                "MDNS",
+                "Single bridge (Split network)",
+                { networks, subnets },
+                () => MDNS(networks, subnets),
+            );
 
-//             const result = DNSmDNSRepeater(baseNetworks);
+            validateRouterConfig(result, ["/ip dns"]);
+            expect(result["/ip dns"][0]).toContain("mdns-repeat-ifaces=LANBridgeSplit");
+        });
 
-//             expect(result["/ip dns"]).toBeDefined();
-//             expect(result["/ip dns"].length).toBe(1);
-//             expect(result["/ip dns"]).toContain(
-//                 "set mdns-repeat-ifaces=LANBridgeFRN,LANBridgeVPN,LANBridgeDOM,LANBridgeSplit",
-//             );
-//         });
+        it("should configure mDNS for multiple bridges", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                    Domestic: true,
+                    Foreign: true,
+                    VPN: true,
+                },
+            };
 
-//         it("should handle single network", () => {
-//             const baseNetworks: Networks[] = ["Foreign"];
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                    Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+                    Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+                    VPN: { name: "VPN", subnet: "192.168.40.0/24" },
+                },
+            };
 
-//             const result = DNSmDNSRepeater(baseNetworks);
+            const result = testWithOutput(
+                "MDNS",
+                "Multiple bridges (all base networks)",
+                { networks, subnets },
+                () => MDNS(networks, subnets),
+            );
 
-//             expect(result["/ip dns"]).toBeDefined();
-//             expect(result["/ip dns"]).toContain(
-//                 "set mdns-repeat-ifaces=LANBridgeFRN",
-//             );
-//         });
+            validateRouterConfig(result, ["/ip dns"]);
+            expect(result["/ip dns"][0]).toContain("mdns-repeat-ifaces=");
+            expect(result["/ip dns"][0]).toContain("LANBridgeSplit");
+            expect(result["/ip dns"][0]).toContain("LANBridgeDomestic");
+            expect(result["/ip dns"][0]).toContain("LANBridgeForeign");
+            expect(result["/ip dns"][0]).toContain("LANBridgeVPN");
+        });
 
-//         it("should handle empty base networks array", () => {
-//             const baseNetworks: Networks[] = [];
+        it("should only include bridges with valid subnets", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                    Domestic: true,
+                    Foreign: true,
+                },
+            };
 
-//             const result = DNSmDNSRepeater(baseNetworks);
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                    // Domestic has network enabled but no subnet
+                    Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+                },
+            };
 
-//             expect(result["/ip dns"]).toBeDefined();
-//             expect(result["/ip dns"].length).toBe(0);
-//         });
+            const result = testWithOutput(
+                "MDNS",
+                "Networks with partial subnets",
+                { networks, subnets },
+                () => MDNS(networks, subnets),
+            );
 
-//         it("should handle no parameters", () => {
-//             const result = DNSmDNSRepeater();
+            validateRouterConfig(result, ["/ip dns"]);
+            expect(result["/ip dns"][0]).toContain("LANBridgeSplit");
+            expect(result["/ip dns"][0]).toContain("LANBridgeForeign");
+            // Should not include Domestic since it has no subnet
+            expect(result["/ip dns"][0]).not.toContain("LANBridgeDomestic");
+        });
+    });
 
-//             expect(result["/ip dns"]).toBeDefined();
-//             expect(result["/ip dns"].length).toBe(0);
-//         });
+    describe("IRTLDRegex", () => {
+        it("should configure .ir TLD forwarding rule", () => {
+            const result = testWithOutput(
+                "IRTLDRegex",
+                "Iranian TLD forwarding",
+                {},
+                () => IRTLDRegex(),
+            );
 
-//         it("should create correct bridge interface names", () => {
-//             const baseNetworks: Networks[] = ["Domestic", "VPN"];
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"].length).toBe(1);
+            expect(result["/ip dns static"][0]).toContain("name=IRTLD");
+            expect(result["/ip dns static"][0]).toContain("type=FWD");
+            expect(result["/ip dns static"][0]).toContain('regexp=".*\\\\.ir\\$"');
+            expect(result["/ip dns static"][0]).toContain("forward-to=Domestic");
+            expect(result["/ip dns static"][0]).toContain("match-subdomain=yes");
+            expect(result["/ip dns static"][0]).toContain(
+                "Forward .ir TLD queries via domestic DNS",
+            );
+        });
+    });
 
-//             const result = DNSmDNSRepeater(baseNetworks);
+    describe("BlockWANDNS", () => {
+        it("should configure firewall rules to block open recursive DNS", () => {
+            const result = testWithOutput(
+                "BlockWANDNS",
+                "Block open recursive DNS on WAN",
+                {},
+                () => BlockWANDNS(),
+            );
 
-//             expect(result["/ip dns"]).toContain(
-//                 "set mdns-repeat-ifaces=LANBridgeDOM,LANBridgeVPN",
-//             );
-//         });
-//     });
-// });
+            validateRouterConfig(result, ["/ip firewall filter"]);
+            expect(result["/ip firewall filter"].length).toBe(2);
+
+            // Check TCP rule
+            const tcpRule = result["/ip firewall filter"].find((cmd) =>
+                cmd.includes("protocol=tcp"),
+            );
+            expect(tcpRule).toBeDefined();
+            expect(tcpRule).toContain("chain=input");
+            expect(tcpRule).toContain("dst-port=53");
+            expect(tcpRule).toContain("in-interface-list=WAN");
+            expect(tcpRule).toContain("action=drop");
+
+            // Check UDP rule
+            const udpRule = result["/ip firewall filter"].find((cmd) =>
+                cmd.includes("protocol=udp"),
+            );
+            expect(udpRule).toBeDefined();
+            expect(udpRule).toContain("chain=input");
+            expect(udpRule).toContain("dst-port=53");
+            expect(udpRule).toContain("in-interface-list=WAN");
+            expect(udpRule).toContain("action=drop");
+        });
+    });
+
+    describe("DOH", () => {
+        it("should configure DNS over HTTPS with Google DNS", () => {
+            const result = testWithOutput(
+                "DOH",
+                "DNS over HTTPS configuration",
+                {},
+                () => DOH(),
+            );
+
+            validateRouterConfig(result, ["/ip dns static", "/ip dns"]);
+
+            // Check static DNS entry for google.com
+            expect(result["/ip dns static"].length).toBe(1);
+            expect(result["/ip dns static"][0]).toContain("address=8.8.8.8");
+            expect(result["/ip dns static"][0]).toContain('name="google.com"');
+            expect(result["/ip dns static"][0]).toContain("DOH-Domain-Static-Entry");
+
+            // Check DoH server configuration
+            expect(result["/ip dns"].length).toBe(1);
+            expect(result["/ip dns"][0]).toContain('use-doh-server="https://8.8.8.8/dns-query"');
+            expect(result["/ip dns"][0]).toContain("verify-doh-cert=yes");
+        });
+    });
+
+    describe("DNSForeward", () => {
+        it("should create DNS forward to Domestic network", () => {
+            const result = testWithOutput(
+                "DNSForeward",
+                "Forward to Domestic network",
+                { address: "example.ir", network: "Domestic" },
+                () => DNSForeward("example.ir", "Domestic"),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"].length).toBe(1);
+            expect(result["/ip dns static"][0]).toContain("name=example.ir");
+            expect(result["/ip dns static"][0]).toContain("type=FWD");
+            expect(result["/ip dns static"][0]).toContain("forward-to=Domestic");
+        });
+
+        it("should create DNS forward to Foreign network", () => {
+            const result = testWithOutput(
+                "DNSForeward",
+                "Forward to Foreign network",
+                { address: "example.com", network: "Foreign" },
+                () => DNSForeward("example.com", "Foreign"),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"][0]).toContain("name=example.com");
+            expect(result["/ip dns static"][0]).toContain("forward-to=Foreign");
+        });
+
+        it("should create DNS forward to VPN network", () => {
+            const result = testWithOutput(
+                "DNSForeward",
+                "Forward to VPN network",
+                { address: "vpn.example.com", network: "VPN" },
+                () => DNSForeward("vpn.example.com", "VPN"),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"][0]).toContain("name=vpn.example.com");
+            expect(result["/ip dns static"][0]).toContain("forward-to=VPN");
+        });
+
+        it("should create DNS forward with custom comment", () => {
+            const comment = "Custom domain routing";
+            const result = testWithOutput(
+                "DNSForeward",
+                "Forward with custom comment",
+                { address: "custom.example.com", network: "Foreign", comment },
+                () => DNSForeward("custom.example.com", "Foreign", comment),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"][0]).toContain('comment="Custom domain routing"');
+        });
+
+        it("should create DNS forward without comment when not provided", () => {
+            const result = testWithOutput(
+                "DNSForeward",
+                "Forward without comment",
+                { address: "nocomment.com", network: "Foreign" },
+                () => DNSForeward("nocomment.com", "Foreign"),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"][0]).not.toContain("comment=");
+        });
+    });
+
+    describe("FRNDNSFWD", () => {
+        it("should configure DNS forwarding for s4i.co and starlink4iran.com", () => {
+            const result = testWithOutput(
+                "FRNDNSFWD",
+                "Forward FRN domains via Foreign DNS",
+                {},
+                () => FRNDNSFWD(),
+            );
+
+            validateRouterConfig(result, ["/ip dns static"]);
+            expect(result["/ip dns static"].length).toBe(2);
+
+            // Check s4i.co forward
+            const s4iForward = result["/ip dns static"].find((cmd) => cmd.includes("name=s4i.co"));
+            expect(s4iForward).toBeDefined();
+            expect(s4iForward).toContain("type=FWD");
+            expect(s4iForward).toContain("forward-to=Foreign");
+            expect(s4iForward).toContain("Forward s4i.co via Foreign DNS");
+
+            // Check starlink4iran.com forward
+            const starlinkForward = result["/ip dns static"].find((cmd) =>
+                cmd.includes("name=starlink4iran.com"),
+            );
+            expect(starlinkForward).toBeDefined();
+            expect(starlinkForward).toContain("type=FWD");
+            expect(starlinkForward).toContain("forward-to=Foreign");
+            expect(starlinkForward).toContain("Forward starlink4iran.com via Foreign DNS");
+        });
+    });
+
+    describe("DNS", () => {
+        it("should merge all DNS configurations with minimal setup", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                },
+            };
+
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                },
+            };
+
+            const result = testWithOutput(
+                "DNS",
+                "Complete DNS configuration - minimal setup",
+                { networks, subnets },
+                () => DNS(networks, subnets),
+            );
+
+            // Should include sections from all DNS functions
+            validateRouterConfig(result, [
+                "/ip dns",
+                "/ip dns forwarders",
+                "/ip dns static",
+                "/ip firewall filter",
+            ]);
+
+            // Verify base DNS settings are included
+            const dnsSetCommand = result["/ip dns"].find((cmd) =>
+                cmd.includes("allow-remote-requests=yes"),
+            );
+            expect(dnsSetCommand).toBeDefined();
+
+            // Verify mDNS is configured
+            const mdnsCommand = result["/ip dns"].find((cmd) =>
+                cmd.includes("mdns-repeat-ifaces="),
+            );
+            expect(mdnsCommand).toBeDefined();
+
+            // Verify .ir TLD regex is included
+            const irTldCommand = result["/ip dns static"].find((cmd) => cmd.includes("name=IRTLD"));
+            expect(irTldCommand).toBeDefined();
+
+            // Verify WAN DNS blocking
+            expect(result["/ip firewall filter"].length).toBeGreaterThanOrEqual(2);
+
+            // Verify DoH configuration
+            const dohCommand = result["/ip dns"].find((cmd) => cmd.includes("use-doh-server="));
+            expect(dohCommand).toBeDefined();
+
+            // Verify FRN domain forwarding
+            const s4iCommand = result["/ip dns static"].find((cmd) => cmd.includes("s4i.co"));
+            expect(s4iCommand).toBeDefined();
+        });
+
+        it("should merge all DNS configurations with full setup", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Split: true,
+                    Domestic: true,
+                    Foreign: true,
+                    VPN: true,
+                },
+            };
+
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Split: { name: "Split", subnet: "192.168.10.0/24" },
+                    Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+                    Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+                    VPN: { name: "VPN", subnet: "192.168.40.0/24" },
+                },
+            };
+
+            const result = testWithOutput(
+                "DNS",
+                "Complete DNS configuration - full setup",
+                { networks, subnets },
+                () => DNS(networks, subnets),
+            );
+
+            // Should have all DNS forwarders
+            expect(result["/ip dns forwarders"].length).toBe(3);
+
+            // Should have all bridge interfaces in mDNS
+            const mdnsCommand = result["/ip dns"].find((cmd) =>
+                cmd.includes("mdns-repeat-ifaces="),
+            );
+            expect(mdnsCommand).toContain("LANBridgeSplit");
+            expect(mdnsCommand).toContain("LANBridgeDomestic");
+            expect(mdnsCommand).toContain("LANBridgeForeign");
+            expect(mdnsCommand).toContain("LANBridgeVPN");
+
+            // Verify all static DNS entries
+            // Should include: DoH google.com, IRTLD regex, s4i.co, starlink4iran.com
+            expect(result["/ip dns static"].length).toBeGreaterThanOrEqual(4);
+        });
+
+        it("should handle empty networks gracefully", () => {
+            const networks: Networks = {
+                BaseNetworks: {},
+            };
+
+            const result = testWithOutput(
+                "DNS",
+                "DNS configuration with empty networks",
+                { networks },
+                () => DNS(networks),
+            );
+
+            // Should still have base configurations
+            validateRouterConfig(result, ["/ip dns", "/ip dns static", "/ip firewall filter"]);
+
+            // Base DNS settings should be present
+            expect(result["/ip dns"].length).toBeGreaterThan(0);
+
+            // Static DNS entries (DoH, IRTLD, FRN domains) should be present
+            expect(result["/ip dns static"].length).toBeGreaterThan(0);
+
+            // Firewall rules should be present
+            expect(result["/ip firewall filter"].length).toBeGreaterThanOrEqual(2);
+        });
+
+        it("should configure all components correctly", () => {
+            const networks: Networks = {
+                BaseNetworks: {
+                    Domestic: true,
+                    Foreign: true,
+                },
+            };
+
+            const subnets: Subnets = {
+                BaseNetworks: {
+                    Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+                    Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+                },
+            };
+
+            const result = testWithOutput(
+                "DNS",
+                "Complete DNS with Domestic and Foreign networks",
+                { networks, subnets },
+                () => DNS(networks, subnets),
+            );
+
+            // Verify DNS forwarders
+            const domesticForwarder = result["/ip dns forwarders"].find((cmd) =>
+                cmd.includes("name=Domestic"),
+            );
+            const foreignForwarder = result["/ip dns forwarders"].find((cmd) =>
+                cmd.includes("name=Foreign"),
+            );
+            expect(domesticForwarder).toBeDefined();
+            expect(foreignForwarder).toBeDefined();
+
+            // Verify mDNS bridges
+            const mdnsCommand = result["/ip dns"].find((cmd) =>
+                cmd.includes("mdns-repeat-ifaces="),
+            );
+            expect(mdnsCommand).toContain("LANBridgeDomestic");
+            expect(mdnsCommand).toContain("LANBridgeForeign");
+
+            // Verify all static configurations are present
+            expect(
+                result["/ip dns static"].some((cmd) => cmd.includes("name=IRTLD")),
+            ).toBe(true);
+            expect(
+                result["/ip dns static"].some((cmd) => cmd.includes("name=s4i.co")),
+            ).toBe(true);
+            expect(
+                result["/ip dns static"].some((cmd) => cmd.includes("starlink4iran.com")),
+            ).toBe(true);
+            expect(
+                result["/ip dns static"].some((cmd) => cmd.includes('name="google.com"')),
+            ).toBe(true);
+        });
+    });
+});
