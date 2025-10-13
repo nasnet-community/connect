@@ -11,7 +11,7 @@
 //     TunnelNetworkBaseGenerator,
 // } from "./Networks";
 // import { testWithOutput, validateRouterConfig, } from "~/test-utils/test-helpers";
-// import type { Subnets } from "~/components/Star/StarContext/LANType";
+// import type { Subnets, WANLinks, VPNClient } from "~/components/Star/StarContext";
 
 // describe("Networks Module Tests", () => {
 
@@ -142,15 +142,15 @@
 //     });
 
 //     describe("Base Network Functions", () => {
-//         it("should generate DomesticBase configuration", () => {
+//         it("should generate DomesticBase configuration with mangle rules", () => {
 //             testWithOutput(
 //                 "DomesticBase",
-//                 "Generate domestic base configuration",
-//                 { NetworkName: "Domestic", Subnet: "192.168.20.0/24" },
-//                 () => DomesticBase("Domestic", "192.168.20.0/24"),
+//                 "Generate domestic base configuration with mangle rules",
+//                 { NetworkName: "Domestic", Subnet: "192.168.20.0/24", skipMangle: false },
+//                 () => DomesticBase("Domestic", "192.168.20.0/24", false),
 //             );
 
-//             const result = DomesticBase("Domestic", "192.168.20.0/24");
+//             const result = DomesticBase("Domestic", "192.168.20.0/24", false);
 //             validateRouterConfig(result, [
 //                 "/interface bridge",
 //                 "/interface list",
@@ -166,15 +166,38 @@
 //             ]);
 //         });
 
-//         it("should generate ForeignBase configuration", () => {
+//         it("should generate DomesticBase configuration without mangle rules when skipMangle=true", () => {
+//             testWithOutput(
+//                 "DomesticBase",
+//                 "Generate domestic base configuration without mangle rules",
+//                 { NetworkName: "Domestic", Subnet: "192.168.20.0/24", skipMangle: true },
+//                 () => DomesticBase("Domestic", "192.168.20.0/24", true),
+//             );
+
+//             const result = DomesticBase("Domestic", "192.168.20.0/24", true);
+//             validateRouterConfig(result, [
+//                 "/interface bridge",
+//                 "/interface list",
+//                 "/ip pool",
+//                 "/ip dhcp-server",
+//                 "/ip dhcp-server network",
+//                 "/ip address",
+//                 "/routing table",
+//                 "/interface list member",
+//                 "/ip firewall address-list",
+//                 "/ip route",
+//             ]);
+//         });
+
+//         it("should generate ForeignBase configuration with mangle rules", () => {
 //             testWithOutput(
 //                 "ForeignBase",
-//                 "Generate foreign base configuration",
-//                 { NetworkName: "Foreign", Subnet: "192.168.30.0/24" },
-//                 () => ForeignBase("Foreign", "192.168.30.0/24"),
+//                 "Generate foreign base configuration with mangle rules",
+//                 { NetworkName: "Foreign", Subnet: "192.168.30.0/24", skipMangle: false },
+//                 () => ForeignBase("Foreign", "192.168.30.0/24", false),
 //             );
 
-//             const result = ForeignBase("Foreign", "192.168.30.0/24");
+//             const result = ForeignBase("Foreign", "192.168.30.0/24", false);
 //             validateRouterConfig(result, [
 //                 "/interface bridge",
 //                 "/interface list",
@@ -190,15 +213,38 @@
 //             ]);
 //         });
 
-//         it("should generate VPNBase configuration", () => {
+//         it("should generate ForeignBase configuration without mangle rules when skipMangle=true", () => {
 //             testWithOutput(
-//                 "VPNBase",
-//                 "Generate VPN base configuration",
-//                 { NetworkName: "VPN", Subnet: "192.168.40.0/24" },
-//                 () => VPNBase("VPN", "192.168.40.0/24"),
+//                 "ForeignBase",
+//                 "Generate foreign base configuration without mangle rules",
+//                 { NetworkName: "Foreign", Subnet: "192.168.30.0/24", skipMangle: true },
+//                 () => ForeignBase("Foreign", "192.168.30.0/24", true),
 //             );
 
-//             const result = VPNBase("VPN", "192.168.40.0/24");
+//             const result = ForeignBase("Foreign", "192.168.30.0/24", true);
+//             validateRouterConfig(result, [
+//                 "/interface bridge",
+//                 "/interface list",
+//                 "/ip pool",
+//                 "/ip dhcp-server",
+//                 "/ip dhcp-server network",
+//                 "/ip address",
+//                 "/routing table",
+//                 "/interface list member",
+//                 "/ip firewall address-list",
+//                 "/ip route",
+//             ]);
+//         });
+
+//         it("should generate VPNBase configuration with mangle rules", () => {
+//             testWithOutput(
+//                 "VPNBase",
+//                 "Generate VPN base configuration with mangle rules",
+//                 { NetworkName: "VPN", Subnet: "192.168.40.0/24", skipMangle: false },
+//                 () => VPNBase("VPN", "192.168.40.0/24", false),
+//             );
+
+//             const result = VPNBase("VPN", "192.168.40.0/24", false);
 //             validateRouterConfig(result, [
 //                 "/interface bridge",
 //                 "/interface list",
@@ -210,6 +256,29 @@
 //                 "/interface list member",
 //                 "/ip firewall address-list",
 //                 "/ip firewall mangle",
+//                 "/ip route",
+//             ]);
+//         });
+
+//         it("should generate VPNBase configuration without mangle rules when skipMangle=true", () => {
+//             testWithOutput(
+//                 "VPNBase",
+//                 "Generate VPN base configuration without mangle rules",
+//                 { NetworkName: "VPN", Subnet: "192.168.40.0/24", skipMangle: true },
+//                 () => VPNBase("VPN", "192.168.40.0/24", true),
+//             );
+
+//             const result = VPNBase("VPN", "192.168.40.0/24", true);
+//             validateRouterConfig(result, [
+//                 "/interface bridge",
+//                 "/interface list",
+//                 "/ip pool",
+//                 "/ip dhcp-server",
+//                 "/ip dhcp-server network",
+//                 "/ip address",
+//                 "/routing table",
+//                 "/interface list member",
+//                 "/ip firewall address-list",
 //                 "/ip route",
 //             ]);
 //         });
@@ -243,15 +312,15 @@
 //         describe("addNetwork", () => {
 //             it("should generate network configuration using DomesticBase generator", () => {
 //                 const network = { name: "MyDomestic", subnet: "192.168.100.0/24" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Generate network with DomesticBase generator",
-//                     { network, defaultName: "Domestic", generator: "DomesticBase" },
-//                     () => addNetwork(network, "Domestic", DomesticBase),
+//                     { network, defaultName: "Domestic", generator: "DomesticBase", skipMangle: false },
+//                     () => addNetwork(network, "Domestic", DomesticBase, false),
 //                 );
 
-//                 const result = addNetwork(network, "Domestic", DomesticBase);
+//                 const result = addNetwork(network, "Domestic", DomesticBase, false);
 //                 validateRouterConfig(result, [
 //                     "/interface bridge",
 //                     "/interface list",
@@ -269,7 +338,7 @@
 
 //             it("should use default name when network name is empty", () => {
 //                 const network = { name: "", subnet: "192.168.50.0/24" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Use default name for network without name",
@@ -283,7 +352,7 @@
 
 //             it("should return empty config when subnet is empty", () => {
 //                 const network = { name: "TestNet", subnet: "" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Return empty config for network without subnet",
@@ -297,7 +366,7 @@
 
 //             it("should work with different generator functions", () => {
 //                 const network = { name: "TestSplit", subnet: "10.0.0.0/24" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Generate split network configuration",
@@ -311,30 +380,44 @@
 
 //             it("should work with VPNBase generator", () => {
 //                 const network = { name: "VPN-Main", subnet: "10.10.0.0/24" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Generate VPN network configuration",
-//                     { network, defaultName: "VPN", generator: "VPNBase" },
-//                     () => addNetwork(network, "VPN", VPNBase),
+//                     { network, defaultName: "VPN", generator: "VPNBase", skipMangle: false },
+//                     () => addNetwork(network, "VPN", VPNBase, false),
 //                 );
 
-//                 const result = addNetwork(network, "VPN", VPNBase);
+//                 const result = addNetwork(network, "VPN", VPNBase, false);
 //                 validateRouterConfig(result, ["/ip firewall mangle"]);
 //             });
 
 //             it("should work with ForeignBase generator", () => {
 //                 const network = { name: "Foreign-Office", subnet: "192.168.200.0/24" };
-                
+
 //                 testWithOutput(
 //                     "addNetwork",
 //                     "Generate foreign network configuration",
-//                     { network, defaultName: "Foreign", generator: "ForeignBase" },
-//                     () => addNetwork(network, "Foreign", ForeignBase),
+//                     { network, defaultName: "Foreign", generator: "ForeignBase", skipMangle: false },
+//                     () => addNetwork(network, "Foreign", ForeignBase, false),
 //                 );
 
-//                 const result = addNetwork(network, "Foreign", ForeignBase);
+//                 const result = addNetwork(network, "Foreign", ForeignBase, false);
 //                 validateRouterConfig(result, ["/ip firewall mangle"]);
+//             });
+
+//             it("should skip mangle rules when skipMangle=true", () => {
+//                 const network = { name: "Foreign-Office", subnet: "192.168.200.0/24" };
+
+//                 testWithOutput(
+//                     "addNetwork",
+//                     "Generate foreign network configuration without mangle rules",
+//                     { network, defaultName: "Foreign", generator: "ForeignBase", skipMangle: true },
+//                     () => addNetwork(network, "Foreign", ForeignBase, true),
+//                 );
+
+//                 const result = addNetwork(network, "Foreign", ForeignBase, true);
+//                 validateRouterConfig(result);
 //             });
 //         });
 
@@ -552,187 +635,85 @@
 //             validateRouterConfig(result);
 //         });
 
-//         // NOTE: VPN Server Networks and Tunnel Networks tests are commented out
-//         // because the implementation is currently disabled in Networks.ts (lines 245-263)
-//         // Uncomment these tests when the functionality is re-enabled
+//         it("should skip mangle rules when Foreign WAN uses PCC load balancing", () => {
+//             const subnets: Subnets = {
+//                 BaseNetworks: {
+//                     Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+//                     Foreign: { name: "Foreign", subnet: "192.168.30.0/24" },
+//                 },
+//             };
 
-//         // it("should generate configuration for WireGuard Server networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         VPNServerNetworks: {
-//         //             Wireguard: [
-//         //                 { name: "WG-Server-1", subnet: "10.100.1.0/24" },
-//         //                 { name: "WG-Server-2", subnet: "10.100.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
+//             const wanLinks: WANLinks = {
+//                 Foreign: {
+//                     MultiLinkConfig: {
+//                         loadBalanceMethod: "PCC",
+//                         Links: [],
+//                     },
+//                 },
+//             };
 
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for WireGuard Server networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
+//             testWithOutput(
+//                 "Networks",
+//                 "Skip mangle rules with PCC load balancing on Foreign WAN",
+//                 { Subnets: subnets, WANLinks: wanLinks },
+//                 () => Networks(subnets, wanLinks),
+//             );
 
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
+//             const result = Networks(subnets, wanLinks);
+//             validateRouterConfig(result);
+//         });
 
-//         // it("should generate configuration for OpenVPN Server networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         VPNServerNetworks: {
-//         //             OpenVPN: [
-//         //                 { name: "OVPN-Server-1", subnet: "10.200.1.0/24" },
-//         //                 { name: "OVPN-Server-2", subnet: "10.200.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
+//         it("should skip mangle rules when Domestic WAN uses NTH load balancing", () => {
+//             const subnets: Subnets = {
+//                 BaseNetworks: {
+//                     Domestic: { name: "Domestic", subnet: "192.168.20.0/24" },
+//                 },
+//             };
 
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for OpenVPN Server networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
+//             const wanLinks: WANLinks = {
+//                 Domestic: {
+//                     MultiLinkConfig: {
+//                         loadBalanceMethod: "NTH",
+//                         Links: [],
+//                     },
+//                 },
+//             };
 
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
+//             testWithOutput(
+//                 "Networks",
+//                 "Skip mangle rules with NTH load balancing on Domestic WAN",
+//                 { Subnets: subnets, WANLinks: wanLinks },
+//                 () => Networks(subnets, wanLinks),
+//             );
 
-//         // it("should generate configuration for all VPN Server protocols", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         VPNServerNetworks: {
-//         //             Wireguard: [{ name: "WG-Main", subnet: "10.100.1.0/24" }],
-//         //             OpenVPN: [{ name: "OVPN-Main", subnet: "10.200.1.0/24" }],
-//         //             L2TP: { name: "L2TP-Main", subnet: "10.150.1.0/24" },
-//         //             PPTP: { name: "PPTP-Main", subnet: "10.160.1.0/24" },
-//         //             SSTP: { name: "SSTP-Main", subnet: "10.170.1.0/24" },
-//         //             IKev2: { name: "IKEv2-Main", subnet: "10.180.1.0/24" },
-//         //         },
-//         //     };
+//             const result = Networks(subnets, wanLinks);
+//             validateRouterConfig(result);
+//         });
 
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for all VPN Server protocols",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
+//         it("should skip mangle rules when VPN Client uses PCC load balancing", () => {
+//             const subnets: Subnets = {
+//                 BaseNetworks: {
+//                     VPN: { name: "VPN", subnet: "192.168.40.0/24" },
+//                 },
+//             };
 
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
+//             const vpnClient: VPNClient = {
+//                 MultiLinkConfig: {
+//                     loadBalanceMethod: "PCC",
+//                     Links: [],
+//                 },
+//             };
 
-//         // it("should generate configuration for IPIP Tunnel networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         TunnelNetworks: {
-//         //             IPIP: [
-//         //                 { name: "IPIP-Site1", subnet: "172.16.1.0/24" },
-//         //                 { name: "IPIP-Site2", subnet: "172.16.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
+//             testWithOutput(
+//                 "Networks",
+//                 "Skip mangle rules with PCC load balancing on VPN Client",
+//                 { Subnets: subnets, VPNClient: vpnClient },
+//                 () => Networks(subnets, undefined, vpnClient),
+//             );
 
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for IPIP Tunnel networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
-
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
-
-//         // it("should generate configuration for EoIP Tunnel networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         TunnelNetworks: {
-//         //             Eoip: [
-//         //                 { name: "EoIP-Site1", subnet: "172.17.1.0/24" },
-//         //                 { name: "EoIP-Site2", subnet: "172.17.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
-
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for EoIP Tunnel networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
-
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
-
-//         // it("should generate configuration for GRE Tunnel networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         TunnelNetworks: {
-//         //             Gre: [
-//         //                 { name: "GRE-Site1", subnet: "172.18.1.0/24" },
-//         //                 { name: "GRE-Site2", subnet: "172.18.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
-
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for GRE Tunnel networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
-
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
-
-//         // it("should generate configuration for VXLAN Tunnel networks", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         TunnelNetworks: {
-//         //             Vxlan: [
-//         //                 { name: "VXLAN-Site1", subnet: "172.19.1.0/24" },
-//         //                 { name: "VXLAN-Site2", subnet: "172.19.2.0/24" },
-//         //             ],
-//         //         },
-//         //     };
-
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for VXLAN Tunnel networks",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
-
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
-
-//         // it("should generate configuration for all tunnel types", () => {
-//         //     const subnets: Subnets = {
-//         //         BaseNetworks: {},
-//         //         TunnelNetworks: {
-//         //             IPIP: [{ name: "IPIP-Main", subnet: "172.16.1.0/24" }],
-//         //             Eoip: [{ name: "EoIP-Main", subnet: "172.17.1.0/24" }],
-//         //             Gre: [{ name: "GRE-Main", subnet: "172.18.1.0/24" }],
-//         //             Vxlan: [{ name: "VXLAN-Main", subnet: "172.19.1.0/24" }],
-//         //         },
-//         //     };
-
-//         //     testWithOutput(
-//         //         "Networks",
-//         //         "Generate configuration for all tunnel types",
-//         //         { Subnets: subnets },
-//         //         () => Networks(subnets),
-//         //     );
-
-//         //     const result = Networks(subnets);
-//         //     validateRouterConfig(result);
-//         // });
+//             const result = Networks(subnets, undefined, vpnClient);
+//             validateRouterConfig(result);
+//         });
 
 //         it("should generate complex multi-network configuration", () => {
 //             const subnets: Subnets = {
@@ -753,23 +734,6 @@
 //                     Wireguard: [
 //                         { name: "VPN-US", subnet: "10.10.10.0/24" },
 //                         { name: "VPN-EU", subnet: "10.10.20.0/24" },
-//                     ],
-//                 },
-//                 VPNServerNetworks: {
-//                     Wireguard: [
-//                         { name: "WG-Main", subnet: "10.100.1.0/24" },
-//                     ],
-//                     OpenVPN: [
-//                         { name: "OVPN-Main", subnet: "10.200.1.0/24" },
-//                     ],
-//                     L2TP: { name: "L2TP-Main", subnet: "10.150.1.0/24" },
-//                 },
-//                 TunnelNetworks: {
-//                     IPIP: [
-//                         { name: "IPIP-Site1", subnet: "172.16.1.0/24" },
-//                     ],
-//                     Gre: [
-//                         { name: "GRE-Site1", subnet: "172.18.1.0/24" },
 //                     ],
 //                 },
 //             };
@@ -839,38 +803,6 @@
 //                         { name: "", subnet: "10.10.20.0/24" },
 //                     ],
 //                 },
-//                 VPNServerNetworks: {
-//                     Wireguard: [
-//                         { name: "", subnet: "10.100.1.0/24" },
-//                         { name: "", subnet: "10.100.2.0/24" },
-//                     ],
-//                     OpenVPN: [
-//                         { name: "", subnet: "10.200.1.0/24" },
-//                         { name: "", subnet: "10.200.2.0/24" },
-//                     ],
-//                     L2TP: { name: "", subnet: "10.150.1.0/24" },
-//                     PPTP: { name: "", subnet: "10.160.1.0/24" },
-//                     SSTP: { name: "", subnet: "10.170.1.0/24" },
-//                     IKev2: { name: "", subnet: "10.180.1.0/24" },
-//                 },
-//                 TunnelNetworks: {
-//                     IPIP: [
-//                         { name: "", subnet: "172.16.1.0/24" },
-//                         { name: "", subnet: "172.16.2.0/24" },
-//                     ],
-//                     Eoip: [
-//                         { name: "", subnet: "172.17.1.0/24" },
-//                         { name: "", subnet: "172.17.2.0/24" },
-//                     ],
-//                     Gre: [
-//                         { name: "", subnet: "172.18.1.0/24" },
-//                         { name: "", subnet: "172.18.2.0/24" },
-//                     ],
-//                     Vxlan: [
-//                         { name: "", subnet: "172.19.1.0/24" },
-//                         { name: "", subnet: "172.19.2.0/24" },
-//                     ],
-//                 },
 //             };
 
 //             testWithOutput(
@@ -893,18 +825,6 @@
 //                 ForeignNetworks: [
 //                     { name: "External", subnet: "172.20.0.0/16" },
 //                 ],
-//                 VPNServerNetworks: {
-//                     Wireguard: [
-//                         { name: "WG-Production", subnet: "10.100.1.0/24" },
-//                         { name: "WG-Testing", subnet: "10.100.2.0/24" },
-//                     ],
-//                     L2TP: { name: "", subnet: "" }, // Empty subnet
-//                 },
-//                 TunnelNetworks: {
-//                     Gre: [
-//                         { name: "GRE-MainSite", subnet: "172.30.1.0/24" },
-//                     ],
-//                 },
 //             };
 
 //             testWithOutput(
@@ -928,8 +848,6 @@
 //                 ForeignNetworks: undefined,
 //                 DomesticNetworks: undefined,
 //                 VPNClientNetworks: undefined,
-//                 VPNServerNetworks: undefined,
-//                 TunnelNetworks: undefined,
 //             };
 
 //             testWithOutput(
@@ -951,16 +869,6 @@
 //                 VPNClientNetworks: {
 //                     Wireguard: [],
 //                     OpenVPN: [],
-//                 },
-//                 VPNServerNetworks: {
-//                     Wireguard: [],
-//                     OpenVPN: [],
-//                 },
-//                 TunnelNetworks: {
-//                     IPIP: [],
-//                     Eoip: [],
-//                     Gre: [],
-//                     Vxlan: [],
 //                 },
 //             };
 

@@ -1,5 +1,5 @@
 // Main ConfigGenerator exports
-export { ConfigGenerator, generateAPConfig } from "./ConfigGenerator";
+export { ConfigGenerator } from "./ConfigGenerator";
 export type { RouterConfig } from "./ConfigGenerator";
 
 // Sub-module re-exports

@@ -317,6 +317,12 @@ export const combineMultiWANInterfaces = (
         allInterfaces.push(...foreignInterfaces);
     }
 
+    // Reassign distances sequentially for proper failover priority
+    // VPN (distance 1, 2, ...), then Domestic, then Foreign
+    allInterfaces.forEach((iface, index) => {
+        iface.distance = index + 1;
+    });
+
     return allInterfaces;
 };
 

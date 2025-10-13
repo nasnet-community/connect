@@ -90,9 +90,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       WANConfigs: wanConfigs,
       MultiLinkConfig: state.multiLinkStrategy ? {
         strategy: state.multiLinkStrategy.strategy,
-        loadBalanceMethod: state.multiLinkStrategy.loadBalanceMethod,
-        FailoverConfig: state.multiLinkStrategy.FailoverConfig,
-        roundRobinInterval: state.multiLinkStrategy.roundRobinInterval,
+        // Only include optional properties if they are defined
+        ...(state.multiLinkStrategy.loadBalanceMethod && { loadBalanceMethod: state.multiLinkStrategy.loadBalanceMethod }),
+        ...(state.multiLinkStrategy.FailoverConfig && { FailoverConfig: state.multiLinkStrategy.FailoverConfig }),
+        ...(state.multiLinkStrategy.roundRobinInterval !== undefined && { roundRobinInterval: state.multiLinkStrategy.roundRobinInterval }),
       } : undefined,
     };
 

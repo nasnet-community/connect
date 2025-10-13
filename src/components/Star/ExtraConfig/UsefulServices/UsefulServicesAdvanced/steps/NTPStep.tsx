@@ -1,4 +1,4 @@
-import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
+import { component$, useSignal, $, useTask$, useContext } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { Card, CardHeader, CardBody, Input, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
@@ -33,29 +33,29 @@ export const NTPStep = component$(() => {
     if (server.trim() && !ntpServers.value.includes(server.trim())) {
       ntpServers.value = [...ntpServers.value, server.trim()];
       newServerInput.value = "";
-      validateAndUpdate$();
     }
   });
 
   // Remove NTP server
   const removeServer$ = $((index: number) => {
     ntpServers.value = ntpServers.value.filter((_, i) => i !== index);
-    validateAndUpdate$();
   });
 
   // Quick add popular server
   const addPopularServer$ = $((server: string) => {
     if (!ntpServers.value.includes(server)) {
       ntpServers.value = [...ntpServers.value, server];
-      validateAndUpdate$();
     }
   });
 
-  // Update context data and validate step completion
-  const validateAndUpdate$ = $(() => {
+  // Reactive task: Update contexts whenever ntpServers changes
+  useTask$(({ track }) => {
+    // Track the ntpServers signal - this task will run whenever it changes
+    const servers = track(() => ntpServers.value);
+
     // Update context data with only servers property
     servicesData.ntp = {
-      servers: ntpServers.value,
+      servers: servers,
     };
 
     // Update StarContext - explicit property assignment to avoid spread operator issues
@@ -64,7 +64,7 @@ export const NTPStep = component$(() => {
       usefulServices: {
         certificate: currentServices.certificate,
         ntp: {
-          servers: [...ntpServers.value],  // Create new array copy
+          servers: [...servers],  // Create new array copy
         },
         graphing: currentServices.graphing,
         cloudDDNS: currentServices.cloudDDNS,
@@ -74,7 +74,7 @@ export const NTPStep = component$(() => {
     });
 
     // Validate: At least one NTP server must be configured
-    const isComplete = ntpServers.value.length > 0 && ntpServers.value.every(server => server.trim() !== "");
+    const isComplete = servers.length > 0 && servers.every(server => server.trim() !== "");
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -86,11 +86,6 @@ export const NTPStep = component$(() => {
         isComplete,
       );
     }
-  });
-
-  // Run validation on component mount and when values change
-  useVisibleTask$(() => {
-    validateAndUpdate$();
   });
 
   return (

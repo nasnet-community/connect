@@ -1,5 +1,5 @@
-import type { Ethernet } from "./CommonType";
-import type { BaseNetworksType } from "./CommonType";
+import type { Ethernet, Sfp } from "./CommonType";
+// import type { BaseNetworksType } from "./CommonType";
 import type { Tunnel } from "./Utils/TunnelType";
 import type { VPNServer } from "./Utils/VPNServerType";
 import type { Subnets } from "./Utils/Subnets";
@@ -26,8 +26,8 @@ export interface WirelessConfig {
 }
 
 export interface EthernetInterfaceConfig {
-  name: Ethernet;
-  bridge: BaseNetworksType;
+  name: Ethernet | Sfp;
+  bridge: string;
 }
 
 

@@ -2,10 +2,7 @@ import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import { ScriptAndScheduler } from "~/components/Star/ConfigGenerator";
 import type { FrequencyValue } from "~/components/Star/StarContext/";
 
-/**
- * Generates a simple UUID v4
- * @returns A UUID string in the format xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
- */
+
 const generateUUID = (): string => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
         /[xy]/g,
@@ -17,17 +14,7 @@ const generateUUID = (): string => {
     );
 };
 
-/**
- * Generates a MikroTik script for updating domestic IP address lists
- * A unique UUID is generated for each script instance for user tracking purposes
- * @param time - The time to run the script in "HH:MM" format
- * @param interval - The frequency of script execution (Daily, Weekly, Monthly)
- * @returns RouterConfig containing the script and scheduler configuration
- */
-export const generateDomesticIPScript = (
-    time: string,
-    interval: FrequencyValue = "Daily",
-): RouterConfig => {
+export const generateDomesticIPScript = ( time: string, interval: FrequencyValue = "Daily" ): RouterConfig => {
     // Generate a unique UUID for this script instance
     const generatedUserId = generateUUID();
 

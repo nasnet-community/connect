@@ -1,137 +1,190 @@
-// import type { DNSConfig } from "~/components/Star/StarContext";
-// import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-// import type { Networks } from "~/components/Star/StarContext";
+import type { Networks, Subnets, WANLinks, VPNClient } from "~/components/Star/StarContext";
+import  { type RouterConfig, extractBridgeNames, DomesticCheckIPs, ForeignCheckIPs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
-// export const BaseDNSSettins = (): RouterConfig => {
-//     const config: RouterConfig = {
-//         "/ip dns": [
-//             "set allow-remote-requests=yes max-concurrent-queries=200 cache-size=51200KiB cache-max-ttl=7d",
-//         ],
-//     };
+export const BaseDNSSettins = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns": [
+            "set allow-remote-requests=yes max-concurrent-queries=200 cache-size=51200KiB cache-max-ttl=7d",
+        ],
+    };
 
-//     return config;
-// };
+    return config;
+};
 
-// export const DNSForwarders = (
-//     DNSConfig: DNSConfig,
-//     baseNetworks: Networks[] = [],
-// ): RouterConfig => {
-//     const { ForeignDNS, VPNDNS, DomesticDNS, SplitDNS, DOH } = DNSConfig;
-//     const config: RouterConfig = {
-//         "/ip dns forwarders": [],
-//     };
+export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns forwarders": [],
+    };
 
-//     // Create forwarders based on available DNS configurations and base networks
-//     const forwarders: string[] = [];
+    if (!networks || !networks.BaseNetworks) {
+        return config;
+    }
 
-//     // Map DNS configurations to network names
-//     const dnsMapping: Record<Networks, string | undefined> = {
-//         Foreign: ForeignDNS,
-//         VPN: VPNDNS,
-//         Domestic: DomesticDNS,
-//         Split: SplitDNS,
-//     };
+    // Create forwarders based on CheckIPs used in routing
+    const forwarders: string[] = [];
 
-//     baseNetworks.forEach((network) => {
-//         const dnsServer = dnsMapping[network];
+    // Calculate counts for each interface type to match MainTableRoute CheckIP assignment
+    const domesticWANCount = wanLinks?.Domestic?.WANConfigs.length || 0;
+    const foreignWANCount = wanLinks?.Foreign?.WANConfigs.length || 0;
+    
+    // Count VPN clients across all VPN types
+    let vpnClientCount = 0;
+    if (vpnClient) {
+        vpnClientCount += vpnClient.Wireguard?.length || 0;
+        vpnClientCount += vpnClient.OpenVPN?.length || 0;
+        vpnClientCount += vpnClient.PPTP?.length || 0;
+        vpnClientCount += vpnClient.L2TP?.length || 0;
+        vpnClientCount += vpnClient.SSTP?.length || 0;
+        vpnClientCount += vpnClient.IKeV2?.length || 0;
+    }
 
-//         // Only create forwarders for valid DNS servers (not empty, not whitespace)
-//         if (dnsServer && dnsServer.trim() !== "") {
-//             let forwarderCmd = `add name=${network.toUpperCase()} dns-servers=${dnsServer}`;
+    // Generate DNS forwarders in the same order as MainTableRoute: VPN -> Domestic -> Foreign
+    // This ensures CheckIP assignment matches exactly with routing configuration
 
-//             // Add DOH configuration for Domestic network if available
-//             if (network === "Domestic" && DOH?.domain) {
-//                 const dohDomain = DOH.domain.startsWith("http")
-//                     ? DOH.domain
-//                     : `https://${DOH.domain}`;
-//                 const dohUrl = dohDomain.endsWith("/dns-query")
-//                     ? dohDomain
-//                     : `${dohDomain}/dns-query`;
-//                 forwarderCmd += ` doh-servers=${dohUrl} verify-doh-cert=yes`;
-//             }
+    // 1. VPN Network - Use CheckIPs assigned to VPN clients (FIRST in MainTableRoute)
+    // Matches the logic in combineMultiWANInterfaces: VPN uses Foreign CheckIPs with offset
+    if (networks.BaseNetworks.VPN && vpnClientCount > 0) {
+        // VPN clients use Foreign CheckIPs with offset based on foreign WAN count
+        // This prevents overlap with Foreign WAN CheckIPs
+        const vpnCheckIPOffset = foreignWANCount;
+        const vpnDNSServers = ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnClientCount).join(",");
+        forwarders.push(`add name=VPN dns-servers=${vpnDNSServers}`);
+    } else if (networks.BaseNetworks.VPN) {
+        // Fallback: Use CheckIP with offset if no VPN clients configured
+        const vpnCheckIPOffset = foreignWANCount;
+        const vpnDNSServers = ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + 1).join(",");
+        forwarders.push(`add name=VPN dns-servers=${vpnDNSServers}`);
+    }
 
-//             forwarders.push(forwarderCmd);
-//         }
-//     });
+    // 2. Domestic Network - Use CheckIPs assigned to Domestic WAN interfaces (SECOND in MainTableRoute)
+    // Matches the logic in convertWANLinkToMultiWAN for domestic links
+    if (networks.BaseNetworks.Domestic && domesticWANCount > 0) {
+        // Use exactly N CheckIPs based on domestic WAN count
+        const domesticDNSServers = DomesticCheckIPs.slice(0, domesticWANCount).join(",");
+        forwarders.push(`add name=Domestic dns-servers=${domesticDNSServers}`);
+    } else if (networks.BaseNetworks.Domestic) {
+        // Fallback: Use first CheckIP if no WAN configs
+        const domesticDNSServers = DomesticCheckIPs.slice(0, 1).join(",");
+        forwarders.push(`add name=Domestic dns-servers=${domesticDNSServers}`);
+    }
 
-//     // Add DNS forwarders to configuration
-//     config["/ip dns forwarders"] = forwarders;
+    // 3. Foreign Network - Use CheckIPs assigned to Foreign WAN interfaces (THIRD in MainTableRoute)
+    // Matches the logic in convertWANLinkToMultiWAN for foreign links
+    // Foreign always starts from index 0 of ForeignCheckIPs
+    if (networks.BaseNetworks.Foreign && foreignWANCount > 0) {
+        // Use exactly N CheckIPs based on foreign WAN count
+        const foreignDNSServers = ForeignCheckIPs.slice(0, foreignWANCount).join(",");
+        forwarders.push(`add name=Foreign dns-servers=${foreignDNSServers}`);
+    } else if (networks.BaseNetworks.Foreign) {
+        // Fallback: Use first CheckIP if no WAN configs
+        const foreignDNSServers = ForeignCheckIPs.slice(0, 1).join(",");
+        forwarders.push(`add name=Foreign dns-servers=${foreignDNSServers}`);
+    }
 
-//     return config;
-// };
+    // Add DNS forwarders to configuration
+    config["/ip dns forwarders"] = forwarders;
 
-// export const DNSmDNSRepeater = (
-//     baseNetworks: Networks[] = [],
-// ): RouterConfig => {
-//     const config: RouterConfig = {
-//         "/ip dns": [],
-//     };
+    return config;
+};
 
-//     if (baseNetworks.length === 0) {
-//         return config;
-//     }
+export const MDNS = ( networks: Networks, subnets?: Subnets ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns": [],
+    };
 
-//     const networkNameMapping: Record<Networks, string> = {
-//         Domestic: "DOM",
-//         Foreign: "FRN",
-//         Split: "Split",
-//         VPN: "VPN",
-//     };
+    // Extract all bridge names from the Networks structure
+    const bridgeInterfaces = extractBridgeNames(networks, subnets);
 
-//     const bridgeInterfaces: string[] = baseNetworks.map(
-//         (network) => `LANBridge${networkNameMapping[network]}`,
-//     );
+    if (bridgeInterfaces.length === 0) {
+        return config;
+    }
 
-//     if (bridgeInterfaces.length > 0) {
-//         const mdnsInterfaces = bridgeInterfaces.join(",");
-//         config["/ip dns"].push(`set mdns-repeat-ifaces=${mdnsInterfaces}`);
-//     }
+    // Join all bridge names with commas
+    const mdnsInterfaces = bridgeInterfaces.join(",");
+    config["/ip dns"].push(`set mdns-repeat-ifaces=${mdnsInterfaces}`);
 
-//     return config;
-// };
+    return config;
+};
 
-// export const IRTLDRegex = (): RouterConfig => {
-//     const config: RouterConfig = {
-//         "/ip dns static": [
-//             `add name=IRTLD type=FWD regexp=".*\\\\.ir\\$" forward-to=DomesticDNS match-subdomain=yes comment="Forward .ir TLD queries via domestic DNS"`,
-//         ],
-//     };
+export const IRTLDRegex = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns static": [
+            `add name=IRTLD type=FWD regexp=".*\\\\.ir\\$" forward-to=Domestic match-subdomain=yes comment="Forward .ir TLD queries via domestic DNS"`,
+        ],
+    };
 
-//     return config;
-// };
+    return config;
+};
 
-// export const BlockWANDNS = (): RouterConfig => {
-//     const config: RouterConfig = {
-//         "/ip firewall filter": [
-//             `add chain=input dst-port=53 in-interface-list=WAN protocol=tcp action=drop comment="Block Open Recursive DNS"`,
-//             `add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop comment="Block Open Recursive DNS"`,
-//         ],
-//     };
+export const BlockWANDNS = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall filter": [
+            `add chain=input dst-port=53 in-interface-list=WAN protocol=tcp action=drop comment="Block Open Recursive DNS"`,
+            `add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop comment="Block Open Recursive DNS"`,
+        ],
+    };
 
-//     return config;
-// };
+    return config;
+};
 
-// export const DOH = (DNSConfig: DNSConfig): RouterConfig => {
-//     const config: RouterConfig = {
-//         "/ip dns static": [],
-//         "/ip dns": [],
-//     };
+export const DOH = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns static": [],
+        "/ip dns": [],
+    };
 
-//     // Check if DOH configuration exists
-//     if (!DNSConfig.DOH?.domain || !DNSConfig.DOH.bindingIP) {
-//         return config;
-//     }
+    config["/ip dns static"].push(
+        `add address=8.8.8.8 name="google.com" comment="DOH-Domain-Static-Entry"`,
+    );
 
-//     const { domain, bindingIP } = DNSConfig.DOH;
-//     const stripedDomain = domain.replace(/^https?:\/\//, "");
+    config["/ip dns"].push(
+        `set use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=yes`,
+    );
 
-//     config["/ip dns static"].push(
-//         `add address=${bindingIP} name="${stripedDomain}" comment="DOH-Domain-Static-Entry"`,
-//     );
+    return config;
+};
 
-//     config["/ip dns"].push(
-//         `set use-doh-server="${domain}" verify-doh-cert=yes`,
-//     );
+export const DNSForeward = ( address: string, network: "Domestic" | "Foreign" | "VPN", comment?: string ): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns static": [],
+    };
 
-//     return config;
-// };
+    // Build the FWD entry using the named forwarder from DNSForwarders
+    let fwdCommand = `add name=${address} type=FWD forward-to=${network}`;
+    
+    if (comment) {
+        fwdCommand += ` comment="${comment}"`;
+    }
+
+    config["/ip dns static"].push(fwdCommand);
+
+    return config;
+};
+
+export const FRNDNSFWD = (): RouterConfig => {
+    const Domains = [
+        "s4i.co",
+        "starlink4iran.com",
+    ];
+
+    // Create DNS forward entries for all domains through Foreign forwarder
+    const configs: RouterConfig[] = Domains.map(domain => 
+        DNSForeward(domain, "Foreign", `Forward ${domain} via Foreign DNS`)
+    );
+
+    // Merge all DNS forward configurations
+    return mergeMultipleConfigs(...configs);
+}
+
+export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+    return mergeMultipleConfigs(
+        BaseDNSSettins(),
+        DNSForwarders(networks, wanLinks, vpnClient),
+        MDNS(networks, subnets),
+        IRTLDRegex(),
+        BlockWANDNS(),
+        DOH(),
+        FRNDNSFWD(),
+    );
+};
+

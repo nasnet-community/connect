@@ -1,5 +1,6 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { VPNClientType, VPNClient } from "~/components/Star/StarContext";
+import { DNSForeward, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 // import type { WANLinkType } from "~/components/Star/StarContext";
 
 // Check if a string is a Fully Qualified Domain Name (FQDN) vs an IP address
@@ -73,6 +74,17 @@ export const AddressListEntry = (Address: string): RouterConfig => {
     config["/ip firewall address-list"].push(
         `add address="${Address}" list=VPNE comment="VPN-${Address} Endpoint for routing"`,
     );
+
+    // If the address is a domain name (FQDN), create DNS forward entry through Foreign forwarder
+    // This ensures VPN endpoint domains are resolved through domestic DNS servers
+    if (isFQDN(Address)) {
+        const dnsForward = DNSForeward(
+            Address, 
+            "Foreign", 
+            `VPN Endpoint ${Address} - Route through Foreign DNS`
+        );
+        return mergeMultipleConfigs(config, dnsForward);
+    }
 
     return config;
 };

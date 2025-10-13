@@ -288,13 +288,13 @@ export const OneTimeScript = (config: OneTimeScript): RouterConfig => {
         finalConfig[""] = [];
     }
 
-    finalConfig[""].unshift(
-        `# One-Time Script Setup for '${name}':`,
-        `# - Script named '${scriptName}' contains user content + scheduler cleanup`,
-        `# - Scheduler named '${schedulerName}' runs at ${startTime} with interval ${interval}`,
-        `# - Self-cleaning: Script will remove scheduler '${schedulerName}' after execution`,
-        "",
-    );
+    // finalConfig[""].unshift(
+    //     `# One-Time Script Setup for '${name}':`,
+    //     `# - Script named '${scriptName}' contains user content + scheduler cleanup`,
+    //     `# - Scheduler named '${schedulerName}' runs at ${startTime} with interval ${interval}`,
+    //     `# - Self-cleaning: Script will remove scheduler '${schedulerName}' after execution`,
+    //     "",
+    // );
 
     return finalConfig;
 };

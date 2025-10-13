@@ -10,7 +10,7 @@ export const GameTable = component$<GameTableProps>(
 
     // Build network options from StarContext Networks
     const networkOptions = useComputed$(() =>
-      buildNetworkOptions(context.state.Choose.Networks)
+      buildNetworkOptions(context.state.Choose.Networks, context.state.WAN)
     );
 
     const groupedOptions = useComputed$(() =>

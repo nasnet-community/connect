@@ -23,41 +23,13 @@ export const StarContextProvider = component$(() => {
       Networks: {}
     },
     WAN: {
-      WANLink: {
-        Foreign: {
-          WANConfigs: [],
-          MultiLinkConfig: undefined,
-        },
-      },
+      WANLink: {},
     },
     LAN: {},
     ExtraConfig: {
       RUI: {
-        Timezone: "Asia/Tehran",
-        IPAddressUpdate: { interval: "Daily", time: "03:00" },
-      },
-      usefulServices: {
-        certificate: {
-          SelfSigned: false,
-          LetsEncrypt: false,
-        },
-        ntp: {
-          servers: [],
-        },
-        graphing: {
-          Interface: false,
-          Queue: false,
-          Resources: false,
-        },
-        cloudDDNS: {
-          ddnsEntries: [],
-        },
-        upnp: {
-          linkType: "",
-        },
-        natpmp: {
-          linkType: "",
-        },
+        Timezone: "",
+        IPAddressUpdate: { interval: "", time: "" },
       },
     },
     ShowConfig: {},

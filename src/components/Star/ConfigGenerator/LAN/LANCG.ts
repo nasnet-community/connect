@@ -1,13 +1,20 @@
-import type { StarState } from "~/components/Star/StarContext/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import { WirelessConfig } from "~/components/Star/ConfigGenerator";
-import { DisableInterfaces } from "~/components/Star/ConfigGenerator";
-import type { EthernetInterfaceConfig } from "~/components/Star/StarContext";
-import { TunnelWrapper } from "~/components/Star/ConfigGenerator";
-import { VPNServerWrapper } from "~/components/Star/ConfigGenerator";
-import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
-import { hasWirelessInterfaces } from "~/components/Star/ConfigGenerator";
-import { calculateSubnetInfo } from "~/components/Star/ConfigGenerator";
+import type { 
+    StarState,
+    Networks as NetworksInterface,
+    EthernetInterfaceConfig,
+} from "~/components/Star/StarContext/";
+import {
+    type RouterConfig, 
+    WirelessConfig,
+    DisableInterfaces,
+    TunnelWrapper,
+    VPNServerWrapper,
+    mergeMultipleConfigs,
+    hasWirelessInterfaces,
+    Networks,
+    mapNetworkToBridgeName,
+} from "~/components/Star/ConfigGenerator";
+
 
 export const IPv6 = (): RouterConfig => {
     const config: RouterConfig = {
@@ -21,60 +28,26 @@ export const IPv6 = (): RouterConfig => {
     return config;
 };
 
-export const EthernetBridgePorts = ( Ethernet: EthernetInterfaceConfig[] ): RouterConfig => {
+export const EthernetBridgePorts = ( Ethernet: EthernetInterfaceConfig[], networks: NetworksInterface ): RouterConfig => {
     const config: RouterConfig = {
         "/interface bridge port": [],
     };
 
-    // Map network types to bridge names
-    const bridgeNameMap: Record<string, string> = {
-        Foreign: "FRN",
-        Domestic: "DOM",
-        VPN: "VPN",
-        Split: "Split",
-    };
-
     Ethernet.forEach((iface) => {
-        const bridgeName = bridgeNameMap[iface.bridge] || iface.bridge;
-        config["/interface bridge port"].push(
-            `add bridge=LANBridge${bridgeName} interface=${iface.name}`,
-        );
-    });
-
-    return config;
-};
-
-export const SubnetIPConfigurations = ( subnets: Record<string, string> | undefined ): RouterConfig => {
-    if (!subnets) return {};
-
-    const config: RouterConfig = {
-        "/ip address": [],
-    };
-
-    // Map network types to bridge names
-    const bridgeNameMap: Record<string, string> = {
-        Foreign: "FRN",
-        Domestic: "DOM",
-        VPN: "VPN",
-        Split: "Split",
-    };
-
-    Object.entries(subnets).forEach(([networkType, subnet]) => {
-        const subnetInfo = calculateSubnetInfo(
-            subnet.split("/")[0],
-            subnet.split("/")[1],
-        );
-        if (!subnetInfo) return;
-
-        // For base networks (DOM, FRN, VPN, Split)
-        if (bridgeNameMap[networkType]) {
-            const bridgeName = bridgeNameMap[networkType];
-            config["/ip address"].push(
-                `add address=${subnetInfo.firstHostAddress}/${subnetInfo.prefixLength} interface=LANBridge${bridgeName} network=${subnetInfo.networkAddress}`,
+        // Map the network name to the actual bridge name
+        const bridgeName = mapNetworkToBridgeName(iface.bridge, networks);
+        
+        if (bridgeName) {
+            config["/interface bridge port"].push(
+                `add bridge=${bridgeName} interface=${iface.name} comment="${iface.bridge}"`,
+            );
+        } else {
+            // Fallback: if mapping fails, use the original bridge name with LANBridge prefix
+            console.warn(`Network "${iface.bridge}" not found in Networks configuration for interface ${iface.name}`);
+            config["/interface bridge port"].push(
+                `add bridge=LANBridge${iface.bridge} interface=${iface.name} comment="${iface.bridge}"`,
             );
         }
-        // For VPN servers - these will be handled by VPNServerWrapper
-        // For tunnels - these will be handled by TunnelWrapper
     });
 
     return config;
@@ -111,20 +84,20 @@ export const LANCG = (state: StarState): RouterConfig => {
 
 
 
-    // Only add Ethernet bridge ports if LAN.Interface exists
-    if (state.LAN.Interface && Array.isArray(state.LAN.Interface)) {
-        configs.push(EthernetBridgePorts(state.LAN.Interface));
+    // Add network configurations using the Networks function
+    if (state.LAN.Subnets) {
+        configs.push(
+            Networks(
+                state.LAN.Subnets,
+                state.WAN.WANLink,
+                state.WAN.VPNClient
+            )
+        );
     }
 
-    // Add subnet IP configurations if defined
-    // For backward compatibility, convert to Record<string, string> if needed
-    if (state.LAN.Subnets) {
-        const subnets = state.LAN.Subnets as any;
-        if (typeof subnets === "object" && !Array.isArray(subnets)) {
-            configs.push(
-                SubnetIPConfigurations(subnets as Record<string, string>),
-            );
-        }
+    // Only add Ethernet bridge ports if LAN.Interface exists
+    if (state.LAN.Interface && Array.isArray(state.LAN.Interface)) {
+        configs.push(EthernetBridgePorts(state.LAN.Interface, state.Choose.Networks));
     }
 
     return mergeMultipleConfigs(...configs);

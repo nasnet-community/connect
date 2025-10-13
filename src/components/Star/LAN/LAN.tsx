@@ -1,19 +1,15 @@
 import {
   component$,
-  useContext,
-  useStore,
   $,
-  useTask$,
 } from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
 import { Tunnel } from "./Tunnel/Tunnel";
 import { Subnets } from "./Subnets";
 import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
-import { StarContext } from "../StarContext/StarContext";
-import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import EInterface from "./EInterface/EInterface";
+import { useLAN } from "./useLAN";
 
 // Define step components outside the main component to avoid serialization issues
 const EInterfaceStep = component$((props: StepProps) => (
@@ -53,108 +49,13 @@ const SubnetsStep = component$((props: StepProps) => (
 
 
 export const LAN = component$((props: StepProps) => {
-  const starContext = useContext(StarContext);
-
-  const hasWirelessEInterface = starContext.state.Choose.RouterModels.some(
-    (routerModel) => !!routerModel.Interfaces.Interfaces.wireless?.length,
-  );
-
-  const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
-
-  // Create a store to manage steps
-  const stepsStore = useStore({
-    activeStep: 0,
-    steps: [] as StepItem[],
-  });
-
-  const handleStepComplete = $((id: number) => {
-    const stepIndex = stepsStore.steps.findIndex((step) => step.id === id);
-    if (stepIndex > -1) {
-      stepsStore.steps[stepIndex].isComplete = true;
-
-      // Move to the next step if there is one
-      if (stepIndex < stepsStore.steps.length - 1) {
-        stepsStore.activeStep = stepIndex + 1;
-      } else {
-        // This was the last step, so complete the entire LAN section
-        props.onComplete$();
-      }
-
-      // Check if all steps are now complete
-      if (stepsStore.steps.every((step) => step.isComplete)) {
-        props.onComplete$();
-      }
-    }
-  });
-
-  const isAdvancedMode = starContext.state.Choose.Mode === "advance";
-  let nextId = 1;
-
-  const baseSteps: StepItem[] = [];
-
-  if (hasWirelessEInterface) {
-    baseSteps.push({
-      id: nextId,
-      title: $localize`Wireless`,
-      component: WirelessStep,
-      isComplete: false,
-    });
-    nextId++;
-  }
-
-  if (isAdvancedMode) {
-    baseSteps.push({
-      id: nextId,
-      title: $localize`LAN EInterfaces`,
-      component: EInterfaceStep,
-      isComplete: false,
-    });
-
-    nextId++;
-  }
-
-  // Only add VPNServer and Tunnel steps if DomesticLink is enabled
-  if (isDomesticLinkEnabled) {
-    baseSteps.push({
-      id: nextId,
-      title: $localize`VPN Server`,
-      component: VPNServerStep,
-      isComplete: false,
-    });
-
-    nextId++;
-
-    // Only add Tunnel step if in Advanced mode (not Easy mode)
-    if (isAdvancedMode) {
-      baseSteps.push({
-        id: nextId,
-        title: $localize`Network Tunnels`,
-        component: TunnelStep,
-        isComplete: false,
-      });
-
-      nextId++;
-    }
-  }
-
-  // Create advanced steps by copying base steps
-  const advancedSteps: StepItem[] = [...baseSteps];
-
-  // Only add Subnets step in advanced mode
-  if (isAdvancedMode) {
-    advancedSteps.push({
-      id: nextId,
-      title: $localize`Network Subnets`,
-      component: SubnetsStep,
-      isComplete: false,
-    });
-  }
-
-  const steps = isAdvancedMode ? advancedSteps : baseSteps;
-
-  // Initialize steps in the store
-  useTask$(() => {
-    stepsStore.steps = steps;
+  const { stepsStore, handleStepComplete, handleStepChange } = useLAN({
+    onComplete$: props.onComplete$,
+    WirelessStep,
+    EInterfaceStep,
+    VPNServerStep,
+    TunnelStep,
+    SubnetsStep,
   });
 
   return (
@@ -163,9 +64,7 @@ export const LAN = component$((props: StepProps) => {
         steps={stepsStore.steps}
         activeStep={stepsStore.activeStep}
         onStepComplete$={handleStepComplete}
-        onStepChange$={(id: number) => {
-          stepsStore.activeStep = id - 1;
-        }}
+        onStepChange$={handleStepChange}
         isComplete={props.isComplete}
       />
     </div>
