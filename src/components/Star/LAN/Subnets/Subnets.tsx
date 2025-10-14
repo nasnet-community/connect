@@ -139,8 +139,170 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   // Handle save with modern error handling
   const handleSave$ = $(async () => {
     if (!subnetsEnabled.value) {
-      // Clear subnets when disabled - use empty Record for backward compatibility
-      await starContext.updateLAN$({ Subnets: {} as any });
+      // Build default subnets using placeholder values when disabled
+      const createSubnetConfig = (name: string, value: number, mask: number) => ({
+        name,
+        subnet: `192.168.${value}.0/${mask}`
+      });
+
+      const defaultSubnets: any = {
+        BaseNetworks: {},
+        ForeignNetworks: [],
+        DomesticNetworks: [],
+        VPNClientNetworks: {},
+        VPNServerNetworks: {},
+        TunnelNetworks: {}
+      };
+
+      // Process all configs with their default placeholder values
+      extendedGroupedConfigs.base?.forEach((config: any) => {
+        defaultSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, config.placeholder, config.mask);
+      });
+
+      extendedGroupedConfigs["wan-domestic"]?.forEach((config: any) => {
+        defaultSubnets.DomesticNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+      });
+
+      extendedGroupedConfigs["wan-foreign"]?.forEach((config: any) => {
+        defaultSubnets.ForeignNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+      });
+
+      // VPN Client networks - organize by protocol
+      const vpnClientsByProtocol: Record<string, any[]> = {
+        Wireguard: [],
+        OpenVPN: [],
+        PPTP: [],
+        L2TP: [],
+        SSTP: [],
+        IKev2: []
+      };
+
+      const networks = starContext.state.Choose.Networks;
+      let vpnClientIndex = 0;
+
+      // Map VPN client configs to protocols using the same order as in useSubnets
+      extendedGroupedConfigs["vpn-client"]?.forEach((config: any) => {
+        vpnClientIndex++;
+        const placeholder = 41 + vpnClientIndex - 1;
+        
+        // Determine protocol based on Networks configuration
+        let protocol = '';
+        let protocolIndex = 0;
+        
+        if (networks?.VPNClientNetworks?.Wireguard?.length) {
+          if (vpnClientIndex <= networks.VPNClientNetworks.Wireguard.length) {
+            protocol = 'Wireguard';
+            protocolIndex = vpnClientIndex - 1;
+          }
+        }
+        let currentCount = networks?.VPNClientNetworks?.Wireguard?.length || 0;
+        
+        if (!protocol && networks?.VPNClientNetworks?.OpenVPN?.length) {
+          if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.OpenVPN.length) {
+            protocol = 'OpenVPN';
+            protocolIndex = vpnClientIndex - currentCount - 1;
+          }
+          currentCount += networks.VPNClientNetworks.OpenVPN.length;
+        }
+        
+        if (!protocol && networks?.VPNClientNetworks?.L2TP?.length) {
+          if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.L2TP.length) {
+            protocol = 'L2TP';
+            protocolIndex = vpnClientIndex - currentCount - 1;
+          }
+          currentCount += networks.VPNClientNetworks.L2TP.length;
+        }
+        
+        if (!protocol && networks?.VPNClientNetworks?.PPTP?.length) {
+          if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.PPTP.length) {
+            protocol = 'PPTP';
+            protocolIndex = vpnClientIndex - currentCount - 1;
+          }
+          currentCount += networks.VPNClientNetworks.PPTP.length;
+        }
+        
+        if (!protocol && networks?.VPNClientNetworks?.SSTP?.length) {
+          if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.SSTP.length) {
+            protocol = 'SSTP';
+            protocolIndex = vpnClientIndex - currentCount - 1;
+          }
+          currentCount += networks.VPNClientNetworks.SSTP.length;
+        }
+        
+        if (!protocol && networks?.VPNClientNetworks?.IKev2?.length) {
+          protocol = 'IKev2';
+          protocolIndex = vpnClientIndex - currentCount - 1;
+        }
+
+        if (protocol) {
+          vpnClientsByProtocol[protocol].push(createSubnetConfig(config.label, placeholder, config.mask));
+        }
+      });
+
+      Object.entries(vpnClientsByProtocol).forEach(([protocol, configs]) => {
+        if (configs.length > 0) {
+          defaultSubnets.VPNClientNetworks[protocol] = configs;
+        }
+      });
+
+      // VPN Server networks
+      extendedGroupedConfigs.vpn?.forEach((config: any) => {
+        const subnetConfig = createSubnetConfig(config.label, config.placeholder, config.mask);
+        
+        // Check if it's an array protocol (Wireguard, OpenVPN)
+        if (networks?.VPNServerNetworks?.Wireguard?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.VPNServerNetworks.Wireguard) {
+            defaultSubnets.VPNServerNetworks.Wireguard = [];
+          }
+          defaultSubnets.VPNServerNetworks.Wireguard.push(subnetConfig);
+        } else if (networks?.VPNServerNetworks?.OpenVPN?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.VPNServerNetworks.OpenVPN) {
+            defaultSubnets.VPNServerNetworks.OpenVPN = [];
+          }
+          defaultSubnets.VPNServerNetworks.OpenVPN.push(subnetConfig);
+        } else {
+          // Single server protocols
+          defaultSubnets.VPNServerNetworks[config.key] = subnetConfig;
+        }
+      });
+
+      // Tunnel networks
+      extendedGroupedConfigs.tunnel?.forEach((config: any) => {
+        const subnetConfig = createSubnetConfig(config.label, config.placeholder, config.mask);
+        
+        // Determine tunnel type from Networks
+        if (networks?.TunnelNetworks?.IPIP?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.TunnelNetworks.IPIP) {
+            defaultSubnets.TunnelNetworks.IPIP = [];
+          }
+          defaultSubnets.TunnelNetworks.IPIP.push(subnetConfig);
+        } else if (networks?.TunnelNetworks?.Eoip?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.TunnelNetworks.Eoip) {
+            defaultSubnets.TunnelNetworks.Eoip = [];
+          }
+          defaultSubnets.TunnelNetworks.Eoip.push(subnetConfig);
+        } else if (networks?.TunnelNetworks?.Gre?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.TunnelNetworks.Gre) {
+            defaultSubnets.TunnelNetworks.Gre = [];
+          }
+          defaultSubnets.TunnelNetworks.Gre.push(subnetConfig);
+        } else if (networks?.TunnelNetworks?.Vxlan?.some((name: string) => name === config.key)) {
+          if (!defaultSubnets.TunnelNetworks.Vxlan) {
+            defaultSubnets.TunnelNetworks.Vxlan = [];
+          }
+          defaultSubnets.TunnelNetworks.Vxlan.push(subnetConfig);
+        }
+      });
+
+      // Clean up empty sections
+      if (Object.keys(defaultSubnets.BaseNetworks).length === 0) delete defaultSubnets.BaseNetworks;
+      if (defaultSubnets.ForeignNetworks.length === 0) delete defaultSubnets.ForeignNetworks;
+      if (defaultSubnets.DomesticNetworks.length === 0) delete defaultSubnets.DomesticNetworks;
+      if (Object.keys(defaultSubnets.VPNClientNetworks).length === 0) delete defaultSubnets.VPNClientNetworks;
+      if (Object.keys(defaultSubnets.VPNServerNetworks).length === 0) delete defaultSubnets.VPNServerNetworks;
+      if (Object.keys(defaultSubnets.TunnelNetworks).length === 0) delete defaultSubnets.TunnelNetworks;
+
+      await starContext.updateLAN$({ Subnets: defaultSubnets as any });
       if (onComplete$) {
         onComplete$();
       }
@@ -152,27 +314,208 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       return;
     }
 
-    // Convert third octet values back to full CIDR format for storage
-    const finalSubnets: Record<string, string> = {};
+    // Helper to create SubnetConfig object
+    const createSubnetConfig = (name: string, value: number, mask: number) => ({
+      name,
+      subnet: `192.168.${value}.0/${mask}`
+    });
 
-    [
-      ...extendedGroupedConfigs.base,
-      ...extendedGroupedConfigs.vpn,
-      ...extendedGroupedConfigs.tunnel,
-      ...extendedGroupedConfigs["wan-domestic"],
-      ...extendedGroupedConfigs["wan-foreign"],
-      ...extendedGroupedConfigs["vpn-client"]
-    ].forEach((config) => {
-      const value = values.value[config.key as string];
+    // Initialize structured subnets object
+    const finalSubnets: any = {
+      BaseNetworks: {},
+      ForeignNetworks: [],
+      DomesticNetworks: [],
+      VPNClientNetworks: {},
+      VPNServerNetworks: {},
+      TunnelNetworks: {}
+    };
+
+    // Process base networks
+    extendedGroupedConfigs.base.forEach((config: any) => {
+      const value = values.value[config.key];
       if (value !== null && value !== undefined) {
-        finalSubnets[config.key] = `192.168.${value}.0/${config.mask}`;
+        finalSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, value, config.mask);
       } else if (config.isRequired) {
-        // Use placeholder for required empty values
-        finalSubnets[config.key] = `192.168.${config.placeholder}.0/${config.mask}`;
+        finalSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, config.placeholder, config.mask);
       }
     });
 
-    // Update context - use any for backward compatibility
+    // Process domestic WAN networks
+    extendedGroupedConfigs["wan-domestic"]?.forEach((config: any) => {
+      const value = values.value[config.key];
+      if (value !== null && value !== undefined) {
+        finalSubnets.DomesticNetworks.push(createSubnetConfig(config.label, value, config.mask));
+      } else if (config.isRequired) {
+        finalSubnets.DomesticNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+      }
+    });
+
+    // Process foreign WAN networks
+    extendedGroupedConfigs["wan-foreign"]?.forEach((config: any) => {
+      const value = values.value[config.key];
+      if (value !== null && value !== undefined) {
+        finalSubnets.ForeignNetworks.push(createSubnetConfig(config.label, value, config.mask));
+      } else if (config.isRequired) {
+        finalSubnets.ForeignNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+      }
+    });
+
+    // Process VPN client networks - organize by protocol
+    const vpnClientsByProtocol: Record<string, any[]> = {
+      Wireguard: [],
+      OpenVPN: [],
+      PPTP: [],
+      L2TP: [],
+      SSTP: [],
+      IKev2: []
+    };
+
+    extendedGroupedConfigs["vpn-client"]?.forEach((config: any, index: number) => {
+      const value = values.value[config.key];
+      const vpnClients = starContext.state.WAN.VPNClient;
+      
+      // Determine protocol from the index by counting clients in order
+      let currentIndex = 0;
+      let protocol = '';
+      
+      if (vpnClients?.Wireguard?.length) {
+        if (index < currentIndex + vpnClients.Wireguard.length) {
+          protocol = 'Wireguard';
+        }
+        currentIndex += vpnClients.Wireguard.length;
+      }
+      if (!protocol && vpnClients?.OpenVPN?.length) {
+        if (index < currentIndex + vpnClients.OpenVPN.length) {
+          protocol = 'OpenVPN';
+        }
+        currentIndex += vpnClients.OpenVPN.length;
+      }
+      if (!protocol && vpnClients?.PPTP?.length) {
+        if (index < currentIndex + vpnClients.PPTP.length) {
+          protocol = 'PPTP';
+        }
+        currentIndex += vpnClients.PPTP.length;
+      }
+      if (!protocol && vpnClients?.L2TP?.length) {
+        if (index < currentIndex + vpnClients.L2TP.length) {
+          protocol = 'L2TP';
+        }
+        currentIndex += vpnClients.L2TP.length;
+      }
+      if (!protocol && vpnClients?.SSTP?.length) {
+        if (index < currentIndex + vpnClients.SSTP.length) {
+          protocol = 'SSTP';
+        }
+        currentIndex += vpnClients.SSTP.length;
+      }
+      if (!protocol && vpnClients?.IKeV2?.length) {
+        if (index < currentIndex + vpnClients.IKeV2.length) {
+          protocol = 'IKev2';
+        }
+        currentIndex += vpnClients.IKeV2.length;
+      }
+
+      if (protocol && (value !== null && value !== undefined)) {
+        vpnClientsByProtocol[protocol].push(createSubnetConfig(config.label, value, config.mask));
+      }
+    });
+
+    // Add non-empty protocol arrays to VPNClientNetworks
+    Object.entries(vpnClientsByProtocol).forEach(([protocol, configs]) => {
+      if (configs.length > 0) {
+        finalSubnets.VPNClientNetworks[protocol] = configs;
+      }
+    });
+
+    // Process VPN server networks - organize by protocol
+    const vpnServers = starContext.state.LAN.VPNServer;
+    
+    // WireGuard servers (array)
+    if (vpnServers?.WireguardServers?.length) {
+      const wireguardConfigs: any[] = [];
+      vpnServers.WireguardServers.forEach((server, index) => {
+        const serverName = server.Interface.Name || `WireGuard${index + 1}`;
+        const value = values.value[serverName];
+        if (value !== null && value !== undefined) {
+          wireguardConfigs.push(createSubnetConfig(serverName, value, 24));
+        }
+      });
+      if (wireguardConfigs.length > 0) {
+        finalSubnets.VPNServerNetworks.Wireguard = wireguardConfigs;
+      }
+    }
+
+    // OpenVPN servers (array)
+    if (vpnServers?.OpenVpnServer?.length) {
+      const openvpnConfigs: any[] = [];
+      vpnServers.OpenVpnServer.forEach((server, index) => {
+        const serverName = server.name || `OpenVPN${index + 1}`;
+        const value = values.value[serverName];
+        if (value !== null && value !== undefined) {
+          openvpnConfigs.push(createSubnetConfig(serverName, value, 24));
+        }
+      });
+      if (openvpnConfigs.length > 0) {
+        finalSubnets.VPNServerNetworks.OpenVPN = openvpnConfigs;
+      }
+    }
+
+      // Single server protocols
+      const singleServerProtocols = [
+        { key: 'L2TP', enabled: vpnServers?.L2tpServer?.enabled },
+        { key: 'PPTP', enabled: vpnServers?.PptpServer?.enabled },
+        { key: 'SSTP', enabled: vpnServers?.SstpServer?.enabled },
+        { key: 'IKev2', enabled: vpnServers?.Ikev2Server },
+        { key: 'SSH', enabled: vpnServers?.SSHServer?.enabled },
+        { key: 'Socks5', enabled: vpnServers?.Socks5Server?.enabled },
+        { key: 'HTTPProxy', enabled: vpnServers?.HTTPProxyServer?.enabled },
+        { key: 'BackToHome', enabled: vpnServers?.BackToHomeServer?.enabled },
+        { key: 'ZeroTier', enabled: vpnServers?.ZeroTierServer?.enabled }
+      ];
+
+    singleServerProtocols.forEach(({ key, enabled }) => {
+      if (enabled) {
+        const value = values.value[key];
+        if (value !== null && value !== undefined) {
+          finalSubnets.VPNServerNetworks[key] = createSubnetConfig(key, value, 24);
+        }
+      }
+    });
+
+    // Process tunnel networks - organize by tunnel type
+    const tunnels = starContext.state.LAN.Tunnel;
+    const tunnelTypes = [
+      { key: 'IPIP', configs: tunnels?.IPIP },
+      { key: 'Eoip', configs: tunnels?.Eoip },
+      { key: 'Gre', configs: tunnels?.Gre },
+      { key: 'Vxlan', configs: tunnels?.Vxlan }
+    ];
+
+    tunnelTypes.forEach(({ key, configs }) => {
+      if (configs?.length) {
+        const tunnelConfigs: any[] = [];
+        configs.forEach((tunnel: any, index: number) => {
+          const tunnelName = tunnel.name || `${key}${index + 1}`;
+          const value = values.value[tunnelName];
+          if (value !== null && value !== undefined) {
+            tunnelConfigs.push(createSubnetConfig(tunnelName, value, 30));
+          }
+        });
+        if (tunnelConfigs.length > 0) {
+          finalSubnets.TunnelNetworks[key] = tunnelConfigs;
+        }
+      }
+    });
+
+    // Clean up empty sections
+    if (Object.keys(finalSubnets.BaseNetworks).length === 0) delete finalSubnets.BaseNetworks;
+    if (finalSubnets.ForeignNetworks.length === 0) delete finalSubnets.ForeignNetworks;
+    if (finalSubnets.DomesticNetworks.length === 0) delete finalSubnets.DomesticNetworks;
+    if (Object.keys(finalSubnets.VPNClientNetworks).length === 0) delete finalSubnets.VPNClientNetworks;
+    if (Object.keys(finalSubnets.VPNServerNetworks).length === 0) delete finalSubnets.VPNServerNetworks;
+    if (Object.keys(finalSubnets.TunnelNetworks).length === 0) delete finalSubnets.TunnelNetworks;
+
+    // Update context with structured format
     await starContext.updateLAN$({ Subnets: finalSubnets as any });
 
     // Complete step
@@ -275,6 +618,132 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       </div>
                     </div>
 
+                    {/* Domestic WAN Networks */}
+                    {starContext.state.Choose.Networks?.DomesticNetworks?.length > 0 && (
+                      <div class="p-4 rounded-lg bg-orange-50/50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                        <h4 class="font-medium text-orange-700 dark:text-orange-300 mb-3 flex items-center gap-2">
+                          <LuHome class="h-4 w-4" />
+                          {$localize`Domestic WAN Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {starContext.state.Choose.Networks.DomesticNetworks.map((networkName, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{21 + index}.0/24</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Foreign WAN Networks */}
+                    {starContext.state.Choose.Networks?.ForeignNetworks?.length > 0 && (
+                      <div class="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                        <h4 class="font-medium text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
+                          <LuGlobe class="h-4 w-4" />
+                          {$localize`Foreign WAN Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {starContext.state.Choose.Networks.ForeignNetworks.map((networkName, index) => (
+                            <div key={index} class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{31 + index}.0/24</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VPN Client Networks */}
+                    {(starContext.state.Choose.Networks?.VPNClientNetworks?.Wireguard?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.OpenVPN?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.L2TP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.PPTP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.SSTP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.IKev2?.length > 0) && (
+                      <div class="p-4 rounded-lg bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800">
+                        <h4 class="font-medium text-teal-700 dark:text-teal-300 mb-3 flex items-center gap-2">
+                          <LuLock class="h-4 w-4" />
+                          {$localize`VPN Client Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(() => {
+                            let clientIndex = 0;
+                            const vpnClientNetworks = starContext.state.Choose.Networks?.VPNClientNetworks;
+                            const elements: any[] = [];
+                            
+                            // Wireguard clients
+                            vpnClientNetworks?.Wireguard?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`wg-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            // OpenVPN clients
+                            vpnClientNetworks?.OpenVPN?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`ovpn-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            // L2TP clients
+                            vpnClientNetworks?.L2TP?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`l2tp-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            // PPTP clients
+                            vpnClientNetworks?.PPTP?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`pptp-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            // SSTP clients
+                            vpnClientNetworks?.SSTP?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`sstp-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            // IKEv2 clients
+                            vpnClientNetworks?.IKev2?.forEach((networkName) => {
+                              elements.push(
+                                <div key={`ikev2-${clientIndex}`} class="flex justify-between text-sm">
+                                  <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
+                                  <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{41 + clientIndex}.0/24</span>
+                                </div>
+                              );
+                              clientIndex++;
+                            });
+                            
+                            return elements;
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
                     {/* VPN Server Networks if configured */}
                     {starContext.state.LAN.VPNServer && (
                       (starContext.state.LAN.VPNServer.WireguardServers && starContext.state.LAN.VPNServer.WireguardServers.length > 0) ||
@@ -282,7 +751,12 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       starContext.state.LAN.VPNServer.L2tpServer?.enabled ||
                       starContext.state.LAN.VPNServer.PptpServer?.enabled ||
                       starContext.state.LAN.VPNServer.SstpServer?.enabled ||
-                      starContext.state.LAN.VPNServer.Ikev2Server
+                      starContext.state.LAN.VPNServer.Ikev2Server ||
+                      starContext.state.Choose.Networks?.VPNServerNetworks?.SSH ||
+                      starContext.state.Choose.Networks?.VPNServerNetworks?.Socks5 ||
+                      starContext.state.Choose.Networks?.VPNServerNetworks?.HTTPProxy ||
+                      starContext.state.Choose.Networks?.VPNServerNetworks?.BackToHome ||
+                      starContext.state.Choose.Networks?.VPNServerNetworks?.ZeroTier
                     ) && (
                       <div class="p-4 rounded-lg bg-green-50/50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                         <h4 class="font-medium text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
@@ -324,6 +798,36 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">{$localize`IKEv2`}:</span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">192.168.160.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.Choose.Networks?.VPNServerNetworks?.SSH && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`SSH Server`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.165.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.Choose.Networks?.VPNServerNetworks?.Socks5 && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Socks5 Proxy`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.155.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.Choose.Networks?.VPNServerNetworks?.HTTPProxy && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`HTTP Proxy`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.156.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.Choose.Networks?.VPNServerNetworks?.BackToHome && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`Back To Home`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.157.0/24</span>
+                            </div>
+                          )}
+                          {starContext.state.Choose.Networks?.VPNServerNetworks?.ZeroTier && (
+                            <div class="flex justify-between text-sm">
+                              <span class="text-gray-600 dark:text-gray-400">{$localize`ZeroTier`}:</span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">192.168.158.0/24</span>
                             </div>
                           )}
                         </div>

@@ -1,8 +1,10 @@
-import { component$, useSignal, $, useComputed$ } from "@builder.io/qwik";
+import { component$, $, useComputed$ } from "@builder.io/qwik";
 import {
   HiServerOutline,
   HiPlusCircleOutline,
   HiTrashOutline,
+  // HiEyeOutline,
+  // HiEyeSlashOutline,
 } from "@qwikest/icons/heroicons";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { ServerFormField, ServerButton, SectionTitle } from "~/components/Core/Form/ServerField";
@@ -14,56 +16,37 @@ import { useWireguardServer } from "./useWireguardServer";
 
 export const WireguardServerAdvanced = component$(() => {
   const {
-    advancedFormState,
-    updateServerConfig,
+    draftConfigs,
+    activeTabIndex,
+    addServerTab$,
+    removeServerTab$,
+    switchTab$,
+    updateName$,
+    // updatePrivateKey$,
+    // updateInterfaceAddress$,
+    // updateMtu$,
+    updateListenPort$,
+    updateVSNetwork$,
+    // handleGeneratePrivateKey,
+    // showPrivateKey,
+    // togglePrivateKeyVisibility,
+    // privateKeyError,
+    // addressError,
+    portError,
   } = useWireguardServer();
-
-  // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<ExtendedNetworks>("Wireguard" as const);
-
-  // Tab management for multiple interfaces
-  const activeTab = useSignal("interface-1");
-  const interfaces = useSignal([
-    { id: "interface-1", suffix: "1" },
-  ]);
-
-  // Add new interface
-  const addInterface$ = $(() => {
-    const newId = `interface-${interfaces.value.length + 1}`;
-    interfaces.value = [
-      ...interfaces.value,
-      { id: newId, suffix: (interfaces.value.length + 1).toString() },
-    ];
-    activeTab.value = newId;
-  });
-
-  // Update interface suffix
-  const updateInterfaceSuffix$ = $((interfaceId: string, newSuffix: string) => {
-    interfaces.value = interfaces.value.map(iface => 
-      iface.id === interfaceId 
-        ? { ...iface, suffix: newSuffix || "1" }
-        : iface
-    );
-  });
-
-  // Remove interface
-  const removeInterface$ = $((interfaceId: string) => {
-    if (interfaces.value.length > 1) {
-      const filteredInterfaces = interfaces.value.filter(iface => iface.id !== interfaceId);
-      interfaces.value = filteredInterfaces;
-      if (activeTab.value === interfaceId) {
-        activeTab.value = filteredInterfaces[0].id;
-      }
-    }
-  });
 
   // Generate tab options for TabNavigation
   const tabOptions = useComputed$(() =>
-    interfaces.value.map(iface => ({
-      id: iface.id,
-      label: `wg-server-${iface.suffix}`,
+    draftConfigs.value.map((config, index) => ({
+      id: `interface-${index}`,
+      label: config.name,
       icon: <HiServerOutline class="h-4 w-4" />,
     }))
+  );
+
+  // Get current draft as a reactive computed value
+  const currentDraft = useComputed$(() =>
+    draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0]
   );
 
   return (
@@ -79,16 +62,16 @@ export const WireguardServerAdvanced = component$(() => {
           </h3>
           <div class="flex items-center gap-2">
             <ServerButton
-              onClick$={addInterface$}
+              onClick$={addServerTab$}
               primary={false}
               class="flex items-center gap-1"
             >
               <HiPlusCircleOutline class="h-4 w-4" />
               {$localize`Add Interface`}
             </ServerButton>
-            {interfaces.value.length > 1 && (
+            {draftConfigs.value.length > 1 && (
               <ServerButton
-                onClick$={() => removeInterface$(activeTab.value)}
+                onClick$={() => removeServerTab$(activeTabIndex.value)}
                 danger={true}
                 primary={false}
                 class="flex items-center gap-1"
@@ -103,9 +86,10 @@ export const WireguardServerAdvanced = component$(() => {
         {/* Tab Navigation */}
         <TabNavigation
           tabs={tabOptions.value}
-          activeTab={activeTab.value}
+          activeTab={`interface-${activeTabIndex.value}`}
           onSelect$={$((tabId: string) => {
-            activeTab.value = tabId;
+            const index = parseInt(tabId.split("-")[1]);
+            switchTab$(index);
           })}
           variant="underline"
           size="sm"
@@ -118,42 +102,47 @@ export const WireguardServerAdvanced = component$(() => {
             {/* Interface Name */}
             <InterfaceNameInput
               type="wireguard"
-              value={interfaces.value.find(iface => iface.id === activeTab.value)?.suffix || ""}
-              onChange$={(event: Event, value: string) => updateInterfaceSuffix$(activeTab.value, value)}
+              value={currentDraft.value.name.replace("wg-server-", "")}
+              onChange$={(event: Event, value: string) => {
+                updateName$(`wg-server-${value || "1"}`);
+              }}
               label={$localize`Interface Name`}
               placeholder="1"
             />
 
+       
+
             {/* Network Selection */}
             <ServerFormField label={$localize`Network`}>
               <NetworkDropdown
-                selectedNetwork={selectedNetwork.value as ExtendedNetworks}
+                selectedNetwork={currentDraft.value.vsNetwork as ExtendedNetworks}
                 onNetworkChange$={(network) => {
-                  selectedNetwork.value = network;
+                  updateVSNetwork$(network as any);
                 }}
               />
             </ServerFormField>
 
-
-
-
             {/* Listen Port */}
-            <ServerFormField label={$localize`Listen Port`}>
+            <ServerFormField
+              label={$localize`Listen Port`}
+              errorMessage={portError.value}
+            >
               <Input
                 type="number"
-                value={advancedFormState.listenPort.toString()}
-                onChange$={(_, value) =>
-                  updateServerConfig({
-                    listenPort: parseInt(value, 10) || 51820,
-                  })
-                }
+                value={currentDraft.value.listenPort.toString()}
+                onChange$={(_, value) => {
+                  const port = parseInt(value, 10);
+                  if (!isNaN(port)) {
+                    updateListenPort$(port);
+                  }
+                }}
                 placeholder="51820"
+                validation={portError.value ? "invalid" : "default"}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {$localize`UDP port for WireGuard connections`}
               </p>
             </ServerFormField>
-
           </div>
         </div>
 

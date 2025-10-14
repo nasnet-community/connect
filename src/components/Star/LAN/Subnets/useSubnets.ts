@@ -18,7 +18,6 @@ import type {
  */
 export const useSubnets = (): UseSubnetsReturn => {
   const starContext = useContext(StarContext);
-  const isDomesticLink = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
   
   // Local state for subnet values and errors
   const values = useSignal<Record<string, number | null>>({});
@@ -88,106 +87,196 @@ export const useSubnets = (): UseSubnetsReturn => {
     const existingSubnets = starContext.state.LAN.Subnets || {};
     const initialValues: Record<string, number | null> = {};
 
-    // Convert existing CIDR subnets back to third octet values
-    // Handle both simple Record<string, string> and complex Subnets type
+    // Helper to extract third octet from CIDR
+    const extractThirdOctet = (cidr: string): number | null => {
+      const match = cidr.match(/192\.168\.(\d+)\.0\/\d+/);
+      return match ? parseInt(match[1], 10) : null;
+    };
+
+    // Handle both legacy flat format and new structured format
     if (typeof existingSubnets === 'object' && !Array.isArray(existingSubnets)) {
-      Object.entries(existingSubnets).forEach(([key, cidr]) => {
-        if (typeof cidr === 'string') {
-          const match = cidr.match(/192\.168\.(\d+)\.0\/\d+/);
-          if (match) {
-            initialValues[key] = parseInt(match[1], 10);
-          }
+      // Check if it's the new structured format (has BaseNetworks property)
+      if ('BaseNetworks' in existingSubnets) {
+        const subnets = existingSubnets as any; // Type assertion for flexibility
+        
+        // Extract base networks
+        if (subnets.BaseNetworks) {
+          Object.entries(subnets.BaseNetworks).forEach(([key, subnetConfig]: [string, any]) => {
+            if (subnetConfig && typeof subnetConfig.subnet === 'string') {
+              const octet = extractThirdOctet(subnetConfig.subnet);
+              if (octet !== null) {
+                initialValues[key] = octet;
+              }
+            }
+          });
         }
-      });
+
+        // Extract domestic networks
+        if (Array.isArray(subnets.DomesticNetworks)) {
+          subnets.DomesticNetworks.forEach((config: any, index: number) => {
+            if (config && typeof config.subnet === 'string') {
+              const octet = extractThirdOctet(config.subnet);
+              if (octet !== null) {
+                initialValues[`Domestic${index + 1}`] = octet;
+              }
+            }
+          });
+        }
+
+        // Extract foreign networks
+        if (Array.isArray(subnets.ForeignNetworks)) {
+          subnets.ForeignNetworks.forEach((config: any, index: number) => {
+            if (config && typeof config.subnet === 'string') {
+              const octet = extractThirdOctet(config.subnet);
+              if (octet !== null) {
+                initialValues[`Foreign${index + 1}`] = octet;
+              }
+            }
+          });
+        }
+
+        // Extract VPN client networks
+        if (subnets.VPNClientNetworks) {
+          let clientIndex = 1;
+          ['Wireguard', 'OpenVPN', 'PPTP', 'L2TP', 'SSTP', 'IKev2'].forEach((protocol) => {
+            const protocolConfigs = subnets.VPNClientNetworks[protocol];
+            if (Array.isArray(protocolConfigs)) {
+              protocolConfigs.forEach((config: any) => {
+                if (config && typeof config.subnet === 'string') {
+                  const octet = extractThirdOctet(config.subnet);
+                  if (octet !== null) {
+                    initialValues[`VPNClient${clientIndex++}`] = octet;
+                  }
+                }
+              });
+            }
+          });
+        }
+
+        // Extract VPN server networks
+        if (subnets.VPNServerNetworks) {
+          ['Wireguard', 'OpenVPN', 'L2TP', 'PPTP', 'SSTP', 'IKev2'].forEach((protocol) => {
+            const protocolConfig = subnets.VPNServerNetworks[protocol];
+            if (Array.isArray(protocolConfig)) {
+              // Multiple servers (Wireguard, OpenVPN)
+              protocolConfig.forEach((config: any) => {
+                if (config && config.name && typeof config.subnet === 'string') {
+                  const octet = extractThirdOctet(config.subnet);
+                  if (octet !== null) {
+                    initialValues[config.name] = octet;
+                  }
+                }
+              });
+            } else if (protocolConfig && typeof protocolConfig.subnet === 'string') {
+              // Single server (L2TP, PPTP, SSTP, IKev2)
+              const octet = extractThirdOctet(protocolConfig.subnet);
+              if (octet !== null) {
+                initialValues[protocol] = octet;
+              }
+            }
+          });
+        }
+
+        // Extract tunnel networks
+        if (subnets.TunnelNetworks) {
+          ['IPIP', 'Eoip', 'Gre', 'Vxlan'].forEach((tunnelType) => {
+            const tunnelConfigs = subnets.TunnelNetworks[tunnelType];
+            if (Array.isArray(tunnelConfigs)) {
+              tunnelConfigs.forEach((config: any) => {
+                if (config && config.name && typeof config.subnet === 'string') {
+                  const octet = extractThirdOctet(config.subnet);
+                  if (octet !== null) {
+                    initialValues[config.name] = octet;
+                  }
+                }
+              });
+            }
+          });
+        }
+      } else {
+        // Legacy flat format - backward compatibility
+        Object.entries(existingSubnets).forEach(([key, cidr]) => {
+          if (typeof cidr === 'string') {
+            const octet = extractThirdOctet(cidr);
+            if (octet !== null) {
+              initialValues[key] = octet;
+            }
+          }
+        });
+      }
     }
 
     // If no existing values saved, we'll populate with placeholders later
     values.value = initialValues;
   });
 
-  // Define subnet configurations based on current state
+  // Define subnet configurations based on Networks
   const subnetConfigs = useComputed$<SubnetConfig[]>(() => {
     const configs: SubnetConfig[] = [];
+    const networks = starContext.state.Choose.Networks;
 
-    // Base network subnets based on DomesticLink
-    if (isDomesticLink) {
-      configs.push(
-        {
-          key: "Split",
-          label: $localize`Split Network`,
-          placeholder: 10,
-          value: values.value["Split"] ?? null,
-          description: $localize`Mixed domestic and foreign traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        },
-        {
-          key: "Domestic", 
-          label: $localize`Domestic Network`,
-          placeholder: 20,
-          value: values.value["Domestic"] ?? null,
-          description: $localize`Domestic-only traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        },
-        {
-          key: "Foreign",
-          label: $localize`Foreign Network`, 
-          placeholder: 30,
-          value: values.value["Foreign"] ?? null,
-          description: $localize`Foreign/international traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        },
-        {
-          key: "VPN",
-          label: $localize`VPN Network`,
-          placeholder: 40,
-          value: values.value["VPN"] ?? null,
-          description: $localize`VPN client traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        }
-      );
-    } else {
-      configs.push(
-        {
-          key: "VPN",
-          label: $localize`VPN Network`,
-          placeholder: 10,
-          value: values.value["VPN"] ?? null,
-          description: $localize`Primary VPN traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        },
-        {
-          key: "Foreign",
-          label: $localize`Foreign Network`,
-          placeholder: 30,
-          value: values.value["Foreign"] ?? null,
-          description: $localize`Foreign/international traffic`,
-          category: "base",
-          isRequired: true,
-          mask: 24,
-          color: "primary",
-        }
-      );
+    // Return empty if Networks is not defined
+    if (!networks) return configs;
+
+    // Base Networks - only show if enabled in Networks.BaseNetworks
+    if (networks.BaseNetworks?.Split) {
+      configs.push({
+        key: "Split",
+        label: $localize`Split Network`,
+        placeholder: 10,
+        value: values.value["Split"] ?? null,
+        description: $localize`Mixed domestic and foreign traffic`,
+        category: "base",
+        isRequired: true,
+        mask: 24,
+        color: "primary",
+      });
+    }
+    
+    if (networks.BaseNetworks?.Domestic) {
+      configs.push({
+        key: "Domestic",
+        label: $localize`Domestic Network`,
+        placeholder: 20,
+        value: values.value["Domestic"] ?? null,
+        description: $localize`Domestic-only traffic`,
+        category: "base",
+        isRequired: true,
+        mask: 24,
+        color: "primary",
+      });
+    }
+    
+    if (networks.BaseNetworks?.Foreign) {
+      configs.push({
+        key: "Foreign",
+        label: $localize`Foreign Network`,
+        placeholder: 30,
+        value: values.value["Foreign"] ?? null,
+        description: $localize`Foreign/international traffic`,
+        category: "base",
+        isRequired: true,
+        mask: 24,
+        color: "primary",
+      });
+    }
+    
+    if (networks.BaseNetworks?.VPN) {
+      configs.push({
+        key: "VPN",
+        label: $localize`VPN Network`,
+        placeholder: 40,
+        value: values.value["VPN"] ?? null,
+        description: $localize`VPN client traffic`,
+        category: "base",
+        isRequired: true,
+        mask: 24,
+        color: "primary",
+      });
     }
 
-    // Add VPN server subnets with specific subnet allocations
-    const vpnServers = starContext.state.LAN.VPNServer;
-
-    // VPN server subnet mapping
+    // VPN Server Networks - read from Networks.VPNServerNetworks
+    // VPN server subnet mapping for placeholders
     const vpnSubnetMap = {
       wireguard: 110,
       openvpn: 120,
@@ -197,16 +286,14 @@ export const useSubnets = (): UseSubnetsReturn => {
       ikev2: 160
     };
 
-    // Multiple WireGuard servers - each gets its own subnet
-    if (vpnServers?.WireguardServers?.length) {
-      vpnServers.WireguardServers.forEach((server, index) => {
-        const serverName = server.Interface.Name || `WireGuard${index + 1}`;
-        const key = serverName;
+    // WireGuard servers - array of network names
+    if (networks.VPNServerNetworks?.Wireguard?.length) {
+      networks.VPNServerNetworks.Wireguard.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${serverName} Network`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: vpnSubnetMap.wireguard + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`WireGuard VPN server clients`,
           category: "vpn",
           isRequired: false,
@@ -215,15 +302,14 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    // Multiple OpenVPN servers - each gets its own subnet
-    if (vpnServers?.OpenVpnServer?.length) {
-      vpnServers.OpenVpnServer.forEach((server, index) => {
-        const key = server.name || `OpenVPN${index + 1}`;
+    // OpenVPN servers - array of network names
+    if (networks.VPNServerNetworks?.OpenVPN?.length) {
+      networks.VPNServerNetworks.OpenVPN.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${server.name} Network`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: vpnSubnetMap.openvpn + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`OpenVPN server clients`,
           category: "vpn",
           isRequired: false,
@@ -232,7 +318,8 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    if (vpnServers?.L2tpServer?.enabled) {
+    // L2TP - boolean check
+    if (networks.VPNServerNetworks?.L2TP) {
       configs.push({
         key: "L2TP",
         label: $localize`L2TP Network`,
@@ -245,7 +332,8 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    if (vpnServers?.PptpServer?.enabled) {
+    // PPTP - boolean check
+    if (networks.VPNServerNetworks?.PPTP) {
       configs.push({
         key: "PPTP",
         label: $localize`PPTP Network`,
@@ -258,7 +346,8 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    if (vpnServers?.SstpServer?.enabled) {
+    // SSTP - boolean check
+    if (networks.VPNServerNetworks?.SSTP) {
       configs.push({
         key: "SSTP",
         label: $localize`SSTP Network`,
@@ -271,7 +360,8 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    if (vpnServers?.Ikev2Server) {
+    // IKEv2 - boolean check
+    if (networks.VPNServerNetworks?.IKev2) {
       configs.push({
         key: "IKev2",
         label: $localize`IKEv2 Network`,
@@ -284,10 +374,78 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    // Add tunnel subnets (using /30 mask for point-to-point)
-    const tunnels = starContext.state.LAN.Tunnel;
+    // SSH - boolean check
+    if (networks.VPNServerNetworks?.SSH) {
+      configs.push({
+        key: "SSH",
+        label: $localize`SSH Server`,
+        placeholder: 165,
+        value: values.value["SSH"] ?? null,
+        description: $localize`SSH tunnel server`,
+        category: "vpn",
+        isRequired: false,
+        mask: 24,
+      });
+    }
 
-    // Fixed starting points for each tunnel type
+    // Socks5 - boolean check
+    if (networks.VPNServerNetworks?.Socks5) {
+      configs.push({
+        key: "Socks5",
+        label: $localize`Socks5 Proxy`,
+        placeholder: 155,
+        value: values.value["Socks5"] ?? null,
+        description: $localize`Socks5 proxy server`,
+        category: "vpn",
+        isRequired: false,
+        mask: 24,
+      });
+    }
+
+    // HTTPProxy - boolean check
+    if (networks.VPNServerNetworks?.HTTPProxy) {
+      configs.push({
+        key: "HTTPProxy",
+        label: $localize`HTTP Proxy`,
+        placeholder: 156,
+        value: values.value["HTTPProxy"] ?? null,
+        description: $localize`HTTP proxy server`,
+        category: "vpn",
+        isRequired: false,
+        mask: 24,
+      });
+    }
+
+    // BackToHome - boolean check
+    if (networks.VPNServerNetworks?.BackToHome) {
+      configs.push({
+        key: "BackToHome",
+        label: $localize`Back To Home`,
+        placeholder: 157,
+        value: values.value["BackToHome"] ?? null,
+        description: $localize`Back to home tunnel`,
+        category: "vpn",
+        isRequired: false,
+        mask: 24,
+      });
+    }
+
+    // ZeroTier - boolean check
+    if (networks.VPNServerNetworks?.ZeroTier) {
+      configs.push({
+        key: "ZeroTier",
+        label: $localize`ZeroTier`,
+        placeholder: 158,
+        value: values.value["ZeroTier"] ?? null,
+        description: $localize`ZeroTier network`,
+        category: "vpn",
+        isRequired: false,
+        mask: 24,
+      });
+    }
+
+    // Tunnel Networks - read from Networks.TunnelNetworks
+    // Fixed starting points for each tunnel type for placeholders
     const tunnelSubnetBases = {
       ipip: 170,
       eoip: 180,
@@ -296,14 +454,13 @@ export const useSubnets = (): UseSubnetsReturn => {
     };
 
     // IPIP Tunnels
-    if (tunnels?.IPIP?.length) {
-      tunnels.IPIP.forEach((tunnel, index) => {
-        const key = tunnel.name || `IPIP${index + 1}`;
+    if (networks.TunnelNetworks?.IPIP?.length) {
+      networks.TunnelNetworks.IPIP.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${tunnel.name || `IPIP ${index + 1}`}`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: tunnelSubnetBases.ipip + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`IPIP tunnel connection`,
           category: "tunnel",
           isRequired: false,
@@ -313,14 +470,13 @@ export const useSubnets = (): UseSubnetsReturn => {
     }
 
     // EoIP Tunnels
-    if (tunnels?.Eoip?.length) {
-      tunnels.Eoip.forEach((tunnel, index) => {
-        const key = tunnel.name || `EoIP${index + 1}`;
+    if (networks.TunnelNetworks?.Eoip?.length) {
+      networks.TunnelNetworks.Eoip.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${tunnel.name || `EoIP ${index + 1}`}`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: tunnelSubnetBases.eoip + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`EoIP tunnel connection`,
           category: "tunnel",
           isRequired: false,
@@ -330,14 +486,13 @@ export const useSubnets = (): UseSubnetsReturn => {
     }
 
     // GRE Tunnels
-    if (tunnels?.Gre?.length) {
-      tunnels.Gre.forEach((tunnel, index) => {
-        const key = tunnel.name || `GRE${index + 1}`;
+    if (networks.TunnelNetworks?.Gre?.length) {
+      networks.TunnelNetworks.Gre.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${tunnel.name || `GRE ${index + 1}`}`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: tunnelSubnetBases.gre + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`GRE tunnel connection`,
           category: "tunnel",
           isRequired: false,
@@ -347,14 +502,13 @@ export const useSubnets = (): UseSubnetsReturn => {
     }
 
     // VXLAN Tunnels
-    if (tunnels?.Vxlan?.length) {
-      tunnels.Vxlan.forEach((tunnel, index) => {
-        const key = tunnel.name || `VXLAN${index + 1}`;
+    if (networks.TunnelNetworks?.Vxlan?.length) {
+      networks.TunnelNetworks.Vxlan.forEach((networkName, index) => {
         configs.push({
-          key,
-          label: $localize`${tunnel.name || `VXLAN ${index + 1}`}`,
+          key: networkName,
+          label: $localize`${networkName}`,
           placeholder: tunnelSubnetBases.vxlan + index,
-          value: values.value[key] ?? null,
+          value: values.value[networkName] ?? null,
           description: $localize`VXLAN tunnel connection`,
           category: "tunnel",
           isRequired: false,
@@ -363,14 +517,13 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    // Multiple Domestic WAN Links - only show if there are 2+ domestic links
-    const domesticLinks = starContext.state.WAN.WANLink.Domestic?.WANConfigs;
-    if (domesticLinks && domesticLinks.length >= 2) {
-      domesticLinks.forEach((link, index) => {
+    // Domestic WAN Networks - read from Networks.DomesticNetworks
+    if (networks.DomesticNetworks?.length) {
+      networks.DomesticNetworks.forEach((networkName, index) => {
         const key = `Domestic${index + 1}`;
         configs.push({
           key,
-          label: $localize`${link.name || `Domestic Link ${index + 1}`}`,
+          label: $localize`${networkName}`,
           placeholder: 21 + index,
           value: values.value[key] ?? null,
           description: $localize`Domestic WAN link network`,
@@ -382,14 +535,13 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    // Multiple Foreign WAN Links - only show if there are 2+ foreign links
-    const foreignLinks = starContext.state.WAN.WANLink.Foreign?.WANConfigs;
-    if (foreignLinks && foreignLinks.length >= 2) {
-      foreignLinks.forEach((link, index) => {
+    // Foreign WAN Networks - read from Networks.ForeignNetworks
+    if (networks.ForeignNetworks?.length) {
+      networks.ForeignNetworks.forEach((networkName, index) => {
         const key = `Foreign${index + 1}`;
         configs.push({
           key,
-          label: $localize`${link.name || `Foreign Link ${index + 1}`}`,
+          label: $localize`${networkName}`,
           placeholder: 31 + index,
           value: values.value[key] ?? null,
           description: $localize`Foreign WAN link network`,
@@ -401,54 +553,109 @@ export const useSubnets = (): UseSubnetsReturn => {
       });
     }
 
-    // Multiple VPN Clients - count total across all types
-    const vpnClients = starContext.state.WAN.VPNClient;
-    const vpnClientConfigs: { name: string; type: string }[] = [];
-
-    if (vpnClients) {
-      // Collect all VPN clients
-      if (vpnClients.Wireguard?.length) {
-        vpnClients.Wireguard.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `WireGuard Client ${index + 1}`, type: "Wireguard" });
-        });
-      }
-      if (vpnClients.OpenVPN?.length) {
-        vpnClients.OpenVPN.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `OpenVPN Client ${index + 1}`, type: "OpenVPN" });
-        });
-      }
-      if (vpnClients.PPTP?.length) {
-        vpnClients.PPTP.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `PPTP Client ${index + 1}`, type: "PPTP" });
-        });
-      }
-      if (vpnClients.L2TP?.length) {
-        vpnClients.L2TP.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `L2TP Client ${index + 1}`, type: "L2TP" });
-        });
-      }
-      if (vpnClients.SSTP?.length) {
-        vpnClients.SSTP.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `SSTP Client ${index + 1}`, type: "SSTP" });
-        });
-      }
-      if (vpnClients.IKeV2?.length) {
-        vpnClients.IKeV2.forEach((_, index) => {
-          vpnClientConfigs.push({ name: `IKEv2 Client ${index + 1}`, type: "IKEv2" });
-        });
-      }
-    }
-
-    // Only show VPN Client subnets if there are 2+ VPN clients
-    if (vpnClientConfigs.length >= 2) {
-      vpnClientConfigs.forEach((client, index) => {
-        const key = `VPNClient${index + 1}`;
+    // VPN Client Networks - read from Networks.VPNClientNetworks
+    let vpnClientIndex = 0;
+    
+    // Wireguard clients
+    if (networks.VPNClientNetworks?.Wireguard?.length) {
+      networks.VPNClientNetworks.Wireguard.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${client.name}`,
-          placeholder: 41 + index,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`${client.type} VPN client network`,
+          description: $localize`WireGuard VPN client network`,
+          category: "vpn-client",
+          isRequired: false,
+          mask: 24,
+          color: "primary",
+        });
+      });
+    }
+
+    // OpenVPN clients
+    if (networks.VPNClientNetworks?.OpenVPN?.length) {
+      networks.VPNClientNetworks.OpenVPN.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
+        configs.push({
+          key,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
+          value: values.value[key] ?? null,
+          description: $localize`OpenVPN VPN client network`,
+          category: "vpn-client",
+          isRequired: false,
+          mask: 24,
+          color: "primary",
+        });
+      });
+    }
+
+    // L2TP clients
+    if (networks.VPNClientNetworks?.L2TP?.length) {
+      networks.VPNClientNetworks.L2TP.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
+        configs.push({
+          key,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
+          value: values.value[key] ?? null,
+          description: $localize`L2TP VPN client network`,
+          category: "vpn-client",
+          isRequired: false,
+          mask: 24,
+          color: "primary",
+        });
+      });
+    }
+
+    // PPTP clients
+    if (networks.VPNClientNetworks?.PPTP?.length) {
+      networks.VPNClientNetworks.PPTP.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
+        configs.push({
+          key,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
+          value: values.value[key] ?? null,
+          description: $localize`PPTP VPN client network`,
+          category: "vpn-client",
+          isRequired: false,
+          mask: 24,
+          color: "primary",
+        });
+      });
+    }
+
+    // SSTP clients
+    if (networks.VPNClientNetworks?.SSTP?.length) {
+      networks.VPNClientNetworks.SSTP.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
+        configs.push({
+          key,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
+          value: values.value[key] ?? null,
+          description: $localize`SSTP VPN client network`,
+          category: "vpn-client",
+          isRequired: false,
+          mask: 24,
+          color: "primary",
+        });
+      });
+    }
+
+    // IKEv2 clients
+    if (networks.VPNClientNetworks?.IKev2?.length) {
+      networks.VPNClientNetworks.IKev2.forEach((networkName) => {
+        const key = `VPNClient${++vpnClientIndex}`;
+        configs.push({
+          key,
+          label: $localize`${networkName}`,
+          placeholder: 41 + vpnClientIndex - 1,
+          value: values.value[key] ?? null,
+          description: $localize`IKEv2 VPN client network`,
           category: "vpn-client",
           isRequired: false,
           mask: 24,

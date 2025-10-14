@@ -1,10 +1,10 @@
-import { component$, useSignal, $, useComputed$ } from "@builder.io/qwik";
+import { component$, $, useComputed$ } from "@builder.io/qwik";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 import { Card } from "~/components/Core/Card";
 import { Field as FormField } from "~/components/Core/Form/Field";
 import { InterfaceNameInput } from "~/components/Core/Form/PrefixedInput";
 import { Input } from "~/components/Core/Input";
-import { Button } from "~/components/Core/button";
+import { ServerButton } from "~/components/Core/Form/ServerField";
 import { TabNavigation } from "~/components/Core/Navigation/TabNavigation";
 import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
 import { NetworkDropdown } from "../../components/NetworkSelection";
@@ -17,67 +17,36 @@ import {
 
 export const OpenVPNServerAdvanced = component$(() => {
   const {
-    advancedFormState,
+    draftConfigs,
+    activeTabIndex,
+    addServerTab$,
+    removeServerTab$,
+    switchTab$,
     protocolOptions,
     updateProtocol$,
     updatePort$,
     updateTcpPort$,
     updateUdpPort$,
     updateName$,
+    // updateCertificate$,
+    // updateAddressPool$,
+    updateVSNetwork$,
+    // certificateError,
+    portError,
   } = useOpenVPNServer();
-
-  // Local network state (not part of VPN server config)
-  const selectedNetwork = useSignal<ExtendedNetworks>("VPN" as const);
-
-  // Local handler for network updates
-  const updateNetwork$ = $((network: ExtendedNetworks) => {
-    selectedNetwork.value = network;
-  });
-
-  // Tab management for multiple interfaces
-  const activeTab = useSignal("interface-1");
-  const interfaces = useSignal([
-    { id: "interface-1", suffix: "1" },
-  ]);
-
-  // Add new interface
-  const addInterface$ = $(() => {
-    const newId = `interface-${interfaces.value.length + 1}`;
-    interfaces.value = [
-      ...interfaces.value,
-      { id: newId, suffix: (interfaces.value.length + 1).toString() },
-    ];
-    activeTab.value = newId;
-  });
-
-  // Update interface suffix
-  const updateInterfaceSuffix$ = $((interfaceId: string, newSuffix: string) => {
-    interfaces.value = interfaces.value.map((iface) =>
-      iface.id === interfaceId ? { ...iface, suffix: newSuffix || "1" } : iface,
-    );
-    // Update server base name so generated instances (tcp/udp) are named accordingly
-    const suffix = (newSuffix || "1").trim();
-    updateName$(`ovpn-server-${suffix}`);
-  });
-
-  // Remove interface
-  const removeInterface$ = $((interfaceId: string) => {
-    if (interfaces.value.length > 1) {
-      const filteredInterfaces = interfaces.value.filter(iface => iface.id !== interfaceId);
-      interfaces.value = filteredInterfaces;
-      if (activeTab.value === interfaceId) {
-        activeTab.value = filteredInterfaces[0].id;
-      }
-    }
-  });
 
   // Generate tab options for TabNavigation
   const tabOptions = useComputed$(() =>
-    interfaces.value.map(iface => ({
-      id: iface.id,
-      label: `ovpn-server-${iface.suffix}`,
+    draftConfigs.value.map((config, index) => ({
+      id: `interface-${index}`,
+      label: config.name,
       icon: <HiServerOutline class="h-4 w-4" />,
     }))
+  );
+
+  // Get current draft as a reactive computed value
+  const currentDraft = useComputed$(() =>
+    draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0]
   );
 
   return (
@@ -94,23 +63,24 @@ export const OpenVPNServerAdvanced = component$(() => {
               {$localize`OpenVPN Interfaces`}
             </h3>
             <div class="flex items-center gap-2">
-              <Button
-                onClick$={addInterface$}
-                variant="secondary"
+              <ServerButton
+                onClick$={addServerTab$}
+                primary={false}
                 class="flex items-center gap-1"
               >
                 <HiPlusCircleOutline class="h-4 w-4" />
                 {$localize`Add Interface`}
-              </Button>
-              {interfaces.value.length > 1 && (
-                <Button
-                  onClick$={() => removeInterface$(activeTab.value)}
-                  variant="secondary"
-                  class="flex items-center gap-1 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/10"
+              </ServerButton>
+              {draftConfigs.value.length > 1 && (
+                <ServerButton
+                  onClick$={() => removeServerTab$(activeTabIndex.value)}
+                  danger={true}
+                  primary={false}
+                  class="flex items-center gap-1"
                 >
                   <HiTrashOutline class="h-4 w-4" />
                   {$localize`Remove`}
-                </Button>
+                </ServerButton>
               )}
             </div>
           </div>
@@ -118,9 +88,10 @@ export const OpenVPNServerAdvanced = component$(() => {
           {/* Tab Navigation for Interfaces */}
           <TabNavigation
             tabs={tabOptions.value}
-            activeTab={activeTab.value}
+            activeTab={`interface-${activeTabIndex.value}`}
             onSelect$={$((tabId: string) => {
-              activeTab.value = tabId;
+              const index = parseInt(tabId.split("-")[1]);
+              switchTab$(index);
             })}
             variant="underline"
             size="sm"
@@ -131,16 +102,22 @@ export const OpenVPNServerAdvanced = component$(() => {
             {/* Interface Name */}
             <InterfaceNameInput
               type="openvpn"
-              value={interfaces.value.find(iface => iface.id === activeTab.value)?.suffix || ""}
-              onChange$={(event: Event, value: string) => updateInterfaceSuffix$(activeTab.value, value)}
+              value={currentDraft.value.name.replace("openvpn-", "")}
+              onChange$={(event: Event, value: string) => {
+                updateName$(`openvpn-${value || "1"}`);
+              }}
               label={$localize`Interface Name`}
               placeholder="1"
             />
 
+
+
             {/* Network Selection */}
             <NetworkDropdown
-              selectedNetwork={selectedNetwork.value}
-              onNetworkChange$={updateNetwork$}
+              selectedNetwork={currentDraft.value.vsNetwork as ExtendedNetworks}
+              onNetworkChange$={(network) => {
+                updateVSNetwork$(network as any);
+              }}
               label={$localize`Network`}
             />
 
@@ -148,7 +125,7 @@ export const OpenVPNServerAdvanced = component$(() => {
             <FormField label={$localize`Protocol`}>
               <Select
                 options={protocolOptions}
-                value={advancedFormState.protocol}
+                value={currentDraft.value.protocol}
                 onChange$={(value) => {
                   updateProtocol$(Array.isArray(value) ? value[0] as any : value as any);
                 }}
@@ -156,42 +133,63 @@ export const OpenVPNServerAdvanced = component$(() => {
             </FormField>
 
             {/* Port Configuration - Conditional rendering based on protocol */}
-            {(advancedFormState.protocol !== "tcp" && advancedFormState.protocol !== "udp") ? (
+            {(currentDraft.value.protocol !== "tcp" && currentDraft.value.protocol !== "udp") ? (
               <>
                 {/* TCP Port */}
-                <FormField label={$localize`TCP Port`}>
+                <FormField
+                  label={$localize`TCP Port`}
+                  helperText={portError.value && portError.value.includes("TCP") ? portError.value : undefined}
+                >
                   <Input
                     type="number"
-                    value={advancedFormState.tcpPort.toString()}
+                    value={currentDraft.value.tcpPort.toString()}
                     onChange$={(event: Event, value: string) => {
-                      updateTcpPort$(parseInt(value, 10) || 1194);
+                      const port = parseInt(value, 10);
+                      if (!isNaN(port)) {
+                        updateTcpPort$(port);
+                      }
                     }}
                     placeholder="1194"
+                    validation={portError.value && portError.value.includes("TCP") ? "invalid" : "default"}
                   />
                 </FormField>
                 
                 {/* UDP Port */}
-                <FormField label={$localize`UDP Port`}>
+                <FormField
+                  label={$localize`UDP Port`}
+                  helperText={portError.value && portError.value.includes("UDP") ? portError.value : undefined}
+                >
                   <Input
                     type="number"
-                    value={advancedFormState.udpPort.toString()}
+                    value={currentDraft.value.udpPort.toString()}
                     onChange$={(event: Event, value: string) => {
-                      updateUdpPort$(parseInt(value, 10) || 1195);
+                      const port = parseInt(value, 10);
+                      if (!isNaN(port)) {
+                        updateUdpPort$(port);
+                      }
                     }}
                     placeholder="1195"
+                    validation={portError.value && portError.value.includes("UDP") ? "invalid" : "default"}
                   />
                 </FormField>
               </>
             ) : (
               /* Single Port for TCP or UDP */
-              <FormField label={$localize`Port`}>
+              <FormField
+                label={$localize`Port`}
+                helperText={portError.value ? portError.value : undefined}
+              >
                 <Input
                   type="number"
-                  value={advancedFormState.port.toString()}
+                  value={currentDraft.value.port.toString()}
                   onChange$={(event: Event, value: string) => {
-                    updatePort$(parseInt(value, 10) || 1194);
+                    const port = parseInt(value, 10);
+                    if (!isNaN(port)) {
+                      updatePort$(port);
+                    }
                   }}
                   placeholder="1-65535"
+                  validation={portError.value ? "invalid" : "default"}
                 />
               </FormField>
             )}

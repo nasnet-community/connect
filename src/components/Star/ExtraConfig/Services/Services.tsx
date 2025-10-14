@@ -5,6 +5,7 @@ import {
   useTask$,
   useStylesScoped$,
   useSignal,
+  useComputed$,
 } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
@@ -155,6 +156,29 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     }
   });
 
+  // Check if SSH VPN Server is enabled
+  const isSSHVPNServerEnabled = useComputed$(() => {
+    return ctx.state.LAN.VPNServer?.SSHServer?.enabled === true;
+  });
+
+  // Auto-enable SSH service when SSH VPN Server is enabled
+  useTask$(({ track }) => {
+    const sshVPNEnabled = track(() => ctx.state.LAN.VPNServer?.SSHServer?.enabled);
+    
+    if (sshVPNEnabled && ctx.state.ExtraConfig.services) {
+      const currentSSH = ctx.state.ExtraConfig.services.ssh;
+      const currentType = typeof currentSSH === "string" ? currentSSH : currentSSH.type;
+      
+      // Force SSH to be enabled if it's not already
+      if (currentType !== "Enable") {
+        const currentPort = typeof currentSSH === "string" ? 22 : currentSSH.port || 22;
+        ctx.state.ExtraConfig.services.ssh = {
+          type: "Enable",
+          port: currentPort,
+        };
+      }
+    }
+  });
 
   // Initialize temp port values when services are available
   useTask$(({ track }) => {
@@ -454,6 +478,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           <span class="font-medium text-text dark:text-text-dark-default">
                             {service.name}
                           </span>
+                          {service.name === "ssh" && isSSHVPNServerEnabled.value && (
+                            <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                              {$localize`Required by VPN Server`}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td class="text-text-secondary dark:text-text-dark-secondary px-6 py-4">
@@ -523,6 +552,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                               }
                             }}
                             clearable={false}
+                            disabled={service.name === "ssh" && isSSHVPNServerEnabled.value}
                             class="w-full"
                             size="sm"
                           />
