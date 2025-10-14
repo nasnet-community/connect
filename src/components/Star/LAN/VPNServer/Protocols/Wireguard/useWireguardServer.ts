@@ -1,133 +1,338 @@
-import { $, useSignal, useStore } from "@builder.io/qwik";
+import { $, useSignal } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import { StarContext } from "../../../../StarContext/StarContext";
 import type { WireguardServerConfig } from "../../../../StarContext/Utils/VPNServerType";
+import type { VSNetwork } from "../../../../StarContext/Utils/VPNServerType";
+import { validatePort, getAllVPNServerPorts } from "../../utils/portValidation";
 
 // Define ViewMode type if it doesn't exist
 type ViewMode = "easy" | "advanced";
+
+// Draft configuration for a single WireGuard server
+interface WireguardDraftConfig {
+  name: string;
+  privateKey: string;
+  interfaceAddress: string;
+  listenPort: number;
+  mtu: number;
+  vsNetwork: VSNetwork;
+}
 
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
 
-  const wireguardState = vpnServerState.WireguardServers?.[0] || {
-    Network: "VPN",
-    Interface: {
-      Name: "wg-server",
-      PrivateKey: "",
-      PublicKey: "",
-      InterfaceAddress: "192.168.110.1/24",
-      ListenPort: 51820,
-      Mtu: 1420,
-    },
-    Peers: [],
-  };
+  // Get all existing WireGuard servers from StarContext
+  const wireguardServers = vpnServerState.WireguardServers || [];
+
+  // Active tab index for managing which server is being edited
+  const activeTabIndex = useSignal(0);
 
   // Error signals
   const privateKeyError = useSignal("");
   const addressError = useSignal("");
+  const portError = useSignal("");
 
   // UI state
   const showPrivateKey = useSignal(false);
-  const isEnabled = useSignal(!!wireguardState.Interface.PrivateKey);
+  const isEnabled = useSignal(wireguardServers.length > 0);
   const viewMode = useSignal<ViewMode>("advanced");
 
-  // Unified form state for both easy and advanced modes
-  const formState = useStore({
-    name: wireguardState.Interface.Name || "wg-server",
-    // network property removed as it doesn't exist in WireguardServerConfig
-    privateKey: wireguardState.Interface.PrivateKey || "",
-    interfaceAddress:
-      wireguardState.Interface.InterfaceAddress || "192.168.110.1/24",
-    listenPort: wireguardState.Interface.ListenPort || 51820,
-    mtu: wireguardState.Interface.Mtu || 1420,
+  // Draft configurations for each tab (not saved to StarContext until explicit save)
+  const draftConfigs = useSignal<WireguardDraftConfig[]>(
+    wireguardServers && wireguardServers.length > 0
+      ? wireguardServers
+          .filter((server) => server && server.Interface) // Filter out invalid servers
+          .map((server) => ({
+            name: server.Interface.Name,
+            privateKey: server.Interface.PrivateKey || "",
+            interfaceAddress: server.Interface.InterfaceAddress,
+            listenPort: server.Interface.ListenPort || 51820,
+            mtu: server.Interface.Mtu || 1420,
+            vsNetwork: server.Interface.VSNetwork || "VPN",
+          }))
+      : [
+          {
+            name: "wg-server-1",
+            privateKey: "",
+            interfaceAddress: "192.168.110.1/24",
+            listenPort: 51820,
+            mtu: 1420,
+            vsNetwork: "VPN",
+          },
+        ]
+  );
+
+  // Update draft configuration for current tab
+  const updateDraftConfig$ = $((updates: Partial<WireguardDraftConfig>) => {
+    const currentIndex = activeTabIndex.value;
+    const next = [...draftConfigs.value];
+    next[currentIndex] = { ...next[currentIndex], ...updates };
+    draftConfigs.value = next;
   });
 
-  // Core update function
-  const updateWireguardServer$ = $((config: Partial<WireguardServerConfig>) => {
-    const newConfig = {
-      ...wireguardState,
-      ...config,
+  // Add a new server tab with default configuration
+  const addServerTab$ = $(() => {
+    const newServerNumber = draftConfigs.value.length + 1;
+    
+    // Get all existing VPN ports to avoid conflicts
+    const allPorts = getAllVPNServerPorts(starContext.state);
+    
+    // Also get ports from current draft configs (unsaved servers)
+    const draftPorts = draftConfigs.value.map(draft => ({
+      protocol: "Wireguard" as const,
+      serverName: draft.name,
+      port: draft.listenPort
+    }));
+    
+    // Combine saved and draft ports
+    const combinedPorts = [...allPorts, ...draftPorts];
+    
+    let nextPort = 51820 + newServerNumber - 1;
+    
+    // Find next available port
+    while (combinedPorts.some(p => p.port === nextPort)) {
+      nextPort++;
+    }
+    
+    const newDraft: WireguardDraftConfig = {
+      name: `wg-server-${newServerNumber}`,
+      privateKey: "",
+      interfaceAddress: `192.168.${110 + newServerNumber - 1}.1/24`,
+      listenPort: nextPort,
+      mtu: 1420,
+      vsNetwork: "VPN",
     };
+    draftConfigs.value = [...draftConfigs.value, newDraft];
+    activeTabIndex.value = draftConfigs.value.length - 1;
+  });
 
-    let isValid = true;
-
-    // Validate private key
-    if (config.Interface?.PrivateKey !== undefined) {
-      if (
-        !newConfig.Interface.PrivateKey ||
-        !newConfig.Interface.PrivateKey.trim()
-      ) {
-        privateKeyError.value = $localize`Private key is required`;
-        isValid = false;
-      } else {
-        privateKeyError.value = "";
+  // Remove a server tab
+  const removeServerTab$ = $((index: number) => {
+    if (draftConfigs.value.length > 1) {
+      const next = [...draftConfigs.value];
+      next.splice(index, 1);
+      draftConfigs.value = next;
+      // Adjust active tab if needed
+      if (activeTabIndex.value >= draftConfigs.value.length) {
+        activeTabIndex.value = draftConfigs.value.length - 1;
       }
-    }
-
-    // Validate interface address
-    if (config.Interface?.InterfaceAddress !== undefined) {
-      const address = newConfig.Interface.InterfaceAddress;
-      if (!address || !address.includes("/")) {
-        addressError.value = $localize`Valid interface address with subnet is required (e.g., 192.168.110.1/24)`;
-        isValid = false;
-      } else {
-        addressError.value = "";
-      }
-    }
-
-    if (
-      isValid ||
-      (config.Interface?.PrivateKey && config.Interface.PrivateKey === "")
-    ) {
-      const current = (starContext.state.LAN.VPNServer || {}) as any;
+      // Also remove from StarContext
+      const updatedServers = [...wireguardServers];
+      updatedServers.splice(index, 1);
       starContext.updateLAN$({
         VPNServer: {
-          ...current,
-          WireguardServers:
-            config.Interface?.PrivateKey && config.Interface.PrivateKey === ""
-              ? undefined
-              : [newConfig],
+          ...vpnServerState,
+          WireguardServers: updatedServers.length > 0 ? updatedServers : undefined,
         },
       });
     }
   });
 
-  // Helper function to update the server configuration (from component logic)
-  const updateServerConfig = $((updatedValues: Partial<typeof formState>) => {
-    // Update local state first
-    Object.assign(formState, updatedValues);
+  // Save current tab configuration to StarContext
+  const saveCurrentServer$ = $(() => {
+    const currentIndex = activeTabIndex.value;
+    const currentDraft = draftConfigs.value[currentIndex] || draftConfigs.value[0];
 
-    // Then update server config with proper StarContext structure
-    updateWireguardServer$({
+    // Reset errors
+    privateKeyError.value = "";
+    addressError.value = "";
+    portError.value = "";
+
+    let isValid = true;
+
+    // Validate private key
+    if (!currentDraft.privateKey || !currentDraft.privateKey.trim()) {
+      privateKeyError.value = $localize`Private key is required`;
+      isValid = false;
+    }
+
+    // Validate interface address
+    if (!currentDraft.interfaceAddress || !currentDraft.interfaceAddress.includes("/")) {
+      addressError.value = $localize`Valid interface address with subnet is required (e.g., 192.168.110.1/24)`;
+      isValid = false;
+    }
+
+    // Validate port
+    const allPorts = getAllVPNServerPorts(starContext.state);
+    const portValidation = validatePort(
+      currentDraft.listenPort,
+      currentDraft.name,
+      allPorts
+    );
+
+    if (!portValidation.valid) {
+      portError.value = portValidation.error || "";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      return;
+    }
+
+    // Create server config from draft
+    const serverConfig: WireguardServerConfig = {
       Interface: {
-        Name: formState.name,
-        PrivateKey: formState.privateKey,
-        PublicKey: "", // Public key would be derived from private key
-        InterfaceAddress: formState.interfaceAddress,
-        ListenPort: formState.listenPort,
-        Mtu: formState.mtu,
+        Name: currentDraft.name,
+        PrivateKey: currentDraft.privateKey,
+        PublicKey: "", // Would be derived from private key
+        InterfaceAddress: currentDraft.interfaceAddress,
+        ListenPort: currentDraft.listenPort,
+        Mtu: currentDraft.mtu,
+        VSNetwork: currentDraft.vsNetwork,
       },
-      Peers: wireguardState.Peers || [],
+      Peers: wireguardServers[currentIndex]?.Peers || [],
+    };
+
+    // Update StarContext with the saved server
+    const updatedServers = [...wireguardServers];
+    if (currentIndex < updatedServers.length) {
+      updatedServers[currentIndex] = serverConfig;
+    } else {
+      updatedServers.push(serverConfig);
+    }
+
+    starContext.updateLAN$({
+      VPNServer: {
+        ...vpnServerState,
+        WireguardServers: updatedServers,
+      },
     });
   });
 
-  // Helper function to update the server configuration for easy mode
-  const updateEasyConfig = $((updatedValues: Partial<typeof formState>) => {
-    // Update local state first
-    Object.assign(formState, updatedValues);
+  // Save all servers (all tabs) to StarContext
+  const saveAllServers$ = $(() => {
+    const validServers: WireguardServerConfig[] = [];
+    const errors: string[] = [];
 
-    // Then update server config with proper StarContext structure
-    updateWireguardServer$({
-      Interface: {
-        Name: formState.name,
-        PrivateKey: formState.privateKey,
-        PublicKey: "", // Public key would be derived from private key
-        InterfaceAddress: formState.interfaceAddress,
-        ListenPort: 51820, // Default values for easy mode
-        Mtu: 1420, // Default values for easy mode
+    // Get all existing VPN ports to avoid conflicts
+    const allPorts = getAllVPNServerPorts(starContext.state);
+
+    // Validate and collect all drafts
+    for (let i = 0; i < draftConfigs.value.length; i++) {
+      const draft = draftConfigs.value[i];
+      let hasError = false;
+
+      // Validate private key
+      if (!draft.privateKey || !draft.privateKey.trim()) {
+        errors.push(`${draft.name}: Private key is required`);
+        hasError = true;
+      }
+
+      // Validate interface address
+      if (!draft.interfaceAddress || !draft.interfaceAddress.includes("/")) {
+        errors.push(`${draft.name}: Valid interface address with subnet is required`);
+        hasError = true;
+      }
+
+      // Validate port
+      const portValidation = validatePort(
+        draft.listenPort,
+        draft.name,
+        allPorts
+      );
+
+      if (!portValidation.valid) {
+        errors.push(`${draft.name}: ${portValidation.error}`);
+        hasError = true;
+      }
+
+      // If valid, add to valid servers list
+      if (!hasError) {
+        const serverConfig: WireguardServerConfig = {
+          Interface: {
+            Name: draft.name,
+            PrivateKey: draft.privateKey,
+            PublicKey: "", // Would be derived from private key
+            InterfaceAddress: draft.interfaceAddress,
+            ListenPort: draft.listenPort,
+            Mtu: draft.mtu,
+            VSNetwork: draft.vsNetwork,
+          },
+          Peers: wireguardServers[i]?.Peers || [],
+        };
+        validServers.push(serverConfig);
+      }
+    }
+
+    // Get FRESH state instead of using stale vpnServerState captured at initialization
+    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [] };
+
+    // Save all valid servers to StarContext
+    starContext.updateLAN$({
+      VPNServer: {
+        ...currentVPNState,
+        WireguardServers: validServers.length > 0 ? validServers : undefined,
       },
     });
+
+    return {
+      saved: validServers.length,
+      total: draftConfigs.value.length,
+      errors,
+    };
+  });
+
+  // Switch to a different tab
+  const switchTab$ = $((index: number) => {
+    if (index >= 0 && index < draftConfigs.value.length) {
+      activeTabIndex.value = index;
+    }
+  });
+
+  // Update individual fields in the current draft
+  const updateName$ = $((value: string) => {
+    updateDraftConfig$({ name: value });
+  });
+
+  const updatePrivateKey$ = $((value: string) => {
+    updateDraftConfig$({ privateKey: value });
+    privateKeyError.value = "";
+  });
+
+  const updateInterfaceAddress$ = $((value: string) => {
+    updateDraftConfig$({ interfaceAddress: value });
+    addressError.value = "";
+  });
+
+  const updateListenPort$ = $((value: number) => {
+    updateDraftConfig$({ listenPort: value });
+    
+    // Get all saved ports
+    const allPorts = getAllVPNServerPorts(starContext.state);
+    
+    // Add draft ports (excluding current draft)
+    const currentIndex = activeTabIndex.value;
+    const draftPorts = draftConfigs.value
+      .filter((_, index) => index !== currentIndex)
+      .map(draft => ({
+        protocol: "Wireguard" as const,
+        serverName: draft.name,
+        port: draft.listenPort
+      }));
+    
+    const combinedPorts = [...allPorts, ...draftPorts];
+    const currentDraft = draftConfigs.value[currentIndex];
+    const validation = validatePort(value, currentDraft.name, combinedPorts);
+    
+    if (!validation.valid) {
+      portError.value = validation.error || "";
+    } else {
+      portError.value = "";
+    }
+  });
+
+  const updateMtu$ = $((value: number) => {
+    updateDraftConfig$({ mtu: value });
+  });
+
+  const updateVSNetwork$ = $((value: VSNetwork) => {
+    updateDraftConfig$({ vsNetwork: value });
+  });
+
+  // For easy mode compatibility
+  const updateEasyConfig = $((updatedValues: Partial<WireguardDraftConfig>) => {
+    updateDraftConfig$(updatedValues);
   });
 
   // Generate private key function
@@ -148,12 +353,13 @@ export const useWireguardServer = () => {
 
   // Handle generate private key from component
   const handleGeneratePrivateKey = $(async () => {
-    // Simulate generating a private key
-    console.log("Generating private key...");
-    const newPrivateKey = "YKZRdzOIFrA9ufcYALAfMZyzkAarXXZ+Va8TnXy4uX8=";
+    // Generate a random private key
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    const newPrivateKey = btoa(String.fromCharCode(...array));
 
-    // Update the private key in the unified form state
-    updateServerConfig({ privateKey: newPrivateKey });
+    // Update the private key in the current draft
+    updatePrivateKey$(newPrivateKey);
   });
 
   // Toggle private key visibility
@@ -166,9 +372,14 @@ export const useWireguardServer = () => {
     const newStatus = !isEnabled.value;
     isEnabled.value = newStatus;
 
-    // If disabling, clear the private key
+    // If disabling, clear all servers
     if (!newStatus) {
-      updateServerConfig({ privateKey: "" });
+      starContext.updateLAN$({
+        VPNServer: {
+          ...vpnServerState,
+          WireguardServers: undefined,
+        },
+      });
     }
   });
 
@@ -177,101 +388,76 @@ export const useWireguardServer = () => {
     viewMode.value = mode;
   });
 
-  // Peer management functions
-  const addPeer = $((peer: any) => {
-    const newPeers = [...(wireguardState.Peers || []), peer];
-    updateWireguardServer$({
-      Interface: wireguardState.Interface,
-      Peers: newPeers,
-    });
-  });
-
-  const removePeer = $((index: number) => {
-    const newPeers = [...(wireguardState.Peers || [])];
-    newPeers.splice(index, 1);
-    updateWireguardServer$({
-      Interface: wireguardState.Interface,
-      Peers: newPeers,
-    });
-  });
-
   // Function to ensure default configuration when protocol is enabled
   const ensureDefaultConfig = $(() => {
-    if (
-      !vpnServerState.WireguardServers ||
-      vpnServerState.WireguardServers.length === 0
-    ) {
-      updateWireguardServer$({
-        Interface: {
-          Name: "wg-server",
-          PrivateKey: "",
-          PublicKey: "",
-          InterfaceAddress: "192.168.110.1/24",
-          ListenPort: 51820,
-          Mtu: 1420,
-        },
-        Peers: [],
-      });
+    if (!vpnServerState.WireguardServers || vpnServerState.WireguardServers.length === 0) {
+      // Initialize with one default server
+      if (draftConfigs.value.length === 0) {
+        draftConfigs.value = [
+          ...draftConfigs.value,
+          {
+            name: "wg-server-1",
+            privateKey: "",
+            interfaceAddress: "192.168.110.1/24",
+            listenPort: 51820,
+            mtu: 1420,
+            vsNetwork: "VPN",
+          }
+        ];
+      }
     }
   });
 
   return {
     // State
-    wireguardState,
-    formState, // Unified state
+    wireguardServers,
+    draftConfigs,
+    activeTabIndex,
+
     // For backward compatibility with existing components
     get advancedFormState() {
-      return formState;
+      return draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];
     },
     get easyFormState() {
-      return formState;
+      return draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];
     },
     viewMode,
 
     // UI state
     showPrivateKey,
+    isEnabled,
 
     // Errors
     privateKeyError,
     addressError,
+    portError,
+
+    // Tab management
+    addServerTab$,
+    removeServerTab$,
+    switchTab$,
 
     // Core functions
-    updateWireguardServer$,
-    updateServerConfig,
-    updateEasyConfig,
+    updateDraftConfig$,
+    saveCurrentServer$,
+    saveAllServers$,
     ensureDefaultConfig,
     setViewMode,
 
-    // Individual field updates (backward compatibility)
-    updateName$: $(function (value: string) {
-      updateServerConfig({ name: value });
-    }),
-    updatePrivateKey$: $(function (value: string) {
-      updateServerConfig({ privateKey: value });
-    }),
-    updateInterfaceAddress$: $(function (value: string) {
-      updateServerConfig({ interfaceAddress: value });
-    }),
-    updateListenPort$: $(function (value: number) {
-      updateServerConfig({ listenPort: value });
-    }),
-    updateMtu$: $(function (value: number) {
-      updateServerConfig({ mtu: value });
-    }),
+    // Individual field updates
+    updateName$,
+    updatePrivateKey$,
+    updateInterfaceAddress$,
+    updateListenPort$,
+    updateMtu$,
+    updateVSNetwork$,
 
-    // Easy mode field updates (backward compatibility)
-    updateEasyName$: $(function (value: string) {
-      updateEasyConfig({ name: value });
-    }),
-    updateEasyPrivateKey$: $(function (value: string) {
-      updateEasyConfig({ privateKey: value });
-    }),
-    updateEasyInterfaceAddress$: $(function (value: string) {
-      updateEasyConfig({ interfaceAddress: value });
-    }),
-
-    // Legacy function aliases for backward compatibility
+    // Easy mode compatibility
+    updateEasyConfig,
     updateEasyForm$: updateEasyConfig,
+    updateEasyName$: updateName$,
+    updateEasyPrivateKey$: updatePrivateKey$,
+    updateEasyInterfaceAddress$: updateInterfaceAddress$,
 
     // Key generation
     generatePrivateKey,
@@ -282,8 +468,7 @@ export const useWireguardServer = () => {
     toggleServerEnabled,
     handleToggle: toggleServerEnabled,
 
-    // Peer management
-    addPeer,
-    removePeer,
+    // Backward compatibility aliases
+    updateServerConfig: updateDraftConfig$,
   };
 };

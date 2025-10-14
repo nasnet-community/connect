@@ -131,79 +131,287 @@ export const useLAN = ({
     track(() => starContext.state.Choose.Mode);
     track(() => starContext.state.Choose.WANLinkType);
     track(() => starContext.state.WAN.VPNClient);
+    track(() => starContext.state.LAN.VPNServer);
     track(() => starContext.state.Choose.Networks);
     
     const isEasyMode = starContext.state.Choose.Mode === "easy";
-    const hasSubnets = starContext.state.LAN.Subnets?.BaseNetworks && 
-                       Object.keys(starContext.state.LAN.Subnets.BaseNetworks).length > 0;
     const hasInterfaces = starContext.state.LAN.Interface && 
                           starContext.state.LAN.Interface.length > 0;
     
     if (isEasyMode) {
-      // === SUBNET CONFIGURATION ===
-      if (!hasSubnets) {
-        const wanLinkType = starContext.state.Choose.WANLinkType;
-        const isDomesticLink = wanLinkType === "domestic" || wanLinkType === "both";
-        const hasForeignLink = wanLinkType === "foreign" || wanLinkType === "both";
-        
-        // Check if VPN client is configured
-        const vpnClient = starContext.state.WAN.VPNClient;
-        const hasVPNClient = vpnClient && (
-          vpnClient.Wireguard?.length ||
-          vpnClient.OpenVPN?.length ||
-          vpnClient.PPTP?.length ||
-          vpnClient.L2TP?.length ||
-          vpnClient.SSTP?.length ||
-          vpnClient.IKeV2?.length
-        );
-        
-        // Create properly structured subnets with BaseNetworks wrapper
-        const defaultSubnets: Partial<Subnets> = {
-          BaseNetworks: {}
-        };
+      // === GRANULAR SUBNET CONFIGURATION ===
+      // Check and add each subnet section independently
+      const wanLinkType = starContext.state.Choose.WANLinkType;
+      const isDomesticLink = wanLinkType === "domestic" || wanLinkType === "both";
+      const hasForeignLink = wanLinkType === "foreign" || wanLinkType === "both";
+      
+      // Check if VPN client is configured
+      const vpnClient = starContext.state.WAN.VPNClient;
+      const hasVPNClient = vpnClient && (
+        vpnClient.Wireguard?.length ||
+        vpnClient.OpenVPN?.length ||
+        vpnClient.PPTP?.length ||
+        vpnClient.L2TP?.length ||
+        vpnClient.SSTP?.length ||
+        vpnClient.IKeV2?.length
+      );
+      
+      // Create properly structured subnets object to collect changes
+      const defaultSubnets: Partial<Subnets> = {};
+      
+      // === BASE NETWORKS ===
+      // Only add BaseNetworks if they don't exist
+      const hasBaseNetworks = starContext.state.LAN.Subnets?.BaseNetworks && 
+                              Object.keys(starContext.state.LAN.Subnets.BaseNetworks).length > 0;
+      
+      if (!hasBaseNetworks) {
+        defaultSubnets.BaseNetworks = {};
         
         // Add base networks based on WANLinkType
         if (isDomesticLink) {
-          defaultSubnets.BaseNetworks!.Split = {
+          defaultSubnets.BaseNetworks.Split = {
             name: "Split",
             subnet: "192.168.10.0/24"
           };
-          defaultSubnets.BaseNetworks!.Domestic = {
+          defaultSubnets.BaseNetworks.Domestic = {
             name: "Domestic",
             subnet: "192.168.20.0/24"
           };
-          defaultSubnets.BaseNetworks!.Foreign = {
+          defaultSubnets.BaseNetworks.Foreign = {
             name: "Foreign",
             subnet: "192.168.30.0/24"
           };
           
           // VPN network for domestic/both (only if VPN clients configured)
           if (hasVPNClient) {
-            defaultSubnets.BaseNetworks!.VPN = {
+            defaultSubnets.BaseNetworks.VPN = {
               name: "VPN",
               subnet: "192.168.40.0/24"
             };
           }
         } else if (hasForeignLink) {
           // Foreign only mode
-          defaultSubnets.BaseNetworks!.Foreign = {
+          defaultSubnets.BaseNetworks.Foreign = {
             name: "Foreign",
             subnet: "192.168.30.0/24"
           };
           
           // VPN network for foreign-only (only if VPN clients configured)
           if (hasVPNClient) {
-            defaultSubnets.BaseNetworks!.VPN = {
+            defaultSubnets.BaseNetworks.VPN = {
               name: "VPN",
               subnet: "192.168.10.0/24"
             };
           }
         }
+      }
+      
+      // === VPN SERVER NETWORKS ===
+      // Only add VPNServerNetworks if they don't exist but VPN servers are configured
+      const hasVPNServerNetworks = starContext.state.LAN.Subnets?.VPNServerNetworks;
+      const vpnServers = starContext.state.LAN.VPNServer;
+      
+      if (!hasVPNServerNetworks && vpnServers) {
+        defaultSubnets.VPNServerNetworks = {};
         
-        // Only update if we have at least one subnet to configure
-        if (Object.keys(defaultSubnets.BaseNetworks!).length > 0) {
-          await starContext.updateLAN$({ Subnets: defaultSubnets as Subnets });
+        // WireGuard servers (110+index)
+        if (vpnServers.WireguardServers?.length) {
+          defaultSubnets.VPNServerNetworks.Wireguard = vpnServers.WireguardServers.map((server, index) => ({
+            name: server.Interface.Name || `WireGuard${index + 1}`,
+            subnet: `192.168.${110 + index}.0/24`
+          }));
         }
+        
+        // OpenVPN servers (120+index)
+        if (vpnServers.OpenVpnServer?.length) {
+          defaultSubnets.VPNServerNetworks.OpenVPN = vpnServers.OpenVpnServer.map((server, index) => ({
+            name: server.name || `OpenVPN${index + 1}`,
+            subnet: `192.168.${120 + index}.0/24`
+          }));
+        }
+        
+        // PPTP server (130)
+        if (vpnServers.PptpServer?.enabled) {
+          defaultSubnets.VPNServerNetworks.PPTP = {
+            name: "PPTP",
+            subnet: "192.168.130.0/24"
+          };
+        }
+        
+        // SSTP server (140)
+        if (vpnServers.SstpServer?.enabled) {
+          defaultSubnets.VPNServerNetworks.SSTP = {
+            name: "SSTP",
+            subnet: "192.168.140.0/24"
+          };
+        }
+        
+        // L2TP server (150)
+        if (vpnServers.L2tpServer?.enabled) {
+          defaultSubnets.VPNServerNetworks.L2TP = {
+            name: "L2TP",
+            subnet: "192.168.150.0/24"
+          };
+        }
+        
+        // IKEv2 server (160)
+        if (vpnServers.Ikev2Server) {
+          defaultSubnets.VPNServerNetworks.IKev2 = {
+            name: "IKEv2",
+            subnet: "192.168.160.0/24"
+          };
+        }
+      }
+      
+      // === MULTIPLE WAN LINK NETWORKS ===
+      const wanLinks = starContext.state.WAN.WANLink;
+      
+      // Domestic WAN links (if 1+)
+      const hasDomesticNetworks = starContext.state.LAN.Subnets?.DomesticNetworks;
+      const domesticLinks = wanLinks.Domestic?.WANConfigs;
+      
+      if (!hasDomesticNetworks && domesticLinks && domesticLinks.length >= 1) {
+        defaultSubnets.DomesticNetworks = domesticLinks.map((link, index) => ({
+          name: link.name || `Domestic${index + 1}`,
+          subnet: `192.168.${21 + index}.0/24`
+        }));
+      }
+      
+      // Foreign WAN links (if 1+)
+      const hasForeignNetworks = starContext.state.LAN.Subnets?.ForeignNetworks;
+      const foreignLinks = wanLinks.Foreign?.WANConfigs;
+      
+      if (!hasForeignNetworks && foreignLinks && foreignLinks.length >= 1) {
+        defaultSubnets.ForeignNetworks = foreignLinks.map((link, index) => ({
+          name: link.name || `Foreign${index + 1}`,
+          subnet: `192.168.${31 + index}.0/24`
+        }));
+      }
+      
+      // === VPN CLIENT NETWORKS ===
+      // Count total VPN clients across all types
+      const vpnClientConfigs: Array<{ name: string; type: string }> = [];
+      
+      if (vpnClient) {
+        if (vpnClient.Wireguard?.length) {
+          vpnClient.Wireguard.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `WireGuard Client ${index + 1}`, 
+              type: "Wireguard" 
+            });
+          });
+        }
+        if (vpnClient.OpenVPN?.length) {
+          vpnClient.OpenVPN.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `OpenVPN Client ${index + 1}`, 
+              type: "OpenVPN" 
+            });
+          });
+        }
+        if (vpnClient.PPTP?.length) {
+          vpnClient.PPTP.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `PPTP Client ${index + 1}`, 
+              type: "PPTP" 
+            });
+          });
+        }
+        if (vpnClient.L2TP?.length) {
+          vpnClient.L2TP.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `L2TP Client ${index + 1}`, 
+              type: "L2TP" 
+            });
+          });
+        }
+        if (vpnClient.SSTP?.length) {
+          vpnClient.SSTP.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `SSTP Client ${index + 1}`, 
+              type: "SSTP" 
+            });
+          });
+        }
+        if (vpnClient.IKeV2?.length) {
+          vpnClient.IKeV2.forEach((client, index) => {
+            vpnClientConfigs.push({ 
+              name: client.Name || `IKEv2 Client ${index + 1}`, 
+              type: "IKEv2" 
+            });
+          });
+        }
+      }
+      
+      // Only create VPN Client networks if there are 1+ clients and they don't exist
+      const hasVPNClientNetworks = starContext.state.LAN.Subnets?.VPNClientNetworks;
+      
+      if (!hasVPNClientNetworks && vpnClientConfigs.length >= 1) {
+        defaultSubnets.VPNClientNetworks = {};
+        
+        // Group by type
+        const wireguardClients = vpnClientConfigs.filter(c => c.type === "Wireguard");
+        const openVpnClients = vpnClientConfigs.filter(c => c.type === "OpenVPN");
+        const pptpClients = vpnClientConfigs.filter(c => c.type === "PPTP");
+        const l2tpClients = vpnClientConfigs.filter(c => c.type === "L2TP");
+        const sstpClients = vpnClientConfigs.filter(c => c.type === "SSTP");
+        const ikev2Clients = vpnClientConfigs.filter(c => c.type === "IKEv2");
+        
+        let subnetIndex = 41; // Starting at 192.168.41.0
+        
+        if (wireguardClients.length > 0) {
+          defaultSubnets.VPNClientNetworks.Wireguard = wireguardClients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+        
+        if (openVpnClients.length > 0) {
+          defaultSubnets.VPNClientNetworks.OpenVPN = openVpnClients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+        
+        if (pptpClients.length > 0) {
+          defaultSubnets.VPNClientNetworks.PPTP = pptpClients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+        
+        if (l2tpClients.length > 0) {
+          defaultSubnets.VPNClientNetworks.L2TP = l2tpClients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+        
+        if (sstpClients.length > 0) {
+          defaultSubnets.VPNClientNetworks.SSTP = sstpClients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+        
+        if (ikev2Clients.length > 0) {
+          defaultSubnets.VPNClientNetworks.IKev2 = ikev2Clients.map((client) => ({
+            name: client.name,
+            subnet: `192.168.${subnetIndex++}.0/24`
+          }));
+        }
+      }
+      
+      // === UPDATE SUBNETS ===
+      // Only update if we have new subnets to add
+      if (Object.keys(defaultSubnets).length > 0) {
+        // Merge with existing subnets to avoid overwriting
+        const updatedSubnets = {
+          ...starContext.state.LAN.Subnets,
+          ...defaultSubnets
+        } as Subnets;
+        
+        await starContext.updateLAN$({ Subnets: updatedSubnets });
       }
       
       // === INTERFACE CONFIGURATION ===

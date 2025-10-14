@@ -222,13 +222,21 @@ export const useVPNServerAdvanced = () => {
       if (!enabledProtocols.OpenVPN) {
         latestConfig.OpenVpnServer = undefined;
       } else {
-        // Ensure a default OpenVPN config exists when enabled but not yet persisted
-        let currentOpenVpn = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer;
-        if (!currentOpenVpn || currentOpenVpn.length === 0) {
-          await openVpnHook.ensureDefaultConfig();
-          currentOpenVpn = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer;
+        // Save all OpenVPN tabs' configurations
+        try {
+          const openVpnResult = await openVpnHook.saveAllServers$();
+          // After saving, get the updated servers from StarContext
+          latestConfig.OpenVpnServer = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer || [];
+          // Log validation results
+          if (openVpnResult.errors.length > 0) {
+            console.warn("OpenVPN validation errors:", openVpnResult.errors);
+          }
+          console.log(`OpenVPN: Saved ${openVpnResult.saved} of ${openVpnResult.total} tabs`);
+        } catch (error) {
+          console.error("Error saving OpenVPN servers:", error);
+          // Fallback to existing state
+          latestConfig.OpenVpnServer = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer || [];
         }
-        latestConfig.OpenVpnServer = currentOpenVpn || [];
       }
 
       if (!enabledProtocols.IKeV2) {
@@ -240,7 +248,21 @@ export const useVPNServerAdvanced = () => {
       if (!enabledProtocols.Wireguard) {
         latestConfig.WireguardServers = undefined;
       } else {
-        latestConfig.WireguardServers = [wireguardHook.wireguardState];
+        // Save all Wireguard tabs' configurations
+        try {
+          const wireguardResult = await wireguardHook.saveAllServers$();
+          // After saving, get the updated servers from StarContext
+          latestConfig.WireguardServers = (starContext.state.LAN.VPNServer as any)?.WireguardServers || [];
+          // Log validation results
+          if (wireguardResult.errors.length > 0) {
+            console.warn("Wireguard validation errors:", wireguardResult.errors);
+          }
+          console.log(`Wireguard: Saved ${wireguardResult.saved} of ${wireguardResult.total} tabs`);
+        } catch (error) {
+          console.error("Error saving WireGuard servers:", error);
+          // Fallback to existing state
+          latestConfig.WireguardServers = (starContext.state.LAN.VPNServer as any)?.WireguardServers || [];
+        }
       }
 
       // Additional protocols persistence
