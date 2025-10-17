@@ -9,6 +9,7 @@ import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { InterfaceType } from "~/components/Star/StarContext/CommonType";
 import { useInterfaceManagement } from "~/components/Star/hooks/useInterfaceManagement";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UseWANAdvancedReturn {
   state: WANWizardState;
@@ -29,6 +30,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
   const networks = useNetworks();
+  const subnets = useSubnets();
 
   // Initialize state with zero links (empty state pattern)
   const state = useStore<WANWizardState>({
@@ -149,6 +151,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Remove a link
@@ -198,6 +201,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Update a specific link with batching to prevent multiple renders
@@ -258,6 +262,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Batch update multiple links in a single operation to prevent multiple renders
@@ -310,6 +315,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Sync with StarContext and update Networks configuration
     syncWithStarContext$();
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)

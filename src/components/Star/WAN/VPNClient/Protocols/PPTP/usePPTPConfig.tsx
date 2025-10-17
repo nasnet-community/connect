@@ -4,6 +4,7 @@ import { StarContext } from "../../../../StarContext/StarContext";
 import type { PptpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UsePPTPConfigResult {
   serverAddress: { value: string };
@@ -29,6 +30,7 @@ export const usePPTPConfig = (
 ): UsePPTPConfigResult => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -97,6 +99,7 @@ export const usePPTPConfig = (
 
     // Update Networks state to reflect VPN availability
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const handleManualFormSubmit$ = $(async () => {

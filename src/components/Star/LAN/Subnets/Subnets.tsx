@@ -146,25 +146,25 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       });
 
       const defaultSubnets: any = {
-        BaseNetworks: {},
-        ForeignNetworks: [],
-        DomesticNetworks: [],
-        VPNClientNetworks: {},
-        VPNServerNetworks: {},
-        TunnelNetworks: {}
+        BaseSubnets: {},
+        ForeignSubnets: [],
+        DomesticSubnets: [],
+        VPNClientSubnets: {},
+        VPNServerSubnets: {},
+        TunnelSubnets: {}
       };
 
       // Process all configs with their default placeholder values
       extendedGroupedConfigs.base?.forEach((config: any) => {
-        defaultSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, config.placeholder, config.mask);
+        defaultSubnets.BaseSubnets[config.key] = createSubnetConfig(config.key, config.placeholder, config.mask);
       });
 
       extendedGroupedConfigs["wan-domestic"]?.forEach((config: any) => {
-        defaultSubnets.DomesticNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+        defaultSubnets.DomesticSubnets.push(createSubnetConfig(config.label, config.placeholder, config.mask));
       });
 
       extendedGroupedConfigs["wan-foreign"]?.forEach((config: any) => {
-        defaultSubnets.ForeignNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+        defaultSubnets.ForeignSubnets.push(createSubnetConfig(config.label, config.placeholder, config.mask));
       });
 
       // VPN Client networks - organize by protocol
@@ -241,7 +241,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
       Object.entries(vpnClientsByProtocol).forEach(([protocol, configs]) => {
         if (configs.length > 0) {
-          defaultSubnets.VPNClientNetworks[protocol] = configs;
+          defaultSubnets.VPNClientSubnets[protocol] = configs;
         }
       });
 
@@ -251,18 +251,18 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         
         // Check if it's an array protocol (Wireguard, OpenVPN)
         if (networks?.VPNServerNetworks?.Wireguard?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.VPNServerNetworks.Wireguard) {
-            defaultSubnets.VPNServerNetworks.Wireguard = [];
+          if (!defaultSubnets.VPNServerSubnets.Wireguard) {
+            defaultSubnets.VPNServerSubnets.Wireguard = [];
           }
-          defaultSubnets.VPNServerNetworks.Wireguard.push(subnetConfig);
+          defaultSubnets.VPNServerSubnets.Wireguard.push(subnetConfig);
         } else if (networks?.VPNServerNetworks?.OpenVPN?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.VPNServerNetworks.OpenVPN) {
-            defaultSubnets.VPNServerNetworks.OpenVPN = [];
+          if (!defaultSubnets.VPNServerSubnets.OpenVPN) {
+            defaultSubnets.VPNServerSubnets.OpenVPN = [];
           }
-          defaultSubnets.VPNServerNetworks.OpenVPN.push(subnetConfig);
+          defaultSubnets.VPNServerSubnets.OpenVPN.push(subnetConfig);
         } else {
           // Single server protocols
-          defaultSubnets.VPNServerNetworks[config.key] = subnetConfig;
+          defaultSubnets.VPNServerSubnets[config.key] = subnetConfig;
         }
       });
 
@@ -272,35 +272,35 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         
         // Determine tunnel type from Networks
         if (networks?.TunnelNetworks?.IPIP?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.TunnelNetworks.IPIP) {
-            defaultSubnets.TunnelNetworks.IPIP = [];
+          if (!defaultSubnets.TunnelSubnets.IPIP) {
+            defaultSubnets.TunnelSubnets.IPIP = [];
           }
-          defaultSubnets.TunnelNetworks.IPIP.push(subnetConfig);
+          defaultSubnets.TunnelSubnets.IPIP.push(subnetConfig);
         } else if (networks?.TunnelNetworks?.Eoip?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.TunnelNetworks.Eoip) {
-            defaultSubnets.TunnelNetworks.Eoip = [];
+          if (!defaultSubnets.TunnelSubnets.Eoip) {
+            defaultSubnets.TunnelSubnets.Eoip = [];
           }
-          defaultSubnets.TunnelNetworks.Eoip.push(subnetConfig);
+          defaultSubnets.TunnelSubnets.Eoip.push(subnetConfig);
         } else if (networks?.TunnelNetworks?.Gre?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.TunnelNetworks.Gre) {
-            defaultSubnets.TunnelNetworks.Gre = [];
+          if (!defaultSubnets.TunnelSubnets.Gre) {
+            defaultSubnets.TunnelSubnets.Gre = [];
           }
-          defaultSubnets.TunnelNetworks.Gre.push(subnetConfig);
+          defaultSubnets.TunnelSubnets.Gre.push(subnetConfig);
         } else if (networks?.TunnelNetworks?.Vxlan?.some((name: string) => name === config.key)) {
-          if (!defaultSubnets.TunnelNetworks.Vxlan) {
-            defaultSubnets.TunnelNetworks.Vxlan = [];
+          if (!defaultSubnets.TunnelSubnets.Vxlan) {
+            defaultSubnets.TunnelSubnets.Vxlan = [];
           }
-          defaultSubnets.TunnelNetworks.Vxlan.push(subnetConfig);
+          defaultSubnets.TunnelSubnets.Vxlan.push(subnetConfig);
         }
       });
 
       // Clean up empty sections
-      if (Object.keys(defaultSubnets.BaseNetworks).length === 0) delete defaultSubnets.BaseNetworks;
-      if (defaultSubnets.ForeignNetworks.length === 0) delete defaultSubnets.ForeignNetworks;
-      if (defaultSubnets.DomesticNetworks.length === 0) delete defaultSubnets.DomesticNetworks;
-      if (Object.keys(defaultSubnets.VPNClientNetworks).length === 0) delete defaultSubnets.VPNClientNetworks;
-      if (Object.keys(defaultSubnets.VPNServerNetworks).length === 0) delete defaultSubnets.VPNServerNetworks;
-      if (Object.keys(defaultSubnets.TunnelNetworks).length === 0) delete defaultSubnets.TunnelNetworks;
+      if (Object.keys(defaultSubnets.BaseSubnets).length === 0) delete defaultSubnets.BaseSubnets;
+      if (defaultSubnets.ForeignSubnets.length === 0) delete defaultSubnets.ForeignSubnets;
+      if (defaultSubnets.DomesticSubnets.length === 0) delete defaultSubnets.DomesticSubnets;
+      if (Object.keys(defaultSubnets.VPNClientSubnets).length === 0) delete defaultSubnets.VPNClientSubnets;
+      if (Object.keys(defaultSubnets.VPNServerSubnets).length === 0) delete defaultSubnets.VPNServerSubnets;
+      if (Object.keys(defaultSubnets.TunnelSubnets).length === 0) delete defaultSubnets.TunnelSubnets;
 
       await starContext.updateLAN$({ Subnets: defaultSubnets as any });
       if (onComplete$) {
@@ -322,21 +322,21 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
     // Initialize structured subnets object
     const finalSubnets: any = {
-      BaseNetworks: {},
-      ForeignNetworks: [],
-      DomesticNetworks: [],
-      VPNClientNetworks: {},
-      VPNServerNetworks: {},
-      TunnelNetworks: {}
+      BaseSubnets: {},
+      ForeignSubnets: [],
+      DomesticSubnets: [],
+      VPNClientSubnets: {},
+      VPNServerSubnets: {},
+      TunnelSubnets: {}
     };
 
     // Process base networks
     extendedGroupedConfigs.base.forEach((config: any) => {
       const value = values.value[config.key];
       if (value !== null && value !== undefined) {
-        finalSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, value, config.mask);
+        finalSubnets.BaseSubnets[config.key] = createSubnetConfig(config.key, value, config.mask);
       } else if (config.isRequired) {
-        finalSubnets.BaseNetworks[config.key] = createSubnetConfig(config.label, config.placeholder, config.mask);
+        finalSubnets.BaseSubnets[config.key] = createSubnetConfig(config.key, config.placeholder, config.mask);
       }
     });
 
@@ -344,9 +344,9 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     extendedGroupedConfigs["wan-domestic"]?.forEach((config: any) => {
       const value = values.value[config.key];
       if (value !== null && value !== undefined) {
-        finalSubnets.DomesticNetworks.push(createSubnetConfig(config.label, value, config.mask));
+        finalSubnets.DomesticSubnets.push(createSubnetConfig(config.label, value, config.mask));
       } else if (config.isRequired) {
-        finalSubnets.DomesticNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+        finalSubnets.DomesticSubnets.push(createSubnetConfig(config.label, config.placeholder, config.mask));
       }
     });
 
@@ -354,9 +354,9 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     extendedGroupedConfigs["wan-foreign"]?.forEach((config: any) => {
       const value = values.value[config.key];
       if (value !== null && value !== undefined) {
-        finalSubnets.ForeignNetworks.push(createSubnetConfig(config.label, value, config.mask));
+        finalSubnets.ForeignSubnets.push(createSubnetConfig(config.label, value, config.mask));
       } else if (config.isRequired) {
-        finalSubnets.ForeignNetworks.push(createSubnetConfig(config.label, config.placeholder, config.mask));
+        finalSubnets.ForeignSubnets.push(createSubnetConfig(config.label, config.placeholder, config.mask));
       }
     });
 
@@ -420,10 +420,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       }
     });
 
-    // Add non-empty protocol arrays to VPNClientNetworks
+    // Add non-empty protocol arrays to VPNClientSubnets
     Object.entries(vpnClientsByProtocol).forEach(([protocol, configs]) => {
       if (configs.length > 0) {
-        finalSubnets.VPNClientNetworks[protocol] = configs;
+        finalSubnets.VPNClientSubnets[protocol] = configs;
       }
     });
 
@@ -441,7 +441,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         }
       });
       if (wireguardConfigs.length > 0) {
-        finalSubnets.VPNServerNetworks.Wireguard = wireguardConfigs;
+        finalSubnets.VPNServerSubnets.Wireguard = wireguardConfigs;
       }
     }
 
@@ -456,7 +456,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         }
       });
       if (openvpnConfigs.length > 0) {
-        finalSubnets.VPNServerNetworks.OpenVPN = openvpnConfigs;
+        finalSubnets.VPNServerSubnets.OpenVPN = openvpnConfigs;
       }
     }
 
@@ -477,7 +477,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       if (enabled) {
         const value = values.value[key];
         if (value !== null && value !== undefined) {
-          finalSubnets.VPNServerNetworks[key] = createSubnetConfig(key, value, 24);
+          finalSubnets.VPNServerSubnets[key] = createSubnetConfig(key, value, 24);
         }
       }
     });
@@ -502,18 +502,18 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           }
         });
         if (tunnelConfigs.length > 0) {
-          finalSubnets.TunnelNetworks[key] = tunnelConfigs;
+          finalSubnets.TunnelSubnets[key] = tunnelConfigs;
         }
       }
     });
 
     // Clean up empty sections
-    if (Object.keys(finalSubnets.BaseNetworks).length === 0) delete finalSubnets.BaseNetworks;
-    if (finalSubnets.ForeignNetworks.length === 0) delete finalSubnets.ForeignNetworks;
-    if (finalSubnets.DomesticNetworks.length === 0) delete finalSubnets.DomesticNetworks;
-    if (Object.keys(finalSubnets.VPNClientNetworks).length === 0) delete finalSubnets.VPNClientNetworks;
-    if (Object.keys(finalSubnets.VPNServerNetworks).length === 0) delete finalSubnets.VPNServerNetworks;
-    if (Object.keys(finalSubnets.TunnelNetworks).length === 0) delete finalSubnets.TunnelNetworks;
+    if (Object.keys(finalSubnets.BaseSubnets).length === 0) delete finalSubnets.BaseSubnets;
+    if (finalSubnets.ForeignSubnets.length === 0) delete finalSubnets.ForeignSubnets;
+    if (finalSubnets.DomesticSubnets.length === 0) delete finalSubnets.DomesticSubnets;
+    if (Object.keys(finalSubnets.VPNClientSubnets).length === 0) delete finalSubnets.VPNClientSubnets;
+    if (Object.keys(finalSubnets.VPNServerSubnets).length === 0) delete finalSubnets.VPNServerSubnets;
+    if (Object.keys(finalSubnets.TunnelSubnets).length === 0) delete finalSubnets.TunnelSubnets;
 
     // Update context with structured format
     await starContext.updateLAN$({ Subnets: finalSubnets as any });
@@ -619,14 +619,14 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     </div>
 
                     {/* Domestic WAN Networks */}
-                    {starContext.state.Choose.Networks?.DomesticNetworks?.length > 0 && (
+                    {starContext.state.Choose.Networks?.DomesticNetworks?.length && starContext.state.Choose.Networks?.DomesticNetworks?.length > 0 && (
                       <div class="p-4 rounded-lg bg-orange-50/50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                         <h4 class="font-medium text-orange-700 dark:text-orange-300 mb-3 flex items-center gap-2">
                           <LuHome class="h-4 w-4" />
                           {$localize`Domestic WAN Networks`}
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {starContext.state.Choose.Networks.DomesticNetworks.map((networkName, index) => (
+                          {starContext.state.Choose.Networks?.DomesticNetworks?.map((networkName, index) => (
                             <div key={index} class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">{networkName}:</span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">192.168.{21 + index}.0/24</span>
@@ -637,7 +637,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     )}
 
                     {/* Foreign WAN Networks */}
-                    {starContext.state.Choose.Networks?.ForeignNetworks?.length > 0 && (
+                    {starContext.state.Choose.Networks?.ForeignNetworks?.length && starContext.state.Choose.Networks?.ForeignNetworks?.length > 0 && (
                       <div class="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                         <h4 class="font-medium text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
                           <LuGlobe class="h-4 w-4" />
@@ -655,12 +655,12 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     )}
 
                     {/* VPN Client Networks */}
-                    {(starContext.state.Choose.Networks?.VPNClientNetworks?.Wireguard?.length > 0 ||
-                      starContext.state.Choose.Networks?.VPNClientNetworks?.OpenVPN?.length > 0 ||
-                      starContext.state.Choose.Networks?.VPNClientNetworks?.L2TP?.length > 0 ||
-                      starContext.state.Choose.Networks?.VPNClientNetworks?.PPTP?.length > 0 ||
-                      starContext.state.Choose.Networks?.VPNClientNetworks?.SSTP?.length > 0 ||
-                      starContext.state.Choose.Networks?.VPNClientNetworks?.IKev2?.length > 0) && (
+                    {(starContext.state.Choose.Networks?.VPNClientNetworks?.Wireguard?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.Wireguard?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.OpenVPN?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.OpenVPN?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.L2TP?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.L2TP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.PPTP?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.PPTP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.SSTP?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.SSTP?.length > 0 ||
+                      starContext.state.Choose.Networks?.VPNClientNetworks?.IKev2?.length && starContext.state.Choose.Networks?.VPNClientNetworks?.IKev2?.length > 0) && (
                       <div class="p-4 rounded-lg bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800">
                         <h4 class="font-medium text-teal-700 dark:text-teal-300 mb-3 flex items-center gap-2">
                           <LuLock class="h-4 w-4" />

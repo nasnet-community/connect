@@ -31,6 +31,7 @@ export const VPNServerAdvanced = component$<StepProps>(
       handleProtocolToggle,
       toggleProtocol,
       saveSettings,
+      vpnHooks,
     } = useVPNServerAdvanced();
 
     const toggleSection$ = $((section: string) => toggleSection(section));
@@ -58,7 +59,7 @@ export const VPNServerAdvanced = component$<StepProps>(
     ));
 
     const ConfigStepWrapper$ = $((props: StepProps) => (
-      <ConfigStep {...props} enabledProtocols={enabledProtocols} />
+      <ConfigStep {...props} enabledProtocols={enabledProtocols} vpnHooks={vpnHooks} />
     ));
 
     const UsersStepWrapper$ = $((props: StepProps) => (

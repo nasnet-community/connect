@@ -4,6 +4,7 @@ import { StarContext } from "../../../../StarContext/StarContext";
 import type { L2tpClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UseL2TPConfigResult {
   serverAddress: { value: string };
@@ -29,6 +30,7 @@ export const useL2TPConfig = (
 ): UseL2TPConfigResult => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -115,6 +117,7 @@ export const useL2TPConfig = (
 
     // Update Networks state to reflect VPN availability
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const handleManualFormSubmit$ = $(async () => {

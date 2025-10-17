@@ -1,4 +1,4 @@
-import { useContext, useSignal, useStore, useTask$ } from "@builder.io/qwik";
+import { useContext, useSignal, useStore } from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import type { TimeConfig } from "./type";
 import type { FrequencyValue } from "~/components/Core";
@@ -18,23 +18,6 @@ export const useRebootUpdate = () => {
   const ipAddressUpdateEnabled = useSignal(true);
 
   const selectedTimezone = useSignal(ctx.state.ExtraConfig.RUI.Timezone);
-
-  // Track changes to selectedTimezone
-  useTask$(({ track }) => {
-    const timezone = track(() => selectedTimezone.value);
-
-    // Update the context when timezone changes
-    if (timezone && timezone !== ctx.state.ExtraConfig.RUI.Timezone) {
-      const updatedRUI = {
-        ...ctx.state.ExtraConfig.RUI,
-        Timezone: timezone,
-      };
-      
-      ctx.updateExtraConfig$({
-        RUI: updatedRUI
-      });
-    }
-  });
 
   const updateInterval = useSignal<FrequencyValue | undefined>(
     ctx.state.ExtraConfig.RUI.Update?.interval === "Daily" || 

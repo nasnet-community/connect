@@ -10,6 +10,7 @@ import type {
   IkeV2PfsGroup,
 } from "../../../../StarContext/Utils/VPNClientType";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UseIKEv2ConfigResult {
   serverAddress: { value: string };
@@ -43,6 +44,7 @@ export const useIKEv2Config = (
 ): UseIKEv2ConfigResult => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -242,6 +244,7 @@ export const useIKEv2Config = (
 
     // Update Networks state to reflect VPN availability
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const handleManualFormSubmit$ = $(async () => {

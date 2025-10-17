@@ -15,7 +15,11 @@ import {
   HiTrashOutline,
 } from "@qwikest/icons/heroicons";
 
-export const OpenVPNServerAdvanced = component$(() => {
+interface OpenVPNServerAdvancedProps {
+  hook: ReturnType<typeof useOpenVPNServer>;
+}
+
+export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ hook }) => {
   const {
     draftConfigs,
     activeTabIndex,
@@ -33,7 +37,7 @@ export const OpenVPNServerAdvanced = component$(() => {
     updateVSNetwork$,
     // certificateError,
     portError,
-  } = useOpenVPNServer();
+  } = hook;
 
   // Generate tab options for TabNavigation
   const tabOptions = useComputed$(() =>

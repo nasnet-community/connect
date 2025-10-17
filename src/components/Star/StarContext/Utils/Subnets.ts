@@ -3,14 +3,14 @@ export interface SubnetConfig {
     subnet: string;
   }
   
-  export interface BaseNetworksSubnets {
+  export interface BaseSubnets {
     Split?: SubnetConfig;
     Domestic?: SubnetConfig;
     Foreign?: SubnetConfig;
     VPN?: SubnetConfig;
   }
   
-  export interface VPNClientNetworksSubnets {
+  export interface VPNClientSubnets {
     Wireguard?: SubnetConfig[];
     OpenVPN?: SubnetConfig[];
     L2TP?: SubnetConfig[];
@@ -19,7 +19,7 @@ export interface SubnetConfig {
     IKev2?: SubnetConfig[];
   }
   
-  export interface VPNServerNetworksSubnets {
+  export interface VPNServerSubnets {
     Wireguard?: SubnetConfig[];
     OpenVPN?: SubnetConfig[];
     L2TP?: SubnetConfig;
@@ -33,17 +33,17 @@ export interface SubnetConfig {
     ZeroTier?: SubnetConfig;
   }
   
-  export interface TunnelNetworksSubnets {
+  export interface TunnelSubnets {
     IPIP?: SubnetConfig[];
     Eoip?: SubnetConfig[];
     Gre?: SubnetConfig[];
     Vxlan?: SubnetConfig[];
   }
   export interface Subnets {
-    BaseNetworks: BaseNetworksSubnets;
-    ForeignNetworks?:SubnetConfig[];
-    DomesticNetworks?:SubnetConfig[];
-    VPNClientNetworks?:VPNClientNetworksSubnets;
-    VPNServerNetworks?:VPNServerNetworksSubnets;
-    TunnelNetworks?:TunnelNetworksSubnets;
+    BaseSubnets: BaseSubnets;
+    ForeignSubnets?:SubnetConfig[];
+    DomesticSubnets?:SubnetConfig[];
+    VPNClientSubnets?:VPNClientSubnets;
+    VPNServerSubnets?:VPNServerSubnets;
+    TunnelSubnets?:TunnelSubnets;
   }

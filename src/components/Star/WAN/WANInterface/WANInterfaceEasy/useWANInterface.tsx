@@ -10,11 +10,13 @@ import type {
 } from "../../../StarContext/CommonType";
 import { useInterfaceManagement } from "../../../hooks/useInterfaceManagement";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
   const networks = useNetworks();
+  const subnets = useSubnets();
   const selectedInterfaceType = useSignal("");
   const selectedInterface = useSignal("");
   const ssid = useSignal("");
@@ -148,6 +150,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
 
     // Update Networks configuration
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const handleInterfaceTypeSelect = $((type: string) => {

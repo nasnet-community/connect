@@ -22,13 +22,19 @@ import { BackToHomeServerWrapper } from "../../Protocols/BackToHome/BackToHomeSe
 import { ZeroTierServerWrapper } from "../../Protocols/ZeroTier/ZeroTierServer.wrapper";
 import { HiCogOutline } from "@qwikest/icons/heroicons";
 import { CertificateStep } from "./CertificateStep";
+import type { useOpenVPNServer } from "../../Protocols/OpenVPN/useOpenVPNServer";
+import type { useWireguardServer } from "../../Protocols/Wireguard/useWireguardServer";
 
 interface ConfigStepProps {
   enabledProtocols: Record<VPNType, boolean>;
+  vpnHooks?: {
+    openVpn?: ReturnType<typeof useOpenVPNServer>;
+    wireguard?: ReturnType<typeof useWireguardServer>;
+  };
 }
 
 export const ConfigStep = component$<ConfigStepProps>(
-  ({ enabledProtocols }) => {
+  ({ enabledProtocols, vpnHooks }) => {
     const context = useStepperContext(VPNServerContextId);
     const state = useStore({
       initialProcessingDone: false,
@@ -43,8 +49,8 @@ export const ConfigStep = component$<ConfigStepProps>(
 
     // Create lazy protocol component factories (QRLs) so they render only when needed
     const protocolFactories = {
-      Wireguard: $(() => <WireguardServerWrapper />),
-      OpenVPN: $(() => <OpenVPNServerWrapper />),
+      Wireguard: $(() => <WireguardServerWrapper hook={vpnHooks?.wireguard} />),
+      OpenVPN: $(() => <OpenVPNServerWrapper hook={vpnHooks?.openVpn} />),
       PPTP: $(() => <PPTPServerWrapper />),
       L2TP: $(() => <L2TPServerWrapper />),
       SSTP: $(() => <SSTPServerWrapper />),
