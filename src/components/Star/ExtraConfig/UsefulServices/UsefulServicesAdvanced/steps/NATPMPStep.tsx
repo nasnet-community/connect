@@ -13,6 +13,7 @@ export type InterfaceOption = {
   type: 'domestic' | 'foreign' | 'vpn';
   interfaceName: string;
   connectionType: string;
+  configName: string; // Stores WANLinkConfig.name or VPN config Name
 };
 
 export const NATPMPStep = component$(() => {
@@ -47,7 +48,8 @@ export const NATPMPStep = component$(() => {
           value: `domestic-${index}`,
           label: `${config.name || `Domestic Link ${index + 1}`}`,
           interfaceName: config.InterfaceConfig.InterfaceName,
-          connectionType: 'domestic'
+          connectionType: 'domestic',
+          configName: config.name
         });
       });
     }
@@ -60,7 +62,8 @@ export const NATPMPStep = component$(() => {
           value: `foreign-${index}`,
           label: `${config.name || `Foreign Link ${index + 1}`}`,
           interfaceName: config.InterfaceConfig.InterfaceName,
-          connectionType: 'foreign'
+          connectionType: 'foreign',
+          configName: config.name
         });
       });
     }
@@ -76,7 +79,8 @@ export const NATPMPStep = component$(() => {
             value: `wireguard-${index}`,
             label: `Wireguard VPN ${index + 1}`,
             interfaceName: `wg${index}`,
-            connectionType: 'wireguard'
+            connectionType: 'wireguard',
+            configName: vpn.Name
           });
         });
       }
@@ -89,7 +93,8 @@ export const NATPMPStep = component$(() => {
             value: `openvpn-${index}`,
             label: `OpenVPN ${index + 1}`,
             interfaceName: `ovpn${index}`,
-            connectionType: 'openvpn'
+            connectionType: 'openvpn',
+            configName: vpn.Name
           });
         });
       }
@@ -102,7 +107,8 @@ export const NATPMPStep = component$(() => {
             value: `pptp-${index}`,
             label: `PPTP VPN ${index + 1}`,
             interfaceName: `pptp${index}`,
-            connectionType: 'pptp'
+            connectionType: 'pptp',
+            configName: vpn.Name
           });
         });
       }
@@ -115,7 +121,8 @@ export const NATPMPStep = component$(() => {
             value: `l2tp-${index}`,
             label: `L2TP VPN ${index + 1}`,
             interfaceName: `l2tp${index}`,
-            connectionType: 'l2tp'
+            connectionType: 'l2tp',
+            configName: vpn.Name
           });
         });
       }
@@ -128,7 +135,8 @@ export const NATPMPStep = component$(() => {
             value: `sstp-${index}`,
             label: `SSTP VPN ${index + 1}`,
             interfaceName: `sstp${index}`,
-            connectionType: 'sstp'
+            connectionType: 'sstp',
+            configName: vpn.Name
           });
         });
       }
@@ -141,7 +149,8 @@ export const NATPMPStep = component$(() => {
             value: `ikev2-${index}`,
             label: `IKeV2 VPN ${index + 1}`,
             interfaceName: `ike${index}`,
-            connectionType: 'ikev2'
+            connectionType: 'ikev2',
+            configName: vpn.Name
           });
         });
       }
@@ -158,7 +167,7 @@ export const NATPMPStep = component$(() => {
         (selectedInterface.value?.type === "domestic" ? "domestic" : 
          selectedInterface.value?.type === "foreign" ? "foreign" : 
          selectedInterface.value?.type === "vpn" ? "vpn" : "") : "",
-      InterfaceName: selectedInterface.value?.value,
+      InterfaceName: selectedInterface.value?.configName,
     };
 
     // Update services data for stepper context (backward compatibility)

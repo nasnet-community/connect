@@ -4,6 +4,7 @@ import { StarContext } from "../../../../StarContext/StarContext";
 import type { QRL } from "@builder.io/qwik";
 import type { WireguardClientConfig } from "../../../../StarContext/Utils/VPNClientType";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UseWireguardConfigResult {
   config: { value: string };
@@ -43,6 +44,7 @@ export const useWireguardConfig = (
 ): UseWireguardConfigResult => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
 
   const config = useSignal("");
   const errorMessage = useSignal("");
@@ -129,6 +131,7 @@ export const useWireguardConfig = (
 
       // Update Networks state to reflect VPN availability
       networks.generateCurrentNetworks$();
+      subnets.generateCurrentSubnets$();
 
       const { isValid } = await validateWireguardConfig(parsedConfig);
       if (onIsValidChange$) {
@@ -441,6 +444,7 @@ export const useWireguardConfig = (
 
     // Update Networks state to reflect VPN availability
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
 
     errorMessage.value = "";
     if (onIsValidChange$) {

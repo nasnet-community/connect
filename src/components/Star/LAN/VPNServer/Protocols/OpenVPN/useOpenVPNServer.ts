@@ -66,21 +66,93 @@ export const useOpenVPNServer = () => {
   const activeTab = useSignal<"basic" | "network" | "security">("basic");
   const viewMode = useSignal<ViewMode>("advanced");
 
-  // Draft configurations for each tab (not saved to StarContext until explicit save)
-  const draftConfigs = useSignal<OpenVPNDraftConfig[]>(
-    openVpnServers && openVpnServers.length > 0
-      ? openVpnServers
-          .filter((server) => server && server.name && server.Certificate && server.Address && server.Encryption) // Filter out invalid servers
-          .map((server) => ({
-            name: server.name || "openvpn-1",
+  // Helper function to reconstruct "both" protocol drafts from paired TCP/UDP servers
+  const reconstructDrafts = (servers: OpenVpnServerConfig[]): OpenVPNDraftConfig[] => {
+    if (!servers || servers.length === 0) {
+      return [
+        {
+          name: "openvpn-1",
+          certificate: "server-cert",
+          enabled: true,
+          port: 1194,
+          tcpPort: 1194,
+          udpPort: 1195,
+          protocol: "both" as ProtocolType,
+          mode: "ip" as LayerMode,
+          vsNetwork: "VPN" as VSNetwork,
+          addressPool: "192.168.78.0/24",
+          requireClientCertificate: false,
+          auth: "sha256" as OvpnAuthMethod,
+          cipher: "aes256-gcm" as OvpnCipher,
+          certificateKeyPassphrase: "",
+          defaultProfile: "ovpn-profile",
+          tlsVersion: "only-1.2" as const,
+          maxMtu: 1450,
+          maxMru: 1450,
+          keepaliveTimeout: 30,
+          authentication: ["mschap2"] as AuthMethod[],
+        },
+      ];
+    }
+
+    // Group servers by base name (without -tcp/-udp suffix)
+    const serverGroups: { [key: string]: OpenVpnServerConfig[] } = {};
+
+    servers
+      .filter((server) => server && server.name && server.Certificate && server.Address && server.Encryption)
+      .forEach((server) => {
+        const baseName = server.name.replace(/-tcp$|-udp$/, "");
+        if (!serverGroups[baseName]) {
+          serverGroups[baseName] = [];
+        }
+        serverGroups[baseName].push(server);
+      });
+
+    const drafts: OpenVPNDraftConfig[] = [];
+
+    // Process each group
+    Object.entries(serverGroups).forEach(([baseName, group]) => {
+      // Check if this is a "both" protocol pair
+      const tcpServer = group.find(s => s.name.endsWith("-tcp"));
+      const udpServer = group.find(s => s.name.endsWith("-udp"));
+
+      if (tcpServer && udpServer && group.length === 2) {
+        // Reconstruct as a single "both" protocol draft
+        drafts.push({
+          name: baseName,
+          certificate: tcpServer.Certificate.Certificate || "server-cert",
+          enabled: tcpServer.enabled !== undefined ? tcpServer.enabled : true,
+          port: tcpServer.Port || 1194,
+          tcpPort: tcpServer.Port || 1194,
+          udpPort: udpServer.Port || 1195,
+          protocol: "both" as ProtocolType,
+          mode: tcpServer.Mode || "ip",
+          vsNetwork: tcpServer.VSNetwork || "VPN",
+          addressPool: tcpServer.Address.AddressPool || "192.168.78.0/24",
+          requireClientCertificate: tcpServer.Certificate.RequireClientCertificate || false,
+          auth: (tcpServer.Encryption.Auth && tcpServer.Encryption.Auth[0]) || "sha256",
+          cipher: (tcpServer.Encryption.Cipher && tcpServer.Encryption.Cipher[0]) || "aes256-gcm",
+          certificateKeyPassphrase: tcpServer.Certificate.CertificateKeyPassphrase || "",
+          defaultProfile: tcpServer.DefaultProfile || "ovpn-profile",
+          tlsVersion: tcpServer.Encryption.TlsVersion || "only-1.2",
+          maxMtu: tcpServer.PacketSize?.MaxMtu || 1450,
+          maxMru: tcpServer.PacketSize?.MaxMru || 1450,
+          keepaliveTimeout: tcpServer.KeepaliveTimeout || 30,
+          authentication: tcpServer.Authentication || ["mschap2"],
+        });
+      } else {
+        // Create individual drafts for non-paired servers
+        group.forEach((server) => {
+          drafts.push({
+            name: server.name.replace(/-tcp$|-udp$/, ""),
             certificate: server.Certificate.Certificate || "server-cert",
             enabled: server.enabled !== undefined ? server.enabled : true,
             port: server.Port || 1194,
-            tcpPort: 1194,
-            udpPort: 1195,
+            tcpPort: server.Protocol === "tcp" ? server.Port || 1194 : 1194,
+            udpPort: server.Protocol === "udp" ? server.Port || 1195 : 1195,
             protocol: (server.Protocol || "udp") as ProtocolType,
             mode: server.Mode || "ip",
-            vsNetwork: "VPN" as VSNetwork,
+            vsNetwork: server.VSNetwork || "VPN",
             addressPool: server.Address.AddressPool || "192.168.78.0/24",
             requireClientCertificate: server.Certificate.RequireClientCertificate || false,
             auth: (server.Encryption.Auth && server.Encryption.Auth[0]) || "sha256",
@@ -92,31 +164,40 @@ export const useOpenVPNServer = () => {
             maxMru: server.PacketSize?.MaxMru || 1450,
             keepaliveTimeout: server.KeepaliveTimeout || 30,
             authentication: server.Authentication || ["mschap2"],
-          }))
-      : [
-          {
-            name: "openvpn-1",
-            certificate: "server-cert",
-            enabled: true,
-            port: 1194,
-            tcpPort: 1194,
-            udpPort: 1195,
-            protocol: "both" as ProtocolType,
-            mode: "ip" as LayerMode,
-            vsNetwork: "VPN" as VSNetwork,
-            addressPool: "192.168.78.0/24",
-            requireClientCertificate: false,
-            auth: "sha256" as OvpnAuthMethod,
-            cipher: "aes256-gcm" as OvpnCipher,
-            certificateKeyPassphrase: "",
-            defaultProfile: "ovpn-profile",
-            tlsVersion: "only-1.2" as const,
-            maxMtu: 1450,
-            maxMru: 1450,
-            keepaliveTimeout: 30,
-            authentication: ["mschap2"] as AuthMethod[],
-          },
-        ]
+          });
+        });
+      }
+    });
+
+    return drafts.length > 0 ? drafts : [
+      {
+        name: "openvpn-1",
+        certificate: "server-cert",
+        enabled: true,
+        port: 1194,
+        tcpPort: 1194,
+        udpPort: 1195,
+        protocol: "both" as ProtocolType,
+        mode: "ip" as LayerMode,
+        vsNetwork: "VPN" as VSNetwork,
+        addressPool: "192.168.78.0/24",
+        requireClientCertificate: false,
+        auth: "sha256" as OvpnAuthMethod,
+        cipher: "aes256-gcm" as OvpnCipher,
+        certificateKeyPassphrase: "",
+        defaultProfile: "ovpn-profile",
+        tlsVersion: "only-1.2" as const,
+        maxMtu: 1450,
+        maxMru: 1450,
+        keepaliveTimeout: 30,
+        authentication: ["mschap2"] as AuthMethod[],
+      },
+    ];
+  };
+
+  // Draft configurations for each tab (not saved to StarContext until explicit save)
+  const draftConfigs = useSignal<OpenVPNDraftConfig[]>(
+    reconstructDrafts(openVpnServers)
   );
 
   // Update draft configuration for current tab
@@ -465,10 +546,11 @@ export const useOpenVPNServer = () => {
     const currentVPNState = starContext.state.LAN.VPNServer || { Users: [] };
 
     // Save all valid servers to StarContext
+    // If we have valid servers, use them; otherwise keep existing servers
     starContext.updateLAN$({
       VPNServer: {
         ...currentVPNState,
-        OpenVpnServer: validServers.length > 0 ? validServers : undefined,
+        OpenVpnServer: validServers.length > 0 ? validServers : currentVPNState.OpenVpnServer,
       },
     });
 

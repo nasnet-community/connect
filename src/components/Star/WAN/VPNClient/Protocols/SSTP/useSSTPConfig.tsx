@@ -7,6 +7,7 @@ import type {
   TLSVersion,
 } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 
 export interface UseSSTPConfigResult {
   serverAddress: { value: string };
@@ -34,6 +35,7 @@ export const useSSTPConfig = (
 ): UseSSTPConfigResult => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
   const errorMessage = useSignal("");
 
   const serverAddress = useSignal("");
@@ -109,6 +111,7 @@ export const useSSTPConfig = (
 
     // Update Networks state to reflect VPN availability
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const handleManualFormSubmit$ = $(async () => {

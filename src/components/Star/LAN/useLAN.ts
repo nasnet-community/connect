@@ -161,44 +161,44 @@ export const useLAN = ({
       
       // === BASE NETWORKS ===
       // Only add BaseNetworks if they don't exist
-      const hasBaseNetworks = starContext.state.LAN.Subnets?.BaseNetworks && 
-                              Object.keys(starContext.state.LAN.Subnets.BaseNetworks).length > 0;
+      const hasBaseNetworks = starContext.state.LAN.Subnets?.BaseSubnets && 
+                              Object.keys(starContext.state.LAN.Subnets.BaseSubnets).length > 0;
       
       if (!hasBaseNetworks) {
-        defaultSubnets.BaseNetworks = {};
+        defaultSubnets.BaseSubnets = {};
         
         // Add base networks based on WANLinkType
         if (isDomesticLink) {
-          defaultSubnets.BaseNetworks.Split = {
+          defaultSubnets.BaseSubnets.Split = {
             name: "Split",
             subnet: "192.168.10.0/24"
           };
-          defaultSubnets.BaseNetworks.Domestic = {
+          defaultSubnets.BaseSubnets.Domestic = {
             name: "Domestic",
             subnet: "192.168.20.0/24"
           };
-          defaultSubnets.BaseNetworks.Foreign = {
+          defaultSubnets.BaseSubnets.Foreign = {
             name: "Foreign",
             subnet: "192.168.30.0/24"
           };
           
           // VPN network for domestic/both (only if VPN clients configured)
           if (hasVPNClient) {
-            defaultSubnets.BaseNetworks.VPN = {
+            defaultSubnets.BaseSubnets.VPN = {
               name: "VPN",
               subnet: "192.168.40.0/24"
             };
           }
         } else if (hasForeignLink) {
           // Foreign only mode
-          defaultSubnets.BaseNetworks.Foreign = {
+          defaultSubnets.BaseSubnets.Foreign = {
             name: "Foreign",
             subnet: "192.168.30.0/24"
           };
           
           // VPN network for foreign-only (only if VPN clients configured)
           if (hasVPNClient) {
-            defaultSubnets.BaseNetworks.VPN = {
+            defaultSubnets.BaseSubnets.VPN = {
               name: "VPN",
               subnet: "192.168.10.0/24"
             };
@@ -208,15 +208,15 @@ export const useLAN = ({
       
       // === VPN SERVER NETWORKS ===
       // Only add VPNServerNetworks if they don't exist but VPN servers are configured
-      const hasVPNServerNetworks = starContext.state.LAN.Subnets?.VPNServerNetworks;
+      const hasVPNServerNetworks = starContext.state.LAN.Subnets?.VPNServerSubnets;
       const vpnServers = starContext.state.LAN.VPNServer;
       
       if (!hasVPNServerNetworks && vpnServers) {
-        defaultSubnets.VPNServerNetworks = {};
+        defaultSubnets.VPNServerSubnets = {};
         
         // WireGuard servers (110+index)
         if (vpnServers.WireguardServers?.length) {
-          defaultSubnets.VPNServerNetworks.Wireguard = vpnServers.WireguardServers.map((server, index) => ({
+          defaultSubnets.VPNServerSubnets.Wireguard = vpnServers.WireguardServers.map((server, index) => ({
             name: server.Interface.Name || `WireGuard${index + 1}`,
             subnet: `192.168.${110 + index}.0/24`
           }));
@@ -224,7 +224,7 @@ export const useLAN = ({
         
         // OpenVPN servers (120+index)
         if (vpnServers.OpenVpnServer?.length) {
-          defaultSubnets.VPNServerNetworks.OpenVPN = vpnServers.OpenVpnServer.map((server, index) => ({
+          defaultSubnets.VPNServerSubnets.OpenVPN = vpnServers.OpenVpnServer.map((server, index) => ({
             name: server.name || `OpenVPN${index + 1}`,
             subnet: `192.168.${120 + index}.0/24`
           }));
@@ -232,7 +232,7 @@ export const useLAN = ({
         
         // PPTP server (130)
         if (vpnServers.PptpServer?.enabled) {
-          defaultSubnets.VPNServerNetworks.PPTP = {
+          defaultSubnets.VPNServerSubnets.PPTP = {
             name: "PPTP",
             subnet: "192.168.130.0/24"
           };
@@ -240,7 +240,7 @@ export const useLAN = ({
         
         // SSTP server (140)
         if (vpnServers.SstpServer?.enabled) {
-          defaultSubnets.VPNServerNetworks.SSTP = {
+          defaultSubnets.VPNServerSubnets.SSTP = {
             name: "SSTP",
             subnet: "192.168.140.0/24"
           };
@@ -248,7 +248,7 @@ export const useLAN = ({
         
         // L2TP server (150)
         if (vpnServers.L2tpServer?.enabled) {
-          defaultSubnets.VPNServerNetworks.L2TP = {
+          defaultSubnets.VPNServerSubnets.L2TP = {
             name: "L2TP",
             subnet: "192.168.150.0/24"
           };
@@ -256,7 +256,7 @@ export const useLAN = ({
         
         // IKEv2 server (160)
         if (vpnServers.Ikev2Server) {
-          defaultSubnets.VPNServerNetworks.IKev2 = {
+          defaultSubnets.VPNServerSubnets.IKev2 = {
             name: "IKEv2",
             subnet: "192.168.160.0/24"
           };
@@ -267,22 +267,22 @@ export const useLAN = ({
       const wanLinks = starContext.state.WAN.WANLink;
       
       // Domestic WAN links (if 1+)
-      const hasDomesticNetworks = starContext.state.LAN.Subnets?.DomesticNetworks;
+      const hasDomesticNetworks = starContext.state.LAN.Subnets?.DomesticSubnets;
       const domesticLinks = wanLinks.Domestic?.WANConfigs;
       
       if (!hasDomesticNetworks && domesticLinks && domesticLinks.length >= 1) {
-        defaultSubnets.DomesticNetworks = domesticLinks.map((link, index) => ({
+        defaultSubnets.DomesticSubnets = domesticLinks.map((link, index) => ({
           name: link.name || `Domestic${index + 1}`,
           subnet: `192.168.${21 + index}.0/24`
         }));
       }
       
       // Foreign WAN links (if 1+)
-      const hasForeignNetworks = starContext.state.LAN.Subnets?.ForeignNetworks;
+      const hasForeignNetworks = starContext.state.LAN.Subnets?.ForeignSubnets;
       const foreignLinks = wanLinks.Foreign?.WANConfigs;
       
       if (!hasForeignNetworks && foreignLinks && foreignLinks.length >= 1) {
-        defaultSubnets.ForeignNetworks = foreignLinks.map((link, index) => ({
+        defaultSubnets.ForeignSubnets = foreignLinks.map((link, index) => ({
           name: link.name || `Foreign${index + 1}`,
           subnet: `192.168.${31 + index}.0/24`
         }));
@@ -344,10 +344,10 @@ export const useLAN = ({
       }
       
       // Only create VPN Client networks if there are 1+ clients and they don't exist
-      const hasVPNClientNetworks = starContext.state.LAN.Subnets?.VPNClientNetworks;
+      const hasVPNClientNetworks = starContext.state.LAN.Subnets?.VPNClientSubnets;
       
       if (!hasVPNClientNetworks && vpnClientConfigs.length >= 1) {
-        defaultSubnets.VPNClientNetworks = {};
+        defaultSubnets.VPNClientSubnets = {};
         
         // Group by type
         const wireguardClients = vpnClientConfigs.filter(c => c.type === "Wireguard");
@@ -360,42 +360,42 @@ export const useLAN = ({
         let subnetIndex = 41; // Starting at 192.168.41.0
         
         if (wireguardClients.length > 0) {
-          defaultSubnets.VPNClientNetworks.Wireguard = wireguardClients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.Wireguard = wireguardClients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));
         }
         
         if (openVpnClients.length > 0) {
-          defaultSubnets.VPNClientNetworks.OpenVPN = openVpnClients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.OpenVPN = openVpnClients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));
         }
         
         if (pptpClients.length > 0) {
-          defaultSubnets.VPNClientNetworks.PPTP = pptpClients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.PPTP = pptpClients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));
         }
         
         if (l2tpClients.length > 0) {
-          defaultSubnets.VPNClientNetworks.L2TP = l2tpClients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.L2TP = l2tpClients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));
         }
         
         if (sstpClients.length > 0) {
-          defaultSubnets.VPNClientNetworks.SSTP = sstpClients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.SSTP = sstpClients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));
         }
         
         if (ikev2Clients.length > 0) {
-          defaultSubnets.VPNClientNetworks.IKev2 = ikev2Clients.map((client) => ({
+          defaultSubnets.VPNClientSubnets.IKev2 = ikev2Clients.map((client) => ({
             name: client.name,
             subnet: `192.168.${subnetIndex++}.0/24`
           }));

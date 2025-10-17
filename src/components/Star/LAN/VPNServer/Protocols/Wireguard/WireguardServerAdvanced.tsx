@@ -14,7 +14,11 @@ import { TabNavigation } from "~/components/Core/Navigation/TabNavigation";
 import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
 import { useWireguardServer } from "./useWireguardServer";
 
-export const WireguardServerAdvanced = component$(() => {
+interface WireguardServerAdvancedProps {
+  hook: ReturnType<typeof useWireguardServer>;
+}
+
+export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(({ hook }) => {
   const {
     draftConfigs,
     activeTabIndex,
@@ -33,7 +37,7 @@ export const WireguardServerAdvanced = component$(() => {
     // privateKeyError,
     // addressError,
     portError,
-  } = useWireguardServer();
+  } = hook;
 
   // Generate tab options for TabNavigation
   const tabOptions = useComputed$(() =>

@@ -8,6 +8,7 @@ import type {
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { generateUniqueId } from "~/components/Core/common/utils";
 import { useNetworks } from "~/utils/useNetworks";
+import { useSubnets } from "~/utils/useSubnets";
 import type { VPNClient } from "~/components/Star/StarContext/Utils/VPNClientType";
 import type { MultiLinkConfig } from "~/components/Star/StarContext/Utils/MultiLinkType";
 
@@ -38,6 +39,7 @@ export interface UseVPNClientAdvancedReturn {
 export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
+  const subnets = useSubnets();
 
   // Calculate Foreign WAN count from StarContext (non-reactive to prevent loops)
   const getForeignWANCount = $(() => {
@@ -210,6 +212,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Remove a VPN client
@@ -264,6 +267,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Update a specific VPN client
@@ -303,6 +307,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Batch update multiple VPN clients at once
@@ -341,6 +346,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   // Toggle between easy and advanced mode (disabled in advanced interface)
@@ -478,29 +484,48 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     const vpnClient: VPNClient = {};
 
     // Group VPN configs by type and convert to StarContext format
+    // Include Name field from parent VPN object to preserve user-entered names
     const wireguardConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "Wireguard" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     const openVPNConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "OpenVPN" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     const pptpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "PPTP" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     const l2tpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "L2TP" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     const sstpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "SSTP" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     const ikev2Configs = state.vpnConfigs
       .filter(vpn => vpn.type === "IKeV2" && 'config' in vpn)
-      .map(vpn => (vpn as any).config);
+      .map(vpn => ({
+        ...(vpn as any).config,
+        Name: vpn.name  // Add Name field from parent VPN object
+      }));
 
     // Only add non-empty arrays to vpnClient
     if (wireguardConfigs.length > 0) {
@@ -554,6 +579,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
     // Update Networks configuration after syncing
     networks.generateCurrentNetworks$();
+    subnets.generateCurrentSubnets$();
   });
 
   const applyConfiguration$ = $(() => {

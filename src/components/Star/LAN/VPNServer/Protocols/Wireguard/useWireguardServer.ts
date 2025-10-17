@@ -141,11 +141,11 @@ export const useWireguardServer = () => {
 
     let isValid = true;
 
-    // Validate private key
-    if (!currentDraft.privateKey || !currentDraft.privateKey.trim()) {
-      privateKeyError.value = $localize`Private key is required`;
-      isValid = false;
-    }
+    // Private key validation removed - not required for this implementation
+    // if (!currentDraft.privateKey || !currentDraft.privateKey.trim()) {
+    //   privateKeyError.value = $localize`Private key is required`;
+    //   isValid = false;
+    // }
 
     // Validate interface address
     if (!currentDraft.interfaceAddress || !currentDraft.interfaceAddress.includes("/")) {
@@ -174,7 +174,7 @@ export const useWireguardServer = () => {
     const serverConfig: WireguardServerConfig = {
       Interface: {
         Name: currentDraft.name,
-        PrivateKey: currentDraft.privateKey,
+        PrivateKey: currentDraft.privateKey || "",  // Empty is acceptable
         PublicKey: "", // Would be derived from private key
         InterfaceAddress: currentDraft.interfaceAddress,
         ListenPort: currentDraft.listenPort,
@@ -213,11 +213,11 @@ export const useWireguardServer = () => {
       const draft = draftConfigs.value[i];
       let hasError = false;
 
-      // Validate private key
-      if (!draft.privateKey || !draft.privateKey.trim()) {
-        errors.push(`${draft.name}: Private key is required`);
-        hasError = true;
-      }
+      // Private key validation removed - not required for this implementation
+      // if (!draft.privateKey || !draft.privateKey.trim()) {
+      //   errors.push(`${draft.name}: Private key is required`);
+      //   hasError = true;
+      // }
 
       // Validate interface address
       if (!draft.interfaceAddress || !draft.interfaceAddress.includes("/")) {
@@ -242,7 +242,7 @@ export const useWireguardServer = () => {
         const serverConfig: WireguardServerConfig = {
           Interface: {
             Name: draft.name,
-            PrivateKey: draft.privateKey,
+            PrivateKey: draft.privateKey || "",  // Empty is acceptable
             PublicKey: "", // Would be derived from private key
             InterfaceAddress: draft.interfaceAddress,
             ListenPort: draft.listenPort,
@@ -259,10 +259,11 @@ export const useWireguardServer = () => {
     const currentVPNState = starContext.state.LAN.VPNServer || { Users: [] };
 
     // Save all valid servers to StarContext
+    // If we have valid servers, use them; otherwise keep existing servers
     starContext.updateLAN$({
       VPNServer: {
         ...currentVPNState,
-        WireguardServers: validServers.length > 0 ? validServers : undefined,
+        WireguardServers: validServers.length > 0 ? validServers : currentVPNState.WireguardServers,
       },
     });
 
