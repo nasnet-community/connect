@@ -5,7 +5,7 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { GenerateOpenVPNCertificateScript } from "~/components/Star/ConfigGenerator";
+// import { GenerateOpenVPNCertificateScript } from "~/components/Star/ConfigGenerator";
 import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 
@@ -33,18 +33,18 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig => {
 
     const interfaceName = GenerateVCInterfaceName(Name, "OpenVPN");
 
-    let command = `add name="${interfaceName}" connect-to="${Server.Address}"`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}" comment="${Name} OpenVPN"`;
 
     if (Server.Port) {
         command += ` port=${Server.Port}`;
     }
 
     if (Protocol) {
-        command += ` protocol=${Protocol}`;
+        command += ` protocol="${Protocol}"`;
     }
 
     if (Mode) {
-        command += ` mode=${Mode}`;
+        command += ` mode=ethernet`;
     }
 
     if (Credentials && AuthType !== "Certificate") {
@@ -87,12 +87,12 @@ export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[] ): RouterCo
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((ovpnConfig) => {
-        let vpnConfig = OpenVPNClient(ovpnConfig);
+        const vpnConfig = OpenVPNClient(ovpnConfig);
 
         // Add certificate script if certificates are provided
         if (ovpnConfig.Certificates) {
-            const certScript = GenerateOpenVPNCertificateScript(ovpnConfig);
-            vpnConfig = mergeConfigurations(vpnConfig, certScript);
+            // const certScript = GenerateOpenVPNCertificateScript(ovpnConfig);
+            // vpnConfig = mergeConfigurations(vpnConfig, certScript);
         }
 
         const interfaceName = GenerateVCInterfaceName(ovpnConfig.Name, "OpenVPN");

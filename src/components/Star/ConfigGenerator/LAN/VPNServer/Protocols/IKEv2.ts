@@ -53,7 +53,7 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
         // Encryption: AES-256 first for security, AES-128 for speed, 3DES for legacy
         `enc-algorithm=aes-256,aes-192,aes-128,3des`,
         // Hash: SHA-256 first, SHA-512 for security, SHA-1 for legacy devices
-        `hash-algorithm=sha256,sha512,sha1`,
+        // `hash-algorithm=sha256,sha512,sha1`,
         // Lifetime: 24h for optimal balance
         `lifetime=${config.profile.lifetime || "24h"}`,
         // DPD: 30s interval with 3 failures for reliable connection detection
@@ -74,7 +74,7 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
         // Includes 3DES for legacy device support
         `enc-algorithms=aes-256-gcm,aes-128-gcm,aes-256-cbc,aes-192-cbc,aes-128-cbc,3des`,
         // Auth: null for GCM (built-in), sha256/sha1 for CBC modes
-        `auth-algorithms=null,sha256,sha1`,
+        // `auth-algorithms=null,sha256,sha1`,
         // PFS: none for iOS/macOS compatibility and better performance (critical!)
         `pfs-group=none`,
         // Lifetime: 8h for optimal balance between security and reconnection frequency
@@ -84,18 +84,18 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
 
     // 4. Build Policy Group and Policy Template - Universal traffic routing
     const policyGroupName = config.policyGroup?.name || `${name}-policies`;
-    routerConfig["/ip ipsec policy group"].push(`add name=${policyGroupName}`);
+    routerConfig["/ip ipsec policy group"].push(`add name="${policyGroupName}-server"`);
 
     // Policy template allows all traffic from clients to VPN subnet
         routerConfig["/ip ipsec policy"].push(
-        `add dst-address=${subnet} group=${policyGroupName} proposal=${proposalName} src-address=0.0.0.0/0 template=yes`,
+        `add dst-address="${subnet}" group="${policyGroupName}-server" proposal="${proposalName}" src-address=0.0.0.0/0 template=yes`,
     );
 
     // 5. Build Mode Config for address distribution - System DNS with responder mode
     const modeConfigName = config.modeConfigs?.name || `${name}-conf`;
     const modeConfigParams: string[] = [
-        `name=${modeConfigName}`,
-        `address-pool=${name}`,
+        `name="${modeConfigName}"`,
+        `address-pool="${name}"`,
         `address-prefix-length=32`,
         // Use system DNS for automatic DNS server assignment
         `system-dns=${formatBooleanValue(config.modeConfigs?.systemDns !== false)}`,
@@ -173,10 +173,10 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
         const identityParams: string[] = [
             `peer=${peerName}`,
             `auth-method=eap`,
-            `eap-methods=eap-mschapv2`,
+            `eap-methods=pre-shared-key`,
             `generate-policy=${generatePolicy}`,
             `mode-config=${modeConfigName}`,
-            `policy-template-group=${policyGroupName}`,
+            `policy-template-group="${policyGroupName}-server"`,
             `match-by=remote-id`,
             `remote-id=ignore`,
         ];
@@ -197,7 +197,7 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
             `secret="${secret}"`,
             `generate-policy=${generatePolicy}`,
             `mode-config=${modeConfigName}`,
-            `policy-template-group=${policyGroupName}`,
+            `policy-template-group="${policyGroupName}-server"`,
         ];
         config["/ip ipsec identity"].push(`add ${identityParams.join(" ")}`);
     }
@@ -216,16 +216,16 @@ export const IKEv2ServerFirewall = (serverConfigs: Ikev2ServerConfig[]): RouterC
     serverConfigs.forEach(() => {
         // Allow IKE (UDP 500) and NAT-T (UDP 4500)
         config["/ip firewall filter"].push(
-            `add action=accept chain=input comment="Allow IKE" dst-port=500 in-interface-list=Domestic-WAN protocol=udp`,
-            `add action=accept chain=input comment="Allow IKE NAT-T" dst-port=4500 in-interface-list=Domestic-WAN protocol=udp`,
-            `add action=accept chain=input comment="Allow ESP" in-interface-list=Domestic-WAN protocol=ipsec-esp`,
+            `add action=accept chain=input comment="Allow IKE" dst-port="500" in-interface-list="Domestic-WAN" protocol="udp"`,
+            `add action=accept chain=input comment="Allow IKE NAT-T" dst-port="4500" in-interface-list="Domestic-WAN" protocol="udp"`,
+            `add action=accept chain=input comment="Allow ESP" in-interface-list="Domestic-WAN" protocol="ipsec-esp"`,
         );
 
         // Mark connections for traffic management
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound IKEv2 Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=udp dst-port=500,4500 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="udp" dst-port="500,4500" \\
+                new-connection-mark="conn-vpn-server" passthrough=yes`,
         );
     });
 

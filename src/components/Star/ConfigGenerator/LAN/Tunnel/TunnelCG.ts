@@ -6,7 +6,7 @@ import type {
     VxlanInterfaceConfig,
     Tunnel,
     SubnetConfig,
-    TunnelNetworksSubnets,
+    TunnelSubnets,
 } from "~/components/Star/StarContext";
 import {
     CommandShortner,
@@ -171,7 +171,7 @@ export const VxlanInterfaceWrapper = (vxlan: VxlanInterfaceConfig, subnet?: Subn
     return CommandShortner(mergeRouterConfigs(...configs));
 };
 
-export const TunnelWrapper = (tunnel: Tunnel, tunnelSubnets?: TunnelNetworksSubnets): RouterConfig => {
+export const TunnelWrapper = (tunnel: Tunnel, tunnelSubnets?: TunnelSubnets): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Add Inbound Traffic Marking rules for tunnel protocols

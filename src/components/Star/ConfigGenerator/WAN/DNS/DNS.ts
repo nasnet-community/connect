@@ -101,7 +101,7 @@ export const MDNS = ( networks: Networks, subnets?: Subnets ): RouterConfig => {
 
     // Join all bridge names with commas
     const mdnsInterfaces = bridgeInterfaces.join(",");
-    config["/ip dns"].push(`set mdns-repeat-ifaces=${mdnsInterfaces}`);
+    config["/ip dns"].push(`set mdns-repeat-ifaces="${mdnsInterfaces}"`);
 
     return config;
 };
@@ -109,7 +109,7 @@ export const MDNS = ( networks: Networks, subnets?: Subnets ): RouterConfig => {
 export const IRTLDRegex = (): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns static": [
-            `add name=IRTLD type=FWD regexp=".*\\\\.ir\\$" forward-to=Domestic match-subdomain=yes comment="Forward .ir TLD queries via domestic DNS"`,
+            `add type=FWD regexp="[*\\\\.ir]" forward-to=Domestic comment="Forward .ir TLD queries via domestic DNS"`,
         ],
     };
 
@@ -119,8 +119,19 @@ export const IRTLDRegex = (): RouterConfig => {
 export const BlockWANDNS = (): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [
-            `add chain=input dst-port=53 in-interface-list=WAN protocol=tcp action=drop comment="Block Open Recursive DNS"`,
-            `add chain=input dst-port=53 in-interface-list=WAN protocol=udp action=drop comment="Block Open Recursive DNS"`,
+            `add chain=input dst-port="53" in-interface-list="WAN" protocol="tcp" action=drop comment="Block Open Recursive DNS"`,
+            `add chain=input dst-port="53" in-interface-list="WAN" protocol="udp" action=drop comment="Block Open Recursive DNS"`,
+        ],
+    };
+
+    return config;
+};
+
+export const RedirectDNS = (): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall nat": [
+            `add chain=dstnat action=redirect protocol=tcp dst-port=53 comment="Redirect DNS"`,
+            `add chain=dstnat action=redirect protocol=udp dst-port=53 comment="Redirect DNS"`,
         ],
     };
 
@@ -185,6 +196,7 @@ export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks
         BlockWANDNS(),
         DOH(),
         FRNDNSFWD(),
+        RedirectDNS(),
     );
 };
 

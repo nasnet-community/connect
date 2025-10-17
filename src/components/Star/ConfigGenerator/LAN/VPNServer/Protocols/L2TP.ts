@@ -269,22 +269,22 @@ export const L2TPServerFirewall = (serverConfigs: L2tpServerConfig[]): RouterCon
         const { IPsec } = serverConfig;
 
         config["/ip firewall filter"].push(
-            `add action=accept chain=input comment="L2TP Server (udp)" dst-port=1701 in-interface-list=Domestic-WAN protocol=udp`,
+            `add action=accept chain=input comment="L2TP Server (udp)" dst-port="1701" in-interface-list="Domestic-WAN" protocol="udp"`,
         );
 
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound L2TP Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=udp dst-port=1701 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="udp" dst-port="1701" \\
+                new-connection-mark="conn-vpn-server" passthrough=yes`,
         );
 
         // Add IPsec firewall rules if IPsec is enabled
         if (IPsec.UseIpsec !== "no") {
             config["/ip firewall filter"].push(
-                `add action=accept chain=input comment="L2TP IPsec ESP" in-interface-list=Domestic-WAN protocol=ipsec-esp`,
-                `add action=accept chain=input comment="L2TP IPsec AH" in-interface-list=Domestic-WAN protocol=ipsec-ah`,
-                `add action=accept chain=input comment="L2TP IPsec UDP 500" dst-port=500 in-interface-list=Domestic-WAN protocol=udp`,
-                `add action=accept chain=input comment="L2TP IPsec UDP 4500" dst-port=4500 in-interface-list=Domestic-WAN protocol=udp`,
+                `add action=accept chain=input comment="L2TP IPsec ESP" in-interface-list="Domestic-WAN" protocol="ipsec-esp"`,
+                `add action=accept chain=input comment="L2TP IPsec AH" in-interface-list="Domestic-WAN" protocol="ipsec-ah"`,
+                `add action=accept chain=input comment="L2TP IPsec UDP 500" dst-port="500" in-interface-list="Domestic-WAN" protocol="udp"`,
+                `add action=accept chain=input comment="L2TP IPsec UDP 4500" dst-port="4500" in-interface-list="Domestic-WAN" protocol="udp"`,
             );
         }
     });
@@ -310,6 +310,11 @@ export const L2tpServerWrapper = ( serverConfig: L2tpServerConfig, users: VSCred
     // Generate L2TP users configuration if users are provided
     if (users.length > 0) {
         configs.push(L2tpServerUsers(serverConfig, users));
+    }
+
+    // Generate L2TP server bindings if users are provided
+    if (users.length > 0) {
+        configs.push(L2TPVSBinding(users, vsNetwork));
     }
 
     // Generate firewall rules

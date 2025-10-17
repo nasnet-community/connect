@@ -405,7 +405,7 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
     config["/ip firewall mangle"].push(
         "",
         `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
-            connection-mark=conn-vpn-server new-routing-mark=to-Domestic passthrough=no`,
+            connection-mark="conn-vpn-server" new-routing-mark="to-Domestic" passthrough=no`,
     );
     // }
 

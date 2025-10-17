@@ -6,7 +6,7 @@ import type { LTESettings, PPPoEConfig, StaticIPConfig } from "~/components/Star
 
 
 // LTE
-export const LTE = (LTESettings: LTESettings): RouterConfig => {
+export const LTE = (name: string, Network: string, LTESettings: LTESettings): RouterConfig => {
     const config: RouterConfig = {
         "/interface lte": [],
         "/interface lte apn": [],
@@ -14,7 +14,7 @@ export const LTE = (LTESettings: LTESettings): RouterConfig => {
     const { apn } = LTESettings;
 
     config["/interface lte"].push(
-        `set [ find default-name=lte1 ] allow-roaming=yes apn-profiles="${apn}" band=""`,
+        `set [ find default-name=lte1 ] allow-roaming=yes apn-profiles="${apn}" band="" comment="${name} to ${Network}"`,
     );
     config["/interface lte apn"].push(
         `add add-default-route=no apn="${apn}" name="${apn}" use-network-apn=yes use-peer-dns=no`,
@@ -30,7 +30,7 @@ export const DHCPClient = ( name: string, Network: string, Interface: string ): 
     };
 
     config["/ip dhcp-client"].push(
-        `add add-default-route=no comment="${name} to ${Network}" interface=${Interface} script=":if (\\$bound=1) do={\\r\\
+        `add add-default-route=no comment="${name} to ${Network}" interface="${Interface}" script=":if (\\$bound=1) do={\\r\\
             \\n:local gw (\\$\\"gateway-address\\" . \\"%\\" . \\$interface)\\r\\
             \\n:local routeCount [/ip route print count-only where comment=\\"Route-to-${Network}-${name}\\"]\\r\\
             \\n:if (\\$routeCount > 0) do={\\r\\

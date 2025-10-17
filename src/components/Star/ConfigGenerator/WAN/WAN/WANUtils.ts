@@ -10,8 +10,8 @@ export const WANIfaceList = ( InterfaceName: string, Network: string ): RouterCo
         "/interface list member": [],
     };
     config["/interface list member"].push(
-        `add interface="${InterfaceName}" list="WAN"`,
-        `add interface="${InterfaceName}" list="${Network}-WAN"`,
+        `add interface="${InterfaceName}" list="WAN" comment="${Network} WAN"`,
+        `add interface="${InterfaceName}" list="${Network}-WAN" comment="${Network} WAN"`,
     );
     return config;
 };

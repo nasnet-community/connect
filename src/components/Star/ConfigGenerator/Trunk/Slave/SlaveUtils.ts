@@ -45,7 +45,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
     };
 
     // BaseNetworks
-    const baseNetworks = subnets?.BaseNetworks;
+    const baseNetworks = subnets?.BaseSubnets;
     if (baseNetworks) {
         if (baseNetworks.Split) {
             config["/interface bridge"].push(`add name=LANBridgeSplit comment="Split"`);
@@ -62,7 +62,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
     }
 
     // ForeignNetworks
-    const foreignNetworks = subnets?.ForeignNetworks;
+    const foreignNetworks = subnets?.ForeignSubnets;
     if (foreignNetworks && foreignNetworks.length > 0) {
         foreignNetworks.forEach((subnetConfig) => {
             const networkName = subnetConfig.name;
@@ -73,7 +73,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
     }
 
     // DomesticNetworks
-    const domesticNetworks = subnets?.DomesticNetworks;
+    const domesticNetworks = subnets?.DomesticSubnets;
     if (domesticNetworks && domesticNetworks.length > 0) {
         domesticNetworks.forEach((subnetConfig) => {
             const networkName = subnetConfig.name;
@@ -84,7 +84,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
     }
 
     // VPNClientNetworks
-    const vpnClient = subnets?.VPNClientNetworks;
+    const vpnClient = subnets?.VPNClientSubnets;
     if (vpnClient) {
         // Wireguard
         if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
@@ -177,7 +177,7 @@ export const createVLANsOnTrunkInterface = ( subnets: Subnets | undefined, trunk
     const configs: RouterConfig[] = [];
 
     // BaseNetworks
-    const baseNetworks = subnets?.BaseNetworks;
+    const baseNetworks = subnets?.BaseSubnets;
     if (baseNetworks) {
         if (baseNetworks.Split?.subnet) {
             const vlanId = extractThirdOctet(baseNetworks.Split.subnet);
@@ -205,7 +205,7 @@ export const createVLANsOnTrunkInterface = ( subnets: Subnets | undefined, trunk
     }
 
     // ForeignNetworks
-    const foreignNetworks = subnets?.ForeignNetworks;
+    const foreignNetworks = subnets?.ForeignSubnets;
     if (foreignNetworks && foreignNetworks.length > 0) {
         foreignNetworks.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
@@ -215,7 +215,7 @@ export const createVLANsOnTrunkInterface = ( subnets: Subnets | undefined, trunk
     }
 
     // DomesticNetworks
-    const domesticNetworks = subnets?.DomesticNetworks;
+    const domesticNetworks = subnets?.DomesticSubnets;
     if (domesticNetworks && domesticNetworks.length > 0) {
         domesticNetworks.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
@@ -225,7 +225,7 @@ export const createVLANsOnTrunkInterface = ( subnets: Subnets | undefined, trunk
     }
 
     // VPNClientNetworks
-    const vpnClient = subnets?.VPNClientNetworks;
+    const vpnClient = subnets?.VPNClientSubnets;
     if (vpnClient) {
         // Wireguard
         if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
@@ -291,7 +291,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
     const configs: RouterConfig[] = [];
 
     // BaseNetworks
-    const baseNetworks = subnets?.BaseNetworks;
+    const baseNetworks = subnets?.BaseSubnets;
     if (baseNetworks) {
         if (baseNetworks.Split?.subnet) {
             const vlanId = extractThirdOctet(baseNetworks.Split.subnet);
@@ -323,7 +323,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
     }
 
     // ForeignNetworks
-    const foreignNetworks = subnets?.ForeignNetworks;
+    const foreignNetworks = subnets?.ForeignSubnets;
     if (foreignNetworks && foreignNetworks.length > 0) {
         foreignNetworks.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
@@ -334,7 +334,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
     }
 
     // DomesticNetworks
-    const domesticNetworks = subnets?.DomesticNetworks;
+    const domesticNetworks = subnets?.DomesticSubnets;
     if (domesticNetworks && domesticNetworks.length > 0) {
         domesticNetworks.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
@@ -345,7 +345,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
     }
 
     // VPNClientNetworks
-    const vpnClient = subnets?.VPNClientNetworks;
+    const vpnClient = subnets?.VPNClientSubnets;
     if (vpnClient) {
         // Wireguard
         if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
@@ -417,7 +417,7 @@ export const createDHCPClientsOnBridges = (subnets?: Subnets): RouterConfig => {
     };
 
     // BaseNetworks
-    const baseNetworks = subnets?.BaseNetworks;
+    const baseNetworks = subnets?.BaseSubnets;
     if (baseNetworks) {
         if (baseNetworks.Split) {
             config["/ip dhcp-client"].push("add interface=LANBridgeSplit");
@@ -434,63 +434,63 @@ export const createDHCPClientsOnBridges = (subnets?: Subnets): RouterConfig => {
     }
 
     // ForeignNetworks
-    const foreignNetworks = subnets?.ForeignNetworks;
+    const foreignNetworks = subnets?.ForeignSubnets;
     if (foreignNetworks && foreignNetworks.length > 0) {
         foreignNetworks.forEach((subnetConfig) => {
-            config["/ip dhcp-client"].push(`add interface=LANBridgeForeign-${subnetConfig.name}`);
+            config["/ip dhcp-client"].push(`add interface="LANBridgeForeign-${subnetConfig.name}"`);
         });
     }
 
     // DomesticNetworks
-    const domesticNetworks = subnets?.DomesticNetworks;
+    const domesticNetworks = subnets?.DomesticSubnets;
     if (domesticNetworks && domesticNetworks.length > 0) {
         domesticNetworks.forEach((subnetConfig) => {
-            config["/ip dhcp-client"].push(`add interface=LANBridgeDomestic-${subnetConfig.name}`);
+            config["/ip dhcp-client"].push(`add interface="LANBridgeDomestic-${subnetConfig.name}"`);
         });
     }
 
     // VPNClientNetworks
-    const vpnClient = subnets?.VPNClientNetworks;
+    const vpnClient = subnets?.VPNClientSubnets;
     if (vpnClient) {
         // Wireguard
         if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
             vpnClient.Wireguard.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-WG-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-WG-Client-${subnetConfig.name}"`);
             });
         }
 
         // OpenVPN
         if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
             vpnClient.OpenVPN.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-OVPN-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-OVPN-Client-${subnetConfig.name}"`);
             });
         }
 
         // L2TP
         if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
             vpnClient.L2TP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-L2TP-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-L2TP-Client-${subnetConfig.name}"`);
             });
         }
 
         // PPTP
         if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
             vpnClient.PPTP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-PPTP-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-PPTP-Client-${subnetConfig.name}"`);
             });
         }
 
         // SSTP
         if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
             vpnClient.SSTP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-SSTP-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-SSTP-Client-${subnetConfig.name}"`);
             });
         }
 
         // IKev2
         if (vpnClient.IKev2 && vpnClient.IKev2.length > 0) {
             vpnClient.IKev2.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface=LANBridgeVPN-IKEv2-Client-${subnetConfig.name}`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-IKEv2-Client-${subnetConfig.name}"`);
             });
         }
     }
@@ -573,9 +573,9 @@ export const addSlaveInterfacesToBridge = ( routerModels: RouterModels[], subnet
 
     // Determine target bridge name (prefer Split, fallback to VPN)
     let targetBridge: string | null = null;
-    if (subnets?.BaseNetworks.Split) {
+    if (subnets?.BaseSubnets?.Split) {
         targetBridge = "LANBridgeSplit";
-    } else if (subnets?.BaseNetworks.VPN) {
+    } else if (subnets?.BaseSubnets?.VPN) {
         targetBridge = "LANBridgeVPN";
     }
 
@@ -667,9 +667,9 @@ export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], route
 
     // Determine network target (prefer Split, fallback to SingleVPN)
     let networkTarget: "Split" | "SingleVPN" | null = null;
-    if (subnets?.BaseNetworks.Split) {
+    if (subnets?.BaseSubnets?.Split) {
         networkTarget = "Split";
-    } else if (subnets?.BaseNetworks.VPN) {
+    } else if (subnets?.BaseSubnets?.VPN) {
         networkTarget = "SingleVPN";
     }
 

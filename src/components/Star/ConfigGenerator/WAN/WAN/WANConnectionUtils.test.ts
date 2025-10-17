@@ -26,11 +26,12 @@ describe("WANConnectionUtils Module", () => {
             const result = testWithOutput(
                 "LTE",
                 "Configure LTE with basic APN",
-                { lteSettings },
-                () => LTE(lteSettings),
+                { name: "WAN-1", Network: "Foreign", lteSettings },
+                () => LTE("WAN-1", "Foreign", lteSettings),
             );
 
             validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
+            expect(result["/interface lte"][0]).toContain('comment="WAN-1 to Foreign"');
         });
 
         it("should configure LTE with custom APN", () => {
@@ -41,11 +42,12 @@ describe("WANConnectionUtils Module", () => {
             const result = testWithOutput(
                 "LTE",
                 "Configure LTE with custom APN",
-                { lteSettings },
-                () => LTE(lteSettings),
+                { name: "WAN-2", Network: "Domestic", lteSettings },
+                () => LTE("WAN-2", "Domestic", lteSettings),
             );
 
             validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
+            expect(result["/interface lte"][0]).toContain('comment="WAN-2 to Domestic"');
         });
 
         it("should configure LTE with enterprise APN", () => {
@@ -56,11 +58,12 @@ describe("WANConnectionUtils Module", () => {
             const result = testWithOutput(
                 "LTE",
                 "Configure LTE with enterprise APN",
-                { lteSettings },
-                () => LTE(lteSettings),
+                { name: "WAN-LTE", Network: "Foreign", lteSettings },
+                () => LTE("WAN-LTE", "Foreign", lteSettings),
             );
 
             validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
+            expect(result["/interface lte"][0]).toContain('comment="WAN-LTE to Foreign"');
             expect(result["/interface lte apn"][0]).toContain("enterprise.apn.carrier.com");
         });
     });

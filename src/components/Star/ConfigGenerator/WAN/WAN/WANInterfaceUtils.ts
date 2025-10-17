@@ -4,6 +4,7 @@ import type {
     WANLinkConfig,
     WANLink,
     WANLinks,
+    LTE,
 } from "~/components/Star/StarContext";
 import type { Band } from "~/components/Star/StarContext";
 import { StationMode } from "~/components/Star/ConfigGenerator";
@@ -76,6 +77,10 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
             if (wanConfig.InterfaceConfig.WirelessCredentials) {
                 return;
             }
+            // Skip LTE interfaces - they don't need comments
+            if (interfaceName.toLowerCase().startsWith("lte")) {
+                return;
+            }
             collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Foreign");
         });
     }
@@ -86,6 +91,10 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
             const interfaceName = wanConfig.InterfaceConfig.InterfaceName;
             // Skip wireless interfaces with credentials - they already get comments in wireless config
             if (wanConfig.InterfaceConfig.WirelessCredentials) {
+                return;
+            }
+            // Skip LTE interfaces - they don't need comments
+            if (interfaceName.toLowerCase().startsWith("lte")) {
                 return;
             }
             collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Domestic");
@@ -180,9 +189,6 @@ export const WirelessWAN = ( SSID: string, password: string, band: Band, name?: 
 
     return stationConfig;
 };
-
-
-
 
 export const requiresAutoMACVLAN = (interfaceName: string): boolean => {
     const isWireless =
@@ -292,3 +298,64 @@ export const GetWANInterfaces = (WANLinks: WANLink): string[] => {
 
     return interfaces;
 };
+
+export const CheckLTEInterface = (WANLinks: WANLinks, availableLTEInterfaces: LTE[]): RouterConfig => {
+    const config: RouterConfig = {
+        "/tool sms": [],
+        "/interface lte": [],
+    };
+    
+    // Return empty config if no LTE interfaces available
+    if (availableLTEInterfaces.length === 0) {
+        return {};
+    }
+    
+    // Collect used LTE interfaces from WANLinks
+    const usedLTEInterfaces = new Set<string>();
+    
+    // Check Foreign WANConfigs
+    if (WANLinks.Foreign?.WANConfigs) {
+        WANLinks.Foreign.WANConfigs.forEach((wanConfig) => {
+            const interfaceName = wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
+            if (interfaceName.startsWith("lte")) {
+                usedLTEInterfaces.add(wanConfig.InterfaceConfig.InterfaceName);
+            }
+        });
+    }
+    
+    // Check Domestic WANConfigs
+    if (WANLinks.Domestic?.WANConfigs) {
+        WANLinks.Domestic.WANConfigs.forEach((wanConfig) => {
+            const interfaceName = wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
+            if (interfaceName.startsWith("lte")) {
+                usedLTEInterfaces.add(wanConfig.InterfaceConfig.InterfaceName);
+            }
+        });
+    }
+    
+    // Enable SMS for used LTE interfaces
+    usedLTEInterfaces.forEach((lteInterface) => {
+        config["/tool sms"].push(
+            `set port=${lteInterface} receive-enabled=yes`
+        );
+    });
+    
+    // Disable unused LTE interfaces from available interfaces
+    availableLTEInterfaces.forEach((lteInterface) => {
+        if (!usedLTEInterfaces.has(lteInterface)) {
+            config["/interface lte"].push(
+                `set ${lteInterface} disabled=yes`
+            );
+        }
+    });
+    
+    // Remove empty arrays
+    if (config["/tool sms"].length === 0) {
+        delete config["/tool sms"];
+    }
+    if (config["/interface lte"].length === 0) {
+        delete config["/interface lte"];
+    }
+    
+    return config;
+}

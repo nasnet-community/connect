@@ -24,7 +24,8 @@ export const IKeV2Profile = ( config: Ike2ClientConfig, profileName: string ): s
     const profileParams = [
         `name=${profileName}`,
         `enc-algorithm=${config.EncAlgorithm?.join(",") || "aes-256,aes-192,aes-128"}`,
-        `hash-algorithm=${config.HashAlgorithm?.join(",") || "sha256,sha1"}`,
+        // `hash-algorithm=${config.HashAlgorithm?.join(",") || "sha256,sha1"}`,
+        `hash-algorithm=sha1`,
         `dh-group=${config.DhGroup?.join(",") || "modp2048,modp1536"}`,
         `lifetime=${config.Lifetime || "8h"}`,
         `nat-traversal=${config.NatTraversal !== false ? "yes" : "no"}`,
@@ -88,7 +89,7 @@ export const IKeV2Peer = ( config: Ike2ClientConfig, peerName: string, profileNa
 export const IKeV2Identity = ( config: Ike2ClientConfig, peerName: string, modeConfigName: string, policyGroupName: string ): string => {
     const identityParams = [
         `peer=${peerName}`,
-        `auth-method=${config.AuthMethod}`,
+        `auth-method=pre-shared-key`,
     ];
 
     switch (config.AuthMethod) {
@@ -153,14 +154,14 @@ export const IKeV2Identity = ( config: Ike2ClientConfig, peerName: string, modeC
     identityParams.push(
         `generate-policy=${config.GeneratePolicy || "port-strict"}`,
     );
-    identityParams.push(`policy-template-group=${policyGroupName}`);
+    identityParams.push(`policy-template-group="${policyGroupName}-client"`);
 
     return `add ${identityParams.join(" ")}`;
 };
 
 export const IKeV2Policy = ( config: Ike2ClientConfig, policyGroupName: string, proposalName: string ): string => {
     const policyParams = [
-        `group=${policyGroupName}`,
+        `group="${policyGroupName}-client"`,
         "template=yes",
         `src-address=${config.PolicySrcAddress || "0.0.0.0/0"}`,
         `dst-address=${config.PolicyDstAddress || "0.0.0.0/0"}`,
@@ -177,14 +178,14 @@ export const IKeV2ModeConfig = ( config: Ike2ClientConfig, modeConfigName: strin
         return null;
     }
 
-    const modeConfigParams = [`name=${modeConfigName}`, "responder=no"];
+    const modeConfigParams = [`name="${modeConfigName}"`, "responder=no"];
 
     if (config.SrcAddressList) {
-        modeConfigParams.push(`src-address-list=${config.SrcAddressList}`);
+        modeConfigParams.push(`src-address-list="${config.SrcAddressList}"`);
     }
 
     if (config.ConnectionMark) {
-        modeConfigParams.push(`connection-mark=${config.ConnectionMark}`);
+        modeConfigParams.push(`connection-mark="${config.ConnectionMark}"`);
     }
 
     return `add ${modeConfigParams.join(" ")}`;
@@ -219,7 +220,7 @@ export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
     );
 
     // Create Policy Group
-    routerConfig["/ip ipsec policy group"].push(`add name=${policyGroupName}`);
+    routerConfig["/ip ipsec policy group"].push(`add name="${policyGroupName}-client"`);
 
     // Create Mode Config (for road warrior setups)
     const modeConfigCommand = IKeV2ModeConfig(config, modeConfigName);
@@ -259,6 +260,10 @@ export const IKeV2ClientWrapper = ( configs: Ike2ClientConfig[] ): RouterConfig 
             endpointAddress,
             ikev2Config.Name,
         );
+
+        // Remove /interface list member from base config
+        delete baseConfig["/interface list member"];
+        delete baseConfig["/ip route"];
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));
     });

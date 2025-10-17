@@ -1,5 +1,5 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { WANState, Networks, Subnets } from "~/components/Star/StarContext";
+import type { WANState, Networks, Subnets, LTE } from "~/components/Star/StarContext";
 import { VPNClientWrapper } from "~/components/Star/ConfigGenerator";
 import { generateWANLinksConfig } from "~/components/Star/ConfigGenerator";
 import { MainTableRoute } from "~/components/Star/ConfigGenerator";
@@ -7,13 +7,13 @@ import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import { DNS } from "~/components/Star/ConfigGenerator";
 
 
-export const WANCG = (WANState: WANState, networks: Networks, subnets?: Subnets): RouterConfig => {
+export const WANCG = (WANState: WANState, networks: Networks, subnets?: Subnets, availableLTEInterfaces?: LTE[]): RouterConfig => {
     const { WANLink, VPNClient } = WANState;
 
     const configs: RouterConfig[] = [];
 
     // 1. Generate WAN Links Configuration (interfaces, connections, routes)
-    configs.push(generateWANLinksConfig(WANLink));
+    configs.push(generateWANLinksConfig(WANLink, availableLTEInterfaces));
 
     // 2. Generate VPN Client Configuration (all VPN protocols)
     // Pass WANLink to calculate proper check IP offset

@@ -213,13 +213,13 @@ export const PPTPServerFirewall = (serverConfigs: PptpServerConfig[]): RouterCon
 
     serverConfigs.forEach(() => {
         config["/ip firewall filter"].push(
-            `add action=accept chain=input comment="PPTP Server (tcp)" dst-port=1723 in-interface-list=Domestic-WAN protocol=tcp`,
+            `add action=accept chain=input comment="PPTP Server (tcp)" dst-port="1723" in-interface-list="Domestic-WAN" protocol="tcp"`,
         );
 
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=tcp dst-port=1723 \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="tcp" dst-port="1723" \\
+                new-connection-mark="conn-vpn-server" passthrough=yes`,
         );
     });
 
@@ -244,6 +244,11 @@ export const PptpServerWrapper = (serverConfig: PptpServerConfig, users: VSCrede
     // Generate PPTP users configuration if users are provided
     if (users.length > 0) {
         configs.push(PptpServerUsers(serverConfig, users));
+    }
+
+    // Generate PPTP server bindings if users are provided
+    if (users.length > 0) {
+        configs.push(PPTPVSBinding(users, vsNetwork));
     }
 
     // Generate firewall rules

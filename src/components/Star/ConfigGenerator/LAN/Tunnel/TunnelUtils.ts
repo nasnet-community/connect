@@ -1,4 +1,5 @@
 import { type RouterConfig, CommandShortner } from "~/components/Star/ConfigGenerator";
+import { SubnetToFirstUsableIP } from "~/components/Star/ConfigGenerator/utils/Subnet";
 import type {
     IpipTunnelConfig,
     EoipTunnelConfig,
@@ -108,7 +109,13 @@ export const extractSubnetPrefix = (subnet: string): string => {
 // Helper function to build tunnel IP address with subnet prefix
 export const buildTunnelIPAddress = ( localAddress: string, subnet: SubnetConfig ): string => {
     const prefix = extractSubnetPrefix(subnet.subnet);
-    return `${localAddress}/${prefix}`;
+    
+    // If localAddress is empty or undefined, use the first usable IP from the subnet
+    const ip = localAddress && localAddress.trim() !== "" 
+        ? localAddress 
+        : SubnetToFirstUsableIP(subnet.subnet);
+    
+    return `${ip}/${prefix}`;
 };
 
 // Helper function to handle IPsec and fast path logic (shared by IPIP, EoIP, GRE)
@@ -162,18 +169,18 @@ export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
         "/ip firewall mangle": [],
     };
 
-    // Add comment header
-    config["/ip firewall mangle"].push(
-        "# --- Tunnel Server Inbound Traffic Marking ---",
-        "# Mark inbound tunnel connections and route outbound replies",
-    );
+    // // Add comment header
+    // config["/ip firewall mangle"].push(
+    //     "# --- Tunnel Server Inbound Traffic Marking ---",
+    //     "# Mark inbound tunnel connections and route outbound replies",
+    // );
 
     // Check for IPIP tunnels - single rule for all IPIP tunnels (protocol-based)
     if (tunnel.IPIP && tunnel.IPIP.length > 0) {
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound IPIP Tunnel Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=ipip \\
-                new-connection-mark=conn-tunnel-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="ipip" \\
+                new-connection-mark="conn-tunnel-server" passthrough=yes`,
         );
     }
 
@@ -184,8 +191,8 @@ export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
     ) {
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound GRE/EoIP Tunnel Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=gre \\
-                new-connection-mark=conn-tunnel-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="gre" \\
+                new-connection-mark="conn-tunnel-server" passthrough=yes`,
         );
     }
 
@@ -198,8 +205,8 @@ export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
 
             config["/ip firewall mangle"].push(
                 `add action=mark-connection chain=input comment="Mark Inbound VXLAN Tunnel Connections (${interfaceName}, VNI ${vni}, Port ${port})" \\
-                    connection-state=new in-interface-list=Domestic-WAN protocol=udp dst-port=${port} \\
-                    new-connection-mark=conn-tunnel-server passthrough=yes`,
+                    connection-state=new in-interface-list="Domestic-WAN" protocol="udp" dst-port="${port}" \\
+                    new-connection-mark="conn-tunnel-server" passthrough=yes`,
             );
         });
     }
@@ -214,9 +221,9 @@ export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
     if (hasTunnels) {
         config["/ip firewall mangle"].push(
             "",
-            "# --- Route Outbound Tunnel Replies ---",
+            // "# --- Route Outbound Tunnel Replies ---",
             `add action=mark-routing chain=output comment="Route Tunnel Server Replies via Domestic WAN" \\
-                connection-mark=conn-tunnel-server new-routing-mark=to-Domestic passthrough=no`,
+                connection-mark="conn-tunnel-server" new-routing-mark="to-Domestic" passthrough=no`,
         );
     }
 

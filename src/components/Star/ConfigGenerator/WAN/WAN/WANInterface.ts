@@ -3,11 +3,12 @@ import type {
     WANLinkConfig,
     WANLinks,
     WANLink,
+    LTE as LTEType,
 } from "~/components/Star/StarContext";
 import { mergeRouterConfigs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import { DHCPClient, PPPOEClient, StaticIP, LTE } from "~/components/Star/ConfigGenerator";
 import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "~/components/Star/ConfigGenerator";
-import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment } from "~/components/Star/ConfigGenerator";
+import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment, CheckLTEInterface } from "~/components/Star/ConfigGenerator";
 import { WANIfaceList, Route } from "~/components/Star/ConfigGenerator";
 import {
     convertWANLinkToMultiWAN,
@@ -61,7 +62,7 @@ export const generateConnectionConfig = ( WANLinkConfig: WANLinkConfig, Network:
     }
 
     if (ConnectionConfig.lteSettings) {
-        const lteConfig = LTE(ConnectionConfig.lteSettings);
+        const lteConfig = LTE(name, Network, ConnectionConfig.lteSettings);
         config = mergeRouterConfigs(config, lteConfig);
     }
 
@@ -294,7 +295,7 @@ export const DFMultiLink = ( wanLink: WANLink, networkType: "Foreign" | "Domesti
     return mergeMultipleConfigs(...configs);
 }
 
-export const generateWANLinksConfig = (wanLinks: WANLinks): RouterConfig => {
+export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterfaces?: LTEType[]): RouterConfig => {
     let config: RouterConfig = {};
     const { Foreign, Domestic } = wanLinks;
 
@@ -335,6 +336,12 @@ export const generateWANLinksConfig = (wanLinks: WANLinks): RouterConfig => {
     // Add interface comments for all physical WAN interfaces
     const interfaceCommentConfig = InterfaceComment(wanLinks);
     config = mergeRouterConfigs(config, interfaceCommentConfig);
+
+    // Add LTE interface SMS configuration
+    if (availableLTEInterfaces && availableLTEInterfaces.length > 0) {
+        const lteConfig = CheckLTEInterface(wanLinks, availableLTEInterfaces);
+        config = mergeRouterConfigs(config, lteConfig);
+    }
 
     return config;
 };

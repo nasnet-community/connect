@@ -43,7 +43,7 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig => {
 
     const interfaceName = GenerateVCInterfaceName(Name, "PPTP");
 
-    let command = `add name="${interfaceName}" connect-to="${ConnectTo}"`;
+    let command = `add name="${interfaceName}" connect-to="${ConnectTo}" comment="${Name} PPTP"`;
     command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
 
     if (AuthMethod && AuthMethod.length > 0) {

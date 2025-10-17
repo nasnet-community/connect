@@ -1,4 +1,4 @@
-import type { VPNServer, VPNServerNetworksSubnets } from "~/components/Star/StarContext";
+import type { VPNServer, VPNServerSubnets } from "~/components/Star/StarContext";
 
 import { 
     type RouterConfig,
@@ -131,7 +131,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
 };
 
 
-export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServerNetworksSubnets ): RouterConfig => {
+export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServerSubnets ): RouterConfig => {
     const configs: RouterConfig[] = [];
     const enabledServers: string[] = [];
 

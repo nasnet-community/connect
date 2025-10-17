@@ -95,7 +95,7 @@ export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subne
     }
 
     if (Ciphers) {
-        serverParams.push(`ciphers=ciphers=aes256-sha,aes256-gcm-sha384`);
+        serverParams.push(`ciphers=aes256-sha,aes256-gcm-sha384`);
     }
 
     if (VerifyClientCertificate !== undefined) {
@@ -249,13 +249,13 @@ export const SSTPServerFirewall = (serverConfigs: SstpServerConfig[]): RouterCon
         const { Port = 4443 } = serverConfig;
 
         config["/ip firewall filter"].push(
-            `add action=accept chain=input comment="SSTP Server (tcp)" dst-port=${Port} in-interface-list=Domestic-WAN protocol=tcp`,
+            `add action=accept chain=input comment="SSTP Server (tcp)" dst-port="${Port}" in-interface-list="Domestic-WAN" protocol="tcp"`,
         );
 
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound SSTP Connections" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=tcp dst-port=${Port} \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="tcp" dst-port="${Port}" \\
+                new-connection-mark="conn-vpn-server" passthrough=yes`,
         );
     });
 
@@ -280,6 +280,11 @@ export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCred
     // Generate SSTP users configuration if users are provided
     if (users.length > 0) {
         configs.push(SstpServerUsers(serverConfig, users));
+    }
+
+    // Generate SSTP server bindings if users are provided
+    if (users.length > 0) {
+        configs.push(SSTPVSBinding(users, vsNetwork));
     }
 
     // Generate firewall rules

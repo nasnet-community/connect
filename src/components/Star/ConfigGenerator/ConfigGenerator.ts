@@ -1,4 +1,5 @@
 import type { StarState } from "~/components/Star/StarContext/StarContext";
+import type { LTE } from "~/components/Star/StarContext";
 import { 
     ChooseCG,
     WANCG,
@@ -27,9 +28,14 @@ export const ConfigGenerator = (state: StarState): string => {
         "/interface ovpn-client": [],
         "/interface l2tp-client": [],
         "/interface ethernet": [],
+        
         "/interface veth": [],
         "/interface wireguard": [],
         "/interface wireguard peers": [],
+        "/interface ipip": [],
+        "/interface eoip": [],
+        "/interface gre": [],
+        "/interface vxlan": [],
         "/interface list": [],
         "/interface lte apn": [],
         "/interface lte": [],
@@ -113,7 +119,16 @@ export const ConfigGenerator = (state: StarState): string => {
     try {
         // Generate configurations from each module
         const chooseConfig = ChooseCG();
-        const wanConfig = WANCG(state.WAN, state.Choose.Networks, state.LAN.Subnets);
+        
+        // Extract available LTE interfaces from RouterModels
+        const availableLTEInterfaces: LTE[] = [];
+        state.Choose.RouterModels.forEach(routerModel => {
+            if (routerModel.Interfaces.Interfaces.lte) {
+                availableLTEInterfaces.push(...routerModel.Interfaces.Interfaces.lte);
+            }
+        });
+        
+        const wanConfig = WANCG(state.WAN, state.Choose.Networks, state.LAN.Subnets, availableLTEInterfaces);
         const lanConfig = LANCG(state);
         const extraConfig = ExtraCG(
             state.ExtraConfig,
@@ -143,7 +158,7 @@ export const ConfigGenerator = (state: StarState): string => {
 
         const ELConfig = formatConfig(removedEmptyArrays);
         const formattedConfigEL = removeEmptyLines(ELConfig);
-        return `${formattedConfigEL} \n\n:delay 60 \n\n/system reboot`;
+        return `\n\n:delay 30 \n\n ${formattedConfigEL} \n\n:delay 20 \n\n/system reboot`;
     } catch (error) {
         console.error("Error generating config:", error);
         return "";
