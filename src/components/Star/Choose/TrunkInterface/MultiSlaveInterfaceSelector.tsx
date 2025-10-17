@@ -2,7 +2,7 @@ import { $, component$, useContext, useSignal, type PropFunction } from "@builde
 import { LuCable, LuWifi, LuRouter, LuLink } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
-import type { TrunkInterfaceType, OccupiedInterface } from "../../StarContext/ChooseType";
+import type { TrunkInterfaceType, OccupiedInterface, RouterModels } from "../../StarContext/ChooseType";
 import {
   addOccupiedInterface,
 } from "../../utils/InterfaceManagementUtils";
@@ -16,7 +16,6 @@ interface SlaveInterfaceMapping {
   masterInterface: string;
   connectionType: TrunkInterfaceType;
 }
-import { getRouterByModel } from "../RouterModel/Constants";
 
 interface MultiSlaveInterfaceSelectorProps {
   onComplete$?: PropFunction<() => void>;
@@ -31,23 +30,19 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
   
   // Get master router
   const masterRouter = routerModels.find(rm => rm.isMaster);
-  const masterRouterData = masterRouter ? getRouterByModel(masterRouter.Model) : null;
   
   // Get slave routers
   const slaveRouters = routerModels.filter(rm => !rm.isMaster);
   
-  // Get available interfaces for a router model
-  const getAvailableInterfaces = (model: string, connectionType: TrunkInterfaceType, _currentInterface?: string) => {
-    const routerData = getRouterByModel(model);
-    if (!routerData) return [];
-
+  // Get available interfaces for a router model using RouterModels.Interfaces
+  const getAvailableInterfaces = (routerModel: RouterModels, connectionType: TrunkInterfaceType) => {
     let interfaces: string[] = [];
     if (connectionType === "wireless") {
-      interfaces = routerData.interfaces.Interfaces.wireless || [];
+      interfaces = routerModel.Interfaces.Interfaces.wireless || [];
     } else {
       interfaces = [
-        ...(routerData.interfaces.Interfaces.ethernet || []),
-        ...(routerData.interfaces.Interfaces.sfp || []),
+        ...(routerModel.Interfaces.Interfaces.ethernet || []),
+        ...(routerModel.Interfaces.Interfaces.sfp || []),
       ];
     }
 
@@ -229,7 +224,7 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
       </div>
       
       {/* Master Router Info */}
-      {masterRouter && masterRouterData && (
+      {masterRouter && (
         <div class="bg-surface/50 dark:bg-surface-dark/50 mx-auto max-w-4xl rounded-xl p-6">
           <div class="mb-4 flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/15 dark:bg-primary-500/20">
@@ -252,9 +247,9 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
             </p>
             <div class="flex flex-wrap gap-2">
               {[...new Set([
-                ...(masterRouterData.interfaces.Interfaces.ethernet || []),
-                ...(masterRouterData.interfaces.Interfaces.wireless || []),
-                ...(masterRouterData.interfaces.Interfaces.sfp || []),
+                ...(masterRouter.Interfaces.Interfaces.ethernet || []),
+                ...(masterRouter.Interfaces.Interfaces.wireless || []),
+                ...(masterRouter.Interfaces.Interfaces.sfp || []),
               ])].map(intf => {
                 const usageCount = getUsedMasterInterfaces().filter(i => i === intf).length;
                 return (
@@ -280,11 +275,8 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
       {/* Slave Router Configurations */}
       <div class="mx-auto max-w-4xl space-y-6">
         {slaveRouters.map((slaveRouter, index) => {
-          const slaveRouterData = getRouterByModel(slaveRouter.Model);
           const currentMapping = getSlaveMapping(index);
           const connectionType = currentMapping?.connectionType || "wired";
-          
-          if (!slaveRouterData) return null;
           
           return (
             <div
@@ -373,7 +365,7 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
                       class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                     >
                       <option value="">{$localize`Select interface...`}</option>
-                      {masterRouter && getAvailableInterfaces(masterRouter.Model, connectionType, currentMapping?.masterInterface).map(intf => {
+                      {masterRouter && getAvailableInterfaces(masterRouter, connectionType).map(intf => {
                         const isUsed = getUsedMasterInterfaces().includes(intf) &&
                                       currentMapping?.masterInterface !== intf;
 
@@ -405,7 +397,7 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
                       class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                     >
                       <option value="">{$localize`Select interface...`}</option>
-                      {getAvailableInterfaces(slaveRouter.Model, connectionType, currentMapping?.slaveInterface).map(intf => {
+                      {getAvailableInterfaces(slaveRouter, connectionType).map(intf => {
                         return (
                           <option
                             key={intf}

@@ -1,12 +1,13 @@
 import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
-import { LuUsers, LuLink } from "@qwikest/icons/lucide";
+import { LuUsers, LuLink, LuPlus } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { getSlaveRouters, type RouterData } from "./Constants";
-import { type RouterInterfaces } from "../../StarContext/ChooseType";
+import { type RouterInterfaces, type CPUArch } from "../../StarContext/ChooseType";
 import { ClassyRouterCard } from "./ClassyRouterCard";
 import { ClassyTabs } from "./ClassyTabs";
 import { RouterDetailsModal } from "./RouterDetailsModal";
+import { CustomRouterModal } from "./CustomRouterModal";
 import { categorizeRouters } from "./RouterCategories";
 
 interface SlaveRouterModelProps {
@@ -27,8 +28,40 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
   const slaveModels = slaveRouters.map(rm => rm.Model);
   const availableSlaveRouters = getSlaveRouters();
   
+  // Get custom routers from context (both master and slaves)
+  const customRouters = starContext.state.Choose.RouterModels
+    .filter((rm) => !availableSlaveRouters.some((r) => r.model === rm.Model))
+    .map((rm) => {
+      // Convert back to RouterData format for display
+      return {
+        model: rm.Model,
+        title: rm.Model,
+        description: rm.isCHR ? $localize`Custom Cloud Hosted Router` : $localize`Custom Router`,
+        icon: "router",
+        specs: {
+          CPU: rm.cpuArch || "Custom",
+          RAM: "N/A",
+          Storage: "N/A",
+          Ports: "Custom",
+          "Wi-Fi": "Custom",
+          Speed: "Custom",
+        },
+        features: [],
+        isWireless: !!rm.Interfaces.Interfaces.wireless?.length,
+        isLTE: !!rm.Interfaces.Interfaces.lte?.length,
+        isSFP: !!rm.Interfaces.Interfaces.sfp?.length,
+        interfaces: rm.Interfaces,
+        canBeMaster: true,
+        canBeSlave: true,
+        images: ["/images/routers/placeholder.png"],
+      } as RouterData;
+    });
+  
+  // Merge custom and predefined routers
+  const allSlaveRouters = [...customRouters, ...availableSlaveRouters];
+  
   // Categorize routers by family
-  const routerCategories = categorizeRouters(availableSlaveRouters);
+  const routerCategories = categorizeRouters(allSlaveRouters);
   
   // Tab state
   const activeTab = useSignal<string>(routerCategories[0]?.id || "hAP");
@@ -36,9 +69,12 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
   // Modal state
   const isModalOpen = useSignal(false);
   const selectedRouter = useSignal<RouterData | null>(null);
+  
+  // Custom router modal state
+  const isCustomRouterModalOpen = useSignal(false);
 
   const handleSelect = $((model: string) => {
-    const selectedRouter = availableSlaveRouters.find((r) => r.model === model);
+    const selectedRouter = allSlaveRouters.find((r) => r.model === model);
     if (!selectedRouter) return;
 
     // Use the full RouterInterfaces structure from the selected router
@@ -55,6 +91,11 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
     // Check if this model is already selected as slave
     const isAlreadySelected = slaveRouters.some((rm) => rm.Model === model);
     
+    // Check if this is a custom router
+    const existingCustomRouterModel = starContext.state.Choose.RouterModels.find(
+      (rm) => rm.Model === model
+    );
+    
     let updatedModels = [...starContext.state.Choose.RouterModels];
     
     if (isAlreadySelected) {
@@ -68,6 +109,8 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
         isMaster: false,
         Model: model as any, // Cast to RouterModel type
         Interfaces: interfaces,
+        isCHR: existingCustomRouterModel?.isCHR,
+        cpuArch: existingCustomRouterModel?.cpuArch,
       });
     }
     
@@ -95,6 +138,37 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
     if (!isAlreadySelected || updatedModels.filter(rm => !rm.isMaster).length > 0) {
       props.onComplete$?.();
     }
+  });
+
+  const handleSaveCustomRouter = $((router: RouterData, isCHR: boolean, cpuArch: string) => {
+    // Track custom router creation
+    track("custom_slave_router_created", {
+      router_name: router.model,
+      is_chr: isCHR,
+      cpu_arch: cpuArch,
+      step: "choose",
+    });
+
+    // Add the custom router as a slave
+    const newRouterModel = {
+      isMaster: false,
+      Model: router.model as any,
+      Interfaces: router.interfaces,
+      isCHR,
+      cpuArch: cpuArch as CPUArch,
+    };
+
+    // Update the context with the new custom router
+    const updatedModels = [...starContext.state.Choose.RouterModels, newRouterModel];
+    starContext.updateChoose$({
+      RouterModels: updatedModels,
+    });
+
+    // Close the modal
+    isCustomRouterModalOpen.value = false;
+
+    // Complete the step
+    props.onComplete$?.();
   });
 
   // Get routers for active tab
@@ -153,6 +227,41 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
         {/* Elegant Router Cards Grid */}
         <div class="w-full">
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 place-items-center max-w-full mx-auto">
+            {/* Custom Router Card - Always shown first */}
+            <div class="w-full">
+              <div
+                onClick$={() => {
+                  isCustomRouterModalOpen.value = true;
+                }}
+                class="group relative h-full min-h-[320px] cursor-pointer transition-all duration-300 ease-out hover:scale-105"
+              >
+                <div class="relative h-full rounded-3xl overflow-visible backdrop-blur-xl border-2 border-dashed border-warning-400/50 hover:border-warning-500 bg-gradient-to-br from-warning-50/20 via-primary-50/20 to-warning-100/20 dark:from-warning-900/20 dark:via-primary-900/20 dark:to-warning-800/20 hover:shadow-2xl hover:shadow-warning-500/20 transition-all duration-500">
+                  <div class="relative h-full flex flex-col items-center justify-center p-8 space-y-6">
+                    <div class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-warning-400/20 to-primary-400/20 group-hover:from-warning-500/30 group-hover:to-primary-500/30 transition-all duration-300">
+                      <LuPlus class="h-12 w-12 text-warning-500 group-hover:text-warning-600 dark:text-warning-400 transition-colors" />
+                    </div>
+                    <div class="text-center space-y-2">
+                      <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {$localize`Custom Slave Router`}
+                      </h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+                        {$localize`Add a custom slave router with specific interfaces`}
+                      </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                      <span class="px-3 py-1 rounded-full bg-warning-500/10 text-warning-700 dark:text-warning-300 text-xs font-medium">
+                        {$localize`Flexible`}
+                      </span>
+                      <span class="px-3 py-1 rounded-full bg-primary-500/10 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                        {$localize`CHR Support`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Regular Router Cards */}
             {activeRouters.map((router, _index) => {
               const isSelected = slaveModels.includes(router.model as any);
               const isMasterRouter = router.model === masterRouter?.Model;
@@ -187,6 +296,16 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
             isModalOpen.value = false;
             selectedRouter.value = null;
           }}
+        />
+
+        {/* Custom Router Modal */}
+        <CustomRouterModal
+          isOpen={isCustomRouterModalOpen.value}
+          onClose$={() => {
+            isCustomRouterModalOpen.value = false;
+          }}
+          onSave$={handleSaveCustomRouter}
+          _existingRouters={allSlaveRouters}
         />
         </div>
       </div>

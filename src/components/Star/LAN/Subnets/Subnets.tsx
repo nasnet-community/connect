@@ -187,12 +187,12 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         
         // Determine protocol based on Networks configuration
         let protocol = '';
-        let protocolIndex = 0;
+        let _protocolIndex = 0;
         
         if (networks?.VPNClientNetworks?.Wireguard?.length) {
           if (vpnClientIndex <= networks.VPNClientNetworks.Wireguard.length) {
             protocol = 'Wireguard';
-            protocolIndex = vpnClientIndex - 1;
+            _protocolIndex = vpnClientIndex - 1;
           }
         }
         let currentCount = networks?.VPNClientNetworks?.Wireguard?.length || 0;
@@ -200,7 +200,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         if (!protocol && networks?.VPNClientNetworks?.OpenVPN?.length) {
           if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.OpenVPN.length) {
             protocol = 'OpenVPN';
-            protocolIndex = vpnClientIndex - currentCount - 1;
+            _protocolIndex = vpnClientIndex - currentCount - 1;
           }
           currentCount += networks.VPNClientNetworks.OpenVPN.length;
         }
@@ -208,7 +208,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         if (!protocol && networks?.VPNClientNetworks?.L2TP?.length) {
           if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.L2TP.length) {
             protocol = 'L2TP';
-            protocolIndex = vpnClientIndex - currentCount - 1;
+            _protocolIndex = vpnClientIndex - currentCount - 1;
           }
           currentCount += networks.VPNClientNetworks.L2TP.length;
         }
@@ -216,7 +216,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         if (!protocol && networks?.VPNClientNetworks?.PPTP?.length) {
           if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.PPTP.length) {
             protocol = 'PPTP';
-            protocolIndex = vpnClientIndex - currentCount - 1;
+            _protocolIndex = vpnClientIndex - currentCount - 1;
           }
           currentCount += networks.VPNClientNetworks.PPTP.length;
         }
@@ -224,14 +224,14 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         if (!protocol && networks?.VPNClientNetworks?.SSTP?.length) {
           if (vpnClientIndex <= currentCount + networks.VPNClientNetworks.SSTP.length) {
             protocol = 'SSTP';
-            protocolIndex = vpnClientIndex - currentCount - 1;
+            _protocolIndex = vpnClientIndex - currentCount - 1;
           }
           currentCount += networks.VPNClientNetworks.SSTP.length;
         }
         
         if (!protocol && networks?.VPNClientNetworks?.IKev2?.length) {
           protocol = 'IKev2';
-          protocolIndex = vpnClientIndex - currentCount - 1;
+          _protocolIndex = vpnClientIndex - currentCount - 1;
         }
 
         if (protocol) {

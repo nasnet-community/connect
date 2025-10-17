@@ -3,7 +3,6 @@ import { LuCable, LuWifi, LuRouter } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
-import { routers } from "../RouterModel/Constants";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
 
@@ -31,49 +30,43 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
     const masterRouter = routerModels.find(rm => rm.isMaster);
     const slaveRouter = routerModels.find(rm => !rm.isMaster);
 
-    // Process master router interfaces
+    // Process master router interfaces directly from RouterModels
     if (masterRouter) {
-      const routerData = routers.find((r) => r.model === masterRouter.Model);
-      if (routerData) {
-        if (props.interfaceType === "wireless") {
-          let wirelessInterfaces = routerData.interfaces.Interfaces.wireless || [];
+      if (props.interfaceType === "wireless") {
+        let wirelessInterfaces = masterRouter.Interfaces.Interfaces.wireless || [];
 
-          // Filter based on selected band if provided
-          if (props.selectedBand) {
-            const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
-            wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
-          }
-
-          interfaces.master = wirelessInterfaces;
-        } else {
-          interfaces.master = [
-            ...(routerData.interfaces.Interfaces.ethernet || []),
-            ...(routerData.interfaces.Interfaces.sfp || []),
-          ];
+        // Filter based on selected band if provided
+        if (props.selectedBand) {
+          const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
+          wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
         }
+
+        interfaces.master = wirelessInterfaces;
+      } else {
+        interfaces.master = [
+          ...(masterRouter.Interfaces.Interfaces.ethernet || []),
+          ...(masterRouter.Interfaces.Interfaces.sfp || []),
+        ];
       }
     }
 
-    // Process slave router interfaces
+    // Process slave router interfaces directly from RouterModels
     if (slaveRouter) {
-      const routerData = routers.find((r) => r.model === slaveRouter.Model);
-      if (routerData) {
-        if (props.interfaceType === "wireless") {
-          let wirelessInterfaces = routerData.interfaces.Interfaces.wireless || [];
+      if (props.interfaceType === "wireless") {
+        let wirelessInterfaces = slaveRouter.Interfaces.Interfaces.wireless || [];
 
-          // Filter based on selected band if provided
-          if (props.selectedBand) {
-            const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
-            wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
-          }
-
-          interfaces.slave = wirelessInterfaces;
-        } else {
-          interfaces.slave = [
-            ...(routerData.interfaces.Interfaces.ethernet || []),
-            ...(routerData.interfaces.Interfaces.sfp || []),
-          ];
+        // Filter based on selected band if provided
+        if (props.selectedBand) {
+          const targetInterface = props.selectedBand === "2.4G" ? "wifi2.4" : "wifi5";
+          wirelessInterfaces = wirelessInterfaces.filter(iface => iface === targetInterface);
         }
+
+        interfaces.slave = wirelessInterfaces;
+      } else {
+        interfaces.slave = [
+          ...(slaveRouter.Interfaces.Interfaces.ethernet || []),
+          ...(slaveRouter.Interfaces.Interfaces.sfp || []),
+        ];
       }
     }
 

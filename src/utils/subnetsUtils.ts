@@ -6,7 +6,7 @@ import type {
   VPNServerSubnets,
   TunnelSubnets,
 } from "~/components/Star/StarContext/Utils/Subnets";
-import type { Networks } from "~/components/Star/StarContext/Utils/Networks";
+import type { Networks, VPNClientNetworks } from "~/components/Star/StarContext/Utils/Networks";
 
 /**
  * Generates default Subnets configuration based on Networks
@@ -421,7 +421,7 @@ export const shouldRegenerateSubnets = (
   }
 
   // Check VPN client counts
-  const vpnProtocols: Array<keyof typeof networks.VPNClientNetworks> = [
+  const vpnProtocols: Array<keyof VPNClientNetworks> = [
     "Wireguard",
     "OpenVPN",
     "L2TP",

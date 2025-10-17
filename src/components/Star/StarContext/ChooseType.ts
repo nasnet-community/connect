@@ -8,6 +8,7 @@ export type WANLinkType = "domestic" | "foreign" | "both";
 export type TrunkInterfaceType = "wired" | "wireless";
 export type Mode = "easy" | "advance";
 export type MasterSlaveInterfaceType = Ethernet | Wireless | Sfp;
+export type CPUArch = "x64/x86" | "ARM" | "ARM64";
 
 
 export interface Interfaces {
@@ -32,6 +33,8 @@ export interface RouterModels {
   Model: RouterModel;
   Interfaces: RouterInterfaces;
   MasterSlaveInterface?: MasterSlaveInterfaceType;
+  isCHR?: boolean;
+  cpuArch?: CPUArch;
 }
 
 export interface ChooseState {
