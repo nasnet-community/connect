@@ -42,7 +42,7 @@ export const addVLANToBridge = ( vlanInterfaceName: string, bridgeName: string, 
 
 export const generateBaseNetworkVLANs = ( subnets: Subnets, trunkInterface: string ): RouterConfig => {
     const configs: RouterConfig[] = [];
-    const baseNetworks = subnets.BaseNetworks;
+    const baseNetworks = subnets.BaseSubnets;
 
     // Split Network
     if (baseNetworks.Split?.subnet) {
@@ -92,8 +92,8 @@ export const generateAdditionalNetworkVLANs = ( subnets: Subnets, trunkInterface
     const configs: RouterConfig[] = [];
 
     // Foreign Networks
-    if (subnets.ForeignNetworks && subnets.ForeignNetworks.length > 0) {
-        subnets.ForeignNetworks.forEach((subnetConfig) => {
+    if (subnets.ForeignSubnets && subnets.ForeignSubnets.length > 0) {
+        subnets.ForeignSubnets.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
             const fullNetworkName = `Foreign-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
@@ -104,8 +104,8 @@ export const generateAdditionalNetworkVLANs = ( subnets: Subnets, trunkInterface
     }
 
     // Domestic Networks
-    if (subnets.DomesticNetworks && subnets.DomesticNetworks.length > 0) {
-        subnets.DomesticNetworks.forEach((subnetConfig) => {
+    if (subnets.DomesticSubnets && subnets.DomesticSubnets.length > 0) {
+        subnets.DomesticSubnets.forEach((subnetConfig) => {
             const vlanId = extractThirdOctet(subnetConfig.subnet);
             const fullNetworkName = `Domestic-${subnetConfig.name}`;
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
@@ -121,7 +121,7 @@ export const generateAdditionalNetworkVLANs = ( subnets: Subnets, trunkInterface
 
 export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface: string ): RouterConfig => {
     const configs: RouterConfig[] = [];
-    const vpnClient = subnets.VPNClientNetworks;
+    const vpnClient = subnets.VPNClientSubnets;
 
     if (!vpnClient) return {};
 
@@ -266,6 +266,28 @@ export const addTrunkInterfaceToBridge = (choose: ChooseState, trunkInterface: s
     }
     
     return config;
+};
+
+
+export const commentTrunkInterface = (trunkInterface: string): RouterConfig => {
+    if (!trunkInterface) {
+        return {};
+    }
+
+    // Determine interface type
+    const isWireless = trunkInterface.toLowerCase().includes("wifi");
+    
+    // Only comment Ethernet and SFP interfaces (wireless is handled separately)
+    if (isWireless) {
+        return {};
+    }
+    
+    // Both Ethernet and SFP use the /interface ethernet config path
+    return {
+        "/interface ethernet": [
+            `set [ find default-name="${trunkInterface}" ] comment="Trunk Interface"`
+        ]
+    };
 };
 
 

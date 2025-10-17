@@ -30,22 +30,28 @@ export const IPv6 = (): RouterConfig => {
 
 export const EthernetBridgePorts = ( Ethernet: EthernetInterfaceConfig[], networks: NetworksInterface ): RouterConfig => {
     const config: RouterConfig = {
+        "/interface ethernet": [],
         "/interface bridge port": [],
     };
 
     Ethernet.forEach((iface) => {
+        // Add comment to ethernet interface
+        config["/interface ethernet"].push(
+            `set [find default-name=${iface.name}] comment="${iface.bridge} Network"`,
+        );
+
         // Map the network name to the actual bridge name
         const bridgeName = mapNetworkToBridgeName(iface.bridge, networks);
         
         if (bridgeName) {
             config["/interface bridge port"].push(
-                `add bridge=${bridgeName} interface=${iface.name} comment="${iface.bridge}"`,
+                `add bridge="${bridgeName}" interface="${iface.name}" comment="${iface.bridge}"`,
             );
         } else {
             // Fallback: if mapping fails, use the original bridge name with LANBridge prefix
             console.warn(`Network "${iface.bridge}" not found in Networks configuration for interface ${iface.name}`);
             config["/interface bridge port"].push(
-                `add bridge=LANBridge${iface.bridge} interface=${iface.name} comment="${iface.bridge}"`,
+                `add bridge="LANBridge${iface.bridge}" interface="${iface.name}" comment="${iface.bridge}"`,
             );
         }
     });
@@ -75,11 +81,11 @@ export const LANCG = (state: StarState): RouterConfig => {
     }
 
     if (state.LAN.Tunnel) {
-        configs.push(TunnelWrapper(state.LAN.Tunnel, state.LAN.Subnets?.TunnelNetworks));
+        configs.push(TunnelWrapper(state.LAN.Tunnel, state.LAN.Subnets?.TunnelSubnets));
     }
 
     if (state.LAN.VPNServer) {
-        configs.push(VPNServerWrapper(state.LAN.VPNServer, (state.LAN.Subnets?.VPNServerNetworks || {}) as any));
+        configs.push(VPNServerWrapper(state.LAN.VPNServer, (state.LAN.Subnets?.VPNServerSubnets || {}) as any));
     }
 
 

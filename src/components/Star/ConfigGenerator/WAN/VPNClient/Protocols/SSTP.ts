@@ -34,7 +34,7 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
 
     const interfaceName = GenerateVCInterfaceName(Name, "SSTP");
 
-    let command = `add name="${interfaceName}" connect-to="${Server.Address}"`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}" comment="${Name} SSTP"`;
 
     // if (Server.Port) {
     //     command += ` port=${Server.Port}`;
@@ -44,7 +44,7 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
     command += ` user="${Credentials.Username}" `;
 
     if (AuthMethod && AuthMethod.length > 0) {
-        command += ` authentication=${AuthMethod.join(",")}`;
+        command += ` authentication="${AuthMethod.join(",")}"`;
     }
 
     if (Ciphers && Ciphers.length > 0) {
@@ -52,11 +52,11 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
     }
 
     if (TlsVersion) {
-        command += ` tls-version=${TlsVersion}`;
+        command += ` tls-version=any`;
     }
 
     if (Proxy) {
-        command += ` http-proxy=${Proxy.Address} proxy-port=${Proxy.Port || 8080}`;
+        command += ` http-proxy="${Proxy.Address}" proxy-port="${Proxy.Port || 8080}"`;
     }
 
     if (SNI !== undefined) {

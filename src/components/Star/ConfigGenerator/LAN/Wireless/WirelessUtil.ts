@@ -149,11 +149,30 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
         "/interface wifi": [],
     };
 
-    const { SSID, Password, isHide, SplitBand } = WirelessConfig;
+    const { SSID, Password, isHide, SplitBand, NetworkName } = WirelessConfig;
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
     const Master = Band === "2.4" ? "wifi2" : "wifi1";
     const MMaster = `[ find default-name=${Master} ]`;
-    let command = `add configuration.mode=ap .ssid="${SSIDList[Band]}" .installation=indoor master-interface=${MMaster} name="wifi${Band}-${Network}LAN" comment="${Network}LAN"`;
+    
+    // Map WifiTarget to base network names
+    const networkMap: Record<WifiTarget, string> = {
+        Domestic: "Domestic",
+        Foreign: "Foreign",
+        VPN: "VPN",
+        Split: "Split",
+        SingleDomestic: "Domestic",
+        SingleForeign: "Foreign",
+        SingleVPN: "VPN",
+    };
+    
+    const baseNetwork = networkMap[Network];
+    // NetworkName should only be used if it's a custom name different from the base network
+    const hasCustomNetworkName = NetworkName && NetworkName !== baseNetwork;
+    const interfaceSuffix = hasCustomNetworkName 
+        ? `${baseNetwork}-${NetworkName}LAN`
+        : `${baseNetwork}LAN`;
+    
+    let command = `add configuration.mode=ap .ssid="${SSIDList[Band]}" .installation=indoor master-interface=${MMaster} name="wifi${Band}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
     command = Hide(command, isHide);
     command = Passphrase(Password, command);
     command = `${command} security.ft=yes .ft-over-ds=yes`;
@@ -164,10 +183,29 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
 }
 
 export function Master( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig ): RouterConfig {
-    const { SSID, Password, isHide, SplitBand } = WirelessConfig;
+    const { SSID, Password, isHide, SplitBand, NetworkName } = WirelessConfig;
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
     const DefaultName = Band === "2.4" ? "wifi2" : "wifi1";
-    let command = `set [ find default-name=${DefaultName} ] configuration.country=Japan .mode=ap .ssid="${SSIDList[Band]}" .installation=indoor name="wifi${Band}-${Network}LAN" comment="${Network}LAN"`;
+    
+    // Map WifiTarget to base network names
+    const networkMap: Record<WifiTarget, string> = {
+        Domestic: "Domestic",
+        Foreign: "Foreign",
+        VPN: "VPN",
+        Split: "Split",
+        SingleDomestic: "Domestic",
+        SingleForeign: "Foreign",
+        SingleVPN: "VPN",
+    };
+    
+    const baseNetwork = networkMap[Network];
+    // NetworkName should only be used if it's a custom name different from the base network
+    const hasCustomNetworkName = NetworkName && NetworkName !== baseNetwork;
+    const interfaceSuffix = hasCustomNetworkName 
+        ? `${baseNetwork}-${NetworkName}LAN`
+        : `${baseNetwork}LAN`;
+    
+    let command = `set [ find default-name=${DefaultName} ] configuration.country=Japan .mode=ap .ssid="${SSIDList[Band]}" .installation=indoor name="wifi${Band}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
     command = Hide(command, isHide);
     command = Passphrase(Password, command);
     command = `${command} security.ft=yes .ft-over-ds=yes`;
@@ -200,25 +238,28 @@ export function WirelessBridge( WirelessConfig: WirelessConfig[] ): RouterConfig
 
         const baseNetwork = networkMap[wireless.WifiTarget];
         
-        // Determine the bridge name
+        // Determine the bridge name and interface suffix
+        // NetworkName should only be used if it's a custom name different from the base network
+        // If NetworkName is empty or equals the base network name, treat it as a base network
+        const hasCustomNetworkName = wireless.NetworkName && wireless.NetworkName !== baseNetwork;
+        
         let bridgeName: string;
-        if (wireless.NetworkName) {
-            // For named networks, use the pattern: LANBridge{NetworkType}-{NetworkName}
+        let interfaceSuffix: string;
+        
+        if (hasCustomNetworkName) {
+            // For named networks with custom names, use: LANBridge{NetworkType}-{NetworkName}
             bridgeName = `LANBridge${baseNetwork}-${wireless.NetworkName}`;
+            interfaceSuffix = `${baseNetwork}-${wireless.NetworkName}LAN`;
         } else {
-            // For base networks, use the pattern: LANBridge{NetworkType}
+            // For base networks (no custom name), use: LANBridge{NetworkType}
             bridgeName = `LANBridge${baseNetwork}`;
+            interfaceSuffix = `${baseNetwork}LAN`;
         }
-
-        // Determine the interface suffix
-        const interfaceSuffix = wireless.NetworkName 
-            ? `${baseNetwork}-${wireless.NetworkName}LAN`
-            : `${baseNetwork}LAN`;
 
         // Add both 2.4GHz and 5GHz interfaces to the bridge
         config["/interface bridge port"].push(
-            `add bridge=${bridgeName} interface=wifi2.4-${interfaceSuffix} comment="${interfaceSuffix}"`,
-            `add bridge=${bridgeName} interface=wifi5-${interfaceSuffix} comment="${interfaceSuffix}"`
+            `add bridge="${bridgeName}" interface="wifi2.4-${interfaceSuffix}" comment="${interfaceSuffix}"`,
+            `add bridge="${bridgeName}" interface="wifi5-${interfaceSuffix}" comment="${interfaceSuffix}"`
         );
     });
 
@@ -247,31 +288,34 @@ export function WirelessInterfaceList( WirelessConfig: WirelessConfig[] ): Route
 
         const baseNetwork = networkMap[wireless.WifiTarget];
         
-        // Determine the list name
+        // Determine the list name and interface suffix
+        // NetworkName should only be used if it's a custom name different from the base network
+        // If NetworkName is empty or equals the base network name, treat it as a base network
+        const hasCustomNetworkName = wireless.NetworkName && wireless.NetworkName !== baseNetwork;
+        
         let listName: string;
-        if (wireless.NetworkName) {
-            // For named networks, use the pattern: {NetworkType}-{NetworkName}-LAN
+        let interfaceSuffix: string;
+        
+        if (hasCustomNetworkName) {
+            // For named networks with custom names, use: {NetworkType}-{NetworkName}-LAN
             listName = `${baseNetwork}-${wireless.NetworkName}-LAN`;
+            interfaceSuffix = `${baseNetwork}-${wireless.NetworkName}LAN`;
         } else {
-            // For base networks, use the pattern: {NetworkType}-LAN
+            // For base networks (no custom name), use: {NetworkType}-LAN
             listName = `${baseNetwork}-LAN`;
+            interfaceSuffix = `${baseNetwork}LAN`;
         }
-
-        // Determine the interface suffix
-        const interfaceSuffix = wireless.NetworkName 
-            ? `${baseNetwork}-${wireless.NetworkName}LAN`
-            : `${baseNetwork}LAN`;
 
         // Add both 2.4GHz and 5GHz interfaces to their respective network lists
         config["/interface list member"].push(
-            `add interface=wifi2.4-${interfaceSuffix} list=${listName} comment="${interfaceSuffix}"`,
-            `add interface=wifi5-${interfaceSuffix} list=${listName} comment="${interfaceSuffix}"`
+            `add interface="wifi2.4-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`,
+            `add interface="wifi5-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`
         );
 
         // Also add to the general LAN list
         config["/interface list member"].push(
-            `add interface=wifi2.4-${interfaceSuffix} list=LAN comment="${interfaceSuffix}"`,
-            `add interface=wifi5-${interfaceSuffix} list=LAN comment="${interfaceSuffix}"`
+            `add interface="wifi2.4-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`,
+            `add interface="wifi5-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`
         );
     });
 
@@ -279,14 +323,28 @@ export function WirelessInterfaceList( WirelessConfig: WirelessConfig[] ): Route
 }
 
 export function WirelessSteering(wirelessConfig: WirelessConfig): RouterConfig {
-    const Network = wirelessConfig.WifiTarget;
-    const steeringName = wirelessConfig.NetworkName 
-        ? `${Network}-${wirelessConfig.NetworkName}`
-        : Network;
+    // Map WifiTarget to base network names
+    const networkMap: Record<WifiTarget, string> = {
+        Domestic: "Domestic",
+        Foreign: "Foreign",
+        VPN: "VPN",
+        Split: "Split",
+        SingleDomestic: "Domestic",
+        SingleForeign: "Foreign",
+        SingleVPN: "VPN",
+    };
     
-    const interfaceSuffix = wirelessConfig.NetworkName 
-        ? `${Network}-${wirelessConfig.NetworkName}LAN`
-        : `${Network}LAN`;
+    const baseNetwork = networkMap[wirelessConfig.WifiTarget];
+    // NetworkName should only be used if it's a custom name different from the base network
+    const hasCustomNetworkName = wirelessConfig.NetworkName && wirelessConfig.NetworkName !== baseNetwork;
+    
+    const steeringName = hasCustomNetworkName 
+        ? `${baseNetwork}-${wirelessConfig.NetworkName}`
+        : baseNetwork;
+    
+    const interfaceSuffix = hasCustomNetworkName 
+        ? `${baseNetwork}-${wirelessConfig.NetworkName}LAN`
+        : `${baseNetwork}LAN`;
     
     const neighborGroup = `wifi2.4-${interfaceSuffix},wifi5-${interfaceSuffix}`;
     
@@ -304,17 +362,31 @@ export function WirelessSteeringAssignment(wirelessConfigs: WirelessConfig[]): R
         "/interface wifi": []
     };
     
+    // Map WifiTarget to base network names
+    const networkMap: Record<WifiTarget, string> = {
+        Domestic: "Domestic",
+        Foreign: "Foreign",
+        VPN: "VPN",
+        Split: "Split",
+        SingleDomestic: "Domestic",
+        SingleForeign: "Foreign",
+        SingleVPN: "VPN",
+    };
+    
     wirelessConfigs.forEach((wireless) => {
         if (wireless.isDisabled) return;
         
-        const Network = wireless.WifiTarget;
-        const steeringName = wireless.NetworkName 
-            ? `${Network}-${wireless.NetworkName}`
-            : Network;
+        const baseNetwork = networkMap[wireless.WifiTarget];
+        // NetworkName should only be used if it's a custom name different from the base network
+        const hasCustomNetworkName = wireless.NetworkName && wireless.NetworkName !== baseNetwork;
         
-        const interfaceSuffix = wireless.NetworkName 
-            ? `${Network}-${wireless.NetworkName}LAN`
-            : `${Network}LAN`;
+        const steeringName = hasCustomNetworkName 
+            ? `${baseNetwork}-${wireless.NetworkName}`
+            : baseNetwork;
+        
+        const interfaceSuffix = hasCustomNetworkName 
+            ? `${baseNetwork}-${wireless.NetworkName}LAN`
+            : `${baseNetwork}LAN`;
         
         config["/interface wifi"].push(
             `set [ find name="wifi2.4-${interfaceSuffix}" ] steering="${steeringName}"`,

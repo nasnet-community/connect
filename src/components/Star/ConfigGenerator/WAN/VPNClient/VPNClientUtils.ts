@@ -96,11 +96,11 @@ export const VPNEndpointMangle = (): RouterConfig => {
 
     config["/ip firewall mangle"].push(
         `add action=mark-connection chain=output comment="VPN Endpoint" \\
-        dst-address-list=VPNE new-connection-mark=conn-VPNE passthrough=yes`,
+        dst-address-list="VPNE" new-connection-mark="conn-VPNE" passthrough=yes`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        connection-mark=conn-VPNE dst-address-list=VPNE new-routing-mark=to-Foreign passthrough=no`,
+        connection-mark="conn-VPNE" dst-address-list="VPNE" new-routing-mark="to-Foreign" passthrough=no`,
         `add action=mark-routing chain=output comment="VPN Endpoint" \\
-        dst-address-list=VPNE new-routing-mark=to-Foreign passthrough=no`,
+        dst-address-list="VPNE" new-routing-mark="to-Foreign" passthrough=no`,
     );
 
     return config;

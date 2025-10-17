@@ -2,7 +2,7 @@ import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     SSHServerConfig,
     VSCredentials,
-    VSNetwork
+    // VSNetwork
 } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
@@ -65,41 +65,34 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
         "/ip firewall raw": [],
     };
 
-    // Map network types to bridge/interface names
-    const networkToBridge: Record<VSNetwork, string> = {
-        "VPN": "LANBridgeVPN",
-        "Domestic": "LANBridgeDomestic",
-        "Foreign": "LANBridgeForeign",
-        "Split": "LANBridgeSplit",
-    };
 
-    const bridgeInterface = networkToBridge[config.Network!];
+    const bridgeInterface = "Domestic-WAN";
 
     // Mangle rules for connection marking and routing
     routerConfig["/ip firewall mangle"].push(
         "",
         // "# SSH Server - Mark incoming SSH connections",
         `add action=mark-connection chain=input comment="Mark incoming SSH connections from ${config.Network} Network" \\
-    connection-state=new dst-port=22 in-interface=${bridgeInterface} \\
-    new-connection-mark=ssh-conn-foreign passthrough=yes protocol=tcp`
+    connection-state=new dst-port="22" in-interface-list="${bridgeInterface}" \\
+    new-connection-mark="ssh-conn-foreign" passthrough=yes protocol="tcp"`
     );
 
     routerConfig["/ip firewall mangle"].push(
         "",
         // "# SSH Server - Route SSH traffic via Foreign WAN",
-        `add action=mark-routing chain=forward comment="Route SSH traffic via Foreign WAN" \\
-    connection-mark=ssh-conn-foreign new-routing-mark=to-Foreign passthrough=no`,
+        `add action=mark-routing chain=preroute comment="Route SSH traffic via Foreign WAN" \\
+    connection-mark="ssh-conn-foreign" new-routing-mark="to-Foreign" passthrough=no`,
         `add action=mark-routing chain=output comment="Route SSH replies via Foreign WAN" \\
-    connection-mark=ssh-conn-foreign new-routing-mark=to-Foreign passthrough=no`
+    connection-mark="ssh-conn-foreign" new-routing-mark="to-Foreign" passthrough=no`
     );
 
     // Raw rules for auto-tracking SSH clients
     routerConfig["/ip firewall raw"].push(
         "",
         // "# SSH Server - Auto-add SSH clients to foreign routing list",
-        `add action=add-src-to-address-list address-list=ssh-foreign-clients \\
+        `add action=add-src-to-address-list address-list="ssh-foreign-clients" \\
     address-list-timeout=8h chain=prerouting comment="Auto-add SSH clients to foreign routing" \\
-    connection-state=new dst-port=22 in-interface=${bridgeInterface} protocol=tcp`
+    dst-port="22" in-interface-list="${bridgeInterface}" protocol="tcp"`
     );
 
     return routerConfig;

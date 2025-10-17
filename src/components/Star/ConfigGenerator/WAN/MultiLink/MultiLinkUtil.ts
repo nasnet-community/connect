@@ -62,12 +62,12 @@ export const DomesticCheckIPs = [
 
 // Foreign (International) Check IPs - Reliable global DNS servers and endpoints
 export const ForeignCheckIPs = [
-    // Google Public DNS
-    "8.8.8.8",
-    "8.8.4.4",
-    // Cloudflare DNS
-    "1.1.1.1",
-    "1.0.0.1",
+    // // Google Public DNS
+    // "8.8.8.8",
+    // "8.8.4.4",
+    // // Cloudflare DNS
+    // "1.1.1.1",
+    // "1.0.0.1",
     // Quad9 DNS
     "9.9.9.9",
     "149.112.112.112",

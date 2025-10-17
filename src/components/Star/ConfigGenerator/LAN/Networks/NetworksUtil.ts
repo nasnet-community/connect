@@ -39,23 +39,23 @@ export const extractBridgeNames = (networks: Networksinterface, subnets?: Subnet
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (networks.BaseNetworks.Split && subnets?.BaseNetworks.Split?.subnet) {
+        if (networks.BaseNetworks.Split && subnets?.BaseSubnets?.Split?.subnet) {
             bridgeNames.push("LANBridgeSplit");
         }
-        if (networks.BaseNetworks.Domestic && subnets?.BaseNetworks.Domestic?.subnet) {
+        if (networks.BaseNetworks.Domestic && subnets?.BaseSubnets?.Domestic?.subnet) {
             bridgeNames.push("LANBridgeDomestic");
         }
-        if (networks.BaseNetworks.Foreign && subnets?.BaseNetworks.Foreign?.subnet) {
+        if (networks.BaseNetworks.Foreign && subnets?.BaseSubnets?.Foreign?.subnet) {
             bridgeNames.push("LANBridgeForeign");
         }
-        if (networks.BaseNetworks.VPN && subnets?.BaseNetworks.VPN?.subnet) {
+        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
             bridgeNames.push("LANBridgeVPN");
         }
     }
 
     // Additional Foreign Networks
-    if (networks.ForeignNetworks && subnets?.ForeignNetworks) {
-        subnets.ForeignNetworks.forEach((subnet) => {
+    if (networks.ForeignNetworks && subnets?.ForeignSubnets) {
+        subnets.ForeignSubnets.forEach((subnet) => {
             if (subnet.subnet) {
                 const name = subnet.name || "Foreign";
                 bridgeNames.push(`LANBridgeForeign-${name}`);
@@ -64,8 +64,8 @@ export const extractBridgeNames = (networks: Networksinterface, subnets?: Subnet
     }
 
     // Additional Domestic Networks
-    if (networks.DomesticNetworks && subnets?.DomesticNetworks) {
-        subnets.DomesticNetworks.forEach((subnet) => {
+    if (networks.DomesticNetworks && subnets?.DomesticSubnets) {
+        subnets.DomesticSubnets.forEach((subnet) => {
             if (subnet.subnet) {
                 const name = subnet.name || "Domestic";
                 bridgeNames.push(`LANBridgeDomestic-${name}`);
@@ -74,9 +74,9 @@ export const extractBridgeNames = (networks: Networksinterface, subnets?: Subnet
     }
 
     // VPN Client Networks
-    if (networks.VPNClientNetworks && subnets?.VPNClientNetworks) {
+    if (networks.VPNClientNetworks && subnets?.VPNClientSubnets) {
         const vpnClient = networks.VPNClientNetworks;
-        const vpnSubnets = subnets.VPNClientNetworks;
+        const vpnSubnets = subnets.VPNClientSubnets;
 
         // Wireguard
         if (vpnClient.Wireguard && vpnSubnets.Wireguard) {
@@ -147,23 +147,23 @@ export const extractTableNames = (networks: Networksinterface, subnets?: Subnets
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (networks.BaseNetworks.Split && subnets?.BaseNetworks.Split?.subnet) {
+        if (networks.BaseNetworks.Split && subnets?.BaseSubnets?.Split?.subnet) {
             tableNames.push("to-Split");
         }
-        if (networks.BaseNetworks.Domestic && subnets?.BaseNetworks.Domestic?.subnet) {
+        if (networks.BaseNetworks.Domestic && subnets?.BaseSubnets?.Domestic?.subnet) {
             tableNames.push("to-Domestic");
         }
-        if (networks.BaseNetworks.Foreign && subnets?.BaseNetworks.Foreign?.subnet) {
+        if (networks.BaseNetworks.Foreign && subnets?.BaseSubnets?.Foreign?.subnet) {
             tableNames.push("to-Foreign");
         }
-        if (networks.BaseNetworks.VPN && subnets?.BaseNetworks.VPN?.subnet) {
+        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
             tableNames.push("to-VPN");
         }
     }
 
     // Additional Foreign Networks
-    if (networks.ForeignNetworks && subnets?.ForeignNetworks) {
-        subnets.ForeignNetworks.forEach((subnet) => {
+    if (networks.ForeignNetworks && subnets?.ForeignSubnets) {
+        subnets.ForeignSubnets.forEach((subnet) => {
             if (subnet.subnet) {
                 const name = subnet.name || "Foreign";
                 tableNames.push(`to-Foreign-${name}`);
@@ -172,8 +172,8 @@ export const extractTableNames = (networks: Networksinterface, subnets?: Subnets
     }
 
     // Additional Domestic Networks
-    if (networks.DomesticNetworks && subnets?.DomesticNetworks) {
-        subnets.DomesticNetworks.forEach((subnet) => {
+    if (networks.DomesticNetworks && subnets?.DomesticSubnets) {
+        subnets.DomesticSubnets.forEach((subnet) => {
             if (subnet.subnet) {
                 const name = subnet.name || "Domestic";
                 tableNames.push(`to-Domestic-${name}`);
@@ -182,9 +182,9 @@ export const extractTableNames = (networks: Networksinterface, subnets?: Subnets
     }
 
     // VPN Client Networks
-    if (networks.VPNClientNetworks && subnets?.VPNClientNetworks) {
+    if (networks.VPNClientNetworks && subnets?.VPNClientSubnets) {
         const vpnClient = networks.VPNClientNetworks;
-        const vpnSubnets = subnets.VPNClientNetworks;
+        const vpnSubnets = subnets.VPNClientSubnets;
 
         // Wireguard
         if (vpnClient.Wireguard && vpnSubnets.Wireguard) {

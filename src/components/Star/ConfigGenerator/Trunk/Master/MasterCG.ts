@@ -1,7 +1,7 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { ChooseState, WirelessConfig, Subnets } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
-import { generateBaseNetworkVLANs, generateAdditionalNetworkVLANs, generateVPNClientNetworkVLANs, generateWirelessTrunkInterface, addTrunkInterfaceToBridge } from "./MasterUtil";
+import { generateBaseNetworkVLANs, generateAdditionalNetworkVLANs, generateVPNClientNetworkVLANs, generateWirelessTrunkInterface, addTrunkInterfaceToBridge, commentTrunkInterface } from "./MasterUtil";
 
 
 
@@ -46,6 +46,7 @@ export const MasterCG = (choose: ChooseState, subnets: Subnets, wirelessConfigs?
         configs.push(addTrunkInterfaceToBridge(choose, trunkInterface));
     } else {
         // For wired trunk, generate VLANs on the single trunk interface
+        configs.push(commentTrunkInterface(trunkInterface));
         configs.push(generateBaseNetworkVLANs(subnets, trunkInterface));
         configs.push(generateAdditionalNetworkVLANs(subnets, trunkInterface));
         configs.push(generateVPNClientNetworkVLANs(subnets, trunkInterface));

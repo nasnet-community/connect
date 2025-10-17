@@ -389,12 +389,12 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
 
     // Create OpenVPN server instance
     const serverParams: string[] = [
-        `name=${name}`,
-        `default-profile=${name}-profile`,
+        `name="${name}"`,
+        `default-profile="${name}-profile"`,
         `disabled=${formatBooleanValue(!enabled)}`,
-        `port=${Port}`,
-        `protocol=${Protocol}`,
-        `mode=${Mode}`,
+        `port="${Port}"`,
+        `protocol="${Protocol}"`,
+        `mode="${Mode}"`,
     ];
 
     if (Certificate.RequireClientCertificate !== undefined) {
@@ -445,6 +445,7 @@ export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCre
     const config: RouterConfig = {
         "/ppp secret": [],
     };
+    const { name } = serverConfig;
 
     // Get the profile name from server config (matches the profile created in OVPNServer)
     const profileName = `${serverConfig.name}-profile`;
@@ -454,7 +455,7 @@ export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCre
 
     ovpnUsers.forEach((user) => {
         const secretParams: string[] = [
-            `name="${user.Username}"`,
+            `name="${user.Username}-${name}"`,
             `password="${user.Password}"`,
             `profile=${profileName}`,
             "service=ovpn",
@@ -567,13 +568,13 @@ export const OVPNServerFirewall = ( serverConfigs: OpenVpnServerConfig[] ): Rout
         const { name, Port = 1194, Protocol = "tcp" } = serverConfig;
 
         config["/ip firewall filter"].push(
-            `add action=accept chain=input comment="OpenVPN Server ${name} (${Protocol})" dst-port=${Port} in-interface-list=Domestic-WAN protocol=${Protocol}`,
+            `add action=accept chain=input comment="OpenVPN Server ${name} (${Protocol})" dst-port="${Port}" in-interface-list="Domestic-WAN" protocol="${Protocol}"`,
         );
 
         config["/ip firewall mangle"].push(
             `add action=mark-connection chain=input comment="Mark Inbound OpenVPN Connections (${name})" \\
-                connection-state=new in-interface-list=Domestic-WAN protocol=${Protocol} dst-port=${Port} \\
-                new-connection-mark=conn-vpn-server passthrough=yes`,
+                connection-state=new in-interface-list="Domestic-WAN" protocol="${Protocol}" dst-port="${Port}" \\
+                new-connection-mark="conn-vpn-server" passthrough=yes`,
         );
     });
 
@@ -589,6 +590,11 @@ export const SingleOVPNWrapper = (  serverConfig: OpenVpnServerConfig,  users: V
     // Generate OpenVPN users configuration if users are provided
     if (users.length > 0) {
         configs.push(OVPNServerUsers(serverConfig, users));
+    }
+
+    // Generate OpenVPN server bindings if users are provided
+    if (users.length > 0) {
+        configs.push(OVPNVSBinding(users, vsNetwork));
     }
 
     // Generate firewall rules

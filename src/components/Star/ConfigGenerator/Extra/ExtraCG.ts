@@ -29,6 +29,7 @@ import {
     Graph,
     DDNS,
     mapNetworkToRoutingTable,
+    generateDomesticIPScriptOneTime,
 } from "~/components/Star/ConfigGenerator";
 
 
@@ -146,7 +147,7 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Certificate configuration
@@ -174,12 +175,12 @@ export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subn
 
     // Handle UPNP configuration
     if (usefulServicesConfig.upnp && subnets && wanLinks) {
-        configs.push(UPNP(usefulServicesConfig.upnp, subnets, wanLinks, vpnClient));
+        configs.push(UPNP(usefulServicesConfig.upnp, subnets, wanLinks, vpnClient, networks));
     }
 
     // Handle NAT-PMP configuration
     if (usefulServicesConfig.natpmp && subnets && wanLinks) {
-        configs.push(NATPMP(usefulServicesConfig.natpmp, subnets, wanLinks, vpnClient));
+        configs.push(NATPMP(usefulServicesConfig.natpmp, subnets, wanLinks, vpnClient, networks));
     }
 
     return mergeMultipleConfigs(...configs);
@@ -313,7 +314,7 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
                 const tcpPorts = game.ports.tcp.filter((port) => port !== "").join(",");
                 config["/ip firewall raw"].push(
                     `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
-        chain=prerouting dst-address-list=!LOCAL-IP dst-port=${tcpPorts} protocol=tcp \\
+        chain=prerouting dst-address-list="!LOCAL-IP" dst-port="${tcpPorts}" protocol="tcp" \\
         comment="${game.name} - TCP"`,
                 );
             }
@@ -323,7 +324,7 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
                 const udpPorts = game.ports.udp.filter((port) => port !== "").join(",");
                 config["/ip firewall raw"].push(
                     `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
-        chain=prerouting dst-address-list=!LOCAL-IP dst-port=${udpPorts} protocol=udp \\
+        chain=prerouting dst-address-list="!LOCAL-IP" dst-port="${udpPorts}" protocol="udp" \\
         comment="${game.name} - UDP"`,
                 );
             }
@@ -336,8 +337,8 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
 export const Firewall = (): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [
-            `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=udp`,
-            `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol=tcp`,
+            `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol="udp"`,
+            `add action=drop chain=input dst-port=53 in-interface-list=WAN protocol="tcp"`,
         ],
     };
 
@@ -354,6 +355,7 @@ export const ExtraCG = (
 ): RouterConfig => {
     const configs: RouterConfig[] = [
         BaseExtra(),
+        generateDomesticIPScriptOneTime(),
         // PublicCert(),
     ];
 
@@ -377,7 +379,7 @@ export const ExtraCG = (
 
     // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)
     if (ExtraConfigState.usefulServices) {
-        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient));
+        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks));
     }
 
     // Add Cloud DDNS configuration

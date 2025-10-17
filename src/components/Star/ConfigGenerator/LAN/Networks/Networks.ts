@@ -26,33 +26,33 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
 
     const config: RouterConfig = {
         "/interface bridge": [
-            `add name=LANBridge${FNetworkName} comment="${FNetworkName}"`
+            `add name="LANBridge${FNetworkName}" comment="${FNetworkName}"`
         ],
         "/interface list": [
-            `add name=${FNetworkName}-WAN comment="${FNetworkName}"`,
-            `add name=${FNetworkName}-LAN comment="${FNetworkName}"`,
+            `add name="${FNetworkName}-WAN" comment="${FNetworkName}"`,
+            `add name="${FNetworkName}-LAN" comment="${FNetworkName}"`,
         ],
         "/ip pool": [
-            `add name=DHCP-pool-${FNetworkName} ranges=${SubnetToRange(Subnet)} comment="${FNetworkName}"`,
+            `add name="DHCP-pool-${FNetworkName}" ranges="${SubnetToRange(Subnet)}" comment="${FNetworkName}"`,
         ],
         "/ip dhcp-server": [
-            `add address-pool=DHCP-pool-${FNetworkName} interface=LANBridge${FNetworkName} name=DHCP-${FNetworkName} comment="${FNetworkName}"`,
+            `add address-pool="DHCP-pool-${FNetworkName}" interface="LANBridge${FNetworkName}" name="DHCP-${FNetworkName}" comment="${FNetworkName}"`,
         ],
         "/ip dhcp-server network": [
-            `add address=${Subnet} dns-server=${SubnetToFirstIP(Subnet)} gateway=${SubnetToFirstIP(Subnet)} comment="${FNetworkName}"`,
+            `add address="${Subnet}" dns-server="${SubnetToFirstIP(Subnet)}" gateway="${SubnetToFirstIP(Subnet)}" comment="${FNetworkName}"`,
         ],
         "/ip address": [
-            `add address=${SubnetToFirstIP(Subnet)}/${prefixLength} interface=LANBridge${FNetworkName} network=${SubnetToNetwork(Subnet)} comment="${FNetworkName}"`,
+            `add address="${SubnetToFirstIP(Subnet)}/${prefixLength}" interface="LANBridge${FNetworkName}" network="${SubnetToNetwork(Subnet)}" comment="${FNetworkName}"`,
         ],
         "/routing table": [
-            `add fib name=to-${FNetworkName} comment="${FNetworkName}"`
+            `add fib name="to-${FNetworkName}" comment="${FNetworkName}"`
         ],
         "/interface list member": [
-            `add interface=LANBridge${FNetworkName} list=LAN comment="${FNetworkName}"`,
-            `add interface=LANBridge${FNetworkName} list=${FNetworkName}-LAN comment="${FNetworkName}"`,
+            `add interface="LANBridge${FNetworkName}" list="LAN" comment="${FNetworkName}"`,
+            `add interface="LANBridge${FNetworkName}" list="${FNetworkName}-LAN" comment="${FNetworkName}"`,
         ],
         "/ip firewall address-list": [
-            `add address=${Subnet} list=${FNetworkName}-LAN comment="${FNetworkName}"`,
+            `add address="${Subnet}" list="${FNetworkName}-LAN" comment="${FNetworkName}"`,
         ],
         // "/ip firewall mangle": [
         //     // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -62,7 +62,7 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
         //     `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark=conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
         // ],
         "/ip route": [
-            `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-${FNetworkName} comment="${FNetworkName}"`,
+            `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table="to-${FNetworkName}"`,
         ],
     };
 
@@ -83,8 +83,8 @@ export const DomesticBase = (NetworkName: string, Subnet: string, skipMangle: bo
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark=conn-${NetworkName} passthrough=yes src-address-list=${NetworkName}-LAN`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark=conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
+            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
         ],
     };
 
@@ -104,8 +104,8 @@ export const ForeignBase = (NetworkName: string, Subnet: string, skipMangle: boo
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark=conn-${NetworkName} passthrough=yes src-address-list=${NetworkName}-LAN`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark=conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
+            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
         ],
     };
     
@@ -125,8 +125,8 @@ export const VPNBase = (NetworkName: string, Subnet: string, skipMangle: boolean
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark=conn-${NetworkName} passthrough=yes src-address-list=${NetworkName}-LAN`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark=conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
+            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
         ],
     };
 
@@ -140,24 +140,24 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // Split VPN IP/Domain/Game Traffic
-            `add action=mark-routing chain=prerouting comment="Split-VPN" dst-address-list=SplitVPNAddList \\
-                new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
+            `add action=mark-routing chain=prerouting comment="Split-VPN" dst-address-list="SplitVPNAddList" \\
+                new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
             // Split FRN IP/Domain/Game Traffic
-            `add action=mark-routing chain=prerouting comment="Split-FRN" dst-address-list=SplitFRNAddList \\
-                new-routing-mark=to-FRN passthrough=no src-address-list=Split-LAN`,
+            `add action=mark-routing chain=prerouting comment="Split-FRN" dst-address-list="SplitFRNAddList" \\
+                new-routing-mark="to-Foreign" passthrough=no src-address-list="Split-LAN"`,
             // Split DOM IP/Domain/Game Traffic
-            `add action=mark-routing chain=prerouting comment="Split-DOM" dst-address-list=SplitDOMAddList \\
-                new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
+            `add action=mark-routing chain=prerouting comment="Split-DOM" dst-address-list="SplitDOMAddList" \\
+                new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split DOM Traffic
-            `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list=DOMAddList \\
-                new-connection-mark=conn-Split-DOM passthrough=yes src-address-list=Split-LAN`,
-            `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark=conn-Split-DOM \\
-                dst-address-list=DOMAddList new-routing-mark=to-DOM passthrough=no src-address-list=Split-LAN`,
+            `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list="DOMAddList" \\
+                new-connection-mark="conn-Split-DOM" passthrough=yes src-address-list="Split-LAN"`,
+            `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark="conn-Split-DOM" \\
+                dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split FRN Traffic
-            `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list=!DOMAddList\\
-                new-connection-mark=conn-Split-!DOM passthrough=yes src-address-list=Split-LAN`,
-            `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark=conn-Split-!DOM\\
-                dst-address-list=!DOMAddList new-routing-mark=to-VPN passthrough=no src-address-list=Split-LAN`,
+            `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list="!DOMAddList"\\
+                new-connection-mark="conn-Split-!DOM" passthrough=yes src-address-list="Split-LAN"`,
+            `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark="conn-Split-!DOM"\\
+                dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
         ],
     };
 
@@ -167,39 +167,39 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
 // Tunnel Network Base Generator - Uses .4 as gateway, .5+ for DHCP
 export const TunnelNetworkBaseGenerator = (NetworkName: string, Subnet: string): RouterConfig => {
     const config: RouterConfig = {
-        "/interface bridge": [`add name=LANBridge${NetworkName}`],
+        "/interface bridge": [`add name="LANBridge${NetworkName}"`],
         "/interface list": [
-            `add name=${NetworkName}-WAN`,
-            `add name=${NetworkName}-LAN`,
+            `add name="${NetworkName}-WAN"`,
+            `add name="${NetworkName}-LAN"`,
         ],
         "/ip pool": [
-            `add name=DHCP-pool-${NetworkName} ranges=${SubnetToTunnelDHCPRange(Subnet)}`,
+            `add name="DHCP-pool-${NetworkName}" ranges="${SubnetToTunnelDHCPRange(Subnet)}"`,
         ],
         "/ip dhcp-server": [
-            `add address-pool=DHCP-pool-${NetworkName} interface=LANBridge${NetworkName} name=DHCP-${NetworkName}`,
+            `add address-pool="DHCP-pool-${NetworkName}" interface="LANBridge${NetworkName}" name="DHCP-${NetworkName}"`,
         ],
         "/ip dhcp-server network": [
-            `add address=${Subnet} dns-server=${SubnetToTunnelGatewayIP(Subnet)} gateway=${SubnetToTunnelGatewayIP(Subnet)}`,
+            `add address="${Subnet}" dns-server="${SubnetToTunnelGatewayIP(Subnet)}" gateway="${SubnetToTunnelGatewayIP(Subnet)}"`,
         ],
         "/ip address": [
-            `add address=${SubnetToTunnelGateway(Subnet)} interface=LANBridge${NetworkName} network=${SubnetToNetwork(Subnet)}`,
+            `add address="${SubnetToTunnelGateway(Subnet)}" interface="LANBridge${NetworkName}" network="${SubnetToNetwork(Subnet)}"`,
         ],
         "/routing table": [
-            `add fib name=to-${NetworkName}`
+            `add fib name="to-${NetworkName}"`
         ],
         "/interface list member": [
-            `add interface=LANBridge${NetworkName} list=LAN`,
-            `add interface=LANBridge${NetworkName} list=${NetworkName}-LAN`,
+            `add interface="LANBridge${NetworkName}" list=LAN`,
+            `add interface="LANBridge${NetworkName}" list="${NetworkName}-LAN"`,
         ],
         "/ip firewall address-list": [
-            `add address=${Subnet} list=${NetworkName}-LAN`,
+            `add address="${Subnet}" list="${NetworkName}-LAN"`,
         ],
         "/ip firewall mangle": [
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark=conn-${NetworkName} passthrough=yes src-address-list=${NetworkName}-LAN`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark=conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
+            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
         ],
         "/ip route": [
-            `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table=to-${NetworkName}`,
+            `add comment=Blackhole blackhole disabled=no distance=99 dst-address=0.0.0.0/0 gateway="" routing-table="to-${NetworkName}"`,
         ],
     };
 
@@ -246,18 +246,18 @@ export const Networks = (subnets: Subnets, wanLinks?: WANLinks, vpnClient?: VPNC
     const skipMangle = shouldSkipMangleRules(wanLinks, vpnClient);
 
     // Base Networks
-    if (subnets.BaseNetworks.Split) configs.push(addNetwork(subnets.BaseNetworks.Split, "Split", SplitBase));
-    if (subnets.BaseNetworks.Domestic) configs.push(addNetwork(subnets.BaseNetworks.Domestic, "Domestic", DomesticBase, skipMangle));
-    if (subnets.BaseNetworks.Foreign) configs.push(addNetwork(subnets.BaseNetworks.Foreign, "Foreign", ForeignBase, skipMangle));
-    if (subnets.BaseNetworks.VPN) configs.push(addNetwork(subnets.BaseNetworks.VPN, "VPN", VPNBase, skipMangle));
+    if (subnets.BaseSubnets?.Split) configs.push(addNetwork(subnets.BaseSubnets.Split, "Split", SplitBase));
+    if (subnets.BaseSubnets?.Domestic) configs.push(addNetwork(subnets.BaseSubnets.Domestic, "Domestic", DomesticBase, skipMangle));
+    if (subnets.BaseSubnets?.Foreign) configs.push(addNetwork(subnets.BaseSubnets.Foreign, "Foreign", ForeignBase, skipMangle));
+    if (subnets.BaseSubnets?.VPN) configs.push(addNetwork(subnets.BaseSubnets.VPN, "VPN", VPNBase, skipMangle));
 
     // Additional Networks
-    configs.push(addNetworks(subnets.ForeignNetworks ?? [], "Foreign", "Foreign"));
-    configs.push(addNetworks(subnets.DomesticNetworks ?? [], "Domestic", "Domestic"));
+    configs.push(addNetworks(subnets.ForeignSubnets ?? [], "Foreign", "Foreign"));
+    configs.push(addNetworks(subnets.DomesticSubnets ?? [], "Domestic", "Domestic"));
 
     // VPN Client Networks
-    if (subnets.VPNClientNetworks) {
-        const vpnClient = subnets.VPNClientNetworks;
+    if (subnets.VPNClientSubnets) {
+        const vpnClient = subnets.VPNClientSubnets;
         configs.push(addNetworks(vpnClient.Wireguard ?? [], "WG-Client", "VPN"));
         configs.push(addNetworks(vpnClient.OpenVPN ?? [], "OVPN-Client", "VPN"));
         configs.push(addNetworks(vpnClient.L2TP ?? [], "L2TP-Client", "VPN"));

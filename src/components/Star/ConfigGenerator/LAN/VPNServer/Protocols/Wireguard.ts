@@ -516,7 +516,7 @@ export const WireguardServer = ( WireguardInterfaceConfig: WireguardInterfaceCon
     // Add IP address to interface
     const [ip, prefix] = subnet.split("/");
     const network = prefix ? calculateNetworkAddress(ip, prefix) : null;
-    let addressCommand = `add address="${subnet}" interface="${interfaceName}"`;
+    let addressCommand = `add address="${subnet}" interface="${interfaceName}" comment="${interfaceName} Wireguard Server"`;
     if (network) {
         addressCommand += ` network="${network}"`;
     }
@@ -548,7 +548,7 @@ export const WireguardServerUsers = ( serverConfig: WireguardInterfaceConfig, us
 
 
     // Interface Name
-    const interfaceName = "wg-server" + serverConfig.Name;
+    const interfaceName = "wg-server-" + serverConfig.Name;
 
     // Extract network info from server address
     const [serverIP, prefixStr] = subnet.split("/");
@@ -567,7 +567,7 @@ export const WireguardServerUsers = ( serverConfig: WireguardInterfaceConfig, us
 
         const peerParams: string[] = [
             `interface=${interfaceName}`,
-            `name="${user.Username}"`,
+            `name="${user.Username}-${serverConfig.Name}"`,
             `allowed-address=0.0.0.0/0`,
             `client-address=${clientAddress}`,
             `client-dns=${serverIP}`,
@@ -616,13 +616,13 @@ export const WireguardServerFirewall = ( WireguardInterfaceConfig: WireguardInte
 
     // Add firewall filter rule for WireGuard handshake
     config["/ip firewall filter"].push(
-        `add action=accept chain=input comment="WireGuard Handshake of ${interfaceName} Server" dst-port=${ListenPort} in-interface-list=Domestic-WAN protocol=udp`,
+        `add action=accept chain=input comment="WireGuard Handshake of ${interfaceName} Server" dst-port="${ListenPort}" in-interface-list="Domestic-WAN" protocol="udp"`,
     );
 
     config["/ip firewall mangle"].push(
         `add action=mark-connection chain=input comment="Mark Inbound WireGuard Connections (${interfaceName})" \\
-            connection-state=new in-interface-list=Domestic-WAN protocol=udp dst-port=${ListenPort} \\
-            new-connection-mark=conn-vpn-server passthrough=yes`,
+            connection-state=new in-interface-list="Domestic-WAN" protocol="udp" dst-port="${ListenPort}" \\
+            new-connection-mark="conn-vpn-server" passthrough=yes`,
     );
 
     return config;
@@ -648,7 +648,7 @@ export const SingleWSWrapper = ( wireguardConfig: WireguardServerConfig, users: 
     }
 
     // Add export script (useful for single server setup)
-    configs.push(ExportWireGuard());
+    // configs.push(ExportWireGuard());
 
     if (configs.length === 0) {
         return {};
@@ -690,6 +690,8 @@ export const WireguardServerWrapper = ( wireguardConfigs: WireguardServerConfig[
         return {};
     }
 
+    configs.push(ExportWireGuard());
+    
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
 
