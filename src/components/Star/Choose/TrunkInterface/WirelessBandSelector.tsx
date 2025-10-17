@@ -2,7 +2,6 @@ import { $, component$, type PropFunction } from "@builder.io/qwik";
 import { LuWifi, LuAlertCircle } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import type { RouterModels } from "../../StarContext/ChooseType";
-import { routers } from "../RouterModel/Constants";
 
 interface WirelessBandSelectorProps {
   selectedBand: "2.4G" | "5G" | null;
@@ -19,14 +18,15 @@ export const WirelessBandSelector = component$((props: WirelessBandSelectorProps
     let has5G = true;
 
     for (const routerModel of allRouters) {
-      const routerData = routers.find(r => r.model === routerModel.Model);
-      if (!routerData || !routerData.interfaces.Interfaces.wireless) {
+      // Use routerModel.Interfaces directly instead of looking up from routers constant
+      const wirelessInterfaces = routerModel.Interfaces.Interfaces.wireless || [];
+      
+      if (wirelessInterfaces.length === 0) {
         has24G = false;
         has5G = false;
         break;
       }
 
-      const wirelessInterfaces = routerData.interfaces.Interfaces.wireless || [];
       if (!wirelessInterfaces.includes("wifi2.4")) {
         has24G = false;
       }

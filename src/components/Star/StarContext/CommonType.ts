@@ -187,7 +187,8 @@ export type RouterModel =
   | "wAP ax"
   | "RB5009"
   | "hAP AX2"
-  | "hAP AX3";
+  | "hAP AX3"
+  | "Custom Router";
 
 export type InterfaceType = Ethernet | Wireless | Sfp | LTE;
 

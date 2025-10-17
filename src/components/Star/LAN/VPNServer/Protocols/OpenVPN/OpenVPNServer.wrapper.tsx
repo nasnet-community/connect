@@ -15,7 +15,8 @@ export const OpenVPNServerWrapper = component$<OpenVPNServerWrapperProps>(({ hoo
   const mode = starContext.state.Choose.Mode as Mode;
 
   // Use provided hook for Advanced mode, Easy mode creates its own
-  const openVpnHook = hook || useOpenVPNServer();
+  const defaultHook = useOpenVPNServer();
+  const openVpnHook = hook ?? defaultHook;
 
   return (
     <>{mode === "easy" ? <OpenVPNServerEasy /> : <OpenVPNServerAdvanced hook={openVpnHook} />}</>

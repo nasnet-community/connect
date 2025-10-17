@@ -15,7 +15,8 @@ export const WireguardServerWrapper = component$<WireguardServerWrapperProps>(({
   const mode = starContext.state.Choose.Mode as Mode;
 
   // Use provided hook for Advanced mode, Easy mode creates its own
-  const wireguardHook = hook || useWireguardServer();
+  const defaultHook = useWireguardServer();
+  const wireguardHook = hook ?? defaultHook;
 
   return (
     <>
