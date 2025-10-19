@@ -471,12 +471,14 @@ export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCre
     return CommandShortner(config);
 };
 
-export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
+export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork, serverConfig: OpenVpnServerConfig): RouterConfig => {
     const config: RouterConfig = {
         "/interface ovpn-server": [],
         "/interface list member": [],
         "": [],
     };
+
+    const { name } = serverConfig;
 
     if (!credentials || credentials.length === 0) {
         // config[""].push("# No credentials provided for VPN server binding");
@@ -514,7 +516,7 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     if (usersByVpnType["OpenVPN"]) {
 
         usersByVpnType["OpenVPN"].forEach((user) => {
-            const staticBindingName = `ovpn-${user.Username}`;
+            const staticBindingName = `ovpn-${name}-${user.Username}`;
 
             config["/interface ovpn-server"].push(
                 `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
@@ -594,7 +596,7 @@ export const SingleOVPNWrapper = (  serverConfig: OpenVpnServerConfig,  users: V
 
     // Generate OpenVPN server bindings if users are provided
     if (users.length > 0) {
-        configs.push(OVPNVSBinding(users, vsNetwork));
+        configs.push(OVPNVSBinding(users, vsNetwork, serverConfig));
     }
 
     // Generate firewall rules
