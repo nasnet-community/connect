@@ -505,7 +505,7 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
     // 2. Create main default routes pointing to the check IPs
     // These use the recursive routes to determine availability
     interfaces.forEach((wan) => {
-        const routeComment = `Route-to-${wan.network}-${wan.name}`;
+        const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
             distance=${wan.distance} target-scope="10" scope="30" comment="${routeComment}"`,
