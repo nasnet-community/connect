@@ -5,7 +5,7 @@ import {
   useId,
   useComputed$,
 } from "@builder.io/qwik";
-import { Input } from "~/components/Core";
+import { Input } from "../../Input/Input";
 import type { NetworkInputProps } from "./NetworkInput.types";
 import { 
   getNetworkPreset,

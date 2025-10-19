@@ -50,7 +50,7 @@ export const RadioInput = component$<RadioInputProps>(
     onChange$,
     onFocus$,
     onBlur$,
-    ...props
+    // ...props
   }) => {
     const radioGroupId = id || `radio-group-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -214,7 +214,6 @@ export const RadioInput = component$<RadioInputProps>(
                       checked={isChecked}
                       disabled={isOptionDisabled}
                       required={required}
-                      {...props}
                       class={radioClasses}
                       onChange$={handleChange$}
                       onFocus$={handleFocus$}
@@ -280,8 +279,7 @@ export const RadioInput = component$<RadioInputProps>(
                     value={option.value}
                     checked={isChecked}
                     disabled={isOptionDisabled}
-                    required={required}
-                    {...props}
+                  required={required}
                     class={radioClasses}
                     onChange$={handleChange$}
                     onFocus$={handleFocus$}
