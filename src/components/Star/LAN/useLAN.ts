@@ -160,11 +160,13 @@ export const useLAN = ({
       const defaultSubnets: Partial<Subnets> = {};
       
       // === BASE NETWORKS ===
-      // Only add BaseNetworks if they don't exist
-      const hasBaseNetworks = starContext.state.LAN.Subnets?.BaseSubnets && 
-                              Object.keys(starContext.state.LAN.Subnets.BaseSubnets).length > 0;
+      // Only add BaseNetworks if they don't exist or have empty subnet values
+      const hasValidBaseNetworks = starContext.state.LAN.Subnets?.BaseSubnets && 
+        Object.values(starContext.state.LAN.Subnets.BaseSubnets).every(
+          subnet => subnet?.subnet && subnet.subnet.trim() !== ""
+        );
       
-      if (!hasBaseNetworks) {
+      if (!hasValidBaseNetworks) {
         defaultSubnets.BaseSubnets = {};
         
         // Add base networks based on WANLinkType
@@ -207,16 +209,43 @@ export const useLAN = ({
       }
       
       // === VPN SERVER NETWORKS ===
-      // Only add VPNServerNetworks if they don't exist but VPN servers are configured
-      const hasVPNServerNetworks = starContext.state.LAN.Subnets?.VPNServerSubnets;
+      // Only add VPNServerNetworks if they don't exist or have empty values
       const vpnServers = starContext.state.LAN.VPNServer;
       
-      if (!hasVPNServerNetworks && vpnServers) {
+      const hasValidVPNServerNetworks = (() => {
+        const vpnServerSubnets = starContext.state.LAN.Subnets?.VPNServerSubnets;
+        if (!vpnServerSubnets) return false;
+        
+        // Check arrays (Wireguard, OpenVPN)
+        const arraySubnets = [vpnServerSubnets.Wireguard, vpnServerSubnets.OpenVPN].filter(Boolean);
+        for (const subnets of arraySubnets) {
+          if (Array.isArray(subnets) && !subnets.every((s: any) => s?.subnet && s.subnet.trim() !== "")) {
+            return false;
+          }
+        }
+        
+        // Check single objects (L2TP, PPTP, SSTP, IKev2)
+        const singleSubnets = [
+          vpnServerSubnets.L2TP, 
+          vpnServerSubnets.PPTP, 
+          vpnServerSubnets.SSTP, 
+          vpnServerSubnets.IKev2
+        ].filter(Boolean);
+        for (const subnet of singleSubnets) {
+          if (subnet && (!subnet.subnet || subnet.subnet.trim() === "")) {
+            return false;
+          }
+        }
+        
+        return true;
+      })();
+      
+      if (!hasValidVPNServerNetworks && vpnServers) {
         defaultSubnets.VPNServerSubnets = {};
         
         // WireGuard servers (110+index)
         if (vpnServers.WireguardServers?.length) {
-          defaultSubnets.VPNServerSubnets.Wireguard = vpnServers.WireguardServers.map((server, index) => ({
+          defaultSubnets.VPNServerSubnets.Wireguard = vpnServers.WireguardServers.map((server: any, index: number) => ({
             name: server.Interface.Name || `WireGuard${index + 1}`,
             subnet: `192.168.${110 + index}.0/24`
           }));
@@ -224,7 +253,7 @@ export const useLAN = ({
         
         // OpenVPN servers (120+index)
         if (vpnServers.OpenVpnServer?.length) {
-          defaultSubnets.VPNServerSubnets.OpenVPN = vpnServers.OpenVpnServer.map((server, index) => ({
+          defaultSubnets.VPNServerSubnets.OpenVPN = vpnServers.OpenVpnServer.map((server: any, index: number) => ({
             name: server.name || `OpenVPN${index + 1}`,
             subnet: `192.168.${120 + index}.0/24`
           }));
@@ -266,22 +295,28 @@ export const useLAN = ({
       // === MULTIPLE WAN LINK NETWORKS ===
       const wanLinks = starContext.state.WAN.WANLink;
       
-      // Domestic WAN links (if 1+)
-      const hasDomesticNetworks = starContext.state.LAN.Subnets?.DomesticSubnets;
+      // Domestic WAN links (if 1+) - check if subnets have valid values
+      const hasValidDomesticNetworks = starContext.state.LAN.Subnets?.DomesticSubnets ? 
+        starContext.state.LAN.Subnets.DomesticSubnets.every(
+          subnet => subnet.subnet && subnet.subnet.trim() !== ""
+        ) : false;
       const domesticLinks = wanLinks.Domestic?.WANConfigs;
       
-      if (!hasDomesticNetworks && domesticLinks && domesticLinks.length >= 1) {
+      if (!hasValidDomesticNetworks && domesticLinks && domesticLinks.length >= 1) {
         defaultSubnets.DomesticSubnets = domesticLinks.map((link, index) => ({
           name: link.name || `Domestic${index + 1}`,
           subnet: `192.168.${21 + index}.0/24`
         }));
       }
       
-      // Foreign WAN links (if 1+)
-      const hasForeignNetworks = starContext.state.LAN.Subnets?.ForeignSubnets;
+      // Foreign WAN links (if 1+) - check if subnets have valid values
+      const hasValidForeignNetworks = starContext.state.LAN.Subnets?.ForeignSubnets ? 
+        starContext.state.LAN.Subnets.ForeignSubnets.every(
+          subnet => subnet.subnet && subnet.subnet.trim() !== ""
+        ) : false;
       const foreignLinks = wanLinks.Foreign?.WANConfigs;
       
-      if (!hasForeignNetworks && foreignLinks && foreignLinks.length >= 1) {
+      if (!hasValidForeignNetworks && foreignLinks && foreignLinks.length >= 1) {
         defaultSubnets.ForeignSubnets = foreignLinks.map((link, index) => ({
           name: link.name || `Foreign${index + 1}`,
           subnet: `192.168.${31 + index}.0/24`
@@ -343,10 +378,20 @@ export const useLAN = ({
         }
       }
       
-      // Only create VPN Client networks if there are 1+ clients and they don't exist
-      const hasVPNClientNetworks = starContext.state.LAN.Subnets?.VPNClientSubnets;
+      // Only create VPN Client networks if there are 1+ clients and they have empty subnet values
+      const hasValidVPNClientNetworks = (() => {
+        const vpnClientSubnets = starContext.state.LAN.Subnets?.VPNClientSubnets;
+        if (!vpnClientSubnets) return false;
+        
+        // Check all VPN client subnet arrays have valid values
+        return Object.values(vpnClientSubnets).every(
+          subnets => Array.isArray(subnets) && subnets.every(
+            subnet => subnet?.subnet && subnet.subnet.trim() !== ""
+          )
+        );
+      })();
       
-      if (!hasVPNClientNetworks && vpnClientConfigs.length >= 1) {
+      if (!hasValidVPNClientNetworks && vpnClientConfigs.length >= 1) {
         defaultSubnets.VPNClientSubnets = {};
         
         // Group by type
