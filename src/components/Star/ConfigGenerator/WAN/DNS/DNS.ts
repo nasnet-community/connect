@@ -176,6 +176,8 @@ export const FRNDNSFWD = (): RouterConfig => {
     const Domains = [
         "s4i.co",
         "starlink4iran.com",
+        // "curl.se",
+        // "pki.goog",
     ];
 
     // Create DNS forward entries for all domains through Foreign forwarder
