@@ -46,7 +46,7 @@ export function validatePort(
   if (duplicate) {
     return {
       valid: false,
-      error: $localize`Port ${port} already used by ${duplicate.protocol}: ${duplicate.serverName}`,
+      error: $localize`Port ${port} already used by ${duplicate.protocol}\: ${duplicate.serverName}`,
     };
   }
 

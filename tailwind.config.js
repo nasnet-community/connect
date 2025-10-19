@@ -841,10 +841,6 @@ export default {
             // Mobile optimizations
             fontSize: theme("fontSize.base[0]"),
             lineHeight: theme("fontSize.base[1].lineHeight"),
-            "@screen sm": {
-              fontSize: theme("fontSize.lg[0]"),
-              lineHeight: theme("fontSize.lg[1].lineHeight"),
-            },
           },
         },
         // RTL variant

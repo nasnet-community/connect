@@ -23,6 +23,7 @@ import type { StepProps } from "~/types/step";
 import { StarContext } from "../StarContext/StarContext";
 import { Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter/Newsletter.types";
+import { subscribeToNewsletterSendGrid } from "~/utils/newsletterAPI";
 
 // Define step components outside the main component to avoid serialization issues
 const FirmwareStep = component$((props: StepProps) => (
@@ -117,7 +118,6 @@ export const Choose = component$((props: StepProps) => {
       console.log("Router configuration newsletter subscription:", subscription);
 
       // Call the SendGrid API to add email to newsletter
-      const { subscribeToNewsletterSendGrid } = await import('~/utils/newsletterAPI');
       const result = await subscribeToNewsletterSendGrid(subscription.email, {
         source: subscription.source || 'router-configuration',
       });
