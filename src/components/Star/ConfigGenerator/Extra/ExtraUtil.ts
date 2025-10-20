@@ -19,6 +19,7 @@ import { LetsEncrypt, PrivateCert, ExportCert } from "~/components/Star/ConfigGe
 import type { Subnets } from "~/components/Star/StarContext";
 import { GetWANInterfaces, GetAllVPNInterfaceNames, GetWANInterface, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 import type { WANLinks } from "~/components/Star/StarContext";
+import { DNSForeward } from "~/components/Star/ConfigGenerator/WAN/DNS";
 
 // Base Extra Utils
 export const Clock = (): RouterConfig => {
@@ -225,7 +226,12 @@ export const NTP = (NTPConfig: NTPConfig): RouterConfig => {
         ),
     };
 
-    return config;
+    // Create DNS forward entries for NTP servers through General forwarder
+    const dnsForwardConfigs: RouterConfig[] = servers.map(server => 
+        DNSForeward(server, "General", false, `Forward ${server} via General DNS for NTP`)
+    );
+
+    return mergeMultipleConfigs(config, ...dnsForwardConfigs);
 };
 
 export const Graph = (GraphingConfig: GraphingConfig): RouterConfig => {
