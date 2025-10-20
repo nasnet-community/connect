@@ -1,4 +1,4 @@
-import type { VPNServer, VPNServerSubnets } from "~/components/Star/StarContext";
+import type { VPNServer, VPNServerSubnets, RouterModels } from "~/components/Star/StarContext";
 
 import { 
     type RouterConfig,
@@ -22,6 +22,13 @@ import {
     CommandShortner,
     VSInboundTraffic,
 } from "~/components/Star/ConfigGenerator/";
+
+// Helper function to check if master router is CHR
+const isMasterCHR = (routerModels?: RouterModels[]): boolean => {
+    if (!routerModels) return false;
+    const masterRouter = routerModels.find(r => r.isMaster);
+    return masterRouter?.isCHR === true;
+};
 
 
 
@@ -131,7 +138,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
 };
 
 
-export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServerSubnets ): RouterConfig => {
+export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServerSubnets, routerModels?: RouterModels[] ): RouterConfig => {
     const configs: RouterConfig[] = [];
     const enabledServers: string[] = [];
 
@@ -241,8 +248,8 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
         enabledServers.push("ZeroTier");
     }
 
-    // 11. Back-to-Home VPN
-    if (vpnServer.BackToHomeServer?.enabled) {
+    // 11. Back-to-Home VPN - skip if master is CHR
+    if (vpnServer.BackToHomeServer?.enabled && !isMasterCHR(routerModels)) {
         configs.push(BTHServerWrapper());
         enabledServers.push("Back-to-Home");
     }

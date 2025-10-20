@@ -20,6 +20,7 @@ export const generateDomesticIPScript = ( time: string, interval: FrequencyValue
 
     // Build the script content as an array of commands
     const scriptCommands: string[] = [
+        ":delay 60s",
         "# ==============================================================================",
         "#  MikroTik Dynamic Address List Updater - With Source Routing",
         "# ==============================================================================",

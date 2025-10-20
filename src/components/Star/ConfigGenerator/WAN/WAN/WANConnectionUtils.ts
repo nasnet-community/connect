@@ -29,14 +29,26 @@ export const DHCPClient = ( name: string, Network: string, Interface: string ): 
         "/ip dhcp-client": [],
     };
 
+    // config["/ip dhcp-client"].push(
+    //     `add add-default-route=no comment="${name} to ${Network}" interface="${Interface}" script=":if (\\$bound=1) do={\\r\\
+    //         \\n:local gw (\\$\\"gateway-address\\" . \\"%\\" . \\$interface)\\r\\
+    //         \\n:local routeCount [/ip route print count-only where comment=\\"Route-to-${Network}-${name}\\"]\\r\\
+    //         \\n:if (\\$routeCount > 0) do={\\r\\
+    //         \\n    /ip route set [ find comment=\\"Route-to-${Network}-${name}\\" gateway!=\\$gw ] gateway=\\$gw\\r\\
+    //         \\n} else={\\r\\
+    //         \\n    /ip route add dst-address=0.0.0.0/0 gateway=\\$gw comment=\\"Route-to-${Network}-${name}\\"\\r\\
+    //         \\n}\\r\\
+    //         \\n} else={\\r\\
+    //         \\n/ip route remove [ find comment=\\"Route-to-${Network}-${name}\\" ]\\r\\
+    //         \\n}" use-peer-dns=no use-peer-ntp=no`,
+    // );
+
     config["/ip dhcp-client"].push(
         `add add-default-route=no comment="${name} to ${Network}" interface="${Interface}" script=":if (\\$bound=1) do={\\r\\
             \\n:local gw (\\$\\"gateway-address\\" . \\"%\\" . \\$interface)\\r\\
             \\n:local routeCount [/ip route print count-only where comment=\\"Route-to-${Network}-${name}\\"]\\r\\
             \\n:if (\\$routeCount > 0) do={\\r\\
             \\n    /ip route set [ find comment=\\"Route-to-${Network}-${name}\\" gateway!=\\$gw ] gateway=\\$gw\\r\\
-            \\n} else={\\r\\
-            \\n    /ip route add dst-address=0.0.0.0/0 gateway=\\$gw comment=\\"Route-to-${Network}-${name}\\"\\r\\
             \\n}\\r\\
             \\n} else={\\r\\
             \\n/ip route remove [ find comment=\\"Route-to-${Network}-${name}\\" ]\\r\\

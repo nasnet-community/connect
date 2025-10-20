@@ -136,7 +136,8 @@ export const ConfigGenerator = (state: StarState): string => {
             state.LAN.Subnets,
             state.WAN.WANLink,
             state.WAN.VPNClient,
-            state.Choose.Networks
+            state.Choose.Networks,
+            state.Choose.RouterModels
         );
         const showConfig = ShowCG(state);
 
