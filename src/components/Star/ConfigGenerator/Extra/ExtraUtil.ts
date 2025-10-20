@@ -168,6 +168,7 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
     const s4iConfig: RouterConfig = {
         "/ip firewall mangle": [
             `add action=mark-routing chain=output comment="S4I Route" content="s4i.co" new-routing-mark="to-Foreign" passthrough=no`,
+            `add action=mark-routing chain=output comment="S4I Route" src-address=192.168.30.1 new-routing-mark="to-Foreign" passthrough=no`,
         ],
     };
 
