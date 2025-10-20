@@ -28,7 +28,7 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
         PeerEndpointPort,
         PeerAllowedIPs,
         PeerPresharedKey,
-        PeerPersistentKeepalive,
+        // PeerPersistentKeepalive,
     } = config;
 
     const interfaceName = GenerateVCInterfaceName(Name, "Wireguard");
@@ -53,14 +53,19 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
         peerCommand += ` preshared-key="${PeerPresharedKey}"`;
     }
 
-    if (PeerPersistentKeepalive) {
-        peerCommand += ` persistent-keepalive=${PeerPersistentKeepalive}s`;
-    }
+    // if (PeerPersistentKeepalive) {
+        peerCommand += ` persistent-keepalive=25s`;
+    // }
 
     routerConfig["/interface wireguard peers"].push(peerCommand);
 
+    // Replace /32 with /30 for better routing compatibility
+    const finalInterfaceAddress = InterfaceAddress.endsWith('/32') 
+        ? InterfaceAddress.replace('/32', '/30') 
+        : InterfaceAddress;
+
     routerConfig["/ip address"].push(
-        `add address="${InterfaceAddress}" interface="${interfaceName}" comment="VPN-client-${Name}"`,
+        `add address="${finalInterfaceAddress}" interface="${interfaceName}" comment="VPN-client-${Name}"`,
     );
 
     // routerConfig["/ip route"].push(

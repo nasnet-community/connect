@@ -10,6 +10,7 @@ import type {
     VPNClient,
     WANLinkType,
     Networks,
+    RouterModels,
 } from "~/components/Star/StarContext";
 import {
     Timezone,
@@ -32,18 +33,34 @@ import {
     generateDomesticIPScriptOneTime,
 } from "~/components/Star/ConfigGenerator";
 
+// Helper function to check if master router is CHR
+const isMasterCHR = (routerModels?: RouterModels[]): boolean => {
+    if (!routerModels) return false;
+    const masterRouter = routerModels.find(r => r.isMaster);
+    return masterRouter?.isCHR === true;
+};
 
-export const BaseExtra = (): RouterConfig => {
+
+export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Add base system clock configuration
     configs.push(Clock());
 
-    // Add system update configuration
-    configs.push(update());
+    // Add system update configuration - skip if master is CHR
+    if (!isMasterCHR(routerModels)) {
+        configs.push(update());
+    }
 
     // Add public certificate configuration
     configs.push(PublicCert());
+
+    // Add certificate settings configuration
+    configs.push({
+        "/certificate settings": [
+            "set builtin-trust-anchors=trusted crl-download=yes crl-store=system crl-use=yes"
+        ]
+    });
 
     // Merge all configurations
     return mergeMultipleConfigs(...configs);
@@ -147,7 +164,7 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks ): RouterConfig => {
+export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[] ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Certificate configuration
@@ -165,8 +182,8 @@ export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subn
         configs.push(Graph(usefulServicesConfig.graphing));
     }
 
-    // Handle Cloud DDNS configuration
-    if (usefulServicesConfig.cloudDDNS) {
+    // Handle Cloud DDNS configuration - skip if master is CHR
+    if (usefulServicesConfig.cloudDDNS && !isMasterCHR(routerModels)) {
         // Process each DDNS entry
         usefulServicesConfig.cloudDDNS.ddnsEntries.forEach(entry => {
             configs.push(DDNS(entry));
@@ -352,9 +369,10 @@ export const ExtraCG = (
     wanLinks?: WANLinks,
     vpnClient?: VPNClient,
     networks?: Networks,
+    routerModels?: RouterModels[],
 ): RouterConfig => {
     const configs: RouterConfig[] = [
-        BaseExtra(),
+        BaseExtra(routerModels),
         generateDomesticIPScriptOneTime(),
         // PublicCert(),
     ];
@@ -379,11 +397,13 @@ export const ExtraCG = (
 
     // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)
     if (ExtraConfigState.usefulServices) {
-        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks));
+        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks, routerModels));
     }
 
-    // Add Cloud DDNS configuration
-    configs.push(CloudDDNS(wanLinkType));
+    // Add Cloud DDNS configuration - skip if master is CHR
+    if (!isMasterCHR(routerModels)) {
+        configs.push(CloudDDNS(wanLinkType));
+    }
 
     return mergeMultipleConfigs(...configs);
 };

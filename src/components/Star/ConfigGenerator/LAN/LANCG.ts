@@ -85,7 +85,11 @@ export const LANCG = (state: StarState): RouterConfig => {
     }
 
     if (state.LAN.VPNServer) {
-        configs.push(VPNServerWrapper(state.LAN.VPNServer, (state.LAN.Subnets?.VPNServerSubnets || {}) as any));
+        configs.push(VPNServerWrapper(
+            state.LAN.VPNServer, 
+            (state.LAN.Subnets?.VPNServerSubnets || {}) as any,
+            state.Choose.RouterModels
+        ));
     }
 
 

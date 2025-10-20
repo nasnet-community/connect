@@ -484,6 +484,38 @@ export const FailoverGateway = ( interfaces: MultiWANInterface[], Table: string 
 };
 
 // Failover Recursive - Check connectivity to public IPs via specific gateways
+// export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: string ): RouterConfig => {
+//     const config: RouterConfig = {
+//         "/ip route": [],
+//     };
+
+//     const routes = config["/ip route"];
+//     const routingTable = Table ? `routing-table="${Table}"` : "";
+
+//     // 1. Create recursive host routes
+//     // These monitor connectivity to public IPs via ISP gateways
+//     interfaces.forEach((wan) => {
+//         const routeComment = `Route-to-${wan.network}-${wan.name}`;
+//         routes.push(
+//             `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+//             ${routingTable} target-scope="10" scope="10" comment="${routeComment}"`,
+//         );
+//     });
+
+//     // 2. Create main default routes pointing to the check IPs
+//     // These use the recursive routes to determine availability
+//     interfaces.forEach((wan) => {
+//         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
+//         routes.push(
+//             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
+//             distance=${wan.distance} target-scope="10" scope="30" comment="${routeComment}"`,
+//         );
+//     });
+
+//     return config;
+// };
+
+
 export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: string ): RouterConfig => {
     const config: RouterConfig = {
         "/ip route": [],
@@ -497,8 +529,8 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
     interfaces.forEach((wan) => {
         const routeComment = `Route-to-${wan.network}-${wan.name}`;
         routes.push(
-            `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
-            ${routingTable} target-scope="10" scope="10" comment="${routeComment}"`,
+            `add dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+            ${routingTable} scope="10" comment="${routeComment}"`,
         );
     });
 
@@ -508,12 +540,13 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance=${wan.distance} target-scope="10" scope="30" comment="${routeComment}"`,
+            distance=${wan.distance} target-scope="11" comment="${routeComment}"`,
         );
     });
 
     return config;
 };
+
 
 // Failover Netwatch - Monitor IPs and control routes via scripts
 export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string ): RouterConfig => {
