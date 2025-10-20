@@ -17,7 +17,7 @@ export const ExportOpenVPN = (): RouterConfig => {
     // Create the OpenVPN Client Configuration Export script content as RouterConfig
     const exportOpenVPNScriptContent: RouterConfig = {
         "": [
-            ":delay 130s;",
+            ":delay 150s;",
             "# ===========================================",
             "# OpenVPN Client Configuration Export Script",
             "# ===========================================",

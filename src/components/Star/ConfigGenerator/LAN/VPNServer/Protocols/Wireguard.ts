@@ -14,7 +14,7 @@ export const ExportWireGuard = (): RouterConfig => {
     // Create simplified WireGuard export script following RouterOS best practices
     const scriptContent: RouterConfig = {
         "": [
-            `:delay 130s;`,
+            `:delay 150s;`,
             "# ===========================================",
             "# WireGuard Client Configuration Export",
             "# ===========================================",
@@ -406,7 +406,7 @@ export const ExportWireGuard = (): RouterConfig => {
 export const WireguardPeerAddress = ( interfaceName: string, scriptName: string = "WireGuard-Peer-Update", startTime: string = "startup" ): RouterConfig => {
     const scriptContent: RouterConfig = {
         "": [
-            `:delay 100s;`,
+            `:delay 120s;`,
             "# Define the WireGuard interface name as a parameter for the script",
             "# To run: /system script run <script_name> wg-interface=<your_wg_interface_name>",
             `:local wgInterfaceName "${interfaceName}";`,

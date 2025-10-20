@@ -31,6 +31,7 @@ import {
     DDNS,
     mapNetworkToRoutingTable,
     generateDomesticIPScriptOneTime,
+    Logging,
 } from "~/components/Star/ConfigGenerator";
 
 // Helper function to check if master router is CHR
@@ -54,6 +55,9 @@ export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
 
     // Add public certificate configuration
     configs.push(PublicCert());
+
+    // Add system logging configuration
+    configs.push(Logging());
 
     // Add certificate settings configuration
     configs.push({
