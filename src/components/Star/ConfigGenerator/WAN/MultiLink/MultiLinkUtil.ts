@@ -540,7 +540,7 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance=${wan.distance} target-scope="11" comment="${routeComment}"`,
+            distance=${wan.distance+"10"} target-scope="11" comment="${routeComment}"`,
         );
     });
 
