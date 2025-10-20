@@ -1,5 +1,17 @@
-import { generateDomesticIPScript } from "~/components/Star/ConfigGenerator";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
+import { 
+    type RouterConfig,
+    generateDomesticIPScript,
+    mergeMultipleConfigs,
+    extractBridgeNames,
+    LetsEncrypt,
+    PrivateCert,
+    ExportCert,
+    GetWANInterfaces,
+    GetAllVPNInterfaceNames,
+    GetWANInterface,
+    GenerateVCInterfaceName,
+    DNSForeward,
+} from "~/components/Star/ConfigGenerator";
 import type {
     IntervalConfig,
     CertificateConfig,
@@ -10,16 +22,11 @@ import type {
     NATPMPConfig,
     VPNClient,
     Networks,
+    WANLinkType,
+    Subnets,
+    WANLinks,
 } from "~/components/Star/StarContext";
-import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
-import { extractBridgeNames } from "~/components/Star/ConfigGenerator/LAN/Networks";
-// import { OneTimeScript, ScriptAndScheduler } from "~/components/Star/ConfigGenerator";
-import type { WANLinkType } from "~/components/Star/StarContext";
-import { LetsEncrypt, PrivateCert, ExportCert } from "~/components/Star/ConfigGenerator";
-import type { Subnets } from "~/components/Star/StarContext";
-import { GetWANInterfaces, GetAllVPNInterfaceNames, GetWANInterface, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-import type { WANLinks } from "~/components/Star/StarContext";
-import { DNSForeward } from "~/components/Star/ConfigGenerator/WAN/DNS";
+
 
 // Base Extra Utils
 export const Clock = (): RouterConfig => {
