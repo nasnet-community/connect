@@ -81,6 +81,7 @@ export const AddressListEntry = (Address: string): RouterConfig => {
         const dnsForward = DNSForeward(
             Address, 
             "Foreign", 
+            true,
             `VPN Endpoint ${Address} - Route through Foreign DNS`
         );
         return mergeMultipleConfigs(config, dnsForward);
