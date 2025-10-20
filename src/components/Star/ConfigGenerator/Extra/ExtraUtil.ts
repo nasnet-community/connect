@@ -217,7 +217,7 @@ export const Certificate = ( certificateConfig: CertificateConfig ): RouterConfi
 };
 
 export const NTP = (NTPConfig: NTPConfig): RouterConfig => {
-    // Use provided servers or default to pool.ntp.org if empty
+    // Use provided servers or default to pool.ntp.org if empty j
     const servers =
         NTPConfig.servers && NTPConfig.servers.length > 0
             ? NTPConfig.servers
