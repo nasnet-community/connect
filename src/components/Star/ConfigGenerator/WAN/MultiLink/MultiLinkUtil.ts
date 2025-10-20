@@ -1,7 +1,5 @@
-import type { BondingConfig } from "~/components/Star/StarContext";
+import type { BondingConfig, WANLinkConfig, WANLinks, VPNClient } from "~/components/Star/StarContext";
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { WANLinkConfig, WANLinks } from "~/components/Star/StarContext";
-import type { VPNClient } from "~/components/Star/StarContext";
 import { GetWANInterface, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 // Common interface for Multi-WAN and Failover functions
@@ -68,17 +66,17 @@ export const ForeignCheckIPs = [
     // // Cloudflare DNS
     // "1.1.1.1",
     // "1.0.0.1",
+    // Level3 DNS
+    "4.2.2.1",
+    "4.2.2.2",
+    "4.2.2.3",
+    "4.2.2.4",
     // Quad9 DNS
     "9.9.9.9",
     "149.112.112.112",
     // OpenDNS
     "208.67.222.222",
     "208.67.220.220",
-    // Level3 DNS
-    "4.2.2.1",
-    "4.2.2.2",
-    "4.2.2.3",
-    "4.2.2.4",
     // Google Secondary
     "8.26.56.26",
     "8.20.247.20",
@@ -540,7 +538,7 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance=${wan.distance+"10"} target-scope="11" comment="${routeComment}"`,
+            distance=${wan.distance+"0"} target-scope="11" comment="${routeComment}"`,
         );
     });
 
@@ -559,32 +557,36 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
     const netwatchRules = config["/tool netwatch"];
     const routingTable = Table ? `routing-table="${Table}"` : "";
 
-    // 1. Create main default routes (controlled by Netwatch)
+    // 1. Create recursive host routes
+    // These monitor connectivity to public IPs via ISP gateways
     interfaces.forEach((wan) => {
+        const routeComment = `Route-to-${wan.network}-${wan.name}`;
         routes.push(
-            `add dst-address="0.0.0.0/0" gateway="${wan.gateway}" ${routingTable} distance=${wan.distance} \\
-            comment="${wan.name}_DEFAULT_ROUTE" target-scope="10" scope="30"`,
+            `add dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+            ${routingTable} scope="10" comment="${routeComment}"`,
         );
     });
 
-    // 2. Create specific host routes for Netwatch checks
-    // Ensures checks go through correct ISP even if main route is disabled
+    // 2. Create main default routes pointing to the check IPs
+    // These use the recursive routes to determine availability
     interfaces.forEach((wan) => {
+        const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
-            `add dst-address="${wan.checkIP}" gateway="${wan.gateway}" ${routingTable} \\
-            comment="${wan.name}_CHECK_ROUTE" target-scope="10" scope="30"`,
+            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
+            distance="${wan.distance+"0"}" target-scope="11" comment="${routeComment}"`,
         );
     });
 
     // 3. Configure Netwatch entries with up/down scripts
     interfaces.forEach((wan) => {
-        const interval = wan.interval || "5s";
-        const timeout = wan.timeout || "5s";
-        const upScript = `/ip route enable [find comment="${wan.name}_DEFAULT_ROUTE"]; /log info "${wan.name} is UP, switching back"`;
-        const downScript = `/ip route disable [find comment="${wan.name}_DEFAULT_ROUTE"]; /log info "${wan.name} is DOWN, switching to backup"`;
+        const interval = wan.interval || "1s";
+        const timeout = wan.timeout || "1s";
+        const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is UP, switching back\\"`;
+        const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is DOWN, switching to backup\\"`;
 
         netwatchRules.push(
             `add host="${wan.checkIP}" interval=${interval} timeout=${timeout} \\
+            ignore-initial-down=no ignore-initial-up=yes start-delay=0ms startup-delay=0s \\
             up-script="${upScript}" down-script="${downScript}" comment="Failover Netwatch - ${wan.name}"`,
         );
     });

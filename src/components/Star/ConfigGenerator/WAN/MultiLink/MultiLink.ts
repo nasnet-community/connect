@@ -4,7 +4,8 @@ import {
     PCCMangle,
     NTHMangle,
     LoadBalanceRoute,
-    FailoverRecursive,
+    // FailoverRecursive,
+    FailoverNetwatch,
     combineMultiWANInterfaces,
     type MultiWANInterface,
 } from "~/components/Star/ConfigGenerator";
@@ -56,7 +57,9 @@ export const MainTableRoute = ( vpnClient?: VPNClient, wanLinks?: WANLinks ): Ro
 
     // Generate recursive failover routes for main table
     // Uses check-gateway=ping with recursive gateway checking
-    return FailoverRecursive(allInterfaces, "main");
+    // return FailoverRecursive(allInterfaces, "main");
+    return FailoverNetwatch(allInterfaces, "main");
+
 };
 
 
