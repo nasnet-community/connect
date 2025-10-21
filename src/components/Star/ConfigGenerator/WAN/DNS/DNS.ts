@@ -1,5 +1,5 @@
 import type { Networks, Subnets, WANLinks, VPNClient } from "~/components/Star/StarContext";
-import  { type RouterConfig, extractBridgeNames, DomesticCheckIPs, ForeignCheckIPs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
+import  { type RouterConfig, extractBridgeNames, mergeMultipleConfigs, DomesticCheckIPs, ForeignCheckIPs, combineMultiWANInterfaces } from "~/components/Star/ConfigGenerator";
 
 export const BaseDNSSettins = (): RouterConfig => {
     const config: RouterConfig = {
@@ -10,6 +10,177 @@ export const BaseDNSSettins = (): RouterConfig => {
 
     return config;
 };
+
+export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLinks, VPNClient?: VPNClient): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip firewall nat": []
+    };
+
+    const natRules = config["/ip firewall nat"];
+
+    // Get the exact same interfaces with CheckIPs as used in routing logic
+    const allInterfaces = combineMultiWANInterfaces(VPNClient, WANLinks);
+    
+    // Extract interfaces by network type
+    const foreignInterfaces = allInterfaces.filter(i => i.network === "Foreign");
+    const domesticInterfaces = allInterfaces.filter(i => i.network === "Domestic");
+    const vpnInterfaces = allInterfaces.filter(i => i.network === "VPN");
+
+    // Helper function to add DNS NAT rules for a network
+    const addDNSNATRules = (networkName: string, addressListName: string, checkIP: string) => {
+        natRules.push(
+            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=udp src-address-list="${addressListName}" to-addresses=${checkIP}`
+        );
+        natRules.push(
+            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=tcp src-address-list="${addressListName}" to-addresses=${checkIP}`
+        );
+    };
+
+    // 1. Base Networks
+    if (networks.BaseNetworks && subnets?.BaseSubnets) {
+        // Split Network - uses same CheckIP as VPN network (routes to VPN)
+        if (networks.BaseNetworks.Split && subnets.BaseSubnets.Split?.subnet) {
+            const checkIP = vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+            addDNSNATRules("Split", "Split-LAN", checkIP);
+        }
+
+        // Domestic Network - uses first Domestic CheckIP from routing
+        if (networks.BaseNetworks.Domestic && subnets.BaseSubnets.Domestic?.subnet) {
+            const checkIP = domesticInterfaces[0]?.checkIP || DomesticCheckIPs[0];
+            addDNSNATRules("Domestic", "Domestic-LAN", checkIP);
+        }
+
+        // Foreign Network - uses first Foreign CheckIP from routing
+        if (networks.BaseNetworks.Foreign && subnets.BaseSubnets.Foreign?.subnet) {
+            const checkIP = foreignInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+            addDNSNATRules("Foreign", "Foreign-LAN", checkIP);
+        }
+
+        // VPN Network - uses first VPN CheckIP from routing
+        if (networks.BaseNetworks.VPN && subnets.BaseSubnets.VPN?.subnet) {
+            const checkIP = vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+            addDNSNATRules("VPN", "VPN-LAN", checkIP);
+        }
+    }
+
+    // 2. Additional Domestic Networks - map by index to Domestic WAN interfaces
+    if (networks.DomesticNetworks && subnets?.DomesticSubnets) {
+        subnets.DomesticSubnets.forEach((subnet, index) => {
+            if (subnet.subnet) {
+                const networkName = subnet.name || "Domestic";
+                const addressListName = `Domestic-${networkName}-LAN`;
+                // Use corresponding Domestic interface by index, fallback to first if index out of bounds
+                const checkIP = domesticInterfaces[index]?.checkIP || domesticInterfaces[0]?.checkIP || DomesticCheckIPs[0];
+                addDNSNATRules(`Domestic-${networkName}`, addressListName, checkIP);
+            }
+        });
+    }
+
+    // 3. VPN Client Networks - match by name to VPN interfaces
+    if (networks.VPNClientNetworks && subnets?.VPNClientSubnets) {
+        const vpnClientNetworks = networks.VPNClientNetworks;
+        const vpnClientSubnets = subnets.VPNClientSubnets;
+
+        // Wireguard
+        if (vpnClientNetworks.Wireguard && vpnClientSubnets.Wireguard) {
+            vpnClientSubnets.Wireguard.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "WG-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+
+        // OpenVPN
+        if (vpnClientNetworks.OpenVPN && vpnClientSubnets.OpenVPN) {
+            vpnClientSubnets.OpenVPN.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "OVPN-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+
+        // L2TP
+        if (vpnClientNetworks.L2TP && vpnClientSubnets.L2TP) {
+            vpnClientSubnets.L2TP.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "L2TP-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+
+        // PPTP
+        if (vpnClientNetworks.PPTP && vpnClientSubnets.PPTP) {
+            vpnClientSubnets.PPTP.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "PPTP-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+
+        // SSTP
+        if (vpnClientNetworks.SSTP && vpnClientSubnets.SSTP) {
+            vpnClientSubnets.SSTP.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "SSTP-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+
+        // IKev2
+        if (vpnClientNetworks.IKev2 && vpnClientSubnets.IKev2) {
+            vpnClientSubnets.IKev2.forEach((subnet) => {
+                if (subnet.subnet) {
+                    const networkName = subnet.name || "IKev2-Client";
+                    const addressListName = `VPN-${networkName}-LAN`;
+                    // Find matching VPN interface by name
+                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
+                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                }
+            });
+        }
+    }
+
+    // 4. Additional Foreign Networks - map by index to Foreign WAN interfaces
+    if (networks.ForeignNetworks && subnets?.ForeignSubnets) {
+        subnets.ForeignSubnets.forEach((subnet, index) => {
+            if (subnet.subnet) {
+                const networkName = subnet.name || "Foreign";
+                const addressListName = `Foreign-${networkName}-LAN`;
+                // Use corresponding Foreign interface by index, fallback to first if index out of bounds
+                const checkIP = foreignInterfaces[index]?.checkIP || foreignInterfaces[0]?.checkIP || ForeignCheckIPs[0];
+                addDNSNATRules(`Foreign-${networkName}`, addressListName, checkIP);
+            }
+        });
+    }
+
+    return config;
+}
 
 export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
     const config: RouterConfig = {
@@ -165,12 +336,30 @@ export const DOH = (): RouterConfig => {
         "/ip dns": [],
     };
 
-    // config["/ip dns static"].push(
-    //     `add address=8.8.8.8 name="google.com" comment="DOH-Domain-Static-Entry"`,
-    // );
+    config["/ip dns static"].push(
+        // Google
+        `add address="8.8.8.8" name="dns.google" comment="DOH-Domain-Static-Entry"`,
+        `add address="8.8.4.4" name="dns.google" comment="DOH-Domain-Static-Entry"`,
+        `add address="2001:4860:4860::8888" name="dns.google" comment="DOH-Domain-Static-Entry"`,
+        `add address="2001:4860:4860::8844" name="dns.google" comment="DOH-Domain-Static-Entry"`, 
+
+        // Cloudflare
+        `add address="1.1.1.1" name="cloudflare-dns.com" comment="DOH-Domain-Static-Entry"`,
+        `add address="1.0.0.1" name="cloudflare-dns.com" comment="DOH-Domain-Static-Entry"`,
+        `add address="2606:4700:4700::1111" name="cloudflare-dns.com" comment="DOH-Domain-Static-Entry"`,
+        `add address="2606:4700:4700::1001" name="cloudflare-dns.com" comment="DOH-Domain-Static-Entry"`,
+
+        // NextDNS
+        `add address="45.90.28.140" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
+        `add address="45.90.30.140" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
+        `add address="2a07:a8c0::9d:4621" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
+        `add address="2a07:a8c1::9d:4621" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
+
+    );
 
     config["/ip dns"].push(
-        `set use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=no`,
+        // `set servers=8.8.8.8,8.8.4.4 use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=yes doh-max-concurrent-queries=100 doh-max-server-connections=10`,
+        `set use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=no doh-max-concurrent-queries=100 doh-max-server-connections=10`,
     );
 
     return config;
@@ -218,6 +407,14 @@ export const GeneralFWD = (): RouterConfig => {
     const Domains = [
         "curl.se",
         "pki.goog",
+        "cacerts.digicert.com",
+        "crl.d-trust.net",
+        "d-trust.net",
+        "accv.es",
+        "crl.certigna.fr",
+        "crl.dhimyotis.com",
+        "crl.securetrust.com",
+        "crl.comodoca.com",
     ];
 
     // Create DNS forward entries for all domains through General forwarder
@@ -232,6 +429,7 @@ export const GeneralFWD = (): RouterConfig => {
 export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
     return mergeMultipleConfigs(
         BaseDNSSettins(),
+        DNSNAT(networks, subnets, wanLinks, vpnClient),
         DNSForwarders(networks, wanLinks, vpnClient),
         MDNS(networks, subnets),
         IRTLDRegex(),
