@@ -1,7 +1,10 @@
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { VPNClientType, VPNClient } from "~/components/Star/StarContext";
-import { DNSForeward, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
-// import type { WANLinkType } from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    DNSForeward, 
+    mergeMultipleConfigs,
+    ScriptAndScheduler 
+} from "~/components/Star/ConfigGenerator";
 
 // Check if a string is a Fully Qualified Domain Name (FQDN) vs an IP address
 export const isFQDN = (address: string): boolean => {
@@ -66,13 +69,13 @@ export const InterfaceList = (InterfaceName: string): RouterConfig => {
     return config;
 };
 
-export const AddressListEntry = (Address: string): RouterConfig => {
+export const AddressListEntry = (Address: string, InterfaceName: string, name: string): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall address-list": [],
     };
 
     config["/ip firewall address-list"].push(
-        `add address="${Address}" list=VPNE comment="VPN-${Address} Endpoint for routing"`,
+        `add address="${Address}" list=VPNE comment="VPN-${name} Interface:${InterfaceName} Endpoint:${Address} - Endpoint for routing"`,
     );
 
     // If the address is a domain name (FQDN), create DNS forward entry through Foreign forwarder
@@ -107,8 +110,8 @@ export const VPNEndpointMangle = (): RouterConfig => {
     return config;
 };
 
-export const AddressList = (Address: string): RouterConfig => {
-    const addressConfig = AddressListEntry(Address);
+export const AddressList = (Address: string, InterfaceName: string, name: string): RouterConfig => {
+    const addressConfig = AddressListEntry(Address, InterfaceName, name);
     const mangleConfig = VPNEndpointMangle();
     
     return {
@@ -182,7 +185,7 @@ export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, n
     const routeConfig = RouteToVPN(InterfaceName, name);
     config["/ip route"].push(...routeConfig["/ip route"]);
 
-    const addressListConfig = AddressListEntry(EndpointAddress);
+    const addressListConfig = AddressListEntry(EndpointAddress, InterfaceName, name);
     config["/ip firewall address-list"].push(
         ...addressListConfig["/ip firewall address-list"],
     );
@@ -240,4 +243,142 @@ export const GetAllVPNInterfaceNames = (vpnClient: VPNClient): string[] => {
 
 export const GetVPNInterfaceName = (name: string, protocol: VPNClientType): string => {
     return GenerateVCInterfaceName(name, protocol);
+};
+
+export const VPNEScript = (): RouterConfig => {
+    // Build the script content as an array of commands
+    const scriptCommands: string[] = [
+        "# VPNE Address List to Routing Rules Manager Script",
+        "# This script processes VPNE address list and creates routing rules for resolved IPs",
+        "",
+        ':local listName "VPNE"',
+        ':local routingTable "to-Foreign"',
+        ':local processedIPs [:toarray ""]',
+        "",
+        "# Log start",
+        ':log info "Starting VPNE routing rules update"',
+        "",
+        "# Process all entries in the VPNE address list",
+        ":foreach entry in=[/ip firewall address-list find where list=$listName] do={",
+        "    ",
+        "    :local entryAddress [/ip firewall address-list get $entry address]",
+        "    :local entryComment [/ip firewall address-list get $entry comment]",
+        "    :local entryDynamic [/ip firewall address-list get $entry dynamic]",
+        "    ",
+        "    # Only process entries that are actual IP addresses (not domain names)",
+        "    # Dynamic=true entries are the resolved IPs from domains",
+        "    # Static IP entries will have dynamic=false and a valid IP",
+        "    ",
+        "    :local isValidIP false",
+        "    :local ipAddr \"\"",
+        "    ",
+        "    # Check if the address is a valid IP",
+        '    :if ([:typeof [:toip $entryAddress]] != "nil") do={',
+        "        :set isValidIP true",
+        "        :set ipAddr $entryAddress",
+        "    }",
+        "    ",
+        "    # Process only valid IPs (both static and dynamic resolved ones)",
+        "    :if ($isValidIP = true) do={",
+        "        ",
+        "        # Format as /32 if no subnet specified",
+        "        :local dstAddr $ipAddr",
+        '        :if ([:find $dstAddr "/"] < 0) do={',
+        "            :set dstAddr ($ipAddr)",
+        "        }",
+        "        ",
+        "        # Extract useful info from comment for the routing rule comment",
+        '        :local ruleComment "VPNE-Route"',
+        "        :if ($entryDynamic = true) do={",
+        "            # This is a resolved IP from a domain",
+        '            :set ruleComment ("VPNE-Resolved: " . $entryComment)',
+        "        } else={",
+        "            # This is a static IP entry",
+        "            :if ([:len $entryComment] > 0) do={",
+        '                :set ruleComment ("VPNE-Static: " . $entryComment)',
+        "            } else={",
+        '                :set ruleComment ("VPNE-Static: " . $ipAddr)',
+        "            }",
+        "        }",
+        "        ",
+        "        # Check if routing rule already exists for this IP",
+        "        :local existingRule [/routing rule find where dst-address=$dstAddr]",
+        "        ",
+        "        :if ([:len $existingRule] = 0) do={",
+        "            # Create new routing rule",
+        "            :do {",
+        "                /routing rule add \\",
+        "                    action=lookup-only-in-table \\",
+        "                    disabled=no \\",
+        "                    dst-address=$dstAddr \\",
+        "                    table=$routingTable \\",
+        "                    comment=$ruleComment",
+        '                :log info ("Created routing rule for: " . $dstAddr)',
+        "            } on-error={",
+        '                :log error ("Failed to create routing rule for: " . $dstAddr)',
+        "            }",
+        "        } else={",
+        "            # Update existing rule if needed (check if it's our rule and table is correct)",
+        "            :foreach rule in=$existingRule do={",
+        "                :local currentTable [/routing rule get $rule table]",
+        "                :local currentComment [/routing rule get $rule comment]",
+        "                ",
+        '                # Only update if it\'s a VPNE rule and table is different',
+        '                :if (([:find $currentComment "VPNE"] >= 0) && ($currentTable != $routingTable)) do={',
+        "                    :do {",
+        "                        /routing rule set $rule \\",
+        "                            table=$routingTable \\",
+        "                            comment=$ruleComment \\",
+        "                            disabled=no",
+        '                        :log info ("Updated routing rule for: " . $dstAddr)',
+        "                    } on-error={",
+        '                        :log error ("Failed to update routing rule for: " . $dstAddr)',
+        "                    }",
+        "                }",
+        "            }",
+        "        }",
+        "        ",
+        "        # Add to processed list for cleanup later",
+        "        :set processedIPs ($processedIPs, $dstAddr)",
+        "    }",
+        "}",
+        "",
+        "# Optional: Remove orphaned VPNE routing rules",
+        "# (Rules that exist but no longer have corresponding IPs in address list)",
+        ':log info "Checking for orphaned VPNE routing rules"',
+        ':foreach rule in=[/routing rule find where comment~"^VPNE-"] do={',
+        "    :local ruleDst [/routing rule get $rule dst-address]",
+        "    :local found false",
+        "    ",
+        "    :foreach procIP in=$processedIPs do={",
+        "        :if ($procIP = $ruleDst) do={",
+        "            :set found true",
+        "        }",
+        "    }",
+        "    ",
+        "    :if ($found = false) do={",
+        '        :log warning ("Removing orphaned VPNE routing rule: " . $ruleDst)',
+        "        :do {",
+        "            /routing rule remove $rule",
+        "        } on-error={",
+        '            :log error ("Failed to remove orphaned rule: " . $ruleDst)',
+        "        }",
+        "    }",
+        "}",
+        "",
+        ':log info ("VPNE routing rules update completed. Processed " . [:len $processedIPs] . " IP addresses")',
+    ];
+
+    // Create the RouterConfig with the script content
+    const scriptContent: RouterConfig = {
+        "": scriptCommands,
+    };
+
+    // Use ScriptAndScheduler to create a scheduled script
+    return ScriptAndScheduler({
+        ScriptContent: scriptContent,
+        Name: "VPNE-Routing-Manager",
+        interval: "1m",
+        startTime: "startup",
+    });
 };

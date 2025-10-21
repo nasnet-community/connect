@@ -1,20 +1,19 @@
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { VPNClient, WANLinks } from "~/components/Star/StarContext";
-import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import {
-    convertVPNClientToMultiWAN,
-    FailoverRecursive,
-    LoadBalanceRoute,
-} from "~/components/Star/ConfigGenerator";
-import {
+    type RouterConfig,
+    mergeMultipleConfigs,
     WireguardClientWrapper,
     OpenVPNClientWrapper,
     PPTPClientWrapper,
     L2TPClientWrapper,
     SSTPClientWrapper,
     IKeV2ClientWrapper,
+    convertVPNClientToMultiWAN,
+    FailoverRecursive,
+    LoadBalanceRoute,
+    VPNEndpointMangle,
+    VPNEScript,
 } from "~/components/Star/ConfigGenerator";
-import { VPNEndpointMangle } from "./VPNClientUtils";
 
 
 
@@ -157,6 +156,7 @@ export const VPNClientWrapper = ( vpnClient: VPNClient, wanLinks?: WANLinks ): R
     // 3. Add VPN endpoint mangle rules (once for all VPN clients)
     if (vpnInterfaces.length > 0) {
         configs.push(VPNEndpointMangle());
+        configs.push(VPNEScript());
     }
 
     // Merge all VPN client configurations

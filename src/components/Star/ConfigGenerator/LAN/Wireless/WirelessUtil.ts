@@ -138,7 +138,7 @@ export function StationMode( SSID: string, Password: string, Band: Band, name?: 
     };
 
     const DInterfaceName = DefaultBandToInterfaceName(Band);
-    const command = `set [ find default-name=${DInterfaceName} ] comment="${name} ${Band}WAN" configuration.mode=station .ssid="${SSID}" \\
+    const command = `set [ find default-name=${DInterfaceName} ] comment="${name} ${Band}WAN" configuration.mode=station-pseudobridge .ssid="${SSID}" \\
     security.passphrase="${Password}" .station-roaming=yes .multicast-enhance=enabled security.ft=yes .ft-over-ds=yes steering.rrm=yes .wnm=yes disabled=no`;
     config["/interface wifi"].push(command);
     return config;

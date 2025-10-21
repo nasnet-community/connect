@@ -298,8 +298,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Create address list for VPN endpoint",
-                { Address: "203.0.113.50" },
-                () => AddressList("203.0.113.50"),
+                { Address: "203.0.113.50", InterfaceName: "ovpn-client-test", name: "test" },
+                () => AddressList("203.0.113.50", "ovpn-client-test", "test"),
             );
 
             validateRouterConfig(result, [
@@ -312,8 +312,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Add address to VPNE list",
-                { Address: "1.2.3.4" },
-                () => AddressList("1.2.3.4"),
+                { Address: "1.2.3.4", InterfaceName: "wireguard-client-wg1", name: "wg1" },
+                () => AddressList("1.2.3.4", "wireguard-client-wg1", "wg1"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
@@ -326,8 +326,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Create mangle rules for endpoint routing",
-                { Address: "8.8.8.8" },
-                () => AddressList("8.8.8.8"),
+                { Address: "8.8.8.8", InterfaceName: "pptp-client-pptp1", name: "pptp1" },
+                () => AddressList("8.8.8.8", "pptp-client-pptp1", "pptp1"),
             );
 
             validateRouterConfig(result, ["/ip firewall mangle"]);
@@ -338,8 +338,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Mark connection for VPN endpoint",
-                { Address: "1.1.1.1" },
-                () => AddressList("1.1.1.1"),
+                { Address: "1.1.1.1", InterfaceName: "l2tp-client-l2tp1", name: "l2tp1" },
+                () => AddressList("1.1.1.1", "l2tp-client-l2tp1", "l2tp1"),
             );
 
             validateRouterConfig(result, ["/ip firewall mangle"]);
@@ -352,8 +352,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Mark routing for VPN endpoint",
-                { Address: "9.9.9.9" },
-                () => AddressList("9.9.9.9"),
+                { Address: "9.9.9.9", InterfaceName: "sstp-client-sstp1", name: "sstp1" },
+                () => AddressList("9.9.9.9", "sstp-client-sstp1", "sstp1"),
             );
 
             validateRouterConfig(result, ["/ip firewall mangle"]);
@@ -373,8 +373,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Route endpoint through to-Foreign table",
-                { Address: "203.0.113.1" },
-                () => AddressList("203.0.113.1"),
+                { Address: "203.0.113.1", InterfaceName: "ike2-client-ike1", name: "ike1" },
+                () => AddressList("203.0.113.1", "ike2-client-ike1", "ike1"),
             );
 
             validateRouterConfig(result, ["/ip firewall mangle"]);
@@ -386,8 +386,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Handle standard IPv4 address",
-                { Address: "192.168.1.100" },
-                () => AddressList("192.168.1.100"),
+                { Address: "192.168.1.100", InterfaceName: "ovpn-client-prod", name: "prod" },
+                () => AddressList("192.168.1.100", "ovpn-client-prod", "prod"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
@@ -398,20 +398,20 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Verify descriptive comments",
-                { Address: "10.0.0.1" },
-                () => AddressList("10.0.0.1"),
+                { Address: "10.0.0.1", InterfaceName: "wireguard-client-main", name: "main" },
+                () => AddressList("10.0.0.1", "wireguard-client-main", "main"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
-            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-10.0.0.1 Endpoint for routing"');
+            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-main Interface:wireguard-client-main Endpoint:10.0.0.1 - Endpoint for routing"');
         });
 
         it("should handle FQDN addresses", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Handle FQDN address",
-                { Address: "vpn.example.com" },
-                () => AddressList("vpn.example.com"),
+                { Address: "vpn.example.com", InterfaceName: "ovpn-client-example", name: "example" },
+                () => AddressList("vpn.example.com", "ovpn-client-example", "example"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
@@ -424,8 +424,8 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressListEntry",
                 "Create address list entry without mangle rules",
-                { Address: "vpn.server.com" },
-                () => AddressListEntry("vpn.server.com"),
+                { Address: "vpn.server.com", InterfaceName: "ovpn-client-server", name: "server" },
+                () => AddressListEntry("vpn.server.com", "ovpn-client-server", "server"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
@@ -439,12 +439,12 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressListEntry",
                 "Add address with descriptive comment",
-                { Address: "10.20.30.40" },
-                () => AddressListEntry("10.20.30.40"),
+                { Address: "10.20.30.40", InterfaceName: "wireguard-client-test", name: "test" },
+                () => AddressListEntry("10.20.30.40", "wireguard-client-test", "test"),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
-            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-10.20.30.40 Endpoint for routing"');
+            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-test Interface:wireguard-client-test Endpoint:10.20.30.40 - Endpoint for routing"');
         });
     });
 
