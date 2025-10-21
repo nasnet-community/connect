@@ -601,7 +601,7 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
     // 3. Configure Netwatch entries with up/down scripts
     interfaces.forEach((wan) => {
         const interval = "5s"; 
-        const timeout = "4s";
+        const timeout = "2s";
         // const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is UP, switching back\\"`;
         // const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is DOWN, switching to backup\\"`;
         const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; `;
