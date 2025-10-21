@@ -573,16 +573,39 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance="${wan.distance+"0"}" target-scope="11" comment="${routeComment}"`,
+            distance="${wan.distance * 5}" target-scope="11" comment="${routeComment}"`,
         );
     });
 
+
+    //     // 1. Create recursive host routes
+    // // These monitor connectivity to public IPs via ISP gateways
+    // interfaces.forEach((wan) => {
+    //     const routeComment = `Route-to-${wan.network}-${wan.name}`;
+    //     routes.push(
+    //         `add dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+    //         ${routingTable} target-scope="10" scope="30" comment="${routeComment}"`,
+    //     );
+    // });
+
+    // // 2. Create main default routes pointing to the check IPs
+    // // These use the recursive routes to determine availability
+    // interfaces.forEach((wan) => {
+    //     const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
+    //     routes.push(
+    //         `add dst-address="0.0.0.0/0" target-scope="10" scope="30" gateway="${wan.checkIP}"  \\
+    //         ${routingTable} distance="${wan.distance * 5}" comment="${routeComment}"`,
+    //     );
+    // });
+
     // 3. Configure Netwatch entries with up/down scripts
     interfaces.forEach((wan) => {
-        const interval = wan.interval || "1s";
-        const timeout = wan.timeout || "1s";
-        const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is UP, switching back\\"`;
-        const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is DOWN, switching to backup\\"`;
+        const interval = "5s"; 
+        const timeout = "4s";
+        // const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is UP, switching back\\"`;
+        // const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is DOWN, switching to backup\\"`;
+        const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; `;
+        const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; `;
 
         netwatchRules.push(
             `add host="${wan.checkIP}" interval=${interval} timeout=${timeout} \\

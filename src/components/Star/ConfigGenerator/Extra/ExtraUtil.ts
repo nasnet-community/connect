@@ -86,6 +86,7 @@ export const Logging = (): RouterConfig => {
             `add disk-file-count=1000 disk-file-name=ConnectLog disk-lines-per-file=1000 disk-stop-on-full=yes name=Disk target=disk`
         ],
         "/system logging": [
+            `set 0 topics=info,!netwatch`,
             `add action=disk disabled=no prefix="" regex="" topics=critical,error,info,warning`
         ]
     };
