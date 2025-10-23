@@ -22,6 +22,7 @@ export interface RouterConfig {
 export const ConfigGenerator = (state: StarState): string => {
     const config: RouterConfig = {
         "/disk": [],
+        "/certificate settings": [],
         "/interface bridge": [],
         "/interface pptp-client": [],
         "/interface sstp-client": [],
@@ -99,6 +100,7 @@ export const ConfigGenerator = (state: StarState): string => {
         "/ppp secret": [],
         "/system clock": [],
         "/system identity": [],
+        "/system logging action": [],
         "/system logging": [],
         "/system note": [],
         "/system ntp client": [],
@@ -114,6 +116,7 @@ export const ConfigGenerator = (state: StarState): string => {
         "/tool graphing resource": [],
         "/tool romon": [],
         "/tool sniffer": [],
+        "/tool sms": [],
     };
 
     try {

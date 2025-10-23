@@ -20,6 +20,36 @@ export interface MultiWANInterface {
 // Domestic (Iranian) Check IPs - DNS servers and reliable endpoints within Iran
 export const DomesticCheckIPs=[
 
+    // Mokhaberat
+    "217.218.127.127",
+    "217.218.155.155",
+    "5.200.200.200",
+    
+
+
+    // Shecan
+    "178.22.122.100",
+    "185.51.200.2",
+
+    // Noyan Abr Arvan (ArvanCloud)
+    "185.231.182.126",
+    "185.97.117.187",
+
+    // Sefroyek Pardaz Eng. (Shahrad / Shecan infra)
+    "185.51.200.10",
+    "185.51.200.50",
+
+    // Tehran Univ. of Medical Sciences (ourdns1.tums.ac.ir)
+    "194.225.62.80",
+
+    // IRANET / IPM network (persia.iranet.ir)
+    "194.225.73.141",
+
+     // Information Technology Company
+    "2.188.21.130",
+    "2.188.21.131",
+    "2.188.21.132",
+
     // 403 Service
     "10.202.10.202",
     "10.202.10.102",
@@ -28,17 +58,11 @@ export const DomesticCheckIPs=[
     "91.92.250.185",
     "91.92.244.233",
 
-    // Mokhaberat
-    "217.218.127.127",
-    "217.218.155.155",
 
     // Shatel
     "85.15.1.14",
     "85.15.1.15",
 
-    // Shecan
-    "178.22.122.100",
-    "185.51.200.2",
 
     // Bogzar
     "185.55.225.25",
@@ -96,24 +120,6 @@ export const DomesticCheckIPs=[
     // Hamkaran System Co.
     "185.187.84.15",
 
-    // Noyan Abr Arvan (ArvanCloud)
-    "185.231.182.126",
-    "185.97.117.187",
-
-    // Sefroyek Pardaz Eng. (Shahrad / Shecan infra)
-    "185.51.200.10",
-    "185.51.200.50",
-
-    // Tehran Univ. of Medical Sciences (ourdns1.tums.ac.ir)
-    "194.225.62.80",
-
-    // IRANET / IPM network (persia.iranet.ir)
-    "194.225.73.141",
-
-    // Information Technology Company
-    "2.188.21.130",
-    "2.188.21.131",
-    "2.188.21.132",
 
     // Telecommunication Infrastructure Co. (TIC / AS49666)
     "2.189.44.44",
