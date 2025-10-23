@@ -1,7 +1,11 @@
-import type { RouterConfig } from "../ConfigGenerator";
-import { mergeMultipleConfigs } from "./ConfigGeneratorUtil";
-import { ScriptAndScheduler, OneTimeScript } from "./ScriptSchedule";
-
+import {
+    type RouterConfig,
+    mergeMultipleConfigs,
+    ScriptAndScheduler,
+    OneTimeScript,
+    SchedulerGenerator,
+    mergeRouterConfigs,
+} from "~/components/Star/ConfigGenerator";
 export const CheckCGNAT = (
     wanInterfaceName: string = "ether1",
 ): RouterConfig => {
@@ -1550,11 +1554,27 @@ export const PublicCert = (): RouterConfig => {
     };
 
     // Use OneTimeScript to create a one-time script and scheduler
-    return OneTimeScript({
+    const mainScript = OneTimeScript({
         ScriptContent: publicCertScriptContent2,
         name: "Public-Cert-Update",
         startTime: "startup",
     });
+
+    // Create CRL download scheduler
+    const crlDownloadContent: RouterConfig = {
+        "": [
+            ":delay 120s",
+            "/certificate crl download"
+        ]
+    };
+
+    const crlScheduler = SchedulerGenerator({
+        Name: "CRL-Download-Startup",
+        content: crlDownloadContent,
+        startTime: "startup",
+    });
+
+    return mergeRouterConfigs(mainScript, crlScheduler);
 };
 
 export const PrivateCert = (

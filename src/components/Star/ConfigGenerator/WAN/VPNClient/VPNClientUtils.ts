@@ -3,7 +3,8 @@ import {
     type RouterConfig,
     DNSForeward, 
     mergeMultipleConfigs,
-    ScriptAndScheduler 
+    ScriptAndScheduler,
+    SchedulerGenerator
 } from "~/components/Star/ConfigGenerator";
 
 // Check if a string is a Fully Qualified Domain Name (FQDN) vs an IP address
@@ -606,10 +607,39 @@ export const VPNEScript = (): RouterConfig => {
     };
 
     // Use ScriptAndScheduler to create a scheduled script
-    return ScriptAndScheduler({
+    const mainScheduler = ScriptAndScheduler({
         ScriptContent: scriptContent,
         Name: "VPNE-Routing-Manager",
         interval: "1m",
         startTime: "startup",
     });
+
+    // Add startup scheduler with delay using SchedulerGenerator
+    const scriptRunCommand: RouterConfig = {
+        "": [
+            ":delay 10s",
+            "/system script",
+            "run VPNE-Routing-Manager",
+            ":delay 10s",
+            "/system script",
+            "run VPNE-Routing-Manager",
+            ":delay 10s",
+            "/system script",
+            "run VPNE-Routing-Manager",
+            ":delay 10s",
+            "/system script",
+            "run VPNE-Routing-Manager",
+            ":delay 10s",
+            "/system script",
+            "run VPNE-Routing-Manager",
+        ]
+    };
+
+    const startupScheduler = SchedulerGenerator({
+        Name: "VPNE-Routing-Manager-Startup",
+        content: scriptRunCommand,
+        startTime: "startup",
+    });
+
+    return mergeMultipleConfigs(mainScheduler, startupScheduler);
 };
