@@ -102,6 +102,7 @@ export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[] ): RouterCo
             interfaceName,
             endpointAddress,
             ovpnConfig.Name,
+            ovpnConfig.WanInterface,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

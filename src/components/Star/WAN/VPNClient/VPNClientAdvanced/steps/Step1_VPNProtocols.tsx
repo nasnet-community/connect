@@ -3,6 +3,7 @@ import { Alert, Input } from "~/components/Core";
 import type { VPNClientAdvancedState, VPNType } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNProtocolSelector } from "../components/fields/VPNProtocolSelector";
+import { WANInterfaceSelector } from "../components/fields/WANInterfaceSelector";
 import { L2TPPromoBanner } from "../../Protocols/L2TP/L2TPPromoBanner";
 import type { L2TPCredentials } from "~/utils/supabaseClient";
 
@@ -283,6 +284,15 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(({
                           />
                         </div>
 
+                        {/* WAN Interface Selection */}
+                        <div>
+                          <WANInterfaceSelector
+                            selectedInterface={(vpn as any).wanInterface}
+                            onSelect$={$(async (wanInterface) => {
+                              await handleUpdateVPN(vpn.id, { wanInterface } as any);
+                            })}
+                          />
+                        </div>
 
                         {/* Protocol Selection */}
                         <div>

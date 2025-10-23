@@ -24,6 +24,7 @@ interface CompactNetworkCardProps {
   isLoading: Record<string, boolean>;
   mode?: Mode;
   isBaseNetworkDisabled?: boolean;
+  hasBothBands?: boolean;
 }
 
 export const CompactNetworkCard = component$<CompactNetworkCardProps>(
@@ -44,6 +45,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
     isLoading,
     mode = "advance",
     isBaseNetworkDisabled = false,
+    hasBothBands = true,
   }) => {
     const displayName =
       networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
@@ -123,24 +125,27 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                 </div>
               )}
 
-              <div class="flex items-center justify-between">
-                <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
-                <Toggle
-                  checked={mode === "easy" ? true : splitBand}
-                  onChange$={$((checked: boolean) => {
-                    // In easy mode, always keep split band
-                    if (mode !== "easy") {
-                      // checked directly represents splitBand state
-                      onSplitBandToggle(checked);
-                    }
-                  })}
-                  label={splitBand ? $localize`Split` : $localize`Single`}
-                  labelPosition="left"
-                  disabled={isDisabled || mode === "easy" || isBaseNetworkDisabled}
-                  size="sm"
-                  color="primary"
-                />
-              </div>
+              {/* Only show split band toggle if router has both bands */}
+              {hasBothBands && (
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
+                  <Toggle
+                    checked={mode === "easy" ? true : splitBand}
+                    onChange$={$((checked: boolean) => {
+                      // In easy mode, always keep split band
+                      if (mode !== "easy") {
+                        // checked directly represents splitBand state
+                        onSplitBandToggle(checked);
+                      }
+                    })}
+                    label={splitBand ? $localize`Split` : $localize`Single`}
+                    labelPosition="left"
+                    disabled={isDisabled || mode === "easy" || isBaseNetworkDisabled}
+                    size="sm"
+                    color="primary"
+                  />
+                </div>
+              )}
             </div>
 
             {/* SSID Input */}

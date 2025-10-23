@@ -18,80 +18,185 @@ export interface MultiWANInterface {
 }
 
 // Domestic (Iranian) Check IPs - DNS servers and reliable endpoints within Iran
-export const DomesticCheckIPs = [
-    "10.202.10.10",      // Shatel DNS
-    "10.202.10.11",      // Shatel DNS
-    "10.202.10.202",     // Shatel DNS
-    "10.202.10.102",     // Shatel DNS
-    "5.202.100.101",     // Iranian ISP
-    "37.156.145.229",    // Iranian ISP
-    "37.156.145.21",     // Iranian ISP
-    "46.224.1.42",       // Iranian ISP
-    "78.157.42.100",     // Iranian ISP
-    "78.157.42.101",     // Iranian ISP
-    "80.191.40.41",      // Iranian ISP
-    "81.91.144.116",     // Iranian ISP
-    "91.99.101.12",      // Iranian ISP
-    "91.245.229.1",      // Iranian ISP
-    "92.119.56.162",     // Iranian ISP
-    "178.22.122.100",    // Asiatech DNS
-    "185.51.200.2",      // Shatel DNS
-    "185.51.200.10",     // Shatel DNS
-    "185.51.200.50",     // Shatel DNS
-    "185.55.225.25",     // Iranian ISP
-    "185.55.226.26",     // Iranian ISP
-    "185.97.117.187",    // Iranian ISP
-    "185.113.59.253",    // Iranian ISP
-    "185.161.112.33",    // Iranian ISP
-    "185.161.112.34",    // Iranian ISP
-    "185.186.242.161",   // Iranian ISP
-    "185.187.84.15",     // Iranian ISP
-    "185.231.182.126",   // Iranian ISP
-    "194.36.174.161",    // Iranian ISP
-    "194.225.62.80",     // Iranian ISP
-    "194.225.73.141",    // Iranian ISP
-    "213.176.123.5",     // Iranian ISP
-    "217.218.155.155",   // Iranian ISP
-    "2.188.21.130",      // Iranian ISP
-    "2.188.21.131",      // Iranian ISP
-    "2.188.21.132",      // Iranian ISP
-    "2.189.44.44",       // Iranian ISP
+export const DomesticCheckIPs=[
+
+    // 403 Service
+    "10.202.10.202",
+    "10.202.10.102",
+    
+    // Shelter
+    "91.92.250.185",
+    "91.92.244.233",
+
+    // Mokhaberat
+    "217.218.127.127",
+    "217.218.155.155",
+
+    // Shatel
+    "85.15.1.14",
+    "85.15.1.15",
+
+    // Shecan
+    "178.22.122.100",
+    "185.51.200.2",
+
+    // Bogzar
+    "185.55.225.25",
+    "185.55.226.26",
+
+    // Electro
+    "78.157.42.100",
+    "78.157.42.101",
+
+    // Radar
+    "10.202.10.10",
+    "10.202.10.11",
+
+    // Pishgaman
+    "5.202.100.100",
+    "5.202.100.101",
+
+    // shatel
+    "85.15.1.14",
+    "85.15.1.15",
+
+    // MCI
+    "208.67.220.200",
+    "208.67.222.222",
+
+    // MTN
+    "74.82.42.42",
+    "109.69.8.51",
+
+    // Rightel
+    "91.239.100.100",
+    "89.223.43.71",
+
+    // shatelMobile
+    "91.239.100.100",
+    "89.233.43.71",
+
+    // Asiatech
+    "194.36.174.161",
+    "178.22.122.100",
+    "37.156.145.21",
+    "37.156.145.229",
+
+
+    // Rayankadeh Apadana Co. (IR)
+    "185.113.59.253",
+
+    // Parvaz System Information Technology
+    "185.161.112.33",
+    "185.161.112.34",
+
+    // Gostaresh Ertebat Azin Kia or Rasaneh Pardaz Sepahan
+    "185.186.242.161",
+
+    // Hamkaran System Co.
+    "185.187.84.15",
+
+    // Noyan Abr Arvan (ArvanCloud)
+    "185.231.182.126",
+    "185.97.117.187",
+
+    // Sefroyek Pardaz Eng. (Shahrad / Shecan infra)
+    "185.51.200.10",
+    "185.51.200.50",
+
+    // Tehran Univ. of Medical Sciences (ourdns1.tums.ac.ir)
+    "194.225.62.80",
+
+    // IRANET / IPM network (persia.iranet.ir)
+    "194.225.73.141",
+
+    // Information Technology Company
+    "2.188.21.130",
+    "2.188.21.131",
+    "2.188.21.132",
+
+    // Telecommunication Infrastructure Co. (TIC / AS49666)
+    "2.189.44.44",
+
+    // ITC / DCI (recursive2.dci.ir, AS12880)
+    "217.218.155.155",
+
+    // IROST – Iranian Research Organization for Sci. & Tech. (dns.irost.net)
+    "213.176.123.5",
+
+    // Dadeh Gostar Asr Novin P.J.S. (DGAN / “Sabet”)
+    "46.224.1.42",
+
+    // Iran Telecommunication Company (ITC/TIC regional)
+    "80.191.40.41",
+
+    // Farabord Dadeh Haye Iranian (FDI / “Zitel”)
+    "81.91.144.116",
+
+    // Kish Cell Pars Co. (ns1.kcpcloud.ir)
+    "91.245.229.1",
+
+    // Pars Online PJS (parsonline)
+    "91.99.101.12",
+
+    // AS57935 Nrp Teknoloji Ltd. Şti. (listed in Isfahan)
+    "92.119.56.162",
 ] as const;
 
 // Foreign (International) Check IPs - Reliable global DNS servers and endpoints
 export const ForeignCheckIPs = [
+
     // // Google Public DNS
     // "8.8.8.8",
     // "8.8.4.4",
+
     // // Cloudflare DNS
     // "1.1.1.1",
     // "1.0.0.1",
+
     // Level3 DNS
     "4.2.2.1",
     "4.2.2.2",
     "4.2.2.3",
     "4.2.2.4",
+
     // Quad9 DNS
     "9.9.9.9",
     "149.112.112.112",
+
     // OpenDNS
     "208.67.222.222",
     "208.67.220.220",
+
     // Google Secondary
     "8.26.56.26",
     "8.20.247.20",
+
     // Verisign Public DNS
     "64.6.64.6",
     "64.6.65.6",
+
     // DNS.Watch
     "84.200.69.80",
     "84.200.70.40",
+
     // Comodo Secure DNS
     "8.26.56.26",
     "8.20.247.20",
+
     // AdGuard DNS
     "94.140.14.14",
     "94.140.15.15",
+
+    // Open NIC
+    "185.121.177.177",
+    "169.239.202.202",
+
+    // Yandex
+    "77.88.8.8",
+    "77.88.8.1",
+
+
 ] as const;
 
 // Helper function to convert WANLinkConfig to MultiWANInterface
@@ -601,7 +706,7 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
     // 3. Configure Netwatch entries with up/down scripts
     interfaces.forEach((wan) => {
         const interval = "5s"; 
-        const timeout = "2s";
+        const timeout = "700ms";
         // const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is UP, switching back\\"`;
         // const downScript = `/ip route disable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; /log info \\"${wan.name} is DOWN, switching to backup\\"`;
         const upScript = `/ip route enable [find comment=\\"CheckIP-Route-to-${wan.network}-${wan.name}\\"]; `;

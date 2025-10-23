@@ -77,6 +77,7 @@ export const PPTPClientWrapper = ( configs: PptpClientConfig[] ): RouterConfig =
             interfaceName,
             endpointAddress,
             pptpConfig.Name,
+            pptpConfig.WanInterface,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

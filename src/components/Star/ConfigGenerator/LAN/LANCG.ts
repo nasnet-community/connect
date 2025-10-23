@@ -76,7 +76,7 @@ export const LANCG = (state: StarState): RouterConfig => {
             );
         } else {
             // Only disable interfaces if the router actually has wireless interfaces
-            configs.push(DisableInterfaces());
+            configs.push(DisableInterfaces(state.Choose.RouterModels));
         }
     }
 

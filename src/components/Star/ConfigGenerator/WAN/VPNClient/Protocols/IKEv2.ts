@@ -259,6 +259,7 @@ export const IKeV2ClientWrapper = ( configs: Ike2ClientConfig[] ): RouterConfig 
             interfaceName,
             endpointAddress,
             ikev2Config.Name,
+            ikev2Config.WanInterface,
         );
 
         // Remove /interface list member from base config

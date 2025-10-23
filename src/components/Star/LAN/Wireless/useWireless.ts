@@ -39,6 +39,37 @@ export const useWirelessForm = () => {
   // Check if we're in easy mode
   const isEasyMode = starContext.state.Choose.Mode === "easy";
 
+  // Signal to store whether router has both wireless bands (2.4GHz and 5GHz)
+  const hasBothBandsSignal = useSignal(false);
+
+  // Check if router has both wireless bands (2.4GHz and 5GHz)
+  const hasBothBands = $((): boolean => {
+    const routerModels = starContext.state.Choose.RouterModels;
+
+    // Check all router models for wireless interfaces
+    for (const model of routerModels) {
+      const wirelessInterfaces = model.Interfaces.Interfaces.wireless;
+
+      if (wirelessInterfaces && wirelessInterfaces.length > 0) {
+        const has24 = wirelessInterfaces.some(iface => iface.includes("2.4"));
+        const has5 = wirelessInterfaces.some(iface => iface.includes("5"));
+
+        // If any router has both bands, return true
+        if (has24 && has5) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  });
+
+  // Update hasBothBandsSignal when RouterModels change
+  useTask$(async ({ track }) => {
+    track(() => starContext.state.Choose.RouterModels);
+    hasBothBandsSignal.value = await hasBothBands();
+  });
+
   // Wireless should be enabled by default
   const wirelessEnabled = useSignal(true);
   const isMultiSSID = useSignal(false);
@@ -315,7 +346,7 @@ export const useWirelessForm = () => {
     }
   });
 
-  useTask$(() => {
+  useTask$(async () => {
     const wirelessConfig = starContext.state.LAN.Wireless;
 
     if (wirelessConfig && Array.isArray(wirelessConfig) && wirelessConfig.length > 0) {
@@ -348,6 +379,20 @@ export const useWirelessForm = () => {
         isDisabled.value = config.isDisabled;
         splitBand.value = config.SplitBand || false;
       }
+
+      // Override splitBand to false if router only has one band
+      if (!(await hasBothBands())) {
+        if (isMultiSSID.value) {
+          // Multi-mode: force all network splitBand to false
+          networks.foreign.splitBand = false;
+          networks.domestic.splitBand = false;
+          networks.split.splitBand = false;
+          networks.vpn.splitBand = false;
+        } else {
+          // Single mode: force splitBand to false
+          splitBand.value = false;
+        }
+      }
     }
   });
 
@@ -361,6 +406,32 @@ export const useWirelessForm = () => {
       // Disable domestic and split networks when DomesticLink is false
       networks.domestic.isDisabled = true;
       networks.split.isDisabled = true;
+    }
+  });
+
+  // Enforce splitBand=false when router only has one wireless band
+  useTask$(async ({ track }) => {
+    // Track RouterModels changes
+    track(() => starContext.state.Choose.RouterModels);
+
+    // Check if router has both bands
+    const bothBands = await hasBothBands();
+
+    // If only one band exists, force all splitBand values to false
+    if (!bothBands) {
+      // Single SSID mode
+      splitBand.value = false;
+
+      // Multi SSID mode - all networks
+      networks.foreign.splitBand = false;
+      networks.domestic.splitBand = false;
+      networks.split.splitBand = false;
+      networks.vpn.splitBand = false;
+
+      // Extra wireless interfaces
+      extraInterfaces.forEach((extraInterface) => {
+        extraInterface.splitBand = false;
+      });
     }
   });
 
@@ -511,7 +582,7 @@ export const useWirelessForm = () => {
   });
 
   // Load extra wireless interfaces from state
-  useTask$(() => {
+  useTask$(async () => {
     const wirelessConfig = starContext.state.LAN.Wireless;
 
     if (wirelessConfig && Array.isArray(wirelessConfig) && wirelessConfig.length > 0) {
@@ -521,6 +592,7 @@ export const useWirelessForm = () => {
       // Only load if we don't have extras yet (to avoid overwriting user changes)
       if (extras.length > 0 && extraInterfaces.length === 0) {
         extraInterfaces.splice(0, extraInterfaces.length);
+        const bothBands = await hasBothBands();
         extras.forEach(config => {
           extraInterfaces.push({
             id: `extra-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -529,7 +601,8 @@ export const useWirelessForm = () => {
             password: config.Password,
             isHide: config.isHide,
             isDisabled: config.isDisabled,
-            splitBand: config.SplitBand || false,
+            // Override splitBand to false if router only has one band
+            splitBand: bothBands ? (config.SplitBand || false) : false,
           });
         });
       }
@@ -566,5 +639,7 @@ export const useWirelessForm = () => {
     selectExtraNetwork,
     generateExtraSSID,
     generateExtraPassword,
+    // Band check
+    hasBothBands: hasBothBandsSignal,
   };
 };

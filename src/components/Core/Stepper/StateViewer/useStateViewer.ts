@@ -1,5 +1,6 @@
 import { $, useSignal, useTask$ } from "@builder.io/qwik";
 import { ConfigGenerator } from "~/components/Star/ConfigGenerator/ConfigGenerator";
+import { extractStateFromConfig } from "./configParser";
 
 export interface StateEntry {
   timestamp: string;
@@ -13,6 +14,7 @@ export function useStateViewer(initialState: any) {
   const pastedContext = useSignal("");
   const pastedContextConfig = useSignal("");
   const pasteError = useSignal("");
+  const uploadMode = useSignal<"paste" | "upload">("paste");
 
   useTask$(({ track }) => {
     const state = track(() => initialState);
@@ -189,6 +191,30 @@ export function useStateViewer(initialState: any) {
     }
   });
 
+  const handleFileUpload$ = $(async (file: File) => {
+    try {
+      const content = await file.text();
+      const result = extractStateFromConfig(content);
+      
+      if (result.error) {
+        pasteError.value = result.error;
+        pastedContext.value = "";
+      } else {
+        pastedContext.value = JSON.stringify(result.state, null, 2);
+        pasteError.value = "";
+      }
+    } catch (error) {
+      pasteError.value = "Failed to read file";
+      pastedContext.value = "";
+    }
+  });
+
+  const handleModeChange$ = $((mode: "paste" | "upload") => {
+    uploadMode.value = mode;
+    // Clear errors when switching modes
+    pasteError.value = "";
+  });
+
   return {
     isOpen,
     stateHistory,
@@ -196,6 +222,7 @@ export function useStateViewer(initialState: any) {
     pastedContext,
     pastedContextConfig,
     pasteError,
+    uploadMode,
     generateConfig$,
     handlePasteContext$,
     handleGenerateFromPaste$,
@@ -203,5 +230,7 @@ export function useStateViewer(initialState: any) {
     downloadLatest$,
     downloadPastedConfig$,
     downloadCurrentConfig$,
+    handleFileUpload$,
+    handleModeChange$,
   };
 }

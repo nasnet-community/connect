@@ -24,6 +24,7 @@ interface NetworkCardProps {
   generateNetworkPassword: QRL<() => Promise<void>>;
   isLoading: Record<string, boolean>;
   mode?: Mode;
+  hasBothBands?: boolean;
 }
 
 export const NetworkCard = component$<NetworkCardProps>(
@@ -43,6 +44,7 @@ export const NetworkCard = component$<NetworkCardProps>(
     generateNetworkPassword,
     isLoading,
     mode = "advance",
+    hasBothBands = true,
   }) => {
     const displayName =
       networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
@@ -99,21 +101,24 @@ export const NetworkCard = component$<NetworkCardProps>(
                   />
                 )}
 
-                <Toggle
-                  checked={mode === "easy" ? true : splitBand}
-                  onChange$={$((checked: boolean) => {
-                    // In easy mode, always keep split band
-                    if (mode !== "easy") {
-                      // checked directly represents splitBand state
-                      onSplitBandToggle(checked);
-                    }
-                  })}
-                  label={$localize`Split 2.4/5GHz`}
-                  labelPosition="left"
-                  size="sm"
-                  color="primary"
-                  disabled={isDisabled || mode === "easy"}
-                />
+                {/* Only show split band toggle if router has both bands */}
+                {hasBothBands && (
+                  <Toggle
+                    checked={mode === "easy" ? true : splitBand}
+                    onChange$={$((checked: boolean) => {
+                      // In easy mode, always keep split band
+                      if (mode !== "easy") {
+                        // checked directly represents splitBand state
+                        onSplitBandToggle(checked);
+                      }
+                    })}
+                    label={$localize`Split 2.4/5GHz`}
+                    labelPosition="left"
+                    size="sm"
+                    color="primary"
+                    disabled={isDisabled || mode === "easy"}
+                  />
+                )}
               </div>
             </div>
           </div>
