@@ -398,12 +398,12 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressList",
                 "Verify descriptive comments",
-                { Address: "10.0.0.1", InterfaceName: "wireguard-client-main", name: "main" },
-                () => AddressList("10.0.0.1", "wireguard-client-main", "main"),
+                { Address: "10.0.0.1", InterfaceName: "wireguard-client-main", name: "main", WanInterface: { WANType: "Foreign", WANName: "ether1" } },
+                () => AddressList("10.0.0.1", "wireguard-client-main", "main", { WANType: "Foreign", WANName: "ether1" }),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
-            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-main Interface:wireguard-client-main Endpoint:10.0.0.1 - Endpoint for routing"');
+            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-main Interface:wireguard-client-main WanInterface:Foreign:ether1 Endpoint:10.0.0.1 - Endpoint for routing"');
         });
 
         it("should handle FQDN addresses", () => {
@@ -439,12 +439,12 @@ describe("VPNClientUtils Module", () => {
             const result = testWithOutput(
                 "AddressListEntry",
                 "Add address with descriptive comment",
-                { Address: "10.20.30.40", InterfaceName: "wireguard-client-test", name: "test" },
-                () => AddressListEntry("10.20.30.40", "wireguard-client-test", "test"),
+                { Address: "10.20.30.40", InterfaceName: "wireguard-client-test", name: "test", WanInterface: { WANType: "Domestic", WANName: "ether2" } },
+                () => AddressListEntry("10.20.30.40", "wireguard-client-test", "test", { WANType: "Domestic", WANName: "ether2" }),
             );
 
             validateRouterConfig(result, ["/ip firewall address-list"]);
-            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-test Interface:wireguard-client-test Endpoint:10.20.30.40 - Endpoint for routing"');
+            expect(result["/ip firewall address-list"][0]).toContain('comment="VPN-test Interface:wireguard-client-test WanInterface:Domestic:ether2 Endpoint:10.20.30.40 - Endpoint for routing"');
         });
     });
 

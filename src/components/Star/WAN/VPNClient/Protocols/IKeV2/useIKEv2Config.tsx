@@ -235,6 +235,24 @@ export const useIKEv2Config = (
   const updateContextWithConfig$ = $(async (parsedConfig: Ike2ClientConfig) => {
     const currentVPNClient = starContext.state.WAN.VPNClient || {};
 
+    // Auto-assign WAN interface with priority: Foreign > Domestic
+    if (!parsedConfig.WanInterface) {
+      const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+      const domesticWANConfigs = starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
+
+      if (foreignWANConfigs.length > 0) {
+        parsedConfig.WanInterface = {
+          WANType: 'Foreign',
+          WANName: foreignWANConfigs[0].name || "Foreign WAN"
+        };
+      } else if (domesticWANConfigs.length > 0) {
+        parsedConfig.WanInterface = {
+          WANType: 'Domestic',
+          WANName: domesticWANConfigs[0].name || "Domestic WAN"
+        };
+      }
+    }
+
     await starContext.updateWAN$({
       VPNClient: {
         ...currentVPNClient,

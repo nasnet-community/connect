@@ -25,13 +25,25 @@ import type {
 
 
 
-// Wireguard
+// WAN Interface Type
+export type WANType = 'Domestic' | 'Foreign' | 'VPN';
 
-export interface WireguardClientConfig {
+export interface WANInterfaceType {
+  WANType: WANType;
+  WANName: string;
+}
+
+// Base VPN Client Configuration
+export interface BaseVPNClientConfig {
   Name: string;
   priority?: number;
   weight?: number;
+  WanInterface?: WANInterfaceType;
+}
 
+// Wireguard
+
+export interface WireguardClientConfig extends BaseVPNClientConfig {
   InterfacePrivateKey: string;
   InterfaceAddress: string; 
   InterfaceListenPort?: number;
@@ -61,11 +73,7 @@ ClientCertificateContent?: string;
 ClientKeyContent?: string;
 }
 
-export interface OpenVpnClientConfig {
-  Name: string;
-  priority?: number;
-  weight?: number;
-
+export interface OpenVpnClientConfig extends BaseVPNClientConfig {
   Server: Server;
   Mode?: LayerMode;
   Protocol?: NetworkProtocol;
@@ -88,11 +96,7 @@ export interface OpenVpnClientConfig {
 // PPTP
 
 
-export interface PptpClientConfig {
-  Name: string;
-  priority?: number;
-  weight?: number;
-
+export interface PptpClientConfig extends BaseVPNClientConfig {
   ConnectTo: string;
   Credentials: Credentials; 
   AuthMethod?: AuthMethod[];
@@ -109,11 +113,7 @@ export interface PptpClientConfig {
 // L2TP
 
 
-export interface L2tpClientConfig {
-  Name: string;
-  priority?: number;
-  weight?: number;
-
+export interface L2tpClientConfig extends BaseVPNClientConfig {
   Server: Server;
   Credentials: Credentials;
   UseIPsec?: boolean;
@@ -138,11 +138,7 @@ export interface L2tpClientConfig {
 
 export type SSTPCiphers= 'aes256-gcm-sha384' | 'aes256-sha' ;
 
-export interface SstpClientConfig {
-  Name: string;
-  priority?: number;
-  weight?: number;
-
+export interface SstpClientConfig extends BaseVPNClientConfig {
   Server: Server;
   Credentials: Credentials; 
   AuthMethod?: AuthMethod[];
@@ -178,11 +174,7 @@ export type IkeV2PolicyAction = 'encrypt' | 'discard' | 'none';
 export type IkeV2PolicyLevel = 'require' | 'use' | 'unique';
 export type IkeV2GeneratePolicy = 'no' | 'port-strict' | 'port-override';
 
-export interface Ike2ClientConfig {
-  Name: string;
-  priority?: number;
-  weight?: number;
-
+export interface Ike2ClientConfig extends BaseVPNClientConfig {
   ServerAddress: string; 
   AuthMethod: IkeV2AuthMethod;
 

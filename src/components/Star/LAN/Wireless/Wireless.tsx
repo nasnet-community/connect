@@ -41,6 +41,7 @@ export const Wireless = component$<StepProps>(
       selectExtraNetwork,
       generateExtraSSID,
       generateExtraPassword,
+      hasBothBands,
     } = useWirelessForm();
 
     const handleSave = $(async () => {
@@ -188,6 +189,7 @@ export const Wireless = component$<StepProps>(
                   toggleSplitBand={toggleSingleSplitBand}
                   isLoading={isLoading}
                   mode={starContext.state.Choose.Mode}
+                  hasBothBands={hasBothBands.value}
                 />
               ) : (
                 <MultiSSIDForm
@@ -200,6 +202,7 @@ export const Wireless = component$<StepProps>(
                   toggleNetworkDisabled={toggleNetworkDisabled}
                   toggleNetworkSplitBand={toggleNetworkSplitBand}
                   mode={starContext.state.Choose.Mode}
+                  hasBothBands={hasBothBands.value}
                   extraInterfaces={extraInterfaces}
                   addExtraInterface={addExtraInterface}
                   removeExtraInterface={removeExtraInterface}

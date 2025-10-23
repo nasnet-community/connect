@@ -50,8 +50,6 @@ export const DHCPClient = ( name: string, Network: string, Interface: string ): 
             \\n:if (\\$routeCount > 0) do={\\r\\
             \\n    /ip route set [ find comment=\\"Route-to-${Network}-${name}\\" gateway!=\\$gw ] gateway=\\$gw\\r\\
             \\n}\\r\\
-            \\n} else={\\r\\
-            \\n/ip route remove [ find comment=\\"Route-to-${Network}-${name}\\" ]\\r\\
             \\n}" use-peer-dns=no use-peer-ntp=no`,
     );
 

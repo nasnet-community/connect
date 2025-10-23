@@ -64,6 +64,7 @@ export interface VPNConfigBase {
   enabled: boolean;
   description?: string;
   assignedLink?: string; // Foreign WAN link ID this VPN is assigned to
+  wanInterface?: string; // WAN Interface name this VPN will use
   weight?: number; // for load balancing
 }
 
@@ -76,6 +77,7 @@ export interface UninitializedVPNConfig {
   enabled: boolean;
   description?: string;
   assignedLink?: string;
+  wanInterface?: string; // WAN Interface name this VPN will use
   weight?: number;
 }
 

@@ -201,6 +201,24 @@ export const useOpenVPNConfig = (
       missingFields.value = [];
       errorMessage.value = "";
 
+      // Auto-assign WAN interface with priority: Foreign > Domestic
+      if (!parsedConfig.WanInterface) {
+        const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+        const domesticWANConfigs = starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
+
+        if (foreignWANConfigs.length > 0) {
+          parsedConfig.WanInterface = {
+            WANType: 'Foreign',
+            WANName: foreignWANConfigs[0].name || "Foreign WAN"
+          };
+        } else if (domesticWANConfigs.length > 0) {
+          parsedConfig.WanInterface = {
+            WANType: 'Domestic',
+            WANName: domesticWANConfigs[0].name || "Domestic WAN"
+          };
+        }
+      }
+
       await starContext.updateWAN$({
         VPNClient: {
           ...starContext.state.WAN.VPNClient,
@@ -876,6 +894,24 @@ export const useOpenVPNConfig = (
       step: "wan_config",
       component: "vpn_client",
     });
+
+    // Auto-assign WAN interface with priority: Foreign > Domestic
+    if (!manualConfig.WanInterface) {
+      const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+      const domesticWANConfigs = starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
+
+      if (foreignWANConfigs.length > 0) {
+        manualConfig.WanInterface = {
+          WANType: 'Foreign',
+          WANName: foreignWANConfigs[0].name || "Foreign WAN"
+        };
+      } else if (domesticWANConfigs.length > 0) {
+        manualConfig.WanInterface = {
+          WANType: 'Domestic',
+          WANName: domesticWANConfigs[0].name || "Domestic WAN"
+        };
+      }
+    }
 
     await starContext.updateWAN$({
       VPNClient: {

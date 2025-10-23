@@ -20,6 +20,7 @@ interface MultiSSIDFormProps {
   toggleNetworkDisabled: QRL<(network: NetworkKey, value?: boolean) => void>;
   toggleNetworkSplitBand: QRL<(network: NetworkKey, value?: boolean) => void>;
   mode?: Mode;
+  hasBothBands?: boolean;
   // Extra wireless interfaces
   extraInterfaces?: ExtraWirelessInterface[];
   addExtraInterface?: QRL<() => void>;
@@ -41,6 +42,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     toggleNetworkDisabled,
     toggleNetworkSplitBand,
     mode = "advance",
+    hasBothBands = true,
     extraInterfaces = [],
     addExtraInterface,
     removeExtraInterface,
@@ -137,6 +139,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                 })}
                 isLoading={isLoading}
                 mode={mode}
+                hasBothBands={hasBothBands}
               />
             );
           })}
@@ -182,6 +185,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                     generatePassword$={generateExtraPassword || $(() => Promise.resolve())}
                     isLoading={isLoading}
                     mode={mode}
+                    hasBothBands={hasBothBands}
                   />
                 ))}
               </Grid>

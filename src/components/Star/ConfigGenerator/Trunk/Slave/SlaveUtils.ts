@@ -14,7 +14,8 @@ import {
 import { 
     Slave,
     WirelessBridge,
-    WirelessInterfaceList
+    WirelessInterfaceList,
+    detectAvailableBands
 } from "~/components/Star/ConfigGenerator/LAN/Wireless/WirelessUtil";
 
 
@@ -697,14 +698,17 @@ export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], route
         }
     });
 
+    // Detect available bands for the slave router
+    const availableBands = detectAvailableBands(routerModels);
+
     // Add wireless bridge configuration
-    const bridgeConfig = WirelessBridge(enabledConfigs);
+    const bridgeConfig = WirelessBridge(enabledConfigs, availableBands);
     if (Object.keys(bridgeConfig).length > 0) {
         configs.push(bridgeConfig);
     }
 
     // Add wireless interface list configuration
-    const interfaceListConfig = WirelessInterfaceList(enabledConfigs);
+    const interfaceListConfig = WirelessInterfaceList(enabledConfigs, availableBands);
     if (Object.keys(interfaceListConfig).length > 0) {
         configs.push(interfaceListConfig);
     }

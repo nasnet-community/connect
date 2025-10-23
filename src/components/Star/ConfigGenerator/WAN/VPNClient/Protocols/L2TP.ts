@@ -105,6 +105,7 @@ export const L2TPClientWrapper = ( configs: L2tpClientConfig[] ): RouterConfig =
             interfaceName,
             endpointAddress,
             l2tpConfig.Name,
+            l2tpConfig.WanInterface,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

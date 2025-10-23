@@ -93,6 +93,7 @@ export const WireguardClientWrapper = ( configs: WireguardClientConfig[] ): Rout
             interfaceName,
             endpointAddress,
             wgConfig.Name,
+            wgConfig.WanInterface,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

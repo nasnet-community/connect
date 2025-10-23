@@ -8,6 +8,45 @@ import type {
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import { CommandShortner } from "~/components/Star/ConfigGenerator";
 
+export interface AvailableBands {
+    has2_4: boolean;
+    has5: boolean;
+    has5_2: boolean; // For dual 5GHz routers
+    bands5GHz: string[]; // List of 5GHz interface names like ["wifi5", "wifi5-2"]
+}
+
+export const detectAvailableBands = (routerModels: RouterModels[]): AvailableBands => {
+    const bands: AvailableBands = {
+        has2_4: false,
+        has5: false,
+        has5_2: false,
+        bands5GHz: []
+    };
+    
+    routerModels.forEach(model => {
+        const wireless = model.Interfaces.Interfaces.wireless;
+        if (!wireless) return;
+        
+        wireless.forEach(iface => {
+            if (iface === "wifi2.4") {
+                bands.has2_4 = true;
+            } else if (iface === "wifi5") {
+                bands.has5 = true;
+                if (!bands.bands5GHz.includes("wifi5")) {
+                    bands.bands5GHz.push("wifi5");
+                }
+            } else if (iface === "wifi5-2") {
+                bands.has5_2 = true;
+                if (!bands.bands5GHz.includes("wifi5-2")) {
+                    bands.bands5GHz.push("wifi5-2");
+                }
+            }
+        });
+    });
+    
+    return bands;
+};
+
 export const DefaultBandToInterfaceName = (band: Band): string => {
     return band === "2.4" ? "wifi2" : "wifi1";
 };
@@ -29,15 +68,23 @@ export const CheckWireless = (wirelessConfigs: WirelessConfig[]): boolean => {
     return wirelessConfigs.some(config => !config.isDisabled);
 };
 
-export const DisableInterfaces = (): RouterConfig => {
+export const DisableInterfaces = (routerModels: RouterModels[]): RouterConfig => {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
-
-    config["/interface wifi"].push(
-        `set [ find default-name=wifi1 ] disabled=yes`,
-        `set [ find default-name=wifi2 ] disabled=yes`,
-    );
+    
+    const availableBands = detectAvailableBands(routerModels);
+    
+    // Only disable interfaces that exist on the router
+    if (availableBands.has2_4) {
+        config["/interface wifi"].push(`set [ find default-name=wifi2 ] disabled=yes`);
+    }
+    if (availableBands.has5) {
+        config["/interface wifi"].push(`set [ find default-name=wifi1 ] disabled=yes`);
+    }
+    if (availableBands.has5_2) {
+        config["/interface wifi"].push(`set [ find default-name=wifi3 ] disabled=yes`);
+    }
 
     return config;
 };
@@ -139,19 +186,22 @@ export function StationMode( SSID: string, Password: string, Band: Band, name?: 
 
     const DInterfaceName = DefaultBandToInterfaceName(Band);
     const command = `set [ find default-name=${DInterfaceName} ] comment="${name} ${Band}WAN" configuration.mode=station-pseudobridge .ssid="${SSID}" \\
-    security.passphrase="${Password}" .station-roaming=yes .multicast-enhance=enabled security.ft=yes .ft-over-ds=yes steering.rrm=yes .wnm=yes disabled=no`;
+    security.passphrase="${Password}" configuration.station-roaming=yes configuration.multicast-enhance=enabled \\
+    security.ft=yes security.ft-over-ds=yes steering.rrm=yes steering.wnm=yes disabled=no`;
     config["/interface wifi"].push(command);
     return config;
 }
 
-export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig ): RouterConfig {
+export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, bandSuffix?: string ): RouterConfig {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
 
     const { SSID, Password, isHide, SplitBand, NetworkName } = WirelessConfig;
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
-    const Master = Band === "2.4" ? "wifi2" : "wifi1";
+    
+    // Determine master interface based on band and suffix
+    const Master = Band === "2.4" ? "wifi2" : (bandSuffix === "5-2" ? "wifi3" : "wifi1");
     const MMaster = `[ find default-name=${Master} ]`;
     
     // Map WifiTarget to base network names
@@ -172,7 +222,10 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
         ? `${baseNetwork}-${NetworkName}LAN`
         : `${baseNetwork}LAN`;
     
-    let command = `add configuration.mode=ap .ssid="${SSIDList[Band]}" .installation=indoor master-interface=${MMaster} name="wifi${Band}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
+    // Determine interface name based on band and suffix
+    const bandName = bandSuffix || Band;
+    
+    let command = `add configuration.mode=ap .ssid="${SSIDList[Band]}" .installation=indoor master-interface=${MMaster} name="wifi${bandName}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
     command = Hide(command, isHide);
     command = Passphrase(Password, command);
     command = `${command} security.ft=yes .ft-over-ds=yes`;
@@ -182,10 +235,17 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
     return CommandShortner(config);
 }
 
-export function Master( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig ): RouterConfig {
+export function Master( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, bandSuffix?: string ): RouterConfig {
     const { SSID, Password, isHide, SplitBand, NetworkName } = WirelessConfig;
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
-    const DefaultName = Band === "2.4" ? "wifi2" : "wifi1";
+    
+    // Determine default interface name based on band and suffix
+    let DefaultName: string;
+    if (Band === "2.4") {
+        DefaultName = "wifi2";
+    } else {
+        DefaultName = bandSuffix === "5-2" ? "wifi3" : "wifi1";
+    }
     
     // Map WifiTarget to base network names
     const networkMap: Record<WifiTarget, string> = {
@@ -205,7 +265,10 @@ export function Master( Network: WifiTarget, Band: Band, WirelessConfig: Wireles
         ? `${baseNetwork}-${NetworkName}LAN`
         : `${baseNetwork}LAN`;
     
-    let command = `set [ find default-name=${DefaultName} ] configuration.country=Japan .mode=ap .ssid="${SSIDList[Band]}" .installation=indoor name="wifi${Band}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
+    // Determine interface name based on band and suffix
+    const bandName = bandSuffix || Band;
+    
+    let command = `set [ find default-name=${DefaultName} ] configuration.country=Japan .mode=ap .ssid="${SSIDList[Band]}" .installation=indoor name="wifi${bandName}-${interfaceSuffix}" comment="${interfaceSuffix}"`;
     command = Hide(command, isHide);
     command = Passphrase(Password, command);
     command = `${command} security.ft=yes .ft-over-ds=yes`;
@@ -216,7 +279,7 @@ export function Master( Network: WifiTarget, Band: Band, WirelessConfig: Wireles
     return CommandShortner(config);
 }
 
-export function WirelessBridge( WirelessConfig: WirelessConfig[] ): RouterConfig {
+export function WirelessBridge( WirelessConfig: WirelessConfig[], availableBands: AvailableBands ): RouterConfig {
     const config: RouterConfig = {
         "/interface bridge port": [],
     };
@@ -256,17 +319,26 @@ export function WirelessBridge( WirelessConfig: WirelessConfig[] ): RouterConfig
             interfaceSuffix = `${baseNetwork}LAN`;
         }
 
-        // Add both 2.4GHz and 5GHz interfaces to the bridge
-        config["/interface bridge port"].push(
-            `add bridge="${bridgeName}" interface="wifi2.4-${interfaceSuffix}" comment="${interfaceSuffix}"`,
-            `add bridge="${bridgeName}" interface="wifi5-${interfaceSuffix}" comment="${interfaceSuffix}"`
-        );
+        // Add 2.4GHz interface if available
+        if (availableBands.has2_4) {
+            config["/interface bridge port"].push(
+                `add bridge="${bridgeName}" interface="wifi2.4-${interfaceSuffix}" comment="${interfaceSuffix}"`
+            );
+        }
+        
+        // Add all 5GHz interfaces if available
+        availableBands.bands5GHz.forEach(band => {
+            const interfaceName = band === "wifi5" ? "wifi5" : "wifi5-2";
+            config["/interface bridge port"].push(
+                `add bridge="${bridgeName}" interface="${interfaceName}-${interfaceSuffix}" comment="${interfaceSuffix}"`
+            );
+        });
     });
 
     return config;
 }
 
-export function WirelessInterfaceList( WirelessConfig: WirelessConfig[] ): RouterConfig {
+export function WirelessInterfaceList( WirelessConfig: WirelessConfig[], availableBands: AvailableBands ): RouterConfig {
     const config: RouterConfig = {
         "/interface list member": [],
     };
@@ -306,23 +378,34 @@ export function WirelessInterfaceList( WirelessConfig: WirelessConfig[] ): Route
             interfaceSuffix = `${baseNetwork}LAN`;
         }
 
-        // Add both 2.4GHz and 5GHz interfaces to their respective network lists
-        config["/interface list member"].push(
-            `add interface="wifi2.4-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`,
-            `add interface="wifi5-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`
-        );
-
-        // Also add to the general LAN list
-        config["/interface list member"].push(
-            `add interface="wifi2.4-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`,
-            `add interface="wifi5-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`
-        );
+        // Add 2.4GHz interface if available
+        if (availableBands.has2_4) {
+            config["/interface list member"].push(
+                `add interface="wifi2.4-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`
+            );
+            // Also add to the general LAN list
+            config["/interface list member"].push(
+                `add interface="wifi2.4-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`
+            );
+        }
+        
+        // Add all 5GHz interfaces if available
+        availableBands.bands5GHz.forEach(band => {
+            const interfaceName = band === "wifi5" ? "wifi5" : "wifi5-2";
+            config["/interface list member"].push(
+                `add interface="${interfaceName}-${interfaceSuffix}" list="${listName}" comment="${interfaceSuffix}"`
+            );
+            // Also add to the general LAN list
+            config["/interface list member"].push(
+                `add interface="${interfaceName}-${interfaceSuffix}" list="LAN" comment="${interfaceSuffix}"`
+            );
+        });
     });
 
     return config;
 }
 
-export function WirelessSteering(wirelessConfig: WirelessConfig): RouterConfig {
+export function WirelessSteering(wirelessConfig: WirelessConfig, availableBands: AvailableBands): RouterConfig {
     // Map WifiTarget to base network names
     const networkMap: Record<WifiTarget, string> = {
         Domestic: "Domestic",
@@ -346,7 +429,17 @@ export function WirelessSteering(wirelessConfig: WirelessConfig): RouterConfig {
         ? `${baseNetwork}-${wirelessConfig.NetworkName}LAN`
         : `${baseNetwork}LAN`;
     
-    const neighborGroup = `wifi2.4-${interfaceSuffix},wifi5-${interfaceSuffix}`;
+    // Build neighbor group with only available bands
+    const neighborInterfaces: string[] = [];
+    if (availableBands.has2_4) {
+        neighborInterfaces.push(`wifi2.4-${interfaceSuffix}`);
+    }
+    availableBands.bands5GHz.forEach(band => {
+        const interfaceName = band === "wifi5" ? "wifi5" : "wifi5-2";
+        neighborInterfaces.push(`${interfaceName}-${interfaceSuffix}`);
+    });
+    
+    const neighborGroup = neighborInterfaces.join(',');
     
     const config: RouterConfig = {
         "/interface wifi": [
@@ -357,7 +450,7 @@ export function WirelessSteering(wirelessConfig: WirelessConfig): RouterConfig {
     return config;
 }
 
-export function WirelessSteeringAssignment(wirelessConfigs: WirelessConfig[]): RouterConfig {
+export function WirelessSteeringAssignment(wirelessConfigs: WirelessConfig[], availableBands: AvailableBands): RouterConfig {
     const config: RouterConfig = {
         "/interface wifi": []
     };
@@ -388,10 +481,20 @@ export function WirelessSteeringAssignment(wirelessConfigs: WirelessConfig[]): R
             ? `${baseNetwork}-${wireless.NetworkName}LAN`
             : `${baseNetwork}LAN`;
         
-        config["/interface wifi"].push(
-            `set [ find name="wifi2.4-${interfaceSuffix}" ] steering="${steeringName}"`,
-            `set [ find name="wifi5-${interfaceSuffix}" ] steering="${steeringName}"`
-        );
+        // Assign steering to 2.4GHz interface if available
+        if (availableBands.has2_4) {
+            config["/interface wifi"].push(
+                `set [ find name="wifi2.4-${interfaceSuffix}" ] steering="${steeringName}"`
+            );
+        }
+        
+        // Assign steering to all 5GHz interfaces if available
+        availableBands.bands5GHz.forEach(band => {
+            const interfaceName = band === "wifi5" ? "wifi5" : "wifi5-2";
+            config["/interface wifi"].push(
+                `set [ find name="${interfaceName}-${interfaceSuffix}" ] steering="${steeringName}"`
+            );
+        });
     });
     
     return config;

@@ -19,6 +19,7 @@ interface ExtraWirelessCardProps {
   generatePassword$: QRL<(id: string) => Promise<void>>;
   isLoading: Record<string, boolean>;
   mode?: Mode;
+  hasBothBands?: boolean;
 }
 
 export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
@@ -33,6 +34,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
     generatePassword$,
     isLoading,
     mode = "advance",
+    hasBothBands = true,
   }) => {
     const isDisabled = extraInterface.isDisabled;
 
@@ -124,22 +126,25 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
               </div>
             )}
 
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
-              <Toggle
-                checked={mode === "easy" ? true : extraInterface.splitBand}
-                onChange$={$((checked: boolean) => {
-                  if (mode !== "easy") {
-                    onFieldChange$(extraInterface.id, "splitBand", checked);
-                  }
-                })}
-                label={extraInterface.splitBand ? $localize`Split` : $localize`Single`}
-                labelPosition="left"
-                disabled={isDisabled || mode === "easy"}
-                size="sm"
-                color="primary"
-              />
-            </div>
+            {/* Only show split band toggle if router has both bands */}
+            {hasBothBands && (
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
+                <Toggle
+                  checked={mode === "easy" ? true : extraInterface.splitBand}
+                  onChange$={$((checked: boolean) => {
+                    if (mode !== "easy") {
+                      onFieldChange$(extraInterface.id, "splitBand", checked);
+                    }
+                  })}
+                  label={extraInterface.splitBand ? $localize`Split` : $localize`Single`}
+                  labelPosition="left"
+                  disabled={isDisabled || mode === "easy"}
+                  size="sm"
+                  color="primary"
+                />
+              </div>
+            )}
           </div>
 
           {/* SSID Input */}

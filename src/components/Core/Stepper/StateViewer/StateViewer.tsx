@@ -16,6 +16,7 @@ export const StateViewer = component$(() => {
     pastedContext,
     pastedContextConfig,
     pasteError,
+    uploadMode,
     generateConfig$,
     handlePasteContext$,
     handleGenerateFromPaste$,
@@ -23,6 +24,8 @@ export const StateViewer = component$(() => {
     downloadLatest$,
     downloadPastedConfig$,
     downloadCurrentConfig$,
+    handleFileUpload$,
+    handleModeChange$,
   } = useStateViewer(context.state);
 
   return (
@@ -78,6 +81,9 @@ export const StateViewer = component$(() => {
                   error={pasteError.value}
                   onPaste={handlePasteContext$}
                   onGenerate={handleGenerateFromPaste$}
+                  onFileUpload={handleFileUpload$}
+                  uploadMode={uploadMode.value}
+                  onModeChange={handleModeChange$}
                 />
               </div>
 

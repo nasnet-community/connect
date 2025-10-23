@@ -47,15 +47,37 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs:', foreignWANConfigs);
     console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs length:', foreignWANConfigs.length);
-    
+
     // If no Foreign WAN configs, check if Foreign WAN is configured
     if (foreignWANConfigs.length === 0 && starContext.state.WAN.WANLink.Foreign) {
       console.log('[useVPNClientAdvanced] Foreign WAN exists but no configs, returning 1');
       return 1; // At least 1 VPN required for Foreign WAN
     }
-    
+
     console.log('[useVPNClientAdvanced] Final foreign count:', Math.max(1, foreignWANConfigs.length));
     return Math.max(1, foreignWANConfigs.length); // At least 1 VPN required
+  });
+
+  // Get default WAN interface with priority: Foreign > Domestic
+  const getDefaultWANInterface$ = $(() => {
+    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+    const domesticWANConfigs = starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
+
+    // Priority: Foreign first, then Domestic
+    if (foreignWANConfigs.length > 0) {
+      return {
+        WANType: 'Foreign' as const,
+        WANName: foreignWANConfigs[0].name || "Foreign WAN"
+      };
+    }
+    if (domesticWANConfigs.length > 0) {
+      return {
+        WANType: 'Domestic' as const,
+        WANName: domesticWANConfigs[0].name || "Domestic WAN"
+      };
+    }
+
+    return undefined;
   });
 
   // Initialize state with minimum required VPN clients
@@ -437,19 +459,28 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         newVPN.name = `VPN ${vpnCounter.value}`;
       }
     }
-    
+
     // Ensure priority is set for proper multi-VPN validation
     if (!newVPN.priority) {
       newVPN.priority = state.vpnConfigs.length + 1;
     }
-    
+
+    // Auto-assign default WAN interface if not provided
+    if (!(newVPN as any).wanInterface) {
+      const defaultWANInterface = await getDefaultWANInterface$();
+      if (defaultWANInterface) {
+        (newVPN as any).wanInterface = defaultWANInterface;
+        console.log(`[useVPNClientAdvanced] Auto-assigned WAN interface: ${defaultWANInterface.WANType} - ${defaultWANInterface.WANName}`);
+      }
+    }
+
     console.log(`[useVPNClientAdvanced] Adding VPN with priority ${newVPN.priority}:`, newVPN);
     state.vpnConfigs = [...state.vpnConfigs, newVPN as VPNConfig];
-    
+
     // Update the priorities array with the new VPN order
     state.priorities = state.vpnConfigs.map(vpn => vpn.id);
     console.log('[useVPNClientAdvanced] Updated priorities array:', state.priorities);
-    
+
     // Initialize multi-VPN strategy if we now have multiple VPNs
     if (state.vpnConfigs.length > 1 && !state.multiVPNStrategy) {
       console.log('[useVPNClientAdvanced] Multiple VPNs detected, initializing default strategy');
@@ -484,47 +515,65 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     const vpnClient: VPNClient = {};
 
     // Group VPN configs by type and convert to StarContext format
-    // Include Name field from parent VPN object to preserve user-entered names
+    // Include Name, WanInterface, priority, and weight fields from parent VPN object
     const wireguardConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "Wireguard" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     const openVPNConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "OpenVPN" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     const pptpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "PPTP" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     const l2tpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "L2TP" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     const sstpConfigs = state.vpnConfigs
       .filter(vpn => vpn.type === "SSTP" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     const ikev2Configs = state.vpnConfigs
       .filter(vpn => vpn.type === "IKeV2" && 'config' in vpn)
       .map(vpn => ({
         ...(vpn as any).config,
-        Name: vpn.name  // Add Name field from parent VPN object
+        Name: vpn.name,
+        WanInterface: (vpn as any).wanInterface,
+        priority: vpn.priority,
+        weight: vpn.weight
       }));
 
     // Only add non-empty arrays to vpnClient

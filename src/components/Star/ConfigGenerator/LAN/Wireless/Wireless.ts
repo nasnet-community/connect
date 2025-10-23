@@ -2,14 +2,12 @@ import type {
     WirelessConfig,
     RouterModels,
     Band,
+    WANLinks,
 } from "~/components/Star/StarContext";
-import type { WANLinks } from "~/components/Star/StarContext";
-import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import {
+    type RouterConfig,
     CommandShortner,
     mergeMultipleConfigs,
-} from "~/components/Star/ConfigGenerator";
-import {
     CheckMasters,
     DisableInterfaces,
     Master,
@@ -19,25 +17,31 @@ import {
     WirelessSteering,
     WirelessSteeringAssignment,
     CheckWireless,
+    detectAvailableBands,
 } from "~/components/Star/ConfigGenerator";
 
 
-export function WirelessConfig(
-    wirelessConfigs: WirelessConfig[],
-    wanLinks: WANLinks,
-    routerModels: RouterModels[],
-): RouterConfig {
-    // Base configuration for wifi interfaces
+export function WirelessConfig( wirelessConfigs: WirelessConfig[], wanLinks: WANLinks, routerModels: RouterModels[] ): RouterConfig {
+    const availableBands = detectAvailableBands(routerModels);
+    
+    // Build base configuration only for interfaces that exist
     const baseConfig: RouterConfig = {
-        "/interface wifi": [
-            "set [ find default-name=wifi2 ] name=wifi2.4 disabled=no",
-            "set [ find default-name=wifi1 ] name=wifi5 disabled=no",
-        ],
+        "/interface wifi": []
     };
+    
+    if (availableBands.has2_4) {
+        baseConfig["/interface wifi"].push("set [ find default-name=wifi2 ] name=wifi2.4 disabled=no");
+    }
+    if (availableBands.has5) {
+        baseConfig["/interface wifi"].push("set [ find default-name=wifi1 ] name=wifi5 disabled=no");
+    }
+    if (availableBands.has5_2) {
+        baseConfig["/interface wifi"].push("set [ find default-name=wifi3 ] name=wifi5-2 disabled=no");
+    }
 
     // Check if wireless configuration is valid
     if (!CheckWireless(wirelessConfigs)) {
-        return DisableInterfaces();
+        return DisableInterfaces(routerModels);
     }
 
     // Check which wifi bands are being used as WAN or Trunk masters
@@ -56,49 +60,62 @@ export function WirelessConfig(
             return;
         }
 
-        // Configure 2.4GHz band
-        if (masterAssigned2_4) {
-            // wifi2.4 is used as WAN/Trunk master, create slave interface
-            const slaveConfig = Slave(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
-            configs.push(slaveConfig);
-        } else {
-            // wifi2.4 is available, configure as master
-            const masterConfig = Master(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
-            configs.push(masterConfig);
-            masterAssigned2_4 = true; // Mark 2.4GHz master as assigned
+        // Configure 2.4GHz band (only if available)
+        if (availableBands.has2_4) {
+            if (masterAssigned2_4) {
+                // wifi2.4 is used as WAN/Trunk master, create slave interface
+                const slaveConfig = Slave(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                configs.push(slaveConfig);
+            } else {
+                // wifi2.4 is available, configure as master
+                const masterConfig = Master(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                configs.push(masterConfig);
+                masterAssigned2_4 = true; // Mark 2.4GHz master as assigned
+            }
         }
 
-        // Configure 5GHz band
-        if (masterAssigned5) {
-            // wifi5 is used as WAN/Trunk master, create slave interface
-            const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig);
-            configs.push(slaveConfig);
-        } else {
-            // wifi5 is available, configure as master
-            const masterConfig = Master(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig);
-            configs.push(masterConfig);
-            masterAssigned5 = true; // Mark 5GHz master as assigned
+        // Configure all 5GHz bands (if available)
+        if (availableBands.has5 || availableBands.has5_2) {
+            // For each 5GHz band, create the same configuration
+            availableBands.bands5GHz.forEach((band5Interface, index) => {
+                const bandName = band5Interface === "wifi5" ? "5" : "5-2";
+                
+                if (masterAssigned5 && index === 0) {
+                    // First 5GHz interface is used as WAN/Trunk master, create slave interface
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(slaveConfig);
+                } else if (!masterAssigned5 && index === 0) {
+                    // First 5GHz interface becomes master
+                    const masterConfig = Master(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(masterConfig);
+                    masterAssigned5 = true; // Only first 5GHz becomes master
+                } else {
+                    // All subsequent 5GHz interfaces are slaves
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(slaveConfig);
+                }
+            });
         }
     });
 
     // Generate steering profiles for all wireless configs
     wirelessConfigs.forEach((wirelessConfig) => {
         if (!wirelessConfig.isDisabled) {
-            const steeringConfig = WirelessSteering(wirelessConfig);
+            const steeringConfig = WirelessSteering(wirelessConfig, availableBands);
             configs.push(steeringConfig);
         }
     });
 
     // Assign steering profiles to interfaces
-    const steeringAssignment = WirelessSteeringAssignment(wirelessConfigs);
+    const steeringAssignment = WirelessSteeringAssignment(wirelessConfigs, availableBands);
     configs.push(steeringAssignment);
 
     // Add bridge port configuration
-    const bridgeConfig = WirelessBridge(wirelessConfigs);
+    const bridgeConfig = WirelessBridge(wirelessConfigs, availableBands);
     configs.push(bridgeConfig);
 
     // Add interface list configuration
-    const interfaceListConfig = WirelessInterfaceList(wirelessConfigs);
+    const interfaceListConfig = WirelessInterfaceList(wirelessConfigs, availableBands);
     configs.push(interfaceListConfig);
 
     // Merge all configurations

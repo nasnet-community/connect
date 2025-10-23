@@ -17,6 +17,7 @@ interface SingleSSIDFormProps {
   toggleSplitBand?: QRL<() => void>;
   isLoading: Signal<Record<string, boolean>>;
   mode?: Mode;
+  hasBothBands?: boolean;
 }
 
 export const SingleSSIDForm = component$<SingleSSIDFormProps>(
@@ -29,6 +30,7 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     generatePassword,
     isLoading,
     mode = "advance",
+    hasBothBands = true,
   }) => {
 
     return (
@@ -52,18 +54,21 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
             />
           )}
 
-          <Toggle
-            checked={mode === "easy" ? false : splitBand.value}
-            onChange$={$((checked: boolean) => {
-              // In easy mode, always keep split band false
-              splitBand.value = mode === "easy" ? false : checked;
-            })}
-            label={$localize`Split 2.4/5GHz`}
-            labelPosition="left"
-            size="sm"
-            color="primary"
-            disabled={mode === "easy"}
-          />
+          {/* Only show split band toggle if router has both bands */}
+          {hasBothBands && (
+            <Toggle
+              checked={mode === "easy" ? false : splitBand.value}
+              onChange$={$((checked: boolean) => {
+                // In easy mode, always keep split band false
+                splitBand.value = mode === "easy" ? false : checked;
+              })}
+              label={$localize`Split 2.4/5GHz`}
+              labelPosition="left"
+              size="sm"
+              color="primary"
+              disabled={mode === "easy"}
+            />
+          )}
         </div>
 
         <div class="mt-4 space-y-6">

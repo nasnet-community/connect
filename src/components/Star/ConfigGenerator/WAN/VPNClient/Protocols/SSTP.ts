@@ -106,6 +106,7 @@ export const SSTPClientWrapper = ( configs: SstpClientConfig[] ): RouterConfig =
             interfaceName,
             endpointAddress,
             sstpConfig.Name,
+            sstpConfig.WanInterface,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

@@ -10,6 +10,9 @@ export interface ContextPasterProps {
   error: string;
   onPaste: QRL<(value: string) => void>;
   onGenerate: QRL<() => void>;
+  onFileUpload: QRL<(file: File) => void>;
+  uploadMode: "paste" | "upload";
+  onModeChange: QRL<(mode: "paste" | "upload") => void>;
 }
 
 export interface StateHistoryProps {
