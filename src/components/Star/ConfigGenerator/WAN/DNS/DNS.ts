@@ -4,7 +4,7 @@ import  { type RouterConfig, extractBridgeNames, mergeMultipleConfigs, DomesticC
 export const BaseDNSSettins = (): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns": [
-            "set allow-remote-requests=yes  max-concurrent-queries=500 max-concurrent-tcp-sessions=50 cache-size=51200KiB cache-max-ttl=7d",
+            "set allow-remote-requests=yes  max-concurrent-queries=500 max-concurrent-tcp-sessions=50 cache-size=20480KiB cache-max-ttl=7d",
         ],
     };
 
