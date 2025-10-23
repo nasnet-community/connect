@@ -4,7 +4,7 @@ import  { type RouterConfig, extractBridgeNames, mergeMultipleConfigs, DomesticC
 export const BaseDNSSettins = (): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns": [
-            "set allow-remote-requests=yes max-concurrent-queries=200 cache-size=51200KiB cache-max-ttl=7d",
+            "set allow-remote-requests=yes  max-concurrent-queries=500 max-concurrent-tcp-sessions=50 cache-size=51200KiB cache-max-ttl=7d",
         ],
     };
 
@@ -279,6 +279,52 @@ export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnCli
     return config;
 };
 
+export const DNSV4 = (networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNClient): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns": [],
+    };
+
+    if (!networks || !networks.BaseNetworks) {
+        return config;
+    }
+
+    // Calculate counts matching DNSForwarders logic (lines 198-210)
+    const domesticWANCount = wanLinks?.Domestic?.WANConfigs.length || 0;
+    const foreignWANCount = wanLinks?.Foreign?.WANConfigs.length || 0;
+    
+    let vpnClientCount = 0;
+    if (vpnClient) {
+        vpnClientCount += vpnClient.Wireguard?.length || 0;
+        vpnClientCount += vpnClient.OpenVPN?.length || 0;
+        vpnClientCount += vpnClient.PPTP?.length || 0;
+        vpnClientCount += vpnClient.L2TP?.length || 0;
+        vpnClientCount += vpnClient.SSTP?.length || 0;
+        vpnClientCount += vpnClient.IKeV2?.length || 0;
+    }
+
+    // Collect CheckIPs in order: VPN -> Domestic -> Foreign
+    const allCheckIPs: string[] = [];
+    
+    // 1. VPN CheckIPs (Foreign CheckIPs with offset)
+    const vpnCheckIPOffset = foreignWANCount;
+    const vpnCount = vpnClientCount > 0 ? vpnClientCount : 1;
+    allCheckIPs.push(...ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnCount));
+    
+    // 2. Domestic CheckIPs
+    const domesticCount = domesticWANCount > 0 ? domesticWANCount : 1;
+    allCheckIPs.push(...DomesticCheckIPs.slice(0, domesticCount));
+    
+    // 3. Foreign CheckIPs
+    const foreignCount = foreignWANCount > 0 ? foreignWANCount : 1;
+    allCheckIPs.push(...ForeignCheckIPs.slice(0, foreignCount));
+    
+    // Create DNS servers command
+    const dnsServers = allCheckIPs.join(",");
+    config["/ip dns"].push(`set servers=${dnsServers}`);
+
+    return config;
+};
+
 export const MDNS = ( networks: Networks, subnets?: Subnets ): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns": [],
@@ -359,7 +405,7 @@ export const DOH = (): RouterConfig => {
 
     config["/ip dns"].push(
         // `set servers=8.8.8.8,8.8.4.4 use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=yes doh-max-concurrent-queries=100 doh-max-server-connections=10`,
-        `set use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=no doh-max-concurrent-queries=100 doh-max-server-connections=10`,
+        `set use-doh-server="https://8.8.8.8/dns-query" verify-doh-cert=no doh-max-concurrent-queries=500 doh-max-server-connections=50`,
     );
 
     return config;
@@ -429,6 +475,7 @@ export const GeneralFWD = (): RouterConfig => {
 export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
     return mergeMultipleConfigs(
         BaseDNSSettins(),
+        DNSV4(networks, wanLinks, vpnClient),
         DNSNAT(networks, subnets, wanLinks, vpnClient),
         DNSForwarders(networks, wanLinks, vpnClient),
         MDNS(networks, subnets),
