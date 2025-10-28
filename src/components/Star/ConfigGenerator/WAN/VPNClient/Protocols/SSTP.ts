@@ -5,7 +5,7 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName, ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
 
 
 // SSTP Client
@@ -94,16 +94,16 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const SSTPClientWrapper = ( configs: SstpClientConfig[] ): RouterConfig => {
+export const SSTPClientWrapper = ( configs: SstpClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((sstpConfig, index) => {
+    configs.forEach((sstpConfig) => {
         const vpnConfig = SSTPClient(sstpConfig);
         const interfaceName = GenerateVCInterfaceName(sstpConfig.Name, "SSTP");
         const endpointAddress = sstpConfig.Server.Address;
         
-        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
-        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
+        // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
+        const checkIP = checkIPMap?.get(sstpConfig.Name);
 
         const baseConfig = BaseVPNConfig(
             interfaceName,

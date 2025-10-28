@@ -657,9 +657,11 @@ export const FailoverRecursive = ( interfaces: MultiWANInterface[], Table: strin
     // These use the recursive routes to determine availability
     interfaces.forEach((wan) => {
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
+        // Distance pattern: 1, 5, 10, 15, 20, 25...
+        const distance = wan.distance === 1 ? 1 : (wan.distance - 2) * 5 + 5;
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance=${wan.distance+"0"} target-scope="11" comment="${routeComment}"`,
+            distance="${distance}" target-scope="11" comment="${routeComment}"`,
         );
     });
 
@@ -692,9 +694,12 @@ export const FailoverNetwatch = ( interfaces: MultiWANInterface[], Table: string
     // These use the recursive routes to determine availability
     interfaces.forEach((wan) => {
         const routeComment = `CheckIP-Route-to-${wan.network}-${wan.name}`;
+        // Distance pattern: 1, 5, 10, 15, 20, 25...
+        const distance = wan.distance === 1 ? 1 : (wan.distance - 2) * 5 + 5;
+
         routes.push(
             `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${wan.checkIP}" ${routingTable} \\
-            distance="${wan.distance * 5}" target-scope="11" comment="${routeComment}"`,
+            distance="${distance}" target-scope="11" comment="${routeComment}"`,
         );
     });
 

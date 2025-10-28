@@ -81,13 +81,23 @@ export const Route = ( wanLinkConfig: WANLinkConfig, networkType: "Foreign" | "D
 
     // Add CheckIP route if checkIP is provided
     if (checkIP) {
-        const checkIPDistance = 10; // Standard distance for CheckIP routes
-        const checkIPRoute = `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${tableName}" \\
-            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-${network}-${name}"`;
+        const checkIPDistance = 1; // Distance 1 for individual routing table CheckIP routes
         
-        if (!routeConfig["/ip route"]) {
-            routeConfig["/ip route"] = [];
+        // Build gateway string same way as Geteway function
+        let checkIPGateway: string;
+        if (gateway && interfaceName) {
+            checkIPGateway = `${gateway}%${interfaceName}`;
+        } else if (interfaceName) {
+            checkIPGateway = interfaceName;
+        } else if (gateway) {
+            checkIPGateway = gateway;
+        } else {
+            checkIPGateway = "";
         }
+        
+        const checkIPRoute = `add check-gateway=ping dst-address="${checkIP}" gateway="${checkIPGateway}" routing-table="${tableName}" \\
+            distance=${checkIPDistance} target-scope="11" comment="Route-to-${network}-${name}"`;
+        
         routeConfig["/ip route"].push(checkIPRoute);
     }
 

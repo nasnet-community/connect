@@ -56,9 +56,9 @@ export const RouteToVPN = ( InterfaceName: string, name: string, checkIP?: strin
 
     // Add CheckIP route if checkIP is provided
     if (checkIP) {
-        const checkIPDistance = 10; // Standard distance for CheckIP routes
-        const checkIPRoute = `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${tableName}" \\
-            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-VPN-${name}"`;
+        const checkIPDistance = 1; // Distance 1 for individual routing table CheckIP routes
+        const checkIPRoute = `add check-gateway=ping dst-address="${checkIP}" gateway="${InterfaceName}" routing-table="${tableName}" \\
+            distance=${checkIPDistance} target-scope="11" comment="Route-to-VPN-${name}"`;
         
         config["/ip route"].push(checkIPRoute);
     }

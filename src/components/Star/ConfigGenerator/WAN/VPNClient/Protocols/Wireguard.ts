@@ -5,7 +5,6 @@ import {
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
 import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-import { ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
 
 
 // Wireguard Client
@@ -82,16 +81,16 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
     return routerConfig;
 };
 
-export const WireguardClientWrapper = ( configs: WireguardClientConfig[] ): RouterConfig => {
+export const WireguardClientWrapper = ( configs: WireguardClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((wgConfig, index) => {
+    configs.forEach((wgConfig) => {
         const vpnConfig = WireguardClient(wgConfig);
         const interfaceName = GenerateVCInterfaceName(wgConfig.Name, "Wireguard");
         const endpointAddress = wgConfig.PeerEndpointAddress;
         
-        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
-        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
+        // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
+        const checkIP = checkIPMap?.get(wgConfig.Name);
 
         const baseConfig = BaseVPNConfig(
             interfaceName,
