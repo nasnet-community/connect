@@ -1,5 +1,8 @@
-import type { StarState } from "~/components/Star/StarContext/StarContext";
-import type { LTE } from "~/components/Star/StarContext";
+import type { 
+    StarState,
+    LTE,
+    Subnets,
+} from "~/components/Star/StarContext";
 import { 
     ChooseCG,
     WANCG,
@@ -11,6 +14,7 @@ import {
     removeEmptyLines,
     formatConfig,
     sortRouterConfig,
+    MasterCG,
 } from "~/components/Star/ConfigGenerator/";
 
 
@@ -144,6 +148,9 @@ export const ConfigGenerator = (state: StarState): string => {
         );
         const showConfig = ShowCG(state);
 
+        // Generate Master/Trunk configuration if in Trunk Mode
+        const masterConfig = MasterCG(state.Choose, state.LAN.Subnets || {} as Subnets, state.LAN.Wireless);
+
         // Merge all configurations
         const finalConfig = mergeMultipleConfigs(
             config,
@@ -152,6 +159,7 @@ export const ConfigGenerator = (state: StarState): string => {
             lanConfig,
             extraConfig,
             showConfig,
+            masterConfig,
         );
 
         // Sort mangle rules according to priority

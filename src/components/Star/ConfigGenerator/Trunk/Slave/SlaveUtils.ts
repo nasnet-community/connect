@@ -13,8 +13,11 @@ import {
 } from "~/components/Star/ConfigGenerator";
 import { 
     Slave,
+    Master,
     WirelessBridge,
     WirelessInterfaceList,
+    WirelessSteering,
+    WirelessSteeringAssignment,
     detectAvailableBands
 } from "~/components/Star/ConfigGenerator/LAN/Wireless/WirelessUtil";
 
@@ -49,16 +52,16 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
     const baseNetworks = subnets?.BaseSubnets;
     if (baseNetworks) {
         if (baseNetworks.Split) {
-            config["/interface bridge"].push(`add name=LANBridgeSplit comment="Split"`);
+            config["/interface bridge"].push(`add name="LANBridgeSplit" comment="Split"`);
         }
         if (baseNetworks.Domestic) {
-            config["/interface bridge"].push(`add name=LANBridgeDomestic comment="Domestic"`);
+            config["/interface bridge"].push(`add name="LANBridgeDomestic" comment="Domestic"`);
         }
         if (baseNetworks.Foreign) {
-            config["/interface bridge"].push(`add name=LANBridgeForeign comment="Foreign"`);
+            config["/interface bridge"].push(`add name="LANBridgeForeign" comment="Foreign"`);
         }
         if (baseNetworks.VPN) {
-            config["/interface bridge"].push(`add name=LANBridgeVPN comment="VPN"`);
+            config["/interface bridge"].push(`add name="LANBridgeVPN" comment="VPN"`);
         }
     }
 
@@ -68,7 +71,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
         foreignNetworks.forEach((subnetConfig) => {
             const networkName = subnetConfig.name;
             config["/interface bridge"].push(
-                `add name=LANBridgeForeign-${networkName} comment="Foreign-${networkName}"`
+                `add name="LANBridgeForeign-${networkName}" comment="Foreign-${networkName}"`
             );
         });
     }
@@ -79,7 +82,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
         domesticNetworks.forEach((subnetConfig) => {
             const networkName = subnetConfig.name;
             config["/interface bridge"].push(
-                `add name=LANBridgeDomestic-${networkName} comment="Domestic-${networkName}"`
+                `add name="LANBridgeDomestic-${networkName}" comment="Domestic-${networkName}"`
             );
         });
     }
@@ -92,7 +95,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.Wireguard.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-WG-Client-${networkName} comment="WG-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -102,7 +105,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.OpenVPN.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-OVPN-Client-${networkName} comment="OVPN-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -112,7 +115,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.L2TP.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-L2TP-Client-${networkName} comment="L2TP-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -122,7 +125,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.PPTP.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-PPTP-Client-${networkName} comment="PPTP-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -132,7 +135,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.SSTP.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-SSTP-Client-${networkName} comment="SSTP-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -142,7 +145,7 @@ export const createBridgesForNetworks = (subnets?: Subnets): RouterConfig => {
             vpnClient.IKev2.forEach((subnetConfig) => {
                 const networkName = subnetConfig.name;
                 config["/interface bridge"].push(
-                    `add name=LANBridgeVPN-IKEv2-Client-${networkName} comment="IKEv2-Client-${networkName}"`
+                    `add name="LANBridgeVPN-${networkName}" comment="VPN-${networkName}"`
                 );
             });
         }
@@ -354,7 +357,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `WG-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-WG-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
 
@@ -364,7 +367,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `OVPN-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-OVPN-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
 
@@ -374,7 +377,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `L2TP-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-L2TP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
 
@@ -384,7 +387,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `PPTP-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-PPTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
 
@@ -394,7 +397,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `SSTP-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-SSTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
 
@@ -404,7 +407,7 @@ export const addVLANsToBridges = ( subnets: Subnets | undefined, trunkInterface:
                 const vlanId = extractThirdOctet(subnetConfig.subnet);
                 const fullNetworkName = `IKEv2-Client-${subnetConfig.name}`;
                 const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
-                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-IKEv2-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+                configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
             });
         }
     }
@@ -456,42 +459,42 @@ export const createDHCPClientsOnBridges = (subnets?: Subnets): RouterConfig => {
         // Wireguard
         if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
             vpnClient.Wireguard.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-WG-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
 
         // OpenVPN
         if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
             vpnClient.OpenVPN.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-OVPN-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
 
         // L2TP
         if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
             vpnClient.L2TP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-L2TP-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
 
         // PPTP
         if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
             vpnClient.PPTP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-PPTP-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
 
         // SSTP
         if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
             vpnClient.SSTP.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-SSTP-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
 
         // IKev2
         if (vpnClient.IKev2 && vpnClient.IKev2.length > 0) {
             vpnClient.IKev2.forEach((subnetConfig) => {
-                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-IKEv2-Client-${subnetConfig.name}"`);
+                config["/ip dhcp-client"].push(`add interface="LANBridgeVPN-${subnetConfig.name}"`);
             });
         }
     }
@@ -561,6 +564,8 @@ export const SlaveExtraCG = (extraConfigState: ExtraConfigState): RouterConfig =
 
 export const addSlaveInterfacesToBridge = ( routerModels: RouterModels[], subnets?: Subnets ): RouterConfig => {
     const config: RouterConfig = {
+        "/interface ethernet": [],
+        "/interface sfp": [],
         "/interface bridge port": [],
     };
 
@@ -598,6 +603,11 @@ export const addSlaveInterfacesToBridge = ( routerModels: RouterModels[], subnet
     if (slaveRouter.Interfaces.Interfaces.ethernet) {
         slaveRouter.Interfaces.Interfaces.ethernet.forEach(ethInterface => {
             if (!occupiedInterfaces.has(ethInterface)) {
+                // Add comment to ethernet interface
+                config["/interface ethernet"].push(
+                    `set [find default-name=${ethInterface}] comment="${targetBridge} Network"`
+                );
+                // Add interface to bridge
                 config["/interface bridge port"].push(
                     `add bridge="${targetBridge}" interface="${ethInterface}" comment="Slave ${ethInterface} to ${targetBridge}"`
                 );
@@ -609,6 +619,11 @@ export const addSlaveInterfacesToBridge = ( routerModels: RouterModels[], subnet
     if (slaveRouter.Interfaces.Interfaces.sfp) {
         slaveRouter.Interfaces.Interfaces.sfp.forEach(sfpInterface => {
             if (!occupiedInterfaces.has(sfpInterface)) {
+                // Add comment to SFP interface
+                config["/interface sfp"].push(
+                    `set [find default-name=${sfpInterface}] comment="${targetBridge} Network"`
+                );
+                // Add interface to bridge
                 config["/interface bridge port"].push(
                     `add bridge="${targetBridge}" interface="${sfpInterface}" comment="Slave ${sfpInterface} to ${targetBridge}"`
                 );
@@ -616,7 +631,19 @@ export const addSlaveInterfacesToBridge = ( routerModels: RouterModels[], subnet
         });
     }
 
-    return config["/interface bridge port"].length === 0 ? {} : config;
+    // Remove empty sections from config
+    const result: RouterConfig = {};
+    if (config["/interface ethernet"].length > 0) {
+        result["/interface ethernet"] = config["/interface ethernet"];
+    }
+    if (config["/interface sfp"] && config["/interface sfp"].length > 0) {
+        result["/interface sfp"] = config["/interface sfp"];
+    }
+    if (config["/interface bridge port"].length > 0) {
+        result["/interface bridge port"] = config["/interface bridge port"];
+    }
+
+    return Object.keys(result).length === 0 ? {} : result;
 };
 
 export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], routerModels: RouterModels[], subnets?: Subnets ): RouterConfig => {
@@ -628,35 +655,24 @@ export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], route
         return {};
     }
 
-    // Check which bands are available on the slave router
-    const wirelessInterfaces = slaveRouter.Interfaces.Interfaces.wireless;
-    const has24GHz = wirelessInterfaces.some(iface => 
-        iface === "wifi2.4"
-    );
-    const has5GHz = wirelessInterfaces.some(iface => 
-        iface === "wifi5" || iface === "wifi5-2"
-    );
+    // Detect available bands for the slave router
+    const availableBands = detectAvailableBands(routerModels);
 
-    // Check if MasterSlaveInterface uses wireless
-    let masterSlaveUses24GHz = false;
-    let masterSlaveUses5GHz = false;
+    // Check if MasterSlaveInterface uses specific wireless bands
+    let masterSlaveUsesWifi24 = false;
+    let masterSlaveUsesWifi5 = false;
+    let masterSlaveUsesWifi5_2 = false;
+    
     if (slaveRouter.MasterSlaveInterface) {
         const msInterface = String(slaveRouter.MasterSlaveInterface);
         if (msInterface.includes("wifi2.4")) {
-            masterSlaveUses24GHz = true;
+            masterSlaveUsesWifi24 = true;
         }
-        if (msInterface.includes("wifi5")) {
-            masterSlaveUses5GHz = true;
+        if (msInterface.includes("wifi5-2")) {
+            masterSlaveUsesWifi5_2 = true;
+        } else if (msInterface.includes("wifi5")) {
+            masterSlaveUsesWifi5 = true;
         }
-    }
-
-    // Determine available bands (exclude band used by MasterSlaveInterface)
-    const available24GHz = has24GHz && !masterSlaveUses24GHz;
-    const available5GHz = has5GHz && !masterSlaveUses5GHz;
-
-    // If no bands available, return empty
-    if (!available24GHz && !available5GHz) {
-        return {};
     }
 
     // Filter enabled wireless configs
@@ -681,25 +697,74 @@ export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], route
 
     const configs: RouterConfig[] = [];
 
-    // Generate wireless configuration for each enabled config and available band
-    enabledConfigs.forEach(wirelessConfig => {
-        // Configure 2.4GHz band if available
-        if (available24GHz) {
-            const band24: Band = "2.4";
-            const slaveConfig = Slave(networkTarget!, band24, wirelessConfig);
-            configs.push(slaveConfig);
+    // Track which bands have master interfaces assigned
+    let masterAssigned2_4 = masterSlaveUsesWifi24; // If trunk uses wifi2.4, it's already a master
+    let masterAssigned5 = masterSlaveUsesWifi5 || masterSlaveUsesWifi5_2; // If trunk uses any 5GHz, mark as assigned
+
+    // Process each wireless configuration
+    enabledConfigs.forEach((wirelessConfig) => {
+        // Skip disabled configurations
+        if (wirelessConfig.isDisabled) {
+            return;
         }
 
-        // Configure 5GHz band if available
-        if (available5GHz) {
-            const band5: Band = "5";
-            const slaveConfig = Slave(networkTarget!, band5, wirelessConfig);
-            configs.push(slaveConfig);
+        // Configure 2.4GHz band (only if available)
+        if (availableBands.has2_4) {
+            if (masterAssigned2_4) {
+                // wifi2.4 is used as trunk master, create slave interface
+                const slaveConfig = Slave(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                configs.push(slaveConfig);
+            } else {
+                // wifi2.4 is available, configure as master
+                const masterConfig = Master(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                configs.push(masterConfig);
+                masterAssigned2_4 = true; // Mark 2.4GHz master as assigned
+            }
+        }
+
+        // Configure all 5GHz bands (if available)
+        if (availableBands.has5 || availableBands.has5_2) {
+            // For each 5GHz band, create the same configuration
+            availableBands.bands5GHz.forEach((band5Interface, index) => {
+                const bandName = band5Interface === "wifi5" ? "5" : "5-2";
+                
+                // Check if this specific 5GHz band is used by trunk
+                const thisWifi5UsedByTrunk = (band5Interface === "wifi5" && masterSlaveUsesWifi5) || 
+                                              (band5Interface === "wifi5-2" && masterSlaveUsesWifi5_2);
+                
+                if (thisWifi5UsedByTrunk) {
+                    // This specific 5GHz interface is used as trunk master, create slave interface
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(slaveConfig);
+                } else if (masterAssigned5 && index === 0) {
+                    // First 5GHz interface: another 5GHz is used as trunk master, create slave interface
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(slaveConfig);
+                } else if (!masterAssigned5 && index === 0) {
+                    // First 5GHz interface becomes master
+                    const masterConfig = Master(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(masterConfig);
+                    masterAssigned5 = true; // Only first 5GHz becomes master
+                } else {
+                    // All subsequent 5GHz interfaces are slaves
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    configs.push(slaveConfig);
+                }
+            });
         }
     });
 
-    // Detect available bands for the slave router
-    const availableBands = detectAvailableBands(routerModels);
+    // Generate steering profiles for all wireless configs
+    enabledConfigs.forEach((wirelessConfig) => {
+        if (!wirelessConfig.isDisabled) {
+            const steeringConfig = WirelessSteering(wirelessConfig, availableBands);
+            configs.push(steeringConfig);
+        }
+    });
+
+    // Assign steering profiles to interfaces
+    const steeringAssignment = WirelessSteeringAssignment(enabledConfigs, availableBands);
+    configs.push(steeringAssignment);
 
     // Add wireless bridge configuration
     const bridgeConfig = WirelessBridge(enabledConfigs, availableBands);
@@ -715,4 +780,115 @@ export const configureSlaveWireless = ( wirelessConfigs: WirelessConfig[], route
 
     // Merge all configs
     return configs.length === 0 ? {} : mergeMultipleConfigs(...configs);
+};
+
+export const SlaveMDNS = (subnets?: Subnets): RouterConfig => {
+    const config: RouterConfig = {
+        "/ip dns": [],
+    };
+
+    if (!subnets) {
+        return config;
+    }
+
+    // Extract all bridge names from the subnets structure
+    const bridgeNames: string[] = [];
+
+    // Base Networks
+    const baseNetworks = subnets.BaseSubnets;
+    if (baseNetworks) {
+        if (baseNetworks.Split) {
+            bridgeNames.push("LANBridgeSplit");
+        }
+        if (baseNetworks.Domestic) {
+            bridgeNames.push("LANBridgeDomestic");
+        }
+        if (baseNetworks.Foreign) {
+            bridgeNames.push("LANBridgeForeign");
+        }
+        if (baseNetworks.VPN) {
+            bridgeNames.push("LANBridgeVPN");
+        }
+    }
+
+    // Foreign Networks
+    const foreignNetworks = subnets.ForeignSubnets;
+    if (foreignNetworks && foreignNetworks.length > 0) {
+        foreignNetworks.forEach((subnetConfig) => {
+            const networkName = subnetConfig.name;
+            bridgeNames.push(`LANBridgeForeign-${networkName}`);
+        });
+    }
+
+    // Domestic Networks
+    const domesticNetworks = subnets.DomesticSubnets;
+    if (domesticNetworks && domesticNetworks.length > 0) {
+        domesticNetworks.forEach((subnetConfig) => {
+            const networkName = subnetConfig.name;
+            bridgeNames.push(`LANBridgeDomestic-${networkName}`);
+        });
+    }
+
+    // VPN Client Networks
+    const vpnClient = subnets.VPNClientSubnets;
+    if (vpnClient) {
+        // Wireguard
+        if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
+            vpnClient.Wireguard.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+
+        // OpenVPN
+        if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
+            vpnClient.OpenVPN.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+
+        // L2TP
+        if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
+            vpnClient.L2TP.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+
+        // PPTP
+        if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
+            vpnClient.PPTP.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+
+        // SSTP
+        if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
+            vpnClient.SSTP.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+
+        // IKev2
+        if (vpnClient.IKev2 && vpnClient.IKev2.length > 0) {
+            vpnClient.IKev2.forEach((subnetConfig) => {
+                const networkName = subnetConfig.name;
+                bridgeNames.push(`LANBridgeVPN-${networkName}`);
+            });
+        }
+    }
+
+    // If no bridges found, return empty config
+    if (bridgeNames.length === 0) {
+        return config;
+    }
+
+    // Join all bridge names with commas
+    const mdnsInterfaces = bridgeNames.join(",");
+    config["/ip dns"].push(`set mdns-repeat-ifaces="${mdnsInterfaces}"`);
+
+    return config;
 };

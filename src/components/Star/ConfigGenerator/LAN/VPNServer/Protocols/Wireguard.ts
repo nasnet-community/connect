@@ -578,7 +578,7 @@ export const WireguardServerUsers = ( serverConfig: WireguardInterfaceConfig, us
             `preshared-key=auto`,
             `private-key=auto`,
             `responder=yes`,
-            `comment="Wireguard Client: ${user.Username} on ${serverConfig.Name} Server"`,
+            `comment="Wireguard Server: ${user.Username} on ${serverConfig.Name} Server"`,
         ];
 
         config["/interface wireguard peers"].push(

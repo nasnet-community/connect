@@ -133,7 +133,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-WG-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -145,7 +145,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-OVPN-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -157,7 +157,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-L2TP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -169,7 +169,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-PPTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -181,7 +181,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-SSTP-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 
@@ -193,7 +193,7 @@ export const generateVPNClientNetworkVLANs = ( subnets: Subnets, trunkInterface:
             const vlanName = `VLAN${vlanId}-${trunkInterface}-${fullNetworkName}`;
 
             configs.push(createVLAN(vlanId, trunkInterface, fullNetworkName, `${fullNetworkName} Network VLAN`));
-            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-IKEv2-Client-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
+            configs.push(addVLANToBridge(vlanName, `LANBridgeVPN-${subnetConfig.name}`, `${fullNetworkName} VLAN to Bridge`));
         });
     }
 

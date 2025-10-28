@@ -6,28 +6,32 @@ import type { WANLinks, VPNClient, Networks as Networksinterface, Subnets } from
 
 
 
-export const shouldSkipMangleRules = (wanLinks?: WANLinks, vpnClient?: VPNClient): boolean => {
-    // Check Foreign WAN Link
-    if (wanLinks?.Foreign?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = wanLinks.Foreign.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
+export const shouldSkipMangleRules = (
+    networkType: "Foreign" | "Domestic" | "VPN",
+    wanLinks?: WANLinks, 
+    vpnClient?: VPNClient
+): boolean => {
+    // Check specific network's load balancing method
+    if (networkType === "Foreign") {
+        if (wanLinks?.Foreign?.MultiLinkConfig?.loadBalanceMethod) {
+            const method = wanLinks.Foreign.MultiLinkConfig.loadBalanceMethod;
+            if (method === "PCC" || method === "NTH") {
+                return true;
+            }
         }
-    }
-    
-    // Check Domestic WAN Link
-    if (wanLinks?.Domestic?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = wanLinks.Domestic.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
+    } else if (networkType === "Domestic") {
+        if (wanLinks?.Domestic?.MultiLinkConfig?.loadBalanceMethod) {
+            const method = wanLinks.Domestic.MultiLinkConfig.loadBalanceMethod;
+            if (method === "PCC" || method === "NTH") {
+                return true;
+            }
         }
-    }
-    
-    // Check VPN Client MultiLink Config
-    if (vpnClient?.MultiLinkConfig?.loadBalanceMethod) {
-        const method = vpnClient.MultiLinkConfig.loadBalanceMethod;
-        if (method === "PCC" || method === "NTH") {
-            return true;
+    } else if (networkType === "VPN") {
+        if (vpnClient?.MultiLinkConfig?.loadBalanceMethod) {
+            const method = vpnClient.MultiLinkConfig.loadBalanceMethod;
+            if (method === "PCC" || method === "NTH") {
+                return true;
+            }
         }
     }
     

@@ -142,8 +142,16 @@ export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Ne
     );
     config = mergeRouterConfigs(config, connectionConfig);
 
-    // 5. Generate routing configuration
-    const routeConfig = Route(wanLinkConfig, Network, 1);
+    // 5. Generate routing configuration with checkIP
+    // Convert to MultiWANInterface format to get checkIP
+    const interfaces = convertWANLinkToMultiWAN(
+        [wanLinkConfig],
+        Network === "Domestic",
+        Network
+    );
+    const checkIP = interfaces.length > 0 ? interfaces[0].checkIP : undefined;
+    
+    const routeConfig = Route(wanLinkConfig, Network, 1, checkIP);
     config = mergeRouterConfigs(config, routeConfig);
 
     return config;
@@ -183,11 +191,29 @@ export const DFSingleLink = ( wanLink: WANLink, networkType: "Foreign" | "Domest
     // Use full network name for routing table to match Networks.ts
     const routingTable = `to-${networkType}`;
     
+    // Convert to MultiWANInterface format to get checkIP
+    const interfaces = convertWANLinkToMultiWAN(
+        wanLink.WANConfigs,
+        networkType === "Domestic",
+        networkType
+    );
+    
     const config: RouterConfig = {
         "/ip route": [
             `add dst-address="0.0.0.0/0" gateway="${gateway}" routing-table="${routingTable}" comment="Route-to-${networkType}-${linkName}"`,
         ],
     };
+
+    // Add CheckIP route if we have the checkIP available
+    if (interfaces.length > 0 && interfaces[0].checkIP) {
+        const checkIP = interfaces[0].checkIP;
+        const distance = interfaces[0].distance || 10;
+        
+        config["/ip route"].push(
+            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${routingTable}" \\
+            distance=${distance} target-scope="11" comment="CheckIP-Route-to-${networkType}-${linkName}"`
+        );
+    }
 
     return config;
 };

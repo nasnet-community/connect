@@ -26,7 +26,25 @@ export const StateViewer = component$(() => {
     downloadCurrentConfig$,
     handleFileUpload$,
     handleModeChange$,
+    // Slave config values
+    slaveConfigOutput,
+    pastedSlaveConfig,
+    selectedSlaveRouter,
+    slaveRouters,
+    generateSlaveConfig$,
+    downloadSlaveConfig$,
+    downloadPastedSlaveConfig$,
+    handleSlaveRouterChange$,
+    // Router options for Context Input
+    routerOptions,
+    selectedRouterForPaste,
+    handlePasteRouterChange$,
   } = useStateViewer(context.state);
+
+  // Get selected slave router name for display
+  const selectedSlaveRouterName = slaveRouters.value.find(
+    r => r.id === selectedSlaveRouter.value
+  )?.name || "";
 
   return (
     <>
@@ -75,6 +93,10 @@ export const StateViewer = component$(() => {
                   onRefresh$={refreshState$}
                   onGenerateConfig$={generateConfig$}
                   onDownloadLatest$={downloadLatest$}
+                  onGenerateSlaveConfig$={generateSlaveConfig$}
+                  slaveRouters={slaveRouters.value}
+                  selectedSlaveRouter={selectedSlaveRouter.value}
+                  onSlaveRouterChange$={handleSlaveRouterChange$}
                 />
                 <ContextPaster
                   value={pastedContext.value}
@@ -84,6 +106,9 @@ export const StateViewer = component$(() => {
                   onFileUpload={handleFileUpload$}
                   uploadMode={uploadMode.value}
                   onModeChange={handleModeChange$}
+                  routerOptions={routerOptions.value}
+                  selectedRouter={selectedRouterForPaste.value}
+                  onRouterChange={handlePasteRouterChange$}
                 />
               </div>
 
@@ -92,6 +117,11 @@ export const StateViewer = component$(() => {
                 pastedConfig={pastedContextConfig.value}
                 onDownloadPastedConfig$={downloadPastedConfig$}
                 onDownloadCurrentConfig$={downloadCurrentConfig$}
+                slaveConfig={slaveConfigOutput.value}
+                pastedSlaveConfig={pastedSlaveConfig.value}
+                onDownloadSlaveConfig$={downloadSlaveConfig$}
+                onDownloadPastedSlaveConfig$={downloadPastedSlaveConfig$}
+                selectedSlaveRouterName={selectedSlaveRouterName}
               />
             </div>
           </div>

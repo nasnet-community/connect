@@ -29,12 +29,22 @@ export const VPNSingleLink = ( vpnClient: VPNClient, checkIPOffset: number = 0 )
 
     const singleInterface = vpnInterfaces[0];
     
-    // For a single VPN link, create a simple route in the VPN routing table
+    // For a single VPN link, create routes in the VPN routing table
     const config: RouterConfig = {
         "/ip route": [
             `add dst-address="0.0.0.0/0" gateway="${singleInterface.gateway}" routing-table="to-VPN" distance=${singleInterface.distance} comment="Route-to-VPN-${singleInterface.name}"`,
         ],
     };
+
+    // Add CheckIP route for failover monitoring
+    if (singleInterface.checkIP) {
+        const checkIPDistance = (singleInterface.distance || 1) + 9; // Use higher distance for CheckIP route
+        
+        config["/ip route"].push(
+            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${singleInterface.checkIP}" routing-table="to-VPN" \\
+            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-VPN-${singleInterface.name}"`
+        );
+    }
 
     return config;
 };

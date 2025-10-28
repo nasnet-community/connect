@@ -444,12 +444,13 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     };
 
     const mangleRules = config["/ip firewall mangle"];
+    const Network = RoutingMark.replace("to-", "");
 
     // 2. Mark connections coming from each WAN interface
     wanInterfaces.forEach((iface, _index) => {
         mangleRules.push(
             `add action=mark-connection chain=input in-interface="${iface}" new-connection-mark="${iface}-conn" \\
-            passthrough=yes comment=" PCC LOAD BALANCING - Mark ${iface} connections"`,
+            passthrough=yes comment="${Network} - PCC LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -457,7 +458,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=output connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes comment=" PCC LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes comment="${Network} - PCC LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -466,7 +467,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
         mangleRules.push(
             `add action=mark-connection chain=prerouting new-connection-mark="${iface}-conn" passthrough=yes \\
             per-connection-classifier=both-addresses-and-ports:${linkCount}/${index} dst-address-type=!local \\
-            dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment=" PCC LOAD BALANCING - Mark ${iface} connections"`,
+            dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment="${Network} - PCC LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -474,7 +475,7 @@ export const PCCMangle = ( linkCount: number, wanInterfaces: string[], AddressLi
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=prerouting connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment=" PCC LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${AddressList}" comment="${Network} - PCC LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -488,12 +489,13 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
     };
 
     const mangleRules = config["/ip firewall mangle"];
+    const Network = RoutingMark.replace("to-", "");
 
     // 2. Mark connections coming from each WAN interface
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-connection chain=prerouting in-interface="${iface}" new-connection-mark="${iface}-conn" \\
-            passthrough=yes comment=" NTH LOAD BALANCING - Mark ${iface} connections"`,
+            passthrough=yes comment="${Network} - NTH LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -501,7 +503,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
     wanInterfaces.forEach((iface) => {
         mangleRules.push(
             `add action=mark-routing chain=output connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
-            passthrough=yes comment=" NTH LOAD BALANCING - Mark ${iface} routing"`,
+            passthrough=yes comment="${Network} - NTH LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -511,7 +513,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
         mangleRules.push(
             `add action=mark-connection chain=prerouting new-connection-mark="${iface}-conn" passthrough=yes \\
             connection-state=new dst-address-list="!LOCAL-IP" src-address-list="${localNetwork}" \\
-            nth=${linkCount},${nthIndex} comment=" NTH LOAD BALANCING - Mark ${iface} connections"`,
+            nth=${linkCount},${nthIndex} comment="${Network} - NTH LOAD BALANCING - Mark ${iface} connections"`,
         );
     });
 
@@ -520,7 +522,7 @@ export const NTHMangle = ( linkCount: number, wanInterfaces: string[], localNetw
         mangleRules.push(
             `add action=mark-routing chain=prerouting connection-mark="${iface}-conn" new-routing-mark="${RoutingMark}" \\
             passthrough=yes dst-address-list="!LOCAL-IP" src-address-list="${localNetwork}" \\
-            comment=" NTH LOAD BALANCING - Mark ${iface} routing"`,
+            comment="${Network} - NTH LOAD BALANCING - Mark ${iface} routing"`,
         );
     });
 
@@ -535,35 +537,43 @@ export const LoadBalanceRoute = ( interfaces: MultiWANInterface[],  _method: "PC
     };
 
     const routes = config["/ip route"];
-    const tableParam = routingTable ? `routing-table="${routingTable}"` : "";
+    
+    // Check if this is a base routing table (to-Domestic, to-Foreign, to-VPN)
+    // For base tables, we skip generating routes here as FailoverRecursive() will handle them
+    const isBaseTable = routingTable === "to-Domestic" || routingTable === "to-Foreign" || routingTable === "to-VPN";
+    
+    // Only generate routes for non-base tables (like "main")
+    // Per-link tables get their routes from Route() function
+    // Base tables get their routes from FailoverRecursive()
+    
+    if (!isBaseTable) {
+        const tableParam = routingTable ? `routing-table="${routingTable}"` : "";
+        
+        // 1. Create recursive check routes (dst-address with real gateway)
+        // These routes are used to check if the ISP gateway is reachable
+        interfaces.forEach((wan) => {
+            routes.push(
+                `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
+                ${tableParam} target-scope="10" scope="10" comment="Route-to-${wan.network}-${wan.name}"`
+            );
+        });
+        
+        // 3. Create default routes with increasing distance for failover
+        // These provide automatic failover if primary routes fail
+        interfaces.forEach((wan, index) => {
+            const distance = index + 1; // 1, 2, 3, 4...
+            routes.push(
+                `add check-gateway=ping gateway="${wan.checkIP}" ${tableParam} distance=${distance} \\
+                scope="30" target-scope="30" comment="Route-to-${wan.network}-${wan.name}"`
+            );
+        });
+    }
 
-    // 1. Create recursive check routes (dst-address with real gateway)
-    // These routes are used to check if the ISP gateway is reachable
-    interfaces.forEach((wan) => {
-        routes.push(
-            `add check-gateway=ping dst-address="${wan.checkIP}" gateway="${wan.gateway}" \\
-            ${tableParam} target-scope="10" scope="10" comment="Route-to-${wan.network}-${wan.name}"`
-        );
-    });
-
-    // 2. Create routing mark routes (one per routing table)
-    // These routes are used by the mangle rules to route traffic to specific ISPs
-    interfaces.forEach((wan) => {
-        routes.push(
-            `add check-gateway=ping gateway="${wan.checkIP}" scope="30" target-scope="30" \\
-            routing-table="to-${wan.network}-${wan.name}" comment="Route-to-${wan.network}-${wan.name}"`
-        );
-    });
-
-    // 3. Create default routes with increasing distance for failover
-    // These provide automatic failover if primary routes fail
-    interfaces.forEach((wan, index) => {
-        const distance = index + 1; // 1, 2, 3, 4...
-        routes.push(
-            `add check-gateway=ping gateway="${wan.checkIP}" ${tableParam} distance=${distance} \\
-            scope="30" target-scope="30" comment="Route-to-${wan.network}-${wan.name}"`
-        );
-    });
+    // Section 2 REMOVED - per-link tables now get routes from Route() function
+    // Previously this section generated routes like:
+    // add check-gateway=ping gateway="${wan.checkIP}" scope="30" target-scope="30"
+    //     routing-table="to-${wan.network}-${wan.name}" comment="Route-to-${wan.network}-${wan.name}"
+    // These are now redundant because Route() generates CheckIP routes for per-link tables
 
     return config;
 };

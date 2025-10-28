@@ -97,6 +97,37 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
         </button>
       </div>
 
+      {/* Router Selection Dropdown */}
+      <div class="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+        <label class="block text-xs font-medium text-text-secondary dark:text-text-dark-secondary">
+          {$localize`Select Router`}
+        </label>
+        {props.routerOptions.length > 0 ? (
+          <>
+            <select
+              value={props.selectedRouter}
+              onChange$={(e) => props.onRouterChange((e.target as HTMLSelectElement).value)}
+              class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            >
+              {props.routerOptions.map((router) => (
+                <option key={router.id} value={router.id}>
+                  {router.name}
+                </option>
+              ))}
+            </select>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+              {$localize`Configuration will be generated for the selected router`}
+            </p>
+          </>
+        ) : (
+          <div class="rounded-md border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950">
+            <p class="text-xs text-yellow-700 dark:text-yellow-300">
+              {$localize`No routers configured. Please configure routers in Trunk Mode with Master and Slave routers to use this feature.`}
+            </p>
+          </div>
+        )}
+      </div>
+
       <div class="space-y-2">
         {/* Paste Mode */}
         {props.uploadMode === "paste" && (
