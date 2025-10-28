@@ -51,32 +51,47 @@ export const Geteway = ( gateway: string | undefined, interfaceName: string | un
     return CommandShortner(config);
 };
 
-export const Route = ( wanLinkConfig: WANLinkConfig, networkType: "Foreign" | "Domestic", distance: number ): RouterConfig => {
+export const Route = ( wanLinkConfig: WANLinkConfig, networkType: "Foreign" | "Domestic", distance: number, checkIP?: string ): RouterConfig => {
     const { name, ConnectionConfig } = wanLinkConfig;
     const interfaceName = GetWANInterface(wanLinkConfig);
     const tableName = `to-${networkType}-${name}`;
     const network = networkType === "Foreign" ? "Foreign" : "Domestic";
     
     let gateway: string | undefined;
+    let routeConfig: RouterConfig;
 
     // Determine gateway based on connection type
     if (ConnectionConfig?.pppoe) {
         // PPPoE: Use interface name only as gateway
         gateway = undefined;
-        return Geteway(undefined, interfaceName, network, name, distance, tableName);
+        routeConfig = Geteway(undefined, interfaceName, network, name, distance, tableName);
     } else if (ConnectionConfig?.lteSettings || wanLinkConfig.InterfaceConfig.InterfaceName.startsWith("lte")) {
         // LTE: Use interface name only as gateway
         gateway = undefined;
-        return Geteway(undefined, interfaceName, network, name, distance, tableName);
+        routeConfig = Geteway(undefined, interfaceName, network, name, distance, tableName);
     } else if (ConnectionConfig?.static) {
         // Static: Use gateway from static config + interface
         gateway = ConnectionConfig.static.gateway;
-        return Geteway(gateway, interfaceName, network, name, distance, tableName);
+        routeConfig = Geteway(gateway, interfaceName, network, name, distance, tableName);
     } else {
         // DHCP (default): Use default IPs based on network type
         gateway = networkType === "Foreign" ? "100.64.0.1" : "192.168.2.1";
-        return Geteway(gateway, interfaceName, network, name, distance, tableName);
+        routeConfig = Geteway(gateway, interfaceName, network, name, distance, tableName);
     }
+
+    // Add CheckIP route if checkIP is provided
+    if (checkIP) {
+        const checkIPDistance = 10; // Standard distance for CheckIP routes
+        const checkIPRoute = `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${tableName}" \\
+            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-${network}-${name}"`;
+        
+        if (!routeConfig["/ip route"]) {
+            routeConfig["/ip route"] = [];
+        }
+        routeConfig["/ip route"].push(checkIPRoute);
+    }
+
+    return routeConfig;
 };
 
 export const getLinkCount = (wanLink: WANLink): number => {

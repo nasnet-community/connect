@@ -5,7 +5,7 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName, ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
 
 // L2TP Client
 
@@ -96,16 +96,20 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
 export const L2TPClientWrapper = ( configs: L2tpClientConfig[] ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((l2tpConfig) => {
+    configs.forEach((l2tpConfig, index) => {
         const vpnConfig = L2TPClient(l2tpConfig);
         const interfaceName = GenerateVCInterfaceName(l2tpConfig.Name, "L2TP");
         const endpointAddress = l2tpConfig.Server.Address;
+        
+        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
+        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
 
         const baseConfig = BaseVPNConfig(
             interfaceName,
             endpointAddress,
             l2tpConfig.Name,
             l2tpConfig.WanInterface,
+            checkIP,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

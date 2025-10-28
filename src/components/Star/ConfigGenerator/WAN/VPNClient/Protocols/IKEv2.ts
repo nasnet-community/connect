@@ -5,7 +5,7 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName, ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
 
 
 
@@ -250,16 +250,20 @@ export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
 export const IKeV2ClientWrapper = ( configs: Ike2ClientConfig[] ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((ikev2Config) => {
+    configs.forEach((ikev2Config, index) => {
         const vpnConfig = IKeV2Client(ikev2Config);
         const interfaceName = GenerateVCInterfaceName(ikev2Config.Name, "IKeV2");
         const endpointAddress = ikev2Config.ServerAddress;
+        
+        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
+        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
 
         const baseConfig = BaseVPNConfig(
             interfaceName,
             endpointAddress,
             ikev2Config.Name,
             ikev2Config.WanInterface,
+            checkIP,
         );
 
         // Remove /interface list member from base config

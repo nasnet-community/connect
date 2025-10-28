@@ -13,6 +13,20 @@ export interface ContextPasterProps {
   onFileUpload: QRL<(file: File) => void>;
   uploadMode: "paste" | "upload";
   onModeChange: QRL<(mode: "paste" | "upload") => void>;
+  routerOptions: RouterOption[];
+  selectedRouter: string;
+  onRouterChange: QRL<(routerId: string) => void>;
+}
+
+export interface SlaveRouterOption {
+  id: string;
+  name: string;
+}
+
+export interface RouterOption {
+  id: string;
+  name: string;
+  type: 'master' | 'slave';
 }
 
 export interface StateHistoryProps {
@@ -23,6 +37,10 @@ export interface StateHistoryProps {
   onRefresh$: QRL<() => void>;
   onGenerateConfig$: QRL<() => void>;
   onDownloadLatest$: QRL<() => void>;
+  onGenerateSlaveConfig$: QRL<() => void>;
+  slaveRouters: SlaveRouterOption[];
+  selectedSlaveRouter: string;
+  onSlaveRouterChange$: QRL<(routerId: string) => void>;
 }
 
 export interface ConfigViewerProps {
@@ -30,6 +48,11 @@ export interface ConfigViewerProps {
   pastedConfig: string;
   onDownloadPastedConfig$?: QRL<() => void>;
   onDownloadCurrentConfig$?: QRL<() => void>;
+  slaveConfig: string;
+  pastedSlaveConfig: string;
+  onDownloadSlaveConfig$?: QRL<() => void>;
+  onDownloadPastedSlaveConfig$?: QRL<() => void>;
+  selectedSlaveRouterName: string;
 }
 
 export interface StateHeaderProps {

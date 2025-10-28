@@ -118,7 +118,7 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
             <div class="flex flex-col gap-3 sm:flex-row">
               <Input
                 id="password"
-                type="password"
+                type="text"
                 value={password.value}
                 onInput$={(event: Event, value: string) => {
                   password.value = value;

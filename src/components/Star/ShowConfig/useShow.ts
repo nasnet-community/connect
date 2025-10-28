@@ -1,7 +1,7 @@
 import { $ } from "@builder.io/qwik";
 import { ConfigGenerator } from "~/components/Star/ConfigGenerator/ConfigGenerator";
 import { SlaveCG } from "~/components/Star/ConfigGenerator/Trunk/Slave";
-import { removeEmptyArrays, formatConfig, removeEmptyLines } from "~/components/Star/ConfigGenerator/utils";
+// import { removeEmptyArrays, formatConfig, removeEmptyLines } from "~/components/Star/ConfigGenerator/utils";
 import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { RouterModels } from "~/components/Star/StarContext/ChooseType";
 
@@ -37,19 +37,17 @@ export const useConfigGenerator = (state: StarState) => {
     try {
       // Generate configuration using SlaveCG
       const routerConfig = SlaveCG(
-        _slaveRouter,
-        state.LAN.Subnets,
-        state.LAN.Wireless,
-        state.ExtraConfig
+        state,
+        _slaveRouter
       );
 
       // Format the configuration using the same utilities as main ConfigGenerator
-      const removedEmptyArrays = removeEmptyArrays(routerConfig);
-      const formattedConfig = formatConfig(removedEmptyArrays);
-      const finalConfig = removeEmptyLines(formattedConfig);
+      // const removedEmptyArrays = removeEmptyArrays(routerConfig as RouterConfig);
+      // const formattedConfig = formatConfig(removedEmptyArrays);
+      // const finalConfig = removeEmptyLines(formattedConfig);
 
       // Add reboot command at the end
-      return `${finalConfig}\n\n:delay 60\n\n/system reboot`;
+      return `${routerConfig}`;
     } catch (error) {
       console.error(`Error generating slave router configuration for ${_slaveRouter.Model}:`, error);
       

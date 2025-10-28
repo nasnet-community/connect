@@ -6,7 +6,7 @@ import {
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
 // import { GenerateOpenVPNCertificateScript } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName, ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
 
 
 // OpenVPN Client
@@ -86,7 +86,7 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig => {
 export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[] ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((ovpnConfig) => {
+    configs.forEach((ovpnConfig, index) => {
         const vpnConfig = OpenVPNClient(ovpnConfig);
 
         // Add certificate script if certificates are provided
@@ -97,12 +97,16 @@ export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[] ): RouterCo
 
         const interfaceName = GenerateVCInterfaceName(ovpnConfig.Name, "OpenVPN");
         const endpointAddress = ovpnConfig.Server.Address;
+        
+        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
+        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
 
         const baseConfig = BaseVPNConfig(
             interfaceName,
             endpointAddress,
             ovpnConfig.Name,
             ovpnConfig.WanInterface,
+            checkIP,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

@@ -230,7 +230,7 @@ export const NTP = (NTPConfig: NTPConfig): RouterConfig => {
             "set broadcast=yes enabled=yes manycast=yes multicast=yes",
         ],
         "/system ntp client servers": servers.map(
-            (server) => `add address=${server}`,
+            (server) => `add address="${server}"`,
         ),
     };
 

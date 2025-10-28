@@ -5,7 +5,7 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import { BaseVPNConfig, GenerateVCInterfaceName, ForeignCheckIPs } from "~/components/Star/ConfigGenerator";
 
 
 
@@ -68,16 +68,20 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig => {
 export const PPTPClientWrapper = ( configs: PptpClientConfig[] ): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
-    configs.forEach((pptpConfig) => {
+    configs.forEach((pptpConfig, index) => {
         const vpnConfig = PPTPClient(pptpConfig);
         const interfaceName = GenerateVCInterfaceName(pptpConfig.Name, "PPTP");
         const endpointAddress = pptpConfig.ConnectTo;
+        
+        // Calculate checkIP using the same logic as convertVPNClientToMultiWAN
+        const checkIP = ForeignCheckIPs[index % ForeignCheckIPs.length];
 
         const baseConfig = BaseVPNConfig(
             interfaceName,
             endpointAddress,
             pptpConfig.Name,
             pptpConfig.WanInterface,
+            checkIP,
         );
 
         routerConfigs.push(mergeConfigurations(vpnConfig, baseConfig));

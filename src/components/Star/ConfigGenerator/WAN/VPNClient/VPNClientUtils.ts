@@ -42,7 +42,7 @@ export const GenerateVCInterfaceName = (Name: string, protocol: VPNClientType): 
     }
 }
 
-export const RouteToVPN = ( InterfaceName: string, name: string ): RouterConfig => {
+export const RouteToVPN = ( InterfaceName: string, name: string, checkIP?: string ): RouterConfig => {
     const config: RouterConfig = {
         "/ip route": [],
     };
@@ -53,6 +53,15 @@ export const RouteToVPN = ( InterfaceName: string, name: string ): RouterConfig 
     config["/ip route"].push(
         `add dst-address="0.0.0.0/0" gateway="${InterfaceName}" routing-table="${tableName}" scope=30 target-scope=10  comment="${comment}"`,
     );
+
+    // Add CheckIP route if checkIP is provided
+    if (checkIP) {
+        const checkIPDistance = 10; // Standard distance for CheckIP routes
+        const checkIPRoute = `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${tableName}" \\
+            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-VPN-${name}"`;
+        
+        config["/ip route"].push(checkIPRoute);
+    }
 
     return config;
 };
@@ -163,7 +172,7 @@ export const IPAddress = ( InterfaceName: string, Address: string ): RouterConfi
 //     return config;
 // };
 
-export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, name: string, WanInterface?: WANInterfaceType): RouterConfig => {
+export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, name: string, WanInterface?: WANInterfaceType, checkIP?: string): RouterConfig => {
     const config: RouterConfig = {
         "/ip address": [],
         "/ip firewall nat": [],
@@ -185,7 +194,7 @@ export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, n
         ...interfaceListConfig["/interface list member"],
     );
 
-    const routeConfig = RouteToVPN(InterfaceName, name);
+    const routeConfig = RouteToVPN(InterfaceName, name, checkIP);
     config["/ip route"].push(...routeConfig["/ip route"]);
 
     const addressListConfig = AddressListEntry(EndpointAddress, InterfaceName, name, WanInterface);
