@@ -38,11 +38,11 @@ export const VPNSingleLink = ( vpnClient: VPNClient, checkIPOffset: number = 0 )
 
     // Add CheckIP route for failover monitoring
     if (singleInterface.checkIP) {
-        const checkIPDistance = (singleInterface.distance || 1) + 9; // Use higher distance for CheckIP route
+        const checkIPDistance = 1; // Distance 1 for single VPN link in to-VPN table
         
         config["/ip route"].push(
-            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${singleInterface.checkIP}" routing-table="to-VPN" \\
-            distance=${checkIPDistance} target-scope="11" comment="CheckIP-Route-to-VPN-${singleInterface.name}"`
+            `add check-gateway=ping dst-address="${singleInterface.checkIP}" gateway="${singleInterface.gateway}" routing-table="to-VPN" \\
+            distance=${checkIPDistance} target-scope="11" comment="Route-to-VPN-${singleInterface.name}"`
         );
     }
 
@@ -127,34 +127,44 @@ export const VPNClientWrapper = ( vpnClient: VPNClient, wanLinks?: WANLinks ): R
     const foreignWANCount = wanLinks?.Foreign?.WANConfigs ? wanLinks.Foreign.WANConfigs.length : 0;
     const vpnCheckIPOffset = foreignWANCount;
 
-    // 1. Process all VPN protocol configurations
+    // Pre-convert all VPN clients to MultiWANInterface to get consistent CheckIPs
+    // This ensures the same CheckIP is used across individual, aggregated, and main tables
+    const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient, vpnCheckIPOffset);
+    
+    // Create checkIP map for easy lookup by VPN name
+    const vpnCheckIPMap = new Map<string, string>();
+    vpnInterfaces.forEach((iface) => {
+        if (iface.checkIP) {
+            vpnCheckIPMap.set(iface.name, iface.checkIP);
+        }
+    });
+
+    // 1. Process all VPN protocol configurations with pre-assigned CheckIPs
     if (Wireguard && Wireguard.length > 0) {
-        configs.push(WireguardClientWrapper(Wireguard));
+        configs.push(WireguardClientWrapper(Wireguard, vpnCheckIPMap));
     }
 
     if (OpenVPN && OpenVPN.length > 0) {
-        configs.push(OpenVPNClientWrapper(OpenVPN));
+        configs.push(OpenVPNClientWrapper(OpenVPN, vpnCheckIPMap));
     }
 
     if (PPTP && PPTP.length > 0) {
-        configs.push(PPTPClientWrapper(PPTP));
+        configs.push(PPTPClientWrapper(PPTP, vpnCheckIPMap));
     }
 
     if (L2TP && L2TP.length > 0) {
-        configs.push(L2TPClientWrapper(L2TP));
+        configs.push(L2TPClientWrapper(L2TP, vpnCheckIPMap));
     }
 
     if (SSTP && SSTP.length > 0) {
-        configs.push(SSTPClientWrapper(SSTP));
+        configs.push(SSTPClientWrapper(SSTP, vpnCheckIPMap));
     }
 
     if (IKeV2 && IKeV2.length > 0) {
-        configs.push(IKeV2ClientWrapper(IKeV2));
+        configs.push(IKeV2ClientWrapper(IKeV2, vpnCheckIPMap));
     }
 
     // 2. Add VPN routing configuration based on number of VPN interfaces
-    const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient, vpnCheckIPOffset);
-
     if (vpnInterfaces.length === 1) {
         // Single VPN link - add simple routing
         configs.push(VPNSingleLink(vpnClient, vpnCheckIPOffset));

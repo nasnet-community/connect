@@ -8,9 +8,9 @@ export const BaseConfig = (): RouterConfig => {
             `add name="LAN"`,
         ],
         "/ip firewall address-list": [
-            `add address="192.168.0.0/16" list="LOCAL-IP"`,
-            `add address="172.16.0.0/12" list="LOCAL-IP"`,
-            `add address="10.0.0.0/8" list="LOCAL-IP"`,
+            `add comment="LOCAL-IP" address="192.168.0.0/16" list="LOCAL-IP"`,
+            `add comment="LOCAL-IP" address="172.16.0.0/12" list="LOCAL-IP"`,
+            `add comment="LOCAL-IP" address="10.0.0.0/8" list="LOCAL-IP"`,
         ],
         "/ip firewall mangle": [
             `add action=accept chain=prerouting comment="Accept" dst-address-list="LOCAL-IP" src-address-list="LOCAL-IP"`,

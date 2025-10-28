@@ -121,7 +121,7 @@ export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig ): RouterC
     return config;
 };
 
-export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Network ): RouterConfig => {
+export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Network, checkIP?: string ): RouterConfig => {
     let config: RouterConfig = {};
 
     // 1. Generate interface configuration (VLAN, MACVLAN, Wireless, etc.)
@@ -142,15 +142,8 @@ export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Ne
     );
     config = mergeRouterConfigs(config, connectionConfig);
 
-    // 5. Generate routing configuration with checkIP
-    // Convert to MultiWANInterface format to get checkIP
-    const interfaces = convertWANLinkToMultiWAN(
-        [wanLinkConfig],
-        Network === "Domestic",
-        Network
-    );
-    const checkIP = interfaces.length > 0 ? interfaces[0].checkIP : undefined;
-    
+    // 5. Generate routing configuration with pre-assigned checkIP
+    // Use the checkIP passed from parent function to ensure consistency
     const routeConfig = Route(wanLinkConfig, Network, 1, checkIP);
     config = mergeRouterConfigs(config, routeConfig);
 
@@ -207,11 +200,11 @@ export const DFSingleLink = ( wanLink: WANLink, networkType: "Foreign" | "Domest
     // Add CheckIP route if we have the checkIP available
     if (interfaces.length > 0 && interfaces[0].checkIP) {
         const checkIP = interfaces[0].checkIP;
-        const distance = interfaces[0].distance || 10;
+        const checkIPDistance = 1; // Distance 1 for single link in aggregated table
         
         config["/ip route"].push(
-            `add check-gateway=ping dst-address="0.0.0.0/0" gateway="${checkIP}" routing-table="${routingTable}" \\
-            distance=${distance} target-scope="11" comment="CheckIP-Route-to-${networkType}-${linkName}"`
+            `add check-gateway=ping dst-address="${checkIP}" gateway="${gateway}" routing-table="${routingTable}" \\
+            distance=${checkIPDistance} target-scope="11" comment="Route-to-${networkType}-${linkName}"`
         );
     }
 
@@ -325,10 +318,40 @@ export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterface
     let config: RouterConfig = {};
     const { Foreign, Domestic } = wanLinks;
 
+    // Pre-convert all WAN links to MultiWANInterface to get consistent CheckIPs
+    // This ensures the same CheckIP is used across individual, aggregated, and main tables
+    const foreignInterfaces = Foreign ? convertWANLinkToMultiWAN(
+        Foreign.WANConfigs,
+        false,  // isDomestic
+        "Foreign"
+    ) : [];
+    
+    const domesticInterfaces = Domestic ? convertWANLinkToMultiWAN(
+        Domestic.WANConfigs,
+        true,  // isDomestic
+        "Domestic"
+    ) : [];
+
+    // Create checkIP maps for easy lookup
+    const foreignCheckIPMap = new Map<string, string>();
+    foreignInterfaces.forEach((iface) => {
+        if (iface.checkIP) {
+            foreignCheckIPMap.set(iface.name, iface.checkIP);
+        }
+    });
+    
+    const domesticCheckIPMap = new Map<string, string>();
+    domesticInterfaces.forEach((iface) => {
+        if (iface.checkIP) {
+            domesticCheckIPMap.set(iface.name, iface.checkIP);
+        }
+    });
+
     // Generate interface configurations for Foreign WAN links
     if (Foreign) {
         Foreign.WANConfigs.forEach((wanLinkConfig) => {
-            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Foreign");
+            const checkIP = foreignCheckIPMap.get(wanLinkConfig.name);
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Foreign", checkIP);
             config = mergeRouterConfigs(config, linkConfig);
         });
 
@@ -345,7 +368,8 @@ export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterface
     // Generate interface configurations for Domestic WAN links
     if (Domestic) {
         Domestic.WANConfigs.forEach((wanLinkConfig) => {
-            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Domestic");
+            const checkIP = domesticCheckIPMap.get(wanLinkConfig.name);
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Domestic", checkIP);
             config = mergeRouterConfigs(config, linkConfig);
         });
 

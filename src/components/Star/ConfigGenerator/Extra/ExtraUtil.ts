@@ -1,7 +1,6 @@
 import { 
     type RouterConfig,
     generateDomesticIPScript,
-    mergeMultipleConfigs,
     extractBridgeNames,
     LetsEncrypt,
     PrivateCert,
@@ -11,6 +10,7 @@ import {
     GetWANInterface,
     GenerateVCInterfaceName,
     DNSForeward,
+    mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
 import type {
     IntervalConfig,
@@ -190,7 +190,13 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
     const s4iConfig: RouterConfig = {
         "/ip firewall mangle": [
             `add action=mark-routing chain=output comment="S4I Route" content="s4i.co" new-routing-mark="to-Foreign" passthrough=no`,
-            `add action=mark-routing chain=output comment="S4I Route" src-address=192.168.30.1 new-routing-mark="to-Foreign" passthrough=no`,
+            `add action=mark-routing chain=output comment="S4I Route" src-address=192.168.39.12 new-routing-mark="to-Foreign" passthrough=no`,
+        ],
+        "/interface bridge": [
+            `add comment="Foreign Table Address Holder" name="FTAH"`
+        ],
+        "/ip address": [
+            `add comment="Foreign Table Address Holder" address=192.168.39.12/32 interface=FTAH network=192.168.39.12`
         ],
     };
 
