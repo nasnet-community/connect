@@ -29,8 +29,11 @@ export function WirelessConfig( wirelessConfigs: WirelessConfig[], wanLinks: WAN
         "/interface wifi": []
     };
     
+    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
+    
     if (availableBands.has2_4) {
-        baseConfig["/interface wifi"].push("set [ find default-name=wifi2 ] name=wifi2.4 disabled=no");
+        const defaultName = totalBands === 1 ? "wifi1" : "wifi2";
+        baseConfig["/interface wifi"].push(`set [ find default-name=${defaultName} ] name=wifi2.4 disabled=no`);
     }
     if (availableBands.has5) {
         baseConfig["/interface wifi"].push("set [ find default-name=wifi1 ] name=wifi5 disabled=no");
@@ -64,11 +67,11 @@ export function WirelessConfig( wirelessConfigs: WirelessConfig[], wanLinks: WAN
         if (availableBands.has2_4) {
             if (masterAssigned2_4) {
                 // wifi2.4 is used as WAN/Trunk master, create slave interface
-                const slaveConfig = Slave(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                const slaveConfig = Slave(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig, availableBands);
                 configs.push(slaveConfig);
             } else {
                 // wifi2.4 is available, configure as master
-                const masterConfig = Master(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig);
+                const masterConfig = Master(wirelessConfig.WifiTarget, "2.4" as Band, wirelessConfig, availableBands);
                 configs.push(masterConfig);
                 masterAssigned2_4 = true; // Mark 2.4GHz master as assigned
             }
@@ -82,16 +85,16 @@ export function WirelessConfig( wirelessConfigs: WirelessConfig[], wanLinks: WAN
                 
                 if (masterAssigned5 && index === 0) {
                     // First 5GHz interface is used as WAN/Trunk master, create slave interface
-                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, availableBands, bandName);
                     configs.push(slaveConfig);
                 } else if (!masterAssigned5 && index === 0) {
                     // First 5GHz interface becomes master
-                    const masterConfig = Master(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    const masterConfig = Master(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, availableBands, bandName);
                     configs.push(masterConfig);
                     masterAssigned5 = true; // Only first 5GHz becomes master
                 } else {
                     // All subsequent 5GHz interfaces are slaves
-                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, bandName);
+                    const slaveConfig = Slave(wirelessConfig.WifiTarget, "5" as Band, wirelessConfig, availableBands, bandName);
                     configs.push(slaveConfig);
                 }
             });

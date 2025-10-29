@@ -47,7 +47,15 @@ export const detectAvailableBands = (routerModels: RouterModels[]): AvailableBan
     return bands;
 };
 
-export const DefaultBandToInterfaceName = (band: Band): string => {
+export const DefaultBandToInterfaceName = (band: Band, availableBands: AvailableBands): string => {
+    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
+    
+    // Single-band routers always use wifi1
+    if (totalBands === 1) {
+        return "wifi1";
+    }
+    
+    // Multi-band routers use standard mapping
     return band === "2.4" ? "wifi2" : "wifi1";
 };
 
@@ -74,10 +82,12 @@ export const DisableInterfaces = (routerModels: RouterModels[]): RouterConfig =>
     };
     
     const availableBands = detectAvailableBands(routerModels);
+    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
     
     // Only disable interfaces that exist on the router
     if (availableBands.has2_4) {
-        config["/interface wifi"].push(`set [ find default-name=wifi2 ] disabled=yes`);
+        const defaultName = totalBands === 1 ? "wifi1" : "wifi2";
+        config["/interface wifi"].push(`set [ find default-name=${defaultName} ] disabled=yes`);
     }
     if (availableBands.has5) {
         config["/interface wifi"].push(`set [ find default-name=wifi1 ] disabled=yes`);
@@ -179,12 +189,21 @@ export function Passphrase(passphrase: string, command: string) {
     return `${command} security.authentication-types=wpa2-psk,wpa3-psk .passphrase="${passphrase}" disabled=no`;
 }
 
-export function StationMode( SSID: string, Password: string, Band: Band, name?: string ): RouterConfig {
+export function StationMode( SSID: string, Password: string, Band: Band, availableBands?: AvailableBands, name?: string ): RouterConfig {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
 
-    const DInterfaceName = DefaultBandToInterfaceName(Band);
+    // For WAN wireless, we may not have availableBands, so use a fallback
+    // In this case, assume standard multi-band mapping (wifi2 for 2.4GHz, wifi1 for 5GHz)
+    let DInterfaceName: string;
+    if (availableBands) {
+        DInterfaceName = DefaultBandToInterfaceName(Band, availableBands);
+    } else {
+        // Fallback: assume multi-band router (standard MikroTik naming)
+        DInterfaceName = Band === "2.4" ? "wifi2" : "wifi1";
+    }
+    
     const command = `set [ find default-name=${DInterfaceName} ] comment="${name} ${Band}WAN" configuration.mode=station-pseudobridge .ssid="${SSID}" \\
     security.passphrase="${Password}" configuration.station-roaming=yes configuration.multicast-enhance=enabled \\
     security.ft=yes security.ft-over-ds=yes steering.rrm=yes steering.wnm=yes disabled=no`;
@@ -192,7 +211,7 @@ export function StationMode( SSID: string, Password: string, Band: Band, name?: 
     return config;
 }
 
-export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, bandSuffix?: string ): RouterConfig {
+export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, availableBands: AvailableBands, bandSuffix?: string ): RouterConfig {
     const config: RouterConfig = {
         "/interface wifi": [],
     };
@@ -201,7 +220,13 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
     
     // Determine master interface based on band and suffix
-    const Master = Band === "2.4" ? "wifi2" : (bandSuffix === "5-2" ? "wifi3" : "wifi1");
+    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
+    let Master: string;
+    if (Band === "2.4") {
+        Master = totalBands === 1 ? "wifi1" : "wifi2";
+    } else {
+        Master = bandSuffix === "5-2" ? "wifi3" : "wifi1";
+    }
     const MMaster = `[ find default-name=${Master} ]`;
     
     // Map WifiTarget to base network names
@@ -235,14 +260,15 @@ export function Slave( Network: WifiTarget, Band: Band, WirelessConfig: Wireless
     return CommandShortner(config);
 }
 
-export function Master( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, bandSuffix?: string ): RouterConfig {
+export function Master( Network: WifiTarget, Band: Band, WirelessConfig: WirelessConfig, availableBands: AvailableBands, bandSuffix?: string ): RouterConfig {
     const { SSID, Password, isHide, SplitBand, NetworkName } = WirelessConfig;
     const SSIDList = SSIDListGenerator(SSID, SplitBand);
     
     // Determine default interface name based on band and suffix
+    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
     let DefaultName: string;
     if (Band === "2.4") {
-        DefaultName = "wifi2";
+        DefaultName = totalBands === 1 ? "wifi1" : "wifi2";
     } else {
         DefaultName = bandSuffix === "5-2" ? "wifi3" : "wifi1";
     }

@@ -66,6 +66,7 @@ export const ConfigGenerator = (state: StarState): string => {
         "/interface l2tp-server": [],
         "/ip dhcp-server": [],
         "/routing table": [],
+        "/routing rule": [],
         "/user group": [],
         "/user": [],
         "/zerotier": [],

@@ -310,12 +310,15 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
             const networkName = routingTable.replace("to-", "");
             
             config["/ip firewall mangle"].push(
-                `add action=mark-connection chain=prerouting dst-address-list="${networkName}-IP-Games" \\
-        new-connection-mark="${networkName}-conn-Games" passthrough=yes src-address-list="${sourceAddressList}" \\
-        comment="Routing Games to ${networkName}"`,
-                `add action=mark-routing chain=prerouting connection-mark="${networkName}-conn-Games" \\
-        new-routing-mark="${routingTable}" passthrough=no src-address-list="${sourceAddressList}" \\
-        comment="Routing Games to ${networkName}"`,
+                // `add action=mark-connection chain=prerouting dst-address-list="${networkName}-IP-Games" \\
+                // new-connection-mark="${networkName}-conn-Games" passthrough=yes src-address-list="${sourceAddressList}" \\
+                // comment="Routing Games to ${networkName}"`,
+                // `add action=mark-routing chain=prerouting connection-mark="${networkName}-conn-Games" \\
+                // new-routing-mark="${routingTable}" passthrough=no src-address-list="${sourceAddressList}" \\
+                // comment="Routing Games to ${networkName}"`,
+                `add action=mark-routing chain=prerouting \\
+                new-routing-mark="${routingTable}" passthrough=no src-address-list="${sourceAddressList}" \\
+                dst-address-list="${networkName}-IP-Games" comment="Routing Games to ${networkName}"`,
             );
         });
 
