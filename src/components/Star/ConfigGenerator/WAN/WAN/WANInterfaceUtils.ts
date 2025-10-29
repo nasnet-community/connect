@@ -185,7 +185,7 @@ export const MACVLANOnVLAN = ( name: string, interfaceName: string, macAddress: 
 // WirelessWAN
 export const WirelessWAN = ( SSID: string, password: string, band: Band, name?: string ): RouterConfig => {
     // Use StationMode function to configure wireless interface for WAN connection
-    const stationConfig = StationMode(SSID, password, band, name);
+    const stationConfig = StationMode(SSID, password, band, undefined, name);
 
     return stationConfig;
 };
