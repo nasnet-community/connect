@@ -66,11 +66,21 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
         ],
     };
 
+    // Add routing rules for all networks except Split
+    if (NetworkType !== "Split") {
+        config["/routing rule"] = [
+            `add action=lookup-only-in-table comment="Routing the ${FNetworkName} SRC Address" disabled=no src-address="${Subnet}" table="to-${FNetworkName}"`,
+            `add action=lookup-only-in-table comment="Routing the ${FNetworkName} Routing Mark" disabled=no routing-mark="to-${FNetworkName}" table="to-${FNetworkName}"`,
+        ];
+    }
+
     // Add mangle rules if requested
     if (includeMangle) {
         config["/ip firewall mangle"] = [
-            `add action=mark-connection chain=forward comment="${FNetworkName} Connection" new-connection-mark="conn-${FNetworkName}" passthrough=yes src-address-list="${FNetworkName}-LAN"`,
-            `add action=mark-routing chain=prerouting comment="${FNetworkName} Routing" connection-mark="conn-${FNetworkName}" new-routing-mark="to-${FNetworkName}" passthrough=no src-address-list="${FNetworkName}-LAN"`,
+            // `add action=mark-connection chain=forward comment="${FNetworkName} Connection" new-connection-mark="conn-${FNetworkName}" passthrough=yes src-address-list="${FNetworkName}-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="${FNetworkName} Routing" connection-mark="conn-${FNetworkName}" new-routing-mark="to-${FNetworkName}" passthrough=no src-address-list="${FNetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${FNetworkName} Routing" new-routing-mark="to-${FNetworkName}" passthrough=no src-address-list="${FNetworkName}-LAN"`,
+        
         ];
     }
 
@@ -91,8 +101,10 @@ export const DomesticBase = (NetworkName: string, Subnet: string, skipMangle: bo
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+
         ],
     };
 
@@ -112,8 +124,10 @@ export const ForeignBase = (NetworkName: string, Subnet: string, skipMangle: boo
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+
         ],
     };
     
@@ -133,8 +147,10 @@ export const VPNBase = (NetworkName: string, Subnet: string, skipMangle: boolean
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=tcp src-address-list=${NetworkName}-LAN`,
             // `add action=mark-routing chain=prerouting comment="DNS ${NetworkName}-LAN" connection-mark=dns-conn-${NetworkName} new-routing-mark=to-${NetworkName} passthrough=no src-address-list=${NetworkName}-LAN`,
-            `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
-            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+            `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
+
         ],
     };
 
@@ -147,25 +163,29 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
     
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
+            // Split DOM IP/Domain/Game Traffic
+            `add action=mark-routing chain=prerouting comment="Split-DOM" dst-address-list="SplitDOMAddList" \\
+                new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split VPN IP/Domain/Game Traffic
             `add action=mark-routing chain=prerouting comment="Split-VPN" dst-address-list="SplitVPNAddList" \\
                 new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
             // Split FRN IP/Domain/Game Traffic
             `add action=mark-routing chain=prerouting comment="Split-FRN" dst-address-list="SplitFRNAddList" \\
                 new-routing-mark="to-Foreign" passthrough=no src-address-list="Split-LAN"`,
-            // Split DOM IP/Domain/Game Traffic
-            `add action=mark-routing chain=prerouting comment="Split-DOM" dst-address-list="SplitDOMAddList" \\
-                new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split DOM Traffic
-            `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list="DOMAddList" \\
-                new-connection-mark="conn-Split-DOM" passthrough=yes src-address-list="Split-LAN"`,
-            `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark="conn-Split-DOM" \\
-                dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
+            // `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list="DOMAddList" \\
+                // new-connection-mark="conn-Split-DOM" passthrough=yes src-address-list="Split-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark="conn-Split-DOM" \\
+                // dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
+            `add action=mark-routing chain=prerouting comment="Split-DOM" \\
+            dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split FRN Traffic
-            `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list="!DOMAddList"\\
-                new-connection-mark="conn-Split-!DOM" passthrough=yes src-address-list="Split-LAN"`,
-            `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark="conn-Split-!DOM"\\
-                dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
+            // `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list="!DOMAddList"\\
+                // new-connection-mark="conn-Split-!DOM" passthrough=yes src-address-list="Split-LAN"`,
+            // `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark="conn-Split-!DOM"\\
+                // dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
+            `add action=mark-routing chain=prerouting comment="Split-!DOM"\\
+            dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
         ],
     };
 

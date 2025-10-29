@@ -36,6 +36,82 @@ export const extractComment = (command: string): string => {
 };
 
 /**
+ * Extract connection-mark and new-connection-mark from a MikroTik command
+ */
+export const extractConnectionMark = (command: string): { newMark: string; connectionMark: string } => {
+    // Match new-connection-mark="value" or new-connection-mark=value
+    const newMarkMatch = command.match(/new-connection-mark=(?:"([^"]+)"|([^\s]+))/);
+    const newMark = newMarkMatch ? (newMarkMatch[1] || newMarkMatch[2]) : "";
+    
+    // Match connection-mark="value" or connection-mark=value
+    const connMarkMatch = command.match(/connection-mark=(?:"([^"]+)"|([^\s]+))/);
+    const connectionMark = connMarkMatch ? (connMarkMatch[1] || connMarkMatch[2]) : "";
+    
+    return {
+        newMark,
+        connectionMark
+    };
+};
+
+/**
+ * Detect NTH/PCC load balancing type from comment
+ */
+export const getLoadBalancingType = (command: string, comment: string): string => {
+    if (comment.includes("NTH LOAD BALANCING")) return "NTH";
+    if (comment.includes("PCC LOAD BALANCING")) return "PCC";
+    return "";
+};
+
+/**
+ * Extract network type from load balancing comment
+ */
+export const getNetworkFromComment = (comment: string): string => {
+    if (comment.startsWith("Domestic")) return "Domestic";
+    if (comment.startsWith("Foreign")) return "Foreign";
+    if (comment.startsWith("VPN")) return "VPN";
+    return "";
+};
+
+/**
+ * Extract specific target from comment for pairing mark-connection with mark-routing
+ * Examples:
+ * - "Routing Games to Domestic" -> "Domestic"
+ * - "Routing Games to Domestic-Fiber1" -> "Domestic-Fiber1"
+ * - "Domestic Connection" -> "Domestic"
+ * - "Domestic-Fiber1 Connection" -> "Domestic-Fiber1"
+ * - "Foreign-Foreign Link 1 Routing" -> "Foreign-Foreign Link 1"
+ */
+export const extractSpecificTarget = (comment: string): string => {
+    // For "Routing Games to X" format
+    const gamesMatch = comment.match(/Routing Games to (.+)/);
+    if (gamesMatch) {
+        return gamesMatch[1];
+    }
+    
+    // For "X Connection" or "X Routing" format
+    const connectionMatch = comment.match(/^(.+?)\s+(Connection|Routing)$/);
+    if (connectionMatch) {
+        return connectionMatch[1];
+    }
+    
+    return comment;
+};
+
+/**
+ * Generate a unique hash for a string to ensure proper pairing
+ * This ensures each unique target gets a unique score
+ */
+export const getStringHash = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+};
+
+/**
  * Extract chain from a MikroTik command string
  */
 export const extractChain = (command: string): string => {
@@ -50,6 +126,7 @@ export const getManglePriority = (command: string, comment: string): ManglePrior
     const lowerComment = comment.toLowerCase();
     const lowerCommand = command.toLowerCase();
     const chain = extractChain(command);
+    const { connectionMark } = extractConnectionMark(command);
     
     // 1. Accept rules for LOCAL-IP traffic
     if (lowerComment === "accept" || 
@@ -77,30 +154,40 @@ export const getManglePriority = (command: string, comment: string): ManglePrior
     
     // 5. Split traffic routing
     if (lowerComment.includes("split-") || 
-        (lowerComment.includes("split") && !lowerComment.includes("games"))) {
+        (lowerComment.includes("split") && !lowerComment.includes("games") && !lowerComment.includes("ssh"))) {
         return ManglePriority.Split;
     }
     
-    // 6. VPN Server inbound connections (check BEFORE Network Routing)
+    // 6. Network routing (Domestic, Foreign, VPN) - includes NTH/PCC load balancing
+    if ((lowerComment.includes("domestic") || 
+         lowerComment.includes("foreign") || 
+         lowerComment.includes("vpn")) &&
+        (lowerComment.includes("connection") || 
+         lowerComment.includes("routing") ||
+         lowerComment.includes("load balancing")) &&
+        !lowerComment.includes("games") &&
+        !lowerComment.includes("split") &&
+        !lowerComment.includes("ssh") &&
+        !lowerComment.includes("inbound") &&
+        !lowerComment.includes("incoming") &&
+        !lowerComment.includes("vpn-server") &&
+        !lowerComment.includes("conn-vpn-server") &&
+        connectionMark !== "conn-vpn-server" &&
+        connectionMark !== "ssh-conn-foreign") {
+        return ManglePriority.NetworkRouting;
+    }
+    
+    // 7. VPN Server inbound connections + SSH rules
     if (lowerComment.includes("inbound") || 
         lowerComment.includes("incoming") ||
         lowerComment.includes("vpn-server") ||
         lowerComment.includes("conn-vpn-server") ||
         lowerCommand.includes("conn-vpn-server") ||
-        (lowerComment.includes("ssh") && chain === "input") ||
+        connectionMark === "conn-vpn-server" ||
+        connectionMark === "ssh-conn-foreign" ||
+        lowerComment.includes("ssh") ||
         (lowerComment.includes("route") && lowerComment.includes("server"))) {
         return ManglePriority.VPNServerInbound;
-    }
-    
-    // 7. Network routing (Domestic, Foreign, VPN)
-    if ((lowerComment.includes("domestic") || 
-         lowerComment.includes("foreign") || 
-         lowerComment.includes("vpn")) &&
-        (lowerComment.includes("connection") || 
-         lowerComment.includes("routing")) &&
-        !lowerComment.includes("games") &&
-        !lowerComment.includes("split")) {
-        return ManglePriority.NetworkRouting;
     }
     
     return ManglePriority.Default;
@@ -112,7 +199,11 @@ export const getManglePriority = (command: string, comment: string): ManglePrior
  */
 export const getSubPriority = (command: string, priority: ManglePriority): number => {
     const lowerCommand = command.toLowerCase();
+    const comment = extractComment(command);
+    const lowerComment = comment.toLowerCase();
     const chain = extractChain(command);
+    const { connectionMark } = extractConnectionMark(command);
+    const loadBalancingType = getLoadBalancingType(command, comment);
     
     // For Accept rules, order by chain
     if (priority === ManglePriority.Accept) {
@@ -131,40 +222,131 @@ export const getSubPriority = (command: string, priority: ManglePriority): numbe
     
     // For Games, maintain pairs: mark-connection then mark-routing
     if (priority === ManglePriority.Games) {
-        if (lowerCommand.includes("mark-connection")) return 0;
-        if (lowerCommand.includes("mark-routing")) return 1;
-        return 999;
+        const target = extractSpecificTarget(comment);
+        
+        // Use proper string hash to ensure each target gets a unique score
+        const targetOrder = getStringHash(target) * 10;
+        
+        // Within each target, mark-connection comes before mark-routing
+        const actionOrder = lowerCommand.includes("mark-connection") ? 0 : 1;
+        
+        return targetOrder + actionOrder;
     }
     
     // For Split, order by specific types
     if (priority === ManglePriority.Split) {
-        if (lowerCommand.includes("split-vpn")) return 0;
-        if (lowerCommand.includes("split-frn")) return 1;
-        if (lowerCommand.includes("split-dom")) return 2;
-        if (lowerCommand.includes("chain=forward") && lowerCommand.includes("mark-connection")) return 3;
-        if (lowerCommand.includes("chain=prerouting") && lowerCommand.includes("mark-routing")) return 4;
+        if (lowerComment.includes("split-vpn")) return 0;
+        if (lowerComment.includes("split-frn")) return 1;
+        if (lowerComment.includes("split-dom") && !lowerComment.includes("!dom")) return 2;
+        if (lowerComment.includes("split-!dom")) return 3;
+        if (lowerCommand.includes("chain=forward") && lowerCommand.includes("mark-connection")) return 4;
+        if (lowerCommand.includes("chain=prerouting") && lowerCommand.includes("mark-routing")) return 5;
         return 999;
     }
     
-    // For Network Routing, order by network type then action
+    // For Network Routing, order by network type then by load balancing
     if (priority === ManglePriority.NetworkRouting) {
+        const target = extractSpecificTarget(comment);
+        
+        // Determine base network type order: Domestic=0, Foreign=100000000, VPN=200000000
         let networkOrder = 0;
-        if (lowerCommand.includes("domestic")) networkOrder = 0;
-        else if (lowerCommand.includes("foreign")) networkOrder = 1;
-        else if (lowerCommand.includes("vpn")) networkOrder = 2;
+        if (target.startsWith("Domestic") || lowerComment.includes("domestic")) {
+            networkOrder = 0;
+        } else if (target.startsWith("Foreign") || lowerComment.includes("foreign")) {
+            networkOrder = 100000000;
+        } else if (target.startsWith("VPN") || lowerComment.includes("vpn")) {
+            networkOrder = 200000000;
+        }
         
         let actionOrder = 0;
-        if (lowerCommand.includes("mark-connection")) actionOrder = 0;
-        else if (lowerCommand.includes("mark-routing")) actionOrder = 1;
         
-        return networkOrder * 10 + actionOrder;
+        // Check if this is a load balancing rule
+        if (loadBalancingType === "NTH" || loadBalancingType === "PCC") {
+            // NTH/PCC load balancing rules come after regular network routing
+            // Base order for load balancing rules: 10000000+
+            
+            // Extract specific interface from load balancing comment
+            // e.g., "Domestic - NTH LOAD BALANCING - Mark pppoe-client-Fiber1 connections"
+            const interfaceMatch = comment.match(/Mark ([^\s]+) (connections|routing)/);
+            const interfaceName = interfaceMatch ? interfaceMatch[1] : "";
+            const interfaceOrder = getStringHash(interfaceName) * 10;
+            
+            if (loadBalancingType === "NTH") {
+                // NTH order:
+                // 1. mark-connection chain=prerouting in-interface (0)
+                // 2. mark-routing chain=output (1)
+                // 3. mark-connection chain=prerouting nth= (2)
+                // 4. mark-routing chain=prerouting (3)
+                
+                if (lowerCommand.includes("mark-connection") && chain === "prerouting" && lowerCommand.includes("in-interface")) {
+                    actionOrder = 10000000 + interfaceOrder + 0;
+                } else if (lowerCommand.includes("mark-routing") && chain === "output") {
+                    actionOrder = 10000000 + interfaceOrder + 1;
+                } else if (lowerCommand.includes("mark-connection") && chain === "prerouting" && lowerCommand.includes("nth=")) {
+                    actionOrder = 10000000 + interfaceOrder + 2;
+                } else if (lowerCommand.includes("mark-routing") && chain === "prerouting") {
+                    actionOrder = 10000000 + interfaceOrder + 3;
+                } else {
+                    actionOrder = 10000000 + interfaceOrder + 4;
+                }
+            } else if (loadBalancingType === "PCC") {
+                // PCC order:
+                // 1. mark-connection chain=input (0)
+                // 2. mark-routing chain=output (1)
+                // 3. mark-connection chain=prerouting (2)
+                // 4. mark-routing chain=prerouting (3)
+                
+                if (lowerCommand.includes("mark-connection") && chain === "input") {
+                    actionOrder = 10000000 + interfaceOrder + 0;
+                } else if (lowerCommand.includes("mark-routing") && chain === "output") {
+                    actionOrder = 10000000 + interfaceOrder + 1;
+                } else if (lowerCommand.includes("mark-connection") && chain === "prerouting") {
+                    actionOrder = 10000000 + interfaceOrder + 2;
+                } else if (lowerCommand.includes("mark-routing") && chain === "prerouting") {
+                    actionOrder = 10000000 + interfaceOrder + 3;
+                } else {
+                    actionOrder = 10000000 + interfaceOrder + 4;
+                }
+            }
+        } else {
+            // Regular network routing rules (not load balancing)
+            // Pair by specific target (e.g., "Domestic", "Domestic-Fiber1", "Foreign", "Foreign-Foreign Link 1")
+            const targetOrder = getStringHash(target) * 10;
+            
+            // Within each target, mark-connection comes before mark-routing
+            const pairOrder = lowerCommand.includes("mark-connection") ? 0 : 1;
+            
+            actionOrder = targetOrder + pairOrder;
+        }
+        
+        return networkOrder + actionOrder;
     }
     
-    // For VPN Server Inbound, order by chain and action
+    // For VPN Server Inbound, order SSH rules first, then VPN inbound markings, then routing rules
     if (priority === ManglePriority.VPNServerInbound) {
-        if (chain === "input") return 0;
-        if (chain === "forward") return 1;
-        if (chain === "output") return 2;
+        // SSH rules should come first
+        if (connectionMark === "ssh-conn-foreign" || lowerComment.includes("ssh")) {
+            if (chain === "input" && lowerCommand.includes("mark-connection")) {
+                return 0; // SSH input marking
+            }
+            if (chain === "prerouting" && lowerCommand.includes("mark-routing")) {
+                return 1; // SSH preroute routing
+            }
+            if (chain === "output" && lowerCommand.includes("mark-routing")) {
+                return 2; // SSH output routing
+            }
+        }
+        
+        // VPN Server inbound connection marking (PPTP, L2TP, SSTP, OpenVPN, WireGuard)
+        if (chain === "input" && lowerCommand.includes("mark-connection") && !lowerComment.includes("ssh")) {
+            return 10;
+        }
+        
+        // VPN Server output routing (conn-vpn-server)
+        if (chain === "output" && connectionMark === "conn-vpn-server") {
+            return 20;
+        }
+        
         return 999;
     }
     
