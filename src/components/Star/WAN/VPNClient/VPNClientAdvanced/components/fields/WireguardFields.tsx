@@ -26,6 +26,32 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
     
     let currentSection = '';
     
+    // Helper function to check if an IP address is IPv6
+    const isIPv6 = (ip: string): boolean => {
+      return ip.includes(":") && !ip.includes(".");
+    };
+
+    // Helper function to filter out IPv6 addresses from comma-separated list
+    const filterIPv4Only = (addresses: string): string => {
+      return addresses
+        .split(",")
+        .map((addr) => addr.trim())
+        .filter((addr) => !isIPv6(addr.split("/")[0])) // Remove network suffix for IP check
+        .join(", ");
+    };
+
+    // Helper function to get first IPv4 address from comma-separated list
+    const getFirstIPv4 = (addresses: string): string => {
+      const addressList = addresses.split(",").map((addr) => addr.trim());
+      for (const addr of addressList) {
+        const ipPart = addr.split("/")[0]; // Remove network suffix
+        if (!isIPv6(ipPart)) {
+          return addr;
+        }
+      }
+      return "";
+    };
+    
     for (const line of lines) {
       const trimmedLine = line.trim();
       if (!trimmedLine || trimmedLine.startsWith('#')) continue;
@@ -47,10 +73,18 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
             parsedConfig.InterfacePrivateKey = value;
             break;
           case 'address':
-            parsedConfig.InterfaceAddress = value;
+            // Handle multiple addresses, filter out IPv6, take first IPv4
+            const ipv4Address = getFirstIPv4(value);
+            if (ipv4Address) {
+              parsedConfig.InterfaceAddress = ipv4Address;
+            }
             break;
           case 'dns':
-            parsedConfig.InterfaceDNS = value;
+            // Handle multiple DNS servers, filter out IPv6, take first IPv4
+            const ipv4DNS = getFirstIPv4(value);
+            if (ipv4DNS) {
+              parsedConfig.InterfaceDNS = ipv4DNS;
+            }
             break;
           case 'mtu':
             parsedConfig.InterfaceMTU = parseInt(value);
@@ -62,7 +96,14 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
             parsedConfig.PeerPublicKey = value;
             break;
           case 'allowedips':
-            parsedConfig.PeerAllowedIPs = value;
+            // Filter out IPv6 addresses from AllowedIPs
+            const filteredAllowedIPs = filterIPv4Only(value);
+            if (filteredAllowedIPs) {
+              parsedConfig.PeerAllowedIPs = filteredAllowedIPs;
+            } else {
+              // If no IPv4 addresses found, default to IPv4 all traffic
+              parsedConfig.PeerAllowedIPs = "0.0.0.0/0";
+            }
             break;
           case 'endpoint':
             const [address, port] = value.split(':');

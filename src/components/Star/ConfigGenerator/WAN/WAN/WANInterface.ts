@@ -4,6 +4,7 @@ import type {
     WANLinks,
     WANLink,
     LTE as LTEType,
+    RouterModels,
 } from "~/components/Star/StarContext";
 import { mergeRouterConfigs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import { DHCPClient, PPPOEClient, StaticIP, LTE } from "~/components/Star/ConfigGenerator";
@@ -69,7 +70,7 @@ export const generateConnectionConfig = ( WANLinkConfig: WANLinkConfig, Network:
     return config;
 };
 
-export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig ): RouterConfig => {
+export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig, routerModels?: RouterModels[] ): RouterConfig => {
     let config: RouterConfig = {};
     const { InterfaceConfig, name } = WANLinkConfig;
 
@@ -85,7 +86,7 @@ export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig ): RouterC
         const { SSID, Password } = WirelessCredentials;
         // Determine band from interface name
         const band = InterfaceName.includes("2.4") ? "2.4" : "5";
-        const wirelessConfig = WirelessWAN(SSID, Password, band, name);
+        const wirelessConfig = WirelessWAN(SSID, Password, band, routerModels, name);
         config = mergeRouterConfigs(config, wirelessConfig);
     }
 
@@ -121,11 +122,11 @@ export const generateInterfaceConfig = ( WANLinkConfig: WANLinkConfig ): RouterC
     return config;
 };
 
-export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Network, checkIP?: string ): RouterConfig => {
+export const generateWANLinkConfig = ( wanLinkConfig: WANLinkConfig, Network: Network, checkIP?: string, routerModels?: RouterModels[] ): RouterConfig => {
     let config: RouterConfig = {};
 
     // 1. Generate interface configuration (VLAN, MACVLAN, Wireless, etc.)
-    const interfaceConfig = generateInterfaceConfig(wanLinkConfig );
+    const interfaceConfig = generateInterfaceConfig(wanLinkConfig, routerModels);
     config = mergeRouterConfigs(config, interfaceConfig);
 
     // 2. Get the final interface name after transformations
@@ -314,7 +315,7 @@ export const DFMultiLink = ( wanLink: WANLink, networkType: "Foreign" | "Domesti
     return mergeMultipleConfigs(...configs);
 }
 
-export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterfaces?: LTEType[]): RouterConfig => {
+export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterfaces?: LTEType[], routerModels?: RouterModels[]): RouterConfig => {
     let config: RouterConfig = {};
     const { Foreign, Domestic } = wanLinks;
 
@@ -351,7 +352,7 @@ export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterface
     if (Foreign) {
         Foreign.WANConfigs.forEach((wanLinkConfig) => {
             const checkIP = foreignCheckIPMap.get(wanLinkConfig.name);
-            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Foreign", checkIP);
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Foreign", checkIP, routerModels);
             config = mergeRouterConfigs(config, linkConfig);
         });
 
@@ -369,7 +370,7 @@ export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterface
     if (Domestic) {
         Domestic.WANConfigs.forEach((wanLinkConfig) => {
             const checkIP = domesticCheckIPMap.get(wanLinkConfig.name);
-            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Domestic", checkIP);
+            const linkConfig = generateWANLinkConfig(wanLinkConfig, "Domestic", checkIP, routerModels);
             config = mergeRouterConfigs(config, linkConfig);
         });
 

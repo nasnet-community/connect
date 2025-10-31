@@ -31,8 +31,8 @@ export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
       <div class="mb-6 overflow-hidden rounded-xl border border-primary-200 bg-gradient-to-r from-primary-600/5 to-primary-400/10 shadow-lg backdrop-blur-sm dark:border-primary-800 dark:from-primary-800/20 dark:to-primary-600/30">
         <div class="p-5">
           {/* Promotional content with feature highlights */}
-          <div class="flex flex-col items-center gap-6 lg:flex-row">
-            <div class="flex flex-1 items-center">
+          <div class="flex flex-col items-center gap-6">
+            <div class="flex w-full items-center">
               {/* VPN Security Icon */}
               <div class="mr-4 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 p-3 text-white shadow-inner">
                 <svg
@@ -135,7 +135,7 @@ export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
             </div>
 
             {/* reCAPTCHA and Action Button */}
-            <div class="flex w-full flex-shrink-0 flex-col items-center gap-3 sm:w-auto">
+            <div class="flex w-full flex-col items-center gap-3">
               {/* reCAPTCHA container */}
               <div id="recaptcha-container" class="mx-auto"></div>
 

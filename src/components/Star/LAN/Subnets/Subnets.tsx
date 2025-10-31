@@ -27,10 +27,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const starContext = useContext(StarContext);
 
   // Check if subnets are already configured
-  const hasSubnetsConfigured = !!(starContext.state.LAN.Subnets && Object.keys(starContext.state.LAN.Subnets).length > 0);
+  const _hasSubnetsConfigured = !!(starContext.state.LAN.Subnets && Object.keys(starContext.state.LAN.Subnets).length > 0);
 
-  // Enable/disable state - default false (disabled by default), but enabled if subnets are already configured
-  const subnetsEnabled = useSignal(hasSubnetsConfigured || false);
+  // Enable/disable state - always disabled by default
+  const subnetsEnabled = useSignal(false);
 
   // Active tab state
   const activeTab = useSignal('base');

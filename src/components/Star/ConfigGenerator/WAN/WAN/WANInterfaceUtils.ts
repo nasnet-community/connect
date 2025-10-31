@@ -5,9 +5,11 @@ import type {
     WANLink,
     WANLinks,
     LTE,
+    RouterModels,
 } from "~/components/Star/StarContext";
 import type { Band } from "~/components/Star/StarContext";
 import { StationMode } from "~/components/Star/ConfigGenerator";
+import { detectAvailableBands } from "~/components/Star/ConfigGenerator/LAN/Wireless/WirelessUtil";
 
 
 
@@ -183,9 +185,15 @@ export const MACVLANOnVLAN = ( name: string, interfaceName: string, macAddress: 
 };
 
 // WirelessWAN
-export const WirelessWAN = ( SSID: string, password: string, band: Band, name?: string ): RouterConfig => {
+export const WirelessWAN = ( SSID: string, password: string, band: Band, routerModels?: RouterModels[], name?: string ): RouterConfig => {
+    // Detect available bands if routerModels provided
+    let availableBands = undefined;
+    if (routerModels && routerModels.length > 0) {
+        availableBands = detectAvailableBands(routerModels);
+    }
+    
     // Use StationMode function to configure wireless interface for WAN connection
-    const stationConfig = StationMode(SSID, password, band, undefined, name);
+    const stationConfig = StationMode(SSID, password, band, availableBands, name);
 
     return stationConfig;
 };
