@@ -113,6 +113,18 @@ export const VPNValidationSchemas = {
       validator: (value: string) => ["any", "only-1.2"].includes(value),
       message: "Invalid TLS version",
     },
+    OVPNFileContent: {
+      required: false,
+      validator: (value: string) => {
+        if (!value || value.trim().length === 0) return true; // Optional field
+        // Check for basic OpenVPN config structure
+        const hasClient = value.includes("client");
+        const hasDev = value.includes("dev");
+        const hasProto = value.includes("proto");
+        return hasClient || hasDev || hasProto; // At least one OpenVPN directive
+      },
+      message: "Invalid OpenVPN configuration file content",
+    },
   },
   PPTP: {
     ConnectTo: {

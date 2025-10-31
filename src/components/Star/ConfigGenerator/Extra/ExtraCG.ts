@@ -48,10 +48,8 @@ export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
     // Add base system clock configuration
     configs.push(Clock());
 
-    // Add system update configuration - skip if master is CHR
-    if (!isMasterCHR(routerModels)) {
-        configs.push(update());
-    }
+    // Add system update configuration - skip routerboard settings if master is CHR
+    configs.push(update(isMasterCHR(routerModels)));
 
     // Add public certificate configuration
     configs.push(PublicCert());

@@ -206,7 +206,7 @@ export const ScriptGenerator = (
     });
 
     config["/system script"].push(
-        `add dont-require-permissions=no name=${scriptName} owner=admin ` +
+        `add dont-require-permissions=no name="${scriptName}" owner=admin ` +
             `policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon ` +
             `source="${escapedScriptContent}"`,
     );

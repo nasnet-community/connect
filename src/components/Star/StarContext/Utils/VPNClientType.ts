@@ -85,6 +85,8 @@ export interface OpenVpnClientConfig extends BaseVPNClientConfig {
   Certificates?: OpenVpnClientCertificates;
   VerifyServerCertificate?: boolean;
   RouteNoPull?: boolean;
+  OVPNFileContent?: string;
+  keyPassphrase?: string;
 }
 
 
