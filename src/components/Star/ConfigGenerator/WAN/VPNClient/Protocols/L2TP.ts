@@ -22,7 +22,6 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
         IPsecSecret,
         AuthMethod,
         ProtoVersion,
-        FastPath,
         keepAlive,
         DialOnDemand,
         CookieLength,
@@ -39,7 +38,7 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
     // }
 
     // let command = `add name=l2tp-client connect-to=${ServerAddress}`;
-    let command = `add name="${interfaceName}" connect-to="${Server.Address}" comment="${Name} L2TP"`;
+    let command = `add name="${interfaceName}" connect-to="${Server.Address}" comment="${Name} L2TP" random-source-port=yes`;
 
     command += ` user="${Credentials.Username}" password="${Credentials.Password}"`;
 
@@ -51,16 +50,19 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
         command += ` ipsec-secret="${IPsecSecret}"`;
     }
 
+    // FastPath must be disabled when IPsec is enabled, enabled otherwise
+    if (UseIPsec === true) {
+        command += ` allow-fast-path=no`;
+    } else {
+        command += ` allow-fast-path=yes`;
+    }
+
     if (AuthMethod && AuthMethod.length > 0) {
         command += ` allow=${AuthMethod.join(",")}`;
     }
 
     if (ProtoVersion) {
         command += ` l2tp-proto-version=${ProtoVersion}`;
-    }
-
-    if (FastPath !== undefined) {
-        command += ` allow-fast-path=${FastPath ? "yes" : "no"}`;
     }
 
     // make the keepalive timeout a number

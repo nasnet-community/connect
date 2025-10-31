@@ -180,64 +180,100 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // eslint-disable-next-line prefer-const
     let refreshStepCompletion$: QRL<() => Promise<void>>;
 
-    // Handler for promotional L2TP credentials
-    const handlePromoL2TP$ = $(async (credentials: L2TPCredentials) => {
-      console.log('[AdvancedVPNClient] Handling promotional L2TP credentials');
+  // Handler for promotional L2TP credentials
+  const handlePromoL2TP$ = $(async (credentials: L2TPCredentials) => {
+    console.log('[AdvancedVPNClient] Handling promotional L2TP credentials');
 
-      // Check if we already have a promotional L2TP VPN
-      const hasPromoL2TP = advancedHooks.state.vpnConfigs.some(vpn =>
-        vpn.type === "L2TP" && vpn.name.includes("Promotional")
-      );
+    // Check if we already have a promotional L2TP VPN
+    const hasPromoL2TP = advancedHooks.state.vpnConfigs.some(vpn =>
+      vpn.type === "L2TP" && vpn.name.includes("NasNet")
+    );
 
-      if (hasPromoL2TP) {
-        console.log('[AdvancedVPNClient] Promotional L2TP already exists, skipping');
-        return;
+    if (hasPromoL2TP) {
+      console.log('[AdvancedVPNClient] Promotional L2TP already exists, skipping');
+      return;
+    }
+
+    console.log('[AdvancedVPNClient] Step 1: Identifying and removing empty VPNs');
+    // Identify empty VPNs (no type or incomplete config)
+    const emptyVPNs = advancedHooks.state.vpnConfigs.filter(vpn => {
+      if (!vpn.type) {
+        console.log(`[AdvancedVPNClient] VPN ${vpn.name} (${vpn.id}) has no type - marking as empty`);
+        return true;
       }
-
-      // Create a new L2TP VPN with promotional credentials
-      const promoVPNId = `vpn-promo-l2tp-${Date.now()}`;
-      const promoVPN = {
-        id: promoVPNId,
-        name: "Promotional L2TP VPN",
-        type: "L2TP" as const,
-        enabled: true,
-        priority: 1, // Give it highest priority
-        weight: 50,
-        config: {
-          Name: "NASnetConnect",
-          Server: {
-            Address: credentials.server,
-            Port: 1701
-          },
-          Credentials: {
-            Username: credentials.username,
-            Password: credentials.password
-          },
-          UseIPsec: true,
-          IPsecSecret: "nasnetconnect", // Default promotional IPsec secret
-        },
-      };
-
-      // If we have existing VPNs, adjust their priorities
-      if (advancedHooks.state.vpnConfigs.length > 0) {
-        // Shift all existing VPN priorities down by 1
-        advancedHooks.state.vpnConfigs.forEach(vpn => {
-          if (vpn.priority) {
-            vpn.priority += 1;
-          }
-        });
+      const hasAllFields = validation.hasAllMandatoryFields$(vpn);
+      if (!hasAllFields) {
+        console.log(`[AdvancedVPNClient] VPN ${vpn.name} (${vpn.id}) is missing mandatory fields - marking as empty`);
       }
-
-      // Add the promotional L2TP VPN
-      await advancedHooks.addVPN$(promoVPN);
-
-      console.log('[AdvancedVPNClient] Promotional L2TP VPN added successfully');
-
-      // Refresh step completion status
-      if (refreshStepCompletion$) {
-        await refreshStepCompletion$();
-      }
+      return !hasAllFields;
     });
+
+    console.log('[AdvancedVPNClient] Found', emptyVPNs.length, 'empty VPNs to remove');
+
+    // Remove empty VPNs
+    for (const emptyVPN of emptyVPNs) {
+      console.log('[AdvancedVPNClient] Removing empty VPN:', emptyVPN.name, emptyVPN.id);
+      await advancedHooks.removeVPN$(emptyVPN.id);
+    }
+
+    console.log('[AdvancedVPNClient] Step 2: Creating promotional L2TP VPN');
+    // Create a new L2TP VPN with promotional credentials
+    const promoVPNId = `vpn-promo-l2tp-${Date.now()}`;
+    const promoVPN = {
+      id: promoVPNId,
+      name: "NasNetL2TP",
+      type: "L2TP" as const,
+      enabled: true,
+      priority: 1, // Give it highest priority
+      weight: 50,
+      config: {
+        Name: "NasNetConnect",
+        Server: {
+          Address: credentials.server,
+          Port: 1701
+        },
+        Credentials: {
+          Username: credentials.username,
+          Password: credentials.password
+        },
+        UseIPsec: false,
+        FastPath: true,
+      },
+    };
+
+    // If we have existing VPNs (after removal), adjust their priorities
+    if (advancedHooks.state.vpnConfigs.length > 0) {
+      console.log('[AdvancedVPNClient] Adjusting priorities for', advancedHooks.state.vpnConfigs.length, 'existing VPNs');
+      // Shift all existing VPN priorities down by 1
+      advancedHooks.state.vpnConfigs.forEach(vpn => {
+        if (vpn.priority) {
+          vpn.priority += 1;
+        }
+      });
+    }
+
+    console.log('[AdvancedVPNClient] Step 3: Adding promotional L2TP VPN');
+    // Add the promotional L2TP VPN
+    await advancedHooks.addVPN$(promoVPN);
+
+    console.log('[AdvancedVPNClient] Promotional L2TP VPN added successfully');
+
+    // Force state update to trigger reactivity
+    console.log('[AdvancedVPNClient] Step 4: Forcing reactivity trigger');
+    advancedHooks.state.vpnConfigs = [...advancedHooks.state.vpnConfigs];
+
+    // Wait for state to settle before validation
+    console.log('[AdvancedVPNClient] Step 5: Waiting for state to settle (50ms)');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Refresh step completion status
+    console.log('[AdvancedVPNClient] Step 6: Refreshing step completion');
+    if (refreshStepCompletion$) {
+      await refreshStepCompletion$();
+    }
+
+    console.log('[AdvancedVPNClient] Promotional L2TP handling completed');
+  });
 
     // Create step definitions - isComplete values will be updated directly in useTask
     const createSteps = $(async (): Promise<CStepMeta[]> => {
@@ -317,30 +353,54 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       return steps;
     });
 
-    // Manual step completion refresh (called by user actions) - following WANInterfaceAdvanced pattern
-    refreshStepCompletion$ = $(async () => {
-      console.log('[VPNClientAdvanced] Manual step completion refresh requested');
+  // Manual step completion refresh (called by user actions) - following WANInterfaceAdvanced pattern
+  refreshStepCompletion$ = $(async () => {
+    console.log('[VPNClientAdvanced] Manual step completion refresh requested');
+    console.log('[VPNClientAdvanced] Current VPN count:', advancedHooks.state.vpnConfigs.length);
+    console.log('[VPNClientAdvanced] Foreign WAN count:', advancedHooks.foreignWANCount);
+    console.log('[VPNClientAdvanced] VPN details:', advancedHooks.state.vpnConfigs.map(v => ({
+      id: v.id,
+      name: v.name,
+      type: v.type,
+      priority: v.priority,
+      hasConfig: !!(v as any).config
+    })));
 
-      const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
+    const hasMultipleVPNs = advancedHooks.state.vpnConfigs.length > 1;
 
-      // Check step 1 completion
-      const allVPNsHaveProtocols = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
-                                   advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
+    // Check step 1 completion
+    const allVPNsHaveProtocols = advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount &&
+                                 advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name) && Boolean(vpn.type));
+    
+    console.log('[VPNClientAdvanced] Step 1 completion check:', {
+      hasEnoughVPNs: advancedHooks.state.vpnConfigs.length >= advancedHooks.foreignWANCount,
+      allHaveNames: advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.name)),
+      allHaveTypes: advancedHooks.state.vpnConfigs.every(vpn => Boolean(vpn.type)),
+      result: allVPNsHaveProtocols
+    });
 
-      // Check step 2 completion with detailed logging
-      let allVPNsConfigured = false;
-      if (allVPNsHaveProtocols && advancedHooks.state.vpnConfigs.length > 0) {
-        console.log('[VPNClientAdvanced] Manual refresh - Validating all VPNs for step 2 completion...');
-        const validationResults = await Promise.all(
-          advancedHooks.state.vpnConfigs.map(async (vpn, index) => {
-            const isValid = await validation.hasAllMandatoryFields$(vpn);
-            console.log(`[VPNClientAdvanced] Manual refresh - VPN ${index + 1} (${vpn.name}) validation result:`, isValid);
-            return isValid;
-          })
-        );
-        allVPNsConfigured = validationResults.every(isValid => isValid);
-        console.log('[VPNClientAdvanced] Manual refresh - All VPNs configured result:', allVPNsConfigured, 'Individual results:', validationResults);
-      }
+    // Check step 2 completion with detailed logging
+    let allVPNsConfigured = false;
+    if (allVPNsHaveProtocols && advancedHooks.state.vpnConfigs.length > 0) {
+      console.log('[VPNClientAdvanced] Manual refresh - Validating all VPNs for step 2 completion...');
+      const validationResults = await Promise.all(
+        advancedHooks.state.vpnConfigs.map(async (vpn, index) => {
+          const isValid = await validation.hasAllMandatoryFields$(vpn);
+          console.log(`[VPNClientAdvanced] Manual refresh - VPN ${index + 1} (${vpn.name}, ${vpn.type}) validation result:`, isValid);
+          if (!isValid) {
+            console.log(`[VPNClientAdvanced] Manual refresh - VPN ${vpn.name} config details:`, (vpn as any).config);
+          }
+          return isValid;
+        })
+      );
+      allVPNsConfigured = validationResults.every(isValid => isValid);
+      console.log('[VPNClientAdvanced] Manual refresh - All VPNs configured result:', allVPNsConfigured, 'Individual results:', validationResults);
+    } else {
+      console.log('[VPNClientAdvanced] Manual refresh - Skipping step 2 validation:', {
+        allVPNsHaveProtocols,
+        vpnCount: advancedHooks.state.vpnConfigs.length
+      });
+    }
 
       // Check step 3 completion (if applicable)
       const allVPNsHavePriorities = hasMultipleVPNs ?
@@ -401,6 +461,18 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       track(() => advancedHooks.state.vpnConfigs.map(v => v.name)); // Track VPN names
       track(() => advancedHooks.state.vpnConfigs.map(v => v.type)); // Track VPN types
       track(() => advancedHooks.foreignWANCount);
+      
+      // Track VPN IDs to detect additions/removals
+      track(() => advancedHooks.state.vpnConfigs.map(vpn => vpn.id));
+      
+      // Track VPN enabled status
+      track(() => advancedHooks.state.vpnConfigs.map(vpn => vpn.enabled));
+      
+      // Track entire config objects to detect any config changes
+      track(() => advancedHooks.state.vpnConfigs.map(vpn => {
+        const config = (vpn as any).config;
+        return config ? JSON.stringify(config) : 'no-config';
+      }));
       
       // Track config fields for Step 2 completion - simplified tracking
       track(() => advancedHooks.state.vpnConfigs.map(vpn => {
