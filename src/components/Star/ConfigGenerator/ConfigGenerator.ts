@@ -26,6 +26,7 @@ export interface RouterConfig {
 export const ConfigGenerator = (state: StarState): string => {
     const config: RouterConfig = {
         "/disk": [],
+        "/system script": [],
         "/certificate settings": [],
         "/interface bridge": [],
         "/interface pptp-client": [],
@@ -114,7 +115,6 @@ export const ConfigGenerator = (state: StarState): string => {
         "/system package update": [],
         "/system routerboard settings": [],
         "/system scheduler": [],
-        "/system script": [],
         "/certificate": [],
         "/tool graphing interface": [],
         "/tool graphing queue": [],

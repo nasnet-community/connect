@@ -107,7 +107,11 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
         const content = await file.text();
         configContent.value = content;
         const parsedConfig = await parseOpenVPNConfig(content);
-        await onUpdate$(parsedConfig);
+        // Store the raw OVPN file content for script generation
+        await onUpdate$({
+          ...parsedConfig,
+          OVPNFileContent: content,
+        });
       } catch (error) {
         console.error('Failed to read config file:', error);
       }
@@ -118,7 +122,11 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
   const handleConfigChange$ = $(async (content: string) => {
     configContent.value = content;
     const parsedConfig = await parseOpenVPNConfig(content);
-    await onUpdate$(parsedConfig);
+    // Store the raw OVPN file content for script generation
+    await onUpdate$({
+      ...parsedConfig,
+      OVPNFileContent: content,
+    });
   });
 
   return (
@@ -134,13 +142,14 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
 
       {/* File Configuration Option */}
       {configMethod.value === "file" && (
-        <VPNConfigFileSection
-          protocolName="OpenVPN"
-          acceptedExtensions=".ovpn,.conf"
-          configValue={configContent.value}
-          onConfigChange$={handleConfigChange$}
-          onFileUpload$={handleFileUpload$}
-          placeholder={$localize`Paste your OpenVPN configuration here. It should include directives like 'remote', 'proto', 'dev', etc.
+        <>
+          <VPNConfigFileSection
+            protocolName="OpenVPN"
+            acceptedExtensions=".ovpn,.conf"
+            configValue={configContent.value}
+            onConfigChange$={handleConfigChange$}
+            onFileUpload$={handleFileUpload$}
+            placeholder={$localize`Paste your OpenVPN configuration here. It should include directives like 'remote', 'proto', 'dev', etc.
 
 Example:
 client
@@ -150,7 +159,84 @@ remote vpn.example.com 1194
 auth-user-pass
 cipher AES-256-GCM
 auth SHA256`}
-        />
+          />
+          
+          {/* Credentials for File Import */}
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Username`} *
+              </label>
+              <Input
+                type="text"
+                value={config.Credentials?.Username || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log('[OpenVPNFields] Username updated:', value);
+                  onUpdate$({ 
+                    Credentials: { 
+                      ...config.Credentials, 
+                      Username: value,
+                      Password: config.Credentials?.Password || ""
+                    } 
+                  });
+                }}
+                placeholder="Your username"
+                validation={errors.Username ? "invalid" : "default"}
+              />
+              {errors.Username && (
+                <ErrorMessage message={errors.Username} />
+              )}
+            </div>
+
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Password`} *
+              </label>
+              <Input
+                type="password"
+                value={config.Credentials?.Password || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log('[OpenVPNFields] Password updated:', value ? '***' : '(empty)');
+                  onUpdate$({
+                    Credentials: {
+                      ...config.Credentials,
+                      Username: config.Credentials?.Username || "",
+                      Password: value
+                    }
+                  });
+                }}
+                placeholder="Your password"
+                validation={errors.Password ? "invalid" : "default"}
+              />
+              {errors.Password && (
+                <ErrorMessage message={errors.Password} />
+              )}
+            </div>
+          </div>
+          
+          {/* Certificate Key Passphrase for File Import */}
+          <div>
+            <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+              {$localize`Certificate Key Passphrase`}
+            </label>
+            <Input
+              type="password"
+              value={config.keyPassphrase || ""}
+              onInput$={(event: Event, value: string) => {
+                console.log('[OpenVPNFields] Key passphrase updated:', value ? '***' : '(empty)');
+                onUpdate$({ keyPassphrase: value });
+              }}
+              placeholder={$localize`Optional passphrase for certificate private key`}
+              validation={errors.keyPassphrase ? "invalid" : "default"}
+            />
+            {errors.keyPassphrase && (
+              <ErrorMessage message={errors.keyPassphrase} />
+            )}
+            <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
+              {$localize`Required if your .ovpn file contains an encrypted private key`}
+            </p>
+          </div>
+        </>
       )}
 
       {/* Manual Configuration Option */}
@@ -258,6 +344,29 @@ auth SHA256`}
             <ErrorMessage message={errors.Password} />
           )}
         </div>
+      </div>
+
+      {/* Certificate Key Passphrase */}
+      <div>
+        <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+          {$localize`Certificate Key Passphrase`}
+        </label>
+        <Input
+          type="password"
+          value={config.keyPassphrase || ""}
+          onInput$={(event: Event, value: string) => {
+            console.log('[OpenVPNFields] Key passphrase updated:', value ? '***' : '(empty)');
+            onUpdate$({ keyPassphrase: value });
+          }}
+          placeholder={$localize`Optional passphrase for certificate private key`}
+          validation={errors.keyPassphrase ? "invalid" : "default"}
+        />
+        {errors.keyPassphrase && (
+          <ErrorMessage message={errors.keyPassphrase} />
+        )}
+        <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
+          {$localize`Leave empty if your certificate doesn't require a passphrase`}
+        </p>
       </div>
 
       {/* Protocol and Cipher */}

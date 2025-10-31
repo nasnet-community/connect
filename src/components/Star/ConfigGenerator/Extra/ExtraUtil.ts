@@ -1,7 +1,6 @@
 import { 
     type RouterConfig,
     generateDomesticIPScript,
-    extractBridgeNames,
     LetsEncrypt,
     PrivateCert,
     ExportCert,
@@ -9,6 +8,7 @@ import {
     GetAllVPNInterfaceNames,
     GetWANInterface,
     GenerateVCInterfaceName,
+    extractBridgeNames,
     DNSForeward,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
@@ -46,11 +46,15 @@ export const Clock = (): RouterConfig => {
     return config;
 };
 
-export const update = (): RouterConfig => {
+export const update = (isCHR?: boolean): RouterConfig => {
     const config: RouterConfig = {
         "/system package update": ["set channel=stable"],
-        "/system routerboard settings": ["set auto-upgrade=yes"],
     };
+
+    // Only add routerboard settings if not CHR
+    if (!isCHR) {
+        config["/system routerboard settings"] = ["set auto-upgrade=yes"];
+    }
 
     return config;
 };
