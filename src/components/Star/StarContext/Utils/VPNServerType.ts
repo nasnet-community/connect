@@ -581,6 +581,7 @@ export interface ZeroTierServerConfig {
 
 export interface VPNServer {
     Users: VSCredentials[];
+    CertificatePassphrase: string;
     PptpServer?: PptpServerConfig;
     L2tpServer?: L2tpServerConfig;
     SstpServer?: SstpServerConfig;
@@ -592,4 +593,5 @@ export interface VPNServer {
     HTTPProxyServer?: HTTPProxyServerConfig;
     BackToHomeServer?: BackToHomeServerConfig;
     ZeroTierServer?: ZeroTierServerConfig;
+
 }

@@ -7,7 +7,7 @@ type ViewMode = "easy" | "advanced";
 
 export const useSocks5Server = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   const socks5State = vpnServerState.Socks5Server || {
     enabled: true,

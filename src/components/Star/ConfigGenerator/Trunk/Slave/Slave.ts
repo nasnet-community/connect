@@ -121,6 +121,8 @@ export const SlaveCG = (
     const config: RouterConfig = {
         "/disk": [],
         "/certificate settings": [],
+        "/interface wifi security": [],
+        "/interface wifi": [],
         "/interface bridge": [],
         "/interface pptp-client": [],
         "/interface sstp-client": [],
@@ -143,8 +145,6 @@ export const SlaveCG = (
         "/ip ipsec peer": [],
         "/ip ipsec proposal": [],
         "/interface vlan": [],
-        "/interface wifi security": [],
-        "/interface wifi": [],
         "/interface macvlan": [],
         "/interface pppoe-client": [],
         // '/interface list': [],

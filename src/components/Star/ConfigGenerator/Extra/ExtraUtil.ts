@@ -25,6 +25,7 @@ import type {
     WANLinkType,
     Subnets,
     WANLinks,
+    VPNServer,
 } from "~/components/Star/StarContext";
 
 
@@ -209,13 +210,22 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
 };
 
 // Useful Services Utils
-export const Certificate = ( certificateConfig: CertificateConfig ): RouterConfig => {
+export const Certificate = ( certificateConfig: CertificateConfig, vpnServer?: VPNServer ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Self-Signed (Private) Certificate
     if (certificateConfig.SelfSigned) {
         configs.push(PrivateCert());
-        configs.push(ExportCert());
+        
+        // Extract passphrase from VPNServer
+        const certPassword = vpnServer?.CertificatePassphrase || "";
+        
+        // Require passphrase when certificates are enabled
+        if (!certPassword || certPassword.trim() === "") {
+            throw new Error("Certificate passphrase is required when self-signed certificates are enabled");
+        }
+        
+        configs.push(ExportCert(certPassword));
     }
 
     // Handle Let's Encrypt Certificate

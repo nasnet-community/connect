@@ -13,7 +13,7 @@ type ViewMode = "easy" | "advanced";
 export const useIKEv2Server = () => {
   const starContext = useContext(StarContext);
 
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   const ikev2State = vpnServerState.Ikev2Server || {
     ipPools: { Name: "ike2-pool", Ranges: "192.168.77.2-192.168.77.254" },

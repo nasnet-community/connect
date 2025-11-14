@@ -20,10 +20,14 @@ import { useZeroTierServer } from "../Protocols/ZeroTier/useZeroTierServer";
 // Import the new user management hook
 import { useUserManagement } from "../UserCredential/useUserCredential";
 
+// Import the certificate management hook
+import { useCertificate } from "./useCertificate";
+
 export const useVPNServerAdvanced = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || { 
-    Users: []
+    Users: [],
+    CertificatePassphrase: ""
   };
 
   // === PROTOCOL HOOKS FOR DEFAULT CONFIGS ===
@@ -41,6 +45,9 @@ export const useVPNServerAdvanced = () => {
 
   // === USER MANAGEMENT (delegated to useUserManagement hook) ===
   const userManagement = useUserManagement();
+
+  // === CERTIFICATE MANAGEMENT (delegated to useCertificate hook) ===
+  const certificateHook = useCertificate();
 
   // === VPN SERVER STATE ===
   const vpnServerEnabled = useSignal(true);
@@ -185,7 +192,7 @@ export const useVPNServerAdvanced = () => {
 
       // Grab the latest VPN server configuration from StarContext to avoid stale references
       const latestConfig = {
-        ...(starContext.state.LAN.VPNServer || { Users: [] }),
+        ...(starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" }),
       } as any;
 
       // Track which protocols are being enabled
@@ -195,6 +202,8 @@ export const useVPNServerAdvanced = () => {
 
       // Start with latest config and update users
       latestConfig.Users = userManagement.users;
+      // Add certificate passphrase (access signal value directly)
+      latestConfig.CertificatePassphrase = certificateHook.certificatePassphrase.value;
       // Remove SelectedNetworks (not part of StarContext types)
       if (latestConfig.SelectedNetworks) {
         delete latestConfig.SelectedNetworks;
@@ -227,7 +236,7 @@ export const useVPNServerAdvanced = () => {
           const openVpnResult = await openVpnHook.saveAllServers$();
           // After saving, get the updated servers from StarContext
           // IMPORTANT: Get the fresh state after saveAllServers$ has updated it
-          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [] };
+          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
           latestConfig.OpenVpnServer = freshVPNState.OpenVpnServer || [];
           // Log validation results
           if (openVpnResult.errors.length > 0) {
@@ -256,7 +265,7 @@ export const useVPNServerAdvanced = () => {
           const wireguardResult = await wireguardHook.saveAllServers$();
           // After saving, get the updated servers from StarContext
           // IMPORTANT: Get the fresh state after saveAllServers$ has updated it
-          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [] };
+          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
           latestConfig.WireguardServers = freshVPNState.WireguardServers || [];
           // Log validation results
           if (wireguardResult.errors.length > 0) {
@@ -399,6 +408,7 @@ export const useVPNServerAdvanced = () => {
       starContext.updateLAN$({
         VPNServer: {
           Users: [],
+          CertificatePassphrase: "",
           PptpServer: undefined,
           L2tpServer: undefined,
           SstpServer: undefined,
@@ -453,5 +463,8 @@ export const useVPNServerAdvanced = () => {
       openVpn: openVpnHook,
       wireguard: wireguardHook,
     },
+
+    // === CERTIFICATE HOOK (for passing to child components) ===
+    certificateHook,
   };
 };

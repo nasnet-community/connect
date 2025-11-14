@@ -24,6 +24,7 @@ import { HiCogOutline } from "@qwikest/icons/heroicons";
 import { CertificateStep } from "./CertificateStep";
 import type { useOpenVPNServer } from "../../Protocols/OpenVPN/useOpenVPNServer";
 import type { useWireguardServer } from "../../Protocols/Wireguard/useWireguardServer";
+import type { useCertificate } from "../useCertificate";
 
 interface ConfigStepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -31,10 +32,11 @@ interface ConfigStepProps {
     openVpn?: ReturnType<typeof useOpenVPNServer>;
     wireguard?: ReturnType<typeof useWireguardServer>;
   };
+  certificateHook?: ReturnType<typeof useCertificate>;
 }
 
 export const ConfigStep = component$<ConfigStepProps>(
-  ({ enabledProtocols, vpnHooks }) => {
+  ({ enabledProtocols, vpnHooks, certificateHook }) => {
     const context = useStepperContext(VPNServerContextId);
     const state = useStore({
       initialProcessingDone: false,
@@ -78,8 +80,8 @@ export const ConfigStep = component$<ConfigStepProps>(
 
     // Add Certificate step if needed
     const addCertificateStep = $(async () => {
-      // Skip if already has certificate step
-      if (state.hasCertificateStep) {
+      // Skip if already has certificate step or certificateHook is not available
+      if (state.hasCertificateStep || !certificateHook) {
         return state.certificateStepId;
       }
 
@@ -103,7 +105,7 @@ export const ConfigStep = component$<ConfigStepProps>(
 
       // Create Certificate step component
       const CertificateStepWrapper$ = $(() => (
-        <CertificateStep enabledProtocols={enabledProtocols} />
+        <CertificateStep enabledProtocols={enabledProtocols} certificateHook={certificateHook!} />
       ));
 
       // Add the step

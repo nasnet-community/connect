@@ -332,7 +332,7 @@ export const useStarContainer = (): StarContainerReturn => {
             }}
           />
         )),
-        isComplete: true,
+        iscomplete: false,
         helpData: {
           title: "Router Selection & Configuration Mode",
           description:
@@ -372,7 +372,7 @@ export const useStarContainer = (): StarContainerReturn => {
             }}
           />
         )),
-        isComplete: true,
+        iscomplete: false,
         helpData: {
           title: "WAN Configuration Guide",
           description:
@@ -419,7 +419,7 @@ export const useStarContainer = (): StarContainerReturn => {
             }}
           />
         )),
-        isComplete: true,
+        iscomplete: false,
         helpData: {
           title: "LAN & Network Configuration",
           description:
@@ -471,7 +471,7 @@ export const useStarContainer = (): StarContainerReturn => {
             }}
           />
         )),
-        isComplete: true,
+        iscomplete: false,
         helpData: {
           title: "Advanced Features & Gaming",
           description:
@@ -522,7 +522,7 @@ export const useStarContainer = (): StarContainerReturn => {
           }}
         />
       )),
-      isComplete: true,
+      iscomplete: false,
       helpData: {
         title: "Configuration Review & Deployment",
         description:

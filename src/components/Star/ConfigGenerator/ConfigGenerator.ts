@@ -28,6 +28,8 @@ export const ConfigGenerator = (state: StarState): string => {
         "/disk": [],
         "/system script": [],
         "/certificate settings": [],
+        "/interface wifi security": [],
+        "/interface wifi": [],
         "/interface bridge": [],
         "/interface pptp-client": [],
         "/interface sstp-client": [],
@@ -50,8 +52,6 @@ export const ConfigGenerator = (state: StarState): string => {
         "/ip ipsec peer": [],
         "/ip ipsec proposal": [],
         "/interface vlan": [],
-        "/interface wifi security": [],
-        "/interface wifi": [],
         "/interface macvlan": [],
         "/interface pppoe-client": [],
         // '/interface list': [],
@@ -145,7 +145,8 @@ export const ConfigGenerator = (state: StarState): string => {
             state.WAN.WANLink,
             state.WAN.VPNClient,
             state.Choose.Networks,
-            state.Choose.RouterModels
+            state.Choose.RouterModels,
+            state.LAN.VPNServer
         );
         const showConfig = ShowCG(state);
 

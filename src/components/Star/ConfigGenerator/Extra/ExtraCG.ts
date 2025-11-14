@@ -11,6 +11,7 @@ import type {
     WANLinkType,
     Networks,
     RouterModels,
+    VPNServer,
 } from "~/components/Star/StarContext";
 import {
     Timezone,
@@ -168,12 +169,12 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[] ): RouterConfig => {
+export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[], vpnServer?: VPNServer ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Certificate configuration
     if (usefulServicesConfig.certificate) {
-        configs.push(Certificate(usefulServicesConfig.certificate));
+        configs.push(Certificate(usefulServicesConfig.certificate, vpnServer));
     }
 
     // Handle NTP configuration
@@ -377,6 +378,7 @@ export const ExtraCG = (
     vpnClient?: VPNClient,
     networks?: Networks,
     routerModels?: RouterModels[],
+    vpnServer?: VPNServer,
 ): RouterConfig => {
     const configs: RouterConfig[] = [
         BaseExtra(routerModels),
@@ -404,7 +406,7 @@ export const ExtraCG = (
 
     // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)
     if (ExtraConfigState.usefulServices) {
-        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks, routerModels));
+        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks, routerModels, vpnServer));
     }
 
     // Add Cloud DDNS configuration - skip if master is CHR

@@ -7,7 +7,7 @@ type ViewMode = "easy" | "advanced";
 
 export const useBackToHomeServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   const backToHomeState = vpnServerState.BackToHomeServer || {
     enabled: true,
