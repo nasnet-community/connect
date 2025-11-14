@@ -248,6 +248,7 @@ describe("LANCG Module Tests", () => {
                                 VPNType: ["Wireguard"],
                             },
                         ],
+                        CertificatePassphrase: "",
                         WireguardServers: [
                             {
                                 Interface: {
@@ -434,6 +435,7 @@ describe("LANCG Module Tests", () => {
                                 VPNType: ["Wireguard"],
                             },
                         ],
+                        CertificatePassphrase: "",
                         OpenVpnServer: [
                             {
                                 name: "openvpn-server",

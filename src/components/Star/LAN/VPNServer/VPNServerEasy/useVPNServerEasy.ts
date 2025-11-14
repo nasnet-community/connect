@@ -371,6 +371,7 @@ export const useVPNServerEasy = () => {
         VPNServer: {
           ...vpnServerState,
           Users: users,
+          CertificatePassphrase: certificatePassphrase.value,
           ...defaultProtocols,
         },
       });

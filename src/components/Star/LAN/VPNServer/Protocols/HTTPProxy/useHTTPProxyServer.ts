@@ -7,7 +7,7 @@ type ViewMode = "easy" | "advanced";
 
 export const useHTTPProxyServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   const httpProxyState = vpnServerState.HTTPProxyServer || {
     enabled: true,

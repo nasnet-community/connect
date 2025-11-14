@@ -1,5 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
-// Removed unused QRL import
+import { component$, type QRL } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
 import { Field } from "~/components/Core/Form/Field";
@@ -13,31 +12,21 @@ import type { VPNType } from "../../../../StarContext/CommonType";
 
 interface CertificateStepProps {
   enabledProtocols: Record<VPNType, boolean>;
+  certificateHook: {
+    certificatePassphrase: { value: string };
+    showPassphrase: { value: boolean };
+    passphraseError: { value: string };
+    updatePassphrase$: QRL<(value: string) => void>;
+    togglePassphraseVisibility$: QRL<() => void>;
+  };
 }
 
 export const CertificateStep = component$<CertificateStepProps>(
-  ({ enabledProtocols }) => {
+  ({ enabledProtocols, certificateHook }) => {
     const _context = useStepperContext(VPNServerContextId);
     
-    // Local state for certificate configuration
-    const certificatePassphrase = useSignal("");
-    const showPassphrase = useSignal(false);
-    const passphraseError = useSignal("");
-
-    // Toggle passphrase visibility
-    const togglePassphraseVisibility$ = $(() => {
-      showPassphrase.value = !showPassphrase.value;
-    });
-
-    // Update passphrase with validation
-    const updatePassphrase$ = $((value: string) => {
-      certificatePassphrase.value = value;
-      if (value.length > 0 && value.length < 10) {
-        passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
-      } else {
-        passphraseError.value = "";
-      }
-    });
+    // Use certificate hook state instead of local state
+    const { certificatePassphrase, showPassphrase, passphraseError, updatePassphrase$, togglePassphraseVisibility$ } = certificateHook;
 
     // Get enabled protocols that require certificates
     const protocolsRequiringCertificates = [

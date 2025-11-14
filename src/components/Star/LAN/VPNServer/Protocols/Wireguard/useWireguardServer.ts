@@ -20,7 +20,7 @@ interface WireguardDraftConfig {
 
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   // Get all existing WireGuard servers from StarContext
   const wireguardServers = vpnServerState.WireguardServers || [];
@@ -42,8 +42,8 @@ export const useWireguardServer = () => {
   const draftConfigs = useSignal<WireguardDraftConfig[]>(
     wireguardServers && wireguardServers.length > 0
       ? wireguardServers
-          .filter((server) => server && server.Interface) // Filter out invalid servers
-          .map((server) => ({
+          .filter((server: WireguardServerConfig) => server && server.Interface) // Filter out invalid servers
+          .map((server: WireguardServerConfig) => ({
             name: server.Interface.Name,
             privateKey: server.Interface.PrivateKey || "",
             interfaceAddress: server.Interface.InterfaceAddress,
@@ -256,7 +256,7 @@ export const useWireguardServer = () => {
     }
 
     // Get FRESH state instead of using stale vpnServerState captured at initialization
-    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [] };
+    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
     // Save all valid servers to StarContext
     // If we have valid servers, use them; otherwise keep existing servers

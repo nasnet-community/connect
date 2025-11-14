@@ -54,7 +54,7 @@ export const ExportOpenVPN = (): RouterConfig => {
             "    # Try MikroTik Cloud DDNS first",
             "    /ip cloud set ddns-enabled=yes",
             "    :delay 5s",
-            "    :set serverAddress [/ip cloud get dns-name]",
+            "    :set serverAddress [/ip cloud get public-address]",
             "    :if ([:len $serverAddress] > 0) do={",
             '        :put "[OK] Using Cloud DDNS: $serverAddress"',
             '        :log info "OpenVPN Export: Using Cloud DDNS endpoint: $serverAddress"',

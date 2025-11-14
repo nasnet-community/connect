@@ -77,7 +77,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `wireguard-${index}`,
-            label: `Wireguard VPN ${index + 1}`,
+            label: vpn.Name || `Wireguard VPN ${index + 1}`,
             interfaceName: `wg${index}`,
             connectionType: 'wireguard',
             configName: vpn.Name
@@ -91,7 +91,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `openvpn-${index}`,
-            label: `OpenVPN ${index + 1}`,
+            label: vpn.Name || `OpenVPN ${index + 1}`,
             interfaceName: `ovpn${index}`,
             connectionType: 'openvpn',
             configName: vpn.Name
@@ -105,7 +105,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `pptp-${index}`,
-            label: `PPTP VPN ${index + 1}`,
+            label: vpn.Name || `PPTP VPN ${index + 1}`,
             interfaceName: `pptp${index}`,
             connectionType: 'pptp',
             configName: vpn.Name
@@ -119,7 +119,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `l2tp-${index}`,
-            label: `L2TP VPN ${index + 1}`,
+            label: vpn.Name || `L2TP VPN ${index + 1}`,
             interfaceName: `l2tp${index}`,
             connectionType: 'l2tp',
             configName: vpn.Name
@@ -133,7 +133,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `sstp-${index}`,
-            label: `SSTP VPN ${index + 1}`,
+            label: vpn.Name || `SSTP VPN ${index + 1}`,
             interfaceName: `sstp${index}`,
             connectionType: 'sstp',
             configName: vpn.Name
@@ -147,7 +147,7 @@ export const NATPMPStep = component$(() => {
           interfaces.push({
             type: 'vpn',
             value: `ikev2-${index}`,
-            label: `IKeV2 VPN ${index + 1}`,
+            label: vpn.Name || `IKeV2 VPN ${index + 1}`,
             interfaceName: `ike${index}`,
             connectionType: 'ikev2',
             configName: vpn.Name

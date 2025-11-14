@@ -47,7 +47,7 @@ interface OpenVPNDraftConfig {
 export const useOpenVPNServer = () => {
   const starContext = useContext(StarContext);
 
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [] };
+  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
   // Get all existing OpenVPN servers from StarContext
   const openVpnServers = vpnServerState.OpenVpnServer || [];
@@ -415,7 +415,7 @@ export const useOpenVPNServer = () => {
     // Update StarContext with the saved servers
     // Remove old servers with matching base name and add new ones
     const updatedServers = openVpnServers.filter(
-      s => !s.name.startsWith(currentDraft.name.replace(/-tcp$|-udp$/, ""))
+      (s: OpenVpnServerConfig) => !s.name.startsWith(currentDraft.name.replace(/-tcp$|-udp$/, ""))
     );
     updatedServers.push(...serverConfigs);
 
@@ -543,7 +543,7 @@ export const useOpenVPNServer = () => {
     }
 
     // Get FRESH state instead of using stale vpnServerState captured at initialization
-    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [] };
+    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
 
     // Save all valid servers to StarContext
     // If we have valid servers, use them; otherwise keep existing servers
