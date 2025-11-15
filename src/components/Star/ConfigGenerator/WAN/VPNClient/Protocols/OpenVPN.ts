@@ -40,6 +40,9 @@ export const GenerateOpenVPNImportScript = (
         vpnName,
     } = config;
 
+    // Sanitize filename by replacing spaces with hyphens
+    const sanitizedFileName = tempFileName.replace(/\s+/g, '-');
+
     // Build the script content as RouterConfig
     const scriptContent: RouterConfig = {
         "": [
@@ -52,7 +55,7 @@ export const GenerateOpenVPNImportScript = (
             `:local ovpnUser "${ovpnUser}"`,
             `:local ovpnPassword "${ovpnPassword}"`,
             `:local keyPassphrase "${keyPassphrase}"`,
-            `:local tempFileName "${tempFileName}"`,
+            `:local tempFileName "${sanitizedFileName}"`,
             "",
             ':log info "OpenVPN Import Script: Starting import process..."',
             "",

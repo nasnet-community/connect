@@ -19,7 +19,8 @@ export function mergeRouterConfigs(...configs: RouterConfig[]): RouterConfig {
 export const mergeMultipleConfigs = (
     ...configs: RouterConfig[]
 ): RouterConfig => {
-    return configs.reduce((acc, curr) => mergeConfigurations(acc, curr));
+    // return configs.reduce((acc, curr) => mergeConfigurations(acc, curr));
+    return configs.reduce((acc, curr) => mergeConfigurations(acc, curr), {});
 };
 
 export const mergeConfigurations = (
