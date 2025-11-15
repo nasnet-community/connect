@@ -172,8 +172,8 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
 export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[], vpnServer?: VPNServer ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Handle Certificate configuration
-    if (usefulServicesConfig.certificate) {
+    // Handle Certificate configuration - only if VPN Server exists
+    if (usefulServicesConfig.certificate && vpnServer) {
         configs.push(Certificate(usefulServicesConfig.certificate, vpnServer));
     }
 
