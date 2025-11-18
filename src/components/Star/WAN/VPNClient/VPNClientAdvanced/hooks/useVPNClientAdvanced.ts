@@ -156,8 +156,11 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
           config: {
             Server: { Address: "", Port: 1701 },
             Credentials: { Username: "", Password: "" },
-            UseIPsec: true,
+            UseIPsec: false,
             IPsecSecret: "",
+            FastPath: true,
+            AuthMethod: ["mschap2", "mschap1"] as const,
+            ProtoVersion: "l2tpv2" as const,
           },
         };
 

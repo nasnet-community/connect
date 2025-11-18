@@ -452,7 +452,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
                   <option value="NTH">{$localize`NTH (Round Robin)`}</option>
                   <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
-                  <option value="Bonding">{$localize`Bonding`}</option>
+                  <option value="Bonding" disabled>{$localize`Bonding`}</option>
                 </select>
                 <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">
                   {$localize`Choose how traffic will be distributed across multiple VPN connections`}
@@ -664,7 +664,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
                   <option value="NTH">{$localize`NTH (Round Robin)`}</option>
                   <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
-                  <option value="Bonding">{$localize`Bonding`}</option>
+                  <option value="Bonding" disabled>{$localize`Bonding`}</option>
                 </select>
               </div>
               

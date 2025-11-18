@@ -261,7 +261,7 @@ export const Step3_MultiLink = component$<Step3Props>(
                   { value: "PCC", label: "PCC (Per Connection Classifier)" },
                   { value: "NTH", label: "NTH (Nth Connection)" },
                   { value: "ECMP", label: "ECMP (Equal Cost Multi-Path)" },
-                  { value: "Bonding", label: "Bonding" }
+                  { value: "Bonding", label: "Bonding", disabled: true }
                 ]}
                 placeholder="Select load balance method"
                 class="w-full"

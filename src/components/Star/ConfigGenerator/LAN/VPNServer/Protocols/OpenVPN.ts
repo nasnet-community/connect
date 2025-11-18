@@ -360,7 +360,7 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
         // IPV6,
         Address,
         KeepaliveTimeout = 60,
-        RedirectGetway = "disabled",
+        // RedirectGetway = "disabled",
         PushRoutes,
     } = config;
 
@@ -415,9 +415,9 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
         serverParams.push(`user-auth-method=${Encryption.UserAuthMethod}`);
     }
 
-    if (RedirectGetway !== "disabled") {
-        serverParams.push(`redirect-gateway=${RedirectGetway}`);
-    }
+    // if (RedirectGetway !== "disabled") {
+        serverParams.push(`redirect-gateway=def1`);
+    // }
 
     if (PushRoutes) {
         serverParams.push(`push-routes="${PushRoutes}"`);
@@ -519,7 +519,7 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
             const staticBindingName = `ovpn-${name}-${user.Username}`;
 
             config["/interface ovpn-server"].push(
-                `add name="${staticBindingName}" user="${user.Username}" comment="Static binding for ${user.Username}"`,
+                `add name="${staticBindingName}" user="${user.Username}-${name}" comment="Static binding for ${user.Username}"`,
             );
 
             createdInterfaces.push(staticBindingName);

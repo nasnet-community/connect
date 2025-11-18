@@ -4,6 +4,7 @@ import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
 import type { VSCredentials } from "../../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../../StarContext/CommonType";
 import { UserCredential } from "../../UserCredential/UserCredential";
+import { Alert } from "~/components/Core";
 
 interface EasyUsersStepProps {
   users: VSCredentials[];
@@ -37,6 +38,14 @@ export const EasyUsersStep = component$<EasyUsersStepProps>(
             {$localize`VPN User Accounts`}
           </h2>
         </div>
+
+        <Alert status="info" size="sm">
+          <p class="text-sm">
+            {$localize`OpenVPN usernames will be created in the format:`}{" "}
+            <strong>{$localize`YourUsername-ovpn-tcp`}</strong> {$localize`and`}{" "}
+            <strong>{$localize`YourUsername-ovpn-udp`}</strong>
+          </p>
+        </Alert>
 
         <p class="text-gray-600 dark:text-gray-400">
           {$localize`Create user accounts that will be able to connect to your VPN server. Each user needs a unique username and a strong password.`}

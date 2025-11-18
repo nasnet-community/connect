@@ -13,10 +13,10 @@ import {
     WebProxyServerWrapper,
     ZeroTierServerWrapper,
     BTHServerWrapper,
-    CheckCGNAT,
-    LetsEncrypt,
-    PrivateCert,
-    ExportCert,
+    // CheckCGNAT,
+    // LetsEncrypt,
+    // PrivateCert,
+    // ExportCert,
     AddCert,
     mergeRouterConfigs,
     CommandShortner,
@@ -51,44 +51,44 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     }
 
     // Get certificate password from first OpenVPN server if available
-    const certPassword =
-        vpnServer.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase ||
-        "client-cert-password";
+    // const certPassword =
+    //     vpnServer.OpenVpnServer?.[0]?.Certificate?.CertificateKeyPassphrase ||
+    //     "client-cert-password";
 
     // Certificate parameters
-    const certParams = {
-        wanInterfaceName: "ether1", // WAN interface name for CGNAT check
-        certNameToRenew: "MikroTik-LE-Cert", // Certificate name for Let's Encrypt
-        daysBeforeExpiryToRenew: 30, // Days before expiration to renew certificate
-        renewalStartTime: "03:00:00", // Time to start renewal process
-        keySize: 2048, // Key size for private certificate
-        daysValid: 3650, // Days for certificate validity
-        certPassword: certPassword, // Password for exported certificate from OpenVPN config
-    };
+    // const certParams = {
+    //     wanInterfaceName: "ether1", // WAN interface name for CGNAT check
+    //     certNameToRenew: "MikroTik-LE-Cert", // Certificate name for Let's Encrypt
+    //     daysBeforeExpiryToRenew: 30, // Days before expiration to renew certificate
+    //     renewalStartTime: "03:00:00", // Time to start renewal process
+    //     keySize: 2048, // Key size for private certificate
+    //     daysValid: 3650, // Days for certificate validity
+    //     certPassword: certPassword, // Password for exported certificate from OpenVPN config
+    // };
 
     // Add certificate-related configurations
 
     // 1. Check CGNAT configuration (important for Let's Encrypt)
-    configs.push(CheckCGNAT(certParams.wanInterfaceName));
+    // configs.push(CheckCGNAT(certParams.wanInterfaceName));
 
     // 2. Generate Let's Encrypt certificate configuration
-    configs.push(
-        LetsEncrypt(
-            certParams.certNameToRenew,
-            certParams.daysBeforeExpiryToRenew,
-            certParams.renewalStartTime,
-        ),
-    );
+    // configs.push(
+    //     LetsEncrypt(
+    //         certParams.certNameToRenew,
+    //         certParams.daysBeforeExpiryToRenew,
+    //         certParams.renewalStartTime,
+    //     ),
+    // );
 
     // 3. Generate private certificate configuration as fallback
-    configs.push(PrivateCert(certParams.keySize, certParams.daysValid));
+    // configs.push(PrivateCert(certParams.keySize, certParams.daysValid));
 
     // 4. Export certificates for client use
-    configs.push(ExportCert(certParams.certPassword));
+    // configs.push(ExportCert(certParams.certPassword));
 
     // 5. Add certificate assignment script for VPN servers
     // Use the private certificate name that matches the PrivateCert function default
-    configs.push(AddCert("MikroTik-Private-Cert"));
+    configs.push(AddCert("auto-detect"));
 
     // Merge all certificate configurations
     const finalConfig: RouterConfig = {};
@@ -112,24 +112,24 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
         finalConfig["/certificate"] = [];
     }
 
-    finalConfig["/certificate"].unshift(
-        "# Certificate configuration for VPN servers:",
-        vpnServer.SstpServer ? "# - SSTP Server requires certificates" : "",
-        vpnServer.OpenVpnServer
-            ? "# - OpenVPN Server requires certificates"
-            : "",
-        vpnServer.Ikev2Server ? "# - IKEv2 Server requires certificates" : "",
-        "# Certificate configurations include:",
-        "# 1. CGNAT check for Let's Encrypt compatibility",
-        "# 2. Let's Encrypt certificate generation",
-        "# 3. Private certificate generation as fallback",
-        "# 4. Certificate export for client configuration",
-        "# 5. Automatic certificate assignment to VPN servers",
-        certPassword !== "client-cert-password"
-            ? `# Certificate password from OpenVPN config: ${certPassword}`
-            : "",
-        "",
-    );
+    // finalConfig["/certificate"].unshift(
+    //     "# Certificate configuration for VPN servers:",
+    //     vpnServer.SstpServer ? "# - SSTP Server requires certificates" : "",
+    //     vpnServer.OpenVpnServer
+    //         ? "# - OpenVPN Server requires certificates"
+    //         : "",
+    //     vpnServer.Ikev2Server ? "# - IKEv2 Server requires certificates" : "",
+    //     "# Certificate configurations include:",
+    //     "# 1. CGNAT check for Let's Encrypt compatibility",
+    //     "# 2. Let's Encrypt certificate generation",
+    //     "# 3. Private certificate generation as fallback",
+    //     "# 4. Certificate export for client configuration",
+    //     "# 5. Automatic certificate assignment to VPN servers",
+    //     certPassword !== "client-cert-password"
+    //         ? `# Certificate password from OpenVPN config: ${certPassword}`
+    //         : "",
+    //     "",
+    // );
 
     // Remove empty comment lines
     finalConfig[""] = finalConfig[""].filter((line) => line !== "");
@@ -253,6 +253,8 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
         configs.push(BTHServerWrapper());
         enabledServers.push("Back-to-Home");
     }
+
+    configs.push(VPNServerCertificate(vpnServer));
 
     // 12. VPN Inbound Traffic Management
     configs.push(VSInboundTraffic(vpnServer));

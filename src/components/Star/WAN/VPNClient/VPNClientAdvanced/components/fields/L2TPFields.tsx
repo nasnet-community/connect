@@ -49,7 +49,10 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             value={config.IPsecSecret || ""}
             onInput$={(event: Event, value: string) => {
               console.log('[L2TPFields] IPsec Secret updated:', value ? '***' : '(empty)');
-              onUpdate$({ IPsecSecret: value });
+              onUpdate$({ 
+                IPsecSecret: value,
+                UseIPsec: value.trim().length > 0
+              });
             }}
             placeholder="Pre-shared key"
           />
