@@ -17,6 +17,8 @@ import { useConfigGenerator } from "./useShow";
 import { useEasyModeDefaults } from "./useEasyModeDefaults";
 // import { MikrotikApplyConfig } from "./MikrotikApplyConfig";
 import { Newsletter } from "~/components/Core";
+import { subscribeToNewsletter } from "~/utils/newsletterAPI";
+import { generateUserUUID } from "~/utils/fingerprinting";
 import { DocumentSection } from "./DocumentSection/DocumentSection";
 import { EasyModeDownloadCard } from "./EasyModeDownloadCard";
 
@@ -122,23 +124,37 @@ def configure_slave_router(host, username, password):
   });
 
   const handleNewsletterSubscribe = $(async (subscription: { email: string; timestamp: string; source?: string }) => {
-    // Track newsletter subscription
-    track("newsletter_subscribed", {
-      location: "show_config",
-      email_domain: subscription.email.split('@')[1],
-      source: subscription.source || "show_config",
-    });
+    try {
+      // Validate subscription object
+      if (!subscription || !subscription.email) {
+        console.error("Invalid subscription object:", subscription);
+        throw new Error("Invalid subscription: email is required");
+      }
 
-    // Here you would typically call your newsletter API
-    // For now, we'll simulate a successful subscription
-    console.log(`Newsletter subscription for: ${subscription.email} at ${subscription.timestamp}`);
+      // Generate userUUID using hardware fingerprinting
+      const userUUID = await generateUserUUID();
 
-    // Return a promise to handle the subscription
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 1000);
-    });
+      // Call the Supabase Edge Function
+      const result = await subscribeToNewsletter(subscription.email, userUUID);
+
+      if (!result.success) {
+        console.error("Newsletter subscription failed:", result.error);
+        throw new Error(result.error_detail || result.error || "Failed to subscribe to newsletter");
+      }
+
+      console.log(`Newsletter subscription successful: ${subscription.email} at ${subscription.timestamp}`);
+
+      // Track newsletter subscription
+      track("newsletter_subscribed", {
+        location: "show_config",
+        email_domain: subscription.email.split('@')[1],
+        source: subscription.source || "show_config",
+      });
+
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      throw error;
+    }
   });
 
   return (

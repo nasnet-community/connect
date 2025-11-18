@@ -3,3 +3,4 @@ export * from "./WANInterface";
 export * from "./WANUtils";
 export * from "./WANInterfaceUtils";
 export * from "./WANConnectionUtils";
+export * from "./WANServiceMangle";

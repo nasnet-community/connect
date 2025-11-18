@@ -23,7 +23,8 @@ import type { StepProps } from "~/types/step";
 import { StarContext } from "../StarContext/StarContext";
 import { Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter/Newsletter.types";
-import { subscribeToNewsletterSendGrid } from "~/utils/newsletterAPI";
+import { subscribeToNewsletter } from "~/utils/newsletterAPI";
+import { generateUserUUID } from "~/utils/fingerprinting";
 
 // Define step components outside the main component to avoid serialization issues
 const FirmwareStep = component$((props: StepProps) => (
@@ -104,6 +105,19 @@ export const Choose = component$((props: StepProps) => {
         throw new Error("Invalid subscription: email is required");
       }
 
+      // Generate userUUID using hardware fingerprinting
+      const userUUID = await generateUserUUID();
+
+      // Call the Supabase Edge Function
+      const result = await subscribeToNewsletter(subscription.email, userUUID);
+
+      if (!result.success) {
+        console.error("Newsletter subscription failed:", result.error);
+        throw new Error(result.error_detail || result.error || "Failed to subscribe to newsletter");
+      }
+
+      console.log("Newsletter subscription successful:", subscription.email);
+
       // Track newsletter signup from router configuration flow
       if (typeof track !== 'undefined') {
         track("newsletter_subscription", {
@@ -114,28 +128,6 @@ export const Choose = component$((props: StepProps) => {
           mode: starContext.state.Choose.Mode || 'not-selected',
         });
       }
-
-      console.log("Router configuration newsletter subscription:", subscription);
-
-      // Call the SendGrid API to add email to newsletter
-      const result = await subscribeToNewsletterSendGrid(subscription.email, {
-        source: subscription.source || 'router-configuration',
-      });
-
-      if (result.success) {
-        console.log("SendGrid subscription successful! Job ID:", result.jobId);
-      } else {
-        console.error("SendGrid subscription failed:", result.error);
-        throw new Error(result.error || "Failed to subscribe to newsletter");
-      }
-      // Example: await fetch('/api/newsletter/subscribe', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     ...subscription,
-      //     source: 'router-configuration',
-      //     interests: ['mikrotik', 'router-setup', 'network-security']
-      //   })
-      // });
 
     } catch (error) {
       console.error("Failed to subscribe to newsletter:", error);

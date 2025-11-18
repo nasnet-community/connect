@@ -66,6 +66,13 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
         ],
     };
 
+    // Add special route for VPN networks to route 192.168.100.0/24 through 100.64.0.1
+    if (NetworkType === "VPN") {
+        config["/ip route"].push(
+            `add comment="Route-to-Foreign-Foreign Link 1" distance=1 dst-address=192.168.100.0/24 gateway=100.64.0.1 routing-table="to-${FNetworkName}"`
+        );
+    }
+
     // Add routing rules for all networks except Split
     if (NetworkType !== "Split") {
         config["/routing rule"] = [
