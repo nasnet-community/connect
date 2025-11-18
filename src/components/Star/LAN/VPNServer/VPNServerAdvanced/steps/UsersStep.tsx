@@ -1,12 +1,14 @@
-import { component$, useTask$ } from "@builder.io/qwik";
+import { component$, useTask$, useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
 import { UserCredential } from "../../UserCredential/UserCredential";
-import type { VSCredentials } from "../../../../StarContext/Utils/VPNServerType";
+import type { VSCredentials, OpenVpnServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../../StarContext/CommonType";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
+import { StarContext } from "../../../../StarContext/StarContext";
+import { Alert } from "~/components/Core";
 
 interface UsersStepProps extends StepProps {
   users: VSCredentials[];
@@ -32,6 +34,16 @@ export const UsersStep = component$<UsersStepProps>(
   }) => {
     // Get the context to pass enabled protocols to UserCredential
     const stepperContext = useStepperContext(VPNServerContextId);
+    
+    // Access StarContext to get OpenVPN server names
+    const starContext = useContext(StarContext);
+    const vpnServerState = starContext.state.LAN.VPNServer;
+    const openVpnServers: OpenVpnServerConfig[] = vpnServerState?.OpenVpnServer || [];
+    
+    // Get all OpenVPN server names for display
+    const openVpnServerNames = openVpnServers
+      .map((server: OpenVpnServerConfig) => server.name)
+      .filter((name: string) => name); // Filter out any undefined/empty names
 
     // Track validation state
     useTask$(({ track }) => {
@@ -48,6 +60,23 @@ export const UsersStep = component$<UsersStepProps>(
             {$localize`Manage VPN Users`}
           </h2>
         </div>
+
+        {/* Show info about OpenVPN username format if OpenVPN is enabled */}
+        {stepperContext.data.enabledProtocols.OpenVPN && (
+          <Alert status="info" size="sm">
+            <p class="text-sm">
+              {$localize`OpenVPN usernames will be created in the format:`}{" "}
+              {openVpnServerNames.length > 0 ? (
+                <strong>
+                  {$localize`YourUsername-`}
+                  {openVpnServerNames.join($localize` and YourUsername-`)}
+                </strong>
+              ) : (
+                <strong>{$localize`YourUsername-ServerName`}</strong>
+              )}
+            </p>
+          </Alert>
+        )}
 
         <div class="space-y-6">
           {users.map((user, index) => (

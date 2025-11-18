@@ -2,7 +2,7 @@ import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
-import { Card, CardHeader, CardBody, Toggle } from "~/components/Core";
+import { Card, CardHeader, CardBody, Toggle, Input } from "~/components/Core";
 
 export const CertificateStep = component$(() => {
   // Get stepper and star contexts
@@ -16,8 +16,34 @@ export const CertificateStep = component$(() => {
   const enableSelfSigned = useSignal(servicesData.certificate.enableSelfSigned || false);
   const enableLetsEncrypt = useSignal(servicesData.certificate.enableLetsEncrypt || false);
 
+  // Certificate passphrase state
+  const certificatePassphrase = useSignal(starCtx.state.LAN.VPNServer?.CertificatePassphrase || "");
+  const showPassphrase = useSignal(false);
+  const passphraseError = useSignal("");
+
   // Check if VPN servers that require certificates are enabled
   const requiresCertificate = useSignal(false);
+
+  // Validate passphrase
+  const validatePassphrase$ = $((value: string) => {
+    if (enableSelfSigned.value && value.length > 0 && value.length < 10) {
+      passphraseError.value = $localize`Passphrase must be at least 10 characters`;
+      return false;
+    }
+    passphraseError.value = "";
+    return true;
+  });
+
+  // Update passphrase with validation
+  const updatePassphrase$ = $((value: string) => {
+    certificatePassphrase.value = value;
+    validatePassphrase$(value);
+  });
+
+  // Toggle passphrase visibility
+  const togglePassphraseVisibility$ = $(() => {
+    showPassphrase.value = !showPassphrase.value;
+  });
 
   // Update context data and validate step completion
   const validateAndUpdate$ = $(() => {
@@ -33,6 +59,9 @@ export const CertificateStep = component$(() => {
     if (requiresCertificate.value && !enableSelfSigned.value && !enableLetsEncrypt.value) {
       enableSelfSigned.value = true;
     }
+
+    // Validate passphrase
+    validatePassphrase$(certificatePassphrase.value);
 
     // Update context data with correct property names
     servicesData.certificate = {
@@ -56,8 +85,26 @@ export const CertificateStep = component$(() => {
       }
     });
 
-    // Validate - step is complete when either certificate type is enabled or none are required
-    const isComplete = !requiresCertificate.value || (enableSelfSigned.value || enableLetsEncrypt.value);
+    // Update LAN VPNServer with certificate passphrase
+    if (enableSelfSigned.value && certificatePassphrase.value) {
+      const currentVpnServer = starCtx.state.LAN.VPNServer;
+      starCtx.updateLAN$({
+        VPNServer: {
+          Users: currentVpnServer?.Users || [],
+          CertificatePassphrase: certificatePassphrase.value,
+          ...currentVpnServer,
+        }
+      });
+    }
+
+    // Validate - step is complete when:
+    // 1. Either certificate type is enabled or none are required
+    // 2. If self-signed is enabled, passphrase must be valid (>= 10 chars)
+    const passphraseValid = !enableSelfSigned.value || 
+      (certificatePassphrase.value.length >= 10);
+    const isComplete = (!requiresCertificate.value || 
+      (enableSelfSigned.value || enableLetsEncrypt.value)) && 
+      passphraseValid;
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -72,6 +119,7 @@ export const CertificateStep = component$(() => {
   });
 
   // Run validation on component mount and when values change
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     validateAndUpdate$();
   });
@@ -191,6 +239,57 @@ export const CertificateStep = component$(() => {
           </div>
         </CardBody>
       </Card>
+
+      {/* Certificate Passphrase Input - Show when self-signed is enabled and passphrase is missing */}
+      {enableSelfSigned.value && !certificatePassphrase.value && (
+        <Card class="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl transition-all duration-300 hover:shadow-2xl animate-fade-in-up">
+          <CardHeader>
+            <h4 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              {$localize`Certificate Passphrase Required`}
+            </h4>
+            <p class="text-gray-600 dark:text-gray-400">
+              {$localize`Enter a passphrase to protect your self-signed certificate`}
+            </p>
+          </CardHeader>
+          <CardBody class="space-y-4">
+            <div class="relative">
+              <Input
+                type={showPassphrase.value ? "text" : "password"}
+                value={certificatePassphrase.value}
+                onInput$={$((e: any) => updatePassphrase$(e.target.value))}
+                placeholder={$localize`Enter certificate passphrase (min 10 characters)`}
+                label={$localize`Certificate Passphrase`}
+                errorMessage={passphraseError.value}
+                validation={passphraseError.value ? "invalid" : undefined}
+                class="pr-12"
+              />
+              <button
+                type="button"
+                onClick$={togglePassphraseVisibility$}
+                class="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                aria-label={showPassphrase.value ? $localize`Hide passphrase` : $localize`Show passphrase`}
+              >
+                {showPassphrase.value ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {$localize`This passphrase will be used to encrypt your certificate for secure export to VPN clients.`}
+            </p>
+          </CardBody>
+        </Card>
+      )}
 
 
     </div>

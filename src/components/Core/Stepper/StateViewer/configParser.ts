@@ -32,13 +32,17 @@ export function extractStateFromConfig(configContent: string): ParseResult {
   // Remove backslash line continuations (backslash followed by newline and spaces)
   noteContent = noteContent.replace(/\\\s*\r?\n\s*/g, '');
 
-  // Handle escaped characters in the note
-  noteContent = noteContent
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t')
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\');
+  // Unescape MikroTik's string escaping
+  noteContent = noteContent.replace(/\\(.)/g, (match, char) => {
+    switch (char) {
+      case 'n': return '\n';
+      case 'r': return '\r';
+      case 't': return '\t';
+      case '"': return '"';
+      case '\\': return '\\';
+      default: return match; // Keep unknown escape sequences as-is
+    }
+  });
 
   // Look for the state: { pattern
   const stateStartMatch = noteContent.match(/state:\s*{/);
