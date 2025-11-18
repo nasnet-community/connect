@@ -29,11 +29,8 @@ export function WirelessConfig( wirelessConfigs: WirelessConfig[], wanLinks: WAN
         "/interface wifi": []
     };
     
-    const totalBands = (availableBands.has2_4 ? 1 : 0) + availableBands.bands5GHz.length;
-    
     if (availableBands.has2_4) {
-        const defaultName = totalBands === 1 ? "wifi1" : "wifi2";
-        baseConfig["/interface wifi"].push(`set [ find default-name=${defaultName} ] name=wifi2.4 disabled=no`);
+        baseConfig["/interface wifi"].push("set [ find default-name=wifi2 ] name=wifi2.4 disabled=no");
     }
     if (availableBands.has5) {
         baseConfig["/interface wifi"].push("set [ find default-name=wifi1 ] name=wifi5 disabled=no");

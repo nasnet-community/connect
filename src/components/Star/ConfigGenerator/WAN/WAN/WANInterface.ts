@@ -6,11 +6,13 @@ import type {
     LTE as LTEType,
     RouterModels,
 } from "~/components/Star/StarContext";
+import type { services } from "~/components/Star/StarContext/ExtraType";
 import { mergeRouterConfigs, mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import { DHCPClient, PPPOEClient, StaticIP, LTE } from "~/components/Star/ConfigGenerator";
 import { WirelessWAN, MACVLANOnVLAN, MACVLAN, VLAN } from "~/components/Star/ConfigGenerator";
 import { GetWANInterface, requiresAutoMACVLAN, getUnderlyingInterface, InterfaceComment, CheckLTEInterface } from "~/components/Star/ConfigGenerator";
 import { WANIfaceList, Route } from "~/components/Star/ConfigGenerator";
+import { ServiceMangle } from "~/components/Star/ConfigGenerator";
 import {
     convertWANLinkToMultiWAN,
     FailoverRecursive,
@@ -315,7 +317,7 @@ export const DFMultiLink = ( wanLink: WANLink, networkType: "Foreign" | "Domesti
     return mergeMultipleConfigs(...configs);
 }
 
-export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterfaces?: LTEType[], routerModels?: RouterModels[]): RouterConfig => {
+export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterfaces?: LTEType[], routerModels?: RouterModels[], services?: services): RouterConfig => {
     let config: RouterConfig = {};
     const { Foreign, Domestic } = wanLinks;
 
@@ -381,6 +383,12 @@ export const generateWANLinksConfig = (wanLinks: WANLinks, availableLTEInterface
         } else if (Domestic.WANConfigs.length > 1) {
             const domesticRoutingConfig = DFMultiLink(Domestic, "Domestic");
             config = mergeRouterConfigs(config, domesticRoutingConfig);
+        }
+
+        // Add service mangle rules for enabled services on Domestic links
+        if (services) {
+            const serviceMangleConfig = ServiceMangle(Domestic.WANConfigs, services);
+            config = mergeRouterConfigs(config, serviceMangleConfig);
         }
     }
 

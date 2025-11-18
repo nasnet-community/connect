@@ -149,13 +149,12 @@ export const CheckTrunkMaster = ( routerModels: RouterModels[] ): { wifi2_4: boo
     };
 }
 
-export function CheckMasters(WANLink: WANLinks, routerModels: RouterModels[]) {
+export function CheckMasters(WANLink: WANLinks, _routerModels: RouterModels[]) {
     const wanMaster = CheckWANMaster(WANLink);
-    const trunkMaster = CheckTrunkMaster(routerModels);
     
-    // Combine WAN and Trunk usage for each band
-    const isWifi2_4: boolean = wanMaster.wifi2_4 || trunkMaster.wifi2_4;
-    const isWifi5: boolean = wanMaster.wifi5 || trunkMaster.wifi5;
+    // Only check WAN usage, not Trunk
+    const isWifi2_4: boolean = wanMaster.wifi2_4;
+    const isWifi5: boolean = wanMaster.wifi5;
     
     return {
         isWifi2_4,

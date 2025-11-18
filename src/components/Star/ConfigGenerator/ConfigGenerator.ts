@@ -136,7 +136,7 @@ export const ConfigGenerator = (state: StarState): string => {
             }
         });
         
-        const wanConfig = WANCG(state.WAN, state.Choose.Networks, state.LAN.Subnets, availableLTEInterfaces, state.Choose.RouterModels);
+        const wanConfig = WANCG(state.WAN, state.Choose.Networks, state.LAN.Subnets, availableLTEInterfaces, state.Choose.RouterModels, state.ExtraConfig.services);
         const lanConfig = LANCG(state);
         const extraConfig = ExtraCG(
             state.ExtraConfig,

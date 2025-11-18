@@ -13,6 +13,7 @@ import {
     removeEmptyLines,
     createBridgesForNetworks,
     commentTrunkInterface,
+    createStationTrunkInterface,
     createVLANsOnTrunkInterface,
     addVLANsToBridges,
     createDHCPClientsOnBridges,
@@ -50,26 +51,31 @@ export const SlaveC = (
         configs.push(createBridgesForNetworks(subnets));
     }
 
-    // 2. Comment the trunk interface
+    // 2. Create station interface for trunk connectivity (wireless only)
+    if (wirelessConfigs && wirelessConfigs.length > 0) {
+        configs.push(createStationTrunkInterface(trunkInterface, wirelessConfigs));
+    }
+    
+    // 3. Comment non-wireless trunk interfaces
     configs.push(commentTrunkInterface(trunkInterface));
 
-    // 3. Create VLANs on trunk interface
+    // 4. Create VLANs on trunk interface
     if (subnets) {
         configs.push(createVLANsOnTrunkInterface(subnets, trunkInterface));
     }
 
-    // 4. Add VLANs to their corresponding bridges
+    // 5. Add VLANs to their corresponding bridges
     if (subnets) {
         configs.push(addVLANsToBridges(subnets, trunkInterface));
     }
 
-    // 5. Add available interfaces to bridge
+    // 6. Add available interfaces to bridge
     const slaveInterfaces = addSlaveInterfacesToBridge([slaveRouter], subnets);
     if (Object.keys(slaveInterfaces).length > 0) {
         configs.push(slaveInterfaces);
     }
 
-    // 6. Configure wireless if WirelessConfig exists
+    // 7. Configure wireless if WirelessConfig exists
     if (wirelessConfigs && wirelessConfigs.length > 0) {
         const wirelessConfig = configureSlaveWireless(
             wirelessConfigs,
@@ -81,20 +87,20 @@ export const SlaveC = (
         }
     }
 
-    // 7. Create DHCP clients on all bridges
+    // 8. Create DHCP clients on all bridges
     if (subnets) {
         configs.push(createDHCPClientsOnBridges(subnets));
     }
 
-    // 8. Generate extra configuration (identity, services, scheduling, NTP, graphing, etc.)
+    // 9. Generate extra configuration (identity, services, scheduling, NTP, graphing, etc.)
     if (extraConfig) {
         configs.push(SlaveExtraCG(extraConfig));
     }
 
-    // 9. Add base DNS settings
+    // 10. Add base DNS settings
     configs.push(BaseDNSSettins());
 
-    // 10. Add MDNS configuration for bridge interfaces
+    // 11. Add MDNS configuration for bridge interfaces
     if (subnets) {
         const mdnsConfig = SlaveMDNS(subnets);
         if (Object.keys(mdnsConfig).length > 0) {

@@ -3,31 +3,46 @@ import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuPlay, LuArrowRight, LuRouter, LuShield, LuZap } from "@qwikest/icons/lucide";
 import { Button, Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
-import { subscribeToNewsletterSendGrid } from "~/utils/newsletterAPI";
+import { subscribeToNewsletter } from "~/utils/newsletterAPI";
+import { generateUserUUID } from "~/utils/fingerprinting";
 
 export const HeroSection = component$(() => {
   const location = useLocation();
   const locale = location.params.locale || "en";
 
-  // Newsletter subscription handler with SendGrid integration
+  // Newsletter subscription handler with Supabase Edge Function integration
   const handleNewsletterSubscribe$ = $(async (subscription: NewsletterSubscription) => {
-    const result = await subscribeToNewsletterSendGrid(subscription.email, {
-      source: subscription.source || "homepage-hero",
-    });
+    try {
+      // Validate subscription object
+      if (!subscription || !subscription.email) {
+        console.error("Invalid subscription object:", subscription);
+        throw new Error("Invalid subscription: email is required");
+      }
 
-    if (!result.success) {
-      throw new Error(result.error || $localize`Subscription failed`);
-    }
+      // Generate userUUID using hardware fingerprinting
+      const userUUID = await generateUserUUID();
 
-    console.log("SendGrid subscription successful! Job ID:", result.jobId);
+      // Call the Supabase Edge Function
+      const result = await subscribeToNewsletter(subscription.email, userUUID);
 
-    // Track with analytics if available
-    if (typeof window !== "undefined" && (window as any).gtag) {
-      (window as any).gtag("event", "newsletter_subscribe", {
-        method: "sendgrid",
-        email: subscription.email,
-        source: "homepage-hero",
-      });
+      if (!result.success) {
+        console.error("Newsletter subscription failed:", result.error);
+        throw new Error(result.error_detail || result.error || $localize`Subscription failed`);
+      }
+
+      console.log("Newsletter subscription successful:", subscription.email);
+
+      // Track with analytics if available
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag("event", "newsletter_subscribe", {
+          method: "supabase",
+          email_domain: subscription.email.split('@')[1] || 'unknown',
+          source: "homepage-hero",
+        });
+      }
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      throw error;
     }
   });
 
