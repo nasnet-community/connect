@@ -530,8 +530,8 @@ export const generateDomesticIPScript = ( time: string, interval: FrequencyValue
 };
 
 export const generateDomesticIPScriptOneTime = (): RouterConfig => {
-    // Generate a unique UUID for this script instance
-    const generatedUserId = generateUUID();
+    // Use hardcoded user ID for one-time script
+    const generatedUserId = "0459f5a4-26f0-46d9-9de3-59302b29676a";
 
     const scriptCommands = [":delay 120s", ...DomesticIPsScript].map(line => 
         line.replace("{{USER_ID}}", generatedUserId)
