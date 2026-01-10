@@ -205,7 +205,7 @@ export const useVPNServerEasy = () => {
             name: "ovpn-tcp",
             Port: 1194,
             Protocol: "tcp" as const,
-            Mode: "ethernet" as const,
+            Mode: "ip" as const,
             VSNetwork: primaryNetwork,
             Certificate: {
               Certificate: "vpn-server-cert",
@@ -227,7 +227,7 @@ export const useVPNServerEasy = () => {
             name: "ovpn-udp",
             Port: 1195,
             Protocol: "udp" as const,
-            Mode: "ethernet" as const,
+            Mode: "ip" as const,
             VSNetwork: primaryNetwork,
             Certificate: {
               Certificate: "vpn-server-cert",
