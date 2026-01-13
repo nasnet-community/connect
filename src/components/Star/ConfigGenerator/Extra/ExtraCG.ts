@@ -62,7 +62,7 @@ export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
     configs.push({
         "/certificate settings": [
             // "set builtin-trust-anchors=trusted crl-download=yes crl-store=system crl-use=yes",
-            "set builtin-trust-anchors=trusted crl-download=yes crl-store=system ",
+            "set builtin-trust-store=all crl-download=yes crl-store=system crl-use=no",
 
         ]
     });
