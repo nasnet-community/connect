@@ -109,7 +109,7 @@ export const HeroSection = component$(() => {
             </Button>
           </Link>
 
-          <a href="https://youtube.com/@joinnasnet" target="_blank" rel="noopener noreferrer">
+          <a href="https://youtu.be/h2XxMztE0vQ" target="_blank" rel="noopener noreferrer">
             <Button
               variant="outline"
               size="lg"
