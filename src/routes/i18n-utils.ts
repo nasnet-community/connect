@@ -1,6 +1,12 @@
 import "@angular/localize/init";
-import { clearTranslations, loadTranslations } from "@angular/localize";
-import { $, getLocale, useOnDocument, withLocale } from "@builder.io/qwik";
+import {
+  clearTranslations,
+  loadTranslations,
+  ɵparseTranslation,
+  ɵtranslate,
+} from "@angular/localize";
+import { getLocale, useVisibleTask$ } from "@builder.io/qwik";
+import { useLocation } from "@builder.io/qwik-city";
 import type { RenderOptions } from "@builder.io/qwik/server";
 
 // You must declare all your locales here
@@ -10,6 +16,8 @@ import FA from "../locales/message.fa.json";
 // Make sure it's obvious when the default locale was selected
 const DEFAULT_LOCALE = "en";
 const TRANSLATION_BUNDLES = [EN, FA] as const;
+const SUPPORTED_LOCALES = new Set(TRANSLATION_BUNDLES.map(({ locale }) => locale));
+let getServerRenderLocale: (() => string | undefined) | undefined;
 
 /**
  * This file is left for the developer to customize to get the behavior they want for localization.
@@ -19,6 +27,19 @@ const TRANSLATION_BUNDLES = [EN, FA] as const;
 const $localizeFn = $localize as any as {
   TRANSLATIONS: Record<string, any>;
   TRANSLATION_BY_LOCALE: Map<string, Record<string, any>>;
+  translate?: (
+    messageParts: TemplateStringsArray,
+    substitutions: readonly any[],
+  ) => [TemplateStringsArray, readonly any[]];
+};
+
+const buildParsedTranslations = (translations: Record<string, string>) => {
+  return Object.fromEntries(
+    Object.entries(translations).map(([messageId, message]) => [
+      messageId,
+      ɵparseTranslation(message),
+    ]),
+  );
 };
 
 function getDocumentLocale(): string | undefined {
@@ -34,10 +55,23 @@ function getDocumentLocale(): string | undefined {
 }
 
 function getActiveLocale(): string {
+  if (import.meta.env.SSR) {
+    const serverLocale = getServerRenderLocale?.();
+    if (serverLocale) {
+      return extractLang(serverLocale);
+    }
+  }
+
   return getLocale(getDocumentLocale() ?? DEFAULT_LOCALE);
 }
 
 function getTranslationsForLocale(locale: string) {
+  return $localizeFn.TRANSLATION_BY_LOCALE.get(locale)
+    ?? $localizeFn.TRANSLATION_BY_LOCALE.get(DEFAULT_LOCALE)
+    ?? {};
+}
+
+function getRawTranslationsForLocale(locale: string) {
   return (
     TRANSLATION_BUNDLES.find((bundle) => bundle.locale === locale) ?? EN
   ).translations;
@@ -50,40 +84,59 @@ function getTranslationsForLocale(locale: string) {
  * appropriate translation based on the current locale which is store in the `usEnvDate('local')`.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-if (!$localizeFn.TRANSLATION_BY_LOCALE) {
-  $localizeFn.TRANSLATION_BY_LOCALE = new Map([["", {}]]);
-  Object.defineProperty($localize, "TRANSLATIONS", {
-    get: function () {
-      const locale = getActiveLocale();
-      let translations = $localizeFn.TRANSLATION_BY_LOCALE.get(locale);
-      if (!translations) {
-        $localizeFn.TRANSLATION_BY_LOCALE.set(locale, (translations = {}));
+if (import.meta.env.SSR) {
+  if (!$localizeFn.translate) {
+    $localizeFn.translate = (messageParts, substitutions) => {
+      try {
+        return ɵtranslate(
+          $localizeFn.TRANSLATIONS,
+          messageParts,
+          substitutions,
+        );
+      } catch (error) {
+        const translationError = error as Error;
+        console.warn(translationError.message);
+        return [messageParts, substitutions];
       }
-      return translations;
-    },
-    set: function (translations: Record<string, any>) {
-      $localizeFn.TRANSLATION_BY_LOCALE.set(getActiveLocale(), translations);
-    },
-  });
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!$localizeFn.TRANSLATION_BY_LOCALE) {
+    $localizeFn.TRANSLATION_BY_LOCALE = new Map(
+      TRANSLATION_BUNDLES.map(({ locale, translations }) => [
+        locale,
+        buildParsedTranslations(translations),
+      ]),
+    );
+    Object.defineProperty($localize, "TRANSLATIONS", {
+      get: function () {
+        return getTranslationsForLocale(getActiveLocale());
+      },
+    });
+  }
 }
 
-/**
- * Function used to load all translations variants.
- */
-export function initTranslations() {
-  TRANSLATION_BUNDLES.forEach(({ translations, locale }) => {
-    withLocale(locale, () => loadTranslations(translations));
-  });
-}
-
-function initClientTranslations(locale: string) {
+function initBrowserTranslations(locale: string) {
   const resolvedLocale = extractLang(locale);
 
-  withLocale(resolvedLocale, () => {
-    clearTranslations();
-    loadTranslations(getTranslationsForLocale(resolvedLocale));
-  });
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = resolvedLocale;
+    document.documentElement.setAttribute("q:locale", resolvedLocale);
+  }
+
+  clearTranslations();
+  loadTranslations(getRawTranslationsForLocale(resolvedLocale));
+}
+
+export function initializeBrowserI18n(locale?: string) {
+  initBrowserTranslations(locale || getDocumentLocale() || DEFAULT_LOCALE);
+}
+
+export function setServerRenderLocaleGetter(
+  getter: (() => string | undefined) | undefined,
+) {
+  getServerRenderLocale = getter;
 }
 
 /**
@@ -94,7 +147,7 @@ function initClientTranslations(locale: string) {
  * @returns The locale to use which will be stored in the `useEnvData('locale')`.
  */
 export function extractLang(locale: string): string {
-  return locale && TRANSLATION_BUNDLES.some((bundle) => bundle.locale === locale)
+  return locale && SUPPORTED_LOCALES.has(locale)
     ? locale
     : DEFAULT_LOCALE;
 }
@@ -117,18 +170,21 @@ export function extractBase({ serverData }: RenderOptions): string {
 }
 
 export function useI18n() {
-  if (import.meta.env.DEV) {
-    // During development only, load the current locale into the browser once.
-    // Angular localize is not designed for switching between multiple runtime catalogs
-    // within the same session after messages have been evaluated.
-    // eslint-disable-next-line
-    useOnDocument("qinit", $(() => {
-      initClientTranslations(getDocumentLocale() ?? DEFAULT_LOCALE);
-    }));
-  }
+  const location = useLocation();
+
+  // During development only, keep the browser translation catalog aligned with the
+  // active route locale. Locale switches use a full page reload, but this also covers
+  // the initial browser render after the dev server has reloaded modules.
+  useVisibleTask$(({ track }) => {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    const routeLocale = track(() => location.params.locale);
+    initBrowserTranslations(routeLocale || getDocumentLocale() || DEFAULT_LOCALE);
+  });
 }
 
-// We always need the translations on the server
-if (import.meta.env.SSR) {
-  initTranslations();
+if (!import.meta.env.SSR && typeof document !== "undefined") {
+  initializeBrowserI18n();
 }
