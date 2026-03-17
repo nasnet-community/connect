@@ -1,5 +1,6 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import GifScriptguide from "../../../../public/gifs/ScriptGuide.gif";
+
+const gifScriptGuide = `${import.meta.env.BASE_URL}gifs/ScriptGuide.gif`;
 
 export const ScriptGuide = component$(() => {
   const isFullScreen = useSignal(false);
@@ -56,7 +57,7 @@ export const ScriptGuide = component$(() => {
               </svg>
             </button>
             <img
-              src={GifScriptguide}
+              src={gifScriptGuide}
               alt="RouterOS Terminal Guide"
               width={1024}
               height={576}
@@ -102,7 +103,7 @@ export const ScriptGuide = component$(() => {
                 </svg>
               </button>
               <img
-                src={GifScriptguide}
+                src={gifScriptGuide}
                 alt="RouterOS Terminal Guide"
                 width={1024}
                 height={576}
