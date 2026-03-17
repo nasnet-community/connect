@@ -10,8 +10,12 @@
  * - Optimizer/Serialization/Deserialization code is not exercised!
  */
 import { render, type RenderOptions } from "@builder.io/qwik";
-import Root from "./root";
+import { initializeBrowserI18n } from "./routes/i18n-utils";
 
-export default function (opts: RenderOptions) {
+export default async function (opts: RenderOptions) {
+  initializeBrowserI18n();
+
+  const { default: Root } = await import("./root");
+
   return render(document, <Root />, opts);
 }
