@@ -14,7 +14,7 @@ export const useHeader = () => {
   });
   // Use detected locale directly, not a signal
   const currentLocale = detectedLocale;
-  const locales = ["en", "it", "ru", "fa", "zh", "ar", "tr"];
+  const locales = ["en", "fa"];
 
   useOnWindow(
     "load",

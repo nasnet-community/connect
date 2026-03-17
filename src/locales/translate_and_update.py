@@ -39,18 +39,10 @@ except ImportError:
 # Language code mapping
 LOCALE_TO_GOOGLE_LANG = {
     'en': 'en',
-    'ar': 'ar',
     'fa': 'fa',
-    'fr': 'fr',
-    'it': 'it',
-    'ru': 'ru',
-    'sk': 'sk',
-    'sp': 'es',  # Spanish
-    'tr': 'tr',
-    'zh': 'zh-cn'
 }
 
-ALL_LOCALES = ['ar', 'fa', 'fr', 'it', 'ru', 'sk', 'sp', 'tr', 'zh']
+ALL_LOCALES = ['fa']
 
 
 class TranslationUpdater:
@@ -340,4 +332,3 @@ Examples:
 
 if __name__ == '__main__':
     main()
-
