@@ -17,11 +17,6 @@ interface LanguageSelectProps {
 const LANGUAGES: Record<string, Language> = {
   en: { code: "en", name: "English", dir: "ltr", flag: "🇬🇧" },
   fa: { code: "fa", name: "فارسی", dir: "rtl", flag: "🇮🇷" },
-  ar: { code: "ar", name: "العربية", dir: "rtl", flag: "🇸🇦" },
-  zh: { code: "zh", name: "中文", dir: "ltr", flag: "🇨🇳" },
-  ru: { code: "ru", name: "Русский", dir: "ltr", flag: "🇷🇺" },
-  tr: { code: "tr", name: "Türkçe", dir: "ltr", flag: "🇹🇷" },
-  it: { code: "it", name: "Italiano", dir: "ltr", flag: "🇮🇹" },
 };
 
 const getLanguage = (locale: string): Language => {

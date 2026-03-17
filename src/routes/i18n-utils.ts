@@ -5,12 +5,7 @@ import type { RenderOptions } from "@builder.io/qwik/server";
 
 // You must declare all your locales here
 import EN from "../locales/message.en.json";
-import IT from "../locales/message.it.json";
-import RU from "../locales/message.ru.json";
 import FA from "../locales/message.fa.json";
-import ZH from "../locales/message.zh.json";
-import AR from "../locales/message.ar.json";
-import TR from "../locales/message.tr.json";
 
 // Make sure it's obvious when the default locale was selected
 const DEFAULT_LOCALE = "en";
@@ -51,7 +46,7 @@ if (!$localizeFn.TRANSLATION_BY_LOCALE) {
  * Function used to load all translations variants.
  */
 export function initTranslations() {
-  [EN, IT, RU, FA, ZH, AR, TR].forEach(({ translations, locale }) => {
+  [EN, FA].forEach(({ translations, locale }) => {
     withLocale(locale, () => loadTranslations(translations));
   });
 }
