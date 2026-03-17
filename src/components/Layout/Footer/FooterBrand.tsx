@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
-import logo from "../../../../public/images/logo.jpg";
+
+const logo = `${import.meta.env.BASE_URL}images/logo.jpg`;
 
 export const FooterBrand = component$(() => (
   <div class="flex flex-col items-center space-y-6 text-center">
