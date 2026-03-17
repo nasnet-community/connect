@@ -47,7 +47,6 @@
     "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.2.0",
     "@qwikest/icons": "^0.0.13",
-    "@rollup/rollup-linux-x64-gnu": "^4.32.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.10",
@@ -83,6 +82,9 @@
     "vite": "^5.1.4",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^3.2.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.32.0"
   },
   "dependencies": {
     "@angular/compiler": "^16.2.12",
