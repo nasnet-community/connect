@@ -15,6 +15,11 @@
     @apply bg-background text-text 
            antialiased dark:bg-background-dark dark:text-text-dark-default;
   }
+
+  html[lang="fa"] body,
+  html[lang="fa"] body :where(:not(code):not(pre):not(kbd):not(samp)) {
+    font-family: "Vazirmatn", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+  }
 }
 
 @layer components {
