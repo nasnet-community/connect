@@ -318,8 +318,8 @@ export const TimelineAnimations = component$(() => {
         </Timeline>
       </div>
 
-      <style>
-        {`
+      <style
+        dangerouslySetInnerHTML={`
           .timeline-dot-animated {
             position: relative;
           }
@@ -488,7 +488,7 @@ export const TimelineAnimations = component$(() => {
             }
           }
         `}
-      </style>
+      />
     </div>
   );
 });

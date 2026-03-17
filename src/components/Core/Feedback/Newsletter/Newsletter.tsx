@@ -476,7 +476,7 @@ export const Newsletter = component$<NewsletterProps>(
         </div>
 
         {/* Enhanced CSS for premium animations */}
-        <style>{`
+        <style dangerouslySetInnerHTML={`
           @keyframes shine {
             0% { transform: translateX(-100%) skewX(-12deg); }
             100% { transform: translateX(200%) skewX(-12deg); }
@@ -540,7 +540,7 @@ export const Newsletter = component$<NewsletterProps>(
           .animation-delay-200 {
             animation-delay: 200ms;
           }
-        `}</style>
+        `} />
       </div>
     </div>
     );

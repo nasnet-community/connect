@@ -259,8 +259,8 @@ export const SkeletonAnimations = component$(() => {
         </div>
       </div>
 
-      <style>
-        {`
+      <style
+        dangerouslySetInnerHTML={`
           @keyframes breathe {
             0%, 100% {
               opacity: 0.4;
@@ -283,7 +283,7 @@ export const SkeletonAnimations = component$(() => {
             }
           }
         `}
-      </style>
+      />
     </div>
   );
 });

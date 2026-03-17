@@ -236,7 +236,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
         )}
 
         {/* Enhanced CSS animations */}
-        <style>{`
+        <style dangerouslySetInnerHTML={`
           @keyframes float {
             0%, 100% {
               transform: translateY(0) rotate(${rotation}deg) scale(1.2);
@@ -359,7 +359,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
             animation: pulse-network-delayed 3s ease-in-out infinite;
             animation-delay: 1.5s;
           }
-        `}</style>
+        `} />
       </>
     );
   },
