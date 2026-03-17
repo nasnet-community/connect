@@ -1,5 +1,5 @@
 import "@angular/localize/init";
-import { loadTranslations } from "@angular/localize";
+import { clearTranslations, loadTranslations } from "@angular/localize";
 import { $, getLocale, useOnDocument, withLocale } from "@builder.io/qwik";
 import type { RenderOptions } from "@builder.io/qwik/server";
 
@@ -9,6 +9,7 @@ import FA from "../locales/message.fa.json";
 
 // Make sure it's obvious when the default locale was selected
 const DEFAULT_LOCALE = "en";
+const TRANSLATION_BUNDLES = [EN, FA] as const;
 
 /**
  * This file is left for the developer to customize to get the behavior they want for localization.
@@ -19,6 +20,28 @@ const $localizeFn = $localize as any as {
   TRANSLATIONS: Record<string, any>;
   TRANSLATION_BY_LOCALE: Map<string, Record<string, any>>;
 };
+
+function getDocumentLocale(): string | undefined {
+  if (typeof document === "undefined") {
+    return undefined;
+  }
+
+  return (
+    document.documentElement.getAttribute("q:locale") ||
+    document.documentElement.lang ||
+    undefined
+  );
+}
+
+function getActiveLocale(): string {
+  return getLocale(getDocumentLocale() ?? DEFAULT_LOCALE);
+}
+
+function getTranslationsForLocale(locale: string) {
+  return (
+    TRANSLATION_BUNDLES.find((bundle) => bundle.locale === locale) ?? EN
+  ).translations;
+}
 
 /**
  * This solution uses the `@angular/localize` package for translations, however out of the box
@@ -32,12 +55,15 @@ if (!$localizeFn.TRANSLATION_BY_LOCALE) {
   $localizeFn.TRANSLATION_BY_LOCALE = new Map([["", {}]]);
   Object.defineProperty($localize, "TRANSLATIONS", {
     get: function () {
-      const locale = getLocale(DEFAULT_LOCALE);
+      const locale = getActiveLocale();
       let translations = $localizeFn.TRANSLATION_BY_LOCALE.get(locale);
       if (!translations) {
         $localizeFn.TRANSLATION_BY_LOCALE.set(locale, (translations = {}));
       }
       return translations;
+    },
+    set: function (translations: Record<string, any>) {
+      $localizeFn.TRANSLATION_BY_LOCALE.set(getActiveLocale(), translations);
     },
   });
 }
@@ -46,8 +72,17 @@ if (!$localizeFn.TRANSLATION_BY_LOCALE) {
  * Function used to load all translations variants.
  */
 export function initTranslations() {
-  [EN, FA].forEach(({ translations, locale }) => {
+  TRANSLATION_BUNDLES.forEach(({ translations, locale }) => {
     withLocale(locale, () => loadTranslations(translations));
+  });
+}
+
+function initClientTranslations(locale: string) {
+  const resolvedLocale = extractLang(locale);
+
+  withLocale(resolvedLocale, () => {
+    clearTranslations();
+    loadTranslations(getTranslationsForLocale(resolvedLocale));
   });
 }
 
@@ -59,7 +94,7 @@ export function initTranslations() {
  * @returns The locale to use which will be stored in the `useEnvData('locale')`.
  */
 export function extractLang(locale: string): string {
-  return locale && $localizeFn.TRANSLATION_BY_LOCALE.has(locale)
+  return locale && TRANSLATION_BUNDLES.some((bundle) => bundle.locale === locale)
     ? locale
     : DEFAULT_LOCALE;
 }
@@ -83,9 +118,13 @@ export function extractBase({ serverData }: RenderOptions): string {
 
 export function useI18n() {
   if (import.meta.env.DEV) {
-    // During development only, load all translations in memory when the app starts on the client.
+    // During development only, load the current locale into the browser once.
+    // Angular localize is not designed for switching between multiple runtime catalogs
+    // within the same session after messages have been evaluated.
     // eslint-disable-next-line
-    useOnDocument("qinit", $(initTranslations));
+    useOnDocument("qinit", $(() => {
+      initClientTranslations(getDocumentLocale() ?? DEFAULT_LOCALE);
+    }));
   }
 }
 
