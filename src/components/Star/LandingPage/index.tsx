@@ -4,6 +4,21 @@ import { EnhancedFeatureShowcase } from "./Features/EnhancedFeatureShowcase";
 import { RouterModelsSection } from "./Interactive/RouterModels/RouterModelsSection";
 // import { TechSpecsSection } from "./SocialProof/TechSpecs/TechSpecsSection";
 
+const PARTICLE_COUNT = 12;
+
+const getParticleStyle = (index: number) => {
+  const left = (index * 17 + 13) % 100;
+  const top = (index * 29 + 7) % 100;
+  const duration = 4 + (index % 5) * 0.6;
+
+  return `
+    left: ${left}%;
+    top: ${top}%;
+    animation-delay: ${index * 0.5}s;
+    animation-duration: ${duration}s;
+  `;
+};
+
 export const LandingPage = component$(() => {
   return (
     <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-purple-900 overflow-hidden">
@@ -31,16 +46,11 @@ export const LandingPage = component$(() => {
 
       {/* Floating Particles */}
       <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-        {[...Array(12)].map((_, i) => (
+        {Array.from({ length: PARTICLE_COUNT }, (_, i) => i).map((i) => (
           <div
             key={i}
             class={`absolute w-2 h-2 bg-gradient-to-br from-purple-400/30 to-blue-400/30 rounded-full animate-float`}
-            style={`
-              left: ${Math.random() * 100}%;
-              top: ${Math.random() * 100}%;
-              animation-delay: ${i * 0.5}s;
-              animation-duration: ${4 + Math.random() * 4}s;
-            `}
+            style={getParticleStyle(i)}
           />
         ))}
       </div>

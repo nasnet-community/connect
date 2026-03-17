@@ -131,3 +131,21 @@
     }
   }
 }
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation-fill-mode: both;
+  }
+
+  .animation-delay-700 {
+    animation-delay: 700ms;
+  }
+
+  .animation-delay-1100 {
+    animation-delay: 1100ms;
+  }
+
+  .animation-delay-1200 {
+    animation-delay: 1200ms;
+  }
+}
