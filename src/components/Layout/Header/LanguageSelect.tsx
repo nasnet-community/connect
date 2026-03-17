@@ -24,9 +24,20 @@ const LANGUAGES: Record<string, Language> = {
   it: { code: "it", name: "Italiano", dir: "ltr", flag: "🇮🇹" },
 };
 
+const getLanguage = (locale: string): Language => {
+  return (
+    LANGUAGES[locale] ?? {
+      code: locale,
+      name: locale.toUpperCase(),
+      dir: "ltr",
+    }
+  );
+};
+
 export const LanguageSelect = component$((props: LanguageSelectProps) => {
   const selectId = `language-select-${props.location || "default"}`;
-  const currentLang = LANGUAGES[props.currentLocale];
+  const currentLang = getLanguage(props.currentLocale);
+  const isCurrentRtl = currentLang.dir === "rtl";
   const selectedLocale = useSignal(props.currentLocale);
   
   // Update the signal when props change
@@ -58,8 +69,8 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
           onChange$={(e) =>
             props.onLocaleChange$((e.target as HTMLSelectElement).value)
           }
-          class="appearance-none cursor-pointer
-                 pl-10 pr-8 py-2.5 
+             class={`appearance-none cursor-pointer
+               ${isCurrentRtl ? "pr-10 pl-8 text-right" : "pl-10 pr-8 text-left"} py-2.5 
                  text-sm font-medium
                  bg-gradient-to-r from-gray-50 to-gray-100
                  hover:from-gray-100 hover:to-gray-150
@@ -76,29 +87,37 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
                  dark:border-gray-700
                  dark:hover:border-gray-600
                  dark:shadow-lg dark:shadow-black/20
-                 dark:hover:shadow-xl dark:hover:shadow-black/30"
+                 dark:hover:shadow-xl dark:hover:shadow-black/30`}
           dir={currentLang.dir || "ltr"}
           aria-label={$localize`Select language`}
         >
-          {props.locales.map((locale) => (
-            <option
-              key={locale}
-              value={locale}
-              class="py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
-              dir={LANGUAGES[locale].dir || "ltr"}
-            >
-              {`${LANGUAGES[locale].flag || ""} ${LANGUAGES[locale].name || locale.toUpperCase()}`}
-            </option>
-          ))}
+          {props.locales.map((locale) => {
+            const language = getLanguage(locale);
+
+            return (
+              <option
+                key={locale}
+                value={locale}
+                class="py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                dir={language.dir}
+              >
+                {language.name}
+              </option>
+            );
+          })}
         </select>
         
         {/* Flag icon display */}
-        <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
+        <div
+          class={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-lg ${isCurrentRtl ? "right-3" : "left-3"}`}
+        >
           {currentLang.flag || ""}
         </div>
         
         {/* Dropdown chevron icon */}
-        <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+        <div
+          class={`absolute top-1/2 -translate-y-1/2 pointer-events-none ${isCurrentRtl ? "left-2" : "right-2"}`}
+        >
           <svg 
             class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 group-hover:text-gray-700 dark:group-hover:text-gray-300"
             fill="none" 
