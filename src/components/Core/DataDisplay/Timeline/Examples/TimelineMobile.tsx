@@ -414,8 +414,8 @@ export const TimelineMobile = component$(() => {
         </p>
       </div>
 
-      <style>
-        {`
+      <style
+        dangerouslySetInnerHTML={`
           .swipeable-card {
             touch-action: pan-x;
             transition: transform 0.3s ease;
@@ -441,7 +441,7 @@ export const TimelineMobile = component$(() => {
             background-color: rgba(59, 130, 246, 0.1);
           }
         `}
-      </style>
+      />
     </div>
   );
 });

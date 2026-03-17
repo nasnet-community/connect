@@ -168,8 +168,8 @@ export const SkeletonThemes = component$(() => {
         </div>
       </div>
 
-      <style>
-        {`
+      <style
+        dangerouslySetInnerHTML={`
           .shimmer {
             background: linear-gradient(
               90deg,
@@ -198,7 +198,7 @@ export const SkeletonThemes = component$(() => {
             );
           }
         `}
-      </style>
+      />
     </div>
   );
 });

@@ -375,8 +375,8 @@ export const TimelineThemes = component$(() => {
         </div>
       </div>
 
-      <style>
-        {`
+      <style
+        dangerouslySetInnerHTML={`
           .custom-timeline {
             background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
           }
@@ -445,7 +445,7 @@ export const TimelineThemes = component$(() => {
             }
           }
         `}
-      </style>
+      />
     </div>
   );
 });

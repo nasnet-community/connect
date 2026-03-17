@@ -220,8 +220,8 @@ export const AccessibilityScanner = component$<AccessibilityScannerProps>(
         {/* Accessibility Overlay */}
         {showOverlay.value && (
           <div class="fixed inset-0 z-40 pointer-events-none">
-            <style>
-              {`
+            <style
+              dangerouslySetInnerHTML={`
                 .a11y-highlight {
                   outline: 2px solid #ef4444 !important;
                   outline-offset: 2px !important;
@@ -239,7 +239,7 @@ export const AccessibilityScanner = component$<AccessibilityScannerProps>(
                   pointer-events: none;
                 }
               `}
-            </style>
+            />
           </div>
         )}
       </>
