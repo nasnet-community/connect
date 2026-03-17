@@ -7,10 +7,11 @@ export const useVPNServerEasy = () => {
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
+    CertificatePassphrase: "",
   };
 
   // Certificate passphrase state
-  const certificatePassphrase = useSignal("");
+  const certificatePassphrase = useSignal(vpnServerState.CertificatePassphrase || "");
   const showPassphrase = useSignal(false);
   const passphraseError = useSignal("");
 
@@ -190,6 +191,34 @@ export const useVPNServerEasy = () => {
   // Save settings to context
   const saveSettings = $(
     async (onComplete?: QRL<() => void>) => {
+      if (!vpnServerEnabled.value) {
+        await starContext.updateLAN$({
+          VPNServer: {
+            Users: [],
+            CertificatePassphrase: "",
+            PptpServer: undefined,
+            L2tpServer: undefined,
+            SstpServer: undefined,
+            OpenVpnServer: undefined,
+            Ikev2Server: undefined,
+            WireguardServers: undefined,
+          },
+        });
+
+        await starContext.updateChoose$({
+          Networks: {
+            ...starContext.state.Choose.Networks,
+            VPNServerNetworks: undefined,
+          },
+        });
+
+        if (onComplete) {
+          await onComplete();
+        }
+
+        return;
+      }
+
       if (!isValid.value) {
         console.error("Validation failed. Cannot save settings.");
         return;
