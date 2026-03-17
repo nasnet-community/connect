@@ -1,9 +1,3 @@
-export const FOOTER_LINKS = {
-  products: ["Features", "Security", "Team", "Enterprise"],
-  resources: ["Documentation", "Guides", "API Status", "Support"],
-  company: ["About", "Blog", "Careers", "Press"],
-};
-
 export const SOCIAL_LINKS = [
   {
     icon: "email",
