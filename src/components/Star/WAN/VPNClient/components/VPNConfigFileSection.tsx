@@ -34,7 +34,7 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
         <div class="flex space-x-4">
           <textarea
             value={configValue}
-            onChange$={(e, currentTarget) =>
+            onInput$={(_, currentTarget) =>
               onConfigChange$(currentTarget.value)
             }
             placeholder={placeholder}

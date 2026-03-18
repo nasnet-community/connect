@@ -64,7 +64,7 @@ export const CertificateStep = component$<CertificateStepProps>(
               <Input
                 type={showPassphrase.value ? "text" : "password"}
                 value={certificatePassphrase.value}
-                onChange$={(_, value) => updatePassphrase$(value)}
+                onInput$={(_event: Event, value: string) => updatePassphrase$(value)}
                 placeholder={$localize`Enter certificate passphrase`}
                 hasSuffixSlot={true}
               >

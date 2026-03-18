@@ -93,7 +93,7 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 name="config"
                 rows={8}
                 value={configValue}
-                onChange$={(_, el) => onConfigChange$(el.value)}
+                onInput$={(_, el) => onConfigChange$(el.value)}
                 placeholder={placeholder}
                 disabled={isUploading}
                 aria-label={$localize`${protocolName} configuration`}
