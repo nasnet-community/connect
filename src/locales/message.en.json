@@ -48,8 +48,6 @@
     "8465695405608556935": "Yes, but ensure the router models are compatible and adjust interface names if they differ between devices.",
     "8407945472042938087": "How often should I update my router firmware?",
     "63298650694208598": "Check for updates monthly and apply stable releases. Always backup before updating and test in a non-production environment first.",
-    "1704134511031058409": "What's the difference between .rsc and .py files?",
-    "7168050684021014027": ".rsc files are native RouterOS scripts that run directly on the router. .py files are Python scripts that connect to the router via API for remote configuration.",
     "3307857402972024864": "OpenVPN Server",
     "114707804386519018": "OpenVPN Interfaces",
     "2322667833924256186": "Add Interface",

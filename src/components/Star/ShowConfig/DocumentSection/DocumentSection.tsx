@@ -56,10 +56,6 @@ const faqItems = [
     question: $localize`How often should I update my router firmware?`,
     answer: $localize`Check for updates monthly and apply stable releases. Always backup before updating and test in a non-production environment first.`,
   },
-  {
-    question: $localize`What's the difference between .rsc and .py files?`,
-    answer: $localize`.rsc files are native RouterOS scripts that run directly on the router. .py files are Python scripts that connect to the router via API for remote configuration.`,
-  },
 ];
 
 export const DocumentSection = component$(() => {
