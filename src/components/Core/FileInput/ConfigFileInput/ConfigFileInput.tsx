@@ -196,7 +196,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
             <textarea
               ref={textareaRef}
               value={config}
-              onChange$={(e, el) => handleConfigChange(el.value)}
+              onInput$={(_, el) => handleConfigChange(el.value)}
               placeholder={placeholder || defaultPlaceholder}
               disabled={disabled || isValidating.value}
               class={`bg-surface-light dark:bg-surface-dark h-32 w-full resize-none rounded-lg 

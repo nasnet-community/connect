@@ -345,9 +345,23 @@ export const useWireguardConfig = (
 
   const handleConfigChange$ = $(async (value: string) => {
     config.value = value;
+    errorMessage.value = "";
+
+    if (!value.trim()) {
+      if (onIsValidChange$) {
+        onIsValidChange$(false);
+      }
+      return;
+    }
+
     const parsedConfig = await parseWireguardConfig(value);
     if (parsedConfig) {
       await updateContextWithConfig$(parsedConfig);
+      return;
+    }
+
+    if (onIsValidChange$) {
+      onIsValidChange$(false);
     }
   });
 
