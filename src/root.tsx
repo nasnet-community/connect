@@ -11,6 +11,36 @@ import { inject } from "@vercel/analytics";
 import "./global.css";
 import "./routes/i18n-utils";
 
+const localizeBootstrapScript = `
+  (function() {
+    if (typeof globalThis.$localize === 'function') {
+      return;
+    }
+
+    var localize = function(messageParts) {
+      var expressions = Array.prototype.slice.call(arguments, 1);
+
+      if (typeof localize.translate === 'function') {
+        var translation = localize.translate(messageParts, expressions);
+        messageParts = translation[0];
+        expressions = translation[1];
+      }
+
+      var message = messageParts[0] || '';
+
+      for (var index = 1; index < messageParts.length; index += 1) {
+        message += String(expressions[index - 1] ?? '');
+        message += messageParts[index] || '';
+      }
+
+      return message;
+    };
+
+    localize.TRANSLATIONS = {};
+    globalThis.$localize = localize;
+  })();
+`;
+
 export default component$(() => {
   /**
    * The root of a QwikCity site always start with the <QwikCityProvider> component,
@@ -43,6 +73,10 @@ export default component$(() => {
     <QwikCityProvider>
       <head>
         <meta charset="utf-8" />
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={localizeBootstrapScript}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
