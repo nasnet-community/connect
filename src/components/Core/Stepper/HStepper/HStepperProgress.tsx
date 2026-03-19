@@ -12,7 +12,7 @@ interface StepperProgressProps {
 export const StepperProgress = component$((props: StepperProgressProps) => {
   return (
     <div class="container mx-auto">
-      <div class="hidden py-6 md:block">
+      <div class="hidden py-4 md:block lg:py-5">
         <div class="mx-auto max-w-4xl px-4">
           <div class="relative">
             <div class="absolute left-0 top-[2.125rem] h-0.5 w-full">
