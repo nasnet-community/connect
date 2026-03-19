@@ -42,6 +42,18 @@ const isMasterCHR = (routerModels?: RouterModels[]): boolean => {
     return masterRouter?.isCHR === true;
 };
 
+const hasCertificateDependentVPNServer = (vpnServer?: VPNServer): boolean => {
+    if (!vpnServer) {
+        return false;
+    }
+
+    const hasSstpServer = vpnServer.SstpServer?.enabled === true;
+    const hasOpenVpnServer = vpnServer.OpenVpnServer?.some(server => server?.enabled === true) === true;
+    const hasIkev2Server = Boolean(vpnServer.Ikev2Server);
+
+    return hasSstpServer || hasOpenVpnServer || hasIkev2Server;
+};
+
 
 export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
     const configs: RouterConfig[] = [];
@@ -172,8 +184,12 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
 export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[], vpnServer?: VPNServer ): RouterConfig => {
     const configs: RouterConfig[] = [];
 
-    // Handle Certificate configuration - only if VPN Server exists
-    if (usefulServicesConfig.certificate && vpnServer) {
+    const shouldGenerateCertificates =
+        (usefulServicesConfig.certificate?.SelfSigned || usefulServicesConfig.certificate?.LetsEncrypt) &&
+        hasCertificateDependentVPNServer(vpnServer);
+
+    // Handle Certificate configuration only for active VPN servers that require it
+    if (shouldGenerateCertificates && usefulServicesConfig.certificate && vpnServer) {
         configs.push(Certificate(usefulServicesConfig.certificate, vpnServer));
     }
 
