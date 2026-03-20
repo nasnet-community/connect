@@ -196,12 +196,12 @@ export const NavigationExample = component$(() => {
                   Analytics
                 </Link>
                 <Link 
-                  href="/reports" 
+                  href="/integrations" 
                   variant="icon" 
                   prefixIcon={<span>📋</span>}
                   class="block w-full px-3 py-2 rounded-md text-left"
                 >
-                  Reports
+                  Integrations
                 </Link>
               </nav>
               
@@ -267,7 +267,7 @@ export const NavigationExample = component$(() => {
             <div>
               <h5 class="font-semibold mb-3">Resources</h5>
               <nav class="space-y-2">
-                <Link href="/docs" variant="subtle" color="inverse" size="sm">Documentation</Link>
+                <Link href="/" variant="subtle" color="inverse" size="sm">Home</Link>
                 <Link href="/blog" variant="subtle" color="inverse" size="sm">Blog</Link>
                 <Link href="/support" variant="subtle" color="inverse" size="sm">Support</Link>
                 <Link href="/community" variant="subtle" color="inverse" size="sm">Community</Link>

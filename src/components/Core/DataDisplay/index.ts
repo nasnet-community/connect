@@ -54,6 +54,3 @@ export { MobileOverlay } from "./MobileOverlay";
 
 // Touch Gesture exports
 export { TouchGesture } from "./TouchGesture";
-
-// Example exports
-export { MobileOptimizedExample } from "./Examples/MobileOptimizedExample";

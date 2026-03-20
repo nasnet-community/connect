@@ -48,13 +48,3 @@ export {
   getOrCreateSessionId,
   formatExpiryDate,
 } from "./supabaseClient";
-
-// ===== AUTHENTICATION UTILITIES =====
-export type { AuthState } from "./auth";
-
-export {
-  getSupabaseClient,
-  getSupabaseServiceClient,
-  checkAuth,
-  requireAuth,
-} from "./auth";

@@ -29,11 +29,6 @@ export type {
   CSSProperties,
 } from "./types";
 
-export { default as NetworkGraphExample } from "./Example/Example";
-export { default as NetworkTrafficExample } from "./Example/TrafficExample";
-export { default as ConnectionTypeExample } from "./Example/ConnectionTypeExample";
-export { default as NodeTypesExample } from "./Example/NodeExample";
-
 export { NodeRenderer } from "./Node/NodeRenderer";
 export { GraphContainer } from "./Container/GraphContainer";
 export { GraphLegend } from "./Container/GraphLegend";

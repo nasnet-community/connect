@@ -12,16 +12,6 @@ export * from "./utils";
 export * from "./VisuallyHidden";
 
 // ====================
-// DOCUMENTATION EXPORTS
-// ====================
-
-// Documentation components
-export * from "./docs";
-
-// Example components
-export * from "./Examples";
-
-// ====================
 // CONVENIENCE RE-EXPORTS
 // ====================
 

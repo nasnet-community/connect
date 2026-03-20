@@ -15,7 +15,6 @@ export const getFooterSections = (locale: string = "en") => [
   {
     title: $localize`Resources`,
     links: [
-      { name: $localize`Documentation`, href: `/${locale}/docs` },
       { name: $localize`API Reference`, href: `/${locale}/api` },
       { name: $localize`Tutorials`, href: `/${locale}/tutorials` },
       { name: $localize`Community`, href: `/${locale}/community` },

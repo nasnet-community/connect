@@ -244,8 +244,6 @@ All existing Radio implementations will continue to work without any changes. Ne
 **Total Files Modified:**
 - `Radio.tsx` - Enhanced component implementation  
 - `Radio.types.ts` - Extended type definitions
-- `Examples/EnhancedResponsiveExample.tsx` - New comprehensive examples
-- `Examples/index.ts` - Updated exports
 - `ENHANCEMENT_GUIDE.md` - Detailed documentation
 - `Radio.test.tsx` - Enhanced test coverage
 

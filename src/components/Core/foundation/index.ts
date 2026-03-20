@@ -23,7 +23,6 @@ export {
 } from "./EffectTokensVisual";
 export { RTLProvider } from "./RTLProvider";
 export type { RTLDirection, RTLLanguage } from "./RTLProvider";
-export { RTLExample } from "./RTLExample";
 export { ThemeTest } from "./ThemeTest";
 export { ThemeTransitionTest } from "./ThemeTransitionTest";
 export { ThemePersistenceTest } from "./ThemePersistenceTest";
