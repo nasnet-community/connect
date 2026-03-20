@@ -189,8 +189,7 @@ MIT License - see [LICENSE](./LICENSE.md) for details
 - [Core Component System](../README.md)
 - [Design System Guidelines](../../design-system/README.md)
 - [Qwik Documentation](https://qwik.builder.io/)
-- [Accessibility Guidelines](./docs/AccessibilityGuide.md)
 
 ---
 
-**Ready to get started?** Check out our [Quick Start Guide](./docs/GettingStarted.md) or explore individual component documentation in their respective folders.
+**Ready to get started?** Check out the component source, examples, and tests in this folder.

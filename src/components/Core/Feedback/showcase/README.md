@@ -50,7 +50,7 @@ A comprehensive interactive showcase demonstrating all enhanced feedback compone
 ## 🚀 Getting Started
 
 ### Accessing the Showcase
-Navigate to `/docs/components/feedback/showcase` in your application to access the interactive showcase.
+Import the showcase component directly from this folder if you want to use it locally for development or review.
 
 ### Keyboard Shortcuts
 - `1-5`: Navigate between sections

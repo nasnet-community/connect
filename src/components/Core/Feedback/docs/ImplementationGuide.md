@@ -672,7 +672,7 @@ export const Navigation = component$(() => {
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     { label: 'Users', href: '/users', icon: '👥' },
     { label: 'Settings', href: '/settings', icon: '⚙️' },
-    { label: 'Reports', href: '/reports', icon: '📈' },
+    { label: 'Activity', href: '/activity', icon: '📈' },
   ];
   
   const userMenuItems = [

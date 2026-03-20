@@ -28,7 +28,3 @@ export type {
   StepProps,
   StepComponentProps
 } from './types';
-
-// Examples
-export { VStepperContextExample } from './examples/VStepper.context-example';
-export { VStepperManagementExample } from './examples/VStepper.management-example'; 
