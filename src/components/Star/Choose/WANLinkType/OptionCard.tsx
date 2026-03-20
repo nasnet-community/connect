@@ -50,7 +50,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
     >
       {/* Selected indicator badge - only shows when option is selected */}
       {isSelected && (
-        <div class="absolute right-4 top-4 z-10 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
+        <div class="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
           <span class="text-xs font-medium text-success dark:text-success-light">
             {$localize`Selected`}
           </span>
@@ -184,7 +184,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
 
       {/* Hover effect gradient overlay */}
       <div
-        class="card-overlay absolute inset-0 bg-gradient-to-br 
+        class="card-overlay pointer-events-none absolute inset-0 bg-gradient-to-br 
         from-primary-500/10 to-secondary-500/10 opacity-0 transition-opacity
         duration-500 dark:from-primary-500/15 dark:to-secondary-500/15"
       />
@@ -215,5 +215,3 @@ export const OptionCard = component$((props: OptionCardProps) => {
     </div>
   );
 });
-
-

@@ -331,6 +331,14 @@ export const Choose = component$((props: StepProps) => {
     if (selectedFirmware === "OpenWRT") {
       // Remove MikroTik-specific steps and add OpenWRT steps
       const owrtSteps = await createOpenWRTSteps();
+
+      const setupModeStepComplete = Boolean(selectedMode);
+      const setupModeStep = owrtSteps.find(
+        (step) => step.title === $localize`Setup Mode`,
+      );
+      if (setupModeStep) {
+        setupModeStep.isComplete = setupModeStepComplete;
+      }
       // console.log('Adding OpenWRT steps:', owrtSteps); // Debug log
 
       // Create new array with firmware and all OpenWRT steps
@@ -367,7 +375,7 @@ export const Choose = component$((props: StepProps) => {
       // Preserve additional step completion statuses
       const setupModeStepComplete =
         steps.value.find((step) => step.title === $localize`Setup Mode`)
-          ?.isComplete || false;
+          ?.isComplete || Boolean(selectedMode);
       const wanLinkStepComplete =
         steps.value.find((step) => step.title === $localize`WAN Link Type`)
           ?.isComplete || false;
