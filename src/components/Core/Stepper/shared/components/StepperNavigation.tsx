@@ -99,7 +99,7 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
               type="button"
               onClick$={() => onShowHelp$ && onShowHelp$()}
               class={`
-                inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 group
+                relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 group
                 ${isHelpOpen
                   ? 'bg-primary-100 text-primary-700 border-2 border-primary-300 dark:bg-primary-900/50 dark:text-primary-300 dark:border-primary-600'
                   : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-400 dark:hover:border-primary-700'
