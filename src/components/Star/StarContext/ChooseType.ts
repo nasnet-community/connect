@@ -3,7 +3,7 @@ import type { Networks } from "./Utils/Networks";
 
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
-export type FirmwareType = "MikroTik" | "OpenWRT";
+export type FirmwareType = "MikroTik";
 export type WANLinkType = "domestic" | "foreign" | "both";
 export type TrunkInterfaceType = "wired" | "wireless";
 export type Mode = "easy" | "advance";
