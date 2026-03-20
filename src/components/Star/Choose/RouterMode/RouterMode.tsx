@@ -96,12 +96,12 @@ export const RouterMode = component$((props: RouterModeProps) => {
             `}
           >
             {option.disabled ? (
-              <div class="absolute right-4 top-4 rounded-full bg-warning/10 px-3 py-1 text-warning dark:text-warning-light">
+                <div class="pointer-events-none absolute right-4 top-4 rounded-full bg-warning/10 px-3 py-1 text-warning dark:text-warning-light">
                 <span class="text-xs font-medium">{$localize`Coming Soon`}</span>
               </div>
             ) : (
               selectedMode === option.mode && (
-                <div class="absolute right-4 top-4 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
+                  <div class="pointer-events-none absolute right-4 top-4 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
                   <span class="text-xs font-medium text-success dark:text-success-light">
                     {$localize`Selected`}
                   </span>
@@ -168,8 +168,8 @@ export const RouterMode = component$((props: RouterModeProps) => {
             </div>
 
             {!option.disabled && (
-              <div
-                class="absolute inset-0 bg-gradient-to-br from-primary-500/10 
+                <div
+                  class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-500/10 
                 to-secondary-500/10 opacity-0 transition-opacity 
                 group-hover:opacity-100 dark:from-primary-500/15 dark:to-secondary-500/15"
               />

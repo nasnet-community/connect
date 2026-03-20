@@ -1,5 +1,5 @@
-import { component$ } from "@builder.io/qwik";
-import { StepperProgress } from "./HStepperProgress";
+import { component$, $ } from "@builder.io/qwik";
+import { CStepperProgress } from "../CStepper/components/CStepperProgress";
 import { useStepper } from "./useHStepper";
 import type { HStepperProps } from "./HSteppertypes";
 import { HStepperNavigation } from "./HStepperNavigation";
@@ -49,18 +49,29 @@ export const HStepper = component$((props: HStepperProps) => {
   const stepTitle = currentStep.title;
   const stepNumber = activeStep.value + 1;
   const totalSteps = steps.value.length;
+  const progressSteps = steps.value.map((step, index) => ({
+    id: step.id,
+    title: step.title,
+    description: step.description || "",
+    component: step.component,
+    isComplete: index < activeStep.value,
+    isDisabled: step.isDisabled,
+    isOptional: step.isOptional,
+    skippable: step.skippable,
+    validationErrors: step.validationErrors,
+  }));
 
   return (
     <div class="min-h-screen w-full bg-background dark:bg-background-dark">
       <div class="fixed inset-x-0 top-20 z-40 border-b border-border/60 bg-surface/78 shadow-[0_18px_48px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-border-dark/60 dark:bg-surface-dark/78">
-        <div class="container mx-auto px-4 py-3 md:hidden">
+        <div class="container mx-auto px-4 py-2 md:hidden">
           <div class="mx-auto max-w-4xl">
-            <div class="flex items-center justify-between rounded-2xl border border-border/60 bg-surface-secondary/80 px-4 py-3 shadow-sm dark:border-border-dark/60 dark:bg-surface-dark-secondary/80">
+            <div class="flex items-center justify-between rounded-2xl border border-border/60 bg-surface-secondary/80 px-4 py-2.5 shadow-sm dark:border-border-dark/60 dark:bg-surface-dark-secondary/80">
               <div>
                 <p class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-text-secondary dark:text-text-dark-secondary">
                   {`Step ${stepNumber} of ${totalSteps}`}
                 </p>
-                <p class="mt-1 text-sm font-semibold text-text dark:text-white">
+                <p class="mt-0.5 text-sm font-semibold text-text dark:text-white">
                   {stepTitle}
                 </p>
               </div>
@@ -70,10 +81,23 @@ export const HStepper = component$((props: HStepperProps) => {
             </div>
           </div>
         </div>
-        <StepperProgress steps={steps.value} activeStep={activeStep.value} />
+        <div class="hidden md:block">
+          <div class="container mx-auto flex items-center px-4">
+            <div class="mx-auto w-full max-w-4xl">
+              <CStepperProgress
+                steps={progressSteps}
+                activeStep={activeStep.value}
+                onStepClick$={$(() => {})}
+                interactive={false}
+                showMobileLayout={false}
+                compact={true}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="container mx-auto pb-20 pt-24 md:pt-28 lg:pt-32">
+      <div class="container mx-auto pb-20 pt-20 md:pt-20 lg:pt-24">
         {/* Step Management UI (only visible in edit mode) */}
         {props.isEditMode && hasEnhancedFeatures && 'addStep$' in stepperData && (
           <StepperManagement

@@ -119,20 +119,20 @@ export const SetupMode = component$((props: StepProps) => {
               } border`}
           >
             <div
-              class="absolute inset-0 bg-gradient-to-br from-primary-500/5 
+              class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-500/5 
                     to-secondary-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
 
             <div class="relative">
               {option.disabled ? (
-                <div class="absolute right-4 top-4">
+                <div class="pointer-events-none absolute right-4 top-4">
                   <span class="rounded-full bg-warning/10 px-2 py-1 text-sm text-warning dark:text-warning-light">
                     {$localize`Coming Soon`}
                   </span>
                 </div>
               ) : (
                 selectedMode === option.mode && (
-                  <div class="absolute right-4 top-4">
+                  <div class="pointer-events-none absolute right-4 top-4">
                     <span class="rounded-full bg-success/10 px-2 py-1 text-sm text-success">
                       {$localize`Selected`}
                     </span>

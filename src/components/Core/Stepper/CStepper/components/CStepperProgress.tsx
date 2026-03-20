@@ -1,4 +1,4 @@
-import { component$, useSignal, useTask$, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
 import type { CStepMeta } from "../types";
 import type { QRL } from "@builder.io/qwik";
 import type { JSX } from "@builder.io/qwik";
@@ -10,25 +10,36 @@ export interface CStepperProgressProps {
   customIcons?: Record<number, JSX.Element>; // Custom icons for specific steps by id
   useNumbers?: boolean; // Whether to use numbers instead of icons for completed steps
   allowSkipSteps?: boolean; // Whether to allow skipping to completed steps
+  interactive?: boolean;
+  showMobileLayout?: boolean;
+  compact?: boolean;
 }
 
 export const CStepperProgress = component$((props: CStepperProgressProps) => {
-  const { steps, activeStep, onStepClick$, customIcons = {}, useNumbers = false, allowSkipSteps = false } = props;
+  const {
+    steps,
+    activeStep,
+    onStepClick$,
+    customIcons = {},
+    useNumbers = false,
+    allowSkipSteps = false,
+    interactive = true,
+    showMobileLayout = true,
+    compact = false,
+  } = props;
+
+  const rootClass = compact
+    ? "pt-2.5 pb-1.5 flex flex-col items-center justify-center w-full"
+    : "pt-2 pb-8 flex flex-col items-center w-full";
+  const desktopMinHeight = compact ? "58px" : "80px";
+  const progressLineTopClass = compact ? "top-[18px]" : "top-[18px]";
+  const titleMarginClass = compact ? "mt-1.5" : "mt-4";
+  const titleTextClass = compact ? "text-[10px] max-w-[82px]" : "text-xs max-w-[90px]";
+  const optionalTextClass = compact ? "text-[7px]" : "text-[9px]";
 
   const containerRef = useSignal<Element>();
   const scrollContainerRef = useSignal<HTMLDivElement>();
   const hasShownScrollHint = useSignal(false);
-
-  // Calculate which steps to show - always show all steps
-  const visibleSteps = useSignal<number[]>([]);
-  
-  // Calculate visible steps - always show all steps
-  useTask$(({ track }) => {
-    track(() => [steps.length, activeStep]);
-
-    // Always show all steps
-    visibleSteps.value = steps.map((_, i) => i);
-  });
 
   // Auto-scroll to active step for 6+ steps
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -106,14 +117,15 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   };
   
   return (
-    <div class="pt-2 pb-8 flex flex-col items-center w-full" ref={containerRef}>
+    <div class={rootClass} ref={containerRef}>
       {/* Mobile view: vertical stepper */}
-      <div class="flex justify-center w-full sm:hidden">
+      <div class={`${showMobileLayout ? "flex" : "hidden"} justify-center w-full sm:hidden`}>
         <ol class="relative border-l border-gray-200 dark:border-gray-700 ml-4 space-y-6">
         {steps.map((step, index) => {
           const isComplete = activeStep > index;
           const isCurrent = activeStep === index;
           const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
+          const canInteract = interactive && (allowSkipSteps || isCurrent);
           
           return (
             <li key={`step-${step.id}-mobile-${index}`} class="mb-10 ml-4">
@@ -126,11 +138,9 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                     : isCurrent 
                       ? 'bg-white dark:bg-gray-800 border-2 border-yellow-500' 
                       : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600'}
-                ${allowSkipSteps || isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                ${canInteract ? 'cursor-pointer' : 'cursor-default'}`}
                 onClick$={step.isDisabled ? undefined : $(() => {
-                  // When allowSkipSteps is true, allow clicking on any step
-                  // Otherwise, only allow clicking the current step
-                  if (allowSkipSteps || isCurrent) {
+                  if (canInteract) {
                     onStepClick$(index);
                   }
                 })}
@@ -160,9 +170,9 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
       <div class="hidden sm:flex justify-center w-full px-2">
         {/* For 5 or fewer steps: use existing full-width layout */}
         {steps.length <= 5 ? (
-          <div class="relative w-full" style={{ minHeight: "80px" }}>
+          <div class="relative w-full" style={{ minHeight: desktopMinHeight }}>
             {/* Progress line that spans full width */}
-            <div class="absolute top-[18px] left-0 right-0 h-1 z-0">
+            <div class={`absolute left-0 right-0 h-1 z-0 ${progressLineTopClass}`}>
               {/* Progress track (background) */}
               <div
                 class="h-1 bg-gray-200 dark:bg-gray-700 w-full"
@@ -178,30 +188,30 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
             </div>
 
             {/* Step nodes container */}
-            <div class="flex justify-between items-start w-full px-4 pt-0 relative z-10" style={{ minHeight: "80px" }}>
-              {visibleSteps.value.map((stepIndex, displayIndex) => {
-                const step = steps[stepIndex];
+            <div class="flex justify-between items-start w-full px-4 pt-0 relative z-10" style={{ minHeight: desktopMinHeight }}>
+              {steps.map((step, stepIndex) => {
                 const isComplete = activeStep > stepIndex;
                 const isCurrent = activeStep === stepIndex;
                 const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
+                const canInteract = interactive && !step.isDisabled && (allowSkipSteps || isCurrent);
 
                 return (
-                  <div key={`step-${step.id}-display-${displayIndex}`} class="flex flex-col items-center">
+                  <div key={`step-${step.id}-display-${stepIndex}`} class="flex flex-col items-center">
                     {/* Step button */}
                     <button
                       class={`flex items-center justify-center outline-none rounded-full w-9 h-9 transition-all duration-200
                             ${step.isDisabled
                               ? 'cursor-not-allowed opacity-60'
-                              : allowSkipSteps || isCurrent
+                              : canInteract
                                 ? 'cursor-pointer hover:scale-110'
-                                : 'cursor-not-allowed opacity-60'}`}
+                                : 'cursor-default'}`}
                       onClick$={step.isDisabled ? undefined : $(() => {
-                        if (allowSkipSteps || isCurrent) {
+                        if (canInteract) {
                           onStepClick$(stepIndex);
                         }
                       })}
-                      disabled={step.isDisabled}
-                      aria-disabled={step.isDisabled}
+                      disabled={step.isDisabled || !canInteract}
+                      aria-disabled={step.isDisabled || !canInteract}
                       aria-current={isCurrent ? 'step' : undefined}
                       aria-label={`Go to step ${stepIndex + 1}: ${step.title}`}
                       type="button"
@@ -223,9 +233,9 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                     </button>
 
                     {/* Step title */}
-                    <div class={`text-center mt-4 ${isCurrent ? 'font-medium' : ''}`}>
+                    <div class={`text-center ${titleMarginClass} ${isCurrent ? 'font-medium' : ''}`}>
                       <div
-                        class={`text-xs max-w-[90px] break-words hyphens-auto leading-tight
+                        class={`${titleTextClass} break-words hyphens-auto leading-tight
                               ${isCurrent
                                 ? 'text-yellow-700 dark:text-yellow-300'
                                 : isComplete
@@ -236,7 +246,7 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                         {step.title}
                       </div>
                       {step.isOptional && (
-                        <div class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">
+                        <div class={`${optionalTextClass} text-gray-400 dark:text-gray-500 mt-0.5`}>
                           (Optional)
                         </div>
                       )}
@@ -248,7 +258,7 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
           </div>
         ) : (
           /* For 6+ steps: use scrollable container */
-          <div class="relative w-full" style={{ minHeight: "80px" }}>
+          <div class="relative w-full" style={{ minHeight: desktopMinHeight }}>
             {/* Scrollable container with snap */}
             <div
               ref={scrollContainerRef}
@@ -259,21 +269,21 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
               }}
             >
               {/* Inner flex container with consistent gaps */}
-              <div class="flex gap-8 px-8 pt-0 relative" style={{ minHeight: "80px", minWidth: "min-content" }}>
+              <div class="flex gap-8 px-8 pt-0 relative" style={{ minHeight: desktopMinHeight, minWidth: "min-content" }}>
                 {/* Progress line (decorative, not full width) */}
-                <div class="absolute top-[18px] left-0 right-0 h-1 z-0 pointer-events-none">
+                <div class={`absolute left-0 right-0 h-1 z-0 pointer-events-none ${progressLineTopClass}`}>
                   <div class="h-1 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></div>
                 </div>
 
-                {visibleSteps.value.map((stepIndex, displayIndex) => {
-                  const step = steps[stepIndex];
+                {steps.map((step, stepIndex) => {
                   const isComplete = activeStep > stepIndex;
                   const isCurrent = activeStep === stepIndex;
                   const hasErrors = step.validationErrors && step.validationErrors.length > 0 ? true : false;
+                  const canInteract = interactive && !step.isDisabled && (allowSkipSteps || isCurrent);
 
                   return (
                     <div
-                      key={`step-${step.id}-display-${displayIndex}`}
+                      key={`step-${step.id}-display-${stepIndex}`}
                       data-step-index={stepIndex}
                       class="flex flex-col items-center snap-center flex-shrink-0 relative z-10"
                     >
@@ -282,16 +292,16 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                         class={`flex items-center justify-center outline-none rounded-full w-9 h-9 transition-all duration-200
                               ${step.isDisabled
                                 ? 'cursor-not-allowed opacity-60'
-                                : allowSkipSteps || isCurrent
+                                : canInteract
                                   ? 'cursor-pointer hover:scale-110'
-                                  : 'cursor-not-allowed opacity-60'}`}
+                                  : 'cursor-default'}`}
                         onClick$={step.isDisabled ? undefined : $(() => {
-                          if (allowSkipSteps || isCurrent) {
+                          if (canInteract) {
                             onStepClick$(stepIndex);
                           }
                         })}
-                        disabled={step.isDisabled}
-                        aria-disabled={step.isDisabled}
+                        disabled={step.isDisabled || !canInteract}
+                        aria-disabled={step.isDisabled || !canInteract}
                         aria-current={isCurrent ? 'step' : undefined}
                         aria-label={`Go to step ${stepIndex + 1}: ${step.title}`}
                         type="button"
@@ -313,9 +323,9 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                       </button>
 
                       {/* Step title */}
-                      <div class={`text-center mt-4 ${isCurrent ? 'font-medium' : ''}`}>
+                      <div class={`text-center ${titleMarginClass} ${isCurrent ? 'font-medium' : ''}`}>
                         <div
-                          class={`text-xs max-w-[90px] break-words hyphens-auto leading-tight
+                          class={`${titleTextClass} break-words hyphens-auto leading-tight
                                 ${isCurrent
                                   ? 'text-yellow-700 dark:text-yellow-300'
                                   : isComplete
@@ -326,7 +336,7 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
                           {step.title}
                         </div>
                         {step.isOptional && (
-                          <div class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">
+                          <div class={`${optionalTextClass} text-gray-400 dark:text-gray-500 mt-0.5`}>
                             (Optional)
                           </div>
                         )}

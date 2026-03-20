@@ -117,7 +117,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
               `}
             >
               {/* Badges container - positioned at top right */}
-              <div class="absolute right-4 top-4 z-10 flex gap-2">
+              <div class="pointer-events-none absolute right-4 top-4 z-10 flex gap-2">
                 {/* Selected indicator */}
                 {isSelected && !isWirelessDisabled && (
                   <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-500 text-white">
@@ -198,7 +198,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
 
             {/* Hover effect gradient overlay */}
             <div
-              class="card-overlay absolute inset-0 bg-gradient-to-br
+              class="card-overlay pointer-events-none absolute inset-0 bg-gradient-to-br
               from-primary-500/10 to-secondary-500/10 opacity-0 transition-opacity
               duration-500 dark:from-primary-500/15 dark:to-secondary-500/15"
             />
