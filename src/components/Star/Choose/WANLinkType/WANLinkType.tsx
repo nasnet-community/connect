@@ -2,7 +2,6 @@ import {
   $,
   component$,
   useContext,
-  useSignal,
   type PropFunction,
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
@@ -28,7 +27,6 @@ interface WANLinkTypeProps {
 export const WANLinkType = component$((props: WANLinkTypeProps) => {
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
-  const hasUserSelected = useSignal(false);
 
   const handleWANLinkSelect = $((linkType: WANLinkTypeEnum) => {
     // Track WAN link selection
@@ -41,7 +39,6 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     starContext.updateChoose$({
       WANLinkType: linkType,
     });
-    hasUserSelected.value = true;
     props.onComplete$?.();
   });
 
@@ -132,7 +129,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -149,7 +146,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -196,5 +193,3 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     </div>
   );
 });
-
-

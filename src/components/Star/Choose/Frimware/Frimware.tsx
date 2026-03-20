@@ -7,6 +7,7 @@ import {
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
+import { SelectionCard } from "../shared/SelectionCard";
 
 export type FrimwareType = "MikroTik" | "OpenWRT";
 
@@ -119,84 +120,17 @@ export const Frimware = component$((props: FrimwareProps) => {
 
       <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
         {firmwareOptions.map((option) => (
-          <div
+          <SelectionCard
             key={option.id}
-            onClick$={() => handleSelect(option.title, option.disabled)}
-            class={`group relative p-8 backdrop-blur-xl
-              ${option.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
-              ${
-                selectedFirmware === option.title && !option.disabled
-                  ? "border-primary-500 bg-primary-500/10"
-                  : "border-border/50 bg-white/40 dark:bg-surface-dark/40"
-              } rounded-2xl border transition-all duration-300`}
-          >
-            <div
-              class={`absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-500/5 
-              to-secondary-500/5 opacity-0 ${!option.disabled && "group-hover:opacity-100"} transition-opacity duration-300`}
-            />
-
-            <div class="relative">
-              {option.disabled ? (
-                <div class="absolute right-4 top-4">
-                  <span class="rounded-full bg-warning/10 px-2 py-1 text-sm text-warning dark:text-warning-light">
-                    {$localize`Coming Soon`}
-                  </span>
-                </div>
-              ) : (
-                selectedFirmware === option.title && (
-                  <div class="absolute right-4 top-4">
-                    <span class="rounded-full bg-success/10 px-2 py-1 text-sm text-success">
-                      {$localize`Selected`}
-                    </span>
-                  </div>
-                )
-              )}
-
-              <div
-                class={`mb-6 w-fit rounded-xl bg-primary-500/10 p-4 dark:bg-primary-500/5 
-                ${!option.disabled && "group-hover:scale-110"} transition-transform duration-300`}
-              >
-                <div class="text-primary-500 dark:text-primary-400">
-                  {option.icon}
-                </div>
-              </div>
-
-              <h3
-                class={`mb-3 text-2xl font-semibold text-text dark:text-text-dark-default 
-                ${!option.disabled && "group-hover:text-primary-500 dark:group-hover:text-primary-400"} 
-                transition-colors duration-300`}
-              >
-                {option.title}
-              </h3>
-              <p class="text-text-secondary dark:text-text-dark-secondary mb-6">
-                {option.description}
-              </p>
-
-              <div class="space-y-3">
-                {option.features.map((feature) => (
-                  <div
-                    key={feature}
-                    class="text-text-secondary dark:text-text-dark-secondary flex items-center"
-                  >
-                    <svg
-                      class="mr-3 h-5 w-5 text-primary-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            value={option.title}
+            isSelected={selectedFirmware === option.title && !option.disabled}
+            icon={option.icon}
+            title={option.title}
+            description={option.description}
+            features={option.features}
+            onSelect$={handleSelect}
+            disabled={option.disabled}
+          />
         ))}
       </div>
     </div>
