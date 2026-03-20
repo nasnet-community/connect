@@ -8,6 +8,7 @@ import {
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import { SelectionCard } from "../shared/SelectionCard";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 export type FrimwareType = "MikroTik" | "OpenWRT";
 
@@ -105,19 +106,11 @@ export const Frimware = component$((props: FrimwareProps) => {
   ];
 
   return (
-    <div class="space-y-8 px-4">
-      <div class="text-center">
-        <h2
-          class="mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text 
-          text-2xl font-bold text-transparent md:text-3xl"
-        >
-          {$localize`Choose Your Firmware`}
-        </h2>
-        <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-2xl">
-          {$localize`Select the firmware that best suits your needs`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Choose Your Firmware`}
+      description={$localize`Select the firmware that best suits your needs`}
+      descriptionClass="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary"
+    >
       <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
         {firmwareOptions.map((option) => (
           <SelectionCard
@@ -133,6 +126,6 @@ export const Frimware = component$((props: FrimwareProps) => {
           />
         ))}
       </div>
-    </div>
+    </SelectionStepSection>
   );
 });

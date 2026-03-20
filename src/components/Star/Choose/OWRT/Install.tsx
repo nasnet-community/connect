@@ -1,4 +1,5 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 interface OWRTInstallProps {
   isComplete?: boolean;
@@ -7,16 +8,10 @@ interface OWRTInstallProps {
 
 export const OWRTInstall = component$((props: OWRTInstallProps) => {
   return (
-    <div class="space-y-8">
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Install OpenWrt`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
-          {$localize`Follow these steps to install OpenWrt on your router`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Install OpenWrt`}
+      description={$localize`Follow these steps to install OpenWrt on your router`}
+    >
       <div class="mx-auto max-w-4xl space-y-8">
         {/* Step 1: Check compatibility */}
         <div class="rounded-2xl bg-surface/50 p-6 dark:bg-surface-dark/50">
@@ -86,6 +81,6 @@ export const OWRTInstall = component$((props: OWRTInstallProps) => {
           </button>
         </div>
       </div>
-    </div>
+    </SelectionStepSection>
   );
 });

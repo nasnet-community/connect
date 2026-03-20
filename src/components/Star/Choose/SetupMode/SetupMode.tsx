@@ -4,6 +4,7 @@ import type { Mode } from "~/components/Star/StarContext/ChooseType";
 import type { StepProps } from "~/types/step";
 import type { QwikJSX } from "@builder.io/qwik";
 import { SelectionCard } from "../shared/SelectionCard";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 interface ModeOption {
   id: number;
@@ -92,19 +93,11 @@ export const SetupMode = component$((props: StepProps) => {
   ];
 
   return (
-    <div class="space-y-8 px-4">
-      <div class="text-center">
-        <h2
-          class="mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text 
-                   text-2xl font-bold text-transparent md:text-3xl"
-        >
-          {$localize`Choose Your Setup Mode`}
-        </h2>
-        <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-2xl">
-          {$localize`Select the setup mode that best fits your needs and experience level`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Choose Your Setup Mode`}
+      description={$localize`Select the setup mode that best fits your needs and experience level`}
+      descriptionClass="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary"
+    >
       <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
         {modeOptions.map((option) => (
           <SelectionCard
@@ -120,6 +113,6 @@ export const SetupMode = component$((props: StepProps) => {
           />
         ))}
       </div>
-    </div>
+    </SelectionStepSection>
   );
 });

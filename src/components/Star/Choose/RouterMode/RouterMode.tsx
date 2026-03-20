@@ -8,6 +8,7 @@ import type { QwikJSX } from "@builder.io/qwik";
 import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { SelectionCard } from "../shared/SelectionCard";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 
@@ -72,16 +73,10 @@ export const RouterMode = component$((props: RouterModeProps) => {
   ];
 
   return (
-    <div class="space-y-8">
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Select Router Mode`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
-          {$localize`Choose how you want your router to operate in your network`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Select Router Mode`}
+      description={$localize`Choose how you want your router to operate in your network`}
+    >
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {modeOptions.map((option) => (
           <SelectionCard
@@ -126,6 +121,6 @@ export const RouterMode = component$((props: RouterModeProps) => {
           )}
         </div>
       )}
-    </div>
+    </SelectionStepSection>
   );
 });

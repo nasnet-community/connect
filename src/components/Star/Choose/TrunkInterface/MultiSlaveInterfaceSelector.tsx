@@ -7,6 +7,7 @@ import {
   addOccupiedInterface,
 } from "../../utils/InterfaceManagementUtils";
 import type { InterfaceType } from "../../StarContext/CommonType";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 // Define SlaveInterfaceMapping locally since it doesn't exist in StarContext
 interface SlaveInterfaceMapping {
@@ -212,16 +213,11 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
   };
   
   return (
-    <div class="space-y-8">
-      {/* Header */}
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Configure Router + Access Point Connections`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary mx-auto mt-3 max-w-2xl">
-          {$localize`Map each slave router to a master interface`}
-        </p>
-      </div>
+    <SelectionStepSection
+      title={$localize`Configure Router + Access Point Connections`}
+      description={$localize`Map each slave router to a master interface`}
+      descriptionClass="mx-auto mt-3 max-w-2xl text-text-secondary/90 dark:text-text-dark-secondary"
+    >
       
       {/* Master Router Info */}
       {masterRouter && (
@@ -473,6 +469,6 @@ export const MultiSlaveInterfaceSelector = component$((props: MultiSlaveInterfac
           </div>
         )}
       </div>
-    </div>
+    </SelectionStepSection>
   );
 });
