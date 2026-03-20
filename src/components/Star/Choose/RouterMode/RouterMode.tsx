@@ -7,6 +7,7 @@ import {
 import type { QwikJSX } from "@builder.io/qwik";
 import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
+import { SelectionCard } from "../shared/SelectionCard";
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 
@@ -83,98 +84,29 @@ export const RouterMode = component$((props: RouterModeProps) => {
 
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {modeOptions.map((option) => (
-          <div
+          <SelectionCard
             key={option.mode}
-            onClick$={() => handleModeSelect(option.mode, option.disabled)}
-            class={`group relative overflow-hidden rounded-2xl transition-all duration-300
-              ${option.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
-              ${
-                selectedMode === option.mode && !option.disabled
-                  ? "bg-primary-500/10 ring-2 ring-primary-500 dark:bg-primary-500/15"
-                  : "hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/60 bg-surface/50 dark:bg-surface-dark/50"
-              }
-            `}
-          >
-            {option.disabled ? (
-                <div class="pointer-events-none absolute right-4 top-4 rounded-full bg-warning/10 px-3 py-1 text-warning dark:text-warning-light">
-                <span class="text-xs font-medium">{$localize`Coming Soon`}</span>
-              </div>
-            ) : (
-              selectedMode === option.mode && (
-                  <div class="pointer-events-none absolute right-4 top-4 rounded-full bg-success/15 px-3 py-1 dark:bg-success/25">
-                  <span class="text-xs font-medium text-success dark:text-success-light">
-                    {$localize`Selected`}
-                  </span>
-                </div>
-              )
-            )}
-
-            <div class="space-y-6 p-6">
-              <div
-                class={`flex h-16 w-16 items-center justify-center rounded-xl
-                transition-all duration-300 ${!option.disabled && "group-hover:scale-110"}
-                ${
-                  selectedMode === option.mode && !option.disabled
-                    ? "bg-primary-500 text-white"
-                    : "bg-primary-500/15 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400"
-                }`}
-              >
-                {option.icon}
-              </div>
-
-              <div class="space-y-4">
-                <div>
-                  <h3 class="mb-2 text-xl font-semibold text-text dark:text-text-dark-default">
-                    {option.title}
-                  </h3>
-                  <p class="text-text-secondary/90 dark:text-text-dark-secondary/95">
-                    {option.description}
+            value={option.mode}
+            isSelected={selectedMode === option.mode && !option.disabled}
+            icon={option.icon}
+            title={option.title}
+            description={option.description}
+            features={option.features}
+            onSelect$={handleModeSelect}
+            disabled={option.disabled}
+            bodyClass="p-6"
+            headingClass="text-xl"
+            featureTextClass="text-sm"
+            footer={
+              option.mode === "Trunk Mode" ? (
+                <div class="border-t border-border/20 pt-3 dark:border-border-dark/20">
+                  <p class="text-text-secondary/90 text-xs dark:text-text-dark-secondary/95">
+                    {$localize`Requires 2 routers (you'll select the second router next)`}
                   </p>
                 </div>
-
-                <div class="space-y-3">
-                  {option.features.map((feature) => (
-                    <div
-                      key={feature}
-                      class="text-text-secondary/90 dark:text-text-dark-secondary/95 flex items-center"
-                    >
-                      <svg
-                        class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span class="text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Show requirement notice for Trunk Mode */}
-                {option.mode === "Trunk Mode" && (
-                  <div class="border-t border-border/20 pt-3 dark:border-border-dark/20">
-                    <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-xs">
-                      {$localize`Requires 2 routers (you'll select the second router next)`}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {!option.disabled && (
-                <div
-                  class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-500/10 
-                to-secondary-500/10 opacity-0 transition-opacity 
-                group-hover:opacity-100 dark:from-primary-500/15 dark:to-secondary-500/15"
-              />
-            )}
-          </div>
+              ) : undefined
+            }
+          />
         ))}
       </div>
 

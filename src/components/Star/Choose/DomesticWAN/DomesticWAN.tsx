@@ -2,7 +2,6 @@ import {
   $,
   component$,
   useContext,
-  useSignal,
   type PropFunction,
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
@@ -28,7 +27,6 @@ interface DomesticProps {
 export const DomesticWAN = component$((props: DomesticProps) => {
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
-  const hasUserSelected = useSignal(false);
 
   const handleWANLinkSelect = $((linkType: WANLinkType) => {
     // Track WAN link selection
@@ -41,7 +39,6 @@ export const DomesticWAN = component$((props: DomesticProps) => {
     starContext.updateChoose$({
       WANLinkType: linkType,
     });
-    hasUserSelected.value = true;
     props.onComplete$?.();
   });
 
@@ -132,7 +129,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -149,7 +146,7 @@ export const DomesticWAN = component$((props: DomesticProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}

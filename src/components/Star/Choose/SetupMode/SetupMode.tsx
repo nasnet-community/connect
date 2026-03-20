@@ -3,6 +3,7 @@ import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { Mode } from "~/components/Star/StarContext/ChooseType";
 import type { StepProps } from "~/types/step";
 import type { QwikJSX } from "@builder.io/qwik";
+import { SelectionCard } from "../shared/SelectionCard";
 
 interface ModeOption {
   id: number;
@@ -18,8 +19,7 @@ export const SetupMode = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const selectedMode = starContext.state.Choose.Mode;
 
-  const handleSelectMode = $((mode: Mode, disabled?: boolean) => {
-    if (disabled) return;
+  const handleSelectMode = $((mode: Mode) => {
     starContext.updateChoose$({ Mode: mode });
     props.onComplete$();
   });
@@ -107,84 +107,17 @@ export const SetupMode = component$((props: StepProps) => {
 
       <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
         {modeOptions.map((option) => (
-          <div
+          <SelectionCard
             key={option.id}
-            onClick$={() => handleSelectMode(option.mode, option.disabled)}
-            class={`group relative overflow-hidden rounded-2xl p-8 backdrop-blur-xl transition-all duration-300
-              ${option.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
-              ${
-                selectedMode === option.mode && !option.disabled
-                  ? "border-primary-500 bg-primary-500/10 ring-2 ring-primary-500"
-                  : "border-border/50 bg-white/40 hover:bg-primary-500/5 dark:bg-surface-dark/40"
-              } border`}
-          >
-            <div
-              class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-500/5 
-                    to-secondary-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            />
-
-            <div class="relative">
-              {option.disabled ? (
-                <div class="pointer-events-none absolute right-4 top-4">
-                  <span class="rounded-full bg-warning/10 px-2 py-1 text-sm text-warning dark:text-warning-light">
-                    {$localize`Coming Soon`}
-                  </span>
-                </div>
-              ) : (
-                selectedMode === option.mode && (
-                  <div class="pointer-events-none absolute right-4 top-4">
-                    <span class="rounded-full bg-success/10 px-2 py-1 text-sm text-success">
-                      {$localize`Selected`}
-                    </span>
-                  </div>
-                )
-              )}
-
-              <div
-                class={`mb-6 w-fit rounded-xl bg-primary-500/10 p-4 dark:bg-primary-500/5 
-                       ${!option.disabled && "group-hover:scale-110"} transition-transform duration-300`}
-              >
-                <div class="text-primary-500 dark:text-primary-400">
-                  {option.icon}
-                </div>
-              </div>
-
-              <h3
-                class={`mb-3 text-2xl font-semibold text-text dark:text-text-dark-default 
-                      ${!option.disabled && "group-hover:text-primary-500 dark:group-hover:text-primary-400"} 
-                      transition-colors duration-300`}
-              >
-                {option.title}
-              </h3>
-              <p class="text-text-secondary dark:text-text-dark-secondary mb-6">
-                {option.description}
-              </p>
-
-              <div class="space-y-3">
-                {option.features.map((feature) => (
-                  <div
-                    key={feature}
-                    class="text-text-secondary dark:text-text-dark-secondary flex items-center"
-                  >
-                    <svg
-                      class="mr-3 h-5 w-5 text-primary-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            value={option.mode}
+            isSelected={selectedMode === option.mode && !option.disabled}
+            icon={option.icon}
+            title={option.title}
+            description={option.description}
+            features={option.features}
+            onSelect$={handleSelectMode}
+            disabled={option.disabled}
+          />
         ))}
       </div>
     </div>
