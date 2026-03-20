@@ -1,17 +1,12 @@
 import { component$ } from "@builder.io/qwik";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 export const OWRTPackage = component$(() => {
   return (
-    <div class="space-y-8">
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Install Custom Package`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
-          {$localize`Install and configure the custom package using LuCI web interface`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Install Custom Package`}
+      description={$localize`Install and configure the custom package using LuCI web interface`}
+    >
       <div class="mx-auto max-w-4xl space-y-6">
         {/* Important hint */}
         <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
@@ -86,6 +81,6 @@ export const OWRTPackage = component$(() => {
           </div>
         </div>
       </div>
-    </div>
+    </SelectionStepSection>
   );
 });
