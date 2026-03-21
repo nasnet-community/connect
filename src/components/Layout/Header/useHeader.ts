@@ -1,6 +1,17 @@
-import { useSignal, useOnWindow, $ } from "@builder.io/qwik";
+import { useSignal, useOnWindow, useVisibleTask$, $ } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
 import { buildLocalePath, getPathWithoutLocale } from "../../../utils/locale";
+
+const THEME_STORAGE_KEY = "theme";
+const resolveTheme = () => {
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+};
+const applyTheme = (theme: "light" | "dark") => {
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.setAttribute("data-theme", theme);
+  document.documentElement.style.colorScheme = theme;
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+};
 
 export const useHeader = () => {
   const location = useLocation();
@@ -16,16 +27,28 @@ export const useHeader = () => {
   const currentLocale = detectedLocale;
   const locales = ["en", "fa"];
 
+  useVisibleTask$(() => {
+    isDarkMode.value = resolveTheme() === "dark";
+  });
+
   useOnWindow(
     "load",
     $(() => {
-      isDarkMode.value = document.documentElement.classList.contains("dark");
+      isDarkMode.value = resolveTheme() === "dark";
+    }),
+  );
+
+  useOnWindow(
+    "storage",
+    $(() => {
+      isDarkMode.value = resolveTheme() === "dark";
     }),
   );
 
   const toggleTheme$ = $(() => {
-    isDarkMode.value = !isDarkMode.value;
-    document.documentElement.classList.toggle("dark");
+    const nextTheme = isDarkMode.value ? "light" : "dark";
+    applyTheme(nextTheme);
+    isDarkMode.value = nextTheme === "dark";
   });
 
   const toggleMenu$ = $(() => {
