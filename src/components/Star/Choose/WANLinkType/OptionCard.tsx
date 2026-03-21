@@ -31,7 +31,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
       orientation={props.isHorizontal ? "horizontal" : "vertical"}
       overflowVisible={true}
       bodyClass={props.isHorizontal ? "p-6" : "p-6"}
-      mediaClass={props.isHorizontal ? "mt-6 md:mt-0" : "pt-6"}
+      mediaClass={props.isHorizontal ? "mt-6 md:mt-0" : "pt-0"}
       headingClass="text-xl"
       featureTextClass="text-sm"
       ignoreClickWithin={[".network-graph", ".topology-container"]}
