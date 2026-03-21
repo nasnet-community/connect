@@ -59,6 +59,15 @@ const SetupModeStep = component$((props: StepProps) => (
 
 export const Choose = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
+  const stepTitles = {
+    setupMode: $localize`Setup Mode`,
+    wanLinkType: $localize`WAN Link Type`,
+    routerModel: $localize`Router Model`,
+    routerMode: $localize`Router Mode`,
+    slaveRouter: $localize`Slave Router`,
+    interfaceType: $localize`Interface Type`,
+    trunkInterface: $localize`Router + Access Point Interface`,
+  };
 
   // Handle newsletter subscription for router configuration tips
   const handleNewsletterSubscription$ = $(async (subscription: NewsletterSubscription) => {
@@ -100,23 +109,23 @@ export const Choose = component$((props: StepProps) => {
   });
 
   // Create step building functions to avoid serialization issues
-  const createMikroTikSteps = $((routerModeComplete: boolean = false) => {
+  const createMikroTikSteps = $(() => {
     const baseSteps: StepItem[] = [
       {
         id: 1,
-        title: $localize`Setup Mode`,
+        title: stepTitles.setupMode,
         component: SetupModeStep,
         isComplete: false,
       },
       {
         id: 2,
-        title: $localize`WAN Link Type`,
+        title: stepTitles.wanLinkType,
         component: WANLinkStep,
         isComplete: false,
       },
       {
         id: 3,
-        title: $localize`Router Model`,
+        title: stepTitles.routerModel,
         component: RouterModelStep,
         isComplete: false,
       },
@@ -128,9 +137,9 @@ export const Choose = component$((props: StepProps) => {
     if (starContext.state.Choose.Mode === "advance") {
       baseSteps.push({
         id: nextId,
-        title: $localize`Router Mode`,
+        title: stepTitles.routerMode,
         component: RouterModeStep,
-        isComplete: routerModeComplete,
+        isComplete: false,
       });
       nextId++;
     }
@@ -139,7 +148,7 @@ export const Choose = component$((props: StepProps) => {
     if (starContext.state.Choose.Mode === "advance" && starContext.state.Choose.RouterMode === "Trunk Mode") {
       baseSteps.push({
         id: nextId,
-        title: $localize`Slave Router`,
+        title: stepTitles.slaveRouter,
         component: SlaveRouterModelStep,
         isComplete: false,
       });
@@ -148,7 +157,7 @@ export const Choose = component$((props: StepProps) => {
       // Add Interface Type step first
       baseSteps.push({
         id: nextId,
-        title: $localize`Interface Type`,
+        title: stepTitles.interfaceType,
         component: InterfaceTypeStep,
         isComplete: false,
       });
@@ -157,7 +166,7 @@ export const Choose = component$((props: StepProps) => {
       // Add Trunk Interface step after interface type selection
       baseSteps.push({
         id: nextId,
-        title: $localize`Router + Access Point Interface`,
+        title: stepTitles.trunkInterface,
         component: TrunkInterfaceStep,
         isComplete: false,
       });
@@ -171,19 +180,19 @@ export const Choose = component$((props: StepProps) => {
   const steps = useSignal<StepItem[]>([
     {
       id: 1,
-      title: $localize`Setup Mode`,
+      title: stepTitles.setupMode,
       component: SetupModeStep,
       isComplete: false,
     },
     {
       id: 2,
-      title: $localize`WAN Link Type`,
+      title: stepTitles.wanLinkType,
       component: WANLinkStep,
       isComplete: false,
     },
     {
       id: 3,
-      title: $localize`Router Model`,
+      title: stepTitles.routerModel,
       component: RouterModelStep,
       isComplete: false,
     },
@@ -211,7 +220,10 @@ export const Choose = component$((props: StepProps) => {
   // Handle router configuration step changes for the MikroTik flow
   useTask$(async ({ track }) => {
     const selectedMode = track(() => starContext.state.Choose.Mode);
+    const selectedWANLinkType = track(() => starContext.state.Choose.WANLinkType);
     const selectedRouterMode = track(() => starContext.state.Choose.RouterMode);
+    const selectedTrunkInterfaceType = track(() => starContext.state.Choose.TrunkInterfaceType);
+    const routerModels = track(() => starContext.state.Choose.RouterModels);
 
     // console.log('=== FIRMWARE/ROUTER MODE CHANGE DETECTED ==='); // Debug log
     // console.log('Previous steps count:', steps.value.length); // Debug log
@@ -235,53 +247,46 @@ export const Choose = component$((props: StepProps) => {
       starContext.updateChoose$({ RouterModels: updatedModels });
     }
 
-    const routerModeStepComplete =
-      steps.value.find((step: StepItem) => step.title === $localize`Router Mode`)
-        ?.isComplete || false;
+    const getCurrentStepCompletion = (title: string) => {
+      return steps.value.find((step: StepItem) => step.title === title)?.isComplete || false;
+    };
 
-    // Preserve additional step completion statuses
-    const setupModeStepComplete =
-      steps.value.find((step: StepItem) => step.title === $localize`Setup Mode`)
-        ?.isComplete || Boolean(selectedMode);
-    const wanLinkStepComplete =
-      steps.value.find((step: StepItem) => step.title === $localize`WAN Link Type`)
-        ?.isComplete || false;
-    const routerModelStepComplete =
-      steps.value.find((step: StepItem) => step.title === $localize`Router Model`)
-        ?.isComplete || false;
+    const setStepCompletion = (targetSteps: StepItem[], title: string, isComplete: boolean) => {
+      const step = targetSteps.find((existingStep) => existingStep.title === title);
+      if (step) {
+        step.isComplete = isComplete;
+      }
+    };
 
-    // If RouterMode exists in context, it should be considered complete
-    const routerModeComplete = routerModeStepComplete || Boolean(selectedRouterMode);
-    const mikrotikSteps = await createMikroTikSteps(routerModeComplete);
-
-    // Update completion statuses for preserved steps
-    const setupModeStep = mikrotikSteps.find(
-      (step) => step.title === $localize`Setup Mode`,
+    const previousRouterModeStepComplete = getCurrentStepCompletion(stepTitles.routerMode);
+    const hasMasterRouter = routerModels.some((routerModel) => routerModel.isMaster);
+    const hasSlaveRouter = routerModels.some((routerModel) => !routerModel.isMaster);
+    const masterRouterInterfaceConfigured = routerModels.some(
+      (routerModel) => routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
     );
-    if (setupModeStep) {
-      setupModeStep.isComplete = setupModeStepComplete;
-    }
-
-    const wanLinkStep = mikrotikSteps.find(
-      (step) => step.title === $localize`WAN Link Type`,
+    const slaveRouterInterfaceConfigured = routerModels.some(
+      (routerModel) => !routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
     );
-    if (wanLinkStep) {
-      wanLinkStep.isComplete = wanLinkStepComplete;
-    }
+    const isTrunkMode = selectedMode === "advance" && selectedRouterMode === "Trunk Mode";
+    const completionState = {
+      setupMode: Boolean(selectedMode),
+      wanLinkType: Boolean(selectedWANLinkType),
+      routerModel: hasMasterRouter,
+      routerMode: selectedMode === "advance" ? Boolean(selectedRouterMode) : false,
+      slaveRouter: isTrunkMode ? hasSlaveRouter : false,
+      interfaceType: isTrunkMode ? Boolean(selectedTrunkInterfaceType) : false,
+      trunkInterface:
+        isTrunkMode && masterRouterInterfaceConfigured && slaveRouterInterfaceConfigured,
+    };
 
-    const routerModelStep = mikrotikSteps.find(
-      (step) => step.title === $localize`Router Model`,
-    );
-    if (routerModelStep) {
-      routerModelStep.isComplete = routerModelStepComplete;
-    }
-
-    const routerModeStep = mikrotikSteps.find(
-      (step) => step.title === $localize`Router Mode`,
-    );
-    if (routerModeStep) {
-      routerModeStep.isComplete = routerModeComplete;
-    }
+    const mikrotikSteps = await createMikroTikSteps();
+    setStepCompletion(mikrotikSteps, stepTitles.setupMode, completionState.setupMode);
+    setStepCompletion(mikrotikSteps, stepTitles.wanLinkType, completionState.wanLinkType);
+    setStepCompletion(mikrotikSteps, stepTitles.routerModel, completionState.routerModel);
+    setStepCompletion(mikrotikSteps, stepTitles.routerMode, completionState.routerMode);
+    setStepCompletion(mikrotikSteps, stepTitles.slaveRouter, completionState.slaveRouter);
+    setStepCompletion(mikrotikSteps, stepTitles.interfaceType, completionState.interfaceType);
+    setStepCompletion(mikrotikSteps, stepTitles.trunkInterface, completionState.trunkInterface);
 
     const newSteps = [
       ...mikrotikSteps,
@@ -299,10 +304,10 @@ export const Choose = component$((props: StepProps) => {
     }
 
     // If RouterMode is complete with Trunk Mode, navigate to Slave Router step (only in advance mode)
-    const routerModeJustCompleted = !routerModeStepComplete && Boolean(selectedRouterMode);
+    const routerModeJustCompleted = !previousRouterModeStepComplete && completionState.routerMode;
     if (selectedMode === "advance" && routerModeJustCompleted && selectedRouterMode === "Trunk Mode") {
       const slaveRouterIndex = newSteps.findIndex(
-        (step) => step.title === $localize`Slave Router`,
+        (step) => step.title === stepTitles.slaveRouter,
       );
       if (slaveRouterIndex !== -1) {
         activeStep.value = slaveRouterIndex;
