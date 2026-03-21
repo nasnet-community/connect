@@ -40,13 +40,47 @@ export const NetworkTopologyGraph = component$(
 
     // Add expanded state
     const isExpanded = useSignal(false);
-    const isTouch = useSignal(false);
+    const dialogRef = useSignal<HTMLDialogElement>();
 
-    // Detect touch device for better UX
-    useVisibleTask$(() => {
-      isTouch.value = window.matchMedia(
-        "(hover: none) and (pointer: coarse)",
-      ).matches;
+    useVisibleTask$(({ track, cleanup }) => {
+      track(() => isExpanded.value);
+      track(() => dialogRef.value);
+
+      const dialog = dialogRef.value;
+
+      if (!dialog) {
+        return;
+      }
+
+      if (isExpanded.value) {
+        if (!dialog.open) {
+          dialog.showModal();
+        }
+      } else if (dialog.open) {
+        dialog.close();
+      }
+
+      if (!isExpanded.value) {
+        return;
+      }
+
+      const previousOverflow = document.body.style.overflow;
+      const previousOverscrollBehavior = document.body.style.overscrollBehavior;
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape" || event.key === "Esc") {
+          isExpanded.value = false;
+        }
+      };
+
+      document.body.style.overflow = "hidden";
+      document.body.style.overscrollBehavior = "contain";
+      window.addEventListener("keydown", onKeyDown);
+
+      cleanup(() => {
+        document.body.style.overflow = previousOverflow;
+        document.body.style.overscrollBehavior = previousOverscrollBehavior;
+        window.removeEventListener("keydown", onKeyDown);
+      });
     });
 
     // Handlers
@@ -55,6 +89,9 @@ export const NetworkTopologyGraph = component$(
     });
     const handleCollapse = $(() => {
       isExpanded.value = false;
+    });
+    const stopPropagation = $((event: Event) => {
+      event.stopPropagation();
     });
 
     const renderNodeIcon = (type: string) => {
@@ -120,46 +157,28 @@ export const NetworkTopologyGraph = component$(
       return destinationTypes;
     };
 
-    return (
+    const renderGraphSurface = (expanded: boolean) => (
       <div
-        class={`topology-container relative h-44${isExpanded.value ? " expanded" : ""}`}
-        tabIndex={0}
-        onClick$={() => {
-          if (!isExpanded.value) handleExpand();
-        }}
-        onKeyDown$={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !isExpanded.value) {
-            handleExpand();
-          }
-          if ((e.key === "Escape" || e.key === "Esc") && isExpanded.value) {
-            handleCollapse();
-          }
-        }}
-        aria-expanded={isExpanded.value}
-        role="region"
-        aria-label={title}
+        class={[
+          "network-graph rounded-xl dark:border dark:border-gray-800 dark:bg-gray-900/95",
+          expanded
+            ? "expanded-graph h-full w-full overflow-hidden border border-amber-200/70 bg-amber-50/95 p-6 shadow-[0_32px_80px_-24px_rgba(15,23,42,0.65)] sm:p-8"
+            : "preview-graph relative h-full w-full overflow-hidden bg-amber-50/50 p-5 shadow-sm",
+        ].join(" ")}
       >
-        <div class="network-graph relative h-full w-full rounded-xl bg-amber-50/50 p-5 shadow-sm transition-all duration-500 ease-in-out dark:border dark:border-gray-800 dark:bg-gray-900/95">
-          {/* Graph header with title, legend, and close icon button (when expanded) */}
-          <div
-            class={`graph-header mb-4 hidden ${isExpanded.value ? "expanded-header" : "relative items-center justify-between"}`}
-          >
-            {/* Centered legend and title */}
-            <div
-              class={`legend-center flex w-full flex-col items-center ${isExpanded.value ? "absolute left-1/2 top-6 z-10 -translate-x-1/2" : ""}`}
-              style={isExpanded.value ? "pointer-events: auto;" : ""}
-            >
-              <span class="mb-1 text-sm font-medium text-amber-800 dark:text-secondary-300">
+        {expanded && (
+          <div class="graph-header expanded-header mb-4 flex min-h-[72px] items-start justify-center">
+            <div class="legend-center flex max-w-[calc(100%-5rem)] flex-col items-center gap-2 rounded-xl bg-amber-50/95 px-4 py-3 text-center shadow-[0_10px_35px_-22px_rgba(15,23,42,0.45)] dark:border dark:border-gray-700/60 dark:bg-gray-900/95 sm:px-6">
+              <span class="text-sm font-medium text-amber-800 dark:text-secondary-300">
                 {title}
               </span>
-              <div class="flex items-center space-x-3">
+              <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 <div class="flex items-center">
                   <div class="mr-1.5 h-2.5 w-2.5 rounded-full bg-amber-500 dark:bg-secondary-500"></div>
                   <span class="text-xs text-amber-800 dark:text-secondary-300">
                     {$localize`Traffic Path`}
                   </span>
                 </div>
-                {/* Add legend for domestic and foreign connections */}
                 {showDomesticLegend && (
                   <div class="flex items-center">
                     <div class="mr-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
@@ -176,227 +195,265 @@ export const NetworkTopologyGraph = component$(
                 </div>
               </div>
             </div>
-            {/* Close icon button - visible when expanded, top right of expanded graph */}
-            {isExpanded.value && (
-              <button
-                class="close-graph-btn absolute right-4 top-4 z-20 rounded-full bg-amber-100 p-2 text-amber-800 shadow-md hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                onClick$={$((e) => {
-                  e.stopPropagation();
-                  handleCollapse();
-                })}
-                aria-label={$localize`Close expanded network graph`}
-                tabIndex={0}
-                type="button"
-              >
-                <LuX class="h-6 w-6" />
-              </button>
-            )}
-          </div>
 
-          {/* Network topology visualization with expandable height on hover */}
-          <div class="topology-content relative flex h-24 items-center justify-center transition-all duration-500 ease-in-out">
-            {/* SVG-based network topology graph */}
-            <svg
-              class="h-full w-full"
-              viewBox="0 0 400 200"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              {/* Render connections between nodes with animated lines */}
-              {connections.map((conn, index) => {
-                const fromNode = nodes[conn.from];
-                const toNode = nodes[conn.to];
-                
-                // Safety check: skip rendering if nodes don't exist
-                if (!fromNode || !toNode) {
-                  console.warn(`NetworkTopologyGraph: Missing node for connection ${conn.from} -> ${conn.to}`);
-                  return null;
-                }
-                
-                const x1 = fromNode.x + 16;
-                const y1 = fromNode.y;
-                const x2 = toNode.x - 16;
-                const y2 = toNode.y;
-
-                let arrowPoints = "";
-                if (y1 === y2) {
-                  arrowPoints = `${x2},${y2} ${x2 - 10},${y2 - 5} ${x2 - 10},${y2 + 5}`;
-                } else if (x1 < x2 && y1 < y2) {
-                  arrowPoints = `${x2},${y2} ${x2 - 10},${y2 - 5} ${x2 - 3},${y2 - 12}`;
-                } else if (x1 < x2 && y1 > y2) {
-                  arrowPoints = `${x2},${y2} ${x2 - 10},${y2 + 5} ${x2 - 3},${y2 + 12}`;
-                }
-
-                // Use the connection color from props (amber in light mode)
-                const lineColor = conn.color;
-                // Modern color palette with better visibility in dark mode
-                const domesticPacketColor = "rgb(16, 185, 129)"; // Emerald-500
-                const foreignPacketColor = "rgb(168, 85, 247)"; // Purple-500
-
-                const packetColor = conn.isDomestic
-                  ? domesticPacketColor
-                  : foreignPacketColor;
-
-                const destinations = findDestinationTypes(conn);
-
-                return (
-                  <g key={`conn-${index}`}>
-                    {/* Path for dashed line */}
-                    <line
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke={lineColor}
-                      class="traffic-path"
-                      stroke-width="2.5"
-                      stroke-dasharray="4,3"
-                    >
-                      <animate
-                        attributeName="stroke-dashoffset"
-                        from="8"
-                        to="0"
-                        dur="1s"
-                        repeatCount="indefinite"
-                      />
-                    </line>
-
-                    {/* Arrow pointing to destination node */}
-                    <polygon
-                      points={arrowPoints}
-                      fill={lineColor}
-                      class="traffic-path-arrow"
-                    />
-
-                    {/* For the User to Router connection, render domestic packets */}
-                    {destinations.hasDomestic && (
-                      <>
-                        {/* Domestic packet 1 */}
-                        <circle r="3" fill={domesticPacketColor} opacity="0.9">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-
-                        {/* Domestic packet 2 (offset start) */}
-                        <circle r="2" fill={domesticPacketColor} opacity="0.7">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            begin={`${0.7 + index * 0.2}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-                      </>
-                    )}
-
-                    {/* For the User to Router connection, render foreign packets */}
-                    {destinations.hasForeign && (
-                      <>
-                        {/* Foreign packet 1 */}
-                        <circle r="3" fill={foreignPacketColor} opacity="0.9">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            begin="0.3s"
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-
-                        {/* Foreign packet 2 (offset start) */}
-                        <circle r="2" fill={foreignPacketColor} opacity="0.7">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            begin={`${1.0 + index * 0.2}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-                      </>
-                    )}
-
-                    {/* For all other connections, render standard packets with appropriate color */}
-                    {!(conn.from === 0 && conn.to === 1) && (
-                      <>
-                        {/* Animated packet 1 */}
-                        <circle r="3" fill={packetColor} opacity="0.9">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-
-                        {/* Animated packet 2 (offset start) */}
-                        <circle r="2" fill={packetColor} opacity="0.7">
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${2 + index * 0.5}s`}
-                            begin={`${0.7 + index * 0.2}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-
-                        {/* Animated packet 3 (faster and smaller) */}
-                        <circle
-                          r="1.5"
-                          fill="#ffffff"
-                          stroke={packetColor}
-                          stroke-width="1"
-                          opacity="0.8"
-                        >
-                          <animateMotion
-                            path={`M${x1},${y1} L${x2},${y2}`}
-                            dur={`${1.5 + index * 0.3}s`}
-                            begin={`${1.3 + index * 0.1}s`}
-                            repeatCount="indefinite"
-                            rotate="auto"
-                          />
-                        </circle>
-                      </>
-                    )}
-                  </g>
-                );
+            <button
+              class="close-graph-btn absolute right-0 top-0 rounded-full bg-amber-100 p-2 text-amber-800 shadow-md transition-colors hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              onClick$={$((event) => {
+                event.stopPropagation();
+                handleCollapse();
               })}
+              aria-label={$localize`Close expanded network graph`}
+              tabIndex={0}
+              type="button"
+            >
+              <LuX class="h-6 w-6" />
+            </button>
+          </div>
+        )}
 
-              {/* Render nodes (devices, routers, servers) */}
-              {nodes.map((node, index) => (
-                <g key={index} transform={`translate(${node.x}, ${node.y})`}>
-                  {/* Node highlight effect */}
-                  <circle
-                    r="22"
-                    fill="rgba(251, 191, 36, 0.2)"
-                    class="node-highlight dark:fill-secondary-500/20"
+        <div
+          class={[
+            "topology-content relative flex items-center justify-center",
+            expanded
+              ? "h-[calc(100%-5.5rem)] min-h-[280px] sm:min-h-[360px]"
+              : "h-24",
+          ].join(" ")}
+        >
+          <svg
+            class="h-full w-full"
+            viewBox="0 0 400 200"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {connections.map((conn, index) => {
+              const fromNode = nodes[conn.from];
+              const toNode = nodes[conn.to];
+
+              if (!fromNode || !toNode) {
+                console.warn(
+                  `NetworkTopologyGraph: Missing node for connection ${conn.from} -> ${conn.to}`,
+                );
+                return null;
+              }
+
+              const x1 = fromNode.x + 16;
+              const y1 = fromNode.y;
+              const x2 = toNode.x - 16;
+              const y2 = toNode.y;
+
+              let arrowPoints = "";
+              if (y1 === y2) {
+                arrowPoints = `${x2},${y2} ${x2 - 10},${y2 - 5} ${x2 - 10},${y2 + 5}`;
+              } else if (x1 < x2 && y1 < y2) {
+                arrowPoints = `${x2},${y2} ${x2 - 10},${y2 - 5} ${x2 - 3},${y2 - 12}`;
+              } else if (x1 < x2 && y1 > y2) {
+                arrowPoints = `${x2},${y2} ${x2 - 10},${y2 + 5} ${x2 - 3},${y2 + 12}`;
+              }
+
+              const lineColor = conn.color;
+              const domesticPacketColor = "rgb(16, 185, 129)";
+              const foreignPacketColor = "rgb(168, 85, 247)";
+              const packetColor = conn.isDomestic
+                ? domesticPacketColor
+                : foreignPacketColor;
+              const destinations = findDestinationTypes(conn);
+
+              return (
+                <g key={`conn-${index}`}>
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke={lineColor}
+                    class="traffic-path"
+                    stroke-width="2.5"
+                    stroke-dasharray="4,3"
+                  >
+                    <animate
+                      attributeName="stroke-dashoffset"
+                      from="8"
+                      to="0"
+                      dur="1s"
+                      repeatCount="indefinite"
+                    />
+                  </line>
+
+                  <polygon
+                    points={arrowPoints}
+                    fill={lineColor}
+                    class="traffic-path-arrow"
                   />
 
-                  <foreignObject x="-16" y="-16" width="32" height="32">
-                    <div class="flex h-8 w-8 items-center justify-center">
-                      {renderNodeIcon(node.type)}
-                    </div>
-                  </foreignObject>
-                  <text
-                    x="0"
-                    y={node.y < 100 ? "-20" : "25"}
-                    text-anchor="middle"
-                    fill={node.y < 100 ? "#eab308" : "#f59e0b"}
-                    class="dark:fill-secondary-300"
-                    font-size="11"
-                    font-weight="bold"
-                  >
-                    {node.label}
-                  </text>
+                  {destinations.hasDomestic && (
+                    <>
+                      <circle r="3" fill={domesticPacketColor} opacity="0.9">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      <circle r="2" fill={domesticPacketColor} opacity="0.7">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${0.7 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
+
+                  {destinations.hasForeign && (
+                    <>
+                      <circle r="3" fill={foreignPacketColor} opacity="0.9">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin="0.3s"
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      <circle r="2" fill={foreignPacketColor} opacity="0.7">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${1.0 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
+
+                  {!(conn.from === 0 && conn.to === 1) && (
+                    <>
+                      <circle r="3" fill={packetColor} opacity="0.9">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      <circle r="2" fill={packetColor} opacity="0.7">
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${2 + index * 0.5}s`}
+                          begin={`${0.7 + index * 0.2}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                      <circle
+                        r="1.5"
+                        fill="#ffffff"
+                        stroke={packetColor}
+                        stroke-width="1"
+                        opacity="0.8"
+                      >
+                        <animateMotion
+                          path={`M${x1},${y1} L${x2},${y2}`}
+                          dur={`${1.5 + index * 0.3}s`}
+                          begin={`${1.3 + index * 0.1}s`}
+                          repeatCount="indefinite"
+                          rotate="auto"
+                        />
+                      </circle>
+                    </>
+                  )}
                 </g>
-              ))}
-            </svg>
-          </div>
+              );
+            })}
+
+            {nodes.map((node, index) => (
+              <g key={index} transform={`translate(${node.x}, ${node.y})`}>
+                <circle
+                  r="22"
+                  fill="rgba(251, 191, 36, 0.2)"
+                  class="node-highlight dark:fill-secondary-500/20"
+                />
+
+                <foreignObject x="-16" y="-16" width="32" height="32">
+                  <div class="flex h-8 w-8 items-center justify-center">
+                    {renderNodeIcon(node.type)}
+                  </div>
+                </foreignObject>
+                <text
+                  x="0"
+                  y={node.y < 100 ? "-20" : "25"}
+                  text-anchor="middle"
+                  fill={node.y < 100 ? "#eab308" : "#f59e0b"}
+                  class="dark:fill-secondary-300"
+                  font-size="11"
+                  font-weight="bold"
+                >
+                  {node.label}
+                </text>
+              </g>
+            ))}
+          </svg>
         </div>
+      </div>
+    );
+
+    return (
+      <div
+        class={`topology-container relative h-44 cursor-zoom-in${isExpanded.value ? " overlay-open" : ""}`}
+        tabIndex={0}
+        onClick$={() => {
+          if (!isExpanded.value) handleExpand();
+        }}
+        onKeyDown$={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !isExpanded.value) {
+            handleExpand();
+          }
+          if ((e.key === "Escape" || e.key === "Esc") && isExpanded.value) {
+            handleCollapse();
+          }
+        }}
+        aria-expanded={isExpanded.value}
+        role="region"
+        aria-label={title}
+      >
+        <div class="preview-shell h-full w-full">
+          {renderGraphSurface(false)}
+        </div>
+
+        {isExpanded.value && (
+          <dialog
+            ref={dialogRef}
+            class="expanded-graph-dialog"
+            aria-label={title}
+            onClick$={$((event) => {
+              if (event.target === dialogRef.value) {
+                handleCollapse();
+              }
+            })}
+            onCancel$={$((event) => {
+              event.preventDefault();
+              handleCollapse();
+            })}
+          >
+            <div
+              class="expanded-graph-overlay flex min-h-screen w-screen items-center justify-center p-4 sm:p-6"
+            >
+              <div
+                class="expanded-graph-backdrop absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
+                onClick$={handleCollapse}
+              />
+              <div
+                class="expanded-graph-panel relative z-10 h-[min(80vh,600px)] w-[min(90vw,800px)]"
+                onClick$={stopPropagation}
+              >
+                {renderGraphSurface(true)}
+              </div>
+            </div>
+          </dialog>
+        )}
 
         {/* Add CSS directly inside component */}
         <style
@@ -405,125 +462,92 @@ export const NetworkTopologyGraph = component$(
           z-index: 1;
           overflow: visible;
         }
-        .graph-header.expanded-header {
-          position: static !important;
-          display: block !important;
-          min-height: 60px;
+        .preview-graph {
+          transition: transform 220ms ease-out, box-shadow 220ms ease-out, opacity 220ms ease-out;
         }
-        .graph-header .legend-center {
-          position: static;
-          left: unset;
-          top: unset;
-          transform: none;
+        .topology-container:not(.expanded):hover .preview-graph {
+          transform: translateY(-2px) scale(1.01);
+          box-shadow: 0 18px 30px -18px rgba(15, 23, 42, 0.35);
         }
-        .topology-container.expanded .graph-header.expanded-header .legend-center {
-          position: absolute;
-          left: 50%;
-          top: 24px;
-          transform: translateX(-50%);
-          z-index: 10;
-          width: auto;
-          background: rgba(255,251,235,0.95);
-          border-radius: 0.75rem;
-          padding: 0.5rem 1.5rem;
-          box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+        .topology-content {
+          transition: height 280ms ease-out, opacity 220ms ease-out, transform 280ms ease-out;
         }
-        .dark .topology-container.expanded .graph-header.expanded-header .legend-center {
-          background: rgba(31, 41, 55, 0.95);
-          border: 1px solid rgba(75, 85, 99, 0.4);
-          box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+        .expanded-graph-dialog {
+          margin: 0;
+          height: 100vh;
+          width: 100vw;
+          max-height: none;
+          max-width: none;
+          border: none;
+          padding: 0;
+          background: transparent;
+          overflow: visible;
         }
-        .topology-container.expanded .graph-header.expanded-header .close-graph-btn {
-          z-index: 20;
+        .expanded-graph-dialog::backdrop {
+          background: transparent;
         }
-        .graph-header { position: relative; }
-        .graph-header button[type="button"] {
-          z-index: 1;
+        .expanded-graph-overlay {
+          animation: overlayFadeIn 220ms ease-out;
         }
-
-        /* Use .expanded instead of :hover for expanded state */
-        .topology-container.expanded .network-graph {
-          position: fixed;
-          transform: translate(-50%, -50%);
-          left: 50%;
-          top: 50%;
-          width: 90vw;
-          max-width: 800px;
-          height: 80vh;
-          max-height: 600px;
-          z-index: 9000 !important;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-          background-color: rgb(255 251 235 / 0.98);
+        .expanded-graph-backdrop {
+          animation: overlayBackdropIn 220ms ease-out;
         }
-        
-        /* Show the graph header when the graph is expanded */
-        .topology-container.expanded .graph-header {
-          display: flex;
+        .expanded-graph-panel {
+          transform-origin: center;
+          animation: overlayPanelIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
         }
-        
-        /* Apply a higher z-index to the backdrop overlay */
-        .topology-container.expanded::before {
-          content: '';
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.4);
-          z-index: 8900 !important;
-        }
-        
-        /* Make sure the domestic option has a higher z-index than the foreign option */
-        .domestic-option .topology-container.expanded .network-graph {
-          z-index: 9100 !important;
-        }
-        
-        .domestic-option .topology-container.expanded::before {
-          z-index: 9000 !important;
-        }
-        
-        .dark .topology-container.expanded .network-graph {
+        .dark .expanded-graph {
           background-color: rgb(17, 24, 39, 0.98);
-          border: 1px solid rgb(55, 65, 81);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+          border-color: rgb(55, 65, 81);
         }
-        
-        .topology-container.expanded .topology-content {
-          height: calc(80vh - 150px);
-          max-height: 450px;
-        }
-        
 
-        
-        /* Node highlight pulse animation */
         .node-highlight {
           animation: pulse 2s infinite ease-in-out;
         }
-        
+
         @keyframes pulse {
           0% { opacity: 0.3; r: 20; }
           50% { opacity: 0.6; r: 22; }
           100% { opacity: 0.3; r: 20; }
         }
-        
-        /* Adjust animation speed when hovered */
-        .topology-container.expanded .node-highlight {
+
+        @keyframes overlayFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes overlayBackdropIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes overlayPanelIn {
+          from {
+            opacity: 0;
+            transform: translateY(16px) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .expanded-graph .node-highlight {
           animation-duration: 3s;
         }
-        
-        .topology-container.expanded circle {
+
+        .expanded-graph circle {
           animation-duration: 3s;
         }
-        
-        /* Apply secondary color to traffic paths in dark mode - using Connect's design system secondary color */
+
         .dark .traffic-path {
-          stroke: #4972ba !important; /* Using the exact secondary-500 color from tailwind.config.js */
+          stroke: #4972ba !important;
           stroke-opacity: 1 !important;
           stroke-width: 3px !important;
         }
-        
+
         .dark .traffic-path-arrow {
-          fill: #4972ba !important; /* Using the exact secondary-500 color from tailwind.config.js */
+          fill: #4972ba !important;
         }
       `}
         />
@@ -531,5 +555,3 @@ export const NetworkTopologyGraph = component$(
     );
   },
 );
-
-

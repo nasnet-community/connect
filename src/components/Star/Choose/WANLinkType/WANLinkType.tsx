@@ -56,7 +56,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
         $localize`May have limited access to some foreign content`,
       ],
       trafficGraph: (
-        <div class="domestic-only-option mt-6">
+        <div class="domestic-only-option">
           <NetworkTopologyGraph
             nodes={domesticOnlyNetworkNodes}
             connections={domesticOnlyNetworkConnections}
@@ -77,7 +77,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
         $localize`Suitable for international connectivity`,
       ],
       trafficGraph: (
-        <div class="foreign-only-option mt-6">
+        <div class="foreign-only-option">
           <NetworkTopologyGraph
             nodes={foreignNetworkNodes}
             connections={foreignNetworkConnections}
@@ -162,6 +162,26 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
         .both-links-option {
           position: relative;
           z-index: 1;
+        }
+
+        .selection-card:has(.topology-container.overlay-open),
+        .selection-card:has(.topology-container.overlay-open) .selection-card-media,
+        .domestic-only-option:has(.topology-container.overlay-open),
+        .foreign-only-option:has(.topology-container.overlay-open),
+        .both-links-option:has(.topology-container.overlay-open) {
+          position: relative;
+          z-index: 9500 !important;
+          isolation: isolate;
+        }
+
+        .selection-card:has(.topology-container.overlay-open) {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          transform: none !important;
+        }
+
+        body:has(.topology-container.overlay-open) .selection-card:not(:has(.topology-container.overlay-open)) {
+          z-index: 0;
         }
         
         /* Hide other graphs when one is being hovered */
