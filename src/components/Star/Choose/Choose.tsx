@@ -320,10 +320,10 @@ export const Choose = component$((props: StepProps) => {
   return (
     <div class="container mx-auto w-full px-4">
       {/* Newsletter Section - Router Configuration Tips */}
-      <div class="mb-12">
+      <div class="mb-8 md:mb-10">
         <Newsletter
           variant="horizontal"
-          size="md"
+          size="sm"
           title={$localize`Stay Updated with NASNET Connect`}
           description={$localize`Get the latest product updates, new features, and important announcements delivered directly to your inbox.`}
           placeholder={$localize`your.email@example.com`}
@@ -333,10 +333,12 @@ export const Choose = component$((props: StepProps) => {
           theme="branded"
           glassmorphism={false}
           animated={true}
-          touchOptimized={true}
-          surfaceElevation="elevated"
+          touchOptimized={false}
+          surfaceElevation="base"
+          compact={true}
+          showPrivacyNotice={false}
           onSubscribe$={handleNewsletterSubscription$}
-          class="max-w-6xl mx-auto backdrop-blur-sm bg-gradient-to-br from-primary-50/80 to-secondary-50/80 dark:from-primary-dark-950/80 dark:to-secondary-dark-950/80 border border-primary-200/50 dark:border-primary-dark-700/50 shadow-lg hover:shadow-xl transition-all duration-300"
+          class="max-w-5xl mx-auto backdrop-blur-sm bg-gradient-to-br from-primary-50/80 to-secondary-50/80 dark:from-primary-dark-950/80 dark:to-secondary-dark-950/80 border border-primary-200/50 dark:border-primary-dark-700/50 shadow-md hover:shadow-lg transition-all duration-300"
         />
       </div>
 
