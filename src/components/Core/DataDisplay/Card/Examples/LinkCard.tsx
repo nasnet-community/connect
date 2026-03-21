@@ -29,7 +29,7 @@ export default component$(() => {
           </CardFooter>
         </Card>
 
-        <Card href="/docs" hoverEffect="border" class="w-full md:w-1/2">
+        <Card href="/" hoverEffect="border" class="w-full md:w-1/2">
           <CardHeader>
             <h3 class="text-lg font-medium">Internal Link Card</h3>
           </CardHeader>
@@ -42,7 +42,7 @@ export default component$(() => {
           </CardBody>
           <CardFooter class="flex justify-end">
             <span class="text-sm text-blue-600 dark:text-blue-400">
-              View docs →
+              Go home →
             </span>
           </CardFooter>
         </Card>

@@ -16,7 +16,7 @@ export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
     Choose: {
       Mode: "" as Mode,
-      Firmware: "" as FirmwareType,
+      Firmware: "MikroTik" as FirmwareType,
       RouterMode: "" as RouterModeType,
       WANLinkType: "" as WANLinkType,
       RouterModels: [],

@@ -17,7 +17,7 @@ export const StarContainer = component$(() => {
   } = useStarContainer();
 
   return (
-    <div class="container mx-auto w-full px-4 pt-24">
+    <div class="w-full pb-10">
       <HStepper
         steps={stepsStore.steps}
         mode={state.Choose.Mode}

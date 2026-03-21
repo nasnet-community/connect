@@ -238,7 +238,7 @@ None. All enhancements are additive and backward compatible.
 
 ## Examples
 
-See the `Examples/EnhancedResponsiveExample.tsx` file for comprehensive examples of all new features.
+The enhanced Radio component previously included companion example files for the new feature set.
 
 ## Testing
 

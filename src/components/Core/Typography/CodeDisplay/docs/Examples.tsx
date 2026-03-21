@@ -633,23 +633,25 @@ LOG_LEVEL=debug`}
           
           <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
             <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              User Authentication Endpoint
+              Newsletter Subscription Endpoint
             </h4>
             
             <p class="text-gray-700 dark:text-gray-300 mb-4">
-              Authenticate a user with email and password. Returns a JWT token on success.
+              Subscribe a contact to the newsletter and queue the request for delivery.
             </p>
             
             <div class="space-y-4">
               <div>
                 <h5 class="font-medium text-gray-900 dark:text-white mb-2">Request</h5>
                 <CodeBlock
-                  code={`POST /api/auth/login
+                  code={`POST /api/newsletter/subscribe
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "secretpassword"
+  "firstName": "John",
+  "lastName": "Doe",
+  "source": "docs-example"
 }`}
                   language="json"
                   title="Request"
@@ -661,16 +663,8 @@ Content-Type: application/json
                 <CodeBlock
                   code={`{
   "success": true,
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": 123,
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "user"
-    },
-    "expiresAt": "2024-01-16T10:30:00Z"
-  }
+  "message": "Successfully subscribed to newsletter",
+  "jobId": "3d9a5cb2-1f1e-4b69-9b95-412fd497b2a5"
 }`}
                   language="json"
                   title="Success Response (200)"

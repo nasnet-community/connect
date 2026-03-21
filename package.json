@@ -18,7 +18,6 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "build": "qwik build",
-    "build-storybook": "storybook build",
     "build.client": "vite build && npm run i18n-translate",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
     "build.server": "vite build -c adapters/vercel-edge/vite.config.ts",
@@ -36,7 +35,6 @@
     "serve": "node server/entry.node-server",
     "start": "vite --open --mode ssr",
     "start:prod": "node server/entry.express",
-    "storybook": "storybook dev -p 6006",
     "qwik": "qwik"
   },
   "devDependencies": {
@@ -70,8 +68,6 @@
     "prettier-plugin-tailwindcss": "^0.5.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "storybook": "^8.2.8",
-    "storybook-framework-qwik": "^0.4.2",
     "supabase-auth-helpers-qwik": "^0.0.3",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.6",

@@ -108,27 +108,25 @@ export default component$(() => {
           nonce={nonce}
           dangerouslySetInnerHTML={`
         (function() {
+          var THEME_STORAGE_KEY = 'theme';
+
           function setTheme(theme) {
-            document.documentElement.className = theme;
-            localStorage.setItem('theme', theme);
+            var root = document.documentElement;
+            var normalizedTheme = theme === 'dark' ? 'dark' : 'light';
+            root.classList.toggle('dark', normalizedTheme === 'dark');
+            root.setAttribute('data-theme', normalizedTheme);
+            root.style.colorScheme = normalizedTheme;
+            localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
           }
-          const theme = localStorage.getItem('theme');
+          var theme = localStorage.getItem(THEME_STORAGE_KEY);
+          var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
  
-          if (theme) {
+          if (theme === 'dark' || theme === 'light') {
             setTheme(theme);
           } else {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              setTheme('dark');}
-              else {
-                setTheme('light');}}
-        })();
-        window.addEventListener('load', function() {
-          const themeSwitch = document.getElementById('hide-checkbox');
-          if (themeSwitch) {
-            themeSwitch.checked = localStorage.getItem('theme') === 'light' ? true : false;
+            setTheme(systemTheme);
           }
-        }
-        );
+        })();
       `}
         ></script>
       </head>

@@ -82,7 +82,7 @@ export const Examples = component$(() => {
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Button Links:</p>
                 <div class="flex flex-wrap gap-2">
                   <Link href="/signup" variant="button" color="primary">Sign Up</Link>
-                  <Link href="/login" variant="button" color="secondary">Log In</Link>
+                  <Link href="/contact" variant="button" color="secondary">Contact Sales</Link>
                   <Link href="/trial" variant="button" color="accent">Free Trial</Link>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export const Examples = component$(() => {
             <pre class="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-x-auto">
 {`<Link href="/docs" variant="standard">Documentation</Link>
 <Link href="/signup" variant="button" color="primary">Sign Up</Link>
-<Link href="/login" variant="button" color="secondary">Log In</Link>`}
+<Link href="/contact" variant="button" color="secondary">Contact Sales</Link>`}
             </pre>
           </div>
 

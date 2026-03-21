@@ -2,7 +2,6 @@ import {
   $,
   component$,
   useContext,
-  useSignal,
   type PropFunction,
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
@@ -10,6 +9,7 @@ import { LuGlobe, LuGlobe2, LuSettings } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { OptionCard } from "./OptionCard";
 import { NetworkTopologyGraph } from "./NetworkTopologyGraph";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 import {
   domesticOnlyNetworkNodes,
   domesticOnlyNetworkConnections,
@@ -28,7 +28,6 @@ interface WANLinkTypeProps {
 export const WANLinkType = component$((props: WANLinkTypeProps) => {
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
-  const hasUserSelected = useSignal(false);
 
   const handleWANLinkSelect = $((linkType: WANLinkTypeEnum) => {
     // Track WAN link selection
@@ -41,7 +40,6 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     starContext.updateChoose$({
       WANLinkType: linkType,
     });
-    hasUserSelected.value = true;
     props.onComplete$?.();
   });
 
@@ -114,17 +112,10 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
   ];
 
   return (
-    <div class="space-y-8">
-      {/* Header section with title and description */}
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`WAN Link Configuration`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
-          {$localize`Choose your internet connection setup for optimal routing`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`WAN Link Configuration`}
+      description={$localize`Choose your internet connection setup for optimal routing`}
+    >
       <div class="mx-auto max-w-5xl space-y-6">
         {/* First row - Two vertical cards side by side */}
         <div class="grid gap-6 md:grid-cols-2">
@@ -132,7 +123,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -149,7 +140,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
             <OptionCard
               key={String(option.value)}
               value={option.value}
-              isSelected={hasUserSelected.value && wanLinkType === option.value}
+              isSelected={wanLinkType === option.value}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -193,8 +184,6 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
         }
       `}
       />
-    </div>
+    </SelectionStepSection>
   );
 });
-
-

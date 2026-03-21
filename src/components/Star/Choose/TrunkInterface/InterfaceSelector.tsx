@@ -12,6 +12,14 @@ interface InterfaceSelectorProps {
   onComplete$?: PropFunction<() => void>;
 }
 
+interface InterfaceSection {
+  id: "master" | "slave";
+  title: string;
+  interfaces: string[];
+  selectedInterface?: string;
+  isSlaveInterface?: boolean;
+}
+
 export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
@@ -165,12 +173,9 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   };
 
 
-  const renderInterfaceSection = (
-    title: string,
-    interfaces: string[],
-    selectedInterface?: string,
-    isSlaveInterface: boolean = false
-  ) => {
+  const renderInterfaceSection = (section: InterfaceSection) => {
+    const { id, title, interfaces, selectedInterface, isSlaveInterface = false } = section;
+
     if (interfaces.length === 0) return null;
 
     const routerModel = isSlaveInterface
@@ -178,7 +183,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
       : routerModels.find(rm => rm.isMaster)?.Model;
 
     return (
-      <div class="space-y-4">
+      <div key={id} class="space-y-4">
         {/* Compact Section Header */}
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-text dark:text-text-dark-default">
@@ -204,7 +209,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
         }`}>
           {interfaces.map((interfaceName, index) => (
             <div
-              key={interfaceName}
+              key={`${id}-${routerModel ?? "router"}-${interfaceName}`}
               onClick$={() => handleInterfaceSelect(interfaceName, isSlaveInterface)}
               style={`animation-delay: ${index * 30}ms`}
               class={`
@@ -290,6 +295,25 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
     );
   };
 
+  const interfaceSections: InterfaceSection[] = [
+    {
+      id: "master",
+      title: isTrunkMode ? $localize`Master Router Interface` : $localize`Router Interface`,
+      interfaces: availableInterfaces.master,
+      selectedInterface: starContext.state.Choose.RouterModels.find(rm => rm.isMaster)?.MasterSlaveInterface,
+    },
+  ];
+
+  if (isTrunkMode && availableInterfaces.slave) {
+    interfaceSections.push({
+      id: "slave",
+      title: $localize`Slave Router Interface`,
+      interfaces: availableInterfaces.slave,
+      selectedInterface: starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)?.MasterSlaveInterface,
+      isSlaveInterface: true,
+    });
+  }
+
   return (
     <div class="space-y-6">
       {/* Compact Header */}
@@ -308,22 +332,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
       {/* Interface sections */}
       <div class="mx-auto max-w-4xl space-y-6">
-        {/* Master router interfaces */}
-        {renderInterfaceSection(
-          isTrunkMode ? $localize`Master Router Interface` : $localize`Router Interface`,
-          availableInterfaces.master,
-          starContext.state.Choose.RouterModels.find(rm => rm.isMaster)?.MasterSlaveInterface
-        )}
-
-        {/* Slave router interfaces (only in Trunk Mode) */}
-        {isTrunkMode &&
-          availableInterfaces.slave &&
-          renderInterfaceSection(
-            $localize`Slave Router Interface`,
-            availableInterfaces.slave,
-            starContext.state.Choose.RouterModels.find(rm => !rm.isMaster)?.MasterSlaveInterface,
-            true
-          )}
+        {interfaceSections.map((section) => renderInterfaceSection(section))}
       </div>
 
       {/* Compact Selection Status */}

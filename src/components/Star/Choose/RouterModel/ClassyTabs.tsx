@@ -94,7 +94,7 @@ const ClassyTabItem = component$<TabItemProps>((props) => {
       type="button"
       onClick$={() => onSelect$(category.id)}
       class={`
-        relative px-6 py-3 rounded-xl font-semibold text-sm
+        relative rounded-xl px-4 py-2.5 text-sm font-semibold
         transition-all duration-300 ease-out
         backdrop-blur-sm border
         ${colorScheme.bg} ${colorScheme.text} ${colorScheme.border} ${colorScheme.shadow}
@@ -108,7 +108,7 @@ const ClassyTabItem = component$<TabItemProps>((props) => {
       )}
 
       {/* Content */}
-      <div class="relative flex items-center gap-3 z-10">
+      <div class="relative z-10 flex items-center gap-2.5">
         <div class={`${isActive ? 'text-white' : 'text-current'}`}>
           {getIcon(category.id)}
         </div>
@@ -118,7 +118,7 @@ const ClassyTabItem = component$<TabItemProps>((props) => {
         {category.routers.length > 0 && (
           <div
             class={`
-              min-w-[22px] h-5 px-2 rounded-full text-xs font-bold
+              h-5 min-w-[20px] rounded-full px-1.5 text-[11px] font-bold
               flex items-center justify-center
               transition-all duration-300
               ${isActive 
@@ -139,7 +139,7 @@ export const ClassyTabs = component$<ClassyTabsProps>((props) => {
   const { categories, activeCategory, onSelect$ } = props;
 
   return (
-    <div class="flex flex-col items-center space-y-8">
+    <div class="flex flex-col items-center px-1 sm:px-0">
       {/* Tab Container */}
       <div class="relative flex items-center justify-center">
         {/* Elegant Background Panel */}
@@ -150,7 +150,7 @@ export const ClassyTabs = component$<ClassyTabsProps>((props) => {
         <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-secondary-400 to-primary-400 rounded-full" />
 
         {/* Tab Items */}
-        <div class="relative flex items-center p-3 gap-2">
+        <div class="relative flex items-center gap-1.5 p-2">
           {categories.map((category, index) => (
             <div key={category.id} class="relative">
               <ClassyTabItem
@@ -166,32 +166,6 @@ export const ClassyTabs = component$<ClassyTabsProps>((props) => {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Active Category Description and Features */}
-      <div class="text-center">
-        {categories.find(cat => cat.id === activeCategory) && (
-          <div class="max-w-4xl mx-auto space-y-6">
-            {/* Description */}
-            <div class="px-6 py-4 rounded-lg bg-white/10 dark:bg-black/20 backdrop-blur-sm border border-white/20 dark:border-white/10">
-              <p class="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
-                {categories.find(cat => cat.id === activeCategory)?.description}
-              </p>
-            </div>
-            
-            {/* Features - Simplified */}
-            <div class="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
-              {categories.find(cat => cat.id === activeCategory)?.features.slice(0, 4).map((feature, index) => (
-                <span
-                  key={index}
-                  class="px-4 py-2 rounded-full bg-primary-500/10 text-primary-700 dark:text-primary-300 text-sm font-medium border border-primary-200/40 dark:border-primary-700/40"
-                >
-                  {feature}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessBandSelector } from "./WirelessBandSelector";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
+import { SelectionStepSection } from "../shared/SelectionStepSection";
 
 interface TrunkInterfaceProps {
   isComplete?: boolean;
@@ -83,17 +84,10 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
   });
 
   return (
-    <div class="space-y-8">
-      {/* Header section */}
-      <div class="text-center">
-        <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-          {$localize`Configure Router + Access Point Interface`}
-        </h2>
-        <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-3 max-w-2xl">
-          {$localize`Select the specific interfaces for your trunk connection`}
-        </p>
-      </div>
-
+    <SelectionStepSection
+      title={$localize`Configure Router + Access Point Interface`}
+      description={$localize`Select the specific interfaces for your trunk connection`}
+    >
       {/* Conditionally show WirelessBandSelector for wireless or InterfaceSelector for wired */}
       {interfaceType === "wireless" ? (
         <WirelessBandSelector
@@ -108,6 +102,6 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
           onComplete$={handleInterfaceSelectorComplete}
         />
       )}
-    </div>
+    </SelectionStepSection>
   );
 });
