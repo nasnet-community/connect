@@ -1,390 +1,119 @@
-// import { describe, it, expect } from "vitest";
-// import { 
-//   generateNetworks, 
-//   hasDomesticLink, 
-//   getAvailableBaseNetworks, 
-//   getVPNNetworkNames,
-//   getForeignNetworkNames,
-//   getDomesticNetworkNames
-// } from "./networksUtils";
-// import type { WANLinkType } from "~/components/Star/StarContext/ChooseType";
-// import type { VPNClient } from "~/components/Star/StarContext/Utils/VPNClientType";
-// import type { WANLinks } from "~/components/Star/StarContext/WANType";
+import { describe, expect, it } from "vitest";
 
-// describe("Networks Utilities", () => {
-//   describe("hasDomesticLink", () => {
-//     it("should return true when WANLinkType is 'domestic'", () => {
-//       expect(hasDomesticLink("domestic")).toBe(true);
-//     });
+import {
+  generateNetworks,
+  getAvailableBaseNetworks,
+  getDomesticNetworkNames,
+  getForeignNetworkNames,
+  getVPNClientNetworks,
+  hasDomesticLink,
+} from "./networksUtils";
 
-//     it("should return true when WANLinkType is 'both'", () => {
-//       expect(hasDomesticLink("both")).toBe(true);
-//     });
+const buildWanLinks = () =>
+  ({
+    Foreign: {
+      WANConfigs: [
+        { name: "ISP-Primary", InterfaceConfig: { InterfaceName: "ether1" } },
+        { InterfaceConfig: { InterfaceName: "ether2" } },
+      ],
+    },
+    Domestic: {
+      WANConfigs: [
+        { name: "Local-Primary", InterfaceConfig: { InterfaceName: "ether3" } },
+      ],
+    },
+  }) as any;
 
-//     it("should return false when WANLinkType is 'foreign'", () => {
-//       expect(hasDomesticLink("foreign")).toBe(false);
-//     });
-//   });
+const buildVpnClient = () =>
+  ({
+    Wireguard: [{ Name: "WG-Main" }],
+    OpenVPN: [{}],
+    IKeV2: [{ Name: "IKev2-Branch" }],
+  }) as any;
 
-//   describe("getAvailableBaseNetworks", () => {
-//     it("should include Split and Domestic when domestic link is available", () => {
-//       const networks = getAvailableBaseNetworks("both");
-//       expect(networks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//     });
+describe("networksUtils", () => {
+  // Verifies domestic-aware logic only treats domestic and dual-link modes as domestic-capable.
+  it("detects whether the selected WAN mode includes a domestic uplink", () => {
+    expect(hasDomesticLink("domestic")).toBe(true);
+    expect(hasDomesticLink("both")).toBe(true);
+    expect(hasDomesticLink("foreign")).toBe(false);
+  });
 
-//     it("should exclude Split and Domestic when no domestic link", () => {
-//       const networks = getAvailableBaseNetworks("foreign");
-//       expect(networks).toEqual(["Foreign", "VPN"]);
-//     });
+  // Verifies the base-network availability flags derive Split from domestic plus either foreign or VPN connectivity.
+  it("builds base-network availability flags from the current WAN and VPN inputs", () => {
+    expect(getAvailableBaseNetworks("both", true, false)).toEqual({
+      Foreign: true,
+      VPN: false,
+      Domestic: true,
+      Split: true,
+    });
 
-//     it("should include Split and Domestic for domestic-only configuration", () => {
-//       const networks = getAvailableBaseNetworks("domestic");
-//       expect(networks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//     });
-//   });
+    expect(getAvailableBaseNetworks("domestic", false, false)).toEqual({
+      Foreign: false,
+      VPN: false,
+      Domestic: true,
+      Split: false,
+    });
+  });
 
-//   describe("getVPNNetworkNames", () => {
-//     it("should return empty array when no VPN client provided", () => {
-//       const vpnNames = getVPNNetworkNames();
-//       expect(vpnNames).toEqual([]);
-//     });
+  // Verifies WAN link names fall back to numbered defaults when a config omits a label.
+  it("extracts foreign and domestic network names with stable fallback labels", () => {
+    const wanLinks = buildWanLinks();
 
-//     it("should return empty array when VPN client is empty", () => {
-//       const vpnClient: VPNClient = {};
-//       const vpnNames = getVPNNetworkNames(vpnClient);
-//       expect(vpnNames).toEqual([]);
-//     });
+    expect(getForeignNetworkNames(wanLinks)).toEqual([
+      "ISP-Primary",
+      "Foreign-Link-2",
+    ]);
+    expect(getDomesticNetworkNames(wanLinks, "both")).toEqual(["Local-Primary"]);
+    expect(getDomesticNetworkNames(wanLinks, "foreign")).toEqual([]);
+  });
 
-//     it("should generate names for Wireguard clients", () => {
-//       const vpnClient: VPNClient = {
-//         Wireguard: [
-//           {
-//             InterfacePrivateKey: "key1",
-//             InterfaceAddress: "10.0.0.2/24",
-//             PeerPublicKey: "pubkey1",
-//             PeerEndpointAddress: "server1.com",
-//             PeerEndpointPort: 51820,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//           {
-//             InterfacePrivateKey: "key2",
-//             InterfaceAddress: "10.0.0.3/24",
-//             PeerPublicKey: "pubkey2",
-//             PeerEndpointAddress: "server2.com",
-//             PeerEndpointPort: 51821,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//         ],
-//       };
-//       const vpnNames = getVPNNetworkNames(vpnClient);
-//       expect(vpnNames).toEqual(["Wireguard-1", "Wireguard-2"]);
-//     });
+  // Verifies VPN client names are grouped by protocol and receive protocol-specific fallbacks when a name is missing.
+  it("extracts VPN client networks by protocol using current fallback naming", () => {
+    const result = getVPNClientNetworks(buildVpnClient());
 
-//     it("should generate names for multiple VPN types", () => {
-//       const vpnClient: VPNClient = {
-//         Wireguard: [
-//           {
-//             InterfacePrivateKey: "key1",
-//             InterfaceAddress: "10.0.0.2/24",
-//             PeerPublicKey: "pubkey1",
-//             PeerEndpointAddress: "server1.com",
-//             PeerEndpointPort: 51820,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//         ],
-//         OpenVPN: [
-//           {
-//             Server: { Address: "vpn.example.com", Port: 1194 },
-//             AuthType: "Credentials",
-//             Auth: "sha256",
-//           },
-//         ],
-//         PPTP: [
-//           {
-//             ConnectTo: "pptp.example.com",
-//             Credentials: { Username: "user", Password: "pass" },
-//           },
-//         ],
-//       };
-//       const vpnNames = getVPNNetworkNames(vpnClient);
-//       expect(vpnNames).toEqual(["Wireguard-1", "OpenVPN-1", "PPTP-1"]);
-//     });
-//   });
+    expect(result.Wireguard).toEqual(["WG-Main"]);
+    expect(result.OpenVPN).toEqual(["OpenVPN-1"]);
+    expect(result.IKev2).toEqual(["IKev2-Branch"]);
+  });
 
-//   describe("getForeignNetworkNames", () => {
-//     it("should return empty array when no WAN links provided", () => {
-//       const foreignNames = getForeignNetworkNames();
-//       expect(foreignNames).toEqual([]);
-//     });
+  // Verifies the aggregate network object combines base flags, WAN labels, and VPN client labels into the current return shape.
+  it("generates the complete Networks object for a dual-link router with VPN clients", () => {
+    const result = generateNetworks("both", buildWanLinks(), buildVpnClient());
 
-//     it("should return empty array when no Foreign WANConfigs", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: { WANConfigs: [] },
-//       };
-//       const foreignNames = getForeignNetworkNames(wanLinks);
-//       expect(foreignNames).toEqual([]);
-//     });
+    expect(result.BaseNetworks).toEqual({
+      Foreign: true,
+      VPN: true,
+      Domestic: true,
+      Split: true,
+    });
+    expect(result.ForeignNetworks).toEqual(["ISP-Primary", "Foreign-Link-2"]);
+    expect(result.DomesticNetworks).toEqual(["Local-Primary"]);
+    expect(result.VPNClientNetworks).toEqual({
+      Wireguard: ["WG-Main"],
+      OpenVPN: ["OpenVPN-1"],
+      IKev2: ["IKev2-Branch"],
+    });
+  });
 
-//     it("should extract Foreign network names from WANConfigs", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "ISP-Primary", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { name: "ISP-Secondary", InterfaceConfig: { InterfaceName: "ether2" } },
-//           ],
-//         },
-//       };
-//       const foreignNames = getForeignNetworkNames(wanLinks);
-//       expect(foreignNames).toEqual(["ISP-Primary", "ISP-Secondary"]);
-//     });
+  // Verifies Split stays disabled when the router has only a domestic uplink and no foreign or VPN path to split between.
+  it("keeps Split disabled when domestic is the only available path", () => {
+    const result = generateNetworks("domestic", {
+      Domestic: {
+        WANConfigs: [
+          { name: "Local-Only", InterfaceConfig: { InterfaceName: "ether1" } },
+        ],
+      },
+    } as any);
 
-//     it("should generate default names when config name is missing", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { InterfaceConfig: { InterfaceName: "ether2" } } as any,
-//           ],
-//         },
-//       };
-//       const foreignNames = getForeignNetworkNames(wanLinks);
-//       expect(foreignNames).toEqual(["Foreign-Link-1", "Foreign-Link-2"]);
-//     });
-//   });
-
-//   describe("getDomesticNetworkNames", () => {
-//     it("should return empty array when no domestic link available", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: { WANConfigs: [] },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "Should-Not-Appear", InterfaceConfig: { InterfaceName: "ether1" } },
-//           ],
-//         },
-//       };
-//       const domesticNames = getDomesticNetworkNames(wanLinks, "foreign");
-//       expect(domesticNames).toEqual([]);
-//     });
-
-//     it("should return empty array when no Domestic WANConfigs", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: { WANConfigs: [] },
-//         Domestic: { WANConfigs: [] },
-//       };
-//       const domesticNames = getDomesticNetworkNames(wanLinks, "both");
-//       expect(domesticNames).toEqual([]);
-//     });
-
-//     it("should extract Domestic network names when domestic link is available", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: { WANConfigs: [] },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "Local-Provider-1", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { name: "Local-Provider-2", InterfaceConfig: { InterfaceName: "ether2" } },
-//           ],
-//         },
-//       };
-//       const domesticNames = getDomesticNetworkNames(wanLinks, "both");
-//       expect(domesticNames).toEqual(["Local-Provider-1", "Local-Provider-2"]);
-//     });
-
-//     it("should generate default names when config name is missing", () => {
-//       const wanLinks: WANLinks = {
-//         Foreign: { WANConfigs: [] },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { InterfaceConfig: { InterfaceName: "ether2" } } as any,
-//           ],
-//         },
-//       };
-//       const domesticNames = getDomesticNetworkNames(wanLinks, "domestic");
-//       expect(domesticNames).toEqual(["Domestic-Link-1", "Domestic-Link-2"]);
-//     });
-//   });
-
-//   describe("generateNetworks", () => {
-//     it("should generate Networks with Split when domestic link is available", () => {
-//       const wanLinkType: WANLinkType = "both";
-//       const networks = generateNetworks(wanLinkType);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//       expect(networks.ForeignNetworks).toBeUndefined();
-//       expect(networks.DomesticNetworks).toBeUndefined();
-//       expect(networks.VPNNetworks).toBeUndefined();
-//     });
-
-//     it("should exclude Split when no domestic link", () => {
-//       const wanLinkType: WANLinkType = "foreign";
-//       const networks = generateNetworks(wanLinkType);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN"]);
-//       expect(networks.ForeignNetworks).toBeUndefined();
-//       expect(networks.DomesticNetworks).toBeUndefined();
-//       expect(networks.VPNNetworks).toBeUndefined();
-//     });
-
-//     it("should include Foreign and Domestic networks from WANLinks", () => {
-//       const wanLinkType: WANLinkType = "both";
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "ISP-Primary", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { name: "ISP-Backup", InterfaceConfig: { InterfaceName: "ether2" } },
-//           ],
-//         },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "Local-Provider", InterfaceConfig: { InterfaceName: "ether3" } },
-//           ],
-//         },
-//       };
-      
-//       const networks = generateNetworks(wanLinkType, wanLinks);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//       expect(networks.ForeignNetworks).toEqual(["ISP-Primary", "ISP-Backup"]);
-//       expect(networks.DomesticNetworks).toEqual(["Local-Provider"]);
-//       expect(networks.VPNNetworks).toBeUndefined();
-//     });
-
-//     it("should include VPN client names when VPN clients are configured", () => {
-//       const wanLinkType: WANLinkType = "both";
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "Main-ISP", InterfaceConfig: { InterfaceName: "ether1" } },
-//           ],
-//         },
-//       };
-//       const vpnClient: VPNClient = {
-//         Wireguard: [
-//           {
-//             InterfacePrivateKey: "key1",
-//             InterfaceAddress: "10.0.0.2/24",
-//             PeerPublicKey: "pubkey1",
-//             PeerEndpointAddress: "server1.com",
-//             PeerEndpointPort: 51820,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//         ],
-//         OpenVPN: [
-//           {
-//             Server: { Address: "vpn.example.com", Port: 1194 },
-//             AuthType: "Credentials",
-//             Auth: "sha256",
-//           },
-//         ],
-//       };
-      
-//       const networks = generateNetworks(wanLinkType, wanLinks, vpnClient);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//       expect(networks.ForeignNetworks).toEqual(["Main-ISP"]);
-//       expect(networks.DomesticNetworks).toBeUndefined();
-//       expect(networks.VPNNetworks).toEqual(["Wireguard-1", "OpenVPN-1"]);
-//     });
-
-//     it("should handle combination of no domestic link and multiple network types", () => {
-//       const wanLinkType: WANLinkType = "foreign";
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "Primary-Foreign", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { name: "Secondary-Foreign", InterfaceConfig: { InterfaceName: "ether2" } },
-//           ],
-//         },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "Should-Not-Appear", InterfaceConfig: { InterfaceName: "ether3" } },
-//           ],
-//         },
-//       };
-//       const vpnClient: VPNClient = {
-//         Wireguard: [
-//           {
-//             InterfacePrivateKey: "key1",
-//             InterfaceAddress: "10.0.0.2/24",
-//             PeerPublicKey: "pubkey1",
-//             PeerEndpointAddress: "server1.com",
-//             PeerEndpointPort: 51820,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//           {
-//             InterfacePrivateKey: "key2",
-//             InterfaceAddress: "10.0.0.3/24",
-//             PeerPublicKey: "pubkey2",
-//             PeerEndpointAddress: "server2.com",
-//             PeerEndpointPort: 51821,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//         ],
-//         L2TP: [
-//           {
-//             Server: { Address: "l2tp.example.com", Port: 1701 },
-//             Credentials: { Username: "user", Password: "pass" },
-//             UseIPsec: true,
-//           },
-//         ],
-//       };
-      
-//       const networks = generateNetworks(wanLinkType, wanLinks, vpnClient);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN"]);
-//       expect(networks.ForeignNetworks).toEqual(["Primary-Foreign", "Secondary-Foreign"]);
-//       expect(networks.DomesticNetworks).toBeUndefined(); // Should not appear because no domestic link
-//       expect(networks.VPNNetworks).toEqual(["Wireguard-1", "Wireguard-2", "L2TP-1"]);
-//     });
-
-//     it("should handle complete configuration with all network types", () => {
-//       const wanLinkType: WANLinkType = "both";
-//       const wanLinks: WANLinks = {
-//         Foreign: {
-//           WANConfigs: [
-//             { name: "ISP-A", InterfaceConfig: { InterfaceName: "ether1" } },
-//             { name: "ISP-B", InterfaceConfig: { InterfaceName: "ether2" } },
-//           ],
-//         },
-//         Domestic: {
-//           WANConfigs: [
-//             { name: "Local-ISP-1", InterfaceConfig: { InterfaceName: "ether3" } },
-//             { name: "Local-ISP-2", InterfaceConfig: { InterfaceName: "ether4" } },
-//           ],
-//         },
-//       };
-//       const vpnClient: VPNClient = {
-//         Wireguard: [
-//           {
-//             InterfacePrivateKey: "key1",
-//             InterfaceAddress: "10.0.0.2/24",
-//             PeerPublicKey: "pubkey1",
-//             PeerEndpointAddress: "server1.com",
-//             PeerEndpointPort: 51820,
-//             PeerAllowedIPs: "0.0.0.0/0",
-//           },
-//         ],
-//         OpenVPN: [
-//           {
-//             Server: { Address: "vpn.example.com", Port: 1194 },
-//             AuthType: "Credentials",
-//             Auth: "sha256",
-//           },
-//         ],
-//         PPTP: [
-//           {
-//             ConnectTo: "pptp.example.com",
-//             Credentials: { Username: "user", Password: "pass" },
-//           },
-//         ],
-//       };
-      
-//       const networks = generateNetworks(wanLinkType, wanLinks, vpnClient);
-      
-//       expect(networks.BaseNetworks).toEqual(["Foreign", "VPN", "Domestic", "Split"]);
-//       expect(networks.ForeignNetworks).toEqual(["ISP-A", "ISP-B"]);
-//       expect(networks.DomesticNetworks).toEqual(["Local-ISP-1", "Local-ISP-2"]);
-//       expect(networks.VPNNetworks).toEqual(["Wireguard-1", "OpenVPN-1", "PPTP-1"]);
-//     });
-//   });
-// });
+    expect(result.BaseNetworks).toEqual({
+      Foreign: false,
+      VPN: false,
+      Domestic: true,
+      Split: false,
+    });
+    expect(result.ForeignNetworks).toBeUndefined();
+    expect(result.DomesticNetworks).toEqual(["Local-Only"]);
+    expect(result.VPNClientNetworks).toBeUndefined();
+  });
+});
