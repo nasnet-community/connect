@@ -55,3 +55,6 @@ lerna-debug.log*
 CLAUDE.md
 
 /.playwright-mcp
+/playwright-report
+/test-results
+/blob-report
