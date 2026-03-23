@@ -35,14 +35,8 @@ export {
 };
 
 export * from "./RadioGroup";
-export * from "./DatePicker";
 export * from "./Slider";
 export * from "./TextArea";
-export * from "./FileUpload";
-export * from "./NumberInput";
-export * from "./PinInput";
-export * from "./Autocomplete";
-export * from "./Rating";
 export * from "./NetworkInput";
 export * from "./PrefixedInput";
 

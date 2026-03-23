@@ -1,10 +1,12 @@
 export { List } from "./List";
-export { ListItem } from "./ListItem";
-export { ListTerm } from "./ListTerm";
-export { ListDescription } from "./ListDescription";
-export { OrderedList } from "./OrderedList";
-export { UnorderedList } from "./UnorderedList";
-export { DefinitionList } from "./DefinitionList";
+export {
+  ListItem,
+  ListTerm,
+  ListDescription,
+  OrderedList,
+  UnorderedList,
+  DefinitionList,
+} from "./List";
 
 export { useList } from "./hooks/useList";
 export { useListItem } from "./hooks/useListItem";

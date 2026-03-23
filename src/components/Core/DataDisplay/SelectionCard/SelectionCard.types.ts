@@ -58,7 +58,7 @@ export interface SelectionCardProps {
   cardProps?: Partial<CardProps>;
 
   /**
-   * Children content (typically FeatureList or custom content)
+   * Children content for custom card body content
    */
   children?: JSXOutput;
 }

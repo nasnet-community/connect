@@ -13,9 +13,6 @@ export * from "./Toast";
 // Export from Drawer
 export * from "./Drawer";
 
-// Export from Popover
-export * from "./Popover";
-
 // Export from Dialog
 export * from "./Dialog";
 
