@@ -1,4 +1,4 @@
-import { $, component$, useContext, useSignal, useTask$, type PropFunction } from "@builder.io/qwik";
+import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import { getMasterRouters, type RouterData } from "./Constants";
@@ -15,18 +15,10 @@ interface RouterModelProps {
 
 export const RouterModel = component$((props: RouterModelProps) => {
   const starContext = useContext(StarContext);
-  const selectedModels = useSignal<string[]>([]);
   const masterRouters = getMasterRouters();
-
-  useTask$(({ track }) => {
-    track(() =>
-      starContext.state.Choose.RouterModels
-        .map((routerModel) => `${routerModel.Model}:${routerModel.isMaster}`)
-        .join("|"),
-    );
-
-    selectedModels.value = starContext.state.Choose.RouterModels.map((rm) => rm.Model);
-  });
+  const selectedModels = starContext.state.Choose.RouterModels
+    .filter((rm) => rm.isMaster)
+    .map((rm) => rm.Model);
 
   const customRouters = starContext.state.Choose.RouterModels
     .filter((rm) => rm.isMaster && !masterRouters.some((router) => router.model === rm.Model))
@@ -62,7 +54,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
   const selectedRouter = useSignal<RouterData | null>(null);
   const isCustomRouterModalOpen = useSignal(false);
 
-  const handleSelect = $((model: string) => {
+  const handleSelect = $(async (model: string) => {
     const selectedRouterData = allMasterRouters.find((router) => router.model === model);
     if (!selectedRouterData) return;
 
@@ -86,32 +78,31 @@ export const RouterModel = component$((props: RouterModelProps) => {
     const isAlreadySelected = existingModels.some((rm) => rm.Model === model && rm.isMaster);
 
     if (isAlreadySelected) {
-      selectedModels.value = [model];
-      props.onComplete$?.();
+      window.requestAnimationFrame(() => props.onComplete$?.());
       return;
     }
-
-    selectedModels.value = [model];
 
     const existingCustomRouterModel = starContext.state.Choose.RouterModels.find(
       (rm) => rm.Model === model,
     );
 
-    starContext.state.Choose.RouterModels = [
-      {
-        isMaster: true,
-        Model: model as any,
-        Interfaces: interfaces,
-        isCHR: existingCustomRouterModel?.isCHR,
-        cpuArch: existingCustomRouterModel?.cpuArch,
-      },
-    ];
+    await starContext.updateChoose$({
+      RouterModels: [
+        {
+          isMaster: true,
+          Model: model as any,
+          Interfaces: interfaces,
+          isCHR: existingCustomRouterModel?.isCHR,
+          cpuArch: existingCustomRouterModel?.cpuArch,
+        },
+      ],
+    });
 
     starContext.state.LAN.Wireless = starContext.state.LAN.Wireless || [];
-    props.onComplete$?.();
+    window.requestAnimationFrame(() => props.onComplete$?.());
   });
 
-  const handleSaveCustomRouter = $((router: RouterData, isCHR: boolean, cpuArch: string) => {
+  const handleSaveCustomRouter = $(async (router: RouterData, isCHR: boolean, cpuArch: string) => {
     track("custom_router_created", {
       router_name: router.model,
       is_chr: isCHR,
@@ -127,11 +118,10 @@ export const RouterModel = component$((props: RouterModelProps) => {
       cpuArch: cpuArch as CPUArch,
     };
 
-    selectedModels.value = [router.model];
-    starContext.state.Choose.RouterModels = [newRouterModel];
+    await starContext.updateChoose$({ RouterModels: [newRouterModel] });
 
     isCustomRouterModalOpen.value = false;
-    props.onComplete$?.();
+    window.requestAnimationFrame(() => props.onComplete$?.());
   });
 
   const activeCategory = routerCategories.find((category) => category.id === activeTab.value);
@@ -143,6 +133,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
         title={$localize`Choose Your Router`}
         categories={routerCategories}
         activeCategory={activeTab.value}
+        selectionStateKey={selectedModels.join("|")}
         onSelectCategory$={$((categoryId: string) => {
           activeTab.value = categoryId;
         })}
@@ -154,7 +145,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
         })}
         routerItems={activeRouters.map((router) => ({
           router,
-          isSelected: selectedModels.value.includes(router.model as any),
+          isSelected: selectedModels.includes(router.model as any),
         }))}
         onSelectRouter$={handleSelect}
         onViewDetails$={$((router: RouterData) => {

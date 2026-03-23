@@ -1,4 +1,4 @@
-import { $, component$, useContext, useSignal, useTask$, type PropFunction } from "@builder.io/qwik";
+import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import { getSlaveRouters, type RouterData } from "./Constants";
@@ -16,21 +16,10 @@ interface SlaveRouterModelProps {
 export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
   const starContext = useContext(StarContext);
   const masterRouter = starContext.state.Choose.RouterModels.find((rm) => rm.isMaster);
-  const slaveRouters = starContext.state.Choose.RouterModels.filter((rm) => !rm.isMaster);
-  const slaveModels = useSignal<string[]>([]);
   const availableSlaveRouters = getSlaveRouters();
-
-  useTask$(({ track }) => {
-    track(() =>
-      starContext.state.Choose.RouterModels
-        .map((routerModel) => `${routerModel.Model}:${routerModel.isMaster}`)
-        .join("|"),
-    );
-
-    slaveModels.value = starContext.state.Choose.RouterModels
-      .filter((rm) => !rm.isMaster)
-      .map((rm) => rm.Model);
-  });
+  const slaveModels = starContext.state.Choose.RouterModels
+    .filter((rm) => !rm.isMaster)
+    .map((rm) => rm.Model);
 
   const customRouters = starContext.state.Choose.RouterModels
     .filter((rm) => !availableSlaveRouters.some((router) => router.model === rm.Model))
@@ -66,9 +55,13 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
   const selectedRouter = useSignal<RouterData | null>(null);
   const isCustomRouterModalOpen = useSignal(false);
 
-  const handleSelect = $((model: string) => {
+  const handleSelect = $(async (model: string) => {
     const selectedRouterData = allSlaveRouters.find((router) => router.model === model);
     if (!selectedRouterData) return;
+
+    const currentRouterModels = [...starContext.state.Choose.RouterModels];
+    const currentSlaveRouters = currentRouterModels.filter((rm) => !rm.isMaster);
+    const currentMasterRouter = currentRouterModels.find((rm) => rm.isMaster);
 
     const interfaces: RouterInterfaces = {
       Interfaces: {
@@ -80,18 +73,14 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
       OccupiedInterfaces: [],
     };
 
-    const isAlreadySelected = slaveRouters.some((rm) => rm.Model === model);
-    const existingCustomRouterModel = starContext.state.Choose.RouterModels.find(
-      (rm) => rm.Model === model,
-    );
+    const isAlreadySelected = currentSlaveRouters.some((rm) => rm.Model === model);
+    const existingCustomRouterModel = currentRouterModels.find((rm) => rm.Model === model);
 
-    let updatedModels = [...starContext.state.Choose.RouterModels];
+    let updatedModels = currentRouterModels;
 
     if (isAlreadySelected) {
-      slaveModels.value = slaveModels.value.filter((existingModel) => existingModel !== model);
       updatedModels = updatedModels.filter((rm) => !(rm.Model === model && !rm.isMaster));
     } else {
-      slaveModels.value = [...slaveModels.value, model];
       updatedModels.push({
         isMaster: false,
         Model: model as any,
@@ -101,23 +90,25 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
       });
     }
 
-    starContext.state.Choose.RouterModels = updatedModels;
+    await starContext.updateChoose$({ RouterModels: updatedModels });
     if (!isAlreadySelected) {
       props.onComplete$?.();
     }
 
     track("slave_router_model_selected", {
-      master_router: masterRouter?.Model || "",
+      master_router: currentMasterRouter?.Model || "",
       slave_router: model,
       action: isAlreadySelected ? "removed" : "added",
-      total_slave_routers: isAlreadySelected ? slaveRouters.length - 1 : slaveRouters.length + 1,
+      total_slave_routers: isAlreadySelected
+        ? currentSlaveRouters.length - 1
+        : currentSlaveRouters.length + 1,
       step: "choose",
     });
 
     starContext.state.LAN.Wireless = starContext.state.LAN.Wireless || [];
   });
 
-  const handleSaveCustomRouter = $((router: RouterData, isCHR: boolean, cpuArch: string) => {
+  const handleSaveCustomRouter = $(async (router: RouterData, isCHR: boolean, cpuArch: string) => {
     track("custom_slave_router_created", {
       router_name: router.model,
       is_chr: isCHR,
@@ -133,9 +124,7 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
       cpuArch: cpuArch as CPUArch,
     };
 
-    const updatedModels = [...starContext.state.Choose.RouterModels, newRouterModel];
-    slaveModels.value = [...slaveModels.value, router.model];
-    starContext.state.Choose.RouterModels = updatedModels;
+    await starContext.updateChoose$({ RouterModels: [...starContext.state.Choose.RouterModels, newRouterModel] });
 
     isCustomRouterModalOpen.value = false;
     props.onComplete$?.();
@@ -150,6 +139,7 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
         title={$localize`Choose Slave Routers`}
         categories={routerCategories}
         activeCategory={activeTab.value}
+        selectionStateKey={slaveModels.join("|")}
         onSelectCategory$={$((categoryId: string) => {
           activeTab.value = categoryId;
         })}
@@ -161,7 +151,7 @@ export const SlaveRouterModel = component$((props: SlaveRouterModelProps) => {
         })}
         routerItems={activeRouters.map((router) => ({
           router,
-          isSelected: slaveModels.value.includes(router.model as any),
+          isSelected: slaveModels.includes(router.model as any),
           badge: router.model === masterRouter?.Model ? $localize`Also Master` : undefined,
           badgeVariant: router.model === masterRouter?.Model ? "info" as const : undefined,
           toggleOnSelect: true,
