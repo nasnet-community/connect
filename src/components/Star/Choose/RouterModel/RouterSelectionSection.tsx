@@ -19,6 +19,7 @@ interface RouterSelectionSectionProps {
   title: string;
   categories: RouterCategory[];
   activeCategory: string;
+  selectionStateKey?: string;
   onSelectCategory$: QRL<(categoryId: string) => void>;
   customCardTitle: string;
   customCardDescription: string;
@@ -31,6 +32,7 @@ interface RouterSelectionSectionProps {
 
 export const RouterSelectionSection = component$<RouterSelectionSectionProps>((props) => {
   const customCardTags = props.customCardTags ?? [];
+  const selectionStateKey = props.selectionStateKey ?? "";
 
   return (
     <div class="rounded-lg bg-surface shadow-md transition-all dark:bg-surface-dark">
@@ -90,6 +92,7 @@ export const RouterSelectionSection = component$<RouterSelectionSectionProps>((p
               key={item.router.model}
               router={item.router}
               isSelected={item.isSelected}
+              selectionStateKey={selectionStateKey}
               badge={item.badge}
               badgeVariant={item.badgeVariant}
               toggleOnSelect={item.toggleOnSelect}
