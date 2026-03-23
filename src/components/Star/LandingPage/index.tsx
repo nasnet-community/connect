@@ -2,7 +2,6 @@ import { component$ } from "@builder.io/qwik";
 import { HeroSection } from "./Hero/HeroSection";
 import { EnhancedFeatureShowcase } from "./Features/EnhancedFeatureShowcase";
 import { RouterModelsSection } from "./Interactive/RouterModels/RouterModelsSection";
-// import { TechSpecsSection } from "./SocialProof/TechSpecs/TechSpecsSection";
 
 const PARTICLE_COUNT = 12;
 
@@ -38,9 +37,6 @@ export const LandingPage = component$(() => {
 
         {/* Router Models Interactive Gallery */}
         <RouterModelsSection />
-
-        {/* Technical Specifications */}
-        {/* <TechSpecsSection /> */}
       </main>
 
 

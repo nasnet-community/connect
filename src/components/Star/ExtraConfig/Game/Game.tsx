@@ -6,7 +6,6 @@ import { GameTable } from "./GameTable";
 import { GameSelected } from "./GameSelected";
 import { GamePagination } from "./GamePagination";
 import { useGameLogic } from "./useGame";
-// import { GameForm } from "./GameForm";
 
 export const Game = component$<StepProps>(({ onComplete$ }) => {
   const { searchQuery, currentPage, itemsPerPage, context } = useGameLogic();
@@ -24,7 +23,6 @@ export const Game = component$<StepProps>(({ onComplete$ }) => {
         <GameHeader />
         <div class="space-y-6 p-6">
           <GameSearch searchQuery={searchQuery} />
-          {/* <GameForm context={context} /> */}
           <GameTable
             context={context}
             searchQuery={searchQuery}

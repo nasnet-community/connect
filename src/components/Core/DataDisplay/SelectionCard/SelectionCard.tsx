@@ -18,7 +18,7 @@ import { CardBody } from "../Card/CardBody";
  *   badgeVariant="primary"
  *   onClick$={() => handleSelect('premium')}
  * >
- *   <FeatureList features={premiumFeatures} />
+ *   <p>Includes priority support and automation tools.</p>
  * </SelectionCard>
  */
 export const SelectionCard = component$<SelectionCardProps>((props) => {
@@ -118,7 +118,7 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
             </div>
           )}
 
-          {/* Children slot for custom content like FeatureList */}
+          {/* Children slot for custom content */}
           {children && (
             <Slot />
           )}

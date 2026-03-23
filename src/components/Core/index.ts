@@ -61,10 +61,6 @@ import { Checkbox } from "./Form/Checkbox/Checkbox";
 import { CheckboxGroup } from "./Form/Checkbox/CheckboxGroup";
 
 // Radio Components
-import { Radio } from "./Radio/Radio";
-import { RadioGroup as RadioGroupOriginal } from "./Radio/RadioGroup";
-// Using Form/RadioGroup as the primary implementation
-// The original RadioGroup is still available as RadioGroupOriginal for backwards compatibility
 export * from "./Form/RadioGroup";
 
 // Toggle/Switch Components
@@ -83,14 +79,8 @@ import { ConfigMethodToggle } from "./Switch/ConfigMethodToggle";
 export * from "./TimePicker";
 import { TimePicker } from "./TimePicker/Timepicker";
 
-// Date Picker
-export * from "./Form/DatePicker";
-
 // Slider Component
 export * from "./Form/Slider";
-
-// File Upload Component
-export * from "./Form/FileUpload";
 
 // File Input Components
 import { ConfigFileInput } from "./FileInput/ConfigFileInput/ConfigFileInput";
@@ -106,15 +96,9 @@ export * from "./DataDisplay";
 // Note: These are exported in the main export object below
 import { Spinner } from "./DataDisplay/Progress/Spinner";
 import { ProgressBar } from "./DataDisplay/Progress/ProgressBar";
-import { FeatureList } from "./DataDisplay/FeatureList/FeatureList";
 import { SelectionCard } from "./DataDisplay/SelectionCard/SelectionCard";
 import { FrequencySelector } from "./DataDisplay/FrequencySelector/FrequencySelector";
 import { SegmentedControl } from "./SegmentedControl/SegmentedControl";
-
-//-------------------------------
-// Media Components
-//-------------------------------
-export * from "./Media";
 
 //-------------------------------
 // Feedback Components
@@ -133,9 +117,6 @@ import { Newsletter } from "./Feedback/Newsletter/Newsletter";
 // Layout Components
 //-------------------------------
 // Card component is now exported from DataDisplay
-// Updated: Modal component is being replaced by Dialog component
-// For backwards compatibility we'll keep the export but mark as deprecated
-export * from "./Modal";
 
 // Navigation
 import { TabNavigation } from "./Navigation/TabNavigation/TabNavigation";
@@ -245,23 +226,6 @@ export {
    * @param onToggle$ - Handler when an option is toggled
    */
   CheckboxGroup,
-
-  // Radio Components
-  /**
-   * Individual radio button component
-   * @param checked - Whether the radio is checked
-   * @param onChange$ - Handler for checked state changes
-   * @param value - Radio button value
-   */
-  Radio,
-
-  /**
-   * Manages a group of related radio options
-   * @param options - Array of radio options
-   * @param value - Current selected value
-   * @param onChange$ - Handler for selection changes
-   */
-  RadioGroupOriginal as RadioGroup,
 
   // Toggle/Switch Components
   /**
@@ -406,23 +370,6 @@ export {
   ProgressBar,
 
   /**
-   * Feature list component for displaying lists with checkmark icons
-   * @param features - Array of feature strings to display
-   * @param iconColor - Color theme for checkmark icons
-   * @param size - Size of text and icons
-   * @param showIcon - Whether to show checkmark icons
-   * @param spacing - Spacing between list items
-   * 
-   * @example
-   * <FeatureList 
-   *   features={["Multi-WAN support", "Advanced QoS", "VPN integration"]}
-   *   iconColor="primary"
-   *   size="sm"
-   * />
-   */
-  FeatureList,
-
-  /**
    * Selection card component for interactive option selection
    * @param isSelected - Whether the card is currently selected
    * @param isDisabled - Whether the card is disabled
@@ -433,15 +380,15 @@ export {
    * @param onClick$ - Click handler
    * 
    * @example
-   * <SelectionCard
-   *   isSelected={selected === 'premium'}
-   *   title="Premium Plan"
-   *   icon={<LuCrown class="h-8 w-8" />}
-   *   badge="Popular"
-   *   onClick$={() => setSelected('premium')}
-   * >
-   *   <FeatureList features={premiumFeatures} />
-   * </SelectionCard>
+  * <SelectionCard
+  *   isSelected={selected === 'premium'}
+  *   title="Premium Plan"
+  *   icon={<LuCrown class="h-8 w-8" />}
+  *   badge="Popular"
+  *   onClick$={() => setSelected('premium')}
+  * >
+  *   <p>Best for growing teams</p>
+  * </SelectionCard>
    */
   SelectionCard,
 
