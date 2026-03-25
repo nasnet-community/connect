@@ -48,7 +48,7 @@ export function useTextArea(props: TextAreaProps) {
 
   // Use form field value if available, otherwise use prop value
   const currentValue = useComputed$(() => {
-    if (name && form && form.values) {
+    if (name) {
       return form.values[name] || "";
     }
     return value || "";
@@ -75,7 +75,7 @@ export function useTextArea(props: TextAreaProps) {
     }
 
     // First check form error
-    const formError = name && form ? form.errors[name] : undefined;
+    const formError = name ? form.errors[name] : undefined;
 
     // Then check props for state indicators
     const errMsg = track(() => errorMessage || formError);
@@ -124,7 +124,7 @@ export function useTextArea(props: TextAreaProps) {
     baseRowHeight.value = lineHeight || 20; // Fallback if lineHeight is 'normal'
 
     // Set initial height
-    if (autoResize && textareaRef.value) {
+    if (autoResize) {
       adjustTextareaHeight$();
     }
   });
@@ -147,7 +147,7 @@ export function useTextArea(props: TextAreaProps) {
     }
 
     // Update form field if available
-    if (name && form && form.setFieldValue) {
+    if (name) {
       form.setFieldValue(name, target.value);
     }
 
@@ -170,7 +170,7 @@ export function useTextArea(props: TextAreaProps) {
   // Handler for blur events
   const handleBlur$ = $((event: FocusEvent) => {
     // Mark field as touched in form
-    if (name && form && form.setFieldTouched) {
+    if (name) {
       form.setFieldTouched(name, true);
     }
 
@@ -193,16 +193,14 @@ export function useTextArea(props: TextAreaProps) {
       charCount.value = 0;
 
       // Update form field if available
-      if (name && form && form.setFieldValue) {
+      if (name) {
         form.setFieldValue(name, "");
       }
 
       // Reset height if auto-resize is enabled
       if (autoResize) {
         textareaHeight.value = `${baseRowHeight.value * minRows}px`;
-        if (textareaRef.value) {
-          textareaRef.value.style.height = textareaHeight.value;
-        }
+        textareaRef.value.style.height = textareaHeight.value;
       }
 
       // Focus the textarea after clearing
@@ -271,7 +269,7 @@ export function useTextArea(props: TextAreaProps) {
     .join(" ");
 
   // Get form error if any
-  const formError = name && form ? form.errors[name] : undefined;
+  const formError = name ? form.errors[name] : undefined;
 
   // Determine if we should show aria-describedby
   const hasDescribedBy = Boolean(

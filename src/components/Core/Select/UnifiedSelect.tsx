@@ -147,9 +147,9 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     const options = optionsContainerRef.value.querySelectorAll(
       '[role="option"]:not([aria-disabled="true"])',
     );
-    const option = options[index] as HTMLElement;
+    const option = options.item(index);
 
-    if (option) {
+    if (option instanceof HTMLElement) {
       const container = optionsContainerRef.value;
       const optionTop = option.offsetTop;
       const optionBottom = optionTop + option.offsetHeight;
@@ -1015,9 +1015,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                         // Add grouped options
                         filteredOptions.value.forEach((opt) => {
                           if (opt.group) {
-                            if (!groups[opt.group]) {
-                              groups[opt.group] = [];
-                            }
+                            groups[opt.group] ??= [];
                             groups[opt.group].push(opt);
                           }
                         });

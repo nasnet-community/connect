@@ -98,7 +98,7 @@ export function useForm(options: FormOptions = {}) {
 
   // Register a field
   const registerField = $((name: string, fieldOptions?: FormFieldOptions) => {
-    if (state.fields[name]) return; // Field already registered
+    if (name in state.fields) return; // Field already registered
 
     const initialValue =
       fieldOptions?.initialValue !== undefined
@@ -123,7 +123,7 @@ export function useForm(options: FormOptions = {}) {
 
   // Set field value
   const setFieldValue = $((name: string, value: any) => {
-    if (!state.fields[name]) {
+    if (!(name in state.fields)) {
       registerField(name, { initialValue: value });
       return;
     }
@@ -137,8 +137,8 @@ export function useForm(options: FormOptions = {}) {
 
     // Validate if needed
     const shouldValidate =
-      (formOptions.validateOnChange ?? true) ||
-      (state.fields[name].touched && (formOptions.validateOnBlur ?? true));
+      formOptions.validateOnChange ||
+      (state.fields[name].touched && formOptions.validateOnBlur);
 
     if (shouldValidate) {
       validateField(name);
@@ -147,21 +147,21 @@ export function useForm(options: FormOptions = {}) {
 
   // Set field touched state
   const setFieldTouched = $((name: string, isTouched: boolean = true) => {
-    if (!state.fields[name]) return;
+    if (!(name in state.fields)) return;
 
     state.fields[name].touched = isTouched;
 
     // Update derived values
     touched[name] = isTouched;
 
-    if (isTouched && (formOptions.validateOnBlur ?? true)) {
+    if (isTouched && formOptions.validateOnBlur) {
       validateField(name);
     }
   });
 
   // Set field error
   const setFieldError = $((name: string, error: string | undefined) => {
-    if (!state.fields[name]) return;
+    if (!(name in state.fields)) return;
 
     state.fields[name].error = error;
     state.fields[name].validating = false;
@@ -175,7 +175,7 @@ export function useForm(options: FormOptions = {}) {
 
   // Validate a field
   const validateField = $(async (name: string): Promise<string | undefined> => {
-    if (!state.fields[name]) return undefined;
+    if (!(name in state.fields)) return undefined;
 
     // Mark field as validating
     state.fields[name].validating = true;
@@ -287,7 +287,7 @@ export function useForm(options: FormOptions = {}) {
       onSubmitFn?: (values: Record<string, any>) => void | Promise<void>,
     ) => {
       // Prevent default if event is provided and option is set
-      if (e && (formOptions.preventDefaultOnSubmit ?? true)) {
+        if (e && formOptions.preventDefaultOnSubmit) {
         e.preventDefault();
       }
 
@@ -303,7 +303,7 @@ export function useForm(options: FormOptions = {}) {
 
       // Validate form if needed
       let isValid = true;
-      if (formOptions.validateOnSubmit ?? true) {
+      if (formOptions.validateOnSubmit) {
         isValid = await validateForm();
       }
 
