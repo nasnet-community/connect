@@ -541,21 +541,18 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                 };
                               }
 
-                              if (ctx.state.ExtraConfig.services) {
-                                const currentService =
-                                  ctx.state.ExtraConfig.services[service.name];
-                                const port =
-                                  typeof currentService === "string"
-                                    ? service.defaultPort
-                                    : currentService.port ||
-                                      service.defaultPort;
+                              const currentService =
+                                ctx.state.ExtraConfig.services[service.name];
+                              const port =
+                                typeof currentService === "string"
+                                  ? service.defaultPort
+                                  : currentService.port ?? service.defaultPort;
 
-                                // Mutate the existing proxy directly (Qwik best practice)
-                                ctx.state.ExtraConfig.services[service.name] = {
-                                  type: value as ServiceType,
-                                  port: port,
-                                };
-                              }
+                              // Mutate the existing proxy directly (Qwik best practice)
+                              ctx.state.ExtraConfig.services[service.name] = {
+                                type: value as ServiceType,
+                                port: port,
+                              };
                             }}
                             clearable={false}
                             disabled={

@@ -33,7 +33,7 @@ const Stack = component$<StackProps>((props) => {
       class={combinedClassNames}
       style={{
         ...styleProperties,
-        ...((props.style as Record<string, string>) || {}),
+        ...(props.style as Record<string, string> | undefined),
       }}
       data-mobile={isMobile ? "true" : "false"}
       data-rtl={isRtl ? "true" : "false"}

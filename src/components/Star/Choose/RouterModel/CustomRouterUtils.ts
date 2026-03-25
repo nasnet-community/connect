@@ -51,7 +51,7 @@ export function generateWirelessInterfaces(
         } else {
           interfaces.push("wifi5-2" as Wireless);
         }
-      } else if (config.band === "6") {
+      } else {
         // 6GHz band - use wifi5 as placeholder (RouterOS doesn't have wifi6 interface type yet)
         interfaces.push("wifi5" as Wireless);
       }

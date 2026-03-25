@@ -225,9 +225,12 @@ export const EOIPProtocol = component$(() => {
                     <select
                       value={tunnel.arp || ""}
                       onChange$={(e) => {
-                        const value = (e.target as HTMLSelectElement)
-                          .value as ARPState;
-                        updateTunnelField$(index, "arp", value || undefined);
+                        const value = (e.target as HTMLSelectElement).value;
+                        updateTunnelField$(
+                          index,
+                          "arp",
+                          value === "" ? undefined : (value as ARPState),
+                        );
                       }}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >

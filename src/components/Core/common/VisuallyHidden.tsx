@@ -123,7 +123,7 @@ export const VisuallyHidden = component$<VisuallyHiddenProps>((props) => {
       ? {
           clip: "rect(0, 0, 0, 0)",
           clipPath: "inset(50%)",
-          ...(typeof rest.style === "object" && rest.style ? rest.style : {}),
+          ...(rest.style && typeof rest.style === "object" ? rest.style : {}),
         }
       : rest.style;
 

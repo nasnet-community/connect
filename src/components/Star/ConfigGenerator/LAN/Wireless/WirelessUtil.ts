@@ -37,7 +37,7 @@ export const detectAvailableBands = (
                 if (!bands.bands5GHz.includes("wifi5")) {
                     bands.bands5GHz.push("wifi5");
                 }
-            } else if (iface === "wifi5-2") {
+            } else {
                 bands.has5_2 = true;
                 if (!bands.bands5GHz.includes("wifi5-2")) {
                     bands.bands5GHz.push("wifi5-2");

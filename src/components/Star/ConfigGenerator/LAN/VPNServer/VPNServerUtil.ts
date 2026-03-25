@@ -388,14 +388,10 @@ export function formatBooleanValue(value: boolean): string {
 // };
 
 // Function to generate inbound traffic marking rules for VPN server
-export const VSInboundTraffic = (vpnServer: VPNServer): RouterConfig => {
+export const VSInboundTraffic = (_vpnServer: VPNServer): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall mangle": [],
     };
-
-    if (!vpnServer) {
-        return config;
-    }
 
     // Add routing rule for outbound VPN replies
     // if (config["/ip firewall mangle"].length > 2) {
