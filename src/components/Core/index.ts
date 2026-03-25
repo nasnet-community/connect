@@ -115,7 +115,6 @@ import { Dialog } from "./Feedback/Dialog/Dialog";
 import { DialogHeader } from "./Feedback/Dialog/DialogHeader";
 import { DialogBody } from "./Feedback/Dialog/DialogBody";
 import { DialogFooter } from "./Feedback/Dialog/DialogFooter";
-import { Drawer } from "./Feedback/Drawer/Drawer";
 import { Newsletter } from "./Feedback/Newsletter/Newsletter";
 
 //-------------------------------
@@ -316,13 +315,6 @@ export {
    * Dialog footer component for modal actions
    */
   DialogFooter,
-
-  /**
-   * Drawer component for sliding panels
-   * @param isOpen - Controls drawer visibility
-   * @param onClose - Handler for close events
-   */
-  Drawer,
 
   // Navigation Components
   /**

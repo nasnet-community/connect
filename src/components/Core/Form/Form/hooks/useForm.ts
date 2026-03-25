@@ -283,14 +283,9 @@ export function useForm(options: FormOptions = {}) {
   // Handle form submission
   const handleSubmit$ = $(
     async (
-      e?: SubmitEvent,
+      _e?: SubmitEvent,
       onSubmitFn?: (values: Record<string, any>) => void | Promise<void>,
     ) => {
-      // Prevent default if event is provided and option is set
-        if (e && formOptions.preventDefaultOnSubmit) {
-        e.preventDefault();
-      }
-
       // Increment submit count and update state
       state.submitCount++;
       state.isSubmitting = true;

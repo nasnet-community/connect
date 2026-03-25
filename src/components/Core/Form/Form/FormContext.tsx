@@ -121,11 +121,7 @@ export const FormProvider = component$<FormOptions>((props) => {
   });
 
   // Handle form submission
-  const handleSubmit$ = $(async (e?: Event) => {
-    if (e) {
-      e.preventDefault();
-    }
-
+  const handleSubmit$ = $(async (_e?: Event) => {
     state.isSubmitting = true;
     state.submitCount++;
 

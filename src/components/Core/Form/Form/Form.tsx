@@ -78,6 +78,7 @@ export const Form = component$<FormProps>((props) => {
           spaReset={spaReset}
           reloadDocument={reloadDocument}
           class={formClasses}
+          preventdefault:submit={formOptions.preventDefaultOnSubmit}
         >
           <Slot />
         </QwikForm>
@@ -99,6 +100,7 @@ export const Form = component$<FormProps>((props) => {
         class={formClasses}
         ref={formRef}
         onReset$={handleReset$}
+        preventdefault:submit={formOptions.preventDefaultOnSubmit}
       >
         <Slot />
       </form>

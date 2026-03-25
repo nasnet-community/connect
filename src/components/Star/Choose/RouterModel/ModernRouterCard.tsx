@@ -48,7 +48,6 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
   });
 
   const handleDetailsClick = $((event?: Event) => {
-    event?.preventDefault();
     event?.stopPropagation();
     onViewDetails$(router);
   });

@@ -24,7 +24,6 @@ export const DraggablePriorityList = component$<DraggablePriorityListProps>(
     });
 
     const handleDragOver = $((e: DragEvent) => {
-      e.preventDefault();
       if (e.dataTransfer) {
         e.dataTransfer.dropEffect = "move";
       }
@@ -38,9 +37,7 @@ export const DraggablePriorityList = component$<DraggablePriorityListProps>(
       draggedOverItem.value = null;
     });
 
-    const handleDrop = $(async (e: DragEvent, dropItemId: string) => {
-      e.preventDefault();
-
+    const handleDrop = $(async (dropItemId: string) => {
       if (draggedItem.value && draggedItem.value !== dropItemId) {
         const newOrder = [...props.items.map((item) => item.id)];
         const draggedIndex = newOrder.indexOf(draggedItem.value);
@@ -92,9 +89,11 @@ export const DraggablePriorityList = component$<DraggablePriorityListProps>(
             draggable
             onDragStart$={(e) => handleDragStart(e, item.id)}
             onDragOver$={handleDragOver}
+            preventdefault:dragover
             onDragEnter$={() => handleDragEnter(item.id)}
             onDragLeave$={handleDragLeave}
-            onDrop$={(e) => handleDrop(e, item.id)}
+            onDrop$={() => handleDrop(item.id)}
+            preventdefault:drop
             class={`
             flex items-center justify-between rounded-lg border p-4 transition-all
             ${

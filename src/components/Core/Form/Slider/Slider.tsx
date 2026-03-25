@@ -259,17 +259,6 @@ export const Slider = component$<SliderProps>((props) => {
     events.handleThumbKeyDown(e, "single");
   });
 
-  const handleSingleThumbTouchStart = $((e: TouchEvent) => {
-    // Convert TouchEvent to MouseEvent for consistent handling
-    const mouseEvent = {
-      preventDefault: () => e.preventDefault(),
-      stopPropagation: () => e.stopPropagation(),
-      clientX: e.touches[0].clientX,
-      clientY: e.touches[0].clientY,
-    } as MouseEvent;
-    events.handleThumbMouseDown(mouseEvent, "single");
-  });
-
   const handleStartThumbMouseDown = $((e: MouseEvent) => {
     events.handleThumbMouseDown(e, "start");
   });
@@ -406,7 +395,6 @@ export const Slider = component$<SliderProps>((props) => {
             formatLabel={utilities.formatLabel}
             onMouseDown={handleSingleThumbMouseDown}
             onKeyDown={handleSingleThumbKeyDown}
-            onTouchStart={handleSingleThumbTouchStart}
             label={label}
             valueText={singleValueText.value}
           />

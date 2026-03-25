@@ -201,33 +201,6 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     }
   });
 
-  // Focus trap implementation
-  const trapFocus = $((e: KeyboardEvent) => {
-    if (!isOpen.value || !dropdownRef.value) return;
-
-    const focusableElements = dropdownRef.value.querySelectorAll(
-      'input, button, [tabindex]:not([tabindex="-1"])',
-    );
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[
-      focusableElements.length - 1
-    ] as HTMLElement;
-
-    if (e.key === "Tab") {
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement.focus();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement.focus();
-        }
-      }
-    }
-  });
-
   // Compute selected value(s) label for display
   const displayValue = useComputed$(() => {
     const val = currentValue.value;
@@ -414,6 +387,28 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (!isOpen.value) return;
 
+      const trapFocus = () => {
+        if (!dropdownRef.value) return;
+
+        const focusableElements = dropdownRef.value.querySelectorAll(
+          'input, button, [tabindex]:not([tabindex="-1"])',
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[
+          focusableElements.length - 1
+        ] as HTMLElement;
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      };
+
       switch (event.key) {
         case "Escape":
           event.preventDefault();
@@ -456,7 +451,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
           break;
 
         case "Tab":
-          await trapFocus(event);
+          trapFocus();
           break;
       }
     };

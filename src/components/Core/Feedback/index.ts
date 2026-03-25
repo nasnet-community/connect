@@ -10,9 +10,6 @@ export * from "./PromoBanner";
 // Export from Toast
 export * from "./Toast";
 
-// Export from Drawer
-export * from "./Drawer";
-
 // Export from Dialog
 export * from "./Dialog";
 

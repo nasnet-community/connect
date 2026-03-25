@@ -433,8 +433,8 @@ export const NetworkTopologyGraph = component$(
                 handleCollapse();
               }
             })}
-            onCancel$={$((event) => {
-              event.preventDefault();
+            preventdefault:cancel
+            onCancel$={$(() => {
               handleCollapse();
             })}
           >

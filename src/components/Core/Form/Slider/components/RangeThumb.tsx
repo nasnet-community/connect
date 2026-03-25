@@ -57,17 +57,19 @@ export const RangeThumb = component$((props: RangeThumbProps) => {
       class={`${thumbClass} slider-thumb-${thumbType}`}
       style={positionStyle}
       onMouseDown$={$((e: MouseEvent) => onMouseDown(e, thumbType))}
+      preventdefault:mousedown
       onTouchStart$={$((e: TouchEvent) => {
         // Convert TouchEvent to MouseEvent for consistent handling
         const touch = e.touches[0];
         const mouseEvent = {
-          preventDefault: () => e.preventDefault(),
-          stopPropagation: () => e.stopPropagation(),
+          preventDefault: () => {},
+          stopPropagation: () => {},
           clientX: touch.clientX || 0,
           clientY: touch.clientY || 0,
         } as MouseEvent;
         onMouseDown(mouseEvent, thumbType);
       })}
+      preventdefault:touchstart
       onKeyDown$={$((e: KeyboardEvent) => onKeyDown(e, thumbType))}
       data-value={value}
       data-thumb={thumbType}
