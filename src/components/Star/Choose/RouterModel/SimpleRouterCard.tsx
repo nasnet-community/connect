@@ -30,10 +30,8 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
     }
   });
 
-  const handleDetailsClick = $((event?: Event) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-    onViewDetails$(router);
+  const handleDetailsClick = $(() => {
+    void onViewDetails$(router);
   });
 
   // Get the first image for display
@@ -79,6 +77,8 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
           <img
             src={primaryImage}
             alt={router.title}
+            width="192"
+            height="128"
             class="max-h-full max-w-full object-contain filter transition-transform duration-300 hover:scale-105"
             loading="lazy"
             onError$={(event) => {

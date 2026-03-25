@@ -1,5 +1,5 @@
 import { component$, $, useComputed$ } from "@builder.io/qwik";
-import { useOpenVPNServer } from "./useOpenVPNServer";
+import type { useOpenVPNServer } from "./useOpenVPNServer";
 import { Card } from "~/components/Core/Card";
 import { Field as FormField } from "~/components/Core/Form/Field";
 import { InterfaceNameInput } from "~/components/Core/Form/PrefixedInput";

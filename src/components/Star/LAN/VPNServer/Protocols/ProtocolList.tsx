@@ -58,6 +58,8 @@ export const ProtocolList = component$<ProtocolListProps>(
                 <img
                   src={protocol.logo}
                   alt={protocol.name}
+                  width="32"
+                  height="32"
                   class={`h-8 w-8 ${
                     enabledProtocols[protocol.id]
                       ? "brightness-100 drop-shadow-sm filter dark:brightness-0 dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.5)] dark:hue-rotate-[170deg] dark:invert dark:saturate-[6] dark:sepia dark:filter"

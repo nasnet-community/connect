@@ -109,9 +109,7 @@ export const Step4_Summary = component$<Step4Props>(
     });
 
     const handleEditStep = $((step: number) => {
-      if (onEdit$) {
-        onEdit$(step);
-      }
+      onEdit$(step);
     });
 
     return (

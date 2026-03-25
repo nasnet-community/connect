@@ -6,6 +6,7 @@ import { SingleSSIDForm } from "./SingleSSIDForm";
 import { MultiSSIDForm } from "./MultiSSIDForm";
 import { ActionButtons } from "./ActionButtons";
 import { StarContext } from "../../StarContext/StarContext";
+import type { WirelessConfig } from "../../StarContext/LANType";
 import type { StepProps } from "~/types/step";
 import { determineWifiTarget } from "./networkUtils";
 
@@ -73,8 +74,7 @@ export const Wireless = component$<StepProps>(
         const isDomesticLinkEnabled =
           starContext.state.Choose.WANLinkType === "domestic" ||
           starContext.state.Choose.WANLinkType === "both";
-        const enabledNetworks: import("~/components/Star/StarContext").WirelessConfig[] =
-          [];
+        const enabledNetworks: WirelessConfig[] = [];
 
         if (!networks.foreign.isDisabled) {
           enabledNetworks.push({

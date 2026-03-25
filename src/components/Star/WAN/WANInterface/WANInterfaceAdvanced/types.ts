@@ -8,6 +8,7 @@ import type {
   StaticIPConfig,
   WANLink,
 } from "../../../StarContext/Utils/WANLinkType";
+import type { WirelessCredentials } from "../../../StarContext/CommonType";
 import type { WANState } from "../../../StarContext/WANType";
 import type { MultiLinkConfig } from "../../../StarContext/Utils/MultiLinkType";
 
@@ -55,7 +56,7 @@ export interface WANLinkConfig extends Omit<CoreWANLinkConfig, "name"> {
   staticIP?: StaticIPConfig;
 
   // Interface-specific settings
-  wirelessCredentials?: import("../../../StarContext/CommonType").WirelessCredentials;
+  wirelessCredentials?: WirelessCredentials;
   connectionConfig?: {
     isDHCP?: boolean;
     pppoe?: PPPoEConfig;

@@ -46,6 +46,8 @@ export const RouterCard = component$<RouterCardProps>(({ router, index }) => {
           <img
             src={router.image}
             alt={router.name}
+            width="320"
+            height="320"
             class="h-32 w-auto object-contain drop-shadow-lg filter transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
             onError$={(event) => {

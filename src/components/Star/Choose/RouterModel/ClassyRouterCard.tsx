@@ -50,10 +50,8 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
     }
   });
 
-  const handleDetailsClick = $(async (event?: Event) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-    await props.onViewDetails$(props.router);
+  const handleDetailsClick = $(() => {
+    void props.onViewDetails$(props.router);
   });
 
   const primaryImage =
@@ -85,6 +83,8 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
           <img
             src={primaryImage}
             alt={props.router.title}
+            width="256"
+            height="256"
             class="max-h-24 max-w-full object-contain sm:max-h-28"
             loading="lazy"
             onError$={(event) => {
