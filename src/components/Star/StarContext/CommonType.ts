@@ -26,8 +26,7 @@ export type VPNClientType =
   | "PPTP"
   | "L2TP"
   | "SSTP"
-  | "IKeV2"
-
+  | "IKeV2";
 
 export type VPNServerType =
   | "Wireguard"
@@ -167,7 +166,7 @@ export type IkeIdType =
   | "key-id";
 export type IkePolicyAction = "encrypt" | "none" | "discard";
 export type IkePolicyLevel = "require" | "unique" | "use";
-export type RouterModel = 
+export type RouterModel =
   | "Chateau 5G R17 ax"
   | "Chateau LTE18 ax"
   | "Chateau LTE6 ax"
@@ -191,6 +190,5 @@ export type RouterModel =
   | "Custom Router";
 
 export type InterfaceType = Ethernet | Wireless | Sfp | LTE;
-
 
 export type FrequencyValue = "Daily" | "Weekly" | "Monthly";

@@ -113,7 +113,7 @@ export function validateEmail(email: string): boolean {
 
 /**
  * Twilio SendGrid Newsletter Subscription
- * 
+ *
  * Subscribes an email to the newsletter using Twilio SendGrid API.
  * This function calls the server-side API endpoint that handles SendGrid integration.
  */
@@ -135,11 +135,11 @@ export interface SendGridSubscriptionResponse {
 
 /**
  * Subscribe to newsletter using Twilio SendGrid
- * 
+ *
  * @param email - Email address to subscribe
  * @param options - Optional subscriber information
  * @returns Promise with subscription response
- * 
+ *
  * @example
  * ```typescript
  * const result = await subscribeToNewsletterSendGrid('user@example.com', {
@@ -151,7 +151,7 @@ export interface SendGridSubscriptionResponse {
  */
 export async function subscribeToNewsletterSendGrid(
   email: string,
-  options?: Omit<SendGridSubscriptionRequest, 'email'>
+  options?: Omit<SendGridSubscriptionRequest, "email">,
 ): Promise<SendGridSubscriptionResponse> {
   try {
     // Validate email
@@ -202,7 +202,7 @@ export async function subscribeToNewsletterSendGrid(
       // Try to parse error response, but handle if it's not JSON
       let errorData: SendGridSubscriptionResponse | null = null;
       try {
-        errorData = await response.json() as SendGridSubscriptionResponse;
+        errorData = (await response.json()) as SendGridSubscriptionResponse;
       } catch {
         // Response is not JSON
         console.warn("API response is not JSON");
@@ -216,18 +216,19 @@ export async function subscribeToNewsletterSendGrid(
     }
 
     // Parse successful response
-    const data = await response.json() as SendGridSubscriptionResponse;
+    const data = (await response.json()) as SendGridSubscriptionResponse;
     console.log("SendGrid subscription successful! Job ID:", data.jobId);
     return data;
   } catch (error) {
     console.error("Newsletter subscription error:", error);
 
     // Check if it's a network error (endpoint not found)
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
       return {
         success: false,
         error: "Service unavailable",
-        details: "Newsletter service is currently unavailable. Please try again later.",
+        details:
+          "Newsletter service is currently unavailable. Please try again later.",
       };
     }
 

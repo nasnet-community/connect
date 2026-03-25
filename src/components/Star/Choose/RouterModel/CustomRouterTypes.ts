@@ -26,4 +26,3 @@ export interface CustomRouterForm {
   sfp: CustomSfpConfig[];
   lte: number;
 }
-

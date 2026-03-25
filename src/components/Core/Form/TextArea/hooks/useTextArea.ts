@@ -230,8 +230,9 @@ export function useTextArea(props: TextAreaProps) {
   }[size];
 
   // State-specific styles with proper dark mode support
-  const defaultStateStyle = "border-gray-300 dark:border-gray-600 focus:border-primary-500 dark:focus:border-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400";
-  
+  const defaultStateStyle =
+    "border-gray-300 dark:border-gray-600 focus:border-primary-500 dark:focus:border-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400";
+
   const stateStyles =
     {
       default: defaultStateStyle,

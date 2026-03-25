@@ -38,7 +38,7 @@ import {
 // Helper function to check if master router is CHR
 const isMasterCHR = (routerModels?: RouterModels[]): boolean => {
     if (!routerModels) return false;
-    const masterRouter = routerModels.find(r => r.isMaster);
+    const masterRouter = routerModels.find((r) => r.isMaster);
     return masterRouter?.isCHR === true;
 };
 
@@ -48,12 +48,13 @@ const hasCertificateDependentVPNServer = (vpnServer?: VPNServer): boolean => {
     }
 
     const hasSstpServer = vpnServer.SstpServer?.enabled === true;
-    const hasOpenVpnServer = vpnServer.OpenVpnServer?.some(server => server?.enabled === true) === true;
+    const hasOpenVpnServer =
+        vpnServer.OpenVpnServer?.some((server) => server?.enabled === true) ===
+        true;
     const hasIkev2Server = Boolean(vpnServer.Ikev2Server);
 
     return hasSstpServer || hasOpenVpnServer || hasIkev2Server;
 };
-
 
 export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
     const configs: RouterConfig[] = [];
@@ -75,15 +76,16 @@ export const BaseExtra = (routerModels?: RouterModels[]): RouterConfig => {
         "/certificate settings": [
             // "set builtin-trust-anchors=trusted crl-download=yes crl-store=system crl-use=yes",
             "set builtin-trust-store=all crl-download=yes crl-store=system crl-use=no",
-
-        ]
+        ],
     });
 
     // Merge all configurations
     return mergeMultipleConfigs(...configs);
 };
 
-export const IdentityRomon = ( RouterIdentityRomon: RouterIdentityRomon ): RouterConfig => {
+export const IdentityRomon = (
+    RouterIdentityRomon: RouterIdentityRomon,
+): RouterConfig => {
     const config: RouterConfig = {
         "/system identity": [],
         "/tool romon": [],
@@ -181,15 +183,28 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     return mergeMultipleConfigs(...configs);
 };
 
-export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient, networks?: Networks, routerModels?: RouterModels[], vpnServer?: VPNServer ): RouterConfig => {
+export const UsefulServices = (
+    usefulServicesConfig: UsefulServicesConfig,
+    subnets?: Subnets,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
+    networks?: Networks,
+    routerModels?: RouterModels[],
+    vpnServer?: VPNServer,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     const shouldGenerateCertificates =
-        (usefulServicesConfig.certificate?.SelfSigned || usefulServicesConfig.certificate?.LetsEncrypt) &&
+        (usefulServicesConfig.certificate?.SelfSigned ||
+            usefulServicesConfig.certificate?.LetsEncrypt) &&
         hasCertificateDependentVPNServer(vpnServer);
 
     // Handle Certificate configuration only for active VPN servers that require it
-    if (shouldGenerateCertificates && usefulServicesConfig.certificate && vpnServer) {
+    if (
+        shouldGenerateCertificates &&
+        usefulServicesConfig.certificate &&
+        vpnServer
+    ) {
         configs.push(Certificate(usefulServicesConfig.certificate, vpnServer));
     }
 
@@ -206,19 +221,35 @@ export const UsefulServices = ( usefulServicesConfig: UsefulServicesConfig, subn
     // Handle Cloud DDNS configuration - skip if master is CHR
     if (usefulServicesConfig.cloudDDNS && !isMasterCHR(routerModels)) {
         // Process each DDNS entry
-        usefulServicesConfig.cloudDDNS.ddnsEntries.forEach(entry => {
+        usefulServicesConfig.cloudDDNS.ddnsEntries.forEach((entry) => {
             configs.push(DDNS(entry));
         });
     }
 
     // Handle UPNP configuration
     if (usefulServicesConfig.upnp && subnets && wanLinks) {
-        configs.push(UPNP(usefulServicesConfig.upnp, subnets, wanLinks, vpnClient, networks));
+        configs.push(
+            UPNP(
+                usefulServicesConfig.upnp,
+                subnets,
+                wanLinks,
+                vpnClient,
+                networks,
+            ),
+        );
     }
 
     // Handle NAT-PMP configuration
     if (usefulServicesConfig.natpmp && subnets && wanLinks) {
-        configs.push(NATPMP(usefulServicesConfig.natpmp, subnets, wanLinks, vpnClient, networks));
+        configs.push(
+            NATPMP(
+                usefulServicesConfig.natpmp,
+                subnets,
+                wanLinks,
+                vpnClient,
+                networks,
+            ),
+        );
     }
 
     return mergeMultipleConfigs(...configs);
@@ -314,7 +345,9 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
     if (games && games.length > 0) {
         // Determine source address list based on Split network availability
         // If Split network exists, use "Split-LAN", otherwise use "VPN-LAN"
-        const sourceAddressList = networks.BaseNetworks?.Split ? "Split-LAN" : "VPN-LAN";
+        const sourceAddressList = networks.BaseNetworks?.Split
+            ? "Split-LAN"
+            : "VPN-LAN";
 
         // Extract all routing tables from networks
         const routingTables = extractRoutingTablesFromNetworks(networks);
@@ -323,7 +356,7 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
         routingTables.forEach((routingTable) => {
             // Extract the network name from routing table (e.g., "to-Foreign" -> "Foreign")
             const networkName = routingTable.replace("to-", "");
-            
+
             config["/ip firewall mangle"].push(
                 // `add action=mark-connection chain=prerouting dst-address-list="${networkName}-IP-Games" \\
                 // new-connection-mark="${networkName}-conn-Games" passthrough=yes src-address-list="${sourceAddressList}" \\
@@ -340,8 +373,11 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
         // Generate raw rules for each game
         games.forEach((game: GameConfig) => {
             // Map network name to routing table
-            const routingTable = mapNetworkToRoutingTable(game.network, networks);
-            
+            const routingTable = mapNetworkToRoutingTable(
+                game.network,
+                networks,
+            );
+
             // Skip if network mapping failed
             if (!routingTable) {
                 return;
@@ -351,8 +387,13 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
             const networkName = routingTable.replace("to-", "");
 
             // Add TCP port rules
-            if (game.ports.tcp?.length && game.ports.tcp.some((port) => port !== "")) {
-                const tcpPorts = game.ports.tcp.filter((port) => port !== "").join(",");
+            if (
+                game.ports.tcp?.length &&
+                game.ports.tcp.some((port) => port !== "")
+            ) {
+                const tcpPorts = game.ports.tcp
+                    .filter((port) => port !== "")
+                    .join(",");
                 config["/ip firewall raw"].push(
                     `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
         chain=prerouting dst-address-list="!LOCAL-IP" dst-port="${tcpPorts}" protocol="tcp" \\
@@ -361,8 +402,13 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
             }
 
             // Add UDP port rules
-            if (game.ports.udp?.length && game.ports.udp.some((port) => port !== "")) {
-                const udpPorts = game.ports.udp.filter((port) => port !== "").join(",");
+            if (
+                game.ports.udp?.length &&
+                game.ports.udp.some((port) => port !== "")
+            ) {
+                const udpPorts = game.ports.udp
+                    .filter((port) => port !== "")
+                    .join(",");
                 config["/ip firewall raw"].push(
                     `add action=add-dst-to-address-list src-address-list="${sourceAddressList}" address-list="${networkName}-IP-Games" address-list-timeout=1d \\
         chain=prerouting dst-address-list="!LOCAL-IP" dst-port="${udpPorts}" protocol="udp" \\
@@ -416,13 +462,27 @@ export const ExtraCG = (
     }
 
     // Generate Game mangle and raw rules only if Games are configured
-    if (networks && ExtraConfigState.Games && ExtraConfigState.Games.length > 0) {
+    if (
+        networks &&
+        ExtraConfigState.Games &&
+        ExtraConfigState.Games.length > 0
+    ) {
         configs.push(Game(ExtraConfigState.Games, networks));
     }
 
     // Handle all useful services (Certificate, NTP, Graph, DDNS, UPNP, NAT-PMP)
     if (ExtraConfigState.usefulServices) {
-        configs.push(UsefulServices(ExtraConfigState.usefulServices, subnets, wanLinks, vpnClient, networks, routerModels, vpnServer));
+        configs.push(
+            UsefulServices(
+                ExtraConfigState.usefulServices,
+                subnets,
+                wanLinks,
+                vpnClient,
+                networks,
+                routerModels,
+                vpnServer,
+            ),
+        );
     }
 
     // Add Cloud DDNS configuration - skip if master is CHR

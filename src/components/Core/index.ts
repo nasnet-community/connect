@@ -66,7 +66,12 @@ export * from "./Form/RadioGroup";
 // Toggle/Switch Components
 // Primary Toggle component for binary states
 export { Toggle } from "./Toggle/Toggle";
-export type { ToggleProps, ToggleSize, ToggleColor, LabelPosition } from "./Toggle/Toggle.types";
+export type {
+  ToggleProps,
+  ToggleSize,
+  ToggleColor,
+  LabelPosition,
+} from "./Toggle/Toggle.types";
 
 // Segmented Control Component for multi-option selection
 export * from "./SegmentedControl";
@@ -242,7 +247,7 @@ export {
    * @param onChange$ - Handler for selection changes
    * @param size - Size variant (sm, md, lg)
    * @param color - Color theme (primary, secondary, neutral)
-   * 
+   *
    * @example
    * const enabledState = useSignal("false");
    * <SegmentedControl
@@ -296,17 +301,17 @@ export {
    * @param onClose - Handler for close events
    */
   Dialog,
-  
+
   /**
    * Dialog header component for modal titles and close button
    */
   DialogHeader,
-  
+
   /**
    * Dialog body component for modal content
    */
   DialogBody,
-  
+
   /**
    * Dialog footer component for modal actions
    */
@@ -374,21 +379,21 @@ export {
    * @param isSelected - Whether the card is currently selected
    * @param isDisabled - Whether the card is disabled
    * @param title - Card title
-   * @param description - Card description  
+   * @param description - Card description
    * @param icon - Icon element to display
    * @param badge - Optional badge text
    * @param onClick$ - Click handler
-   * 
+   *
    * @example
-  * <SelectionCard
-  *   isSelected={selected === 'premium'}
-  *   title="Premium Plan"
-  *   icon={<LuCrown class="h-8 w-8" />}
-  *   badge="Popular"
-  *   onClick$={() => setSelected('premium')}
-  * >
-  *   <p>Best for growing teams</p>
-  * </SelectionCard>
+   * <SelectionCard
+   *   isSelected={selected === 'premium'}
+   *   title="Premium Plan"
+   *   icon={<LuCrown class="h-8 w-8" />}
+   *   badge="Popular"
+   *   onClick$={() => setSelected('premium')}
+   * >
+   *   <p>Best for growing teams</p>
+   * </SelectionCard>
    */
   SelectionCard,
 

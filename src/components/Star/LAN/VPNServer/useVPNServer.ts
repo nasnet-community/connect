@@ -7,9 +7,12 @@ import { StarContext } from "../../StarContext/StarContext";
 
 export const useVPNServer = () => {
   const starContext = useContext(StarContext);
-  
+
   return {
     starContext,
-    vpnServerState: starContext.state.LAN.VPNServer || { Users: [], SelectedNetworks: ["VPN"] },
+    vpnServerState: starContext.state.LAN.VPNServer || {
+      Users: [],
+      SelectedNetworks: ["VPN"],
+    },
   };
 };

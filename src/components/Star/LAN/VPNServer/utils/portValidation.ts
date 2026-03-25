@@ -3,8 +3,8 @@ import type { StarState } from "../../../StarContext/StarContext";
 
 // Reserved system/service ports that cannot be used for VPN servers
 export const RESERVED_PORTS = [
-  20, 21, 22, 23, 25, 53, 80, 110, 143, 443,
-  465, 587, 993, 995, 3306, 5432, 8080, 8443,
+  20, 21, 22, 23, 25, 53, 80, 110, 143, 443, 465, 587, 993, 995, 3306, 5432,
+  8080, 8443,
 ];
 
 export interface VPNServerPort {
@@ -20,7 +20,7 @@ export interface VPNServerPort {
 export function validatePort(
   port: number,
   currentServerName: string,
-  allVPNServers: VPNServerPort[]
+  allVPNServers: VPNServerPort[],
 ): { valid: boolean; error?: string } {
   // Check if port is in valid range
   if (port < 1 || port > 65535) {
@@ -40,7 +40,7 @@ export function validatePort(
 
   // Check duplicates across all VPN protocols
   const duplicate = allVPNServers.find(
-    (s) => s.port === port && s.serverName !== currentServerName
+    (s) => s.port === port && s.serverName !== currentServerName,
   );
 
   if (duplicate) {
@@ -153,4 +153,3 @@ export function getAllVPNServerPorts(state: StarState): VPNServerPort[] {
 
   return ports;
 }
-

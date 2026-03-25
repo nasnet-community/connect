@@ -1,5 +1,10 @@
 import { component$, Slot } from "@builder.io/qwik";
-import type { GridProps, GridItemProps, ResponsiveGridTemplateColumns, GridTemplateColumns } from "./Grid.types";
+import type {
+  GridProps,
+  GridItemProps,
+  ResponsiveGridTemplateColumns,
+  GridTemplateColumns,
+} from "./Grid.types";
 
 /**
  * Grid component - a layout primitive for creating two-dimensional grid layouts.
@@ -26,7 +31,9 @@ const Grid = component$<GridProps>((props) => {
   } = props;
 
   // Type guard to check if columns is a regular responsive object
-  const isRegularResponsive = (cols: ResponsiveGridTemplateColumns): cols is {
+  const isRegularResponsive = (
+    cols: ResponsiveGridTemplateColumns,
+  ): cols is {
     base?: GridTemplateColumns;
     sm?: GridTemplateColumns;
     md?: GridTemplateColumns;
@@ -34,7 +41,15 @@ const Grid = component$<GridProps>((props) => {
     xl?: GridTemplateColumns;
     "2xl"?: GridTemplateColumns;
   } => {
-    return typeof cols === "object" && ('sm' in cols || 'md' in cols || 'lg' in cols || 'xl' in cols || '2xl' in cols || 'base' in cols);
+    return (
+      typeof cols === "object" &&
+      ("sm" in cols ||
+        "md" in cols ||
+        "lg" in cols ||
+        "xl" in cols ||
+        "2xl" in cols ||
+        "base" in cols)
+    );
   };
 
   // Generate grid template columns classes

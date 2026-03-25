@@ -5,14 +5,19 @@ import type {
   CustomWirelessConfig,
   CustomSfpConfig,
 } from "./CustomRouterTypes";
-import type { Ethernet, Wireless, Sfp, LTE } from "../../StarContext/CommonType";
+import type {
+  Ethernet,
+  Wireless,
+  Sfp,
+  LTE,
+} from "../../StarContext/CommonType";
 import type { RouterInterfaces } from "../../StarContext/ChooseType";
 
 /**
  * Generate interface names for ethernet interfaces
  */
 export function generateEthernetInterfaces(
-  configs: CustomEthernetConfig[]
+  configs: CustomEthernetConfig[],
 ): Ethernet[] {
   const interfaces: Ethernet[] = [];
   let counter = 1;
@@ -31,10 +36,10 @@ export function generateEthernetInterfaces(
  * Generate interface names for wireless interfaces
  */
 export function generateWirelessInterfaces(
-  configs: CustomWirelessConfig[]
+  configs: CustomWirelessConfig[],
 ): Wireless[] {
   const interfaces: Wireless[] = [];
-  
+
   for (const config of configs) {
     for (let i = 0; i < config.count; i++) {
       if (config.band === "2.4") {
@@ -92,8 +97,14 @@ export function generateLteInterfaces(count: number): LTE[] {
  * Generate specs object for display
  */
 export function generateSpecs(form: CustomRouterForm): RouterData["specs"] {
-  const ethernetCount = form.ethernet.reduce((sum, config) => sum + config.count, 0);
-  const wirelessCount = form.wireless.reduce((sum, config) => sum + config.count, 0);
+  const ethernetCount = form.ethernet.reduce(
+    (sum, config) => sum + config.count,
+    0,
+  );
+  const wirelessCount = form.wireless.reduce(
+    (sum, config) => sum + config.count,
+    0,
+  );
   const sfpCount = form.sfp.reduce((sum, config) => sum + config.count, 0);
 
   // Build ethernet description
@@ -117,8 +128,10 @@ export function generateSpecs(form: CustomRouterForm): RouterData["specs"] {
     Storage: form.isCHR ? "Virtual" : "N/A",
     Ports: ethernetCount > 0 ? ethernetDescriptions : "N/A",
     "Wi-Fi": wirelessCount > 0 ? wirelessDescriptions : "None",
-    Speed: ethernetCount > 0 || sfpCount > 0 ? 
-      `${ethernetDescriptions}${sfpCount > 0 ? `, ${sfpDescriptions}` : ""}` : "N/A",
+    Speed:
+      ethernetCount > 0 || sfpCount > 0
+        ? `${ethernetDescriptions}${sfpCount > 0 ? `, ${sfpDescriptions}` : ""}`
+        : "N/A",
   };
 }
 
@@ -132,25 +145,37 @@ export function generateFeatures(form: CustomRouterForm): string[] {
     features.push($localize`Cloud Hosted Router (CHR)`);
   }
 
-  const ethernetCount = form.ethernet.reduce((sum, config) => sum + config.count, 0);
+  const ethernetCount = form.ethernet.reduce(
+    (sum, config) => sum + config.count,
+    0,
+  );
   if (ethernetCount > 0) {
     features.push(
-      $localize`${ethernetCount}:ethernet_count: Ethernet Port${ethernetCount > 1 ? "s" : ""}`
+      $localize`${ethernetCount}:ethernet_count: Ethernet Port${ethernetCount > 1 ? "s" : ""}`,
     );
   }
 
-  const wirelessCount = form.wireless.reduce((sum, config) => sum + config.count, 0);
+  const wirelessCount = form.wireless.reduce(
+    (sum, config) => sum + config.count,
+    0,
+  );
   if (wirelessCount > 0) {
-    features.push($localize`${wirelessCount}:wireless_count: Wireless Interface${wirelessCount > 1 ? "s" : ""}`);
+    features.push(
+      $localize`${wirelessCount}:wireless_count: Wireless Interface${wirelessCount > 1 ? "s" : ""}`,
+    );
   }
 
   const sfpCount = form.sfp.reduce((sum, config) => sum + config.count, 0);
   if (sfpCount > 0) {
-    features.push($localize`${sfpCount}:sfp_count: SFP Port${sfpCount > 1 ? "s" : ""}`);
+    features.push(
+      $localize`${sfpCount}:sfp_count: SFP Port${sfpCount > 1 ? "s" : ""}`,
+    );
   }
 
   if (form.lte > 0) {
-    features.push($localize`${form.lte}:lte_count: LTE Modem${form.lte > 1 ? "s" : ""}`);
+    features.push(
+      $localize`${form.lte}:lte_count: LTE Modem${form.lte > 1 ? "s" : ""}`,
+    );
   }
 
   if (form.cpuArch) {
@@ -276,7 +301,7 @@ export function convertFormToRouterData(form: CustomRouterForm): RouterData {
  */
 export function generateUniqueRouterName(
   baseName: string,
-  existingRouters: RouterData[]
+  existingRouters: RouterData[],
 ): string {
   let name = baseName;
   let counter = 1;
@@ -288,4 +313,3 @@ export function generateUniqueRouterName(
 
   return name;
 }
-

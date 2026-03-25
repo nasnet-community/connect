@@ -5,7 +5,11 @@ import {
     BTHServerFirewall,
     BTHServerWrapper,
 } from "./BTH";
-import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+    validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
 import type {
     BackToHomeServerConfig,
     VSCredentials,
@@ -236,11 +240,14 @@ describe("Back-to-Home (BTH) Protocol Tests", () => {
                 Network: "VPN",
             };
 
-            const users: VSCredentials[] = Array.from({ length: 20 }, (_, i) => ({
-                Username: `bth_user${i + 1}`,
-                Password: `bth_pass${i + 1}`,
-                VPNType: ["BackToHome"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 20 },
+                (_, i) => ({
+                    Username: `bth_user${i + 1}`,
+                    Password: `bth_pass${i + 1}`,
+                    VPNType: ["BackToHome"],
+                }),
+            );
 
             testWithOutput(
                 "BTHServerUsers",
@@ -358,8 +365,10 @@ describe("Back-to-Home (BTH) Protocol Tests", () => {
 
             const users: VSCredentials[] = [
                 {
-                    Username: "very_long_bth_username_with_many_characters_12345",
-                    Password: "VeryLongP@ssw0rd!BTH#Many$Special%Characters&12345",
+                    Username:
+                        "very_long_bth_username_with_many_characters_12345",
+                    Password:
+                        "VeryLongP@ssw0rd!BTH#Many$Special%Characters&12345",
                     VPNType: ["BackToHome"],
                 },
             ];
@@ -376,7 +385,12 @@ describe("Back-to-Home (BTH) Protocol Tests", () => {
         });
 
         it("should handle all network types", () => {
-            const networks: Array<BackToHomeServerConfig["Network"]> = ["VPN", "Domestic", "Foreign", "Split"];
+            const networks: Array<BackToHomeServerConfig["Network"]> = [
+                "VPN",
+                "Domestic",
+                "Foreign",
+                "Split",
+            ];
 
             networks.forEach((network) => {
                 const config: BackToHomeServerConfig = {
@@ -406,7 +420,17 @@ describe("Back-to-Home (BTH) Protocol Tests", () => {
                 {
                     Username: "allmethods",
                     Password: "allpass",
-                    VPNType: ["BackToHome", "Wireguard", "OpenVPN", "PPTP", "L2TP", "SSTP", "IKeV2", "SSH", "Socks5"],
+                    VPNType: [
+                        "BackToHome",
+                        "Wireguard",
+                        "OpenVPN",
+                        "PPTP",
+                        "L2TP",
+                        "SSTP",
+                        "IKeV2",
+                        "SSH",
+                        "Socks5",
+                    ],
                 },
             ];
 

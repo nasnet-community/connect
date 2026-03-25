@@ -93,7 +93,6 @@ export const EasyUsersStep = component$<EasyUsersStepProps>(
           <span>{$localize`Add User`}</span>
         </button>
 
-
         {/* Validation Status */}
         {!isValid.value && users.length > 0 && (
           <div class="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-200">
@@ -102,5 +101,5 @@ export const EasyUsersStep = component$<EasyUsersStepProps>(
         )}
       </div>
     );
-  }
+  },
 );

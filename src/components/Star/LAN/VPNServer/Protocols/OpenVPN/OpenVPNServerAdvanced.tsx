@@ -19,48 +19,49 @@ interface OpenVPNServerAdvancedProps {
   hook: ReturnType<typeof useOpenVPNServer>;
 }
 
-export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ hook }) => {
-  const {
-    draftConfigs,
-    activeTabIndex,
-    addServerTab$,
-    removeServerTab$,
-    switchTab$,
-    protocolOptions,
-    updateProtocol$,
-    updatePort$,
-    updateTcpPort$,
-    updateUdpPort$,
-    updateName$,
-    // updateCertificate$,
-    // updateAddressPool$,
-    updateVSNetwork$,
-    // certificateError,
-    portError,
-  } = hook;
+export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
+  ({ hook }) => {
+    const {
+      draftConfigs,
+      activeTabIndex,
+      addServerTab$,
+      removeServerTab$,
+      switchTab$,
+      protocolOptions,
+      updateProtocol$,
+      updatePort$,
+      updateTcpPort$,
+      updateUdpPort$,
+      updateName$,
+      // updateCertificate$,
+      // updateAddressPool$,
+      updateVSNetwork$,
+      // certificateError,
+      portError,
+    } = hook;
 
-  // Generate tab options for TabNavigation
-  const tabOptions = useComputed$(() =>
-    draftConfigs.value.map((config, index) => ({
-      id: `interface-${index}`,
-      label: config.name,
-      icon: <HiServerOutline class="h-4 w-4" />,
-    }))
-  );
+    // Generate tab options for TabNavigation
+    const tabOptions = useComputed$(() =>
+      draftConfigs.value.map((config, index) => ({
+        id: `interface-${index}`,
+        label: config.name,
+        icon: <HiServerOutline class="h-4 w-4" />,
+      })),
+    );
 
-  // Get current draft as a reactive computed value
-  const currentDraft = useComputed$(() =>
-    draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0]
-  );
+    // Get current draft as a reactive computed value
+    const currentDraft = useComputed$(
+      () => draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0],
+    );
 
-  return (
-    <Card hasHeader>
-      <div q:slot="header" class="flex items-center gap-2">
-        <HiServerOutline class="h-5 w-5" />
-        <span class="font-medium">{$localize`OpenVPN Server`}</span>
-      </div>
-      
-      <div class="space-y-6">
+    return (
+      <Card hasHeader>
+        <div q:slot="header" class="flex items-center gap-2">
+          <HiServerOutline class="h-5 w-5" />
+          <span class="font-medium">{$localize`OpenVPN Server`}</span>
+        </div>
+
+        <div class="space-y-6">
           {/* Interface Management */}
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -114,8 +115,6 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ h
               placeholder="1"
             />
 
-
-
             {/* Network Selection */}
             <NetworkDropdown
               selectedNetwork={currentDraft.value.vsNetwork as ExtendedNetworks}
@@ -131,18 +130,25 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ h
                 options={protocolOptions}
                 value={currentDraft.value.protocol}
                 onChange$={(value) => {
-                  updateProtocol$(Array.isArray(value) ? value[0] as any : value as any);
+                  updateProtocol$(
+                    Array.isArray(value) ? (value[0] as any) : (value as any),
+                  );
                 }}
               />
             </FormField>
 
             {/* Port Configuration - Conditional rendering based on protocol */}
-            {(currentDraft.value.protocol !== "tcp" && currentDraft.value.protocol !== "udp") ? (
+            {currentDraft.value.protocol !== "tcp" &&
+            currentDraft.value.protocol !== "udp" ? (
               <>
                 {/* TCP Port */}
                 <FormField
                   label={$localize`TCP Port`}
-                  helperText={portError.value && portError.value.includes("TCP") ? portError.value : undefined}
+                  helperText={
+                    portError.value && portError.value.includes("TCP")
+                      ? portError.value
+                      : undefined
+                  }
                 >
                   <Input
                     type="number"
@@ -154,14 +160,22 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ h
                       }
                     }}
                     placeholder="1194"
-                    validation={portError.value && portError.value.includes("TCP") ? "invalid" : "default"}
+                    validation={
+                      portError.value && portError.value.includes("TCP")
+                        ? "invalid"
+                        : "default"
+                    }
                   />
                 </FormField>
-                
+
                 {/* UDP Port */}
                 <FormField
                   label={$localize`UDP Port`}
-                  helperText={portError.value && portError.value.includes("UDP") ? portError.value : undefined}
+                  helperText={
+                    portError.value && portError.value.includes("UDP")
+                      ? portError.value
+                      : undefined
+                  }
                 >
                   <Input
                     type="number"
@@ -173,7 +187,11 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ h
                       }
                     }}
                     placeholder="1195"
-                    validation={portError.value && portError.value.includes("UDP") ? "invalid" : "default"}
+                    validation={
+                      portError.value && portError.value.includes("UDP")
+                        ? "invalid"
+                        : "default"
+                    }
                   />
                 </FormField>
               </>
@@ -208,7 +226,8 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(({ h
               {$localize`Server certificates and security settings are configured in the Certificate step. This ensures consistent certificate management across all protocols that require them.`}
             </p>
           </div>
-      </div>
-    </Card>
-  );
-});
+        </div>
+      </Card>
+    );
+  },
+);

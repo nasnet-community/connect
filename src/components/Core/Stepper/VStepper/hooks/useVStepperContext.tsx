@@ -1,22 +1,25 @@
-import { 
-  createContextId, 
-  useContext, 
+import {
+  createContextId,
+  useContext,
   useContextProvider,
   $,
-  useSignal
+  useSignal,
 } from "@builder.io/qwik";
 import type { VStepperContext, StepItem } from "../types";
 import type { ContextId } from "@builder.io/qwik";
 
 // Create default context ID for VStepper
-export const VStepperContextId = createContextId<VStepperContext>("VStepper-context");
+export const VStepperContextId =
+  createContextId<VStepperContext>("VStepper-context");
 
 /**
  * Creates a context for sharing state between vertical stepper steps
  * @param name A unique name for this stepper context
  * @returns A context ID for the stepper
  */
-export function createVStepperContext<T = any>(name: string = "custom-vstepper") {
+export function createVStepperContext<T = any>(
+  name: string = "custom-vstepper",
+) {
   // Create a typed context ID for this specific stepper
   return createContextId<VStepperContext<T>>(`VStepper-${name}`);
 }
@@ -34,11 +37,11 @@ export function useProvideVStepperContext<T = any>(
   steps: StepItem[],
   activeStep: number,
   data: T,
-  scrollToStep$: any
+  scrollToStep$: any,
 ) {
   const stepsSignal = useSignal<StepItem[]>(steps);
   const activeStepSignal = useSignal<number>(activeStep);
-  
+
   // Step navigation functions
   const goToStep$ = $((step: number) => {
     if (step >= 0 && step < stepsSignal.value.length) {
@@ -46,7 +49,7 @@ export function useProvideVStepperContext<T = any>(
       scrollToStep$(step);
     }
   });
-  
+
   const nextStep$ = $(() => {
     const currentStep = activeStepSignal.value;
     if (currentStep < stepsSignal.value.length - 1) {
@@ -54,55 +57,62 @@ export function useProvideVStepperContext<T = any>(
       scrollToStep$(activeStepSignal.value);
     }
   });
-  
+
   const prevStep$ = $(() => {
     if (activeStepSignal.value > 0) {
       activeStepSignal.value--;
       scrollToStep$(activeStepSignal.value);
     }
   });
-  
+
   // Step completion state
   const updateStepCompletion$ = $((stepId: number, isComplete: boolean) => {
-    stepsSignal.value = stepsSignal.value.map(step => 
-      step.id === stepId ? { ...step, isComplete } : step
+    stepsSignal.value = stepsSignal.value.map((step) =>
+      step.id === stepId ? { ...step, isComplete } : step,
     );
   });
-  
+
   // Add function to easily complete a step
   const completeStep$ = $((stepId?: number) => {
     // If no stepId is provided, complete the current active step
-    const idToComplete = stepId !== undefined ? stepId : stepsSignal.value[activeStepSignal.value].id;
-    
+    const idToComplete =
+      stepId !== undefined
+        ? stepId
+        : stepsSignal.value[activeStepSignal.value].id;
+
     // Update the step completion status
-    stepsSignal.value = stepsSignal.value.map(step => 
-      step.id === idToComplete ? { ...step, isComplete: true } : step
+    stepsSignal.value = stepsSignal.value.map((step) =>
+      step.id === idToComplete ? { ...step, isComplete: true } : step,
     );
   });
-  
+
   // Add step management functions
   const addStep$ = $((newStep: StepItem, position?: number) => {
     const newSteps = [...stepsSignal.value];
-    
-    if (position !== undefined && position >= 0 && position <= newSteps.length) {
+
+    if (
+      position !== undefined &&
+      position >= 0 &&
+      position <= newSteps.length
+    ) {
       // Insert at specific position
       newSteps.splice(position, 0, newStep);
     } else {
       // Append to end
       newSteps.push(newStep);
     }
-    
+
     stepsSignal.value = newSteps;
     return newStep.id;
   });
-  
+
   const removeStep$ = $((stepId: number) => {
-    const stepIndex = stepsSignal.value.findIndex(step => step.id === stepId);
-    
+    const stepIndex = stepsSignal.value.findIndex((step) => step.id === stepId);
+
     if (stepIndex >= 0) {
       const newSteps = [...stepsSignal.value];
       newSteps.splice(stepIndex, 1);
-      
+
       // Adjust active step if necessary
       if (activeStepSignal.value >= newSteps.length) {
         activeStepSignal.value = Math.max(0, newSteps.length - 1);
@@ -110,42 +120,44 @@ export function useProvideVStepperContext<T = any>(
         // If we removed a step before the active one, adjust active step
         activeStepSignal.value = Math.max(0, activeStepSignal.value - 1);
       }
-      
+
       stepsSignal.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
-  
+
   const swapSteps$ = $((sourceIndex: number, targetIndex: number) => {
     if (
-      sourceIndex >= 0 && 
-      sourceIndex < stepsSignal.value.length && 
-      targetIndex >= 0 && 
+      sourceIndex >= 0 &&
+      sourceIndex < stepsSignal.value.length &&
+      targetIndex >= 0 &&
       targetIndex < stepsSignal.value.length &&
       sourceIndex !== targetIndex
     ) {
       const newSteps = [...stepsSignal.value];
-      
+
       // Swap the steps
-      [newSteps[sourceIndex], newSteps[targetIndex]] = 
-      [newSteps[targetIndex], newSteps[sourceIndex]];
-      
+      [newSteps[sourceIndex], newSteps[targetIndex]] = [
+        newSteps[targetIndex],
+        newSteps[sourceIndex],
+      ];
+
       // Update active step if it was one of the swapped steps
       if (activeStepSignal.value === sourceIndex) {
         activeStepSignal.value = targetIndex;
       } else if (activeStepSignal.value === targetIndex) {
         activeStepSignal.value = sourceIndex;
       }
-      
+
       stepsSignal.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
-  
+
   // Create the context value
   const contextValue: VStepperContext<T> = {
     activeStep: activeStepSignal,
@@ -159,12 +171,12 @@ export function useProvideVStepperContext<T = any>(
     removeStep$,
     swapSteps$,
     scrollToStep$,
-    data
+    data,
   };
-  
+
   // Provide the context
   useContextProvider(contextId, contextValue);
-  
+
   return contextValue;
 }
 
@@ -174,7 +186,9 @@ export function useProvideVStepperContext<T = any>(
  * @returns The stepper context with shared state and functions
  */
 export function useVStepperContext<T = any>(
-  contextId: ContextId<VStepperContext<T>> = VStepperContextId as unknown as ContextId<VStepperContext<T>>
+  contextId: ContextId<
+    VStepperContext<T>
+  > = VStepperContextId as unknown as ContextId<VStepperContext<T>>,
 ) {
   return useContext<VStepperContext<T>>(contextId);
-} 
+}

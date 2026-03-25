@@ -6,7 +6,7 @@ export const StateEntry = component$((props: StateEntryProps) => {
   return (
     <div class="space-y-2">
       <div class="flex items-center justify-between">
-        <span class="text-sm text-text-secondary dark:text-text-dark-secondary">
+        <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
           {new Date(props.entry.timestamp).toLocaleString()}
         </span>
         <div class="flex items-center gap-2">
@@ -71,11 +71,7 @@ export const StateEntry = component$((props: StateEntryProps) => {
           </button>
         </div>
       </div>
-      <JsonViewer
-        data={props.entry.state}
-        maxHeight="600px"
-        class="mt-3"
-      />
+      <JsonViewer data={props.entry.state} maxHeight="600px" class="mt-3" />
     </div>
   );
 });

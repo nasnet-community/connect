@@ -6,11 +6,7 @@ import {
   useTask$,
 } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
-import type { 
-  SubnetConfig, 
-  UseSubnetsReturn, 
-  SubnetCategory 
-} from "./types";
+import type { SubnetConfig, UseSubnetsReturn, SubnetCategory } from "./types";
 
 /**
  * Custom hook for managing subnet configuration state and logic
@@ -18,7 +14,7 @@ import type {
  */
 export const useSubnets = (): UseSubnetsReturn => {
   const starContext = useContext(StarContext);
-  
+
   // Local state for subnet values and errors
   const values = useSignal<Record<string, number | null>>({});
   const errors = useSignal<Record<string, string>>({});
@@ -32,38 +28,51 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     // Check both Domestic and Foreign WAN links
     const allLinks = [
-      ...(wanLinks.Domestic?.WANConfigs || []).map(c => ({ ...c, type: 'Domestic' })),
-      ...(wanLinks.Foreign?.WANConfigs || []).map(c => ({ ...c, type: 'Foreign' }))
+      ...(wanLinks.Domestic?.WANConfigs || []).map((c) => ({
+        ...c,
+        type: "Domestic",
+      })),
+      ...(wanLinks.Foreign?.WANConfigs || []).map((c) => ({
+        ...c,
+        type: "Foreign",
+      })),
     ];
 
     // Helper to compute third octet of network from IP and mask
     const toThirdOctet = (ip: string, mask: string): number | null => {
       // Fallback: handle accidental CIDR stored in mask field (e.g., "192.168.30.0/24")
-      if (mask && mask.includes('/')) {
+      if (mask && mask.includes("/")) {
         const m = mask.match(/192\.168\.(\d+)\.\d+\/\d+/);
         if (m) return parseInt(m[1], 10);
       }
 
-      const ipParts = ip.split('.').map(p => parseInt(p, 10));
-      const maskParts = mask.split('.').map(p => parseInt(p, 10));
-      if (!ipParts || !maskParts || ipParts.length !== 4 || maskParts.length !== 4) return null;
-      if (ipParts.some(n => isNaN(n)) || maskParts.some(n => isNaN(n))) return null;
+      const ipParts = ip.split(".").map((p) => parseInt(p, 10));
+      const maskParts = mask.split(".").map((p) => parseInt(p, 10));
+      if (
+        !ipParts ||
+        !maskParts ||
+        ipParts.length !== 4 ||
+        maskParts.length !== 4
+      )
+        return null;
+      if (ipParts.some((n) => isNaN(n)) || maskParts.some((n) => isNaN(n)))
+        return null;
 
-      const network = ipParts.map((octet, i) => (octet & maskParts[i]));
+      const network = ipParts.map((octet, i) => octet & maskParts[i]);
       if (network[0] === 192 && network[1] === 168) {
         return network[2];
       }
       return null;
     };
 
-    allLinks.forEach(link => {
+    allLinks.forEach((link) => {
       const staticCfg = link.ConnectionConfig?.static;
       if (staticCfg?.ipAddress && staticCfg.subnet) {
         const third = toThirdOctet(staticCfg.ipAddress, staticCfg.subnet);
         if (third !== null) {
           wanSubnets.push({
             value: third,
-            name: `${link.type} WAN: ${link.name || 'Link'}`
+            name: `${link.type} WAN: ${link.name || "Link"}`,
           });
         }
       } else if (staticCfg?.subnet) {
@@ -72,7 +81,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         if (match) {
           wanSubnets.push({
             value: parseInt(match[1], 10),
-            name: `${link.type} WAN: ${link.name || 'Link'}`
+            name: `${link.type} WAN: ${link.name || "Link"}`,
           });
         }
       }
@@ -94,27 +103,32 @@ export const useSubnets = (): UseSubnetsReturn => {
     };
 
     // Handle both legacy flat format and new structured format
-    if (typeof existingSubnets === 'object' && !Array.isArray(existingSubnets)) {
+    if (
+      typeof existingSubnets === "object" &&
+      !Array.isArray(existingSubnets)
+    ) {
       // Check if it's the new structured format (has BaseNetworks property)
-      if ('BaseNetworks' in existingSubnets) {
+      if ("BaseNetworks" in existingSubnets) {
         const subnets = existingSubnets as any; // Type assertion for flexibility
-        
+
         // Extract base networks
         if (subnets.BaseNetworks) {
-          Object.entries(subnets.BaseNetworks).forEach(([key, subnetConfig]: [string, any]) => {
-            if (subnetConfig && typeof subnetConfig.subnet === 'string') {
-              const octet = extractThirdOctet(subnetConfig.subnet);
-              if (octet !== null) {
-                initialValues[key] = octet;
+          Object.entries(subnets.BaseNetworks).forEach(
+            ([key, subnetConfig]: [string, any]) => {
+              if (subnetConfig && typeof subnetConfig.subnet === "string") {
+                const octet = extractThirdOctet(subnetConfig.subnet);
+                if (octet !== null) {
+                  initialValues[key] = octet;
+                }
               }
-            }
-          });
+            },
+          );
         }
 
         // Extract domestic networks
         if (Array.isArray(subnets.DomesticNetworks)) {
           subnets.DomesticNetworks.forEach((config: any, index: number) => {
-            if (config && typeof config.subnet === 'string') {
+            if (config && typeof config.subnet === "string") {
               const octet = extractThirdOctet(config.subnet);
               if (octet !== null) {
                 initialValues[`Domestic${index + 1}`] = octet;
@@ -126,7 +140,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         // Extract foreign networks
         if (Array.isArray(subnets.ForeignNetworks)) {
           subnets.ForeignNetworks.forEach((config: any, index: number) => {
-            if (config && typeof config.subnet === 'string') {
+            if (config && typeof config.subnet === "string") {
               const octet = extractThirdOctet(config.subnet);
               if (octet !== null) {
                 initialValues[`Foreign${index + 1}`] = octet;
@@ -138,52 +152,67 @@ export const useSubnets = (): UseSubnetsReturn => {
         // Extract VPN client networks
         if (subnets.VPNClientNetworks) {
           let clientIndex = 1;
-          ['Wireguard', 'OpenVPN', 'PPTP', 'L2TP', 'SSTP', 'IKev2'].forEach((protocol) => {
-            const protocolConfigs = subnets.VPNClientNetworks[protocol];
-            if (Array.isArray(protocolConfigs)) {
-              protocolConfigs.forEach((config: any) => {
-                if (config && typeof config.subnet === 'string') {
-                  const octet = extractThirdOctet(config.subnet);
-                  if (octet !== null) {
-                    initialValues[`VPNClient${clientIndex++}`] = octet;
+          ["Wireguard", "OpenVPN", "PPTP", "L2TP", "SSTP", "IKev2"].forEach(
+            (protocol) => {
+              const protocolConfigs = subnets.VPNClientNetworks[protocol];
+              if (Array.isArray(protocolConfigs)) {
+                protocolConfigs.forEach((config: any) => {
+                  if (config && typeof config.subnet === "string") {
+                    const octet = extractThirdOctet(config.subnet);
+                    if (octet !== null) {
+                      initialValues[`VPNClient${clientIndex++}`] = octet;
+                    }
                   }
-                }
-              });
-            }
-          });
+                });
+              }
+            },
+          );
         }
 
         // Extract VPN server networks
         if (subnets.VPNServerNetworks) {
-          ['Wireguard', 'OpenVPN', 'L2TP', 'PPTP', 'SSTP', 'IKev2'].forEach((protocol) => {
-            const protocolConfig = subnets.VPNServerNetworks[protocol];
-            if (Array.isArray(protocolConfig)) {
-              // Multiple servers (Wireguard, OpenVPN)
-              protocolConfig.forEach((config: any) => {
-                if (config && config.name && typeof config.subnet === 'string') {
-                  const octet = extractThirdOctet(config.subnet);
-                  if (octet !== null) {
-                    initialValues[config.name] = octet;
+          ["Wireguard", "OpenVPN", "L2TP", "PPTP", "SSTP", "IKev2"].forEach(
+            (protocol) => {
+              const protocolConfig = subnets.VPNServerNetworks[protocol];
+              if (Array.isArray(protocolConfig)) {
+                // Multiple servers (Wireguard, OpenVPN)
+                protocolConfig.forEach((config: any) => {
+                  if (
+                    config &&
+                    config.name &&
+                    typeof config.subnet === "string"
+                  ) {
+                    const octet = extractThirdOctet(config.subnet);
+                    if (octet !== null) {
+                      initialValues[config.name] = octet;
+                    }
                   }
+                });
+              } else if (
+                protocolConfig &&
+                typeof protocolConfig.subnet === "string"
+              ) {
+                // Single server (L2TP, PPTP, SSTP, IKev2)
+                const octet = extractThirdOctet(protocolConfig.subnet);
+                if (octet !== null) {
+                  initialValues[protocol] = octet;
                 }
-              });
-            } else if (protocolConfig && typeof protocolConfig.subnet === 'string') {
-              // Single server (L2TP, PPTP, SSTP, IKev2)
-              const octet = extractThirdOctet(protocolConfig.subnet);
-              if (octet !== null) {
-                initialValues[protocol] = octet;
               }
-            }
-          });
+            },
+          );
         }
 
         // Extract tunnel networks
         if (subnets.TunnelNetworks) {
-          ['IPIP', 'Eoip', 'Gre', 'Vxlan'].forEach((tunnelType) => {
+          ["IPIP", "Eoip", "Gre", "Vxlan"].forEach((tunnelType) => {
             const tunnelConfigs = subnets.TunnelNetworks[tunnelType];
             if (Array.isArray(tunnelConfigs)) {
               tunnelConfigs.forEach((config: any) => {
-                if (config && config.name && typeof config.subnet === 'string') {
+                if (
+                  config &&
+                  config.name &&
+                  typeof config.subnet === "string"
+                ) {
                   const octet = extractThirdOctet(config.subnet);
                   if (octet !== null) {
                     initialValues[config.name] = octet;
@@ -196,7 +225,7 @@ export const useSubnets = (): UseSubnetsReturn => {
       } else {
         // Legacy flat format - backward compatibility
         Object.entries(existingSubnets).forEach(([key, cidr]) => {
-          if (typeof cidr === 'string') {
+          if (typeof cidr === "string") {
             const octet = extractThirdOctet(cidr);
             if (octet !== null) {
               initialValues[key] = octet;
@@ -232,7 +261,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         color: "primary",
       });
     }
-    
+
     if (networks.BaseNetworks?.Domestic) {
       configs.push({
         key: "Domestic",
@@ -246,7 +275,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         color: "primary",
       });
     }
-    
+
     if (networks.BaseNetworks?.Foreign) {
       configs.push({
         key: "Foreign",
@@ -260,7 +289,7 @@ export const useSubnets = (): UseSubnetsReturn => {
         color: "primary",
       });
     }
-    
+
     if (networks.BaseNetworks?.VPN) {
       configs.push({
         key: "VPN",
@@ -283,7 +312,7 @@ export const useSubnets = (): UseSubnetsReturn => {
       pptp: 130,
       sstp: 140,
       l2tp: 150,
-      ikev2: 160
+      ikev2: 160,
     };
 
     // WireGuard servers - array of network names
@@ -450,7 +479,7 @@ export const useSubnets = (): UseSubnetsReturn => {
       ipip: 170,
       eoip: 180,
       gre: 190,
-      vxlan: 210
+      vxlan: 210,
     };
 
     // IPIP Tunnels
@@ -555,7 +584,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     // VPN Client Networks - read from Networks.VPNClientNetworks
     let vpnClientIndex = 0;
-    
+
     // Wireguard clients
     if (networks.VPNClientNetworks?.Wireguard?.length) {
       networks.VPNClientNetworks.Wireguard.forEach((networkName) => {
@@ -674,7 +703,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     // First, add all WAN static subnets to the used values map
     const wanSubnets = getWANStaticSubnets.value;
-    wanSubnets.forEach(wan => {
+    wanSubnets.forEach((wan) => {
       usedValues.set(wan.value, `WAN:${wan.name}`);
     });
 
@@ -700,17 +729,22 @@ export const useSubnets = (): UseSubnetsReturn => {
           const conflictingKey = usedValues.get(value)!;
 
           // Check if it's a WAN conflict
-          if (conflictingKey.startsWith('WAN:')) {
+          if (conflictingKey.startsWith("WAN:")) {
             const wanName = conflictingKey.substring(4);
-            newErrors[config.key] = $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+            newErrors[config.key] =
+              $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
           } else {
             // It's a LAN-LAN conflict
-            const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+            const conflictingConfig = subnetConfigs.value.find(
+              (c) => c.key === conflictingKey,
+            );
             const conflictingLabel = conflictingConfig?.label || conflictingKey;
 
             // Mark both conflicting subnets
-            newErrors[config.key] = $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
-            newErrors[conflictingKey] = $localize`Conflicts with ${config.label} (192.168.${value}.0)`;
+            newErrors[config.key] =
+              $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
+            newErrors[conflictingKey] =
+              $localize`Conflicts with ${config.label} (192.168.${value}.0)`;
           }
         } else {
           usedValues.set(value, config.key);
@@ -731,12 +765,16 @@ export const useSubnets = (): UseSubnetsReturn => {
     let hasChanges = false;
 
     // Only set defaults if we don't have saved values
-    const hasSavedValues = Object.keys(starContext.state.LAN.Subnets || {}).length > 0;
+    const hasSavedValues =
+      Object.keys(starContext.state.LAN.Subnets || {}).length > 0;
 
     if (!hasSavedValues) {
       // Go through all configurations and set placeholder as default if not set
       subnetConfigs.value.forEach((config) => {
-        if (currentValues[config.key] === undefined || currentValues[config.key] === null) {
+        if (
+          currentValues[config.key] === undefined ||
+          currentValues[config.key] === null
+        ) {
           currentValues[config.key] = config.placeholder;
           hasChanges = true;
         }
@@ -797,7 +835,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     // First, add all WAN static subnets to the used values map
     const wanSubnets = getWANStaticSubnets.value;
-    wanSubnets.forEach(wan => {
+    wanSubnets.forEach((wan) => {
       usedValues.set(wan.value, `WAN:${wan.name}`);
     });
 
@@ -829,14 +867,18 @@ export const useSubnets = (): UseSubnetsReturn => {
           const conflictingKey = usedValues.get(value)!;
 
           // Check if it's a WAN conflict
-          if (conflictingKey.startsWith('WAN:')) {
+          if (conflictingKey.startsWith("WAN:")) {
             const wanName = conflictingKey.substring(4);
-            newErrors[config.key] = $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+            newErrors[config.key] =
+              $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
           } else {
             // It's a LAN-LAN conflict
-            const conflictingConfig = subnetConfigs.value.find(c => c.key === conflictingKey);
+            const conflictingConfig = subnetConfigs.value.find(
+              (c) => c.key === conflictingKey,
+            );
             const conflictingLabel = conflictingConfig?.label || conflictingKey;
-            newErrors[config.key] = $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
+            newErrors[config.key] =
+              $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
           }
         } else {
           usedValues.set(value, config.key);
@@ -855,17 +897,19 @@ export const useSubnets = (): UseSubnetsReturn => {
   });
 
   // Generate subnet string
-  const getSubnetString = $((config: SubnetConfig, value: number | null): string => {
-    if (value === null) {
-      return `192.168.___.0/${config.mask}`;
-    }
-    return `192.168.${value}.0/${config.mask}`;
-  });
+  const getSubnetString = $(
+    (config: SubnetConfig, value: number | null): string => {
+      if (value === null) {
+        return `192.168.___.0/${config.mask}`;
+      }
+      return `192.168.${value}.0/${config.mask}`;
+    },
+  );
 
   // Get suggested value for a category
   const getSuggestedValue = $((category: SubnetCategory): number => {
     const usedValues = new Set(
-      Object.values(values.value).filter((v): v is number => v !== null)
+      Object.values(values.value).filter((v): v is number => v !== null),
     );
 
     // Base suggestions by category
@@ -913,7 +957,9 @@ export const useSubnets = (): UseSubnetsReturn => {
   // Get progress for a category
   const getCategoryProgress = $((category: SubnetCategory) => {
     const configs = groupedConfigs.value[category] || [];
-    const configured = configs.filter(c => values.value[c.key] !== null).length;
+    const configured = configs.filter(
+      (c) => values.value[c.key] !== null,
+    ).length;
     const total = configs.length;
     const percentage = total > 0 ? Math.round((configured / total) * 100) : 0;
 

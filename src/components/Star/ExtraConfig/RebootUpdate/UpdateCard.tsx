@@ -14,7 +14,6 @@ interface UpdateCardProps {
   updateInterval: Signal<FrequencyValue | undefined>;
 }
 
-
 export const UpdateCard = component$<UpdateCardProps>(
   ({ autoUpdateEnabled, updateTime, updateInterval }) => {
     const handleIntervalChange = $((value: FrequencyValue) => {
@@ -64,7 +63,7 @@ export const UpdateCard = component$<UpdateCardProps>(
             <TimePicker
               time={updateTime}
               onChange$={(type, value) => {
-                if (type === 'hour' || type === 'minute') {
+                if (type === "hour" || type === "minute") {
                   updateTime[type] = value;
                 }
               }}

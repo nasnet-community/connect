@@ -1,7 +1,7 @@
 // Local types for WAN Interface Advanced UI
 // These are UI-specific types that don't belong in StarContext
 
-import type { 
+import type {
   WANLinkConfig as CoreWANLinkConfig,
   LTESettings,
   PPPoEConfig,
@@ -46,14 +46,14 @@ export interface WANLinkConfig extends Omit<CoreWANLinkConfig, "name"> {
   interfaceName?: string;
   connectionType?: ConnectionType;
   connectionConfirmed?: boolean;
-  
+
   // UI-specific connection settings
   vlanConfig?: VLANConfig;
   macAddress?: MACAddressConfig;
   lteSettings?: LTESettings;
   pppoe?: PPPoEConfig;
   staticIP?: StaticIPConfig;
-  
+
   // Interface-specific settings
   wirelessCredentials?: import("../../../StarContext/CommonType").WirelessCredentials;
   connectionConfig?: {

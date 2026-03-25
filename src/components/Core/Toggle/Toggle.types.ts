@@ -11,8 +11,13 @@ export type ToggleSize = "sm" | "md" | "lg";
 /**
  * Color variants for the Toggle component
  */
-export type ToggleColor = "primary" | "secondary" | "success" | "error" | "warning" | "info";
-
+export type ToggleColor =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "error"
+  | "warning"
+  | "info";
 
 /**
  * Position of the label relative to the toggle
@@ -80,7 +85,6 @@ export interface ToggleProps {
    * Can be a Qwik component, JSX element, or string
    */
   uncheckedIcon?: any;
-
 
   /**
    * Name attribute for the input element

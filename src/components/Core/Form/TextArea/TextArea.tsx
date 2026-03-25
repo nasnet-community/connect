@@ -118,7 +118,7 @@ export const TextArea = component$<TextAreaProps>((props) => {
 
       {/* Character count - responsive positioning */}
       {showCharCount && (
-        <div class="mt-1 text-right text-xs text-gray-500 sm:text-sm dark:text-gray-400">
+        <div class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
           {charCountFormatter$
             ? charCountFormatter$(charCount.value, maxLength)
             : defaultCharCount$(charCount.value, maxLength)}

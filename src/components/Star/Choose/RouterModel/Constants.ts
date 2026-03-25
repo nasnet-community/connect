@@ -42,7 +42,7 @@ export interface RouterData {
 
 export const routers: RouterData[] = [
   // ===== MASTER ROUTERS (Can be used as primary routers) =====
-  
+
   // Chateau Series - LTE/5G Routers
   {
     model: "Chateau 5G R17 ax",
@@ -234,11 +234,24 @@ export const routers: RouterData[] = [
       "/images/routers/chateau-pro-ax/chateau-pro-ax-3.png",
     ],
     networkCapabilities: {
-      vpnProtocols: ["IPSec", "L2TP", "PPTP", "OpenVPN", "WireGuard", "SSTP", "IKEv2"],
+      vpnProtocols: [
+        "IPSec",
+        "L2TP",
+        "PPTP",
+        "OpenVPN",
+        "WireGuard",
+        "SSTP",
+        "IKEv2",
+      ],
       maxConnections: 300,
       routingProtocols: ["Static", "RIP", "OSPF", "BGP", "MPLS"],
       vlanSupport: true,
-      qosFeatures: ["Traffic Shaping", "Queue Management", "Priority Queuing", "Bandwidth Management"],
+      qosFeatures: [
+        "Traffic Shaping",
+        "Queue Management",
+        "Priority Queuing",
+        "Bandwidth Management",
+      ],
       firewallType: "Enterprise Stateful Firewall with DPI",
       throughput: "2 Gbps",
       maxVlans: 4094,
@@ -476,7 +489,16 @@ export const routers: RouterData[] = [
     isSFP: true,
     interfaces: {
       Interfaces: {
-        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
+        ethernet: [
+          "ether1",
+          "ether2",
+          "ether3",
+          "ether4",
+          "ether5",
+          "ether6",
+          "ether7",
+          "ether8",
+        ],
         sfp: ["sfp-sfpplus1"],
       },
       OccupiedInterfaces: [],
@@ -489,11 +511,26 @@ export const routers: RouterData[] = [
       "/images/routers/rb5009upr-s-in/rb5009upr-s-in-3.png",
     ],
     networkCapabilities: {
-      vpnProtocols: ["IPSec", "L2TP", "PPTP", "OpenVPN", "WireGuard", "SSTP", "IKEv2", "GRE"],
+      vpnProtocols: [
+        "IPSec",
+        "L2TP",
+        "PPTP",
+        "OpenVPN",
+        "WireGuard",
+        "SSTP",
+        "IKEv2",
+        "GRE",
+      ],
       maxConnections: 500,
       routingProtocols: ["Static", "RIP", "OSPF", "BGP", "MPLS", "VPLS"],
       vlanSupport: true,
-      qosFeatures: ["Traffic Shaping", "Queue Management", "Priority Queuing", "Bandwidth Management", "HTB"],
+      qosFeatures: [
+        "Traffic Shaping",
+        "Queue Management",
+        "Priority Queuing",
+        "Bandwidth Management",
+        "HTB",
+      ],
       firewallType: "Enterprise Stateful Firewall with DPI",
       throughput: "7.5 Gbps",
       maxVlans: 4094,
@@ -504,7 +541,7 @@ export const routers: RouterData[] = [
   },
 
   // ===== SLAVE ROUTERS (Can be used in trunk mode) =====
-  
+
   // Audience - Mesh System
   {
     model: "Audience",
@@ -738,7 +775,16 @@ export const routers: RouterData[] = [
     isSFP: true,
     interfaces: {
       Interfaces: {
-        ethernet: ["ether1", "ether2", "ether3", "ether4", "ether5", "ether6", "ether7", "ether8"],
+        ethernet: [
+          "ether1",
+          "ether2",
+          "ether3",
+          "ether4",
+          "ether5",
+          "ether6",
+          "ether7",
+          "ether8",
+        ],
         wireless: ["wifi2.4"],
         sfp: ["sfp1"],
       },
@@ -929,60 +975,65 @@ export const routers: RouterData[] = [
 
 // Helper functions to get routers by category
 export const getMasterRouters = (): RouterData[] => {
-  return routers.filter(router => router.canBeMaster);
+  return routers.filter((router) => router.canBeMaster);
 };
 
 export const getSlaveRouters = (): RouterData[] => {
-  return routers.filter(router => router.canBeSlave);
+  return routers.filter((router) => router.canBeSlave);
 };
 
 // Get router by model name with backward compatibility
 export const getRouterByModel = (model: string): RouterData | undefined => {
   // Map legacy model names to new names
   const legacyMapping: Record<string, string> = {
-    "RB5009": "RB5009UPr+S+IN",
+    RB5009: "RB5009UPr+S+IN",
     "hAP AX2": "hAP ax2",
     "hAP AX3": "hAP ax3",
   };
-  
+
   const mappedModel = legacyMapping[model] || model;
-  return routers.find(router => router.model === mappedModel);
+  return routers.find((router) => router.model === mappedModel);
 };
 
 // Helper functions to detect router capabilities
 export const hasUSBPort = (router: RouterData): boolean => {
   if (router.hasUSB !== undefined) return router.hasUSB;
-  return router.features.some(feature => 
-    feature.toLowerCase().includes('usb')
+  return router.features.some((feature) =>
+    feature.toLowerCase().includes("usb"),
   );
 };
 
 export const has25GigPort = (router: RouterData): boolean => {
   if (router.has25GPort !== undefined) return router.has25GPort;
-  return router.features.some(feature => 
-    feature.toLowerCase().includes('2.5g')
-  ) || router.specs.Ports.includes('2.5G');
+  return (
+    router.features.some((feature) => feature.toLowerCase().includes("2.5g")) ||
+    router.specs.Ports.includes("2.5G")
+  );
 };
 
 export const isDockerCapable = (router: RouterData): boolean => {
   if (router.dockerCapable !== undefined) return router.dockerCapable;
-  
+
   // Check for explicit Docker/Container support in features
-  const hasContainerSupport = router.features.some(feature => 
-    feature.toLowerCase().includes('container') || 
-    feature.toLowerCase().includes('docker')
+  const hasContainerSupport = router.features.some(
+    (feature) =>
+      feature.toLowerCase().includes("container") ||
+      feature.toLowerCase().includes("docker"),
   );
-  
+
   if (hasContainerSupport) return true;
-  
+
   // Check RAM requirement (need at least 1GB for Docker)
   const ramValue = router.specs.RAM;
-  const hasEnoughRAM = ramValue.includes('1 GB') || ramValue.includes('2 GB') || 
-                      ramValue.includes('1GB') || ramValue.includes('2GB');
-  
+  const hasEnoughRAM =
+    ramValue.includes("1 GB") ||
+    ramValue.includes("2 GB") ||
+    ramValue.includes("1GB") ||
+    ramValue.includes("2GB");
+
   // Check CPU (quad-core preferred for Docker)
-  const isQuadCore = router.specs.CPU.toLowerCase().includes('quad-core');
-  
+  const isQuadCore = router.specs.CPU.toLowerCase().includes("quad-core");
+
   return hasEnoughRAM && isQuadCore;
 };
 

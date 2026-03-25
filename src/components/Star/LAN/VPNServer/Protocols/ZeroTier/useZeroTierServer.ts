@@ -14,7 +14,7 @@ export const useZeroTierServer = () => {
       ZeroTierNetworkID: "",
     },
     ensureDefaultConfig: $(async () => {
-      const current = starContext.state.LAN.VPNServer || {} as any;
+      const current = starContext.state.LAN.VPNServer || ({} as any);
       if (!current.ZeroTierServer) {
         await starContext.updateLAN$({
           VPNServer: {

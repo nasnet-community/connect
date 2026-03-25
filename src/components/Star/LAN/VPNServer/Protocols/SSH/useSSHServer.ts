@@ -7,7 +7,10 @@ type ViewMode = "easy" | "advanced";
 
 export const useSSHServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   const sshState = vpnServerState.SSHServer || {
     enabled: true,
@@ -34,7 +37,8 @@ export const useSSHServer = () => {
     starContext.updateLAN$({
       VPNServer: {
         ...vpnServerState,
-        SSHServer: config.enabled === false && !config.Network ? undefined : newConfig,
+        SSHServer:
+          config.enabled === false && !config.Network ? undefined : newConfig,
       },
     });
   });

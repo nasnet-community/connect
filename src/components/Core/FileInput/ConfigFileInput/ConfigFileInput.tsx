@@ -6,7 +6,7 @@ import { FileTypeIcon } from "../FileTypeIcon";
 
 /**
  * ConfigFileInput Component
- * 
+ *
  * A streamlined file input component for VPN configuration files with enhanced
  * error handling, validation, and accessibility features.
  */
@@ -33,7 +33,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
     // Auto-resize textarea based on content
     const adjustTextareaHeight = $(() => {
       if (autoResize && textareaRef.value) {
-        textareaRef.value.style.height = 'auto';
+        textareaRef.value.style.height = "auto";
         textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`;
       }
     });
@@ -69,54 +69,61 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
       return true;
     });
 
-    const validateConfigFormat = $(async (content: string): Promise<boolean> => {
-      if (!validationOptions?.validateFormat) return true;
-      
-      isValidating.value = true;
-      try {
-        // Basic format validation based on VPN type
-        let isValid = true;
-        const errors: string[] = [];
-        
-        switch (vpnType) {
-          case "Wireguard":
-            if (!content.includes("[Interface]") || !content.includes("[Peer]")) {
-              errors.push($localize`Missing required [Interface] or [Peer] sections`);
-              isValid = false;
-            }
-            break;
-          case "OpenVPN":
-            if (!content.includes("remote") && !content.includes("client")) {
-              errors.push($localize`Missing required OpenVPN directives`);
-              isValid = false;
-            }
-            break;
-          // Add more validation for other VPN types
+    const validateConfigFormat = $(
+      async (content: string): Promise<boolean> => {
+        if (!validationOptions?.validateFormat) return true;
+
+        isValidating.value = true;
+        try {
+          // Basic format validation based on VPN type
+          let isValid = true;
+          const errors: string[] = [];
+
+          switch (vpnType) {
+            case "Wireguard":
+              if (
+                !content.includes("[Interface]") ||
+                !content.includes("[Peer]")
+              ) {
+                errors.push(
+                  $localize`Missing required [Interface] or [Peer] sections`,
+                );
+                isValid = false;
+              }
+              break;
+            case "OpenVPN":
+              if (!content.includes("remote") && !content.includes("client")) {
+                errors.push($localize`Missing required OpenVPN directives`);
+                isValid = false;
+              }
+              break;
+            // Add more validation for other VPN types
+          }
+
+          if (!isValid) {
+            localError.value = {
+              type: "VALIDATION_ERROR",
+              message: $localize`Invalid ${vpnType} configuration format`,
+              details: errors.join(", "),
+              retryable: false,
+            };
+          }
+
+          return isValid;
+        } finally {
+          isValidating.value = false;
         }
-        
-        if (!isValid) {
-          localError.value = {
-            type: "VALIDATION_ERROR",
-            message: $localize`Invalid ${vpnType} configuration format`,
-            details: errors.join(", "),
-            retryable: false,
-          };
-        }
-        
-        return isValid;
-      } finally {
-        isValidating.value = false;
-      }
-    });
+      },
+    );
 
     const handleConfigChange = $(async (value: string) => {
       localError.value = null;
       onConfigChange$(value);
-      
+
       if (autoResize) {
         await adjustTextareaHeight();
       }
-      
+
       if (validationOptions?.validateFormat && value) {
         await validateConfigFormat(value);
       }
@@ -124,7 +131,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
 
     const handlePaste = $(async () => {
       if (disabled || isLoading) return;
-      
+
       try {
         const text = await navigator.clipboard.readText();
         if (text) {
@@ -142,17 +149,17 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
 
     const handleFileUpload = $(async (event: Event) => {
       if (disabled || isLoading) return;
-      
+
       const target = event.target as HTMLInputElement;
       const file = target.files?.[0];
-      
+
       if (!file) return;
-      
+
       // Validate file size
       if (!validateFileSize(file)) return;
-      
+
       localError.value = null;
-      
+
       try {
         // Read file content
         const reader = new FileReader();
@@ -169,7 +176,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
           };
         };
         reader.readAsText(file);
-        
+
         // Call the original handler
         onFileUpload$(event);
       } catch (err) {
@@ -183,7 +190,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
     });
 
     const acceptFileExtension = vpnType === "OpenVPN" ? ".ovpn,.conf" : ".conf";
-    
+
     // Show loading skeleton if requested
     if (isLoading) {
       return <FileInputSkeleton variant="simple" animate={true} />;
@@ -199,41 +206,52 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
               onInput$={(_, el) => handleConfigChange(el.value)}
               placeholder={placeholder || defaultPlaceholder}
               disabled={disabled || isValidating.value}
-              class={`bg-surface-light dark:bg-surface-dark h-32 w-full resize-none rounded-lg 
-              border px-3 py-2.5 
-              text-sm text-gray-900
-              placeholder-gray-400 transition-all
-              duration-200 focus:outline-none
-              focus:ring-2 sm:h-40 
-              sm:px-4 sm:py-3
-              sm:text-base
-              lg:h-48 dark:text-gray-100 dark:placeholder-gray-500
-              ${disabled || isValidating.value 
-                ? "cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700" 
-                : "border-gray-200 hover:border-gray-300 focus:border-primary-500 focus:ring-primary-500/20 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-primary-400 dark:focus:ring-primary-400/20"}
+              class={`bg-surface-light h-32 w-full resize-none rounded-lg border 
+              px-3 py-2.5 text-sm 
+              text-gray-900 placeholder-gray-400
+              transition-all duration-200
+              focus:outline-none focus:ring-2
+              dark:bg-surface-dark dark:text-gray-100 
+              dark:placeholder-gray-500 sm:h-40
+              sm:px-4
+              sm:py-3 sm:text-base lg:h-48
+              ${
+                disabled || isValidating.value
+                  ? "cursor-not-allowed border-gray-200 opacity-60 dark:border-gray-700"
+                  : "border-gray-200 hover:border-gray-300 focus:border-primary-500 focus:ring-primary-500/20 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-primary-400 dark:focus:ring-primary-400/20"
+              }
               ${localError.value ? "border-error-500 dark:border-error-400" : ""}
               ${autoResize ? "overflow-hidden" : ""}
             `}
               aria-label={$localize`${vpnType} configuration input`}
               aria-invalid={!!localError.value}
-              aria-describedby={localError.value ? "config-error" : showCharCount ? "char-count" : undefined}
+              aria-describedby={
+                localError.value
+                  ? "config-error"
+                  : showCharCount
+                    ? "char-count"
+                    : undefined
+              }
             />
-            
+
             {/* Character count */}
             {showCharCount && (
-              <div id="char-count" class="absolute bottom-2 end-2 text-xs text-gray-500 dark:text-gray-400">
+              <div
+                id="char-count"
+                class="absolute bottom-2 end-2 text-xs text-gray-500 dark:text-gray-400"
+              >
                 {config.length} {$localize`characters`}
               </div>
             )}
-            
+
             {/* Validation indicator */}
             {isValidating.value && (
-              <div class="absolute top-2 end-2">
+              <div class="absolute end-2 top-2">
                 <div class="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
               </div>
             )}
           </div>
-          
+
           <div class="flex gap-2 sm:gap-3 lg:flex-col lg:justify-center">
             <label
               class={`flex flex-1 items-center justify-center rounded-lg 
@@ -244,14 +262,19 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   sm:px-4 sm:py-2.5
                   sm:text-base lg:flex-initial
                   lg:px-5
-                  ${disabled || isLoading
-                    ? "cursor-not-allowed opacity-60 bg-gray-400 dark:bg-gray-600"
-                    : "cursor-pointer bg-primary-500 hover:bg-primary-600 hover:shadow-md active:scale-[0.98] dark:bg-primary-600 dark:hover:bg-primary-700 focus-within:ring-primary-500 dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-gray-900"
+                  ${
+                    disabled || isLoading
+                      ? "cursor-not-allowed bg-gray-400 opacity-60 dark:bg-gray-600"
+                      : "cursor-pointer bg-primary-500 focus-within:ring-primary-500 hover:bg-primary-600 hover:shadow-md active:scale-[0.98] dark:bg-primary-600 dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-gray-900 dark:hover:bg-primary-700"
                   }
               `}
               tabIndex={disabled || isLoading ? -1 : 0}
             >
-              <FileTypeIcon fileType={vpnType} size="sm" class="mr-1.5 sm:mr-2" />
+              <FileTypeIcon
+                fileType={vpnType}
+                size="sm"
+                class="mr-1.5 sm:mr-2"
+              />
               {$localize`Upload`}
               <input
                 type="file"
@@ -272,9 +295,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   sm:px-4 sm:py-2.5
                   sm:text-base lg:flex-initial
                   lg:px-5
-                  ${disabled || isLoading
-                    ? "cursor-not-allowed opacity-60 bg-gray-400 dark:bg-gray-600"
-                    : "bg-secondary-500 hover:bg-secondary-600 hover:shadow-md active:scale-[0.98] dark:bg-secondary-600 dark:hover:bg-secondary-700 focus:ring-secondary-500 dark:focus:ring-secondary-400 dark:focus:ring-offset-gray-900"
+                  ${
+                    disabled || isLoading
+                      ? "cursor-not-allowed bg-gray-400 opacity-60 dark:bg-gray-600"
+                      : "bg-secondary-500 hover:bg-secondary-600 hover:shadow-md focus:ring-secondary-500 active:scale-[0.98] dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-400 dark:focus:ring-offset-gray-900"
                   }
               `}
               type="button"
@@ -298,12 +322,14 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
             </button>
           </div>
         </div>
-        
+
         {/* Error display */}
         {localError.value && (
           <FileInputError
             error={localError.value}
-            onRetry$={localError.value.type === "READ_ERROR" ? handlePaste : undefined}
+            onRetry$={
+              localError.value.type === "READ_ERROR" ? handlePaste : undefined
+            }
             onDismiss$={() => (localError.value = null)}
             variant="inline"
           />

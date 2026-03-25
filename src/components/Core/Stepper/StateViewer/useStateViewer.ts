@@ -18,7 +18,7 @@ export function useStateViewer(initialState: any) {
   const pastedContextConfig = useSignal("");
   const pasteError = useSignal("");
   const uploadMode = useSignal<"paste" | "upload">("paste");
-  
+
   // Slave router config state
   const slaveConfigOutput = useSignal("");
   const pastedSlaveConfig = useSignal("");
@@ -39,9 +39,9 @@ export function useStateViewer(initialState: any) {
           id: `slave-${index}`,
           name: router.Model || `Slave Router ${index + 1}`,
         }));
-      
+
       slaveRouters.value = slaves;
-      
+
       // Set first slave as default if available
       if (slaves.length > 0 && !selectedSlaveRouter.value) {
         selectedSlaveRouter.value = slaves[0].id;
@@ -53,35 +53,39 @@ export function useStateViewer(initialState: any) {
   useTask$(({ track }) => {
     const state = track(() => initialState);
     const options: RouterOption[] = [];
-    
-    if (state?.Choose?.RouterModels && Array.isArray(state.Choose.RouterModels) && state.Choose.RouterModels.length > 0) {
+
+    if (
+      state?.Choose?.RouterModels &&
+      Array.isArray(state.Choose.RouterModels) &&
+      state.Choose.RouterModels.length > 0
+    ) {
       const routers = state.Choose.RouterModels as RouterModels[];
-      
+
       // Add master router
       const master = routers.find((r) => r.isMaster);
       if (master) {
         options.push({
-          id: 'master',
+          id: "master",
           name: `Master Router - ${master.Model}`,
-          type: 'master'
+          type: "master",
         });
       }
-      
+
       // Add slave routers
       const slaves = routers.filter((r) => !r.isMaster);
       slaves.forEach((slave, index) => {
         options.push({
           id: `slave-${index}`,
           name: `Slave ${index + 1} - ${slave.Model}`,
-          type: 'slave'
+          type: "slave",
         });
       });
-      
+
       routerOptions.value = options;
-      
+
       // Set default to master if not set
       if (!selectedRouterForPaste.value && options.length > 0) {
-        selectedRouterForPaste.value = 'master';
+        selectedRouterForPaste.value = "master";
       }
     }
   });
@@ -135,9 +139,10 @@ export function useStateViewer(initialState: any) {
 
     try {
       // Extract slave router index from ID
-      const slaveIndex = parseInt(selectedSlaveRouter.value.split('-')[1]);
-      const slaveRouterModel = (initialState.Choose?.RouterModels as RouterModels[])
-        ?.filter((r) => !r.isMaster)[slaveIndex];
+      const slaveIndex = parseInt(selectedSlaveRouter.value.split("-")[1]);
+      const slaveRouterModel = (
+        initialState.Choose?.RouterModels as RouterModels[]
+      )?.filter((r) => !r.isMaster)[slaveIndex];
 
       if (!slaveRouterModel) {
         slaveConfigOutput.value = "Selected slave router not found";
@@ -157,41 +162,47 @@ export function useStateViewer(initialState: any) {
   const handlePasteContext$ = $((value: string) => {
     pastedContext.value = value;
     pasteError.value = "";
-    
+
     // Try to extract routers from pasted context
     if (value) {
       try {
         const parsedContext = JSON.parse(value);
-        if (parsedContext?.Choose?.RouterModels && Array.isArray(parsedContext.Choose.RouterModels)) {
+        if (
+          parsedContext?.Choose?.RouterModels &&
+          Array.isArray(parsedContext.Choose.RouterModels)
+        ) {
           const routers = parsedContext.Choose.RouterModels as RouterModels[];
           const options: RouterOption[] = [];
-          
+
           // Add master router
           const master = routers.find((r) => r.isMaster);
           if (master) {
             options.push({
-              id: 'master',
+              id: "master",
               name: `Master Router - ${master.Model}`,
-              type: 'master'
+              type: "master",
             });
           }
-          
+
           // Add slave routers
           const slaves = routers.filter((r) => !r.isMaster);
           slaves.forEach((slave, index) => {
             options.push({
               id: `slave-${index}`,
               name: `Slave ${index + 1} - ${slave.Model}`,
-              type: 'slave'
+              type: "slave",
             });
           });
-          
+
           // Update router options from pasted context
           if (options.length > 0) {
             routerOptions.value = options;
             // Set default to master
-            if (!selectedRouterForPaste.value || selectedRouterForPaste.value === '') {
-              selectedRouterForPaste.value = 'master';
+            if (
+              !selectedRouterForPaste.value ||
+              selectedRouterForPaste.value === ""
+            ) {
+              selectedRouterForPaste.value = "master";
             }
           }
         }
@@ -216,7 +227,7 @@ export function useStateViewer(initialState: any) {
 
       // Find selected router option to determine type
       const selectedOption = routerOptions.value.find(
-        opt => opt.id === selectedRouterForPaste.value
+        (opt) => opt.id === selectedRouterForPaste.value,
       );
 
       if (!selectedOption) {
@@ -229,7 +240,7 @@ export function useStateViewer(initialState: any) {
       pastedSlaveConfig.value = "";
 
       // Generate config based on selected router type
-      if (selectedOption.type === 'master') {
+      if (selectedOption.type === "master") {
         // Generate master config only
         const config = ConfigGenerator(parsedContext);
         pastedContextConfig.value = config || "No configuration generated";
@@ -237,15 +248,19 @@ export function useStateViewer(initialState: any) {
         // Generate slave config only
         if (parsedContext.Choose?.RouterModels) {
           try {
-            const slaveIndex = parseInt(selectedRouterForPaste.value.split('-')[1]);
-            const slaveRouterModel = (parsedContext.Choose.RouterModels as RouterModels[])
-              ?.filter((r: RouterModels) => !r.isMaster)[slaveIndex];
+            const slaveIndex = parseInt(
+              selectedRouterForPaste.value.split("-")[1],
+            );
+            const slaveRouterModel = (
+              parsedContext.Choose.RouterModels as RouterModels[]
+            )?.filter((r: RouterModels) => !r.isMaster)[slaveIndex];
 
             if (slaveRouterModel) {
               // Generate slave configuration (returns string directly)
               const slaveConfig = SlaveCG(parsedContext, slaveRouterModel);
 
-              pastedSlaveConfig.value = slaveConfig || "No configuration generated";
+              pastedSlaveConfig.value =
+                slaveConfig || "No configuration generated";
             } else {
               pasteError.value = "Selected slave router not found in context";
             }
@@ -255,7 +270,7 @@ export function useStateViewer(initialState: any) {
           }
         }
       }
-      
+
       pasteError.value = "";
     } catch (error) {
       pasteError.value = "Invalid JSON format";
@@ -286,26 +301,26 @@ export function useStateViewer(initialState: any) {
     try {
       // Get the current state directly from StarContext
       const currentState = JSON.parse(JSON.stringify(initialState));
-      
+
       // Format the state as a readable JSON string
       const stateContent = JSON.stringify(currentState, null, 2);
-      
+
       // Create a blob with the state content
-      const blob = new Blob([stateContent], { type: 'text/plain' });
-      
+      const blob = new Blob([stateContent], { type: "text/plain" });
+
       // Create a download link
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate filename with current timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.download = `router-state-${timestamp}.txt`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
@@ -322,21 +337,23 @@ export function useStateViewer(initialState: any) {
 
     try {
       // Create a blob with the pasted config content
-      const blob = new Blob([pastedContextConfig.value], { type: 'text/plain' });
-      
+      const blob = new Blob([pastedContextConfig.value], {
+        type: "text/plain",
+      });
+
       // Create a download link
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.download = `router-config-${timestamp}.rsc`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
@@ -353,21 +370,21 @@ export function useStateViewer(initialState: any) {
 
     try {
       // Create a blob with the current config content
-      const blob = new Blob([configOutput.value], { type: 'text/plain' });
-      
+      const blob = new Blob([configOutput.value], { type: "text/plain" });
+
       // Create a download link
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       link.download = `current-router-config-${timestamp}.rsc`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
@@ -380,7 +397,7 @@ export function useStateViewer(initialState: any) {
     try {
       const content = await file.text();
       const result = extractStateFromConfig(content);
-      
+
       if (result.error) {
         pasteError.value = result.error;
         pastedContext.value = "";
@@ -388,38 +405,44 @@ export function useStateViewer(initialState: any) {
         const stateString = JSON.stringify(result.state, null, 2);
         pastedContext.value = stateString;
         pasteError.value = "";
-        
+
         // Extract routers from uploaded file
-        if (result.state?.Choose?.RouterModels && Array.isArray(result.state.Choose.RouterModels)) {
+        if (
+          result.state?.Choose?.RouterModels &&
+          Array.isArray(result.state.Choose.RouterModels)
+        ) {
           const routers = result.state.Choose.RouterModels as RouterModels[];
           const options: RouterOption[] = [];
-          
+
           // Add master router
           const master = routers.find((r) => r.isMaster);
           if (master) {
             options.push({
-              id: 'master',
+              id: "master",
               name: `Master Router - ${master.Model}`,
-              type: 'master'
+              type: "master",
             });
           }
-          
+
           // Add slave routers
           const slaves = routers.filter((r) => !r.isMaster);
           slaves.forEach((slave, index) => {
             options.push({
               id: `slave-${index}`,
               name: `Slave ${index + 1} - ${slave.Model}`,
-              type: 'slave'
+              type: "slave",
             });
           });
-          
+
           // Update router options from uploaded file
           if (options.length > 0) {
             routerOptions.value = options;
             // Set default to master
-            if (!selectedRouterForPaste.value || selectedRouterForPaste.value === '') {
-              selectedRouterForPaste.value = 'master';
+            if (
+              !selectedRouterForPaste.value ||
+              selectedRouterForPaste.value === ""
+            ) {
+              selectedRouterForPaste.value = "master";
             }
           }
         }
@@ -443,18 +466,20 @@ export function useStateViewer(initialState: any) {
     }
 
     try {
-      const blob = new Blob([slaveConfigOutput.value], { type: 'text/plain' });
+      const blob = new Blob([slaveConfigOutput.value], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const slaveName = slaveRouters.value.find(r => r.id === selectedSlaveRouter.value)?.name || 'slave';
-      link.download = `${slaveName.replace(/\s+/g, '-')}-config-${timestamp}.rsc`;
-      
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const slaveName =
+        slaveRouters.value.find((r) => r.id === selectedSlaveRouter.value)
+          ?.name || "slave";
+      link.download = `${slaveName.replace(/\s+/g, "-")}-config-${timestamp}.rsc`;
+
       document.body.appendChild(link);
       link.click();
-      
+
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -469,18 +494,20 @@ export function useStateViewer(initialState: any) {
     }
 
     try {
-      const blob = new Blob([pastedSlaveConfig.value], { type: 'text/plain' });
+      const blob = new Blob([pastedSlaveConfig.value], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const slaveName = slaveRouters.value.find(r => r.id === selectedSlaveRouter.value)?.name || 'slave';
-      link.download = `${slaveName.replace(/\s+/g, '-')}-pasted-config-${timestamp}.rsc`;
-      
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const slaveName =
+        slaveRouters.value.find((r) => r.id === selectedSlaveRouter.value)
+          ?.name || "slave";
+      link.download = `${slaveName.replace(/\s+/g, "-")}-pasted-config-${timestamp}.rsc`;
+
       document.body.appendChild(link);
       link.click();
-      
+
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {

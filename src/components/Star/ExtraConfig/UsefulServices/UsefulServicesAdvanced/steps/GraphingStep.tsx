@@ -1,4 +1,10 @@
-import { component$, useSignal, $, useVisibleTask$, useContext } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  $,
+  useVisibleTask$,
+  useContext,
+} from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { SelectionCard } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
@@ -13,9 +19,13 @@ export const GraphingStep = component$(() => {
   const { servicesData } = context.data;
 
   // Create local signals for form state
-  const enableInterface = useSignal(servicesData.graphing.enableInterface || false);
+  const enableInterface = useSignal(
+    servicesData.graphing.enableInterface || false,
+  );
   const enableQueue = useSignal(servicesData.graphing.enableQueue || false);
-  const enableResources = useSignal(servicesData.graphing.enableResources || false);
+  const enableResources = useSignal(
+    servicesData.graphing.enableResources || false,
+  );
 
   // Graph configuration data
   const graphingOptions = [
@@ -23,35 +33,68 @@ export const GraphingStep = component$(() => {
       id: "interface",
       title: $localize`Interface Monitoring`,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
         </svg>
       ),
       colorTheme: "primary",
-      signal: enableInterface
+      signal: enableInterface,
     },
     {
       id: "queue",
       title: $localize`Queue Management`,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={2}
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
         </svg>
       ),
       colorTheme: "primary",
-      signal: enableQueue
+      signal: enableQueue,
     },
     {
       id: "resources",
       title: $localize`System Resources`,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width={2}
+            d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+          />
         </svg>
       ),
       colorTheme: "primary",
-      signal: enableResources
-    }
+      signal: enableResources,
+    },
   ];
 
   // Enhanced color theme mappings using primary colors
@@ -60,9 +103,10 @@ export const GraphingStep = component$(() => {
       bg: "from-primary-50/80 to-primary-100/80 dark:from-primary-900/20 dark:to-primary-800/20",
       border: "border-primary-200/30 dark:border-primary-700/30",
       icon: "bg-gradient-to-br from-primary-500 to-primary-600",
-      selectedBg: "from-primary-100/90 to-primary-200/90 dark:from-primary-800/40 dark:to-primary-700/40",
-      selectedBorder: "border-primary-400/50 dark:border-primary-500/50"
-    }
+      selectedBg:
+        "from-primary-100/90 to-primary-200/90 dark:from-primary-800/40 dark:to-primary-700/40",
+      selectedBorder: "border-primary-400/50 dark:border-primary-500/50",
+    },
   };
 
   // Update context data and validate step completion
@@ -88,11 +132,12 @@ export const GraphingStep = component$(() => {
         cloudDDNS: currentServices.cloudDDNS,
         upnp: currentServices.upnp,
         natpmp: currentServices.natpmp,
-      }
+      },
     });
 
     // Validate: At least one graphing option must be selected
-    const isComplete = enableInterface.value || enableQueue.value || enableResources.value;
+    const isComplete =
+      enableInterface.value || enableQueue.value || enableResources.value;
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -108,7 +153,7 @@ export const GraphingStep = component$(() => {
 
   // Handler for graph type selection
   const handleGraphToggle$ = $((optionId: string) => {
-    const option = graphingOptions.find(opt => opt.id === optionId);
+    const option = graphingOptions.find((opt) => opt.id === optionId);
     if (option) {
       option.signal.value = !option.signal.value;
       validateAndUpdate$();
@@ -121,23 +166,34 @@ export const GraphingStep = component$(() => {
   });
 
   return (
-    <div class="space-y-8 animate-fade-in-up">
+    <div class="animate-fade-in-up space-y-8">
       {/* Enhanced modern header with glassmorphism */}
-      <div class="text-center space-y-6">
+      <div class="space-y-6 text-center">
         <div class="relative inline-flex items-center justify-center">
           {/* Subtle glow effect */}
-          <div class="absolute inset-0 w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500/15 via-primary-500/15 to-primary-500/15 animate-pulse-slow"></div>
-          <div class="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-500 text-white shadow-2xl shadow-primary-500/30 transition-all duration-500 hover:scale-110 hover:rotate-3 hover:shadow-primary-500/40">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 transition-transform duration-500 hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <div class="absolute inset-0 h-24 w-24 animate-pulse-slow rounded-3xl bg-gradient-to-br from-primary-500/15 via-primary-500/15 to-primary-500/15"></div>
+          <div class="relative inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-500 text-white shadow-2xl shadow-primary-500/30 transition-all duration-500 hover:rotate-3 hover:scale-110 hover:shadow-primary-500/40">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 transition-transform duration-500 hover:rotate-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
           </div>
         </div>
         <div class="space-y-3">
-          <h3 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent dark:from-white dark:via-gray-200 dark:to-white animate-gradient bg-300%">
+          <h3 class="animate-gradient bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-300% bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:via-gray-200 dark:to-white md:text-5xl">
             {$localize`Network Graphing`}
           </h3>
-          <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
             {$localize`Enable comprehensive network monitoring with real-time graphs and performance analytics`}
           </p>
         </div>
@@ -146,15 +202,15 @@ export const GraphingStep = component$(() => {
       {/* Graph Type Selection */}
       <div class="space-y-6">
         <div class="text-center">
-          <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h4 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
             {$localize`Choose Monitoring Types`}
           </h4>
           <p class="text-gray-600 dark:text-gray-400">
             {$localize`Select the types of network data you want to monitor and visualize`}
           </p>
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           {graphingOptions.map((option) => {
             const theme = colorThemes.primary;
             return (
@@ -163,20 +219,19 @@ export const GraphingStep = component$(() => {
                 isSelected={option.signal.value}
                 title={option.title}
                 icon={
-                  <div class={`flex h-16 w-16 items-center justify-center rounded-2xl ${theme.icon} text-white shadow-xl`}>
+                  <div
+                    class={`flex h-16 w-16 items-center justify-center rounded-2xl ${theme.icon} text-white shadow-xl`}
+                  >
                     {option.icon}
                   </div>
                 }
                 onClick$={() => handleGraphToggle$(option.id)}
-                class={`relative overflow-hidden hover:shadow-2xl hover:shadow-primary-500/10 bg-gradient-to-br ${option.signal.value ? theme.selectedBg : theme.bg} border ${option.signal.value ? theme.selectedBorder : theme.border}`}
+                class={`relative overflow-hidden bg-gradient-to-br hover:shadow-2xl hover:shadow-primary-500/10 ${option.signal.value ? theme.selectedBg : theme.bg} border ${option.signal.value ? theme.selectedBorder : theme.border}`}
               />
             );
           })}
         </div>
       </div>
-
-
-
     </div>
   );
 });

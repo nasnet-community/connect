@@ -90,9 +90,11 @@ describe("Certificate utilities", () => {
         expect(result["/system script"]).toHaveLength(1);
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(configString).toContain('name="Private-Cert-Setup"');
-        expect(configString).toContain(':global KEYSIZE 4096;');
-        expect(configString).toContain(':global DAYSVALID 7300;');
-        expect(configString).toContain("remove [find name=Private-Cert-Setup];");
+        expect(configString).toContain(":global KEYSIZE 4096;");
+        expect(configString).toContain(":global DAYSVALID 7300;");
+        expect(configString).toContain(
+            "remove [find name=Private-Cert-Setup];",
+        );
     });
 
     // Verifies the export helper carries the configured password into the generated certificate export script.
@@ -116,7 +118,9 @@ describe("Certificate utilities", () => {
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(configString).toContain('name="Add-VPN-Cert"');
         expect(configString).toContain("CompanyVPNCert");
-        expect(configString).toContain("Smart VPN Certificate Assignment Script");
+        expect(configString).toContain(
+            "Smart VPN Certificate Assignment Script",
+        );
     });
 
     // Verifies the all-in-one helper documents custom values in the top-level comment block and merges the component bundles.
@@ -141,7 +145,9 @@ describe("Certificate utilities", () => {
             "Complete Certificate Management Configuration Bundle with OpenVPN",
         );
         expect(configString).toContain("# - WAN Interface: pppoe-out1");
-        expect(configString).toContain("# - Let's Encrypt Certificate: PartialCert");
+        expect(configString).toContain(
+            "# - Let's Encrypt Certificate: PartialCert",
+        );
         expect(configString).toContain("# - Renewal Time: 01:30:00");
         expect(configString).toContain("# - Public Cert Validation: Enabled");
         expect(configString).toContain("bundle-pass");
@@ -156,7 +162,9 @@ describe("Certificate utilities", () => {
         expect(result["/system script"]).toHaveLength(1);
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(configString).toContain('name="LE-Enhanced-Diagnostic"');
-        expect(configString).toContain("forum.mikrotik.com/viewtopic.php?t=189289");
+        expect(configString).toContain(
+            "forum.mikrotik.com/viewtopic.php?t=189289",
+        );
         expect(configString).toContain("DNS propagation verification");
     });
 
@@ -169,7 +177,9 @@ describe("Certificate utilities", () => {
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(configString).toContain('name="Simple-LE-Renewal"');
         expect(configString).toContain("vpn.example.com");
-        expect(configString).toContain("enable-ssl-certificate dns-name=\\$dnsNameToUse");
+        expect(configString).toContain(
+            "enable-ssl-certificate dns-name=\\$dnsNameToUse",
+        );
     });
 
     // Verifies the advanced diagnostic helper keeps the expected script name and expanded network checks.
@@ -180,8 +190,14 @@ describe("Certificate utilities", () => {
         expect(result["/system script"]).toHaveLength(1);
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(configString).toContain('name="LE-Advanced-Diagnostic"');
-        expect(configString).toContain("Advanced Let's Encrypt Diagnostic Script");
-        expect(configString).toContain("Test 1: Enhanced internet connectivity check");
-        expect(configString).toContain("Advanced Let's Encrypt Diagnostic Completed");
+        expect(configString).toContain(
+            "Advanced Let's Encrypt Diagnostic Script",
+        );
+        expect(configString).toContain(
+            "Test 1: Enhanced internet connectivity check",
+        );
+        expect(configString).toContain(
+            "Advanced Let's Encrypt Diagnostic Completed",
+        );
     });
 });

@@ -1,9 +1,4 @@
-import {
-  $,
-  component$,
-  useContext,
-  type PropFunction,
-} from "@builder.io/qwik";
+import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import type { QwikJSX } from "@builder.io/qwik";
 import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
@@ -95,7 +90,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
             footer={
               option.mode === "Trunk Mode" ? (
                 <div class="border-t border-border/20 pt-3 dark:border-border-dark/20">
-                  <p class="text-text-secondary/90 text-xs dark:text-text-dark-secondary/95">
+                  <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-xs">
                     {$localize`Requires 2 routers (you'll select the second router next)`}
                   </p>
                 </div>

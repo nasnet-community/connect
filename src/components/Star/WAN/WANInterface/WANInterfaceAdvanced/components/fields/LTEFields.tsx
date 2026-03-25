@@ -18,11 +18,7 @@ export const LTEFields = component$<LTEFieldsProps>(
           {$localize`LTE Settings`}
         </h4>
 
-        <FormField
-          label={$localize`APN`}
-          required
-          error={errors?.apn?.[0]}
-        >
+        <FormField label={$localize`APN`} required error={errors?.apn?.[0]}>
           <Input
             type="text"
             value={settings?.apn || ""}
@@ -32,7 +28,6 @@ export const LTEFields = component$<LTEFieldsProps>(
               });
             }}
             placeholder="Enter APN"
-
           />
         </FormField>
       </div>

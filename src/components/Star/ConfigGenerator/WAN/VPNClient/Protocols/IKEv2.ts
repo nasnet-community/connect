@@ -5,22 +5,17 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-
-
-
-
-
-
-
-
-
-
-
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 
 // IKeV2 Utility Functions
 
-export const IKeV2Profile = ( config: Ike2ClientConfig, profileName: string ): string => {
+export const IKeV2Profile = (
+    config: Ike2ClientConfig,
+    profileName: string,
+): string => {
     const profileParams = [
         `name=${profileName}`,
         `enc-algorithm=${config.EncAlgorithm?.join(",") || "aes-256,aes-192,aes-128"}`,
@@ -38,7 +33,10 @@ export const IKeV2Profile = ( config: Ike2ClientConfig, profileName: string ): s
     return `add ${profileParams.join(" ")}`;
 };
 
-export const IKeV2Proposal = ( config: Ike2ClientConfig, proposalName: string ): string => {
+export const IKeV2Proposal = (
+    config: Ike2ClientConfig,
+    proposalName: string,
+): string => {
     const phase2EncAlgorithms = config.EncAlgorithm?.map((alg) => {
         switch (alg) {
             case "aes-128":
@@ -63,7 +61,11 @@ export const IKeV2Proposal = ( config: Ike2ClientConfig, proposalName: string ):
     return `add ${proposalParams.join(" ")}`;
 };
 
-export const IKeV2Peer = ( config: Ike2ClientConfig, peerName: string, profileName: string ): string => {
+export const IKeV2Peer = (
+    config: Ike2ClientConfig,
+    peerName: string,
+    profileName: string,
+): string => {
     const peerParams = [
         `name=${peerName}`,
         `address=${config.ServerAddress}`,
@@ -86,11 +88,13 @@ export const IKeV2Peer = ( config: Ike2ClientConfig, peerName: string, profileNa
     return `add ${peerParams.join(" ")}`;
 };
 
-export const IKeV2Identity = ( config: Ike2ClientConfig, peerName: string, modeConfigName: string, policyGroupName: string ): string => {
-    const identityParams = [
-        `peer=${peerName}`,
-        `auth-method=pre-shared-key`,
-    ];
+export const IKeV2Identity = (
+    config: Ike2ClientConfig,
+    peerName: string,
+    modeConfigName: string,
+    policyGroupName: string,
+): string => {
+    const identityParams = [`peer=${peerName}`, `auth-method=pre-shared-key`];
 
     switch (config.AuthMethod) {
         case "pre-shared-key":
@@ -159,7 +163,11 @@ export const IKeV2Identity = ( config: Ike2ClientConfig, peerName: string, modeC
     return `add ${identityParams.join(" ")}`;
 };
 
-export const IKeV2Policy = ( config: Ike2ClientConfig, policyGroupName: string, proposalName: string ): string => {
+export const IKeV2Policy = (
+    config: Ike2ClientConfig,
+    policyGroupName: string,
+    proposalName: string,
+): string => {
     const policyParams = [
         `group="${policyGroupName}-client"`,
         "template=yes",
@@ -173,7 +181,10 @@ export const IKeV2Policy = ( config: Ike2ClientConfig, policyGroupName: string, 
     return `add ${policyParams.join(" ")}`;
 };
 
-export const IKeV2ModeConfig = ( config: Ike2ClientConfig, modeConfigName: string ): string | null => {
+export const IKeV2ModeConfig = (
+    config: Ike2ClientConfig,
+    modeConfigName: string,
+): string | null => {
     if (config.EnableModeConfig === false) {
         return null;
     }
@@ -220,7 +231,9 @@ export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
     );
 
     // Create Policy Group
-    routerConfig["/ip ipsec policy group"].push(`add name="${policyGroupName}-client"`);
+    routerConfig["/ip ipsec policy group"].push(
+        `add name="${policyGroupName}-client"`,
+    );
 
     // Create Mode Config (for road warrior setups)
     const modeConfigCommand = IKeV2ModeConfig(config, modeConfigName);
@@ -246,15 +259,20 @@ export const IKeV2Client = (config: Ike2ClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-
-export const IKeV2ClientWrapper = ( configs: Ike2ClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const IKeV2ClientWrapper = (
+    configs: Ike2ClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((ikev2Config) => {
         const vpnConfig = IKeV2Client(ikev2Config);
-        const interfaceName = GenerateVCInterfaceName(ikev2Config.Name, "IKeV2");
+        const interfaceName = GenerateVCInterfaceName(
+            ikev2Config.Name,
+            "IKeV2",
+        );
         const endpointAddress = ikev2Config.ServerAddress;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(ikev2Config.Name);
 

@@ -1,13 +1,19 @@
 import { useContext, $, useStore, useSignal } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext";
-import type { Socks5ServerConfig, VSNetwork } from "~/components/Star/StarContext";
+import type {
+  Socks5ServerConfig,
+  VSNetwork,
+} from "~/components/Star/StarContext";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const useSocks5Server = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   const socks5State = vpnServerState.Socks5Server || {
     enabled: true,

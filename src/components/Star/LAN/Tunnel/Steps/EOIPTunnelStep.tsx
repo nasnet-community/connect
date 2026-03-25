@@ -56,11 +56,7 @@ export const EOIPTunnelStep = component$(() => {
 
     // Check if all tunnels have required fields
     for (const tunnel of stepper.data.eoip) {
-      if (
-        !tunnel.name ||
-        !tunnel.remoteAddress ||
-        !tunnel.tunnelId
-      ) {
+      if (!tunnel.name || !tunnel.remoteAddress || !tunnel.tunnelId) {
         isValid = false;
         break;
       }
@@ -182,7 +178,6 @@ export const EOIPTunnelStep = component$(() => {
                   />
                 </Field>
 
-
                 {/* Remote Address */}
                 <Field label={$localize`Remote Address`} required>
                   <Input
@@ -195,7 +190,6 @@ export const EOIPTunnelStep = component$(() => {
                   />
                 </Field>
 
-
                 {/* IPsec Secret */}
                 <Field label={$localize`IPsec Secret`}>
                   <Input
@@ -207,9 +201,7 @@ export const EOIPTunnelStep = component$(() => {
                     placeholder={$localize`Enter IPsec secret (optional)`}
                   />
                 </Field>
-
               </div>
-
             </Card>
           ))}
         </div>

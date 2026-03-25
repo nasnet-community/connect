@@ -1,5 +1,9 @@
 import { $, useSignal } from "@builder.io/qwik";
-import type { UseNewsletterParams, UseNewsletterReturn, NewsletterSubscription } from "./Newsletter.types";
+import type {
+  UseNewsletterParams,
+  UseNewsletterReturn,
+  NewsletterSubscription,
+} from "./Newsletter.types";
 
 /**
  * Hook for managing newsletter subscription state and validation
@@ -28,7 +32,10 @@ export function useNewsletter({
     const target = event.target as HTMLInputElement;
     const emailValue = target.value;
 
-    console.log("[Newsletter] Email input changed:", { emailValue, length: emailValue.length });
+    console.log("[Newsletter] Email input changed:", {
+      emailValue,
+      length: emailValue.length,
+    });
 
     email.value = emailValue;
     error.value = null; // Clear errors on input
@@ -46,9 +53,13 @@ export function useNewsletter({
 
       if (!isValid.value && emailValue.length > 5) {
         error.value = $localize`Please enter a valid email address`;
-        console.log("[Newsletter] Email validation failed:", { email: emailValue });
+        console.log("[Newsletter] Email validation failed:", {
+          email: emailValue,
+        });
       } else if (isValid.value) {
-        console.log("[Newsletter] Email validation passed:", { email: emailValue });
+        console.log("[Newsletter] Email validation passed:", {
+          email: emailValue,
+        });
       }
     } else {
       isValid.value = false;
@@ -61,7 +72,9 @@ export function useNewsletter({
   const validateEmail$ = $(async (): Promise<boolean> => {
     const emailValue = email.value.trim();
 
-    console.log("[Newsletter] Manual email validation started:", { email: emailValue });
+    console.log("[Newsletter] Manual email validation started:", {
+      email: emailValue,
+    });
 
     if (!emailValue) {
       error.value = $localize`Email address is required`;
@@ -78,7 +91,9 @@ export function useNewsletter({
       if (!isValidFormat) {
         error.value = $localize`Please enter a valid email address`;
         isValid.value = false;
-        console.warn("[Newsletter] Validation failed: Invalid email format", { email: emailValue });
+        console.warn("[Newsletter] Validation failed: Invalid email format", {
+          email: emailValue,
+        });
         return false;
       }
     }
@@ -88,7 +103,9 @@ export function useNewsletter({
 
     error.value = null;
     isValid.value = true;
-    console.log("[Newsletter] Email validation successful", { email: emailValue });
+    console.log("[Newsletter] Email validation successful", {
+      email: emailValue,
+    });
     return true;
   });
 
@@ -96,7 +113,9 @@ export function useNewsletter({
   const handleSubmit$ = $(async (event: Event): Promise<void> => {
     event.preventDefault();
 
-    console.log("[Newsletter] Newsletter subscription started", { email: email.value });
+    console.log("[Newsletter] Newsletter subscription started", {
+      email: email.value,
+    });
 
     // Reset states
     loading.value = true;
@@ -107,7 +126,9 @@ export function useNewsletter({
       // Validate email first
       const isEmailValid = await validateEmail$();
       if (!isEmailValid) {
-        console.warn("[Newsletter] Subscription aborted: Email validation failed");
+        console.warn(
+          "[Newsletter] Subscription aborted: Email validation failed",
+        );
         return;
       }
 
@@ -131,30 +152,41 @@ export function useNewsletter({
 
       // Call the subscription handler
       if (subscriptionHandler) {
-        console.log("[Newsletter] Calling onSubscribe$ handler with subscription:", subscription);
+        console.log(
+          "[Newsletter] Calling onSubscribe$ handler with subscription:",
+          subscription,
+        );
         const startTime = Date.now();
         try {
           await subscriptionHandler(subscription);
           const duration = Date.now() - startTime;
-          console.log("[Newsletter] onSubscribe$ completed successfully", { duration: `${duration}ms` });
+          console.log("[Newsletter] onSubscribe$ completed successfully", {
+            duration: `${duration}ms`,
+          });
         } catch (error) {
-          console.error("[Newsletter] onSubscribe$ handler threw an error:", error);
+          console.error(
+            "[Newsletter] onSubscribe$ handler threw an error:",
+            error,
+          );
           throw error; // Re-throw to be handled by the outer catch
         }
       } else {
-        console.warn("[Newsletter] No onSubscribe$ handler provided - using default behavior");
+        console.warn(
+          "[Newsletter] No onSubscribe$ handler provided - using default behavior",
+        );
         // Default behavior: just show success
         // In production, this might send to a default API endpoint
       }
 
       // Set success state
       success.value = true;
-      console.log("[Newsletter] Newsletter subscription successful", { email: subscription.email });
+      console.log("[Newsletter] Newsletter subscription successful", {
+        email: subscription.email,
+      });
 
       // Clear email after successful subscription
       email.value = "";
       isValid.value = false;
-
     } catch (err) {
       console.error("[Newsletter] Newsletter subscription failed:", err);
       // Handle errors

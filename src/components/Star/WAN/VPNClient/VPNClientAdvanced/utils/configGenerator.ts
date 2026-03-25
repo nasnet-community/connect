@@ -22,7 +22,9 @@ import { GenerateOpenVPNImportScript } from "~/components/Star/ConfigGenerator/"
 import { mergeMultipleConfigs } from "../../../../ConfigGenerator/utils/ConfigGeneratorUtil";
 
 // Convert AdvancedVPNState to StarContext VPNClient format
-export function convertToStarContextVPNClient( state: AdvancedVPNState ): VPNClient | undefined {
+export function convertToStarContextVPNClient(
+  state: AdvancedVPNState,
+): VPNClient | undefined {
   // Filter enabled VPNs and sort by priority
   const enabledVPNs = state.vpnConfigs
     .filter((vpn) => vpn.enabled)
@@ -66,7 +68,10 @@ export function convertToStarContextVPNClient( state: AdvancedVPNState ): VPNCli
 }
 
 // Generate MikroTik commands for multiple VPN clients with priority-based failover
-export function generateMultiVPNClientConfig( state: AdvancedVPNState, domesticLink: boolean ): RouterConfig {
+export function generateMultiVPNClientConfig(
+  state: AdvancedVPNState,
+  domesticLink: boolean,
+): RouterConfig {
   // Filter enabled VPNs and sort by priority
   const enabledVPNs = state.vpnConfigs
     .filter((vpn) => vpn.enabled)
@@ -98,7 +103,11 @@ export function generateMultiVPNClientConfig( state: AdvancedVPNState, domesticL
 }
 
 // Generate config for a single VPN with priority suffix
-function generateSingleVPNConfig( vpn: VPNConfig, priority: number, domesticLink: boolean ): RouterConfig {
+function generateSingleVPNConfig(
+  vpn: VPNConfig,
+  priority: number,
+  domesticLink: boolean,
+): RouterConfig {
   let vpnConfig: RouterConfig = {};
   let interfaceName = "";
   let endpointAddress = "";

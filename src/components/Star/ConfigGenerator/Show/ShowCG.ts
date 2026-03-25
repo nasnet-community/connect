@@ -208,8 +208,6 @@ export const Note = (state: StarState): RouterConfig => {
     return config;
 };
 
-
-
 export const ShowCG = (state: StarState): RouterConfig => {
     const config: RouterConfig = {
         ...Note(state),

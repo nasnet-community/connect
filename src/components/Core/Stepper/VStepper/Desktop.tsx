@@ -3,8 +3,15 @@ import type { DesktopProps } from "./types";
 import { StepperProgressDisplay } from "../shared/components/StepperProgressDisplay";
 
 export const Desktop = component$((props: DesktopProps) => {
-  const { activeStep, position, allowStepNavigation = false, onStepClick$, helpButton, onHelpClick$ } = props;
-  
+  const {
+    activeStep,
+    position,
+    allowStepNavigation = false,
+    onStepClick$,
+    helpButton,
+    onHelpClick$,
+  } = props;
+
   const showHelp = !!onHelpClick$;
   const helpButtonConfig = helpButton || {};
 
@@ -22,17 +29,18 @@ export const Desktop = component$((props: DesktopProps) => {
           {/* Help Button */}
           {showHelp && (
             <div class="mb-4 flex items-center justify-between">
-              <span class="text-xs font-semibold text-text-secondary dark:text-white/90">
+              <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
                 {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
               </span>
               <button
                 onClick$={() => onHelpClick$ && onHelpClick$()}
                 class={`group flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
-                  ${helpButtonConfig.variant === 'primary'
-                    ? 'bg-primary-500/20 text-primary-600 hover:bg-primary-500/30 dark:text-primary-400'
-                    : helpButtonConfig.variant === 'secondary'
-                      ? 'bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30 dark:text-secondary-400'
-                      : 'text-text-secondary hover:text-primary-500 hover:bg-primary-500/10 dark:text-text-dark-secondary dark:hover:text-primary-400'
+                  ${
+                    helpButtonConfig.variant === "primary"
+                      ? "bg-primary-500/20 text-primary-600 hover:bg-primary-500/30 dark:text-primary-400"
+                      : helpButtonConfig.variant === "secondary"
+                        ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30 dark:text-secondary-400"
+                        : "text-text-secondary dark:text-text-dark-secondary hover:bg-primary-500/10 hover:text-primary-500 dark:hover:text-primary-400"
                   }`}
                 title={$localize`Get help for this step (Press ? key)`}
               >
@@ -55,11 +63,11 @@ export const Desktop = component$((props: DesktopProps) => {
               </button>
             </div>
           )}
-          
+
           {/* Step counter (when no help button) */}
           {!showHelp && (
             <div class="mb-4 px-1">
-              <span class="text-xs font-semibold text-text-secondary dark:text-white/90">
+              <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
                 {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
               </span>
             </div>

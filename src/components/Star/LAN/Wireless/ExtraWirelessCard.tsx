@@ -1,8 +1,5 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
-import {
-  HiSparklesOutline,
-  HiTrashOutline,
-} from "@qwikest/icons/heroicons";
+import { HiSparklesOutline, HiTrashOutline } from "@qwikest/icons/heroicons";
 import type { ExtraWirelessInterface } from "./type";
 import type { NetworkOption } from "./networkUtils";
 import { Toggle, Input, Button, Select } from "~/components/Core";
@@ -13,7 +10,9 @@ interface ExtraWirelessCardProps {
   availableNetworks: NetworkOption[];
   assignedNetworks: string[];
   onNetworkSelect$: QRL<(id: string, networkName: string) => void>;
-  onFieldChange$: QRL<(id: string, field: keyof ExtraWirelessInterface, value: any) => void>;
+  onFieldChange$: QRL<
+    (id: string, field: keyof ExtraWirelessInterface, value: any) => void
+  >;
   onDelete$: QRL<(id: string) => void>;
   generateSSID$: QRL<(id: string) => Promise<void>>;
   generatePassword$: QRL<(id: string) => Promise<void>>;
@@ -40,8 +39,9 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
 
     // Convert available networks to Select options format
     const networkOptions = availableNetworks.map((network) => {
-      const isAssigned = assignedNetworks.includes(network.name) &&
-                         network.name !== extraInterface.targetNetworkName;
+      const isAssigned =
+        assignedNetworks.includes(network.name) &&
+        network.name !== extraInterface.targetNetworkName;
       return {
         value: network.name,
         label: isAssigned
@@ -58,11 +58,12 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 ${isDisabled ? "opacity-60" : ""}`}
       >
         {/* Compact Header with network selector, status, enable toggle and delete button */}
-        <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
-          <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div class="flex-1 min-w-0">
-              <label class="text-xs text-gray-600 dark:text-gray-400 block mb-1">
-                {$localize`Network`}<span class="ml-1 text-red-500">*</span>
+        <div class="flex items-center justify-between border-b border-gray-100 p-3 dark:border-gray-700">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <div class="min-w-0 flex-1">
+              <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">
+                {$localize`Network`}
+                <span class="ml-1 text-red-500">*</span>
               </label>
               <Select
                 options={networkOptions}
@@ -76,11 +77,13 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 class="w-full"
               />
             </div>
-            <div class={`w-2 h-2 rounded-full flex-shrink-0 mt-5 ${isDisabled ? 'bg-gray-400' : 'bg-green-500'}`} />
+            <div
+              class={`mt-5 h-2 w-2 flex-shrink-0 rounded-full ${isDisabled ? "bg-gray-400" : "bg-green-500"}`}
+            />
           </div>
 
           {/* Enable toggle and delete button */}
-          <div class="flex items-center gap-2 ml-2 mt-5">
+          <div class="ml-2 mt-5 flex items-center gap-2">
             <Toggle
               checked={!isDisabled}
               onChange$={$((checked: boolean) => {
@@ -105,19 +108,21 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
         </div>
 
         {/* Content */}
-        <div class="px-3 pb-3 space-y-3 pt-3">
+        <div class="space-y-3 px-3 pb-3 pt-3">
           {/* Quick Toggles */}
           <div class="flex flex-col gap-3 text-xs">
             {/* Only show visibility toggle in advance mode */}
             {mode === "advance" && (
               <div class="flex items-center justify-between">
-                <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`SSID Visibility:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`SSID Visibility:`}</span>
                 <Toggle
                   checked={!extraInterface.isHide}
                   onChange$={$((checked: boolean) => {
                     onFieldChange$(extraInterface.id, "isHide", !checked);
                   })}
-                  label={!extraInterface.isHide ? $localize`Show` : $localize`Hide`}
+                  label={
+                    !extraInterface.isHide ? $localize`Show` : $localize`Hide`
+                  }
                   labelPosition="left"
                   disabled={isDisabled}
                   size="sm"
@@ -129,7 +134,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
             {/* Only show split band toggle if router has both bands */}
             {hasBothBands && (
               <div class="flex items-center justify-between">
-                <span class="text-gray-600 dark:text-gray-400 font-medium">{$localize`Band Mode:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`Band Mode:`}</span>
                 <Toggle
                   checked={mode === "easy" ? true : extraInterface.splitBand}
                   onChange$={$((checked: boolean) => {
@@ -137,7 +142,11 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                       onFieldChange$(extraInterface.id, "splitBand", checked);
                     }
                   })}
-                  label={extraInterface.splitBand ? $localize`Split` : $localize`Single`}
+                  label={
+                    extraInterface.splitBand
+                      ? $localize`Split`
+                      : $localize`Single`
+                  }
                   labelPosition="left"
                   disabled={isDisabled || mode === "easy"}
                   size="sm"
@@ -156,7 +165,9 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
             <div class="flex gap-2">
               <Input
                 value={extraInterface.ssid}
-                onChange$={$((e, value) => onFieldChange$(extraInterface.id, "ssid", value))}
+                onChange$={$((e, value) =>
+                  onFieldChange$(extraInterface.id, "ssid", value),
+                )}
                 type="text"
                 disabled={isDisabled}
                 placeholder={$localize`Network name`}
@@ -187,7 +198,9 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
             <div class="flex gap-2">
               <Input
                 value={extraInterface.password}
-                onChange$={$((e, value) => onFieldChange$(extraInterface.id, "password", value))}
+                onChange$={$((e, value) =>
+                  onFieldChange$(extraInterface.id, "password", value),
+                )}
                 type="text"
                 disabled={isDisabled}
                 placeholder={$localize`Password`}
@@ -196,8 +209,12 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 class="flex-1"
               />
               <Button
-                onClick$={async () => await generatePassword$(extraInterface.id)}
-                disabled={isLoading[`${extraInterface.id}-password`] || isDisabled}
+                onClick$={async () =>
+                  await generatePassword$(extraInterface.id)
+                }
+                disabled={
+                  isLoading[`${extraInterface.id}-password`] || isDisabled
+                }
                 loading={isLoading[`${extraInterface.id}-password`]}
                 variant="outline"
                 size="sm"
@@ -211,8 +228,9 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
 
           {/* Show network info */}
           {extraInterface.targetNetworkName && (
-            <p class="text-xs text-gray-500 dark:text-gray-400 italic">
-              {$localize`This wireless interface will be bridged to`} {extraInterface.targetNetworkName}
+            <p class="text-xs italic text-gray-500 dark:text-gray-400">
+              {$localize`This wireless interface will be bridged to`}{" "}
+              {extraInterface.targetNetworkName}
             </p>
           )}
         </div>

@@ -29,7 +29,7 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
   const handleSubmit = $(() => {
     // Clear previous validation error
     validationError.value = "";
-    
+
     // Helper function to convert time to minutes
     const timeToMinutes = (time: { hour: string; minute: string }): number => {
       const hour = parseInt(time.hour);
@@ -39,13 +39,25 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
 
     // Validate time gaps - inline validation logic
     const times: { name: string; minutes: number; enabled: boolean }[] = [
-      { name: "Reboot", minutes: timeToMinutes(rebootTime), enabled: autoRebootEnabled.value },
-      { name: "Update", minutes: timeToMinutes(updateTime), enabled: autoUpdateEnabled.value },
-      { name: "IP Address Update", minutes: timeToMinutes(ipAddressUpdateTime), enabled: true },
+      {
+        name: "Reboot",
+        minutes: timeToMinutes(rebootTime),
+        enabled: autoRebootEnabled.value,
+      },
+      {
+        name: "Update",
+        minutes: timeToMinutes(updateTime),
+        enabled: autoUpdateEnabled.value,
+      },
+      {
+        name: "IP Address Update",
+        minutes: timeToMinutes(ipAddressUpdateTime),
+        enabled: true,
+      },
     ];
 
-    const enabledTimes = times.filter(t => t.enabled);
-    
+    const enabledTimes = times.filter((t) => t.enabled);
+
     // Check for time conflicts
     for (let i = 0; i < enabledTimes.length; i++) {
       for (let j = i + 1; j < enabledTimes.length; j++) {
@@ -53,7 +65,7 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
         const time2 = enabledTimes[j];
         const diff = Math.abs(time1.minutes - time2.minutes);
         const minDiff = Math.min(diff, 1440 - diff); // Account for day wrap-around
-        
+
         if (minDiff < 15) {
           validationError.value = `${time1.name} and ${time2.name} must be at least 15 minutes apart.`;
           return; // Don't proceed with saving
@@ -87,7 +99,7 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
     }
 
     ctx.updateExtraConfig$({
-      RUI: updatedRUI
+      RUI: updatedRUI,
     });
     onComplete$();
   });
@@ -97,17 +109,11 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
       <div class="rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
         <RebootHeader />
         <div class="space-y-6 overflow-visible p-6 pb-20">
-          <Alert 
-            status="warning" 
-            title={$localize`Important Notice`}
-          >
+          <Alert status="warning" title={$localize`Important Notice`}>
             {$localize`Internet connectivity may be temporarily interrupted during scheduled reboot, update, and IP address list synchronization times. Please plan accordingly.`}
           </Alert>
           {validationError.value && (
-            <Alert 
-              status="error" 
-              title={$localize`Validation Error`}
-            >
+            <Alert status="error" title={$localize`Validation Error`}>
               {validationError.value}
             </Alert>
           )}

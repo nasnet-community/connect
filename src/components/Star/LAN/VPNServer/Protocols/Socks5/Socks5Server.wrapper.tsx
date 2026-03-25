@@ -9,5 +9,7 @@ export const Socks5ServerWrapper = component$(() => {
   const starContext = useContext(StarContext);
   const mode = starContext.state.Choose.Mode as Mode;
 
-  return <>{mode === "easy" ? <Socks5ServerEasy /> : <Socks5ServerAdvanced />}</>;
+  return (
+    <>{mode === "easy" ? <Socks5ServerEasy /> : <Socks5ServerAdvanced />}</>
+  );
 });

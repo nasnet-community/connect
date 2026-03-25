@@ -32,10 +32,13 @@ export const VPNLink = component$<VPNLinkProps>(
     // Get validation errors for this VPN
     const vpnErrors = Object.keys(validationErrors)
       .filter((key) => key.startsWith(`vpn-${vpn.id}`))
-      .reduce((acc, key) => {
-        acc[key] = validationErrors[key];
-        return acc;
-      }, {} as Record<string, string[]>);
+      .reduce(
+        (acc, key) => {
+          acc[key] = validationErrors[key];
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
 
     const hasErrors = Object.keys(vpnErrors).length > 0;
 
@@ -72,11 +75,11 @@ export const VPNLink = component$<VPNLinkProps>(
     // Get link status similar to WANInterface pattern
     const getLinkStatus = () => {
       if (hasErrors) return "error";
-      
+
       // Check if VPN is fully configured
       const hasBasicInfo = Boolean(vpn.name) && Boolean(vpn.type);
       const hasConnection = Boolean(vpn.connectionConfig);
-      
+
       if (hasBasicInfo && hasConnection) return "complete";
       if (hasBasicInfo || hasConnection) return "partial";
       return "incomplete";
@@ -105,10 +108,10 @@ export const VPNLink = component$<VPNLinkProps>(
         `}
       >
         {/* Status Indicator */}
-        <div class="absolute top-3 right-3 z-10">
+        <div class="absolute right-3 top-3 z-10">
           {linkStatus === "complete" && (
             <div class="flex h-3 w-3 items-center justify-center rounded-full bg-green-500 shadow-sm">
-              <div class="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></div>
+              <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></div>
             </div>
           )}
           {linkStatus === "error" && (
@@ -118,7 +121,7 @@ export const VPNLink = component$<VPNLinkProps>(
           )}
           {linkStatus === "partial" && (
             <div class="flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 shadow-sm">
-              <div class="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></div>
+              <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></div>
             </div>
           )}
         </div>
@@ -146,8 +149,8 @@ export const VPNLink = component$<VPNLinkProps>(
         )}
 
         {/* Hover Glow Effect */}
-        <div class="absolute inset-0 rounded-xl opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none bg-gradient-to-r from-primary-500/5 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"></div>
       </div>
     );
-  }
+  },
 );

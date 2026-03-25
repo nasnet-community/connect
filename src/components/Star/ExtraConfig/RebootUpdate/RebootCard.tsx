@@ -14,7 +14,6 @@ interface RebootCardProps {
   rebootInterval: Signal<FrequencyValue | undefined>;
 }
 
-
 export const RebootCard = component$<RebootCardProps>(
   ({ autoRebootEnabled, rebootTime, rebootInterval }) => {
     const handleIntervalChange = $((value: FrequencyValue) => {
@@ -63,7 +62,7 @@ export const RebootCard = component$<RebootCardProps>(
             <TimePicker
               time={rebootTime}
               onChange$={(type, value) => {
-                if (type === 'hour' || type === 'minute') {
+                if (type === "hour" || type === "minute") {
                   rebootTime[type] = value;
                 }
               }}

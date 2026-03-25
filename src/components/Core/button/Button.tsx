@@ -39,7 +39,15 @@ export interface ButtonProps {
   radius?: ButtonRadius;
   shadow?: boolean;
   pulse?: boolean;
-  gradientDirection?: "to-r" | "to-l" | "to-t" | "to-b" | "to-br" | "to-bl" | "to-tr" | "to-tl";
+  gradientDirection?:
+    | "to-r"
+    | "to-l"
+    | "to-t"
+    | "to-b"
+    | "to-br"
+    | "to-bl"
+    | "to-tr"
+    | "to-tl";
 }
 
 export const Button = component$<ButtonProps>(
@@ -70,11 +78,11 @@ export const Button = component$<ButtonProps>(
       if (!ripple || disabled || loading) return;
 
       const button = e.currentTarget as HTMLButtonElement;
-      if (!button || typeof button.getBoundingClientRect !== 'function') return;
-      
+      if (!button || typeof button.getBoundingClientRect !== "function") return;
+
       const rect = button.getBoundingClientRect();
       if (!rect) return;
-      
+
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
@@ -125,47 +133,53 @@ export const Button = component$<ButtonProps>(
         "bg-warning-600 text-warning-900 hover:bg-warning-700 focus-visible:ring-warning-300/50 dark:bg-warning-dark dark:text-warning-100 dark:hover:bg-warning-700 dark:focus-visible:ring-warning-dark/50",
       info: "bg-info-600 text-white hover:bg-info-700 focus-visible:ring-info-300/50 dark:bg-info-dark dark:hover:bg-info-700 dark:focus-visible:ring-info-dark/50",
       cta: "bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 focus-visible:ring-orange-300/50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5",
-      gradient: "text-white focus-visible:ring-purple-300/50 shadow-lg hover:shadow-xl",
+      gradient:
+        "text-white focus-visible:ring-purple-300/50 shadow-lg hover:shadow-xl",
       glow: "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-300/50 shadow-lg shadow-primary-600/50 hover:shadow-xl hover:shadow-primary-600/50 dark:shadow-primary-dark-500/50 dark:hover:shadow-primary-dark-500/50",
-      glass: "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 focus-visible:ring-white/30 dark:bg-gray-900/10 dark:border-gray-700/20 dark:hover:bg-gray-900/20",
-      motion: "bg-gradient-to-br from-secondary-600 to-secondary-800 text-white hover:from-secondary-700 hover:to-secondary-900 focus-visible:ring-secondary-400/50 shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700 dark:from-secondary-dark-600 dark:to-secondary-dark-800 dark:hover:from-secondary-dark-700 dark:hover:to-secondary-dark-900",
-      premium: "bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 text-gray-900 hover:from-amber-300 hover:via-yellow-500 hover:to-amber-300 focus-visible:ring-yellow-400/50 shadow-lg hover:shadow-xl font-semibold tracking-wide relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:-skew-x-12 before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-1000 dark:from-yellow-600 dark:via-amber-500 dark:to-yellow-600 dark:text-white dark:hover:from-yellow-700 dark:hover:via-amber-600 dark:hover:to-yellow-700",
+      glass:
+        "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 focus-visible:ring-white/30 dark:bg-gray-900/10 dark:border-gray-700/20 dark:hover:bg-gray-900/20",
+      motion:
+        "bg-gradient-to-br from-secondary-600 to-secondary-800 text-white hover:from-secondary-700 hover:to-secondary-900 focus-visible:ring-secondary-400/50 shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700 dark:from-secondary-dark-600 dark:to-secondary-dark-800 dark:hover:from-secondary-dark-700 dark:hover:to-secondary-dark-900",
+      premium:
+        "bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 text-gray-900 hover:from-amber-300 hover:via-yellow-500 hover:to-amber-300 focus-visible:ring-yellow-400/50 shadow-lg hover:shadow-xl font-semibold tracking-wide relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:-skew-x-12 before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-1000 dark:from-yellow-600 dark:via-amber-500 dark:to-yellow-600 dark:text-white dark:hover:from-yellow-700 dark:hover:via-amber-600 dark:hover:to-yellow-700",
     };
 
-    const sizeClasses = iconOnly ? {
-      // Equal padding for icon-only buttons
-      xs: "p-1.5",
-      sm: "p-2",
-      md: "p-2.5",
-      lg: "p-3",
-      xl: "p-3.5",
-    } : {
-      xs: [
-        "text-xs px-2.5 py-1.5",
-        "sm:text-xs sm:px-2.5 sm:py-1.5",
-        "max-sm:text-xs max-sm:px-3 max-sm:py-2 max-sm:min-h-[36px]",
-      ].join(" "),
-      sm: [
-        "text-xs px-3 py-2",
-        "sm:text-xs sm:px-3 sm:py-2",
-        "max-sm:text-sm max-sm:px-4 max-sm:py-2.5 max-sm:min-h-[40px]",
-      ].join(" "),
-      md: [
-        "text-sm px-4 py-2.5",
-        "sm:text-sm sm:px-4 sm:py-2.5",
-        "max-sm:text-base max-sm:px-5 max-sm:py-3 max-sm:min-h-[44px]",
-      ].join(" "),
-      lg: [
-        "text-base px-5 py-3",
-        "sm:text-base sm:px-5 sm:py-3",
-        "max-sm:text-lg max-sm:px-6 max-sm:py-3.5 max-sm:min-h-[48px]",
-      ].join(" "),
-      xl: [
-        "text-lg px-6 py-3.5",
-        "sm:text-lg sm:px-6 sm:py-3.5",
-        "max-sm:text-xl max-sm:px-7 max-sm:py-4 max-sm:min-h-[52px]",
-      ].join(" "),
-    };
+    const sizeClasses = iconOnly
+      ? {
+          // Equal padding for icon-only buttons
+          xs: "p-1.5",
+          sm: "p-2",
+          md: "p-2.5",
+          lg: "p-3",
+          xl: "p-3.5",
+        }
+      : {
+          xs: [
+            "text-xs px-2.5 py-1.5",
+            "sm:text-xs sm:px-2.5 sm:py-1.5",
+            "max-sm:text-xs max-sm:px-3 max-sm:py-2 max-sm:min-h-[36px]",
+          ].join(" "),
+          sm: [
+            "text-xs px-3 py-2",
+            "sm:text-xs sm:px-3 sm:py-2",
+            "max-sm:text-sm max-sm:px-4 max-sm:py-2.5 max-sm:min-h-[40px]",
+          ].join(" "),
+          md: [
+            "text-sm px-4 py-2.5",
+            "sm:text-sm sm:px-4 sm:py-2.5",
+            "max-sm:text-base max-sm:px-5 max-sm:py-3 max-sm:min-h-[44px]",
+          ].join(" "),
+          lg: [
+            "text-base px-5 py-3",
+            "sm:text-base sm:px-5 sm:py-3",
+            "max-sm:text-lg max-sm:px-6 max-sm:py-3.5 max-sm:min-h-[48px]",
+          ].join(" "),
+          xl: [
+            "text-lg px-6 py-3.5",
+            "sm:text-lg sm:px-6 sm:py-3.5",
+            "max-sm:text-xl max-sm:px-7 max-sm:py-4 max-sm:min-h-[52px]",
+          ].join(" "),
+        };
 
     const iconSizeClasses = {
       auto: {
@@ -235,13 +249,13 @@ export const Button = component$<ButtonProps>(
           />
         )}
         {leftIcon && (
-          <span class={`${!iconOnly ? 'mr-2' : ''} ${getIconClass()}`}>
+          <span class={`${!iconOnly ? "mr-2" : ""} ${getIconClass()}`}>
             <Slot name="leftIcon" />
           </span>
         )}
         <Slot />
         {rightIcon && (
-          <span class={`${!iconOnly ? 'ml-2' : ''} ${getIconClass()}`}>
+          <span class={`${!iconOnly ? "ml-2" : ""} ${getIconClass()}`}>
             <Slot name="rightIcon" />
           </span>
         )}
@@ -260,9 +274,17 @@ export const Button = component$<ButtonProps>(
                         : "sm"
               }
               color={
-                ["primary", "success", "error", "info", "cta", "gradient", "glow", "motion", "premium"].includes(
-                  variant,
-                )
+                [
+                  "primary",
+                  "success",
+                  "error",
+                  "info",
+                  "cta",
+                  "gradient",
+                  "glow",
+                  "motion",
+                  "premium",
+                ].includes(variant)
                   ? "white"
                   : variant === "warning"
                     ? "warning"

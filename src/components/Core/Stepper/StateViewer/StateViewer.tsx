@@ -42,9 +42,9 @@ export const StateViewer = component$(() => {
   } = useStateViewer(context.state);
 
   // Get selected slave router name for display
-  const selectedSlaveRouterName = slaveRouters.value.find(
-    r => r.id === selectedSlaveRouter.value
-  )?.name || "";
+  const selectedSlaveRouterName =
+    slaveRouters.value.find((r) => r.id === selectedSlaveRouter.value)?.name ||
+    "";
 
   return (
     <>

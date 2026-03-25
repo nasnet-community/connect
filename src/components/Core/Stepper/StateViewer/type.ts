@@ -26,7 +26,7 @@ export interface SlaveRouterOption {
 export interface RouterOption {
   id: string;
   name: string;
-  type: 'master' | 'slave';
+  type: "master" | "slave";
 }
 
 export interface StateHistoryProps {

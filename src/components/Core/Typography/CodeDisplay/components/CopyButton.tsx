@@ -21,7 +21,9 @@ export const CopyButton = component$<CopyButtonProps>(
           : theme === "dark"
             ? "bg-slate-700/60 backdrop-blur-sm hover:bg-slate-700/80 text-slate-200 border border-slate-600/30 hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10"
             : "bg-gray-700/80 hover:bg-gray-700/90 text-gray-300",
-      copySuccess ? "copy-success !text-emerald-400 !border-emerald-500/30" : "",
+      copySuccess
+        ? "copy-success !text-emerald-400 !border-emerald-500/30"
+        : "",
     ]
       .filter(Boolean)
       .join(" ");

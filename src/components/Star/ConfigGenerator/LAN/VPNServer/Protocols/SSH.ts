@@ -6,32 +6,29 @@ import type {
 } from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 
-
 export const SSHServer = (config: SSHServerConfig): RouterConfig => {
     if (!config.enabled) {
         return {};
     }
 
     const routerConfig: RouterConfig = {
-        "/ip ssh": [
-            "set forwarding-enabled=both"
-        ],
+        "/ip ssh": ["set forwarding-enabled=both"],
     };
 
     return routerConfig;
 };
 
-
-export const SSHServerUsers = ( users: VSCredentials[], _config?: SSHServerConfig ): RouterConfig => {
+export const SSHServerUsers = (
+    users: VSCredentials[],
+    _config?: SSHServerConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/user group": [],
         "/user": [],
     };
 
     // Filter users that have SSH in their VPNType array
-    const sshUsers = users.filter((user) =>
-        user.VPNType.includes("SSH")
-    );
+    const sshUsers = users.filter((user) => user.VPNType.includes("SSH"));
 
     // Only add group if there are SSH users
     if (sshUsers.length === 0) {
@@ -41,21 +38,21 @@ export const SSHServerUsers = ( users: VSCredentials[], _config?: SSHServerConfi
     // Create SSH user group with SSH-only permissions
     routerConfig["/user group"].push(
         `add name=SSH policy="ssh,!local,!telnet,!ftp,!reboot,!read,!write,!policy,!test,!winbox,!password,!web,!sniff,!sensitive,!api,!romon,!rest-api" \\
-    comment="SSH Server Users Group - SSH access only"`
+    comment="SSH Server Users Group - SSH access only"`,
     );
 
     // Add each SSH user
     sshUsers.forEach((user) => {
         routerConfig["/user"].push(
             `add group=SSH inactivity-timeout=1d name="${user.Username}" password="${user.Password}" \\
-    comment="SSH Server User - ${user.Username}"`
+    comment="SSH Server User - ${user.Username}"`,
         );
     });
 
     return routerConfig;
 };
 
-export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
+export const SSHServerFirewall = (config: SSHServerConfig): RouterConfig => {
     if (!config.enabled) {
         return {};
     }
@@ -65,7 +62,6 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
         "/ip firewall raw": [],
     };
 
-
     const bridgeInterface = "Domestic-WAN";
 
     // Mangle rules for connection marking and routing
@@ -74,7 +70,7 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
         // "# SSH Server - Mark incoming SSH connections",
         `add action=mark-connection chain=input comment="Mark incoming SSH connections from ${config.Network} Network" \\
     connection-state=new dst-port="22" in-interface-list="${bridgeInterface}" \\
-    new-connection-mark="ssh-conn-foreign" passthrough=yes protocol="tcp"`
+    new-connection-mark="ssh-conn-foreign" passthrough=yes protocol="tcp"`,
     );
 
     routerConfig["/ip firewall mangle"].push(
@@ -83,7 +79,7 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
         `add action=mark-routing chain=preroute comment="Route SSH traffic via Foreign WAN" \\
     connection-mark="ssh-conn-foreign" new-routing-mark="to-Foreign" passthrough=no`,
         `add action=mark-routing chain=output comment="Route SSH replies via Foreign WAN" \\
-    connection-mark="ssh-conn-foreign" new-routing-mark="to-Foreign" passthrough=no`
+    connection-mark="ssh-conn-foreign" new-routing-mark="to-Foreign" passthrough=no`,
     );
 
     // Raw rules for auto-tracking SSH clients
@@ -92,13 +88,16 @@ export const SSHServerFirewall = ( config: SSHServerConfig ): RouterConfig => {
         // "# SSH Server - Auto-add SSH clients to foreign routing list",
         `add action=add-src-to-address-list address-list="ssh-foreign-clients" \\
     address-list-timeout=8h chain=prerouting comment="Auto-add SSH clients to foreign routing" \\
-    dst-port="22" in-interface-list="${bridgeInterface}" protocol="tcp"`
+    dst-port="22" in-interface-list="${bridgeInterface}" protocol="tcp"`,
     );
 
     return routerConfig;
 };
 
-export const SSHServerWrapper = ( serverConfig: SSHServerConfig, users: VSCredentials[] ): RouterConfig => {
+export const SSHServerWrapper = (
+    serverConfig: SSHServerConfig,
+    users: VSCredentials[],
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Add base SSH server configuration
@@ -115,4 +114,3 @@ export const SSHServerWrapper = ( serverConfig: SSHServerConfig, users: VSCreden
     // Merge all configurations
     return mergeMultipleConfigs(...configs);
 };
-

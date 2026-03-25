@@ -8,7 +8,13 @@ export interface BackgroundLogoProps {
   /** Opacity of the logo (0-1) */
   opacity?: number;
   /** Position of the logo */
-  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "bottom-center" | "center";
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "bottom-center"
+    | "center";
   /** Enable floating animation */
   animated?: boolean;
   /** Rotation angle in degrees */
@@ -42,7 +48,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
         "bottom-left": "bottom-2 start-2",
         "bottom-right": "bottom-2 end-2",
         "bottom-center": "-bottom-12 start-1/2 -translate-x-1/2",
-        "center": "top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2",
+        center: "top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2",
       };
       return positions[position];
     };
@@ -56,55 +62,184 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
     return (
       <>
         {/* Network topology pattern background */}
-        <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <svg class="absolute inset-0 w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
+        <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <svg
+            class="absolute inset-0 h-full w-full opacity-5 dark:opacity-10"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
               {/* Network grid pattern */}
-              <pattern id="network-grid" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+              <pattern
+                id="network-grid"
+                x="0"
+                y="0"
+                width="80"
+                height="80"
+                patternUnits="userSpaceOnUse"
+              >
                 {/* Grid lines */}
-                <line x1="0" y1="0" x2="80" y2="0" stroke="currentColor" stroke-width="0.5" class="text-primary-300 dark:text-primary-700" opacity="0.3" />
-                <line x1="0" y1="0" x2="0" y2="80" stroke="currentColor" stroke-width="0.5" class="text-primary-300 dark:text-primary-700" opacity="0.3" />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="80"
+                  y2="0"
+                  stroke="currentColor"
+                  stroke-width="0.5"
+                  class="text-primary-300 dark:text-primary-700"
+                  opacity="0.3"
+                />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="80"
+                  stroke="currentColor"
+                  stroke-width="0.5"
+                  class="text-primary-300 dark:text-primary-700"
+                  opacity="0.3"
+                />
 
                 {/* Network nodes */}
-                <circle cx="0" cy="0" r="2" fill="currentColor" class="text-primary-500" opacity="0.5" />
-                <circle cx="80" cy="0" r="2" fill="currentColor" class="text-secondary-500" opacity="0.5" />
-                <circle cx="0" cy="80" r="2" fill="currentColor" class="text-secondary-500" opacity="0.5" />
-                <circle cx="80" cy="80" r="2" fill="currentColor" class="text-primary-500" opacity="0.5" />
-                <circle cx="40" cy="40" r="3" fill="currentColor" class="text-primary-600" opacity="0.6" />
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="2"
+                  fill="currentColor"
+                  class="text-primary-500"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="80"
+                  cy="0"
+                  r="2"
+                  fill="currentColor"
+                  class="text-secondary-500"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="0"
+                  cy="80"
+                  r="2"
+                  fill="currentColor"
+                  class="text-secondary-500"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="2"
+                  fill="currentColor"
+                  class="text-primary-500"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="3"
+                  fill="currentColor"
+                  class="text-primary-600"
+                  opacity="0.6"
+                />
 
                 {/* Connection lines */}
-                <line x1="0" y1="0" x2="40" y2="40" stroke="currentColor" stroke-width="0.3" class="text-secondary-400 dark:text-secondary-600" opacity="0.4" />
-                <line x1="80" y1="0" x2="40" y2="40" stroke="currentColor" stroke-width="0.3" class="text-secondary-400 dark:text-secondary-600" opacity="0.4" />
-                <line x1="0" y1="80" x2="40" y2="40" stroke="currentColor" stroke-width="0.3" class="text-secondary-400 dark:text-secondary-600" opacity="0.4" />
-                <line x1="80" y1="80" x2="40" y2="40" stroke="currentColor" stroke-width="0.3" class="text-secondary-400 dark:text-secondary-600" opacity="0.4" />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="40"
+                  y2="40"
+                  stroke="currentColor"
+                  stroke-width="0.3"
+                  class="text-secondary-400 dark:text-secondary-600"
+                  opacity="0.4"
+                />
+                <line
+                  x1="80"
+                  y1="0"
+                  x2="40"
+                  y2="40"
+                  stroke="currentColor"
+                  stroke-width="0.3"
+                  class="text-secondary-400 dark:text-secondary-600"
+                  opacity="0.4"
+                />
+                <line
+                  x1="0"
+                  y1="80"
+                  x2="40"
+                  y2="40"
+                  stroke="currentColor"
+                  stroke-width="0.3"
+                  class="text-secondary-400 dark:text-secondary-600"
+                  opacity="0.4"
+                />
+                <line
+                  x1="80"
+                  y1="80"
+                  x2="40"
+                  y2="40"
+                  stroke="currentColor"
+                  stroke-width="0.3"
+                  class="text-secondary-400 dark:text-secondary-600"
+                  opacity="0.4"
+                />
               </pattern>
 
               {/* Hexagonal network pattern */}
-              <pattern id="hex-network" x="0" y="0" width="60" height="70" patternUnits="userSpaceOnUse">
-                <polygon points="30,0 60,17.5 60,52.5 30,70 0,52.5 0,17.5"
+              <pattern
+                id="hex-network"
+                x="0"
+                y="0"
+                width="60"
+                height="70"
+                patternUnits="userSpaceOnUse"
+              >
+                <polygon
+                  points="30,0 60,17.5 60,52.5 30,70 0,52.5 0,17.5"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="0.5"
                   class="text-primary-300 dark:text-primary-700"
-                  opacity="0.2" />
+                  opacity="0.2"
+                />
               </pattern>
 
               {/* Gradient definitions */}
-              <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="var(--tw-gradient-from)" class="from-primary-500" stop-opacity="0.2" />
-                <stop offset="100%" stop-color="var(--tw-gradient-to)" class="to-secondary-500" stop-opacity="0.1" />
+              <linearGradient
+                id="logo-gradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="var(--tw-gradient-from)"
+                  class="from-primary-500"
+                  stop-opacity="0.2"
+                />
+                <stop
+                  offset="100%"
+                  stop-color="var(--tw-gradient-to)"
+                  class="to-secondary-500"
+                  stop-opacity="0.1"
+                />
               </linearGradient>
             </defs>
 
             {/* Apply patterns */}
             <rect width="100%" height="100%" fill="url(#network-grid)" />
-            <rect width="100%" height="100%" fill="url(#hex-network)" opacity="0.3" />
+            <rect
+              width="100%"
+              height="100%"
+              fill="url(#hex-network)"
+              opacity="0.3"
+            />
           </svg>
         </div>
 
         {/* Main background logo with gradient overlay */}
         <div
-          class={`absolute z-0 pointer-events-none select-none ${getPositionClasses()} ${getAnimationClasses()} ${className || ""}`}
+          class={`pointer-events-none absolute z-0 select-none ${getPositionClasses()} ${getAnimationClasses()} ${className || ""}`}
           style={{
             width: `${size}px`,
             height: `${size}px`,
@@ -114,7 +249,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
           }}
         >
           {/* Logo container with mask */}
-          <div class="relative w-full h-full">
+          <div class="relative h-full w-full">
             {/* Logo image */}
             <img
               src={logo}
@@ -123,7 +258,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
               width={size}
               height={size}
               loading="lazy"
-              class="w-full h-full object-cover rounded-full"
+              class="h-full w-full rounded-full object-cover"
             />
 
             {/* Premium gradient overlays */}
@@ -132,33 +267,61 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
 
             {/* Glow effect */}
             {animated && (
-              <div class="absolute inset-0 rounded-full bg-gradient-radial from-primary-500/20 to-transparent blur-2xl animate-pulse-slow" />
+              <div class="absolute inset-0 animate-pulse-slow rounded-full bg-gradient-radial from-primary-500/20 to-transparent blur-2xl" />
             )}
           </div>
         </div>
 
         {/* Network connection lines */}
         {animated && (
-          <svg class="absolute inset-0 w-full h-full z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            class="pointer-events-none absolute inset-0 z-0 h-full w-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="var(--tw-gradient-from)" class="from-primary-500" stop-opacity="0" />
-                <stop offset="50%" stop-color="var(--tw-gradient-via)" class="via-primary-500" stop-opacity="0.3" />
-                <stop offset="100%" stop-color="var(--tw-gradient-to)" class="to-primary-500" stop-opacity="0" />
+              <linearGradient
+                id="line-gradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="var(--tw-gradient-from)"
+                  class="from-primary-500"
+                  stop-opacity="0"
+                />
+                <stop
+                  offset="50%"
+                  stop-color="var(--tw-gradient-via)"
+                  class="via-primary-500"
+                  stop-opacity="0.3"
+                />
+                <stop
+                  offset="100%"
+                  stop-color="var(--tw-gradient-to)"
+                  class="to-primary-500"
+                  stop-opacity="0"
+                />
               </linearGradient>
             </defs>
 
             {/* Animated connection lines */}
             <line
-              x1="10%" y1="20%"
-              x2="90%" y2="80%"
+              x1="10%"
+              y1="20%"
+              x2="90%"
+              y2="80%"
               stroke="url(#line-gradient)"
               stroke-width="1"
               class="animate-pulse-network opacity-20"
             />
             <line
-              x1="90%" y1="20%"
-              x2="10%" y2="80%"
+              x1="90%"
+              y1="20%"
+              x2="10%"
+              y2="80%"
               stroke="url(#line-gradient)"
               stroke-width="1"
               class="animate-pulse-network-delayed opacity-20"
@@ -171,7 +334,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
           <>
             {/* Floating network nodes */}
             <div
-              class="absolute z-0 pointer-events-none select-none animate-float-delayed"
+              class="animate-float-delayed pointer-events-none absolute z-0 select-none"
               style={{
                 width: `${size * 0.6}px`,
                 height: `${size * 0.6}px`,
@@ -182,16 +345,16 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
                 filter: `blur(${blur * 2}px)`,
               }}
             >
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-primary-500/10 to-secondary-500/5">
+              <div class="h-full w-full rounded-full bg-gradient-to-br from-primary-500/10 to-secondary-500/5">
                 {/* Inner network node */}
-                <div class="absolute inset-4 rounded-full border border-dashed border-primary-400/20 dark:border-primary-600/20 animate-spin-slow" />
+                <div class="animate-spin-slow absolute inset-4 rounded-full border border-dashed border-primary-400/20 dark:border-primary-600/20" />
                 <div class="absolute inset-8 rounded-full bg-primary-500/10 blur-md" />
               </div>
             </div>
 
             {/* Tertiary floating element */}
             <div
-              class="absolute z-0 pointer-events-none select-none animate-float-reverse"
+              class="animate-float-reverse pointer-events-none absolute z-0 select-none"
               style={{
                 width: `${size * 0.4}px`,
                 height: `${size * 0.4}px`,
@@ -202,9 +365,12 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
                 filter: `blur(${blur * 3}px)`,
               }}
             >
-              <div class="w-full h-full rounded-full bg-gradient-to-tl from-secondary-500/10 to-primary-500/5">
+              <div class="h-full w-full rounded-full bg-gradient-to-tl from-secondary-500/10 to-primary-500/5">
                 {/* Inner hexagon shape */}
-                <svg class="absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)]" viewBox="0 0 100 100">
+                <svg
+                  class="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)]"
+                  viewBox="0 0 100 100"
+                >
                   <polygon
                     points="50,10 85,30 85,70 50,90 15,70 15,30"
                     fill="none"
@@ -220,7 +386,7 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                class="absolute z-0 pointer-events-none select-none animate-float-particle"
+                class="animate-float-particle pointer-events-none absolute z-0 select-none"
                 style={{
                   width: "8px",
                   height: "8px",
@@ -230,14 +396,15 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
                   animationDelay: `${i * 1.5}s`,
                 }}
               >
-                <div class="w-full h-full rounded-full bg-gradient-to-br from-primary-400/40 to-secondary-400/40 blur-sm" />
+                <div class="h-full w-full rounded-full bg-gradient-to-br from-primary-400/40 to-secondary-400/40 blur-sm" />
               </div>
             ))}
           </>
         )}
 
         {/* Enhanced CSS animations */}
-        <style dangerouslySetInnerHTML={`
+        <style
+          dangerouslySetInnerHTML={`
           @keyframes float {
             0%, 100% {
               transform: translateY(0) rotate(${rotation}deg) scale(1.2);
@@ -360,7 +527,8 @@ export const BackgroundLogo = component$<BackgroundLogoProps>(
             animation: pulse-network-delayed 3s ease-in-out infinite;
             animation-delay: 1.5s;
           }
-        `} />
+        `}
+        />
       </>
     );
   },

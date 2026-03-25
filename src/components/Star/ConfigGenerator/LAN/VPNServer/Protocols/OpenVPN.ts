@@ -1,8 +1,13 @@
-import type { OpenVpnServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import type {
+    OpenVpnServerConfig,
+    SubnetConfig,
+    VSCredentials,
+    VSNetwork,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
-    CommandShortner, 
-    mergeRouterConfigs, 
+    CommandShortner,
+    mergeRouterConfigs,
     OneTimeScript,
     formatBooleanValue,
     VSAddressList,
@@ -11,7 +16,6 @@ import {
     VSPorfile,
     SubnetToRange,
 } from "~/components/Star/ConfigGenerator";
-
 
 export const ExportOpenVPN = (): RouterConfig => {
     // Create the OpenVPN Client Configuration Export script content as RouterConfig
@@ -339,7 +343,11 @@ export const ExportOpenVPN = (): RouterConfig => {
     });
 };
 
-export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig ): RouterConfig => {
+export const OVPNServer = (
+    config: OpenVpnServerConfig,
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
@@ -364,14 +372,17 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
         PushRoutes,
     } = config;
 
-
     // Use provided subnet configuration
     const { subnet } = subnetConfig;
     const ranges = SubnetToRange(subnet);
 
     // Generate IP pool for OpenVPN clients
     routerConfig["/ip pool"].push(
-        ...generateIPPool({ name, ranges, comment: `OpenVPN ${name} client pool` })
+        ...generateIPPool({
+            name,
+            ranges,
+            comment: `OpenVPN ${name} client pool`,
+        }),
     );
 
     // Create PPP profile using shared helper (profile name: `${name}-profile`)
@@ -381,11 +392,14 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
     });
 
     // Add VPN subnet to address list using shared helper
-    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} OpenVPN subnet`);
+    const addrCfg = VSAddressList(
+        subnet,
+        String(vsNetwork),
+        `${name} OpenVPN subnet`,
+    );
     Object.entries(addrCfg).forEach(([section, cmds]) => {
         routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
     });
-
 
     // Create OpenVPN server instance
     const serverParams: string[] = [
@@ -398,9 +412,7 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
     ];
 
     if (Certificate.RequireClientCertificate !== undefined) {
-        serverParams.push(
-            `require-client-certificate=no`,
-        );
+        serverParams.push(`require-client-certificate=no`);
     }
 
     if (Encryption.Auth) {
@@ -408,7 +420,9 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
     }
 
     if (Encryption.Cipher) {
-        serverParams.push(`cipher=blowfish128,aes128-cbc,aes192-cbc,aes256-cbc,aes128-gcm,aes192-gcm,aes256-gcm`);
+        serverParams.push(
+            `cipher=blowfish128,aes128-cbc,aes192-cbc,aes256-cbc,aes128-gcm,aes192-gcm,aes256-gcm`,
+        );
     }
 
     if (Encryption.UserAuthMethod) {
@@ -416,7 +430,7 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
     }
 
     // if (RedirectGetway !== "disabled") {
-        serverParams.push(`redirect-gateway=def1`);
+    serverParams.push(`redirect-gateway=def1`);
     // }
 
     if (PushRoutes) {
@@ -437,11 +451,13 @@ export const OVPNServer = (config: OpenVpnServerConfig, vsNetwork: VSNetwork, su
 
     // Add firewall rules
 
-
     return CommandShortner(routerConfig);
 };
 
-export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCredentials[]): RouterConfig => {
+export const OVPNServerUsers = (
+    serverConfig: OpenVpnServerConfig,
+    users: VSCredentials[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
@@ -471,7 +487,11 @@ export const OVPNServerUsers = ( serverConfig: OpenVpnServerConfig, users: VSCre
     return CommandShortner(config);
 };
 
-export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork, serverConfig: OpenVpnServerConfig): RouterConfig => {
+export const OVPNVSBinding = (
+    credentials: VSCredentials[],
+    VSNetwork: VSNetwork,
+    serverConfig: OpenVpnServerConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface ovpn-server": [],
         "/interface list member": [],
@@ -514,7 +534,6 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
 
     // OpenVPN Static Interface Bindings
     if (usersByVpnType["OpenVPN"]) {
-
         usersByVpnType["OpenVPN"].forEach((user) => {
             const staticBindingName = `ovpn-${name}-${user.Username}`;
 
@@ -529,15 +548,14 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
 
     // Add all created interfaces to LAN and VSNetwork-LAN interface lists using VSInterfaceList
     if (createdInterfaces.length > 0) {
-
         createdInterfaces.forEach((interfaceName) => {
             // Use VSInterfaceList helper to add interface to proper lists
             const interfaceListCfg = VSInterfaceList(
-                interfaceName, 
-                String(VSNetwork), 
-                `VPN binding interface for ${interfaceName}`
+                interfaceName,
+                String(VSNetwork),
+                `VPN binding interface for ${interfaceName}`,
             );
-            
+
             // Merge the interface list configuration
             Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
                 config[section] = (config[section] ?? []).concat(cmds);
@@ -560,7 +578,9 @@ export const OVPNVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     return config;
 };
 
-export const OVPNServerFirewall = ( serverConfigs: OpenVpnServerConfig[] ): RouterConfig => {
+export const OVPNServerFirewall = (
+    serverConfigs: OpenVpnServerConfig[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -581,9 +601,14 @@ export const OVPNServerFirewall = ( serverConfigs: OpenVpnServerConfig[] ): Rout
     });
 
     return config;
-}
+};
 
-export const SingleOVPNWrapper = (  serverConfig: OpenVpnServerConfig,  users: VSCredentials[],  vsNetwork: VSNetwork,  subnetConfig: SubnetConfig ): RouterConfig => {
+export const SingleOVPNWrapper = (
+    serverConfig: OpenVpnServerConfig,
+    users: VSCredentials[],
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Generate OpenVPN server configuration
@@ -606,23 +631,37 @@ export const SingleOVPNWrapper = (  serverConfig: OpenVpnServerConfig,  users: V
     const finalConfig = mergeRouterConfigs(...configs);
 
     return CommandShortner(finalConfig);
-}
+};
 
-export const OVPNServerWrapper = (  serverConfigs: OpenVpnServerConfig[],  users: VSCredentials[] = [],  subnetConfigs: SubnetConfig[] ): RouterConfig => {
+export const OVPNServerWrapper = (
+    serverConfigs: OpenVpnServerConfig[],
+    users: VSCredentials[] = [],
+    subnetConfigs: SubnetConfig[],
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Process each OpenVPN server configuration
     serverConfigs.forEach((serverConfig, index) => {
         // Get VSNetwork from server config or default to "VPN"
         const vsNetwork: VSNetwork = serverConfig.VSNetwork || "VPN";
-        
+
         // Try to find matching subnet by name
         const serverName = serverConfig.name;
         let matchedSubnet = subnetConfigs.find((s) => s.name === serverName);
-        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name.toLowerCase() === serverName.toLowerCase());
-        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name === `ovpn-${serverName}`);
-        if (!matchedSubnet) matchedSubnet = subnetConfigs.find((s) => s.name.toLowerCase() === `ovpn-${serverName}`.toLowerCase());
-        
+        if (!matchedSubnet)
+            matchedSubnet = subnetConfigs.find(
+                (s) => s.name.toLowerCase() === serverName.toLowerCase(),
+            );
+        if (!matchedSubnet)
+            matchedSubnet = subnetConfigs.find(
+                (s) => s.name === `ovpn-${serverName}`,
+            );
+        if (!matchedSubnet)
+            matchedSubnet = subnetConfigs.find(
+                (s) =>
+                    s.name.toLowerCase() === `ovpn-${serverName}`.toLowerCase(),
+            );
+
         // Fallback to default subnet if no match found
         const effectiveSubnet: SubnetConfig = matchedSubnet || {
             name: serverName,
@@ -630,7 +669,9 @@ export const OVPNServerWrapper = (  serverConfigs: OpenVpnServerConfig[],  users
         };
 
         // Use SingleOVPNWrapper for full server setup
-        configs.push(SingleOVPNWrapper(serverConfig, users, vsNetwork, effectiveSubnet));
+        configs.push(
+            SingleOVPNWrapper(serverConfig, users, vsNetwork, effectiveSubnet),
+        );
     });
 
     // Add OpenVPN client configuration export functionality (only once)
@@ -667,7 +708,3 @@ export const OVPNServerWrapper = (  serverConfigs: OpenVpnServerConfig[],  users
 
     return CommandShortner(finalConfig);
 };
-
-
-
-

@@ -1,9 +1,9 @@
 import { $, useSignal, useTask$, useVisibleTask$ } from "@builder.io/qwik";
-import type { 
-  BaseStepMeta, 
-  BaseStepperProps, 
-  UseBaseStepperOptions, 
-  UseBaseStepperReturn 
+import type {
+  BaseStepMeta,
+  BaseStepperProps,
+  UseBaseStepperOptions,
+  UseBaseStepperReturn,
 } from "../types";
 import { useStepperHelp } from "./useStepperHelp";
 
@@ -13,12 +13,12 @@ import { useStepperHelp } from "./useStepperHelp";
  */
 export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
   props: BaseStepperProps<S>,
-  options: UseBaseStepperOptions = {}
+  options: UseBaseStepperOptions = {},
 ): UseBaseStepperReturn<S> {
   const {
     preventInfiniteLoops = true,
     maxRenderCycles = 10,
-    contextNamespace = '',
+    contextNamespace = "",
   } = options;
 
   // Core stepper state
@@ -29,7 +29,7 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
 
   // Error and loading state
   const hasError = useSignal(false);
-  const errorMessage = useSignal('');
+  const errorMessage = useSignal("");
   const isLoading = useSignal(false);
 
   // Loop prevention state
@@ -40,16 +40,16 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
   // Track steps changes to handle dynamic step modifications
   useTask$(({ track }) => {
     track(() => props.steps);
-    
+
     if (isStepperMounted.value) {
       // Handle dynamic steps changes (adding or removing steps)
       const newSteps = [...props.steps];
-      
+
       // Keep active step within bounds
       if (activeStep.value >= newSteps.length) {
         activeStep.value = Math.max(0, newSteps.length - 1);
       }
-      
+
       // Update steps signal
       steps.value = newSteps;
     }
@@ -58,15 +58,15 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
   // Error handling for steps
   useTask$(({ track }) => {
     track(() => steps.value);
-    
+
     // Check for problematic step configurations
     if (steps.value.length === 0) {
       hasError.value = true;
-      errorMessage.value = 'No steps provided to the stepper component';
+      errorMessage.value = "No steps provided to the stepper component";
     } else {
       // Reset error state if we have steps
       hasError.value = false;
-      errorMessage.value = '';
+      errorMessage.value = "";
     }
   });
 
@@ -76,33 +76,34 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
     if (preventInfiniteLoops && renderCount.value > maxRenderCycles) {
       console.warn(
         `[${contextNamespace}] Stepper render cycle limit reached (${maxRenderCycles}). ` +
-        `This usually indicates an infinite loop in nested steppers.`
+          `This usually indicates an infinite loop in nested steppers.`,
       );
       return;
     }
 
     // Track only the active step index to minimize re-renders
     const currentStepIndex = track(() => activeStep.value);
-    
+
     // Safety check
     if (currentStepIndex < 0 || currentStepIndex >= steps.value.length) {
       return;
     }
 
     const currentStep = steps.value[currentStepIndex];
-    
+
     // Check if current step is complete and we haven't already processed it
-    if (currentStep?.isComplete && 
-        lastCompletedStep.value !== currentStep.id &&
-        !completionInProgress.value) {
-      
+    if (
+      currentStep?.isComplete &&
+      lastCompletedStep.value !== currentStep.id &&
+      !completionInProgress.value
+    ) {
       // Mark as in progress to prevent duplicate calls
       completionInProgress.value = true;
       lastCompletedStep.value = currentStep.id;
-      
+
       // Call the completion handler
       props.onStepComplete$?.(currentStep.id);
-      
+
       // Reset completion flag after a short delay
       setTimeout(() => {
         completionInProgress.value = false;
@@ -124,29 +125,27 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
     isStepperMounted.value = true;
   });
 
-
   // Navigation functions
   const handleNext$ = $(() => {
-    const canProceed = 
+    const canProceed =
       activeStep.value < steps.value.length - 1 &&
-      (steps.value[activeStep.value].isComplete || 
-       props.allowSkipSteps || 
-       steps.value[activeStep.value].skippable);
+      (steps.value[activeStep.value].isComplete ||
+        props.allowSkipSteps ||
+        steps.value[activeStep.value].skippable);
 
     if (canProceed) {
       // Store previous step for back navigation tracking
       previousSteps.value = [...previousSteps.value, activeStep.value];
-      
+
       // Navigate to next step
       activeStep.value++;
-      
-      
+
       props.onStepChange$?.(steps.value[activeStep.value].id);
     } else if (
       activeStep.value === steps.value.length - 1 &&
-      (steps.value[activeStep.value].isComplete || 
-       props.allowSkipSteps || 
-       steps.value[activeStep.value].skippable)
+      (steps.value[activeStep.value].isComplete ||
+        props.allowSkipSteps ||
+        steps.value[activeStep.value].skippable)
     ) {
       props.onComplete$?.();
     }
@@ -165,32 +164,30 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
       } else {
         activeStep.value--;
       }
-      
-      
+
       props.onStepChange$?.(steps.value[activeStep.value].id);
     }
   });
 
   const setStep$ = $((step: number) => {
     // Allow navigation based on props configuration
-    const canNavigateToStep = 
-      step <= activeStep.value || 
-      (step === activeStep.value + 1 && (
-        steps.value[activeStep.value].isComplete || 
-        props.allowSkipSteps || 
-        steps.value[activeStep.value].skippable)) ||
+    const canNavigateToStep =
+      step <= activeStep.value ||
+      (step === activeStep.value + 1 &&
+        (steps.value[activeStep.value].isComplete ||
+          props.allowSkipSteps ||
+          steps.value[activeStep.value].skippable)) ||
       props.allowNonLinearNavigation ||
       props.allowSkipSteps;
-    
+
     if (step >= 0 && step < steps.value.length && canNavigateToStep) {
       // Store previous step if advancing forward
       if (step > activeStep.value) {
         previousSteps.value = [...previousSteps.value, activeStep.value];
       }
-      
+
       activeStep.value = step;
-      
-      
+
       props.onStepChange$?.(steps.value[step].id);
     }
   });
@@ -198,41 +195,44 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
   // Step management functions
   const completeStep$ = $((stepId?: number) => {
     // If no stepId is provided, complete the current active step
-    const idToComplete = stepId !== undefined 
-      ? stepId 
-      : steps.value[activeStep.value].id;
-    
+    const idToComplete =
+      stepId !== undefined ? stepId : steps.value[activeStep.value].id;
+
     // Update the step completion status
-    steps.value = steps.value.map(step => 
-      step.id === idToComplete ? { ...step, isComplete: true } : step
+    steps.value = steps.value.map((step) =>
+      step.id === idToComplete ? { ...step, isComplete: true } : step,
     );
-    
+
     // Trigger onStepComplete prop if provided
     props.onStepComplete$?.(idToComplete);
   });
 
   const addStep$ = $((newStep: S, position?: number) => {
     const newSteps = [...steps.value];
-    
-    if (position !== undefined && position >= 0 && position <= newSteps.length) {
+
+    if (
+      position !== undefined &&
+      position >= 0 &&
+      position <= newSteps.length
+    ) {
       // Insert at specific position
       newSteps.splice(position, 0, newStep);
     } else {
       // Append to end
       newSteps.push(newStep);
     }
-    
+
     steps.value = newSteps;
     return newStep.id;
   });
 
   const removeStep$ = $((stepId: number) => {
-    const stepIndex = steps.value.findIndex(step => step.id === stepId);
-    
+    const stepIndex = steps.value.findIndex((step) => step.id === stepId);
+
     if (stepIndex >= 0) {
       const newSteps = [...steps.value];
       newSteps.splice(stepIndex, 1);
-      
+
       // Adjust active step if necessary
       if (activeStep.value >= newSteps.length) {
         activeStep.value = Math.max(0, newSteps.length - 1);
@@ -240,39 +240,41 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
         // If we removed a step before the active one, adjust active step
         activeStep.value = Math.max(0, activeStep.value - 1);
       }
-      
+
       steps.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
 
   const swapSteps$ = $((sourceIndex: number, targetIndex: number) => {
     if (
-      sourceIndex >= 0 && 
-      sourceIndex < steps.value.length && 
-      targetIndex >= 0 && 
+      sourceIndex >= 0 &&
+      sourceIndex < steps.value.length &&
+      targetIndex >= 0 &&
       targetIndex < steps.value.length &&
       sourceIndex !== targetIndex
     ) {
       const newSteps = [...steps.value];
-      
+
       // Swap the steps
-      [newSteps[sourceIndex], newSteps[targetIndex]] = 
-      [newSteps[targetIndex], newSteps[sourceIndex]];
-      
+      [newSteps[sourceIndex], newSteps[targetIndex]] = [
+        newSteps[targetIndex],
+        newSteps[sourceIndex],
+      ];
+
       // Update active step if it was one of the swapped steps
       if (activeStep.value === sourceIndex) {
         activeStep.value = targetIndex;
       } else if (activeStep.value === targetIndex) {
         activeStep.value = sourceIndex;
       }
-      
+
       steps.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
 
@@ -284,39 +286,35 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
   });
 
   // Initialize help system (always call hook, but use enableHelp flag)
-  const helpSystem = useStepperHelp(
-    steps,
-    activeStep,
-    props.helpOptions
-  );
+  const helpSystem = useStepperHelp(steps, activeStep, props.helpOptions);
 
   return {
     // Core state
     activeStep,
     steps,
     previousSteps,
-    
+
     // Error and loading state
     hasError,
     errorMessage,
     isLoading,
-    
+
     // Navigation functions
     handleNext$,
     handlePrev$,
     setStep$,
-    
+
     // Step management
     completeStep$,
     addStep$,
     removeStep$,
     swapSteps$,
     handleStepError,
-    
+
     // Loop prevention
     renderCount,
     lastCompletedStep,
-    
+
     // Help system (only included if enabled)
     ...(props.enableHelp && { helpSystem }),
   };

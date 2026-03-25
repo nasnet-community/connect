@@ -5,7 +5,11 @@ import {
     SSHServerFirewall,
     SSHServerWrapper,
 } from "./SSH";
-import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+    validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
 import type {
     SSHServerConfig,
     VSCredentials,
@@ -219,11 +223,14 @@ describe("SSH Protocol Tests", () => {
                 Network: "VPN",
             };
 
-            const users: VSCredentials[] = Array.from({ length: 30 }, (_, i) => ({
-                Username: `ssh_user${i + 1}`,
-                Password: `ssh_pass${i + 1}`,
-                VPNType: ["SSH"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 30 },
+                (_, i) => ({
+                    Username: `ssh_user${i + 1}`,
+                    Password: `ssh_pass${i + 1}`,
+                    VPNType: ["SSH"],
+                }),
+            );
 
             testWithOutput(
                 "SSHServerUsers",
@@ -302,7 +309,10 @@ describe("SSH Protocol Tests", () => {
             );
 
             const result = SSHServerFirewall(config);
-            validateRouterConfig(result, ["/ip firewall mangle", "/ip firewall raw"]);
+            validateRouterConfig(result, [
+                "/ip firewall mangle",
+                "/ip firewall raw",
+            ]);
         });
 
         it("should generate firewall rules for Domestic network", () => {
@@ -319,7 +329,10 @@ describe("SSH Protocol Tests", () => {
             );
 
             const result = SSHServerFirewall(config);
-            validateRouterConfig(result, ["/ip firewall mangle", "/ip firewall raw"]);
+            validateRouterConfig(result, [
+                "/ip firewall mangle",
+                "/ip firewall raw",
+            ]);
         });
 
         it("should generate firewall rules for Foreign network", () => {
@@ -336,7 +349,10 @@ describe("SSH Protocol Tests", () => {
             );
 
             const result = SSHServerFirewall(config);
-            validateRouterConfig(result, ["/ip firewall mangle", "/ip firewall raw"]);
+            validateRouterConfig(result, [
+                "/ip firewall mangle",
+                "/ip firewall raw",
+            ]);
         });
 
         it("should generate firewall rules for Split network", () => {
@@ -353,7 +369,10 @@ describe("SSH Protocol Tests", () => {
             );
 
             const result = SSHServerFirewall(config);
-            validateRouterConfig(result, ["/ip firewall mangle", "/ip firewall raw"]);
+            validateRouterConfig(result, [
+                "/ip firewall mangle",
+                "/ip firewall raw",
+            ]);
         });
 
         it("should return empty config when SSH is disabled", () => {
@@ -453,11 +472,14 @@ describe("SSH Protocol Tests", () => {
                 Network: "Domestic",
             };
 
-            const users: VSCredentials[] = Array.from({ length: 10 }, (_, i) => ({
-                Username: `domesticuser${i + 1}`,
-                Password: `domesticpass${i + 1}`,
-                VPNType: ["SSH"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 10 },
+                (_, i) => ({
+                    Username: `domesticuser${i + 1}`,
+                    Password: `domesticpass${i + 1}`,
+                    VPNType: ["SSH"],
+                }),
+            );
 
             testWithOutput(
                 "SSHServerWrapper",
@@ -541,7 +563,8 @@ describe("SSH Protocol Tests", () => {
             const users: VSCredentials[] = [
                 {
                     Username: "very_long_username_with_many_characters_12345",
-                    Password: "VeryLongP@ssw0rd!With#Many$Special%Characters&12345",
+                    Password:
+                        "VeryLongP@ssw0rd!With#Many$Special%Characters&12345",
                     VPNType: ["SSH"],
                 },
             ];
@@ -558,7 +581,12 @@ describe("SSH Protocol Tests", () => {
         });
 
         it("should handle all network types in wrapper", () => {
-            const networks: Array<SSHServerConfig["Network"]> = ["VPN", "Domestic", "Foreign", "Split"];
+            const networks: Array<SSHServerConfig["Network"]> = [
+                "VPN",
+                "Domestic",
+                "Foreign",
+                "Split",
+            ];
 
             networks.forEach((network) => {
                 const serverConfig: SSHServerConfig = {
@@ -596,7 +624,16 @@ describe("SSH Protocol Tests", () => {
                 {
                     Username: "allmethods",
                     Password: "allpass",
-                    VPNType: ["SSH", "Wireguard", "OpenVPN", "PPTP", "L2TP", "SSTP", "IKeV2", "Socks5"],
+                    VPNType: [
+                        "SSH",
+                        "Wireguard",
+                        "OpenVPN",
+                        "PPTP",
+                        "L2TP",
+                        "SSTP",
+                        "IKeV2",
+                        "Socks5",
+                    ],
                 },
             ];
 

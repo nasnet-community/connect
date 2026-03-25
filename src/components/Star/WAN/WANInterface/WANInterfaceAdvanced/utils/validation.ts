@@ -1,7 +1,4 @@
-import type {
-  WANLinkConfig,
-  WANWizardState,
-} from "../types";
+import type { WANLinkConfig, WANWizardState } from "../types";
 
 // Regular expressions for validation
 export const IP_REGEX =
@@ -161,10 +158,7 @@ export function validateWANLink(
           message: "Valid gateway is required",
         });
       }
-      if (
-        !staticConfig?.DNS ||
-        !validateIPAddress(staticConfig.DNS)
-      ) {
+      if (!staticConfig?.DNS || !validateIPAddress(staticConfig.DNS)) {
         errors.push({
           field: "static-dns1",
           message: "Valid primary DNS is required",

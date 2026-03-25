@@ -29,7 +29,7 @@ export const Header = component$(() => {
           <div class="hidden items-center gap-6 lg:flex">
             <Link
               href={`/${currentLocale}/star/`}
-              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+              class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
             >
               {$localize`Launch App`}
             </Link>
@@ -47,7 +47,7 @@ export const Header = component$(() => {
 
           <button
             onClick$={toggleMenu$}
-            class="rounded-lg p-2 hover:bg-primary-100 lg:hidden dark:hover:bg-primary-900/20"
+            class="rounded-lg p-2 hover:bg-primary-100 dark:hover:bg-primary-900/20 lg:hidden"
             aria-label={$localize`Toggle menu`}
           >
             {isMenuOpen.value ? (
@@ -84,12 +84,12 @@ export const Header = component$(() => {
 
         {/* Mobile Menu */}
         <div
-          class={`fixed inset-x-0 top-20 border-t border-primary-100 bg-white/90 p-4 backdrop-blur-xl transition-all duration-300 lg:hidden dark:border-primary-900/20 dark:bg-surface-dark/90 ${isMenuOpen.value ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"}`}
+          class={`fixed inset-x-0 top-20 border-t border-primary-100 bg-white/90 p-4 backdrop-blur-xl transition-all duration-300 dark:border-primary-900/20 dark:bg-surface-dark/90 lg:hidden ${isMenuOpen.value ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"}`}
         >
           <div class="space-y-4">
             <Link
               href={`/${currentLocale}/star/`}
-              class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+              class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
             >
               {$localize`Launch App`}
             </Link>

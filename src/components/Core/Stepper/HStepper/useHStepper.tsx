@@ -72,14 +72,14 @@ function useHStepperLegacy(props: HStepperProps) {
 export function useStepper(props: HStepperProps) {
   // Always call hooks at top level for Qwik compliance
   const baseStepperResult = useBaseStepper(props, {
-    contextNamespace: 'hstepper',
+    contextNamespace: "hstepper",
     preventInfiniteLoops: true,
-    maxRenderCycles: 10
+    maxRenderCycles: 10,
   });
 
   // Always create these signals
   const selectedModeEnhanced = useSignal<StepperMode>(props.mode || "easy");
-  
+
   // Always call legacy implementation
   const legacyResult = useHStepperLegacy(props);
 
@@ -92,15 +92,21 @@ export function useStepper(props: HStepperProps) {
   // Enhanced next with scroll
   const handleNextEnhanced$ = $(() => {
     if (
-      baseStepperResult.activeStep.value < baseStepperResult.steps.value.length - 1 &&
-      baseStepperResult.steps.value[baseStepperResult.activeStep.value].isComplete
+      baseStepperResult.activeStep.value <
+        baseStepperResult.steps.value.length - 1 &&
+      baseStepperResult.steps.value[baseStepperResult.activeStep.value]
+        .isComplete
     ) {
       baseStepperResult.activeStep.value++;
-      props.onStepChange$?.(baseStepperResult.steps.value[baseStepperResult.activeStep.value].id);
+      props.onStepChange$?.(
+        baseStepperResult.steps.value[baseStepperResult.activeStep.value].id,
+      );
       scrollToTop();
     } else if (
-      baseStepperResult.activeStep.value === baseStepperResult.steps.value.length - 1 &&
-      baseStepperResult.steps.value[baseStepperResult.activeStep.value].isComplete
+      baseStepperResult.activeStep.value ===
+        baseStepperResult.steps.value.length - 1 &&
+      baseStepperResult.steps.value[baseStepperResult.activeStep.value]
+        .isComplete
     ) {
       props.onComplete$?.();
     }
@@ -110,7 +116,9 @@ export function useStepper(props: HStepperProps) {
   const handlePrevEnhanced$ = $(() => {
     if (baseStepperResult.activeStep.value > 0) {
       baseStepperResult.activeStep.value--;
-      props.onStepChange$?.(baseStepperResult.steps.value[baseStepperResult.activeStep.value].id);
+      props.onStepChange$?.(
+        baseStepperResult.steps.value[baseStepperResult.activeStep.value].id,
+      );
       scrollToTop();
     }
   });
@@ -119,11 +127,20 @@ export function useStepper(props: HStepperProps) {
   useTask$(({ track }) => {
     // Only run enhanced logic if features are enabled
     if (!props.enableEnhancedFeatures) return;
-    
-    track(() => baseStepperResult.steps.value[baseStepperResult.activeStep.value]?.isComplete);
 
-    const currentStep = baseStepperResult.steps.value[baseStepperResult.activeStep.value];
-    if (currentStep?.isComplete && baseStepperResult.activeStep.value < baseStepperResult.steps.value.length - 1) {
+    track(
+      () =>
+        baseStepperResult.steps.value[baseStepperResult.activeStep.value]
+          ?.isComplete,
+    );
+
+    const currentStep =
+      baseStepperResult.steps.value[baseStepperResult.activeStep.value];
+    if (
+      currentStep?.isComplete &&
+      baseStepperResult.activeStep.value <
+        baseStepperResult.steps.value.length - 1
+    ) {
       props.onStepComplete$?.(currentStep.id);
     }
   });
@@ -142,7 +159,7 @@ export function useStepper(props: HStepperProps) {
       hasError: baseStepperResult.hasError,
       errorMessage: baseStepperResult.errorMessage,
       isLoading: baseStepperResult.isLoading,
-      
+
       // HStepper-specific
       selectedMode: selectedModeEnhanced,
       handleModeChange$: handleModeChangeEnhanced$,

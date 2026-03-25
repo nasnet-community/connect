@@ -2,7 +2,10 @@ import { component$ } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { useL2TPServer } from "./useL2TPServer";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
-import { ServerFormField, SectionTitle } from "~/components/Core/Form/ServerField";
+import {
+  ServerFormField,
+  SectionTitle,
+} from "~/components/Core/Form/ServerField";
 import { PasswordField } from "~/components/Core/Form/PasswordField";
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { NetworkDropdown } from "../../components/NetworkSelection";
@@ -17,11 +20,8 @@ import { NetworkDropdown } from "../../components/NetworkSelection";
  * - Configure MTU/MRU and other connection parameters
  */
 export const L2TPServerAdvanced = component$(() => {
-  const {
-    advancedFormState,
-    updateUseIpsec$,
-    updateIpsecSecret$,
-  } = useL2TPServer();
+  const { advancedFormState, updateUseIpsec$, updateIpsecSecret$ } =
+    useL2TPServer();
 
   return (
     <ServerCard
@@ -41,7 +41,6 @@ export const L2TPServerAdvanced = component$(() => {
             }}
           />
         </ServerFormField>
-
 
         {/* IPsec Usage Dropdown */}
         <ServerFormField label={$localize`Use IPsec`}>
@@ -70,9 +69,7 @@ export const L2TPServerAdvanced = component$(() => {
             />
           </ServerFormField>
         )}
-
       </div>
-
 
       {/* Apply Settings Button
       <ServerButton

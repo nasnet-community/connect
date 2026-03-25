@@ -8,7 +8,7 @@ export const routerModels = [
     isWireless: true,
     isLTE: true,
     specs: { cpu: "ARM Cortex-A53", ram: "1GB", ethernet: "4x Gigabit" },
-    features: ["5G", "WiFi 6", "Enterprise"]
+    features: ["5G", "WiFi 6", "Enterprise"],
   },
   {
     name: "hAP ax3",
@@ -17,7 +17,7 @@ export const routerModels = [
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "512MB", ethernet: "5x Gigabit" },
-    features: ["WiFi 6", "Home", "Gaming"]
+    features: ["WiFi 6", "Home", "Gaming"],
   },
   {
     name: "RB5009UPr+S+IN",
@@ -26,7 +26,7 @@ export const routerModels = [
     isWireless: false,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A57", ram: "1GB", ethernet: "8x Gigabit + SFP+" },
-    features: ["Enterprise", "High Performance", "Rackmount"]
+    features: ["Enterprise", "High Performance", "Rackmount"],
   },
   {
     name: "Chateau LTE18 ax",
@@ -35,7 +35,7 @@ export const routerModels = [
     isWireless: true,
     isLTE: true,
     specs: { cpu: "ARM Cortex-A53", ram: "512MB", ethernet: "4x Gigabit" },
-    features: ["LTE", "WiFi 6", "Backup"]
+    features: ["LTE", "WiFi 6", "Backup"],
   },
   {
     name: "hAP ax2",
@@ -44,7 +44,7 @@ export const routerModels = [
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "256MB", ethernet: "5x Gigabit" },
-    features: ["WiFi 6", "Affordable", "Home"]
+    features: ["WiFi 6", "Affordable", "Home"],
   },
   {
     name: "cAP ax",
@@ -53,20 +53,20 @@ export const routerModels = [
     isWireless: true,
     isLTE: false,
     specs: { cpu: "ARM Cortex-A53", ram: "256MB", ethernet: "2x Gigabit" },
-    features: ["Access Point", "WiFi 6", "Ceiling Mount"]
-  }
+    features: ["Access Point", "WiFi 6", "Ceiling Mount"],
+  },
 ];
 
 export const routerCategories = [
   { id: "all", name: $localize`All Models`, icon: "LuRouter" as IconName },
   { id: "wifi6", name: $localize`WiFi 6`, icon: "LuWifi" as IconName },
   { id: "5g", name: $localize`5G / LTE`, icon: "LuZap" as IconName },
-  { id: "enterprise", name: $localize`Enterprise`, icon: "LuCpu" as IconName }
+  { id: "enterprise", name: $localize`Enterprise`, icon: "LuCpu" as IconName },
 ];
 
 export const routerStats = [
   { number: "17+", label: $localize`Router Models` },
   { number: "100%", label: $localize`Auto-Detection` },
   { number: "6", label: $localize`VPN Protocols` },
-  { number: "∞", label: $localize`Configurations` }
+  { number: "∞", label: $localize`Configurations` },
 ];

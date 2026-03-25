@@ -1,10 +1,16 @@
-import { $, component$, useSignal, useVisibleTask$, type QRL } from "@builder.io/qwik";
-import { 
-  LuWifi, 
-  LuSmartphone, 
-  LuRouter, 
-  LuCpu, 
-  LuZap 
+import {
+  $,
+  component$,
+  useSignal,
+  useVisibleTask$,
+  type QRL,
+} from "@builder.io/qwik";
+import {
+  LuWifi,
+  LuSmartphone,
+  LuRouter,
+  LuCpu,
+  LuZap,
 } from "@qwikest/icons/lucide";
 import { type RouterCategory } from "./RouterCategories";
 
@@ -59,13 +65,14 @@ const ModernTabItem = component$<TabItemProps>((props) => {
       type="button"
       onClick$={() => onSelect$(category.id)}
       class={`
-        relative px-6 py-3 rounded-2xl font-medium text-sm
-        transition-all duration-300 ease-out
-        transform-gpu hover:scale-[1.02]
-        group overflow-hidden
-        ${isActive 
-          ? 'text-white shadow-lg hover:shadow-xl' 
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+        group relative transform-gpu overflow-hidden rounded-2xl px-6
+        py-3 text-sm font-medium
+        transition-all duration-300
+        ease-out hover:scale-[1.02]
+        ${
+          isActive
+            ? "text-white shadow-lg hover:shadow-xl"
+            : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
         }
       `}
       style={`animation-delay: ${index * 100}ms`}
@@ -74,19 +81,20 @@ const ModernTabItem = component$<TabItemProps>((props) => {
       <div
         class={`
           absolute inset-0 rounded-2xl transition-all duration-500
-          ${isActive 
-            ? `bg-gradient-to-r ${getGradient(category.id)} opacity-100 animate-gradient-shift` 
-            : 'bg-white/10 dark:bg-white/5 backdrop-blur-sm opacity-0 group-hover:opacity-100'
+          ${
+            isActive
+              ? `bg-gradient-to-r ${getGradient(category.id)} animate-gradient-shift opacity-100`
+              : "bg-white/10 opacity-0 backdrop-blur-sm group-hover:opacity-100 dark:bg-white/5"
           }
         `}
       />
-      
+
       {/* Glow Effect for Active Tab */}
       {isActive && (
         <div
           class={`
-            absolute inset-0 rounded-2xl blur-xl scale-110 opacity-50
-            bg-gradient-to-r ${getGradient(category.id)}
+            absolute inset-0 scale-110 rounded-2xl bg-gradient-to-r opacity-50
+            blur-xl ${getGradient(category.id)}
             animate-pulse-glow
           `}
         />
@@ -96,35 +104,35 @@ const ModernTabItem = component$<TabItemProps>((props) => {
       <div
         class={`
           absolute inset-0 rounded-2xl border transition-all duration-300
-          ${isActive 
-            ? 'border-white/30' 
-            : 'border-white/20 dark:border-white/10 group-hover:border-white/30'
+          ${
+            isActive
+              ? "border-white/30"
+              : "border-white/20 group-hover:border-white/30 dark:border-white/10"
           }
         `}
       />
 
       {/* Content */}
-      <div class="relative flex items-center gap-2 z-10">
+      <div class="relative z-10 flex items-center gap-2">
         <div
           class={`
             transition-all duration-300
-            ${isActive ? 'text-white animate-bounce-subtle' : 'text-current'}
+            ${isActive ? "animate-bounce-subtle text-white" : "text-current"}
           `}
         >
           {getIcon(category.id)}
         </div>
-        <span class="font-semibold whitespace-nowrap">
-          {category.label}
-        </span>
+        <span class="whitespace-nowrap font-semibold">{category.label}</span>
         {category.routers.length > 0 && (
           <div
             class={`
-              min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold
-              flex items-center justify-center
+              flex h-5 min-w-[20px] items-center justify-center rounded-full
+              px-1.5 text-xs font-bold
               transition-all duration-300
-              ${isActive 
-                ? 'bg-white/25 text-white animate-pulse' 
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 group-hover:bg-white/20'
+              ${
+                isActive
+                  ? "animate-pulse bg-white/25 text-white"
+                  : "bg-gray-200 text-gray-600 group-hover:bg-white/20 dark:bg-gray-700 dark:text-gray-300"
               }
             `}
           >
@@ -145,12 +153,14 @@ export const ModernTabs = component$<ModernTabsProps>((props) => {
   const updateIndicator = $(() => {
     if (!containerRef.value || !indicatorRef.value) return;
 
-    const activeButton = containerRef.value.querySelector(`[data-category="${activeCategory}"]`) as HTMLElement;
+    const activeButton = containerRef.value.querySelector(
+      `[data-category="${activeCategory}"]`,
+    ) as HTMLElement;
     if (!activeButton) return;
 
     const containerRect = containerRef.value.getBoundingClientRect();
     const buttonRect = activeButton.getBoundingClientRect();
-    
+
     const left = buttonRect.left - containerRect.left;
     const width = buttonRect.width;
 
@@ -166,23 +176,20 @@ export const ModernTabs = component$<ModernTabsProps>((props) => {
   return (
     <div class="flex flex-col items-center space-y-6">
       {/* Tab Container */}
-      <div
-        ref={containerRef}
-        class="relative flex items-center justify-center"
-      >
+      <div ref={containerRef} class="relative flex items-center justify-center">
         {/* Background Panel */}
-        <div class="absolute inset-0 bg-white/5 dark:bg-black/20 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-white/10 shadow-2xl" />
-        
+        <div class="absolute inset-0 rounded-3xl border border-white/20 bg-white/5 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/20" />
+
         {/* Animated Indicator */}
         <div
           ref={indicatorRef}
           class="absolute top-0 h-full rounded-2xl transition-all duration-500 ease-out"
         >
-          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-pink-500/20 rounded-2xl blur-sm" />
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-pink-500/20 blur-sm" />
         </div>
 
         {/* Tab Items */}
-        <div class="relative flex items-center p-2 gap-1">
+        <div class="relative flex items-center gap-1 p-2">
           {categories.map((category, index) => (
             <div
               key={category.id}
@@ -201,11 +208,11 @@ export const ModernTabs = component$<ModernTabsProps>((props) => {
       </div>
 
       {/* Active Category Description */}
-      <div class="text-center animate-fade-in">
-        {categories.find(cat => cat.id === activeCategory) && (
-          <div class="max-w-md mx-auto">
-            <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-              {categories.find(cat => cat.id === activeCategory)?.description}
+      <div class="animate-fade-in text-center">
+        {categories.find((cat) => cat.id === activeCategory) && (
+          <div class="mx-auto max-w-md">
+            <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+              {categories.find((cat) => cat.id === activeCategory)?.description}
             </p>
           </div>
         )}

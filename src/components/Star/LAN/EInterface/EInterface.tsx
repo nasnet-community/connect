@@ -1,4 +1,10 @@
-import { component$, useVisibleTask$, $, useSignal, useContext } from "@builder.io/qwik";
+import {
+  component$,
+  useVisibleTask$,
+  $,
+  useSignal,
+  useContext,
+} from "@builder.io/qwik";
 import { useEInterface } from "./useEInterface";
 import type { Ethernet } from "~/components/Star/StarContext";
 import type { StepProps } from "~/types/step";
@@ -6,7 +12,7 @@ import { StarContext } from "~/components/Star/StarContext";
 import {
   isInterfaceOccupied,
   getOccupiedInterfacesForRouter,
-  getInterfaceUsage
+  getInterfaceUsage,
 } from "../../utils/InterfaceManagementUtils";
 
 export default component$<StepProps>(({ isComplete, onComplete$ }) => {
@@ -46,7 +52,9 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     const defaultNetwork = await getDefaultNetwork();
 
     // Get occupied interfaces for the master router only
-    const masterRouter = starContext.state.Choose.RouterModels.find(rm => rm.isMaster);
+    const masterRouter = starContext.state.Choose.RouterModels.find(
+      (rm) => rm.isMaster,
+    );
     const occupiedInterfaces = masterRouter
       ? getOccupiedInterfacesForRouter(masterRouter)
       : [];
@@ -54,7 +62,9 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     const allIntfs = [...availableEInterfaces.value].map((name) => {
       const selected = currentlySelected.has(name);
       const isOccupied = isInterfaceOccupied(occupiedInterfaces, name);
-      const usage = isOccupied ? (getInterfaceUsage(occupiedInterfaces, name) || "Other") : "";
+      const usage = isOccupied
+        ? getInterfaceUsage(occupiedInterfaces, name) || "Other"
+        : "";
 
       return {
         name,
@@ -250,11 +260,13 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                     </td>
                     <td class="text-text-secondary dark:text-text-dark-secondary px-6 py-4">
                       {intf.inUse ? (
-                        <span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          intf.usedBy === "WAN"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                            : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
-                        }`}>
+                        <span
+                          class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            intf.usedBy === "WAN"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                          }`}
+                        >
                           {$localize`Used by ${intf.usedBy}`}
                         </span>
                       ) : intf.selected ? (
@@ -288,7 +300,10 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                             }
                           >
                             {availableNetworks.value.map((network) => (
-                              <option key={network as string} value={network as string}>
+                              <option
+                                key={network as string}
+                                value={network as string}
+                              >
                                 {network as string}
                               </option>
                             ))}

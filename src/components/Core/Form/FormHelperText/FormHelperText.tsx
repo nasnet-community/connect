@@ -81,7 +81,8 @@ export const FormHelperText = component$<FormHelperTextProps>(
           // Semantic colors with proper contrast and accessibility
           stateClasses,
           // Enhanced text selection for better UX
-          !error && "selection:bg-surface-light-secondary dark:selection:bg-surface-dark-secondary",
+          !error &&
+            "selection:bg-surface-light-secondary dark:selection:bg-surface-dark-secondary",
           error && "selection:bg-error-100 dark:selection:bg-error-900",
           success && "selection:bg-success-100 dark:selection:bg-success-900",
           warning && "selection:bg-warning-100 dark:selection:bg-warning-900",
@@ -97,7 +98,7 @@ export const FormHelperText = component$<FormHelperTextProps>(
           "high-contrast:font-medium",
           "high-contrast:text-gray-800 high-contrast:dark:text-gray-200",
           // RTL support with logical properties
-          "rtl:text-right ltr:text-left",
+          "ltr:text-left rtl:text-right",
           // Touch optimization with adequate target sizes
           "mobile:min-h-[18px] tablet:min-h-[16px] desktop:min-h-[14px]",
           // Improved focus accessibility
@@ -107,7 +108,9 @@ export const FormHelperText = component$<FormHelperTextProps>(
           "motion-reduce:transition-none",
           // Additional classes
           className || "",
-        ].filter(Boolean).join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
         role="status"
       >
         {icon && <span class="flex-shrink-0">{icon}</span>}

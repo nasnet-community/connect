@@ -1,10 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { useWireguardConfig } from "./useWireguardConfig";
-import {
-  ErrorMessage,
-  VPNConfigFileSection,
-} from "../../components";
+import { ErrorMessage, VPNConfigFileSection } from "../../components";
 
 interface WireguardConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -12,13 +9,8 @@ interface WireguardConfigProps {
 
 export const WireguardConfig = component$<WireguardConfigProps>(
   ({ onIsValidChange$ }) => {
-    const {
-      config,
-      errorMessage,
-      handleConfigChange$,
-      handleFileUpload$,
-    } = useWireguardConfig(onIsValidChange$);
-
+    const { config, errorMessage, handleConfigChange$, handleFileUpload$ } =
+      useWireguardConfig(onIsValidChange$);
 
     return (
       <div class="space-y-6">

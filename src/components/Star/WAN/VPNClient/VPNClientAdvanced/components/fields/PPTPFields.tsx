@@ -23,15 +23,13 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
           type="text"
           value={config.ConnectTo || ""}
           onInput$={(event: Event, value: string) => {
-            console.log('[PPTPFields] Connect To updated:', value);
+            console.log("[PPTPFields] Connect To updated:", value);
             onUpdate$({ ConnectTo: value });
           }}
           placeholder="vpn.example.com"
           validation={errors.ConnectTo ? "invalid" : "default"}
         />
-        {errors.ConnectTo && (
-          <ErrorMessage message={errors.ConnectTo} />
-        )}
+        {errors.ConnectTo && <ErrorMessage message={errors.ConnectTo} />}
       </div>
 
       {/* Authentication */}
@@ -44,21 +42,19 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Username || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[PPTPFields] Username updated:', value);
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+              console.log("[PPTPFields] Username updated:", value);
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: value,
-                  Password: config.Credentials?.Password || ""
-                } 
+                  Password: config.Credentials?.Password || "",
+                },
               });
             }}
             placeholder="Your username"
             validation={errors.User ? "invalid" : "default"}
           />
-          {errors.User && (
-            <ErrorMessage message={errors.User} />
-          )}
+          {errors.User && <ErrorMessage message={errors.User} />}
         </div>
 
         <div>
@@ -69,21 +65,22 @@ export const PPTPFields = component$<PPTPFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Password || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[PPTPFields] Password updated:', value ? '***' : '(empty)');
+              console.log(
+                "[PPTPFields] Password updated:",
+                value ? "***" : "(empty)",
+              );
               onUpdate$({
                 Credentials: {
                   ...config.Credentials,
                   Username: config.Credentials?.Username || "",
-                  Password: value
-                }
+                  Password: value,
+                },
               });
             }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
-          {errors.Password && (
-            <ErrorMessage message={errors.Password} />
-          )}
+          {errors.Password && <ErrorMessage message={errors.Password} />}
         </div>
       </div>
     </div>

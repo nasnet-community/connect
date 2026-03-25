@@ -14,9 +14,7 @@ export const LTESettings = component$<LTESettingsProps>(
           {$localize`LTE Settings`}
         </h4>
 
-        <FormField
-          label={$localize`APN (Access Point Name)`}
-        >
+        <FormField label={$localize`APN (Access Point Name)`}>
           <Input
             type="text"
             value={apn || ""}

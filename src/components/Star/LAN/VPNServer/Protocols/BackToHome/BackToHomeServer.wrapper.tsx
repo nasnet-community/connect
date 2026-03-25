@@ -9,5 +9,13 @@ export const BackToHomeServerWrapper = component$(() => {
   const starContext = useContext(StarContext);
   const mode = starContext.state.Choose.Mode as Mode;
 
-  return <>{mode === "easy" ? <BackToHomeServerEasy /> : <BackToHomeServerAdvanced />}</>;
+  return (
+    <>
+      {mode === "easy" ? (
+        <BackToHomeServerEasy />
+      ) : (
+        <BackToHomeServerAdvanced />
+      )}
+    </>
+  );
 });

@@ -58,29 +58,42 @@ export const RadioGroup = component$<RadioGroupProps>(
       sm: {
         radio: "h-4 w-4 mobile:h-5 mobile:w-5 tablet:h-4 tablet:w-4",
         label: "text-sm mobile:text-base tablet:text-sm",
-        spacing: direction === "horizontal" ? "gap-4 mobile:gap-6 tablet:gap-5" : "gap-2 mobile:gap-3 tablet:gap-2.5",
+        spacing:
+          direction === "horizontal"
+            ? "gap-4 mobile:gap-6 tablet:gap-5"
+            : "gap-2 mobile:gap-3 tablet:gap-2.5",
         padding: "py-2 mobile:py-3 tablet:py-2.5 desktop:py-2",
-        hitTarget: "mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[36px]",
+        hitTarget:
+          "mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[36px]",
       },
       md: {
         radio: "h-4 w-4 mobile:h-5 mobile:w-5 tablet:h-4 tablet:w-4",
         label: "text-sm mobile:text-base tablet:text-sm",
-        spacing: direction === "horizontal" ? "gap-6 mobile:gap-8 tablet:gap-7" : "gap-3 mobile:gap-4 tablet:gap-3.5",
+        spacing:
+          direction === "horizontal"
+            ? "gap-6 mobile:gap-8 tablet:gap-7"
+            : "gap-3 mobile:gap-4 tablet:gap-3.5",
         padding: "py-2.5 mobile:py-3.5 tablet:py-3 desktop:py-2.5",
-        hitTarget: "mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[40px]",
+        hitTarget:
+          "mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[40px]",
       },
       lg: {
         radio: "h-5 w-5 mobile:h-6 mobile:w-6 tablet:h-5 tablet:w-5",
         label: "text-base mobile:text-lg tablet:text-base",
-        spacing: direction === "horizontal" ? "gap-8 mobile:gap-10 tablet:gap-9" : "gap-4 mobile:gap-5 tablet:gap-4.5",
+        spacing:
+          direction === "horizontal"
+            ? "gap-8 mobile:gap-10 tablet:gap-9"
+            : "gap-4 mobile:gap-5 tablet:gap-4.5",
         padding: "py-3 mobile:py-4 tablet:py-3.5 desktop:py-3",
-        hitTarget: "mobile:min-h-[44px] tablet:min-h-[44px] desktop:min-h-[44px]",
+        hitTarget:
+          "mobile:min-h-[44px] tablet:min-h-[44px] desktop:min-h-[44px]",
       },
     }[size];
 
-    const containerClass = direction === "horizontal" 
-      ? `flex flex-wrap ${sizeClasses.spacing}`
-      : `flex flex-col ${sizeClasses.spacing}`;
+    const containerClass =
+      direction === "horizontal"
+        ? `flex flex-wrap ${sizeClasses.spacing}`
+        : `flex flex-col ${sizeClasses.spacing}`;
 
     return (
       <div class={["relative", className].filter(Boolean).join(" ")}>
@@ -114,7 +127,7 @@ export const RadioGroup = component$<RadioGroupProps>(
                 key={option.value}
                 for={optionId}
                 class={[
-                  "relative flex items-start gap-3 cursor-pointer rounded-lg",
+                  "relative flex cursor-pointer items-start gap-3 rounded-lg",
                   sizeClasses.padding,
                   sizeClasses.hitTarget,
                   // Enhanced mobile touch optimizations
@@ -152,12 +165,14 @@ export const RadioGroup = component$<RadioGroupProps>(
                   checked={isSelected}
                   disabled={isDisabled}
                   onChange$={() => handleChange$(option.value)}
-                  aria-describedby={option.description ? `${optionId}-desc` : undefined}
+                  aria-describedby={
+                    option.description ? `${optionId}-desc` : undefined
+                  }
                   class={[
                     sizeClasses.radio,
                     "mt-1 flex-shrink-0", // Proper alignment and prevent shrinking
                     // Enhanced base styles with better semantic colors
-                    "border-2 rounded-full transition-all duration-200",
+                    "rounded-full border-2 transition-all duration-200",
                     "motion-safe:transition-all motion-reduce:transition-none",
                     // Border and background states with improved contrast
                     hasError
@@ -183,11 +198,13 @@ export const RadioGroup = component$<RadioGroupProps>(
                         ].join(" ")
                       : "bg-white dark:bg-gray-900",
                     // Enhanced hover states for better UX
-                    !isDisabled && !isSelected && [
-                      hasError
-                        ? "hover:border-error-400 dark:hover:border-error-500"
-                        : "hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950",
-                    ].join(" "),
+                    !isDisabled &&
+                      !isSelected &&
+                      [
+                        hasError
+                          ? "hover:border-error-400 dark:hover:border-error-500"
+                          : "hover:border-primary-400 hover:bg-primary-50 dark:hover:border-primary-500 dark:hover:bg-primary-950",
+                      ].join(" "),
                     // Disabled state with better visual feedback
                     isDisabled && "cursor-not-allowed opacity-50",
                   ]
@@ -199,17 +216,17 @@ export const RadioGroup = component$<RadioGroupProps>(
                 {isSelected && (
                   <div
                     class={[
-                      "absolute pointer-events-none",
-                      "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                      "pointer-events-none absolute",
+                      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
                       // Responsive indicator sizing
-                      size === "lg" 
-                        ? "w-2.5 h-2.5 mobile:w-3 mobile:h-3 tablet:w-2.5 tablet:h-2.5" 
-                        : "w-2 h-2 mobile:w-2.5 mobile:h-2.5 tablet:w-2 tablet:h-2",
+                      size === "lg"
+                        ? "h-2.5 w-2.5 mobile:h-3 mobile:w-3 tablet:h-2.5 tablet:w-2.5"
+                        : "h-2 w-2 mobile:h-2.5 mobile:w-2.5 tablet:h-2 tablet:w-2",
                       "rounded-full",
                       // Better contrast for indicator
                       "bg-white dark:bg-gray-900",
                       // Enhanced animations
-                      "transition-all duration-200 scale-100",
+                      "scale-100 transition-all duration-200",
                       "motion-safe:transition-all motion-reduce:transition-none",
                       "motion-safe:animate-scale-up",
                       // Shadow for better visibility
@@ -222,7 +239,7 @@ export const RadioGroup = component$<RadioGroupProps>(
                   />
                 )}
 
-                <div class="flex-1 min-w-0">
+                <div class="min-w-0 flex-1">
                   <span
                     class={[
                       sizeClasses.label,
@@ -232,10 +249,12 @@ export const RadioGroup = component$<RadioGroupProps>(
                         ? "text-gray-400 dark:text-gray-600"
                         : "text-gray-900 dark:text-gray-100",
                       // Enhanced selection state with better contrast
-                      isSelected && !hasError && [
-                        "text-primary-700 dark:text-primary-300",
-                        "font-semibold",
-                      ].join(" "),
+                      isSelected &&
+                        !hasError &&
+                        [
+                          "text-primary-700 dark:text-primary-300",
+                          "font-semibold",
+                        ].join(" "),
                       // Error state with better visibility
                       hasError && "text-error-700 dark:text-error-300",
                       // Better text selection
@@ -258,7 +277,9 @@ export const RadioGroup = component$<RadioGroupProps>(
                           ? "text-gray-400 dark:text-gray-600"
                           : "text-gray-600 dark:text-gray-400",
                         // Selection state for description
-                        isSelected && !hasError && "text-primary-600 dark:text-primary-400",
+                        isSelected &&
+                          !hasError &&
+                          "text-primary-600 dark:text-primary-400",
                         hasError && "text-error-600 dark:text-error-400",
                       ]
                         .filter(Boolean)

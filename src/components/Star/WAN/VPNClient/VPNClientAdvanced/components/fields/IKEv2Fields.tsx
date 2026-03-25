@@ -23,7 +23,7 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
           type="text"
           value={config.ServerAddress || ""}
           onInput$={(event: Event, value: string) => {
-            console.log('[IKEv2Fields] Server Address updated:', value);
+            console.log("[IKEv2Fields] Server Address updated:", value);
             onUpdate$({ ServerAddress: value });
           }}
           placeholder="vpn.example.com"
@@ -44,21 +44,19 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Username || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[IKEv2Fields] Username updated:', value);
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+              console.log("[IKEv2Fields] Username updated:", value);
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: value,
-                  Password: config.Credentials?.Password || ""
-                } 
+                  Password: config.Credentials?.Password || "",
+                },
               });
             }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
-          {errors.Username && (
-            <ErrorMessage message={errors.Username} />
-          )}
+          {errors.Username && <ErrorMessage message={errors.Username} />}
         </div>
 
         <div>
@@ -69,21 +67,22 @@ export const IKEv2Fields = component$<IKEv2FieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Password || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[IKEv2Fields] Password updated:', value ? '***' : '(empty)');
+              console.log(
+                "[IKEv2Fields] Password updated:",
+                value ? "***" : "(empty)",
+              );
               onUpdate$({
                 Credentials: {
                   ...config.Credentials,
                   Username: config.Credentials?.Username || "",
-                  Password: value
-                }
+                  Password: value,
+                },
               });
             }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
-          {errors.Password && (
-            <ErrorMessage message={errors.Password} />
-          )}
+          {errors.Password && <ErrorMessage message={errors.Password} />}
         </div>
       </div>
     </div>

@@ -16,7 +16,9 @@ export interface UseWANAdvancedReturn {
   addLink$: QRL<() => void>;
   removeLink$: QRL<(id: string) => void>;
   updateLink$: QRL<(id: string, updates: Partial<WANLinkConfig>) => void>;
-  batchUpdateLinks$: QRL<(updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => void>;
+  batchUpdateLinks$: QRL<
+    (updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => void
+  >;
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiLinkStrategy$: QRL<(strategy: MultiLinkUIConfig) => void>;
@@ -26,7 +28,9 @@ export interface UseWANAdvancedReturn {
   syncWithStarContext$: QRL<() => void>;
 }
 
-export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWANAdvancedReturn {
+export function useWANAdvanced(
+  mode: "Foreign" | "Domestic" = "Foreign",
+): UseWANAdvancedReturn {
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
   const networks = useNetworks();
@@ -53,13 +57,19 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     const updatedWANLink = { ...starContext.state.WAN.WANLink };
 
     // Build proper WANLinkConfig structures from UI state
-    const wanConfigs = state.links.map(link => {
+    const wanConfigs = state.links.map((link) => {
       // Build InterfaceConfig with proper type mapping
       const interfaceConfig = {
-        InterfaceName: (link.interfaceName || link.InterfaceConfig.InterfaceName || "ether1") as InterfaceType,
+        InterfaceName: (link.interfaceName ||
+          link.InterfaceConfig.InterfaceName ||
+          "ether1") as InterfaceType,
         WirelessCredentials: link.wirelessCredentials,
-        VLANID: link.vlanConfig?.enabled ? String(link.vlanConfig.id) : undefined,
-        MacAddress: link.macAddress?.enabled ? link.macAddress.address : undefined,
+        VLANID: link.vlanConfig?.enabled
+          ? String(link.vlanConfig.id)
+          : undefined,
+        MacAddress: link.macAddress?.enabled
+          ? link.macAddress.address
+          : undefined,
       };
 
       // Build ConnectionConfig based on connection type
@@ -70,9 +80,14 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         connectionConfig = { pppoe: link.pppoe };
       } else if (link.connectionType === "Static" && link.staticIP) {
         connectionConfig = { static: link.staticIP };
-      } else if (link.connectionType === "LTE" || link.interfaceType === "LTE") {
+      } else if (
+        link.connectionType === "LTE" ||
+        link.interfaceType === "LTE"
+      ) {
         // LTE: Add lteSettings to ConnectionConfig
-        connectionConfig = link.lteSettings ? { lteSettings: link.lteSettings } : undefined;
+        connectionConfig = link.lteSettings
+          ? { lteSettings: link.lteSettings }
+          : undefined;
       } else if (link.connectionConfig) {
         // Use existing connectionConfig if available
         connectionConfig = link.connectionConfig;
@@ -90,13 +105,21 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Create the WANLink structure with MultiLinkConfig if applicable
     const wanLink = {
       WANConfigs: wanConfigs,
-      MultiLinkConfig: state.multiLinkStrategy ? {
-        strategy: state.multiLinkStrategy.strategy,
-        // Only include optional properties if they are defined
-        ...(state.multiLinkStrategy.loadBalanceMethod && { loadBalanceMethod: state.multiLinkStrategy.loadBalanceMethod }),
-        ...(state.multiLinkStrategy.FailoverConfig && { FailoverConfig: state.multiLinkStrategy.FailoverConfig }),
-        ...(state.multiLinkStrategy.roundRobinInterval !== undefined && { roundRobinInterval: state.multiLinkStrategy.roundRobinInterval }),
-      } : undefined,
+      MultiLinkConfig: state.multiLinkStrategy
+        ? {
+            strategy: state.multiLinkStrategy.strategy,
+            // Only include optional properties if they are defined
+            ...(state.multiLinkStrategy.loadBalanceMethod && {
+              loadBalanceMethod: state.multiLinkStrategy.loadBalanceMethod,
+            }),
+            ...(state.multiLinkStrategy.FailoverConfig && {
+              FailoverConfig: state.multiLinkStrategy.FailoverConfig,
+            }),
+            ...(state.multiLinkStrategy.roundRobinInterval !== undefined && {
+              roundRobinInterval: state.multiLinkStrategy.roundRobinInterval,
+            }),
+          }
+        : undefined,
     };
 
     // Update the appropriate mode in StarContext
@@ -128,10 +151,10 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
       weight: equalWeight, // Set appropriate weight
       priority: state.links.length + 1,
       InterfaceConfig: {
-        InterfaceName: "ether1"
+        InterfaceName: "ether1",
       },
       connectionConfig: {
-        isDHCP: true
+        isDHCP: true,
       },
     };
 
@@ -164,7 +187,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     // Release the interface before removing the link
     const linkToRemove = state.links.find((link) => link.id === id);
     if (linkToRemove?.interfaceName) {
-      await interfaceManagement.releaseInterface$(linkToRemove.interfaceName as InterfaceType);
+      await interfaceManagement.releaseInterface$(
+        linkToRemove.interfaceName as InterfaceType,
+      );
     }
 
     state.links = state.links.filter((link) => link.id !== id);
@@ -214,11 +239,16 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     const updatedLink = { ...currentLink };
 
     // Handle interface name changes and update occupied interfaces
-    if (updates.interfaceName !== undefined && updates.interfaceName !== currentLink.interfaceName) {
+    if (
+      updates.interfaceName !== undefined &&
+      updates.interfaceName !== currentLink.interfaceName
+    ) {
       await interfaceManagement.updateInterfaceOccupation$(
-        currentLink.interfaceName ? (currentLink.interfaceName as InterfaceType) : null,
+        currentLink.interfaceName
+          ? (currentLink.interfaceName as InterfaceType)
+          : null,
         updates.interfaceName ? (updates.interfaceName as InterfaceType) : null,
-        "WAN"
+        "WAN",
       );
     }
 
@@ -232,7 +262,9 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
     ) {
       // Release the old interface when type changes
       if (updatedLink.interfaceName) {
-        await interfaceManagement.releaseInterface$(updatedLink.interfaceName as InterfaceType);
+        await interfaceManagement.releaseInterface$(
+          updatedLink.interfaceName as InterfaceType,
+        );
       }
 
       updatedLink.interfaceName = "";
@@ -266,57 +298,59 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
   });
 
   // Batch update multiple links in a single operation to prevent multiple renders
-  const batchUpdateLinks$ = $((updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => {
-    if (!updates || updates.length === 0) return;
+  const batchUpdateLinks$ = $(
+    (updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => {
+      if (!updates || updates.length === 0) return;
 
-    // Create a copy of all links
-    const newLinks = [...state.links];
-    
-    // Apply all updates
-    updates.forEach(({ id, updates: linkUpdates }) => {
-      const linkIndex = newLinks.findIndex((link) => link.id === id);
-      if (linkIndex === -1) return;
+      // Create a copy of all links
+      const newLinks = [...state.links];
 
-      const currentLink = newLinks[linkIndex];
-      const updatedLink = { ...currentLink };
+      // Apply all updates
+      updates.forEach(({ id, updates: linkUpdates }) => {
+        const linkIndex = newLinks.findIndex((link) => link.id === id);
+        if (linkIndex === -1) return;
 
-      // Apply updates
-      Object.assign(updatedLink, linkUpdates);
+        const currentLink = newLinks[linkIndex];
+        const updatedLink = { ...currentLink };
 
-      // Clear certain fields when interface type changes
-      if (
-        linkUpdates.interfaceType &&
-        linkUpdates.interfaceType !== currentLink.interfaceType
-      ) {
-        updatedLink.interfaceName = "";
-        updatedLink.wirelessCredentials = undefined;
-        updatedLink.lteSettings = undefined;
+        // Apply updates
+        Object.assign(updatedLink, linkUpdates);
 
-        // Reset connection type for LTE
-        if (linkUpdates.interfaceType === "LTE") {
-          updatedLink.connectionType = "LTE";
+        // Clear certain fields when interface type changes
+        if (
+          linkUpdates.interfaceType &&
+          linkUpdates.interfaceType !== currentLink.interfaceType
+        ) {
+          updatedLink.interfaceName = "";
+          updatedLink.wirelessCredentials = undefined;
+          updatedLink.lteSettings = undefined;
+
+          // Reset connection type for LTE
+          if (linkUpdates.interfaceType === "LTE") {
+            updatedLink.connectionType = "LTE";
+          }
         }
-      }
 
-      // Clear connection config when type changes
-      if (
-        linkUpdates.connectionType &&
-        linkUpdates.connectionType !== currentLink.connectionType
-      ) {
-        updatedLink.connectionConfig = undefined;
-      }
+        // Clear connection config when type changes
+        if (
+          linkUpdates.connectionType &&
+          linkUpdates.connectionType !== currentLink.connectionType
+        ) {
+          updatedLink.connectionConfig = undefined;
+        }
 
-      newLinks[linkIndex] = updatedLink;
-    });
+        newLinks[linkIndex] = updatedLink;
+      });
 
-    // Update state once with all changes
-    state.links = newLinks;
+      // Update state once with all changes
+      state.links = newLinks;
 
-    // Sync with StarContext and update Networks configuration
-    syncWithStarContext$();
-    networks.generateCurrentNetworks$();
-    subnets.generateCurrentSubnets$();
-  });
+      // Sync with StarContext and update Networks configuration
+      syncWithStarContext$();
+      networks.generateCurrentNetworks$();
+      subnets.generateCurrentSubnets$();
+    },
+  );
 
   // Toggle between easy and advanced mode (disabled in advanced interface - always advanced)
   const toggleMode$ = $(() => {
@@ -336,7 +370,7 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
 
     // Initialize weights and priorities based on strategy
     const updates: Array<{ id: string; updates: Partial<WANLinkConfig> }> = [];
-    
+
     // Initialize weights for load balance
     if (strategy.strategy === "LoadBalance" || strategy.strategy === "Both") {
       const equalWeight = Math.floor(100 / state.links.length);
@@ -346,29 +380,31 @@ export function useWANAdvanced(mode: "Foreign" | "Domestic" = "Foreign"): UseWAN
         if (!link.weight || link.weight === 0) {
           updates.push({
             id: link.id,
-            updates: { weight: index === 0 ? equalWeight + remainder : equalWeight }
+            updates: {
+              weight: index === 0 ? equalWeight + remainder : equalWeight,
+            },
           });
         }
       });
     }
-    
+
     // Initialize priorities for failover
     if (strategy.strategy === "Failover" || strategy.strategy === "Both") {
       state.links.forEach((link, index) => {
         if (!link.priority || link.priority === 0) {
-          const existingUpdate = updates.find(u => u.id === link.id);
+          const existingUpdate = updates.find((u) => u.id === link.id);
           if (existingUpdate) {
             existingUpdate.updates.priority = index + 1;
           } else {
             updates.push({
               id: link.id,
-              updates: { priority: index + 1 }
+              updates: { priority: index + 1 },
             });
           }
         }
       });
     }
-    
+
     // Apply updates if any
     if (updates.length > 0) {
       batchUpdateLinks$(updates);

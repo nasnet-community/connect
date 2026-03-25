@@ -26,7 +26,9 @@ describe("ChooseCG module", () => {
     it("builds local traffic accept rules across all firewall chains", () => {
         const rules = BaseConfig()["/ip firewall mangle"];
 
-        expect(rules.every((rule) => rule.includes("action=accept"))).toBe(true);
+        expect(rules.every((rule) => rule.includes("action=accept"))).toBe(
+            true,
+        );
         expect(
             rules.every(
                 (rule) =>
@@ -34,8 +36,12 @@ describe("ChooseCG module", () => {
                     rule.includes('src-address-list="LOCAL-IP"'),
             ),
         ).toBe(true);
-        expect(rules.some((rule) => rule.includes("chain=prerouting"))).toBe(true);
-        expect(rules.some((rule) => rule.includes("chain=postrouting"))).toBe(true);
+        expect(rules.some((rule) => rule.includes("chain=prerouting"))).toBe(
+            true,
+        );
+        expect(rules.some((rule) => rule.includes("chain=postrouting"))).toBe(
+            true,
+        );
         expect(rules.some((rule) => rule.includes("chain=output"))).toBe(true);
         expect(rules.some((rule) => rule.includes("chain=input"))).toBe(true);
         expect(rules.some((rule) => rule.includes("chain=forward"))).toBe(true);
@@ -46,12 +52,18 @@ describe("ChooseCG module", () => {
         const baseResult = BaseConfig();
         const result = ChooseCG();
 
-        expect(result["/interface list"]).toEqual(baseResult["/interface list"]);
+        expect(result["/interface list"]).toEqual(
+            baseResult["/interface list"],
+        );
         expect(result["/ip firewall address-list"]).toEqual(
             baseResult["/ip firewall address-list"],
         );
-        expect(result["/ip firewall mangle"]).toEqual(baseResult["/ip firewall mangle"]);
-        expect(result["/ip firewall nat"]).toEqual(baseResult["/ip firewall nat"]);
+        expect(result["/ip firewall mangle"]).toEqual(
+            baseResult["/ip firewall mangle"],
+        );
+        expect(result["/ip firewall nat"]).toEqual(
+            baseResult["/ip firewall nat"],
+        );
         expect(result["/ip route"]).toEqual([]);
     });
 

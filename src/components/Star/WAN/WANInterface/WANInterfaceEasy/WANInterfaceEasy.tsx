@@ -71,21 +71,20 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
               />
             )}
 
-            {selectedInterfaceType.value === "Wireless" && selectedInterface.value && (
-              <WirelessSettings
-                ssid={ssid.value}
-                password={password.value}
-                onSSIDChange={handleSSIDChange}
-                onPasswordChange={handlePasswordChange}
-              />
-            )}
+            {selectedInterfaceType.value === "Wireless" &&
+              selectedInterface.value && (
+                <WirelessSettings
+                  ssid={ssid.value}
+                  password={password.value}
+                  onSSIDChange={handleSSIDChange}
+                  onPasswordChange={handlePasswordChange}
+                />
+              )}
 
-            {selectedInterfaceType.value === "LTE" && selectedInterface.value && (
-              <LTESettings
-                apn={apn.value}
-                onAPNChange$={handleAPNChange}
-              />
-            )}
+            {selectedInterfaceType.value === "LTE" &&
+              selectedInterface.value && (
+                <LTESettings apn={apn.value} onAPNChange$={handleAPNChange} />
+              )}
 
             <div class="flex items-center justify-between border-t border-border pt-4 dark:border-border-dark">
               <span

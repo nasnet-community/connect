@@ -1,43 +1,31 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type { ZeroTierServerConfig } from "~/components/Star/StarContext";
 
-
-
-
-
-
-
-
 export const ZeroTierServer = (config: ZeroTierServerConfig): RouterConfig => {
     if (!config.enabled) {
         return {};
     }
 
     const routerConfig: RouterConfig = {
-        "/zerotier": [
-            "set zt1 disabled=no"
-        ],
+        "/zerotier": ["set zt1 disabled=no"],
         "/zerotier interface": [
             `add allow-default=no allow-global=no allow-managed=yes disabled=no \\
-    instance=zt1 name=zerotier1 network=${config.ZeroTierNetworkID}`
+    instance=zt1 name=zerotier1 network=${config.ZeroTierNetworkID}`,
         ],
     };
 
     return routerConfig;
 };
 
-
 export const ZeroTierServerUsers = (): RouterConfig => {
-    const config: RouterConfig = {
+    const config: RouterConfig = {};
 
-    }
+    return config;
+};
 
-    return config
-
-}
-
-
-export const ZeroTierServerFirewall = (config: ZeroTierServerConfig): RouterConfig => {
+export const ZeroTierServerFirewall = (
+    config: ZeroTierServerConfig,
+): RouterConfig => {
     if (!config.enabled) {
         return {};
     }
@@ -51,36 +39,15 @@ export const ZeroTierServerFirewall = (config: ZeroTierServerConfig): RouterConf
             "",
             "# ZeroTier - Accept input traffic from ZeroTier interface",
             `add action=accept chain=input comment="Accept ZeroTier input traffic" \\
-    in-interface=zerotier1`
+    in-interface=zerotier1`,
         ],
     };
 
     return routerConfig;
 };
 
-
 export const ZeroTierServerWrapper = (): RouterConfig => {
-    const config: RouterConfig = {
+    const config: RouterConfig = {};
 
-    }
-
-    return config
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return config;
+};

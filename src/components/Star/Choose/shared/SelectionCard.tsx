@@ -1,4 +1,9 @@
-import { $, component$, type JSXOutput, type PropFunction } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  type JSXOutput,
+  type PropFunction,
+} from "@builder.io/qwik";
 
 export interface SelectionCardProps {
   value: any;
@@ -63,7 +68,9 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
   const rootClasses = [
     "selection-card group relative rounded-2xl border backdrop-blur-xl transition-all duration-300",
     overflowVisible ? "overflow-visible" : "overflow-hidden",
-    disabled ? "selection-card-disabled cursor-not-allowed opacity-60" : "cursor-pointer",
+    disabled
+      ? "selection-card-disabled cursor-not-allowed opacity-60"
+      : "cursor-pointer",
     isSelected
       ? "border-primary-500 bg-primary-500/10 ring-2 ring-primary-500"
       : "border-border/50 bg-white/40 hover:bg-primary-500/5 dark:bg-surface-dark/40",
@@ -74,16 +81,16 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
 
   const titleClasses = [
     "text-2xl font-semibold text-text transition-colors duration-300 dark:text-text-dark-default",
-    disabled ? "" : "group-hover:text-primary-500 dark:group-hover:text-primary-400",
+    disabled
+      ? ""
+      : "group-hover:text-primary-500 dark:group-hover:text-primary-400",
     headingClass,
   ]
     .filter(Boolean)
     .join(" ");
 
   const contentClasses =
-    orientation === "horizontal"
-      ? "flex-1 space-y-6"
-      : "space-y-6";
+    orientation === "horizontal" ? "flex-1 space-y-6" : "space-y-6";
 
   const bodyClasses = [
     orientation === "horizontal"
@@ -100,7 +107,9 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
 
       <div class="relative">
         {badge ? (
-          <div class="pointer-events-none absolute right-4 top-4 z-10">{badge}</div>
+          <div class="pointer-events-none absolute right-4 top-4 z-10">
+            {badge}
+          </div>
         ) : disabled ? (
           <div class="pointer-events-none absolute right-4 top-4 z-10">
             <span class="rounded-full bg-warning/10 px-2 py-1 text-sm text-warning dark:text-warning-light">
@@ -124,7 +133,7 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
             <div class="space-y-4">
               <div>
                 <h3 class={titleClasses}>{title}</h3>
-                <p class="mt-3 text-text-secondary dark:text-text-dark-secondary">
+                <p class="text-text-secondary dark:text-text-dark-secondary mt-3">
                   {description}
                 </p>
               </div>
@@ -133,7 +142,7 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
                 {features.map((feature) => (
                   <div
                     key={feature}
-                    class="flex items-center text-text-secondary dark:text-text-dark-secondary"
+                    class="text-text-secondary dark:text-text-dark-secondary flex items-center"
                   >
                     <svg
                       class="mr-3 h-5 w-5 text-primary-500 dark:text-primary-400"
@@ -158,7 +167,13 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
           </div>
 
           {media && (
-            <div class={orientation === "horizontal" ? `flex-1 ${mediaClass || ""}` : mediaClass || "pt-6"}>
+            <div
+              class={
+                orientation === "horizontal"
+                  ? `flex-1 ${mediaClass || ""}`
+                  : mediaClass || "pt-6"
+              }
+            >
               <div class="selection-card-media relative z-auto overflow-visible">
                 {media}
               </div>

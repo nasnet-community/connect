@@ -1,11 +1,11 @@
-import { 
-  useContextProvider, 
+import {
+  useContextProvider,
   useContext,
   createContextId,
-  $, 
+  $,
   useSignal,
   type Signal,
-  type QRL
+  type QRL,
 } from "@builder.io/qwik";
 
 /**
@@ -14,7 +14,7 @@ import {
 export interface GlobalHelpSettings {
   /** Whether to auto-show help modals when navigating to steps with help content */
   autoShowHelpOnStepChange: Signal<boolean>;
-  
+
   /** Set the auto-show help setting to a specific value */
   setAutoShowHelp$: QRL<(value: boolean) => void>;
 }
@@ -22,32 +22,34 @@ export interface GlobalHelpSettings {
 /**
  * Context ID for global help settings
  */
-export const GlobalHelpSettingsContext = createContextId<GlobalHelpSettings>('global-help-settings');
+export const GlobalHelpSettingsContext = createContextId<GlobalHelpSettings>(
+  "global-help-settings",
+);
 
 /**
  * Provider hook for global help settings
  * Should be used at the application root or high-level container
  */
 export const useProvideGlobalHelpSettings = (
-  initialAutoShow: boolean = false
+  initialAutoShow: boolean = false,
 ): GlobalHelpSettings => {
   // Signal for auto-show help state
   const autoShowHelpOnStepChange = useSignal(initialAutoShow);
-  
+
   // Setter function
   const setAutoShowHelp$ = $((value: boolean) => {
     autoShowHelpOnStepChange.value = value;
   });
-  
+
   // Create context value
   const contextValue: GlobalHelpSettings = {
     autoShowHelpOnStepChange,
-    setAutoShowHelp$
+    setAutoShowHelp$,
   };
-  
+
   // Provide the context
   useContextProvider(GlobalHelpSettingsContext, contextValue);
-  
+
   return contextValue;
 };
 
@@ -59,4 +61,3 @@ export const useProvideGlobalHelpSettings = (
 export const useGlobalHelpSettings = (): GlobalHelpSettings => {
   return useContext(GlobalHelpSettingsContext);
 };
-

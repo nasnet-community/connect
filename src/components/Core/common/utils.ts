@@ -33,11 +33,7 @@ export const generateUniqueId = (prefix: string = "id"): string => {
 export const classNames = (
   ...classes: (string | string[] | undefined | null | false)[]
 ): string => {
-  return classes
-    .flat()
-    .filter(Boolean)
-    .join(" ")
-    .trim();
+  return classes.flat().filter(Boolean).join(" ").trim();
 };
 
 /**
@@ -162,7 +158,7 @@ export const prefersDarkMode = (): boolean => {
 export const truncate = (
   str: string,
   length: number = 100,
-  suffix: string = "..."
+  suffix: string = "...",
 ): string => {
   if (str.length <= length) return str;
   return str.substring(0, length - suffix.length).trim() + suffix;
@@ -240,7 +236,7 @@ export const formatNumber = (num: number): string => {
 export const formatCurrency = (
   amount: number,
   currency: string = "USD",
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string => {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -291,9 +287,12 @@ export const clamp = (value: number, min: number, max: number): number => {
 export const formatDate = (
   date: Date | string | number,
   options: Intl.DateTimeFormatOptions = {},
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string => {
-  const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  const dateObj =
+    typeof date === "string" || typeof date === "number"
+      ? new Date(date)
+      : date;
   return new Intl.DateTimeFormat(locale, options).format(dateObj);
 };
 
@@ -305,19 +304,29 @@ export const formatDate = (
  */
 export const formatRelativeTime = (
   date: Date | string | number,
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string => {
   const now = new Date();
-  const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  const dateObj =
+    typeof date === "string" || typeof date === "number"
+      ? new Date(date)
+      : date;
   const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
 
   if (diffInSeconds < 60) return "just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  if (diffInSeconds < 3600)
+    return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 2592000)
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
 
   // For older dates, use absolute formatting
-  return formatDate(dateObj, { year: "numeric", month: "short", day: "numeric" }, locale);
+  return formatDate(
+    dateObj,
+    { year: "numeric", month: "short", day: "numeric" },
+    locale,
+  );
 };
 
 // ====================
@@ -394,7 +403,7 @@ export const deepClone = <T>(obj: T): T => {
  */
 export const pick = <T extends Record<string, any>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Pick<T, K> => {
   const result = {} as Pick<T, K>;
   keys.forEach((key) => {
@@ -413,7 +422,7 @@ export const pick = <T extends Record<string, any>, K extends keyof T>(
  */
 export const omit = <T extends Record<string, any>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Omit<T, K> => {
   const result = { ...obj };
   keys.forEach((key) => {
@@ -433,11 +442,12 @@ export const omit = <T extends Record<string, any>, K extends keyof T>(
  */
 export const scrollToElement = (
   element: Element | string,
-  options: ScrollIntoViewOptions = { behavior: "smooth", block: "start" }
+  options: ScrollIntoViewOptions = { behavior: "smooth", block: "start" },
 ): void => {
   if (isServer()) return;
-  
-  const target = typeof element === "string" ? document.querySelector(element) : element;
+
+  const target =
+    typeof element === "string" ? document.querySelector(element) : element;
   if (target) {
     target.scrollIntoView(options);
   }
@@ -450,7 +460,7 @@ export const scrollToElement = (
  */
 export const copyToClipboard = async (text: string): Promise<boolean> => {
   if (isServer()) return false;
-  
+
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);

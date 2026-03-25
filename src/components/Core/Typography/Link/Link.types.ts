@@ -4,9 +4,30 @@ import type { LinkProps as QwikLinkProps } from "@builder.io/qwik-city";
 /**
  * Available link sizes (enhanced with fluid typography)
  */
-export type LinkSize = 
-  | "3xs" | "2xs" | "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl"
-  | "fluid-xs" | "fluid-sm" | "fluid-base" | "fluid-lg" | "fluid-xl" | "fluid-2xl" | "fluid-3xl" | "fluid-4xl";
+export type LinkSize =
+  | "3xs"
+  | "2xs"
+  | "xs"
+  | "sm"
+  | "base"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "4xl"
+  | "5xl"
+  | "6xl"
+  | "7xl"
+  | "8xl"
+  | "9xl"
+  | "fluid-xs"
+  | "fluid-sm"
+  | "fluid-base"
+  | "fluid-lg"
+  | "fluid-xl"
+  | "fluid-2xl"
+  | "fluid-3xl"
+  | "fluid-4xl";
 
 /**
  * Available font weights for link text
@@ -176,7 +197,14 @@ export interface LinkProps {
    * Font family variant
    * @default "sans"
    */
-  fontFamily?: "sans" | "sans-rtl" | "serif" | "serif-rtl" | "mono" | "display" | "body";
+  fontFamily?:
+    | "sans"
+    | "sans-rtl"
+    | "serif"
+    | "serif-rtl"
+    | "mono"
+    | "display"
+    | "body";
 
   /**
    * Enable high contrast mode

@@ -45,7 +45,6 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
                 updateField("ipAddress", value)
               }
               placeholder="192.168.1.100"
-              
             />
           </FormField>
 
@@ -61,7 +60,6 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
                 updateField("subnet", value)
               }
               placeholder="255.255.255.0"
-              
             />
           </FormField>
 
@@ -77,7 +75,6 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
                 updateField("gateway", value)
               }
               placeholder="192.168.1.1"
-              
             />
           </FormField>
 
@@ -93,10 +90,8 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
                 updateField("DNS", value)
               }
               placeholder="8.8.8.8"
-              
             />
           </FormField>
-
         </div>
       </div>
     );

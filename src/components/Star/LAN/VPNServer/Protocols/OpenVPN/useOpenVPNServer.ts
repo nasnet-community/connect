@@ -47,7 +47,10 @@ interface OpenVPNDraftConfig {
 export const useOpenVPNServer = () => {
   const starContext = useContext(StarContext);
 
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   // Get all existing OpenVPN servers from StarContext
   const openVpnServers = vpnServerState.OpenVpnServer || [];
@@ -67,7 +70,9 @@ export const useOpenVPNServer = () => {
   const viewMode = useSignal<ViewMode>("advanced");
 
   // Helper function to reconstruct "both" protocol drafts from paired TCP/UDP servers
-  const reconstructDrafts = (servers: OpenVpnServerConfig[]): OpenVPNDraftConfig[] => {
+  const reconstructDrafts = (
+    servers: OpenVpnServerConfig[],
+  ): OpenVPNDraftConfig[] => {
     if (!servers || servers.length === 0) {
       return [
         {
@@ -99,7 +104,14 @@ export const useOpenVPNServer = () => {
     const serverGroups: { [key: string]: OpenVpnServerConfig[] } = {};
 
     servers
-      .filter((server) => server && server.name && server.Certificate && server.Address && server.Encryption)
+      .filter(
+        (server) =>
+          server &&
+          server.name &&
+          server.Certificate &&
+          server.Address &&
+          server.Encryption,
+      )
       .forEach((server) => {
         const baseName = server.name.replace(/-tcp$|-udp$/, "");
         if (!serverGroups[baseName]) {
@@ -113,8 +125,8 @@ export const useOpenVPNServer = () => {
     // Process each group
     Object.entries(serverGroups).forEach(([baseName, group]) => {
       // Check if this is a "both" protocol pair
-      const tcpServer = group.find(s => s.name.endsWith("-tcp"));
-      const udpServer = group.find(s => s.name.endsWith("-udp"));
+      const tcpServer = group.find((s) => s.name.endsWith("-tcp"));
+      const udpServer = group.find((s) => s.name.endsWith("-udp"));
 
       if (tcpServer && udpServer && group.length === 2) {
         // Reconstruct as a single "both" protocol draft
@@ -129,10 +141,16 @@ export const useOpenVPNServer = () => {
           mode: tcpServer.Mode || "ip",
           vsNetwork: tcpServer.VSNetwork || "VPN",
           addressPool: tcpServer.Address.AddressPool || "192.168.78.0/24",
-          requireClientCertificate: tcpServer.Certificate.RequireClientCertificate || false,
-          auth: (tcpServer.Encryption.Auth && tcpServer.Encryption.Auth[0]) || "sha256",
-          cipher: (tcpServer.Encryption.Cipher && tcpServer.Encryption.Cipher[0]) || "aes256-gcm",
-          certificateKeyPassphrase: tcpServer.Certificate.CertificateKeyPassphrase || "",
+          requireClientCertificate:
+            tcpServer.Certificate.RequireClientCertificate || false,
+          auth:
+            (tcpServer.Encryption.Auth && tcpServer.Encryption.Auth[0]) ||
+            "sha256",
+          cipher:
+            (tcpServer.Encryption.Cipher && tcpServer.Encryption.Cipher[0]) ||
+            "aes256-gcm",
+          certificateKeyPassphrase:
+            tcpServer.Certificate.CertificateKeyPassphrase || "",
           defaultProfile: tcpServer.DefaultProfile || "ovpn-profile",
           tlsVersion: tcpServer.Encryption.TlsVersion || "only-1.2",
           maxMtu: tcpServer.PacketSize?.MaxMtu || 1450,
@@ -154,10 +172,15 @@ export const useOpenVPNServer = () => {
             mode: server.Mode || "ip",
             vsNetwork: server.VSNetwork || "VPN",
             addressPool: server.Address.AddressPool || "192.168.78.0/24",
-            requireClientCertificate: server.Certificate.RequireClientCertificate || false,
-            auth: (server.Encryption.Auth && server.Encryption.Auth[0]) || "sha256",
-            cipher: (server.Encryption.Cipher && server.Encryption.Cipher[0]) || "aes256-gcm",
-            certificateKeyPassphrase: server.Certificate.CertificateKeyPassphrase || "",
+            requireClientCertificate:
+              server.Certificate.RequireClientCertificate || false,
+            auth:
+              (server.Encryption.Auth && server.Encryption.Auth[0]) || "sha256",
+            cipher:
+              (server.Encryption.Cipher && server.Encryption.Cipher[0]) ||
+              "aes256-gcm",
+            certificateKeyPassphrase:
+              server.Certificate.CertificateKeyPassphrase || "",
             defaultProfile: server.DefaultProfile || "ovpn-profile",
             tlsVersion: server.Encryption.TlsVersion || "only-1.2",
             maxMtu: server.PacketSize?.MaxMtu || 1450,
@@ -169,35 +192,37 @@ export const useOpenVPNServer = () => {
       }
     });
 
-    return drafts.length > 0 ? drafts : [
-      {
-        name: "openvpn-1",
-        certificate: "server-cert",
-        enabled: true,
-        port: 1194,
-        tcpPort: 1194,
-        udpPort: 1195,
-        protocol: "both" as ProtocolType,
-        mode: "ip" as LayerMode,
-        vsNetwork: "VPN" as VSNetwork,
-        addressPool: "192.168.78.0/24",
-        requireClientCertificate: false,
-        auth: "sha256" as OvpnAuthMethod,
-        cipher: "aes256-gcm" as OvpnCipher,
-        certificateKeyPassphrase: "",
-        defaultProfile: "ovpn-profile",
-        tlsVersion: "only-1.2" as const,
-        maxMtu: 1450,
-        maxMru: 1450,
-        keepaliveTimeout: 30,
-        authentication: ["mschap2"] as AuthMethod[],
-      },
-    ];
+    return drafts.length > 0
+      ? drafts
+      : [
+          {
+            name: "openvpn-1",
+            certificate: "server-cert",
+            enabled: true,
+            port: 1194,
+            tcpPort: 1194,
+            udpPort: 1195,
+            protocol: "both" as ProtocolType,
+            mode: "ip" as LayerMode,
+            vsNetwork: "VPN" as VSNetwork,
+            addressPool: "192.168.78.0/24",
+            requireClientCertificate: false,
+            auth: "sha256" as OvpnAuthMethod,
+            cipher: "aes256-gcm" as OvpnCipher,
+            certificateKeyPassphrase: "",
+            defaultProfile: "ovpn-profile",
+            tlsVersion: "only-1.2" as const,
+            maxMtu: 1450,
+            maxMru: 1450,
+            keepaliveTimeout: 30,
+            authentication: ["mschap2"] as AuthMethod[],
+          },
+        ];
   };
 
   // Draft configurations for each tab (not saved to StarContext until explicit save)
   const draftConfigs = useSignal<OpenVPNDraftConfig[]>(
-    reconstructDrafts(openVpnServers)
+    reconstructDrafts(openVpnServers),
   );
 
   // Update draft configuration for current tab
@@ -211,25 +236,39 @@ export const useOpenVPNServer = () => {
   // Add a new server tab with default configuration
   const addServerTab$ = $(() => {
     const newServerNumber = draftConfigs.value.length + 1;
-    
+
     // Get all existing VPN ports to avoid conflicts
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Also get ports from current draft configs (unsaved servers)
-    const draftPorts = draftConfigs.value.flatMap(draft => {
+    const draftPorts = draftConfigs.value.flatMap((draft) => {
       if (draft.protocol === "both") {
         return [
-          { protocol: "OpenVPN" as const, serverName: `${draft.name}-tcp`, port: draft.tcpPort },
-          { protocol: "OpenVPN" as const, serverName: `${draft.name}-udp`, port: draft.udpPort }
+          {
+            protocol: "OpenVPN" as const,
+            serverName: `${draft.name}-tcp`,
+            port: draft.tcpPort,
+          },
+          {
+            protocol: "OpenVPN" as const,
+            serverName: `${draft.name}-udp`,
+            port: draft.udpPort,
+          },
         ];
       } else {
-        return [{ protocol: "OpenVPN" as const, serverName: draft.name, port: draft.port }];
+        return [
+          {
+            protocol: "OpenVPN" as const,
+            serverName: draft.name,
+            port: draft.port,
+          },
+        ];
       }
     });
-    
+
     // Combine saved and draft ports
     const combinedPorts = [...allPorts, ...draftPorts];
-    const used = new Set<number>(combinedPorts.map(p => p.port));
+    const used = new Set<number>(combinedPorts.map((p) => p.port));
     // Pair-safe allocator: UDP even, TCP odd
     let nextEven = 1194;
     while (used.has(nextEven) || used.has(nextEven + 1)) {
@@ -237,7 +276,7 @@ export const useOpenVPNServer = () => {
     }
     const udpPort = nextEven;
     const tcpPort = nextEven + 1;
-    
+
     const newDraft: OpenVPNDraftConfig = {
       name: `openvpn-${newServerNumber}`,
       certificate: "server-cert",
@@ -279,7 +318,7 @@ export const useOpenVPNServer = () => {
       const updatedServers = [...openVpnServers];
       // Remove servers that match the name prefix
       const filtered = updatedServers.filter(
-        s => !s.name.startsWith(removedDraft?.name || `openvpn-${index + 1}`)
+        (s) => !s.name.startsWith(removedDraft?.name || `openvpn-${index + 1}`),
       );
       starContext.updateLAN$({
         VPNServer: {
@@ -293,7 +332,8 @@ export const useOpenVPNServer = () => {
   // Save current tab configuration to StarContext
   const saveCurrentServer$ = $(() => {
     const currentIndex = activeTabIndex.value;
-    const currentDraft = draftConfigs.value[currentIndex] || draftConfigs.value[0];
+    const currentDraft =
+      draftConfigs.value[currentIndex] || draftConfigs.value[0];
 
     // Reset errors
     certificateError.value = "";
@@ -309,7 +349,10 @@ export const useOpenVPNServer = () => {
     }
 
     // Validate passphrase
-    if (currentDraft.certificateKeyPassphrase && currentDraft.certificateKeyPassphrase.length < 10) {
+    if (
+      currentDraft.certificateKeyPassphrase &&
+      currentDraft.certificateKeyPassphrase.length < 10
+    ) {
       passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
       isValid = false;
     }
@@ -319,8 +362,16 @@ export const useOpenVPNServer = () => {
 
     if (currentDraft.protocol === "both") {
       // Validate both TCP and UDP ports
-      const tcpValidation = validatePort(currentDraft.tcpPort, `${currentDraft.name}-tcp`, allPorts);
-      const udpValidation = validatePort(currentDraft.udpPort, `${currentDraft.name}-udp`, allPorts);
+      const tcpValidation = validatePort(
+        currentDraft.tcpPort,
+        `${currentDraft.name}-tcp`,
+        allPorts,
+      );
+      const udpValidation = validatePort(
+        currentDraft.udpPort,
+        `${currentDraft.name}-udp`,
+        allPorts,
+      );
 
       if (!tcpValidation.valid) {
         portError.value = `TCP: ${tcpValidation.error}`;
@@ -331,7 +382,11 @@ export const useOpenVPNServer = () => {
       }
     } else {
       // Validate single port
-      const portValidation = validatePort(currentDraft.port, currentDraft.name, allPorts);
+      const portValidation = validatePort(
+        currentDraft.port,
+        currentDraft.name,
+        allPorts,
+      );
       if (!portValidation.valid) {
         portError.value = portValidation.error || "";
         isValid = false;
@@ -415,7 +470,8 @@ export const useOpenVPNServer = () => {
     // Update StarContext with the saved servers
     // Remove old servers with matching base name and add new ones
     const updatedServers = openVpnServers.filter(
-      (s: OpenVpnServerConfig) => !s.name.startsWith(currentDraft.name.replace(/-tcp$|-udp$/, ""))
+      (s: OpenVpnServerConfig) =>
+        !s.name.startsWith(currentDraft.name.replace(/-tcp$|-udp$/, "")),
     );
     updatedServers.push(...serverConfigs);
 
@@ -446,15 +502,28 @@ export const useOpenVPNServer = () => {
       }
 
       // Validate passphrase
-      if (draft.certificateKeyPassphrase && draft.certificateKeyPassphrase.length < 10) {
-        errors.push(`${draft.name}: Passphrase must be at least 10 characters long`);
+      if (
+        draft.certificateKeyPassphrase &&
+        draft.certificateKeyPassphrase.length < 10
+      ) {
+        errors.push(
+          `${draft.name}: Passphrase must be at least 10 characters long`,
+        );
         hasError = true;
       }
 
       // Validate ports based on protocol
       if (draft.protocol === "both") {
-        const tcpValidation = validatePort(draft.tcpPort, `${draft.name}-tcp`, allPorts);
-        const udpValidation = validatePort(draft.udpPort, `${draft.name}-udp`, allPorts);
+        const tcpValidation = validatePort(
+          draft.tcpPort,
+          `${draft.name}-tcp`,
+          allPorts,
+        );
+        const udpValidation = validatePort(
+          draft.udpPort,
+          `${draft.name}-udp`,
+          allPorts,
+        );
 
         if (!tcpValidation.valid) {
           errors.push(`${draft.name}: TCP ${tcpValidation.error}`);
@@ -528,7 +597,7 @@ export const useOpenVPNServer = () => {
               name: `${draft.name}-udp`,
               Protocol: "udp" as const,
               Port: draft.udpPort,
-            }
+            },
           );
         } else {
           // Single protocol case
@@ -543,14 +612,20 @@ export const useOpenVPNServer = () => {
     }
 
     // Get FRESH state instead of using stale vpnServerState captured at initialization
-    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+    const currentVPNState = starContext.state.LAN.VPNServer || {
+      Users: [],
+      CertificatePassphrase: "",
+    };
 
     // Save all valid servers to StarContext
     // If we have valid servers, use them; otherwise keep existing servers
     starContext.updateLAN$({
       VPNServer: {
         ...currentVPNState,
-        OpenVpnServer: validServers.length > 0 ? validServers : currentVPNState.OpenVpnServer,
+        OpenVpnServer:
+          validServers.length > 0
+            ? validServers
+            : currentVPNState.OpenVpnServer,
       },
     });
 
@@ -580,29 +655,43 @@ export const useOpenVPNServer = () => {
 
   const updatePort$ = $((value: number) => {
     updateDraftConfig$({ port: value });
-    
+
     // Get all saved ports
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Add draft ports (excluding current draft)
     const currentIndex = activeTabIndex.value;
     const draftPorts = draftConfigs.value
       .filter((_, index) => index !== currentIndex)
-      .flatMap(draft => {
+      .flatMap((draft) => {
         if (draft.protocol === "both") {
           return [
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-tcp`, port: draft.tcpPort },
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-udp`, port: draft.udpPort }
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-tcp`,
+              port: draft.tcpPort,
+            },
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-udp`,
+              port: draft.udpPort,
+            },
           ];
         } else {
-          return [{ protocol: "OpenVPN" as const, serverName: draft.name, port: draft.port }];
+          return [
+            {
+              protocol: "OpenVPN" as const,
+              serverName: draft.name,
+              port: draft.port,
+            },
+          ];
         }
       });
-    
+
     const combinedPorts = [...allPorts, ...draftPorts];
     const currentDraft = draftConfigs.value[currentIndex];
     const validation = validatePort(value, currentDraft.name, combinedPorts);
-    
+
     if (!validation.valid) {
       portError.value = validation.error || "";
     } else {
@@ -612,25 +701,39 @@ export const useOpenVPNServer = () => {
 
   const updateTcpPort$ = $((value: number) => {
     updateDraftConfig$({ tcpPort: value });
-    
+
     // Get all saved ports
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Add draft ports (excluding current draft)
     const currentIndex = activeTabIndex.value;
     const draftPorts = draftConfigs.value
       .filter((_, index) => index !== currentIndex)
-      .flatMap(draft => {
+      .flatMap((draft) => {
         if (draft.protocol === "both") {
           return [
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-tcp`, port: draft.tcpPort },
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-udp`, port: draft.udpPort }
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-tcp`,
+              port: draft.tcpPort,
+            },
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-udp`,
+              port: draft.udpPort,
+            },
           ];
         } else {
-          return [{ protocol: "OpenVPN" as const, serverName: draft.name, port: draft.port }];
+          return [
+            {
+              protocol: "OpenVPN" as const,
+              serverName: draft.name,
+              port: draft.port,
+            },
+          ];
         }
       });
-    
+
     const combinedPorts = [...allPorts, ...draftPorts];
     const currentDraft = draftConfigs.value[currentIndex];
     // Guard equality with UDP on same draft
@@ -638,8 +741,12 @@ export const useOpenVPNServer = () => {
       portError.value = $localize`TCP/UDP ports must be different`;
       return;
     }
-    const validation = validatePort(value, `${currentDraft.name}-tcp`, combinedPorts);
-    
+    const validation = validatePort(
+      value,
+      `${currentDraft.name}-tcp`,
+      combinedPorts,
+    );
+
     if (!validation.valid) {
       portError.value = `TCP: ${validation.error || ""}`;
     } else {
@@ -649,25 +756,39 @@ export const useOpenVPNServer = () => {
 
   const updateUdpPort$ = $((value: number) => {
     updateDraftConfig$({ udpPort: value });
-    
+
     // Get all saved ports
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Add draft ports (excluding current draft)
     const currentIndex = activeTabIndex.value;
     const draftPorts = draftConfigs.value
       .filter((_, index) => index !== currentIndex)
-      .flatMap(draft => {
+      .flatMap((draft) => {
         if (draft.protocol === "both") {
           return [
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-tcp`, port: draft.tcpPort },
-            { protocol: "OpenVPN" as const, serverName: `${draft.name}-udp`, port: draft.udpPort }
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-tcp`,
+              port: draft.tcpPort,
+            },
+            {
+              protocol: "OpenVPN" as const,
+              serverName: `${draft.name}-udp`,
+              port: draft.udpPort,
+            },
           ];
         } else {
-          return [{ protocol: "OpenVPN" as const, serverName: draft.name, port: draft.port }];
+          return [
+            {
+              protocol: "OpenVPN" as const,
+              serverName: draft.name,
+              port: draft.port,
+            },
+          ];
         }
       });
-    
+
     const combinedPorts = [...allPorts, ...draftPorts];
     const currentDraft = draftConfigs.value[currentIndex];
     // Guard equality with TCP on same draft
@@ -675,8 +796,12 @@ export const useOpenVPNServer = () => {
       portError.value = $localize`TCP/UDP ports must be different`;
       return;
     }
-    const validation = validatePort(value, `${currentDraft.name}-udp`, combinedPorts);
-    
+    const validation = validatePort(
+      value,
+      `${currentDraft.name}-udp`,
+      combinedPorts,
+    );
+
     if (!validation.valid) {
       portError.value = `UDP: ${validation.error || ""}`;
     } else {
@@ -741,7 +866,8 @@ export const useOpenVPNServer = () => {
   const handleToggle = $((enabled: boolean) => {
     try {
       isEnabled.value = enabled;
-      const currentDraft = draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];
+      const currentDraft =
+        draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];
       if (isEnabled.value && !currentDraft.name) {
         updateDraftConfig$({ name: "openvpn-1" });
       }
@@ -763,32 +889,35 @@ export const useOpenVPNServer = () => {
 
   // Function to ensure default configuration when protocol is enabled
   const ensureDefaultConfig = $(() => {
-    if (!vpnServerState.OpenVpnServer || vpnServerState.OpenVpnServer.length === 0) {
+    if (
+      !vpnServerState.OpenVpnServer ||
+      vpnServerState.OpenVpnServer.length === 0
+    ) {
       if (draftConfigs.value.length === 0) {
         draftConfigs.value = [
-        ...draftConfigs.value,
-        {
-          name: "openvpn-1",
-          certificate: "server-cert",
-          enabled: true,
-          port: 1194,
-          tcpPort: 1194,
-          udpPort: 1195,
-          protocol: "both",
-          mode: "ip",
-          vsNetwork: "VPN",
-          addressPool: "192.168.78.0/24",
-          requireClientCertificate: false,
-          auth: "sha256",
-          cipher: "aes256-gcm",
-          certificateKeyPassphrase: "",
-          defaultProfile: "ovpn-profile",
-          tlsVersion: "only-1.2",
-          maxMtu: 1450,
-          maxMru: 1450,
-          keepaliveTimeout: 30,
-          authentication: ["mschap2"],
-        }
+          ...draftConfigs.value,
+          {
+            name: "openvpn-1",
+            certificate: "server-cert",
+            enabled: true,
+            port: 1194,
+            tcpPort: 1194,
+            udpPort: 1195,
+            protocol: "both",
+            mode: "ip",
+            vsNetwork: "VPN",
+            addressPool: "192.168.78.0/24",
+            requireClientCertificate: false,
+            auth: "sha256",
+            cipher: "aes256-gcm",
+            certificateKeyPassphrase: "",
+            defaultProfile: "ovpn-profile",
+            tlsVersion: "only-1.2",
+            maxMtu: 1450,
+            maxMru: 1450,
+            keepaliveTimeout: 30,
+            authentication: ["mschap2"],
+          },
         ];
       }
     }
@@ -849,7 +978,11 @@ export const useOpenVPNServer = () => {
 
     // For backward compatibility
     get openVpnState() {
-      return openVpnServers[0] || draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];
+      return (
+        openVpnServers[0] ||
+        draftConfigs.value[activeTabIndex.value] ||
+        draftConfigs.value[0]
+      );
     },
     get formState() {
       return draftConfigs.value[activeTabIndex.value] || draftConfigs.value[0];

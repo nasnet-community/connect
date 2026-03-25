@@ -10,19 +10,10 @@ export const VPNClient = component$<StepProps>(
 
     // If in advanced mode, render the advanced component
     if (vpnMode.value === "advanced") {
-      return (
-        <VPNClientAdvanced
-          onComplete$={onComplete$}
-        />
-      );
+      return <VPNClientAdvanced onComplete$={onComplete$} />;
     }
 
     // Easy mode - render easy component
-    return (
-      <VPNClientEasy
-        isComplete={isComplete}
-        onComplete$={onComplete$}
-      />
-    );
+    return <VPNClientEasy isComplete={isComplete} onComplete$={onComplete$} />;
   },
 );

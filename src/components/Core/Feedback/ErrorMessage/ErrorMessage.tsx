@@ -131,7 +131,7 @@ export const ErrorMessage = component$<ErrorMessageProps>(
           fontClasses,
           getDisplayClasses(),
           animate && "animate-fadeIn",
-          className
+          className,
         )}
       >
         {showIcon && (
@@ -156,20 +156,28 @@ export const ErrorMessage = component$<ErrorMessageProps>(
             )}
           </div>
         )}
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1">
           {title && (
-            <h3 class={cn(
-              "font-medium text-current",
-              size === "sm" ? "text-sm" : size === "lg" ? "text-base" : "text-sm"
-            )}>
+            <h3
+              class={cn(
+                "font-medium text-current",
+                size === "sm"
+                  ? "text-sm"
+                  : size === "lg"
+                    ? "text-base"
+                    : "text-sm",
+              )}
+            >
               {title}
             </h3>
           )}
-          <p class={cn(
-            "text-current",
-            title ? "mt-1" : "",
-            size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-sm"
-          )}>
+          <p
+            class={cn(
+              "text-current",
+              title ? "mt-1" : "",
+              size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-sm",
+            )}
+          >
             {message}
           </p>
         </div>
@@ -181,13 +189,13 @@ export const ErrorMessage = component$<ErrorMessageProps>(
             class={cn(
               "ml-3 flex-shrink-0 rounded-md text-current opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2",
               touchClasses,
-              "transition-opacity"
+              "transition-opacity",
             )}
             aria-label="Dismiss error"
           >
-            <svg 
-              class={cn(iconClasses)} 
-              viewBox="0 0 20 20" 
+            <svg
+              class={cn(iconClasses)}
+              viewBox="0 0 20 20"
               fill="currentColor"
               aria-hidden="true"
             >

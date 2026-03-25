@@ -63,7 +63,9 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               }}
               onDragLeave$={(e) => {
                 // Only set to false if we're leaving the entire drop zone
-                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const rect = (
+                  e.currentTarget as HTMLElement
+                ).getBoundingClientRect();
                 const x = e.clientX;
                 const y = e.clientY;
                 if (
@@ -118,11 +120,11 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                   text-gray-900 focus:border-primary-500
                   
                   focus:outline-none focus:ring-2 focus:ring-primary-500 
-                  focus:ring-offset-2 mobile:text-base
-                  tablet:text-sm dark:text-gray-100
-                  dark:focus:border-primary-400
+                  focus:ring-offset-2 dark:text-gray-100
+                  dark:focus:border-primary-400 dark:focus:ring-primary-400
+                  dark:focus:ring-offset-surface-dark
                   
-                  dark:focus:ring-primary-400 dark:focus:ring-offset-surface-dark
+                  mobile:text-base tablet:text-sm
                 `}
               />
 
@@ -218,9 +220,9 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 hover:shadow-lg
                 
                 hover:shadow-primary-500/25 active:scale-[0.98] 
-                tablet:flex-initial
-                
                 dark:focus-within:ring-primary-800
+                
+                tablet:flex-initial
                 
                 ${isUploading ? "cursor-not-allowed opacity-60" : ""}
               `}
@@ -270,9 +272,9 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 focus:outline-none
                 
                 focus:ring-4 focus:ring-secondary-300 active:scale-[0.98] 
-                tablet:flex-initial
-                
                 dark:focus:ring-secondary-800
+                
+                tablet:flex-initial
                 
                 ${isUploading ? "cursor-not-allowed opacity-60" : ""}
               `}

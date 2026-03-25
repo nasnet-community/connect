@@ -7,7 +7,7 @@ interface NavigationProps {
   isCurrentStepComplete: boolean;
   onPrevious$: QRL<() => void>;
   onNext$: QRL<() => void>;
-  
+
   // Help system props
   hasHelp?: boolean;
   onShowHelp$?: QRL<() => void>;
@@ -18,13 +18,13 @@ interface NavigationProps {
 export const HStepperNavigation = component$((props: NavigationProps) => {
   const isFirst = props.activeStep === 0;
   const isLast = props.activeStep === props.totalSteps - 1;
-  
+
   // Help system props
   const {
     hasHelp = false,
     onShowHelp$,
-    helpButtonLabel = 'Get help for this step',
-    isHelpOpen = false
+    helpButtonLabel = "Get help for this step",
+    isHelpOpen = false,
   } = props;
 
   return (
@@ -37,8 +37,8 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
           class={`rounded-lg px-6 py-2.5 font-medium transition-all duration-300
             ${
               isFirst
-                ? "cursor-not-allowed bg-surface-secondary/50 text-text-secondary/50"
-                : "bg-surface text-text-secondary shadow-md hover:bg-surface-secondary"
+                ? "bg-surface-secondary/50 text-text-secondary/50 cursor-not-allowed"
+                : "text-text-secondary hover:bg-surface-secondary bg-surface shadow-md"
             }`}
         >
           {$localize`Previous`}
@@ -54,43 +54,44 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
               type="button"
               onClick$={() => onShowHelp$ && onShowHelp$()}
               class={`
-                relative inline-flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 group
-                ${isHelpOpen
-                  ? 'bg-primary-100 text-primary-700 border-2 border-primary-300 dark:bg-primary-900/50 dark:text-primary-300 dark:border-primary-600'
-                  : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-400 dark:hover:border-primary-700'
+                group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200
+                ${
+                  isHelpOpen
+                    ? "border-2 border-primary-300 bg-primary-100 text-primary-700 dark:border-primary-600 dark:bg-primary-900/50 dark:text-primary-300"
+                    : "border-2 border-transparent bg-gray-100 text-gray-600 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-400"
                 }
                 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
               `}
               aria-label={helpButtonLabel}
               title={helpButtonLabel}
             >
-              <svg 
-                class={`w-6 h-6 transition-transform duration-200 ${isHelpOpen ? 'scale-110' : 'group-hover:scale-110'}`} 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                class={`h-6 w-6 transition-transform duration-200 ${isHelpOpen ? "scale-110" : "group-hover:scale-110"}`}
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              
+
               {/* Pulse animation for attention */}
               {!isHelpOpen && (
-                <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+                <span class="absolute -right-1 -top-1 flex h-3 w-3">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75"></span>
+                  <span class="relative inline-flex h-3 w-3 rounded-full bg-primary-500"></span>
                 </span>
               )}
             </button>
           )}
-          
+
           {/* Global Help Settings Toggle */}
-          <HelpSettingsToggle 
-            size="sm" 
+          <HelpSettingsToggle
+            size="sm"
             class="text-xs text-gray-600 dark:text-gray-400"
           />
         </div>

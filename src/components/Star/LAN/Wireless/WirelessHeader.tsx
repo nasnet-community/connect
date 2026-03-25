@@ -1,4 +1,12 @@
-import { component$, type Signal, type QRL, $, useSignal, useTask$, type JSXNode } from "@builder.io/qwik";
+import {
+  component$,
+  type Signal,
+  type QRL,
+  $,
+  useSignal,
+  useTask$,
+  type JSXNode,
+} from "@builder.io/qwik";
 import {
   HiWifiOutline,
   HiExclamationTriangleOutline,
@@ -15,7 +23,9 @@ interface WirelessHeaderProps {
 export const WirelessHeader = component$<WirelessHeaderProps>(
   ({ wirelessEnabled, onToggle$ }) => {
     // Create a mutable string signal for SegmentedControl
-    const enabledState = useSignal(wirelessEnabled.value ? "enabled" : "disabled");
+    const enabledState = useSignal(
+      wirelessEnabled.value ? "enabled" : "disabled",
+    );
 
     // Keep the string signal in sync with the boolean signal
     useTask$(({ track }) => {
@@ -27,12 +37,12 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
       {
         value: "disabled",
         label: $localize`Disabled`,
-        icon: <HiXCircleOutline /> as JSXNode,
+        icon: (<HiXCircleOutline />) as JSXNode,
       },
       {
         value: "enabled",
         label: $localize`Enabled`,
-        icon: <HiCheckCircleOutline /> as JSXNode,
+        icon: (<HiCheckCircleOutline />) as JSXNode,
       },
     ];
 

@@ -105,11 +105,7 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
     const renderProtocolConfig = () => {
       switch (vpn.type) {
         case "Wireguard":
-          return (
-            <WireguardConfig
-              onIsValidChange$={handleValidChange}
-            />
-          );
+          return <WireguardConfig onIsValidChange$={handleValidChange} />;
 
         case "OpenVPN":
           return (
@@ -176,7 +172,9 @@ export const StepVPNConfig = component$<StepVPNConfigProps>(
           <VPNBoxContent
             vpn={vpn as VPNClientConfig}
             validationErrors={{}}
-            onUpdate$={$((updates: any) => wizardActions.updateVPN$(vpnId, updates))}
+            onUpdate$={$((updates: any) =>
+              wizardActions.updateVPN$(vpnId, updates),
+            )}
           >
             {/* VPN Name (read-only in this step) */}
             <div class="mb-4 rounded-md bg-gray-50 p-3 dark:bg-gray-800">

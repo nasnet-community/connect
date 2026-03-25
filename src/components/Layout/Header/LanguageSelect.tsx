@@ -1,4 +1,10 @@
-import { component$, type QRL, useSignal, useTask$, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  type QRL,
+  useSignal,
+  useTask$,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 
 interface Language {
   code: string;
@@ -34,28 +40,30 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
   const currentLang = getLanguage(props.currentLocale);
   const isCurrentRtl = currentLang.dir === "rtl";
   const selectedLocale = useSignal(props.currentLocale);
-  
+
   // Update the signal when props change
   useTask$(({ track }) => {
     track(() => props.currentLocale);
     selectedLocale.value = props.currentLocale;
   });
-  
+
   // Ensure select value is correct after hydration
   useVisibleTask$(({ track }) => {
     track(() => props.currentLocale);
-    const selectElement = document.getElementById(selectId) as HTMLSelectElement;
+    const selectElement = document.getElementById(
+      selectId,
+    ) as HTMLSelectElement;
     if (selectElement && selectElement.value !== props.currentLocale) {
       selectElement.value = props.currentLocale;
     }
   });
 
   return (
-    <div class="relative group">
+    <div class="group relative">
       <label for={selectId} class="sr-only">
         {$localize`Select language`}
       </label>
-      
+
       {/* Custom select wrapper for better styling */}
       <div class="relative">
         <select
@@ -64,24 +72,24 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
           onChange$={(e) =>
             props.onLocaleChange$((e.target as HTMLSelectElement).value)
           }
-             class={`appearance-none cursor-pointer
-               ${isCurrentRtl ? "pr-10 pl-8 text-right" : "pl-10 pr-8 text-left"} py-2.5 
-                 text-sm font-medium
-                 bg-gradient-to-r from-gray-50 to-gray-100
-                 hover:from-gray-100 hover:to-gray-150
-                 text-gray-700 
-                 border border-gray-200
-                 rounded-xl
-                 shadow-sm hover:shadow-md
+          class={`cursor-pointer appearance-none
+               ${isCurrentRtl ? "pl-8 pr-10 text-right" : "pl-10 pr-8 text-left"} hover:to-gray-150 
+                 rounded-xl border
+                 border-gray-200 bg-gradient-to-r from-gray-50
+                 to-gray-100 py-2.5
+                 text-sm 
+                 font-medium text-gray-700
+                 shadow-sm
                  transition-all duration-200
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                 hover:from-gray-100 hover:shadow-md
+                 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500
                  
-                 dark:from-gray-800 dark:to-gray-900
-                 dark:hover:from-gray-700 dark:hover:to-gray-800
-                 dark:text-gray-200
-                 dark:border-gray-700
+                 dark:border-gray-700 dark:from-gray-800
+                 dark:to-gray-900 dark:text-gray-200
+                 dark:shadow-lg
+                 dark:shadow-black/20
                  dark:hover:border-gray-600
-                 dark:shadow-lg dark:shadow-black/20
+                 dark:hover:from-gray-700 dark:hover:to-gray-800
                  dark:hover:shadow-xl dark:hover:shadow-black/30`}
           dir={currentLang.dir || "ltr"}
           aria-label={$localize`Select language`}
@@ -93,7 +101,7 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
               <option
                 key={locale}
                 value={locale}
-                class="py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                class="bg-white py-2 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
                 dir={language.dir}
               >
                 {language.name}
@@ -101,32 +109,39 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
             );
           })}
         </select>
-        
+
         {/* Flag icon display */}
         <div
-          class={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-lg ${isCurrentRtl ? "right-3" : "left-3"}`}
+          class={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-lg ${isCurrentRtl ? "right-3" : "left-3"}`}
         >
           {currentLang.flag || ""}
         </div>
-        
+
         {/* Dropdown chevron icon */}
         <div
-          class={`absolute top-1/2 -translate-y-1/2 pointer-events-none ${isCurrentRtl ? "left-2" : "right-2"}`}
+          class={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isCurrentRtl ? "left-2" : "right-2"}`}
         >
-          <svg 
-            class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            class="h-4 w-4 text-gray-500 transition-transform duration-200 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </div>
-        
+
         {/* Subtle glow effect on hover for dark mode */}
-        <div class="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
+        <div
+          class="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100
                     dark:bg-gradient-to-r dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10 
-                    dark:blur-xl" />
+                    dark:blur-xl"
+        />
       </div>
     </div>
   );

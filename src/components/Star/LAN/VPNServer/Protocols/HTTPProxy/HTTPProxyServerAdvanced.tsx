@@ -18,7 +18,7 @@ export const HTTPProxyServerAdvanced = component$(() => {
   const selectedNetwork = useSignal<BaseNetworksType>("Split");
   const port = useSignal<number>(8080);
   const allowedIPs = useSignal<string[]>(
-    advancedFormState?.AllowedIPAddresses || []
+    advancedFormState?.AllowedIPAddresses || [],
   );
 
   // Local handlers
@@ -54,7 +54,7 @@ export const HTTPProxyServerAdvanced = component$(() => {
 
   const updateIPAddress$ = $((index: number, value: string) => {
     allowedIPs.value = allowedIPs.value.map((ip, i) =>
-      i === index ? value : ip
+      i === index ? value : ip,
     );
     if (advancedFormState) {
       advancedFormState.AllowedIPAddresses = allowedIPs.value;
@@ -107,7 +107,7 @@ export const HTTPProxyServerAdvanced = component$(() => {
 
         {/* Allowed IP Addresses */}
         <div>
-          <div class="flex items-center justify-between mb-4">
+          <div class="mb-4 flex items-center justify-between">
             <SectionTitle title={$localize`Allowed IP Addresses`} />
             <ServerButton
               onClick$={addIPAddress$}

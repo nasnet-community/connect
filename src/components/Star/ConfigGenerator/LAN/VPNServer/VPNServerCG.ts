@@ -1,6 +1,10 @@
-import type { VPNServer, VPNServerSubnets, RouterModels } from "~/components/Star/StarContext";
+import type {
+    VPNServer,
+    VPNServerSubnets,
+    RouterModels,
+} from "~/components/Star/StarContext";
 
-import { 
+import {
     type RouterConfig,
     WireguardServerWrapper,
     OVPNServerWrapper,
@@ -26,13 +30,9 @@ import {
 // Helper function to check if master router is CHR
 const isMasterCHR = (routerModels?: RouterModels[]): boolean => {
     if (!routerModels) return false;
-    const masterRouter = routerModels.find(r => r.isMaster);
+    const masterRouter = routerModels.find((r) => r.isMaster);
     return masterRouter?.isCHR === true;
 };
-
-
-
-
 
 export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     const configs: RouterConfig[] = [];
@@ -137,8 +137,11 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     return finalConfig;
 };
 
-
-export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServerSubnets, routerModels?: RouterModels[] ): RouterConfig => {
+export const VPNServerWrapper = (
+    vpnServer: VPNServer,
+    subnetConfigs: VPNServerSubnets,
+    routerModels?: RouterModels[],
+): RouterConfig => {
     const configs: RouterConfig[] = [];
     const enabledServers: string[] = [];
 
@@ -148,11 +151,7 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
     // 1. PPTP Server
     if (vpnServer.PptpServer?.enabled) {
         configs.push(
-            PptpServerWrapper(
-                vpnServer.PptpServer,
-                users,
-                subnetConfigs.PPTP
-            )
+            PptpServerWrapper(vpnServer.PptpServer, users, subnetConfigs.PPTP),
         );
         enabledServers.push("PPTP");
     }
@@ -160,11 +159,7 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
     // 2. L2TP Server
     if (vpnServer.L2tpServer?.enabled) {
         configs.push(
-            L2tpServerWrapper(
-                vpnServer.L2tpServer,
-                users,
-                subnetConfigs.L2TP
-            )
+            L2tpServerWrapper(vpnServer.L2tpServer, users, subnetConfigs.L2TP),
         );
         enabledServers.push("L2TP");
     }
@@ -172,11 +167,7 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
     // 3. SSTP Server
     if (vpnServer.SstpServer?.enabled) {
         configs.push(
-            SstpServerWrapper(
-                vpnServer.SstpServer,
-                users,
-                subnetConfigs.SSTP
-            )
+            SstpServerWrapper(vpnServer.SstpServer, users, subnetConfigs.SSTP),
         );
         enabledServers.push("SSTP");
     }
@@ -187,8 +178,8 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
             Ikev2ServerWrapper(
                 vpnServer.Ikev2Server,
                 users,
-                subnetConfigs.IKev2
-            )
+                subnetConfigs.IKev2,
+            ),
         );
         enabledServers.push("IKEv2");
     }
@@ -196,17 +187,19 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
     // 5. OpenVPN Server(s)
     if (vpnServer.OpenVpnServer && vpnServer.OpenVpnServer.length > 0) {
         const enabledOvpnServers = vpnServer.OpenVpnServer.filter(
-            (server) => server.enabled
+            (server) => server.enabled,
         );
         if (enabledOvpnServers.length > 0) {
             configs.push(
                 OVPNServerWrapper(
                     enabledOvpnServers,
                     users,
-                    subnetConfigs.OpenVPN || []
-                )
+                    subnetConfigs.OpenVPN || [],
+                ),
             );
-            enabledServers.push(`OpenVPN (${enabledOvpnServers.length} servers)`);
+            enabledServers.push(
+                `OpenVPN (${enabledOvpnServers.length} servers)`,
+            );
         }
     }
 
@@ -216,17 +209,17 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
             WireguardServerWrapper(
                 vpnServer.WireguardServers,
                 users,
-                subnetConfigs.Wireguard || []
-            )
+                subnetConfigs.Wireguard || [],
+            ),
         );
-        enabledServers.push(`WireGuard (${vpnServer.WireguardServers.length} servers)`);
+        enabledServers.push(
+            `WireGuard (${vpnServer.WireguardServers.length} servers)`,
+        );
     }
 
     // 7. SSH Server
     if (vpnServer.SSHServer?.enabled) {
-        configs.push(
-            SSHServerWrapper(vpnServer.SSHServer, users)
-        );
+        configs.push(SSHServerWrapper(vpnServer.SSHServer, users));
         enabledServers.push("SSH");
     }
 
@@ -264,7 +257,7 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
         return {
             "": [
                 "# No VPN servers configured",
-                "# Enable at least one VPN server in your configuration"
+                "# Enable at least one VPN server in your configuration",
             ],
         };
     }
@@ -279,6 +272,3 @@ export const VPNServerWrapper = ( vpnServer: VPNServer, subnetConfigs: VPNServer
 
     return CommandShortner(finalConfig);
 };
-
-
-

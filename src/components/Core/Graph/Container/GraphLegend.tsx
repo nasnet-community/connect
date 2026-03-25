@@ -19,14 +19,17 @@ export const GraphLegend = component$<{
   // Default legend items for NetworkTopologyGraph style
   const defaultLegendItems = [
     { color: "rgb(251 191 36)", label: $localize`Traffic Path` }, // amber-500
-    ...(showDomesticLegend ? [{ color: "rgb(16, 185, 129)", label: $localize`Domestic` }] : []), // emerald-500
+    ...(showDomesticLegend
+      ? [{ color: "rgb(16, 185, 129)", label: $localize`Domestic` }]
+      : []), // emerald-500
     { color: "rgb(168, 85, 247)", label: $localize`Foreign` }, // purple-500
   ];
 
   // Use custom legend items if provided, otherwise use defaults
-  const legendItems = customLegendItems && customLegendItems.length > 0 
-    ? customLegendItems 
-    : defaultLegendItems;
+  const legendItems =
+    customLegendItems && customLegendItems.length > 0
+      ? customLegendItems
+      : defaultLegendItems;
 
   return (
     <div class="flex items-center space-x-3">

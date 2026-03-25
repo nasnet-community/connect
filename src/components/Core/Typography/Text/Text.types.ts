@@ -3,9 +3,30 @@ import type { JSXChildren, QRL } from "@builder.io/qwik";
 /**
  * Available text sizes (including fluid typography)
  */
-export type TextSize = 
-  | "3xs" | "2xs" | "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl"
-  | "fluid-xs" | "fluid-sm" | "fluid-base" | "fluid-lg" | "fluid-xl" | "fluid-2xl" | "fluid-3xl" | "fluid-4xl";
+export type TextSize =
+  | "3xs"
+  | "2xs"
+  | "xs"
+  | "sm"
+  | "base"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "4xl"
+  | "5xl"
+  | "6xl"
+  | "7xl"
+  | "8xl"
+  | "9xl"
+  | "fluid-xs"
+  | "fluid-sm"
+  | "fluid-base"
+  | "fluid-lg"
+  | "fluid-xl"
+  | "fluid-2xl"
+  | "fluid-3xl"
+  | "fluid-4xl";
 
 /**
  * Available font weights
@@ -28,7 +49,7 @@ export type TextAlign = "left" | "center" | "right" | "start" | "end";
  */
 export type TextColor =
   | "primary"
-  | "secondary" 
+  | "secondary"
   | "tertiary"
   | "inverse"
   | "accent"
@@ -90,7 +111,7 @@ export interface ResponsiveTextSize {
   "3xl"?: TextSize;
   /** 2K/4K (2560px+) */
   "4xl"?: TextSize;
-  
+
   /** Base/default size (mobile-first) */
   base?: TextSize;
   /** Mobile devices (360px+) */
@@ -212,7 +233,14 @@ export interface TextProps {
    * Font family variant
    * @default "sans"
    */
-  fontFamily?: "sans" | "sans-rtl" | "serif" | "serif-rtl" | "mono" | "display" | "body";
+  fontFamily?:
+    | "sans"
+    | "sans-rtl"
+    | "serif"
+    | "serif-rtl"
+    | "mono"
+    | "display"
+    | "body";
 
   /**
    * Enable high contrast mode

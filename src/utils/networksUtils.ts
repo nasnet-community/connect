@@ -4,9 +4,7 @@ import type {
   BaseNetworks,
   VPNClientNetworks,
 } from "~/components/Star/StarContext/Utils/Networks";
-import type {
-  WANLinkType
-} from "~/components/Star/StarContext/ChooseType";
+import type { WANLinkType } from "~/components/Star/StarContext/ChooseType";
 import type { VPNClient } from "~/components/Star/StarContext/Utils/VPNClientType";
 import type { WANLinks } from "~/components/Star/StarContext/WANType";
 
@@ -20,19 +18,22 @@ import type { WANLinks } from "~/components/Star/StarContext/WANType";
 export const generateNetworks = (
   wanLinkType: WANLinkType,
   wanLinks?: WANLinks,
-  vpnClient?: VPNClient
+  vpnClient?: VPNClient,
 ): Networks => {
   // Determine what networks are available
   const hasDomesticLink = wanLinkType === "domestic" || wanLinkType === "both";
-  const hasForeignLinks = !!(wanLinks?.Foreign?.WANConfigs && wanLinks.Foreign.WANConfigs.length > 0);
-  const hasVPNClients = !!(vpnClient && (
-    (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) ||
-    (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) ||
-    (vpnClient.PPTP && vpnClient.PPTP.length > 0) ||
-    (vpnClient.L2TP && vpnClient.L2TP.length > 0) ||
-    (vpnClient.SSTP && vpnClient.SSTP.length > 0) ||
-    (vpnClient.IKeV2 && vpnClient.IKeV2.length > 0)
-  ));
+  const hasForeignLinks = !!(
+    wanLinks?.Foreign?.WANConfigs && wanLinks.Foreign.WANConfigs.length > 0
+  );
+  const hasVPNClients = !!(
+    vpnClient &&
+    ((vpnClient.Wireguard && vpnClient.Wireguard.length > 0) ||
+      (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) ||
+      (vpnClient.PPTP && vpnClient.PPTP.length > 0) ||
+      (vpnClient.L2TP && vpnClient.L2TP.length > 0) ||
+      (vpnClient.SSTP && vpnClient.SSTP.length > 0) ||
+      (vpnClient.IKeV2 && vpnClient.IKeV2.length > 0))
+  );
 
   // Build BaseNetworks with proper logic
   // Split network is only added when Domestic exists AND (Foreign OR VPN exists)
@@ -54,7 +55,11 @@ export const generateNetworks = (
 
   // Extract Domestic network names from WANLinks configuration (only if domestic link is available)
   const domesticNetworks: NetworkName[] = [];
-  if (hasDomesticLink && wanLinks?.Domestic?.WANConfigs && wanLinks.Domestic.WANConfigs.length > 0) {
+  if (
+    hasDomesticLink &&
+    wanLinks?.Domestic?.WANConfigs &&
+    wanLinks.Domestic.WANConfigs.length > 0
+  ) {
     wanLinks.Domestic.WANConfigs.forEach((config, index) => {
       const name = config.name || `Domestic-Link-${index + 1}`;
       domesticNetworks.push(name);
@@ -67,43 +72,43 @@ export const generateNetworks = (
   if (vpnClient) {
     // Add Wireguard client names
     if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
-      vpnClientNetworks.Wireguard = vpnClient.Wireguard.map((config, index) =>
-        config.Name || `Wireguard-${index + 1}`
+      vpnClientNetworks.Wireguard = vpnClient.Wireguard.map(
+        (config, index) => config.Name || `Wireguard-${index + 1}`,
       );
     }
 
     // Add OpenVPN client names
     if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
-      vpnClientNetworks.OpenVPN = vpnClient.OpenVPN.map((config, index) =>
-        config.Name || `OpenVPN-${index + 1}`
+      vpnClientNetworks.OpenVPN = vpnClient.OpenVPN.map(
+        (config, index) => config.Name || `OpenVPN-${index + 1}`,
       );
     }
 
     // Add PPTP client names
     if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
-      vpnClientNetworks.PPTP = vpnClient.PPTP.map((config, index) =>
-        config.Name || `PPTP-${index + 1}`
+      vpnClientNetworks.PPTP = vpnClient.PPTP.map(
+        (config, index) => config.Name || `PPTP-${index + 1}`,
       );
     }
 
     // Add L2TP client names
     if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
-      vpnClientNetworks.L2TP = vpnClient.L2TP.map((config, index) =>
-        config.Name || `L2TP-${index + 1}`
+      vpnClientNetworks.L2TP = vpnClient.L2TP.map(
+        (config, index) => config.Name || `L2TP-${index + 1}`,
       );
     }
 
     // Add SSTP client names
     if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
-      vpnClientNetworks.SSTP = vpnClient.SSTP.map((config, index) =>
-        config.Name || `SSTP-${index + 1}`
+      vpnClientNetworks.SSTP = vpnClient.SSTP.map(
+        (config, index) => config.Name || `SSTP-${index + 1}`,
       );
     }
 
     // Add IKeV2 client names
     if (vpnClient.IKeV2 && vpnClient.IKeV2.length > 0) {
-      vpnClientNetworks.IKev2 = vpnClient.IKeV2.map((config, index) =>
-        config.Name || `IKev2-${index + 1}`
+      vpnClientNetworks.IKev2 = vpnClient.IKeV2.map(
+        (config, index) => config.Name || `IKev2-${index + 1}`,
       );
     }
   }
@@ -111,8 +116,10 @@ export const generateNetworks = (
   return {
     BaseNetworks: baseNetworks,
     ForeignNetworks: foreignNetworks.length > 0 ? foreignNetworks : undefined,
-    DomesticNetworks: domesticNetworks.length > 0 ? domesticNetworks : undefined,
-    VPNClientNetworks: Object.keys(vpnClientNetworks).length > 0 ? vpnClientNetworks : undefined,
+    DomesticNetworks:
+      domesticNetworks.length > 0 ? domesticNetworks : undefined,
+    VPNClientNetworks:
+      Object.keys(vpnClientNetworks).length > 0 ? vpnClientNetworks : undefined,
   };
 };
 
@@ -135,7 +142,7 @@ export const hasDomesticLink = (wanLinkType: WANLinkType): boolean => {
 export const getAvailableBaseNetworks = (
   wanLinkType: WANLinkType,
   hasForeign: boolean = false,
-  hasVPN: boolean = false
+  hasVPN: boolean = false,
 ): BaseNetworks => {
   const domestic = hasDomesticLink(wanLinkType);
 
@@ -154,9 +161,9 @@ export const getAvailableBaseNetworks = (
  */
 export const getForeignNetworkNames = (wanLinks?: WANLinks): string[] => {
   if (!wanLinks?.Foreign?.WANConfigs) return [];
-  
-  return wanLinks.Foreign.WANConfigs.map((config, index) => 
-    config.name || `Foreign-Link-${index + 1}`
+
+  return wanLinks.Foreign.WANConfigs.map(
+    (config, index) => config.name || `Foreign-Link-${index + 1}`,
   );
 };
 
@@ -166,12 +173,15 @@ export const getForeignNetworkNames = (wanLinks?: WANLinks): string[] => {
  * @param wanLinkType - The WAN link type to check if domestic is available
  * @returns Array of Domestic network names
  */
-export const getDomesticNetworkNames = (wanLinks?: WANLinks, wanLinkType?: WANLinkType): string[] => {
+export const getDomesticNetworkNames = (
+  wanLinks?: WANLinks,
+  wanLinkType?: WANLinkType,
+): string[] => {
   if (!wanLinkType || !hasDomesticLink(wanLinkType)) return [];
   if (!wanLinks?.Domestic?.WANConfigs) return [];
-  
-  return wanLinks.Domestic.WANConfigs.map((config, index) => 
-    config.name || `Domestic-Link-${index + 1}`
+
+  return wanLinks.Domestic.WANConfigs.map(
+    (config, index) => config.name || `Domestic-Link-${index + 1}`,
   );
 };
 
@@ -180,50 +190,52 @@ export const getDomesticNetworkNames = (wanLinks?: WANLinks, wanLinkType?: WANLi
  * @param vpnClient - The VPN client configuration
  * @returns VPNClientNetworks object with protocol-specific network arrays
  */
-export const getVPNClientNetworks = (vpnClient?: VPNClient): VPNClientNetworks => {
+export const getVPNClientNetworks = (
+  vpnClient?: VPNClient,
+): VPNClientNetworks => {
   if (!vpnClient) return {};
 
   const vpnClientNetworks: VPNClientNetworks = {};
 
   // Add Wireguard client names
   if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
-    vpnClientNetworks.Wireguard = vpnClient.Wireguard.map((config, index) =>
-      config.Name || `Wireguard-${index + 1}`
+    vpnClientNetworks.Wireguard = vpnClient.Wireguard.map(
+      (config, index) => config.Name || `Wireguard-${index + 1}`,
     );
   }
 
   // Add OpenVPN client names
   if (vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
-    vpnClientNetworks.OpenVPN = vpnClient.OpenVPN.map((config, index) =>
-      config.Name || `OpenVPN-${index + 1}`
+    vpnClientNetworks.OpenVPN = vpnClient.OpenVPN.map(
+      (config, index) => config.Name || `OpenVPN-${index + 1}`,
     );
   }
 
   // Add PPTP client names
   if (vpnClient.PPTP && vpnClient.PPTP.length > 0) {
-    vpnClientNetworks.PPTP = vpnClient.PPTP.map((config, index) =>
-      config.Name || `PPTP-${index + 1}`
+    vpnClientNetworks.PPTP = vpnClient.PPTP.map(
+      (config, index) => config.Name || `PPTP-${index + 1}`,
     );
   }
 
   // Add L2TP client names
   if (vpnClient.L2TP && vpnClient.L2TP.length > 0) {
-    vpnClientNetworks.L2TP = vpnClient.L2TP.map((config, index) =>
-      config.Name || `L2TP-${index + 1}`
+    vpnClientNetworks.L2TP = vpnClient.L2TP.map(
+      (config, index) => config.Name || `L2TP-${index + 1}`,
     );
   }
 
   // Add SSTP client names
   if (vpnClient.SSTP && vpnClient.SSTP.length > 0) {
-    vpnClientNetworks.SSTP = vpnClient.SSTP.map((config, index) =>
-      config.Name || `SSTP-${index + 1}`
+    vpnClientNetworks.SSTP = vpnClient.SSTP.map(
+      (config, index) => config.Name || `SSTP-${index + 1}`,
     );
   }
 
   // Add IKeV2 client names
   if (vpnClient.IKeV2 && vpnClient.IKeV2.length > 0) {
-    vpnClientNetworks.IKev2 = vpnClient.IKeV2.map((config, index) =>
-      config.Name || `IKev2-${index + 1}`
+    vpnClientNetworks.IKev2 = vpnClient.IKeV2.map(
+      (config, index) => config.Name || `IKev2-${index + 1}`,
     );
   }
 

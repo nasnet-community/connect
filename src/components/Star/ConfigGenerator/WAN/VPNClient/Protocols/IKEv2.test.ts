@@ -77,7 +77,12 @@ describe("IKEv2", () => {
 
     // Verifies pre-shared-key identities append the current mode-config and policy-group naming convention that adds a `-client` suffix.
     it("builds pre-shared-key identities with the current policy-group suffixing", () => {
-        const result = IKeV2Identity(baseConfig, "peer", "modeconf", "policies");
+        const result = IKeV2Identity(
+            baseConfig,
+            "peer",
+            "modeconf",
+            "policies",
+        );
 
         expect(result).toContain("peer=peer");
         expect(result).toContain("auth-method=pre-shared-key");
@@ -123,7 +128,11 @@ describe("IKEv2", () => {
 
     // Verifies policy and mode-config builders both use quoted names where the current implementation emits quoted RouterOS values.
     it("builds policy and mode-config commands using the current quoted naming format", () => {
-        const policyResult = IKeV2Policy(baseConfig, "test-policies", "test-proposal");
+        const policyResult = IKeV2Policy(
+            baseConfig,
+            "test-policies",
+            "test-proposal",
+        );
         const modeConfigResult = IKeV2ModeConfig(
             {
                 ...baseConfig,
@@ -158,7 +167,9 @@ describe("IKEv2", () => {
         expect(result["/ip ipsec policy group"][0]).toContain(
             'name="my-policies-client"',
         );
-        expect(result["/ip ipsec mode-config"][0]).toContain('name="my-modeconf"');
+        expect(result["/ip ipsec mode-config"][0]).toContain(
+            'name="my-modeconf"',
+        );
     });
 
     // Verifies the wrapper currently merges only the IPsec sections plus the endpoint address-list entry and intentionally omits interface-list, route, and mangle sections.

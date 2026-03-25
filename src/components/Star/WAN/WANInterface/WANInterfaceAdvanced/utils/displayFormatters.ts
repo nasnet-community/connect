@@ -42,7 +42,9 @@ export const getCardStyleByStatus = (status: string): string => {
   }
 };
 
-export const getStatusColorClass = (status: string): { bg: string; text: string } => {
+export const getStatusColorClass = (
+  status: string,
+): { bg: string; text: string } => {
   switch (status) {
     case "complete":
       return {

@@ -99,14 +99,16 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
 
       {/* Router Selection Dropdown */}
       <div class="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
-        <label class="block text-xs font-medium text-text-secondary dark:text-text-dark-secondary">
+        <label class="text-text-secondary dark:text-text-dark-secondary block text-xs font-medium">
           {$localize`Select Router`}
         </label>
         {props.routerOptions.length > 0 ? (
           <>
             <select
               value={props.selectedRouter}
-              onChange$={(e) => props.onRouterChange((e.target as HTMLSelectElement).value)}
+              onChange$={(e) =>
+                props.onRouterChange((e.target as HTMLSelectElement).value)
+              }
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {props.routerOptions.map((router) => (
@@ -135,7 +137,9 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
             <div class="flex items-center gap-2">
               <button
                 onClick$={() =>
-                  navigator.clipboard.readText().then((text) => props.onPaste(text))
+                  navigator.clipboard
+                    .readText()
+                    .then((text) => props.onPaste(text))
                 }
                 class="flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-600"
               >
@@ -158,7 +162,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
             <textarea
               value={props.value}
               onChange$={(_, el) => props.onPaste(el.value)}
-              class="h-96 w-full resize-none rounded-lg border border-gray-300 bg-white p-4 font-mono text-sm text-gray-900 placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-primary dark:focus:ring-primary/30"
+              class="focus:border-primary focus:ring-primary/20 dark:focus:border-primary dark:focus:ring-primary/30 h-96 w-full resize-none rounded-lg border border-gray-300 bg-white p-4 font-mono text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400"
               placeholder={$localize`Paste your context here...`}
             />
           </div>

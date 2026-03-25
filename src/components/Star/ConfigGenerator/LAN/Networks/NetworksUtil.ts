@@ -1,15 +1,14 @@
-import type { WANLinks, VPNClient, Networks as Networksinterface, Subnets } from "~/components/Star/StarContext";
-
-
-
-
-
-
+import type {
+    WANLinks,
+    VPNClient,
+    Networks as Networksinterface,
+    Subnets,
+} from "~/components/Star/StarContext";
 
 export const shouldSkipMangleRules = (
     networkType: "Foreign" | "Domestic" | "VPN",
-    wanLinks?: WANLinks, 
-    vpnClient?: VPNClient
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
 ): boolean => {
     // Check specific network's load balancing method
     if (networkType === "Foreign") {
@@ -34,22 +33,34 @@ export const shouldSkipMangleRules = (
             }
         }
     }
-    
+
     return false;
 };
 
-export const extractBridgeNames = (networks: Networksinterface, subnets?: Subnets): string[] => {
+export const extractBridgeNames = (
+    networks: Networksinterface,
+    subnets?: Subnets,
+): string[] => {
     const bridgeNames: string[] = [];
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (networks.BaseNetworks.Split && subnets?.BaseSubnets?.Split?.subnet) {
+        if (
+            networks.BaseNetworks.Split &&
+            subnets?.BaseSubnets?.Split?.subnet
+        ) {
             bridgeNames.push("LANBridgeSplit");
         }
-        if (networks.BaseNetworks.Domestic && subnets?.BaseSubnets?.Domestic?.subnet) {
+        if (
+            networks.BaseNetworks.Domestic &&
+            subnets?.BaseSubnets?.Domestic?.subnet
+        ) {
             bridgeNames.push("LANBridgeDomestic");
         }
-        if (networks.BaseNetworks.Foreign && subnets?.BaseSubnets?.Foreign?.subnet) {
+        if (
+            networks.BaseNetworks.Foreign &&
+            subnets?.BaseSubnets?.Foreign?.subnet
+        ) {
             bridgeNames.push("LANBridgeForeign");
         }
         if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
@@ -146,18 +157,30 @@ export const extractBridgeNames = (networks: Networksinterface, subnets?: Subnet
     return bridgeNames;
 };
 
-export const extractTableNames = (networks: Networksinterface, subnets?: Subnets): string[] => {
+export const extractTableNames = (
+    networks: Networksinterface,
+    subnets?: Subnets,
+): string[] => {
     const tableNames: string[] = [];
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (networks.BaseNetworks.Split && subnets?.BaseSubnets?.Split?.subnet) {
+        if (
+            networks.BaseNetworks.Split &&
+            subnets?.BaseSubnets?.Split?.subnet
+        ) {
             tableNames.push("to-Split");
         }
-        if (networks.BaseNetworks.Domestic && subnets?.BaseSubnets?.Domestic?.subnet) {
+        if (
+            networks.BaseNetworks.Domestic &&
+            subnets?.BaseSubnets?.Domestic?.subnet
+        ) {
             tableNames.push("to-Domestic");
         }
-        if (networks.BaseNetworks.Foreign && subnets?.BaseSubnets?.Foreign?.subnet) {
+        if (
+            networks.BaseNetworks.Foreign &&
+            subnets?.BaseSubnets?.Foreign?.subnet
+        ) {
             tableNames.push("to-Foreign");
         }
         if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
@@ -254,7 +277,10 @@ export const extractTableNames = (networks: Networksinterface, subnets?: Subnets
     return tableNames;
 };
 
-export const mapNetworkToRoutingTable = (networkName: string, networks: Networksinterface): string | null => {
+export const mapNetworkToRoutingTable = (
+    networkName: string,
+    networks: Networksinterface,
+): string | null => {
     // Check Base Networks
     if (networks.BaseNetworks) {
         if (networkName === "Domestic" && networks.BaseNetworks.Domestic) {
@@ -269,19 +295,25 @@ export const mapNetworkToRoutingTable = (networkName: string, networks: Networks
     }
 
     // Check Foreign Networks
-    if (networks.ForeignNetworks && networks.ForeignNetworks.includes(networkName)) {
+    if (
+        networks.ForeignNetworks &&
+        networks.ForeignNetworks.includes(networkName)
+    ) {
         return `to-Foreign-${networkName}`;
     }
 
     // Check Domestic Networks
-    if (networks.DomesticNetworks && networks.DomesticNetworks.includes(networkName)) {
+    if (
+        networks.DomesticNetworks &&
+        networks.DomesticNetworks.includes(networkName)
+    ) {
         return `to-Domestic-${networkName}`;
     }
 
     // Check VPN Client Networks
     if (networks.VPNClientNetworks) {
         const vpnClient = networks.VPNClientNetworks;
-        
+
         if (vpnClient.Wireguard && vpnClient.Wireguard.includes(networkName)) {
             return `to-VPN-${networkName}`;
         }
@@ -305,7 +337,10 @@ export const mapNetworkToRoutingTable = (networkName: string, networks: Networks
     return null;
 };
 
-export const mapNetworkToBridgeName = (networkName: string, networks: Networksinterface): string | null => {
+export const mapNetworkToBridgeName = (
+    networkName: string,
+    networks: Networksinterface,
+): string | null => {
     // Check Base Networks
     if (networks.BaseNetworks) {
         if (networkName === "Split" && networks.BaseNetworks.Split) {
@@ -323,19 +358,25 @@ export const mapNetworkToBridgeName = (networkName: string, networks: Networksin
     }
 
     // Check Foreign Networks
-    if (networks.ForeignNetworks && networks.ForeignNetworks.includes(networkName)) {
+    if (
+        networks.ForeignNetworks &&
+        networks.ForeignNetworks.includes(networkName)
+    ) {
         return `LANBridgeForeign-${networkName}`;
     }
 
     // Check Domestic Networks
-    if (networks.DomesticNetworks && networks.DomesticNetworks.includes(networkName)) {
+    if (
+        networks.DomesticNetworks &&
+        networks.DomesticNetworks.includes(networkName)
+    ) {
         return `LANBridgeDomestic-${networkName}`;
     }
 
     // Check VPN Client Networks
     if (networks.VPNClientNetworks) {
         const vpnClient = networks.VPNClientNetworks;
-        
+
         if (vpnClient.Wireguard && vpnClient.Wireguard.includes(networkName)) {
             return `LANBridgeVPN-${networkName}`;
         }

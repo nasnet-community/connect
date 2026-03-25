@@ -3,7 +3,7 @@
  */
 
 // Base types
-export * from './base';
+export * from "./base";
 
 // Compatibility types for backward compatibility
-export * from './compatibility';
+export * from "./compatibility";

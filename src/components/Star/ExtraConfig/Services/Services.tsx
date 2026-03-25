@@ -85,7 +85,9 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   const warningCloseByAcknowledge = useSignal(false);
 
   // State for temporary input values (to handle editing without immediate state update)
-  const tempPortValues = useSignal<Record<ServiceName, string>>({} as Record<ServiceName, string>);
+  const tempPortValues = useSignal<Record<ServiceName, string>>(
+    {} as Record<ServiceName, string>,
+  );
 
   // Define services array before using it in hooks
   const services: ServiceItem[] = [
@@ -163,15 +165,19 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
 
   // Auto-enable SSH service when SSH VPN Server is enabled
   useTask$(({ track }) => {
-    const sshVPNEnabled = track(() => ctx.state.LAN.VPNServer?.SSHServer?.enabled);
-    
+    const sshVPNEnabled = track(
+      () => ctx.state.LAN.VPNServer?.SSHServer?.enabled,
+    );
+
     if (sshVPNEnabled && ctx.state.ExtraConfig.services) {
       const currentSSH = ctx.state.ExtraConfig.services.ssh;
-      const currentType = typeof currentSSH === "string" ? currentSSH : currentSSH.type;
-      
+      const currentType =
+        typeof currentSSH === "string" ? currentSSH : currentSSH.type;
+
       // Force SSH to be enabled if it's not already
       if (currentType !== "Enable") {
-        const currentPort = typeof currentSSH === "string" ? 22 : currentSSH.port || 22;
+        const currentPort =
+          typeof currentSSH === "string" ? 22 : currentSSH.port || 22;
         ctx.state.ExtraConfig.services.ssh = {
           type: "Enable",
           port: currentPort,
@@ -187,9 +193,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
       const newTempValues = {} as Record<ServiceName, string>;
       services.forEach((service) => {
         const currentConfig = currentServices[service.name];
-        const currentPort = typeof currentConfig === "string"
-          ? service.defaultPort
-          : currentConfig.port || service.defaultPort;
+        const currentPort =
+          typeof currentConfig === "string"
+            ? service.defaultPort
+            : currentConfig.port || service.defaultPort;
         newTempValues[service.name] = currentPort.toString();
       });
       tempPortValues.value = newTempValues;
@@ -197,16 +204,20 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   });
 
   // Helper function to get current port value for display
-  const getCurrentPortValue = (serviceName: ServiceName, defaultPort: number): string => {
+  const getCurrentPortValue = (
+    serviceName: ServiceName,
+    defaultPort: number,
+  ): string => {
     // Return temp value if exists, otherwise return actual port value
     if (tempPortValues.value[serviceName]) {
       return tempPortValues.value[serviceName];
     }
 
     const currentConfig = ctx.state.ExtraConfig.services?.[serviceName];
-    const currentPort = typeof currentConfig === "string"
-      ? defaultPort
-      : currentConfig?.port || defaultPort;
+    const currentPort =
+      typeof currentConfig === "string"
+        ? defaultPort
+        : currentConfig?.port || defaultPort;
     return currentPort.toString();
   };
 
@@ -214,7 +225,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   const updateTempPortValue = $((serviceName: ServiceName, value: string) => {
     tempPortValues.value = {
       ...tempPortValues.value,
-      [serviceName]: value
+      [serviceName]: value,
     };
   });
 
@@ -226,75 +237,71 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   });
 
   // Handle port change confirmation
-  const handlePortChangeRequest = $((
-    service: ServiceItem,
-    currentPort: number,
-    newPort: number
-  ) => {
-    // Check if the port is actually changing
-    if (currentPort === newPort) return;
+  const handlePortChangeRequest = $(
+    (service: ServiceItem, currentPort: number, newPort: number) => {
+      // Check if the port is actually changing
+      if (currentPort === newPort) return;
 
-    // Safeguard: Don't show dialog if it's already open
-    if (showConfirmDialog.value || showInitialWarning.value) {
-      // Reset temp value to current port if dialog is already showing
-      updateTempPortValue(service.name, currentPort.toString());
-      return;
-    }
-
-    // Store pending change for later
-    pendingPortChange.value = {
-      serviceName: service.name,
-      serviceDescription: service.description,
-      oldPort: currentPort,
-      newPort: newPort,
-    };
-
-    // Check if we need to show the one-time warning first
-    if (!hasShownPortWarning.value) {
-      showInitialWarning.value = true;
-    } else {
-      // If warning has already been shown, go directly to confirmation dialog
-      showConfirmDialog.value = true;
-    }
-  });
-
-  // Handle port input blur event
-  const handlePortBlur$ = $(async (
-    event: FocusEvent,
-    service: ServiceItem,
-    currentPort: number
-  ) => {
-    const target = event.target as HTMLInputElement;
-    const newPortStr = target.value;
-    const newPort = parseInt(newPortStr);
-
-    // Validate the input
-    if (isNaN(newPort) || newPort < 1 || newPort > 65535) {
-      // Reset invalid input to current port
-      updateTempPortValue(service.name, currentPort.toString());
-      return;
-    }
-
-    // Check if the port actually changed
-    if (newPort !== currentPort) {
-      // Initialize services if they don't exist
-      if (!ctx.state.ExtraConfig.services) {
-        ctx.state.ExtraConfig.services = {
-          api: { type: "Local" as ServiceType, port: 8728 },
-          apissl: { type: "Local" as ServiceType, port: 8729 },
-          ftp: { type: "Local" as ServiceType, port: 21 },
-          ssh: { type: "Local" as ServiceType, port: 22 },
-          telnet: { type: "Local" as ServiceType, port: 23 },
-          winbox: { type: "Enable" as ServiceType, port: 8291 },
-          web: { type: "Local" as ServiceType, port: 80 },
-          webssl: { type: "Local" as ServiceType, port: 443 },
-        };
+      // Safeguard: Don't show dialog if it's already open
+      if (showConfirmDialog.value || showInitialWarning.value) {
+        // Reset temp value to current port if dialog is already showing
+        updateTempPortValue(service.name, currentPort.toString());
+        return;
       }
 
-      // Request confirmation for port change
-      await handlePortChangeRequest(service, currentPort, newPort);
-    }
-  });
+      // Store pending change for later
+      pendingPortChange.value = {
+        serviceName: service.name,
+        serviceDescription: service.description,
+        oldPort: currentPort,
+        newPort: newPort,
+      };
+
+      // Check if we need to show the one-time warning first
+      if (!hasShownPortWarning.value) {
+        showInitialWarning.value = true;
+      } else {
+        // If warning has already been shown, go directly to confirmation dialog
+        showConfirmDialog.value = true;
+      }
+    },
+  );
+
+  // Handle port input blur event
+  const handlePortBlur$ = $(
+    async (event: FocusEvent, service: ServiceItem, currentPort: number) => {
+      const target = event.target as HTMLInputElement;
+      const newPortStr = target.value;
+      const newPort = parseInt(newPortStr);
+
+      // Validate the input
+      if (isNaN(newPort) || newPort < 1 || newPort > 65535) {
+        // Reset invalid input to current port
+        updateTempPortValue(service.name, currentPort.toString());
+        return;
+      }
+
+      // Check if the port actually changed
+      if (newPort !== currentPort) {
+        // Initialize services if they don't exist
+        if (!ctx.state.ExtraConfig.services) {
+          ctx.state.ExtraConfig.services = {
+            api: { type: "Local" as ServiceType, port: 8728 },
+            apissl: { type: "Local" as ServiceType, port: 8729 },
+            ftp: { type: "Local" as ServiceType, port: 21 },
+            ssh: { type: "Local" as ServiceType, port: 22 },
+            telnet: { type: "Local" as ServiceType, port: 23 },
+            winbox: { type: "Enable" as ServiceType, port: 8291 },
+            web: { type: "Local" as ServiceType, port: 80 },
+            webssl: { type: "Local" as ServiceType, port: 443 },
+          };
+        }
+
+        // Request confirmation for port change
+        await handlePortChangeRequest(service, currentPort, newPort);
+      }
+    },
+  );
 
   // Apply the confirmed port change
   const applyPortChange = $(() => {
@@ -303,9 +310,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     const { serviceName, newPort } = pendingPortChange.value;
     const currentService = ctx.state.ExtraConfig.services[serviceName];
     const type =
-      typeof currentService === "string"
-        ? currentService
-        : currentService.type;
+      typeof currentService === "string" ? currentService : currentService.type;
 
     // Mutate the existing proxy directly (Qwik best practice)
     ctx.state.ExtraConfig.services[serviceName] = {
@@ -316,7 +321,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     // Update temp value to match confirmed change
     tempPortValues.value = {
       ...tempPortValues.value,
-      [serviceName]: newPort.toString()
+      [serviceName]: newPort.toString(),
     };
 
     // Clear pending state and close dialog
@@ -331,7 +336,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
       const { serviceName, oldPort } = pendingPortChange.value;
       tempPortValues.value = {
         ...tempPortValues.value,
-        [serviceName]: oldPort.toString()
+        [serviceName]: oldPort.toString(),
       };
     }
 
@@ -367,7 +372,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
       const { serviceName, oldPort } = pendingPortChange.value;
       tempPortValues.value = {
         ...tempPortValues.value,
-        [serviceName]: oldPort.toString()
+        [serviceName]: oldPort.toString(),
       };
     }
 
@@ -478,11 +483,12 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           <span class="font-medium text-text dark:text-text-dark-default">
                             {service.name}
                           </span>
-                          {service.name === "ssh" && isSSHVPNServerEnabled.value && (
-                            <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                              {$localize`Required by VPN Server`}
-                            </span>
-                          )}
+                          {service.name === "ssh" &&
+                            isSSHVPNServerEnabled.value && (
+                              <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                                {$localize`Required by VPN Server`}
+                              </span>
+                            )}
                         </div>
                       </td>
                       <td class="text-text-secondary dark:text-text-dark-secondary px-6 py-4">
@@ -543,7 +549,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                     ? service.defaultPort
                                     : currentService.port ||
                                       service.defaultPort;
-                                
+
                                 // Mutate the existing proxy directly (Qwik best practice)
                                 ctx.state.ExtraConfig.services[service.name] = {
                                   type: value as ServiceType,
@@ -552,7 +558,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                               }
                             }}
                             clearable={false}
-                            disabled={service.name === "ssh" && isSSHVPNServerEnabled.value}
+                            disabled={
+                              service.name === "ssh" &&
+                              isSSHVPNServerEnabled.value
+                            }
                             class="w-full"
                             size="sm"
                           />
@@ -563,11 +572,16 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           type="number"
                           min={1}
                           max={65535}
-                          value={getCurrentPortValue(service.name, service.defaultPort)}
+                          value={getCurrentPortValue(
+                            service.name,
+                            service.defaultPort,
+                          )}
                           onInput$={(event: Event, value: string) => {
                             updateTempPortValue(service.name, value);
                           }}
-                          onBlur$={(event: FocusEvent) => handlePortBlur$(event, service, currentPort)}
+                          onBlur$={(event: FocusEvent) =>
+                            handlePortBlur$(event, service, currentPort)
+                          }
                           class="w-20"
                           size="sm"
                         />
@@ -664,7 +678,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 </div>
               </div>
             </div>
-            <div class="space-y-2 text-text-secondary dark:text-text-dark-secondary">
+            <div class="text-text-secondary dark:text-text-dark-secondary space-y-2">
               <p class="text-sm">
                 {$localize`This warning will only appear once. Please take note of:`}
               </p>
@@ -746,7 +760,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 </span>
                 :
               </p>
-              <div class="rounded-lg border border-border bg-surface-secondary p-4 dark:border-border-dark dark:bg-surface-dark-secondary">
+              <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-lg border border-border p-4 dark:border-border-dark">
                 <div class="space-y-2">
                   <div class="flex justify-between">
                     <span class="text-text-secondary dark:text-text-dark-secondary">
@@ -785,8 +799,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 )}
               {(pendingPortChange.value.serviceName === "web" ||
                 pendingPortChange.value.serviceName === "webssl") &&
-                (pendingPortChange.value.newPort !== 80 &&
-                  pendingPortChange.value.newPort !== 443) && (
+                pendingPortChange.value.newPort !== 80 &&
+                pendingPortChange.value.newPort !== 443 && (
                   <div class="rounded-md bg-info-50 p-3 dark:bg-info-900/20">
                     <p class="text-sm text-info-700 dark:text-info-400">
                       <strong>{$localize`Note`}:</strong>{" "}

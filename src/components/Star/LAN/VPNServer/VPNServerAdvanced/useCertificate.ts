@@ -3,10 +3,15 @@ import { StarContext } from "../../../StarContext/StarContext";
 
 export const useCertificate = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   // Initialize certificate passphrase from StarContext
-  const certificatePassphrase = useSignal(vpnServerState.CertificatePassphrase || "");
+  const certificatePassphrase = useSignal(
+    vpnServerState.CertificatePassphrase || "",
+  );
   const showPassphrase = useSignal(false);
   const passphraseError = useSignal("");
 
@@ -43,4 +48,3 @@ export const useCertificate = () => {
     validatePassphrase,
   };
 };
-

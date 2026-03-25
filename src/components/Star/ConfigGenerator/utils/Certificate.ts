@@ -1705,10 +1705,7 @@ export const PublicCert = (): RouterConfig => {
 
     // Create CRL download scheduler
     const crlDownloadContent: RouterConfig = {
-        "": [
-            ":delay 120s",
-            "/certificate crl download"
-        ]
+        "": [":delay 120s", "/certificate crl download"],
     };
 
     const crlScheduler = SchedulerGenerator({
@@ -2274,8 +2271,6 @@ export const ExportCert = (
             `:put "=== Certificate Export Process Complete ===";`,
         ],
     };
-
-    
 
     // Use OneTimeScript to create the script
     return OneTimeScript({

@@ -77,7 +77,7 @@ export const TabNavigation = component$<TabNavigationProps>(
       track(() => activeTab);
       if (containerRef.value) {
         const activeElement = containerRef.value.querySelector(
-          `[aria-selected="true"]`
+          `[aria-selected="true"]`,
         ) as HTMLElement;
         if (activeElement) {
           activeElement.scrollIntoView({
@@ -117,8 +117,8 @@ export const TabNavigation = component$<TabNavigationProps>(
         <div
           ref={containerRef}
           class="
-            overflow-x-hidden
             touch-pan-x
+            overflow-x-hidden
             mobile:-mx-4 mobile:px-4
             tablet:-mx-2 tablet:px-2
           "

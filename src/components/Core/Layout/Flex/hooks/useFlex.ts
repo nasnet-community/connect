@@ -40,21 +40,23 @@ export function useFlex(props: FlexProps) {
     if (typeof document !== "undefined") {
       const dir = document.documentElement.dir || document.dir;
       isRtl.value = dir === "rtl";
-      
+
       // Detect mobile device
       const userAgent = navigator.userAgent.toLowerCase();
-      const mobileKeywords = ['android', 'iphone', 'ipad', 'mobile', 'tablet'];
-      isMobile.value = mobileKeywords.some(keyword => userAgent.includes(keyword));
-      
+      const mobileKeywords = ["android", "iphone", "ipad", "mobile", "tablet"];
+      isMobile.value = mobileKeywords.some((keyword) =>
+        userAgent.includes(keyword),
+      );
+
       // Check container query support
-      isContainerQuery.value = 'container' in document.documentElement.style;
+      isContainerQuery.value = "container" in document.documentElement.style;
     }
   });
 
   // Helper function to generate responsive classes with mobile-first approach
   const generateResponsiveClasses = <T>(
     value: T | ResponsiveValue<T> | undefined,
-    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>
+    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>,
   ): Record<string, boolean> => {
     if (value === undefined) return {};
 
@@ -66,14 +68,17 @@ export function useFlex(props: FlexProps) {
       if (responsiveValue.base !== undefined) {
         classes = { ...classes, ...classGenerator(responsiveValue.base) };
       }
-      
+
       // Apply responsive breakpoints
-      const breakpoints = ['sm', 'md', 'lg', 'xl', '2xl'] as const;
-      breakpoints.forEach(bp => {
+      const breakpoints = ["sm", "md", "lg", "xl", "2xl"] as const;
+      breakpoints.forEach((bp) => {
         if (responsiveValue[bp] !== undefined) {
           const bpClasses = classGenerator(responsiveValue[bp]!, bp);
           const prefixedClasses = Object.fromEntries(
-            Object.entries(bpClasses).map(([key, val]) => [`${bp}:${key}`, val])
+            Object.entries(bpClasses).map(([key, val]) => [
+              `${bp}:${key}`,
+              val,
+            ]),
           );
           classes = { ...classes, ...prefixedClasses };
         }
@@ -86,9 +91,12 @@ export function useFlex(props: FlexProps) {
   };
 
   // Enhanced gap class generator with mobile-specific options
-  const generateGapClasses = (gapValue: FlexProps["gap"], prefix: string = ""): Record<string, boolean> => {
+  const generateGapClasses = (
+    gapValue: FlexProps["gap"],
+    prefix: string = "",
+  ): Record<string, boolean> => {
     const prefixStr = prefix ? `${prefix}-` : "";
-    
+
     return generateResponsiveClasses(gapValue, (gap: string) => {
       const baseClasses = {
         [`${prefixStr}gap-0`]: gap === "none",
@@ -114,12 +122,15 @@ export function useFlex(props: FlexProps) {
   };
 
   // Direction classes with RTL support
-  const directionClasses = generateResponsiveClasses(direction, (dir: string) => ({
-    "flex-row": dir === "row",
-    "flex-col": dir === "column",
-    "flex-row-reverse": dir === "row-reverse",
-    "flex-col-reverse": dir === "column-reverse",
-  }));
+  const directionClasses = generateResponsiveClasses(
+    direction,
+    (dir: string) => ({
+      "flex-row": dir === "row",
+      "flex-col": dir === "column",
+      "flex-row-reverse": dir === "row-reverse",
+      "flex-col-reverse": dir === "column-reverse",
+    }),
+  );
 
   // Wrap classes with mobile behavior
   const wrapClasses = generateResponsiveClasses(wrap, (w: string) => {
@@ -131,30 +142,30 @@ export function useFlex(props: FlexProps) {
 
     // Apply mobile behavior overrides
     if (mobileBehavior === "stack" && isMobile.value) {
-      return { 
-        "flex-col": true, 
+      return {
+        "flex-col": true,
         "flex-wrap": false,
         "flex-nowrap": false,
         "flex-wrap-reverse": false,
-        "overflow-x-auto": false
+        "overflow-x-auto": false,
       };
     }
     if (mobileBehavior === "scroll" && isMobile.value) {
-      return { 
-        "flex-nowrap": true, 
+      return {
+        "flex-nowrap": true,
         "overflow-x-auto": true,
         "flex-col": false,
         "flex-wrap": false,
-        "flex-wrap-reverse": false
+        "flex-wrap-reverse": false,
       };
     }
     if (mobileBehavior === "wrap" && isMobile.value) {
-      return { 
+      return {
         "flex-wrap": true,
         "flex-nowrap": false,
         "flex-wrap-reverse": false,
         "flex-col": false,
-        "overflow-x-auto": false
+        "overflow-x-auto": false,
       };
     }
 
@@ -181,14 +192,17 @@ export function useFlex(props: FlexProps) {
   }));
 
   // Align content classes
-  const alignContentClasses = generateResponsiveClasses(alignContent, (ac: string) => ({
-    "content-start": ac === "start",
-    "content-center": ac === "center",
-    "content-end": ac === "end",
-    "content-between": ac === "between",
-    "content-around": ac === "around",
-    "content-stretch": ac === "stretch",
-  }));
+  const alignContentClasses = generateResponsiveClasses(
+    alignContent,
+    (ac: string) => ({
+      "content-start": ac === "start",
+      "content-center": ac === "center",
+      "content-end": ac === "end",
+      "content-between": ac === "between",
+      "content-around": ac === "around",
+      "content-stretch": ac === "stretch",
+    }),
+  );
 
   // Gap classes
   const gapClasses = {
@@ -210,7 +224,8 @@ export function useFlex(props: FlexProps) {
   // Container query classes
   const containerClasses = {
     "@container": containerQuery && isContainerQuery.value,
-    [`@container/${containerBreakpoint}`]: containerQuery && isContainerQuery.value,
+    [`@container/${containerBreakpoint}`]:
+      containerQuery && isContainerQuery.value,
   };
 
   // Mobile safe area classes
@@ -225,8 +240,9 @@ export function useFlex(props: FlexProps) {
   const rtlClasses = (() => {
     if (!supportRtl || !isRtl.value) return {};
 
-    const baseDirection = typeof direction === "object" ? direction.base : direction;
-    
+    const baseDirection =
+      typeof direction === "object" ? direction.base : direction;
+
     // RTL direction adjustments
     if (baseDirection === "row") {
       return { "rtl:flex-row-reverse": true };
@@ -234,7 +250,7 @@ export function useFlex(props: FlexProps) {
     if (baseDirection === "row-reverse") {
       return { "rtl:flex-row": true };
     }
-    
+
     return {};
   })();
 
@@ -259,7 +275,7 @@ export function useFlex(props: FlexProps) {
   // Mobile behavior classes
   const mobileClasses = (() => {
     if (!isMobile.value) return {};
-    
+
     switch (mobileBehavior) {
       case "scroll":
         return {
@@ -285,7 +301,7 @@ export function useFlex(props: FlexProps) {
   const baseClasses = {
     // Base flex
     flex: true,
-    
+
     // Layout classes
     ...directionClasses,
     ...wrapClasses,
@@ -293,12 +309,12 @@ export function useFlex(props: FlexProps) {
     ...alignClasses,
     ...alignContentClasses,
     ...gapClasses,
-    
+
     // Mobile & Touch
     ...touchClasses,
     ...safeAreaClasses,
     ...mobileClasses,
-    
+
     // Advanced features
     ...containerClasses,
     ...rtlClasses,
@@ -308,11 +324,11 @@ export function useFlex(props: FlexProps) {
 
   // Filter out undefined values and ensure all values are boolean
   const allClasses: Record<string, boolean> = Object.fromEntries(
-    Object.entries(baseClasses).filter(([, value]) => value !== undefined)
+    Object.entries(baseClasses).filter(([, value]) => value !== undefined),
   ) as Record<string, boolean>;
 
   // Performance optimization: filter classes efficiently
-  const classNames = optimize 
+  const classNames = optimize
     ? Object.entries(allClasses)
         .filter(([, value]) => value)
         .map(([className]) => className)
@@ -329,11 +345,11 @@ export function useFlex(props: FlexProps) {
 
   // CSS custom properties for advanced features
   const styleProperties: Record<string, string> = {};
-  
+
   if (containerQuery && isContainerQuery.value) {
     styleProperties.containerType = "inline-size";
   }
-  
+
   if (mobileBehavior === "scroll") {
     styleProperties.WebkitOverflowScrolling = "touch";
   }
@@ -345,18 +361,20 @@ export function useFlex(props: FlexProps) {
     isMobile: isMobile.value,
     isRtl: isRtl.value,
     supportsContainerQueries: isContainerQuery.value,
-    
+
     // Development debugging
-    ...(process.env.NODE_ENV === 'development' && {
+    ...(process.env.NODE_ENV === "development" && {
       debug: {
-        generatedClasses: Object.keys(allClasses).filter(key => allClasses[key]),
+        generatedClasses: Object.keys(allClasses).filter(
+          (key) => allClasses[key],
+        ),
         userClasses: props.class,
         mobileBehavior,
         touchMode,
         isMobile: isMobile.value,
         isRtl: isRtl.value,
         containerQuery,
-      }
-    })
+      },
+    }),
   };
 }

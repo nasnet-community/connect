@@ -66,14 +66,14 @@ export const UserCredential = component$<UserCredentialProps>(
 
     // Calculate enabled protocols for Select All functionality
     const enabledProtocolsList = VPN_PROTOCOLS.filter(
-      (protocol) => enabledProtocols && enabledProtocols[protocol.id]
+      (protocol) => enabledProtocols && enabledProtocols[protocol.id],
     ).map((p) => p.id);
 
     // Check if all enabled protocols are selected
     const allProtocolsSelected =
       enabledProtocolsList.length > 0 &&
       enabledProtocolsList.every((protocol) =>
-        (user.VPNType || []).includes(protocol)
+        (user.VPNType || []).includes(protocol),
       );
 
     // Handle Select All / Deselect All
@@ -189,7 +189,6 @@ export const UserCredential = component$<UserCredentialProps>(
             </Field>
           </div>
 
-
           {/* Allowed VPN Protocols - Only show in Advanced mode */}
           {!isEasyMode && (
             <Field
@@ -260,15 +259,15 @@ export const UserCredential = component$<UserCredentialProps>(
                     return null;
                   }
 
-                const isSelected = (user.VPNType || []).includes(protocol.id);
+                  const isSelected = (user.VPNType || []).includes(protocol.id);
 
-                return (
-                  <div
-                    key={protocol.id}
-                    onClick$={async () =>
-                      await handleProtocolToggle(protocol.id)
-                    }
-                    class={`
+                  return (
+                    <div
+                      key={protocol.id}
+                      onClick$={async () =>
+                        await handleProtocolToggle(protocol.id)
+                      }
+                      class={`
                       relative cursor-pointer rounded-lg border transition-all hover:shadow-md
                       ${
                         isSelected
@@ -276,52 +275,52 @@ export const UserCredential = component$<UserCredentialProps>(
                           : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
                       }
                     `}
-                  >
-                    {/* Selected indicator */}
-                    {isSelected && (
-                      <div class="absolute -right-1 -top-1 rounded-full bg-primary-500 p-0.5 shadow-sm dark:bg-primary-600">
-                        <HiCheckCircleOutline class="h-3 w-3 text-white" />
-                      </div>
-                    )}
+                    >
+                      {/* Selected indicator */}
+                      {isSelected && (
+                        <div class="absolute -right-1 -top-1 rounded-full bg-primary-500 p-0.5 shadow-sm dark:bg-primary-600">
+                          <HiCheckCircleOutline class="h-3 w-3 text-white" />
+                        </div>
+                      )}
 
-                    <div class="flex flex-col items-center gap-1 p-2">
-                      {/* Protocol logo */}
-                      <img
-                        src={protocol.logo}
-                        alt={protocol.name}
-                        class={`h-6 w-6 ${
-                          isSelected
-                            ? "dark:brightness-[1.1] dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.3)] dark:hue-rotate-[180deg] dark:invert dark:saturate-[5] dark:sepia dark:filter"
-                            : "dark:opacity-80 dark:brightness-75 dark:hue-rotate-[180deg] dark:invert dark:saturate-[2] dark:sepia dark:filter"
-                        }`}
-                        onError$={(e) => {
-                          const target = e.target as HTMLInputElement;
-                          target.style.display = "none";
+                      <div class="flex flex-col items-center gap-1 p-2">
+                        {/* Protocol logo */}
+                        <img
+                          src={protocol.logo}
+                          alt={protocol.name}
+                          class={`h-6 w-6 ${
+                            isSelected
+                              ? "dark:brightness-[1.1] dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.3)] dark:hue-rotate-[180deg] dark:invert dark:saturate-[5] dark:sepia dark:filter"
+                              : "dark:opacity-80 dark:brightness-75 dark:hue-rotate-[180deg] dark:invert dark:saturate-[2] dark:sepia dark:filter"
+                          }`}
+                          onError$={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            target.style.display = "none";
+                          }}
+                        />
+
+                        {/* Protocol name */}
+                        <span
+                          class={`text-center text-xs font-medium ${
+                            isSelected
+                              ? "text-primary-700 dark:text-primary-300"
+                              : "text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {protocol.name}
+                        </span>
+                      </div>
+
+                      {/* Hidden checkbox for accessibility */}
+                      <Checkbox
+                        class="sr-only"
+                        checked={isSelected}
+                        onChange$={async () => {
+                          await handleProtocolToggle(protocol.id);
                         }}
                       />
-
-                      {/* Protocol name */}
-                      <span
-                        class={`text-center text-xs font-medium ${
-                          isSelected
-                            ? "text-primary-700 dark:text-primary-300"
-                            : "text-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        {protocol.name}
-                      </span>
                     </div>
-
-                    {/* Hidden checkbox for accessibility */}
-                    <Checkbox
-                      class="sr-only"
-                      checked={isSelected}
-                      onChange$={async () => {
-                        await handleProtocolToggle(protocol.id);
-                      }}
-                    />
-                  </div>
-                );
+                  );
                 })}
               </div>
             </Field>

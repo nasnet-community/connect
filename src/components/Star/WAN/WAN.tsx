@@ -34,7 +34,6 @@ const VPNClientStep = component$((props: StepProps) => (
 //   <DNS isComplete={props.isComplete} onComplete$={props.onComplete$} />
 // ));
 
-
 export const WAN = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;

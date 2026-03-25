@@ -97,7 +97,10 @@ export function useSwipeGestures({
     swipeState.deltaX = touch.clientX - swipeState.startX;
     swipeState.deltaY = touch.clientY - swipeState.startY;
 
-    const direction = await getSwipeDirection$(swipeState.deltaX, swipeState.deltaY);
+    const direction = await getSwipeDirection$(
+      swipeState.deltaX,
+      swipeState.deltaY,
+    );
     swipeState.direction = direction;
 
     // Prevent default scrolling if swiping in the direction to close
@@ -136,7 +139,7 @@ export function useSwipeGestures({
 
     if (
       swipeState.direction &&
-      await shouldAllowSwipe$(swipeState.direction) &&
+      (await shouldAllowSwipe$(swipeState.direction)) &&
       (thresholdMet || velocityMet)
     ) {
       if (onClose$) {

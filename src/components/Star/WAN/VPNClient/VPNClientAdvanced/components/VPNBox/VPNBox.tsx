@@ -32,10 +32,13 @@ export const VPNBox = component$<VPNBoxProps>(
     // Get validation errors for this VPN
     const vpnErrors = Object.keys(validationErrors)
       .filter((key) => key.startsWith(`vpn-${vpn.id}`))
-      .reduce((acc, key) => {
-        acc[key] = validationErrors[key];
-        return acc;
-      }, {} as Record<string, string[]>);
+      .reduce(
+        (acc, key) => {
+          acc[key] = validationErrors[key];
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      );
 
     const hasErrors = Object.keys(vpnErrors).length > 0;
 
@@ -74,8 +77,10 @@ export const VPNBox = component$<VPNBoxProps>(
         class={[
           "group relative rounded-xl border transition-all duration-200",
           {
-            "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20": hasErrors,
-            "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600": !hasErrors,
+            "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20":
+              hasErrors,
+            "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600":
+              !hasErrors,
           },
         ]}
       >
@@ -121,11 +126,16 @@ export const VPNBox = component$<VPNBoxProps>(
                   {$localize`Configuration Issues`}
                 </p>
                 <div class="mt-1 space-y-1">
-                  {Object.values(vpnErrors).flat().map((error, errorIndex) => (
-                    <p key={errorIndex} class="text-sm text-red-700 dark:text-red-300">
-                      • {error}
-                    </p>
-                  ))}
+                  {Object.values(vpnErrors)
+                    .flat()
+                    .map((error, errorIndex) => (
+                      <p
+                        key={errorIndex}
+                        class="text-sm text-red-700 dark:text-red-300"
+                      >
+                        • {error}
+                      </p>
+                    ))}
                 </div>
               </div>
             </div>
@@ -133,5 +143,5 @@ export const VPNBox = component$<VPNBoxProps>(
         )}
       </div>
     );
-  }
+  },
 );

@@ -44,6 +44,7 @@ export default component$(() => {
 ## Layout Variants
 
 ### Responsive (Default)
+
 Automatically adapts to screen size - vertical on mobile, horizontal on desktop.
 
 ```tsx
@@ -51,6 +52,7 @@ Automatically adapts to screen size - vertical on mobile, horizontal on desktop.
 ```
 
 ### Vertical
+
 Logo and content stacked vertically. Perfect for sidebars and narrow spaces.
 
 ```tsx
@@ -58,6 +60,7 @@ Logo and content stacked vertically. Perfect for sidebars and narrow spaces.
 ```
 
 ### Horizontal
+
 Logo and content side-by-side. Ideal for headers and wide content areas.
 
 ```tsx
@@ -67,26 +70,23 @@ Logo and content side-by-side. Ideal for headers and wide content areas.
 ## Themes and Styling
 
 ### Brand Theme (Default)
+
 Uses your primary and secondary brand colors.
 
 ```tsx
-<Newsletter
-  themeColors={true}
-  theme="branded"
-/>
+<Newsletter themeColors={true} theme="branded" />
 ```
 
 ### Glassmorphism Effect
+
 Modern glass-like appearance with backdrop blur.
 
 ```tsx
-<Newsletter
-  glassmorphism={true}
-  theme="glass"
-/>
+<Newsletter glassmorphism={true} theme="glass" />
 ```
 
 ### Custom Styling
+
 ```tsx
 <Newsletter
   theme="dark"
@@ -99,12 +99,14 @@ Modern glass-like appearance with backdrop blur.
 ## Device Optimization
 
 ### Mobile Features
+
 - Touch-optimized input fields (44px minimum height)
 - Large tap targets for buttons
 - Optimized spacing and typography
 - Vertical layout on small screens
 
 ### Tablet & Desktop
+
 - Horizontal layouts where appropriate
 - Enhanced visual hierarchy
 - Hover effects and animations
@@ -125,19 +127,26 @@ The component automatically adapts to text direction using logical CSS propertie
 ## Size Variants
 
 ```tsx
-{/* Compact for tight spaces */}
-<Newsletter size="sm" compact={true} />
+{
+  /* Compact for tight spaces */
+}
+<Newsletter size="sm" compact={true} />;
 
-{/* Standard size */}
-<Newsletter size="md" />
+{
+  /* Standard size */
+}
+<Newsletter size="md" />;
 
-{/* Large for hero sections */}
-<Newsletter size="lg" />
+{
+  /* Large for hero sections */
+}
+<Newsletter size="lg" />;
 ```
 
 ## Advanced Features
 
 ### Custom Content
+
 ```tsx
 <Newsletter
   title="Router Security Updates"
@@ -149,6 +158,7 @@ The component automatically adapts to text direction using logical CSS propertie
 ```
 
 ### External State Control
+
 ```tsx
 export default component$(() => {
   const isLoading = useSignal(false);
@@ -167,6 +177,7 @@ export default component$(() => {
 ```
 
 ### Without Logo
+
 ```tsx
 <Newsletter
   showLogo={false}
@@ -179,28 +190,28 @@ export default component$(() => {
 
 ### NewsletterProps
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'vertical' \| 'horizontal' \| 'responsive'` | `'responsive'` | Layout variant |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Component size |
-| `title` | `string` | `'Stay Connected'` | Newsletter title |
-| `description` | `string` | `'Subscribe to get...'` | Description text |
-| `placeholder` | `string` | `'Enter your email...'` | Input placeholder |
-| `buttonText` | `string` | `'Subscribe'` | Button text |
-| `onSubscribe$` | `QRL<(subscription) => Promise<void>>` | - | Subscription handler |
-| `showLogo` | `boolean` | `true` | Show NASNET logo |
-| `glassmorphism` | `boolean` | `false` | Enable glassmorphism |
-| `themeColors` | `boolean` | `true` | Use theme colors |
-| `theme` | `'light' \| 'dark' \| 'glass' \| 'branded'` | `'branded'` | Theme variant |
-| `disabled` | `boolean` | `false` | Disable component |
-| `showPrivacyNotice` | `boolean` | `true` | Show privacy notice |
-| `loading` | `boolean` | - | External loading state |
-| `success` | `boolean` | - | External success state |
-| `error` | `string` | - | External error message |
-| `touchOptimized` | `boolean` | `true` | Touch-friendly sizing |
-| `compact` | `boolean` | `false` | Reduced padding |
-| `fullWidth` | `boolean` | `false` | Full container width |
-| `animated` | `boolean` | `true` | Enable animations |
+| Prop                | Type                                         | Default                 | Description            |
+| ------------------- | -------------------------------------------- | ----------------------- | ---------------------- |
+| `variant`           | `'vertical' \| 'horizontal' \| 'responsive'` | `'responsive'`          | Layout variant         |
+| `size`              | `'sm' \| 'md' \| 'lg'`                       | `'md'`                  | Component size         |
+| `title`             | `string`                                     | `'Stay Connected'`      | Newsletter title       |
+| `description`       | `string`                                     | `'Subscribe to get...'` | Description text       |
+| `placeholder`       | `string`                                     | `'Enter your email...'` | Input placeholder      |
+| `buttonText`        | `string`                                     | `'Subscribe'`           | Button text            |
+| `onSubscribe$`      | `QRL<(subscription) => Promise<void>>`       | -                       | Subscription handler   |
+| `showLogo`          | `boolean`                                    | `true`                  | Show NASNET logo       |
+| `glassmorphism`     | `boolean`                                    | `false`                 | Enable glassmorphism   |
+| `themeColors`       | `boolean`                                    | `true`                  | Use theme colors       |
+| `theme`             | `'light' \| 'dark' \| 'glass' \| 'branded'`  | `'branded'`             | Theme variant          |
+| `disabled`          | `boolean`                                    | `false`                 | Disable component      |
+| `showPrivacyNotice` | `boolean`                                    | `true`                  | Show privacy notice    |
+| `loading`           | `boolean`                                    | -                       | External loading state |
+| `success`           | `boolean`                                    | -                       | External success state |
+| `error`             | `string`                                     | -                       | External error message |
+| `touchOptimized`    | `boolean`                                    | `true`                  | Touch-friendly sizing  |
+| `compact`           | `boolean`                                    | `false`                 | Reduced padding        |
+| `fullWidth`         | `boolean`                                    | `false`                 | Full container width   |
+| `animated`          | `boolean`                                    | `true`                  | Enable animations      |
 
 ### NewsletterSubscription
 

@@ -1,4 +1,9 @@
-import type { PptpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import type {
+    PptpServerConfig,
+    SubnetConfig,
+    VSCredentials,
+    VSNetwork,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
     CommandShortner,
@@ -11,8 +16,11 @@ import {
     SubnetToRange,
 } from "~/components/Star/ConfigGenerator";
 
-
-export const PptpServer = (config: PptpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
+export const PptpServer = (
+    config: PptpServerConfig,
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
@@ -36,7 +44,11 @@ export const PptpServer = (config: PptpServerConfig, vsNetwork: VSNetwork, subne
 
     // Generate IP pool for PPTP clients
     routerConfig["/ip pool"].push(
-        ...generateIPPool({ name, ranges, comment: `PPTP ${name} client pool` })
+        ...generateIPPool({
+            name,
+            ranges,
+            comment: `PPTP ${name} client pool`,
+        }),
     );
 
     // Create PPP profile using shared helper (profile name: `${name}-profile`)
@@ -46,7 +58,11 @@ export const PptpServer = (config: PptpServerConfig, vsNetwork: VSNetwork, subne
     });
 
     // Add VPN subnet to address list using shared helper
-    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} PPTP subnet`);
+    const addrCfg = VSAddressList(
+        subnet,
+        String(vsNetwork),
+        `${name} PPTP subnet`,
+    );
     Object.entries(addrCfg).forEach(([section, cmds]) => {
         routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
     });
@@ -83,7 +99,10 @@ export const PptpServer = (config: PptpServerConfig, vsNetwork: VSNetwork, subne
     return CommandShortner(routerConfig);
 };
 
-export const PptpServerUsers = (serverConfig: PptpServerConfig, users: VSCredentials[]): RouterConfig => {
+export const PptpServerUsers = (
+    serverConfig: PptpServerConfig,
+    users: VSCredentials[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
@@ -112,7 +131,10 @@ export const PptpServerUsers = (serverConfig: PptpServerConfig, users: VSCredent
     return CommandShortner(config);
 };
 
-export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
+export const PPTPVSBinding = (
+    credentials: VSCredentials[],
+    VSNetwork: VSNetwork,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface pptp-server": [],
         "/interface list member": [],
@@ -178,11 +200,11 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
         createdInterfaces.forEach((interfaceName) => {
             // Use VSInterfaceList helper to add interface to proper lists
             const interfaceListCfg = VSInterfaceList(
-                interfaceName, 
-                String(VSNetwork), 
-                `VPN binding interface for ${interfaceName}`
+                interfaceName,
+                String(VSNetwork),
+                `VPN binding interface for ${interfaceName}`,
             );
-            
+
             // Merge the interface list configuration
             Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
                 config[section] = (config[section] ?? []).concat(cmds);
@@ -205,7 +227,9 @@ export const PPTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     return config;
 };
 
-export const PPTPServerFirewall = (serverConfigs: PptpServerConfig[]): RouterConfig => {
+export const PPTPServerFirewall = (
+    serverConfigs: PptpServerConfig[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -224,9 +248,13 @@ export const PPTPServerFirewall = (serverConfigs: PptpServerConfig[]): RouterCon
     });
 
     return config;
-}
+};
 
-export const PptpServerWrapper = (serverConfig: PptpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig): RouterConfig => {
+export const PptpServerWrapper = (
+    serverConfig: PptpServerConfig,
+    users: VSCredentials[] = [],
+    subnetConfig?: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Get VSNetwork from server config or default to "VPN"
@@ -265,16 +293,11 @@ export const PptpServerWrapper = (serverConfig: PptpServerConfig, users: VSCrede
     return CommandShortner(finalConfig);
 };
 
-
-
-
-
-    // // Check for PPTP Server
-    // if (vpnServer.PptpServer) {
-    //     config["/ip firewall mangle"].push(
-    //         `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
-    //             connection-state=new in-interface-list=${interfaceList} protocol=tcp dst-port=1723 \\
-    //             new-connection-mark=conn-vpn-server passthrough=yes`,
-    //     );
-    // }
-
+// // Check for PPTP Server
+// if (vpnServer.PptpServer) {
+//     config["/ip firewall mangle"].push(
+//         `add action=mark-connection chain=input comment="Mark Inbound PPTP Connections" \\
+//             connection-state=new in-interface-list=${interfaceList} protocol=tcp dst-port=1723 \\
+//             new-connection-mark=conn-vpn-server passthrough=yes`,
+//     );
+// }

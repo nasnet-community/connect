@@ -16,8 +16,8 @@ export * from "./VisuallyHidden";
 // ====================
 
 // Most commonly used utilities (for easier imports)
-export { 
-  classNames, 
+export {
+  classNames,
   cn,
   generateId,
   debounce,

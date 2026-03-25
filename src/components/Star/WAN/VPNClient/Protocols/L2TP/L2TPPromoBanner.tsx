@@ -54,7 +54,7 @@ export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
               {/* Promotional Text and Feature List */}
               <div>
                 <div class="flex items-center">
-                  <h3 class="text-text-default text-lg font-bold sm:text-xl dark:text-text-dark-default">
+                  <h3 class="text-text-default text-lg font-bold dark:text-text-dark-default sm:text-xl">
                     FREE Hyper Speed VPN Until February 2026! Powered by Nasnet
                     Connect
                   </h3>

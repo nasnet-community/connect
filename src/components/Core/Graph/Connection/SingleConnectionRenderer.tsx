@@ -11,7 +11,6 @@ export const SingleConnectionRenderer = component$<{
 }>((props) => {
   const { connection, fromNode, toNode } = props;
 
-
   const id = connection.id || `${connection.from}-${connection.to}`;
   const color = connection.color || "rgb(251 191 36)"; // Default: amber-400
   const width = connection.width || 2.5;
@@ -37,7 +36,7 @@ export const SingleConnectionRenderer = component$<{
   const y1 = fromNode.y;
   const x2 = toNode.x - 16;
   const y2 = toNode.y;
-  
+
   // Calculate arrow points based on direction
   let arrowPoints = "";
   if (y1 === y2) {
@@ -54,7 +53,7 @@ export const SingleConnectionRenderer = component$<{
   // Calculate midpoint for label positioning
   const midX = (fromNode.x + toNode.x) / 2;
   const midY = (fromNode.y + toNode.y) / 2 - 10;
-  
+
   // Check if connection has domestic/foreign traffic type
   const domesticPacketColor = "rgb(16, 185, 129)"; // Emerald-500
   const foreignPacketColor = "rgb(168, 85, 247)"; // Purple-500
@@ -88,11 +87,7 @@ export const SingleConnectionRenderer = component$<{
 
       {/* Arrow pointing to destination node */}
       {arrowHead && arrowPoints && (
-        <polygon
-          points={arrowPoints}
-          fill={color}
-          class="traffic-path-arrow"
-        />
+        <polygon points={arrowPoints} fill={color} class="traffic-path-arrow" />
       )}
 
       {/* Animate packets if enabled with enhanced styling */}
@@ -118,7 +113,7 @@ export const SingleConnectionRenderer = component$<{
               rotate="auto"
             />
           </circle>
-          
+
           {/* Animated packet 3 (faster and smaller) - if multi-packet enabled */}
           {connection.packetColors && connection.packetColors.length > 2 && (
             <circle

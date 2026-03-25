@@ -1,4 +1,10 @@
-import { $, component$, useContext, useSignal, useTask$ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
 import {
   HiCheckCircleOutline,
   HiXCircleOutline,
@@ -10,7 +16,7 @@ import { Input } from "~/components/Core";
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
   const isEasyMode = ctx.state.Choose.Mode === "easy";
-  
+
   const routerIdentity = useSignal(
     ctx.state.ExtraConfig.RouterIdentityRomon?.RouterIdentity,
   );
@@ -18,10 +24,13 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
     ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon ?? true,
   );
   const isValid = useSignal(false);
-  
+
   // Set default Romon value to true in easy mode
   useTask$(() => {
-    if (isEasyMode && ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon === undefined) {
+    if (
+      isEasyMode &&
+      ctx.state.ExtraConfig.RouterIdentityRomon?.isRomon === undefined
+    ) {
       romonEnabled.value = true;
     }
   });

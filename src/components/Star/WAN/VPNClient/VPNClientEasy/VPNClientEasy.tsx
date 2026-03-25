@@ -140,7 +140,7 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                   value={enabled}
                   options={[
                     { value: "false", label: $localize`Disabled` },
-                    { value: "true", label: $localize`Enabled` }
+                    { value: "true", label: $localize`Enabled` },
                   ]}
                   onChange$={handleToggle$}
                   size="sm"
@@ -155,52 +155,50 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                 {/* Promotional L2TP Banner */}
                 <PromoL2TPBanner onVPNTypeChange$={handleVPNTypeChange} />
 
-            <VPNSelector
-              selectedType={vpnType.value}
-              onTypeChange$={handleVPNTypeChange}
-            />
+                <VPNSelector
+                  selectedType={vpnType.value}
+                  onTypeChange$={handleVPNTypeChange}
+                />
 
-            {/* Render protocol-specific component based on selected type */}
-            {vpnType.value === "Wireguard" && (
-              <WireguardConfig
-                onIsValidChange$={handleIsValidChange}
-              />
-            )}
+                {/* Render protocol-specific component based on selected type */}
+                {vpnType.value === "Wireguard" && (
+                  <WireguardConfig onIsValidChange$={handleIsValidChange} />
+                )}
 
-            {vpnType.value === "OpenVPN" && (
-              <OpenVPNConfig
-                onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
-              />
-            )}
+                {vpnType.value === "OpenVPN" && (
+                  <OpenVPNConfig
+                    onIsValidChange$={handleIsValidChange}
+                    isSaving={isSaving.value}
+                  />
+                )}
 
-            {vpnType.value === "L2TP" && (
-              <L2TPConfig
-                onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
-              />
-            )}
+                {vpnType.value === "L2TP" && (
+                  <L2TPConfig
+                    onIsValidChange$={handleIsValidChange}
+                    isSaving={isSaving.value}
+                  />
+                )}
 
-            {vpnType.value === "IKeV2" && (
-              <IKEv2Config
-                onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
-              />
-            )}
+                {vpnType.value === "IKeV2" && (
+                  <IKEv2Config
+                    onIsValidChange$={handleIsValidChange}
+                    isSaving={isSaving.value}
+                  />
+                )}
 
-            {vpnType.value === "PPTP" && (
-              <PPTPConfig
-                onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
-              />
-            )}
+                {vpnType.value === "PPTP" && (
+                  <PPTPConfig
+                    onIsValidChange$={handleIsValidChange}
+                    isSaving={isSaving.value}
+                  />
+                )}
 
-            {vpnType.value === "SSTP" && (
-              <SSTPConfig
-                onIsValidChange$={handleIsValidChange}
-                isSaving={isSaving.value}
-              />
-            )}
+                {vpnType.value === "SSTP" && (
+                  <SSTPConfig
+                    onIsValidChange$={handleIsValidChange}
+                    isSaving={isSaving.value}
+                  />
+                )}
 
                 <ErrorMessage message={errorMessage.value} />
 
@@ -213,9 +211,9 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
             ) : (
               <>
                 {/* Disabled state message */}
-                <div class="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 p-8 text-center">
-                  <div class="flex justify-center mb-4">
-                    <div class="rounded-full bg-gray-200 dark:bg-gray-700 p-4">
+                <div class="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800/50">
+                  <div class="mb-4 flex justify-center">
+                    <div class="rounded-full bg-gray-200 p-4 dark:bg-gray-700">
                       <svg
                         class="h-8 w-8 text-gray-400 dark:text-gray-500"
                         fill="none"
@@ -231,7 +229,7 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                       </svg>
                     </div>
                   </div>
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-gray-100">
                     {$localize`VPN Client is Disabled`}
                   </h3>
                   <p class="text-gray-600 dark:text-gray-400">

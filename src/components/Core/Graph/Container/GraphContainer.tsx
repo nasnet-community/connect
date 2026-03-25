@@ -1,4 +1,10 @@
-import { $, component$, useSignal, useVisibleTask$, Slot } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useSignal,
+  useVisibleTask$,
+  Slot,
+} from "@builder.io/qwik";
 import type { CSSProperties, GraphConfig } from "../types";
 import { GraphLegend } from "./GraphLegend";
 import { LuX } from "@qwikest/icons/lucide";
@@ -69,7 +75,8 @@ export const GraphContainer = component$<{
   return (
     <div
       class={{
-        "topology-container relative h-96 transition-all duration-500 ease-in-out": true,
+        "topology-container relative h-96 transition-all duration-500 ease-in-out":
+          true,
         expanded: isExpanded.value,
       }}
       style={graphContainerStyle as any}
@@ -78,7 +85,11 @@ export const GraphContainer = component$<{
         if (!isExpanded.value && mergedConfig.expandOnClick) handleExpand();
       }}
       onKeyDown$={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && !isExpanded.value && mergedConfig.expandOnClick) {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          !isExpanded.value &&
+          mergedConfig.expandOnClick
+        ) {
           handleExpand();
         }
         if ((e.key === "Escape" || e.key === "Esc") && isExpanded.value) {
@@ -90,47 +101,46 @@ export const GraphContainer = component$<{
       aria-label={title || "Network Graph"}
     >
       <div class="network-graph relative h-full w-full rounded-xl bg-amber-50/50 p-5 shadow-sm transition-all duration-500 ease-in-out dark:border dark:border-gray-800 dark:bg-gray-900/95">
-      {/* Graph header with title, legend, and close icon button (when expanded) */}
-      <div
-        class={`graph-header mb-4 ${isExpanded.value ? "expanded-header" : "relative items-center justify-between hidden"}`}
-      >
-        {/* Centered legend and title */}
+        {/* Graph header with title, legend, and close icon button (when expanded) */}
         <div
-          class={`legend-center flex w-full flex-col items-center ${isExpanded.value ? "absolute left-1/2 top-6 z-10 -translate-x-1/2" : ""}`}
-          style={isExpanded.value ? "pointer-events: auto;" : ""}
+          class={`graph-header mb-4 ${isExpanded.value ? "expanded-header" : "relative hidden items-center justify-between"}`}
         >
-          <span class="mb-1 text-sm font-medium text-amber-800 dark:text-secondary-300">
-            {title || "Network Graph"}
-          </span>
-          <GraphLegend
-            connections={connections}
-            customLegendItems={mergedConfig.legendItems}
-            showLegend={mergedConfig.showLegend}
-            showDomesticLegend={mergedConfig.showDomesticLegend}
-          />
-        </div>
-        {/* Close icon button - visible when expanded, top right of expanded graph */}
-        {isExpanded.value && (
-          <button
-            class="close-graph-btn absolute right-4 top-4 z-20 rounded-full bg-amber-100 p-2 text-amber-800 shadow-md hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-            onClick$={$((e) => {
-              e.stopPropagation();
-              handleCollapse();
-            })}
-            aria-label="Close expanded network graph"
-            tabIndex={0}
-            type="button"
+          {/* Centered legend and title */}
+          <div
+            class={`legend-center flex w-full flex-col items-center ${isExpanded.value ? "absolute left-1/2 top-6 z-10 -translate-x-1/2" : ""}`}
+            style={isExpanded.value ? "pointer-events: auto;" : ""}
           >
-            <LuX class="h-6 w-6" />
-          </button>
-        )}
-      </div>
+            <span class="mb-1 text-sm font-medium text-amber-800 dark:text-secondary-300">
+              {title || "Network Graph"}
+            </span>
+            <GraphLegend
+              connections={connections}
+              customLegendItems={mergedConfig.legendItems}
+              showLegend={mergedConfig.showLegend}
+              showDomesticLegend={mergedConfig.showDomesticLegend}
+            />
+          </div>
+          {/* Close icon button - visible when expanded, top right of expanded graph */}
+          {isExpanded.value && (
+            <button
+              class="close-graph-btn absolute right-4 top-4 z-20 rounded-full bg-amber-100 p-2 text-amber-800 shadow-md hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              onClick$={$((e) => {
+                e.stopPropagation();
+                handleCollapse();
+              })}
+              aria-label="Close expanded network graph"
+              tabIndex={0}
+              type="button"
+            >
+              <LuX class="h-6 w-6" />
+            </button>
+          )}
+        </div>
 
-      {/* Network topology visualization with expandable height */}
-      <div class="topology-content relative flex h-80 items-center justify-center transition-all duration-500 ease-in-out">
-        <Slot />
-      </div>
-
+        {/* Network topology visualization with expandable height */}
+        <div class="topology-content relative flex h-80 items-center justify-center transition-all duration-500 ease-in-out">
+          <Slot />
+        </div>
       </div>
 
       {/* Add CSS directly inside component */}

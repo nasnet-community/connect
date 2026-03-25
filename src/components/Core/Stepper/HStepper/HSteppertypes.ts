@@ -15,7 +15,7 @@ export interface StepItem {
   isOptional?: boolean;
   skippable?: boolean;
   validationErrors?: string[];
-  
+
   // Help system properties
   helpTitle?: string;
   helpContent?: string | JSX.Element;
@@ -31,7 +31,7 @@ export interface HStepperProps {
   onComplete$?: QRL<() => void>;
   mode?: StepperMode;
   onModeChange$?: QRL<(mode: StepperMode) => void>;
-  
+
   // Enhanced features (opt-in for backward compatibility)
   enableEnhancedFeatures?: boolean;
   allowNonLinearNavigation?: boolean;
@@ -40,10 +40,10 @@ export interface HStepperProps {
   contextValue?: any;
   isEditMode?: boolean;
   dynamicStepComponent?: any;
-  validationMode?: 'onBlur' | 'onChange' | 'onSubmit';
+  validationMode?: "onBlur" | "onChange" | "onSubmit";
   customIcons?: Record<number, any>;
   useNumbers?: boolean;
-  
+
   // Help system options
   enableHelp?: boolean;
   helpOptions?: {

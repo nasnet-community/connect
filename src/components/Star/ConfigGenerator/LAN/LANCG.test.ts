@@ -4,7 +4,10 @@ import type { StarState } from "~/components/Star/StarContext/StarContext";
 import type { EthernetInterfaceConfig } from "~/components/Star/StarContext/LANType";
 import type { RouterModeType } from "~/components/Star/StarContext/ChooseType";
 import type { Networks } from "~/components/Star/StarContext/Utils/Networks";
-import { testWithOutput, validateRouterConfig } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+} from "~/test-utils/test-helpers";
 
 describe("LANCG Module Tests", () => {
     // Mock Networks configuration for testing
@@ -89,7 +92,10 @@ describe("LANCG Module Tests", () => {
                 () => EthernetBridgePorts(etherConfigs, mockNetworksVPNOnly),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, mockNetworksVPNOnly);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                mockNetworksVPNOnly,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
 
@@ -107,7 +113,10 @@ describe("LANCG Module Tests", () => {
                 () => EthernetBridgePorts(etherConfigs, mockNetworksAllEnabled),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, mockNetworksAllEnabled);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                mockNetworksAllEnabled,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
 
@@ -143,7 +152,10 @@ describe("LANCG Module Tests", () => {
                 () => EthernetBridgePorts(etherConfigs, mockNetworksAllEnabled),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, mockNetworksAllEnabled);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                mockNetworksAllEnabled,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
 
@@ -157,10 +169,14 @@ describe("LANCG Module Tests", () => {
                 "EthernetBridgePorts",
                 "Map ForeignNetworks array to bridge names",
                 { etherConfigs, networks: mockNetworksWithForeign },
-                () => EthernetBridgePorts(etherConfigs, mockNetworksWithForeign),
+                () =>
+                    EthernetBridgePorts(etherConfigs, mockNetworksWithForeign),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, mockNetworksWithForeign);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                mockNetworksWithForeign,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
 
@@ -189,10 +205,10 @@ describe("LANCG Module Tests", () => {
 
             // Verify console.warn was called with the expected message
             expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Network "UnknownNetwork" not found')
+                expect.stringContaining('Network "UnknownNetwork" not found'),
             );
             expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining("ether2")
+                expect.stringContaining("ether2"),
             );
         });
     });
@@ -207,8 +223,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode",
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: true, Foreign: true, VPN: true }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: true,
+                            Foreign: true,
+                            VPN: true,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -294,8 +315,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode",
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: true }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: true,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -352,8 +378,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode",
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: false,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -403,8 +434,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: true }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: true,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -501,8 +537,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: true }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: true,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -561,8 +602,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode",
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: false,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -618,7 +664,10 @@ describe("LANCG Module Tests", () => {
                 () => EthernetBridgePorts(etherConfigs, mockNetworksVPNOnly),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, mockNetworksVPNOnly);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                mockNetworksVPNOnly,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
 
@@ -631,8 +680,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: true, Foreign: false, VPN: true }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: true,
+                            Foreign: false,
+                            VPN: true,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -693,8 +747,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode",
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: false, Foreign: false, VPN: false }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: false,
+                            Foreign: false,
+                            VPN: false,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -894,8 +953,13 @@ describe("LANCG Module Tests", () => {
                     RouterMode: "AP Mode" as RouterModeType,
                     RouterModels: [],
                     Networks: {
-                        BaseNetworks: { Split: false, Domestic: true, Foreign: false, VPN: false }
-                    }
+                        BaseNetworks: {
+                            Split: false,
+                            Domestic: true,
+                            Foreign: false,
+                            VPN: false,
+                        },
+                    },
                 },
                 WAN: {
                     WANLink: {
@@ -916,11 +980,11 @@ describe("LANCG Module Tests", () => {
                     Interface: [
                         {
                             name: "ether2",
-                            bridge: "Domestic",  // This exists in Networks
+                            bridge: "Domestic", // This exists in Networks
                         },
                         {
                             name: "ether3",
-                            bridge: "VPN",  // This does NOT exist in Networks (VPN is disabled)
+                            bridge: "VPN", // This does NOT exist in Networks (VPN is disabled)
                         },
                     ],
                 },
@@ -948,7 +1012,7 @@ describe("LANCG Module Tests", () => {
 
             // Verify console.warn was called for the mismatched network
             expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Network "VPN" not found')
+                expect.stringContaining('Network "VPN" not found'),
             );
         });
 
@@ -976,7 +1040,10 @@ describe("LANCG Module Tests", () => {
                 () => EthernetBridgePorts(etherConfigs, networksWithDomestic),
             );
 
-            const result = EthernetBridgePorts(etherConfigs, networksWithDomestic);
+            const result = EthernetBridgePorts(
+                etherConfigs,
+                networksWithDomestic,
+            );
             validateRouterConfig(result, ["/interface bridge port"]);
         });
     });

@@ -1,4 +1,11 @@
-import { useSignal, useContext, $, useComputed$, useTask$, type QRL } from "@builder.io/qwik";
+import {
+  useSignal,
+  useContext,
+  $,
+  useComputed$,
+  useTask$,
+  type QRL,
+} from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export interface UseVPNClientEnabledReturn {
@@ -46,6 +53,6 @@ export const useVPNClientEnabled = (): UseVPNClientEnabledReturn => {
   return {
     enabled,
     hasForeignLink,
-    handleToggle$
+    handleToggle$,
   };
 };

@@ -4,12 +4,15 @@ import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { ServerFormField } from "~/components/Core/Form/ServerField";
 import { useOpenVPNServer } from "./useOpenVPNServer";
 import { Input } from "~/components/Core";
-import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
+import {
+  NetworkDropdown,
+  type ExtendedNetworks,
+} from "../../components/NetworkSelection";
 
 export const OpenVPNServerEasy = component$(() => {
   const { easyFormState, passphraseError, updateEasyPassphrase$ } =
     useOpenVPNServer();
-  
+
   // Local network state (not part of VPN server config)
   const selectedNetwork = useSignal<ExtendedNetworks>("VPN" as const);
 
@@ -35,7 +38,12 @@ export const OpenVPNServerEasy = component$(() => {
         {/* Certificate Key Passphrase */}
         <ServerFormField
           label={$localize`Certificate Key Passphrase`}
-          errorMessage={passphraseError.value || (!passphraseError.value ? $localize`Creates both TCP and UDP OpenVPN servers with this passphrase` : undefined)}
+          errorMessage={
+            passphraseError.value ||
+            (!passphraseError.value
+              ? $localize`Creates both TCP and UDP OpenVPN servers with this passphrase`
+              : undefined)
+          }
         >
           <div class="relative">
             <Input

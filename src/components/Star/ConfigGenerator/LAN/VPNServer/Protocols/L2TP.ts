@@ -1,4 +1,9 @@
-import type { L2tpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import type {
+    L2tpServerConfig,
+    SubnetConfig,
+    VSCredentials,
+    VSNetwork,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
     CommandShortner,
@@ -12,8 +17,11 @@ import {
     SubnetToRange,
 } from "~/components/Star/ConfigGenerator";
 
-
-export const L2tpServer = (config: L2tpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
+export const L2tpServer = (
+    config: L2tpServerConfig,
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
@@ -44,7 +52,11 @@ export const L2tpServer = (config: L2tpServerConfig, vsNetwork: VSNetwork, subne
 
     // Generate IP pool for L2TP clients
     routerConfig["/ip pool"].push(
-        ...generateIPPool({ name, ranges, comment: `L2TP ${name} client pool` })
+        ...generateIPPool({
+            name,
+            ranges,
+            comment: `L2TP ${name} client pool`,
+        }),
     );
 
     // Create PPP profile using shared helper (profile name: `${name}-profile`)
@@ -54,7 +66,11 @@ export const L2tpServer = (config: L2tpServerConfig, vsNetwork: VSNetwork, subne
     });
 
     // Add VPN subnet to address list using shared helper
-    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} L2TP subnet`);
+    const addrCfg = VSAddressList(
+        subnet,
+        String(vsNetwork),
+        `${name} L2TP subnet`,
+    );
     Object.entries(addrCfg).forEach(([section, cmds]) => {
         routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
     });
@@ -137,7 +153,10 @@ export const L2tpServer = (config: L2tpServerConfig, vsNetwork: VSNetwork, subne
     return CommandShortner(routerConfig);
 };
 
-export const L2tpServerUsers = (serverConfig: L2tpServerConfig, users: VSCredentials[]): RouterConfig => {
+export const L2tpServerUsers = (
+    serverConfig: L2tpServerConfig,
+    users: VSCredentials[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
@@ -166,7 +185,10 @@ export const L2tpServerUsers = (serverConfig: L2tpServerConfig, users: VSCredent
     return CommandShortner(config);
 };
 
-export const L2TPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
+export const L2TPVSBinding = (
+    credentials: VSCredentials[],
+    VSNetwork: VSNetwork,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface l2tp-server": [],
         "/interface list member": [],
@@ -232,11 +254,11 @@ export const L2TPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
         createdInterfaces.forEach((interfaceName) => {
             // Use VSInterfaceList helper to add interface to proper lists
             const interfaceListCfg = VSInterfaceList(
-                interfaceName, 
-                String(VSNetwork), 
-                `VPN binding interface for ${interfaceName}`
+                interfaceName,
+                String(VSNetwork),
+                `VPN binding interface for ${interfaceName}`,
             );
-            
+
             // Merge the interface list configuration
             Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
                 config[section] = (config[section] ?? []).concat(cmds);
@@ -259,7 +281,9 @@ export const L2TPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     return config;
 };
 
-export const L2TPServerFirewall = (serverConfigs: L2tpServerConfig[]): RouterConfig => {
+export const L2TPServerFirewall = (
+    serverConfigs: L2tpServerConfig[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -290,9 +314,13 @@ export const L2TPServerFirewall = (serverConfigs: L2tpServerConfig[]): RouterCon
     });
 
     return config;
-}
+};
 
-export const L2tpServerWrapper = ( serverConfig: L2tpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig ): RouterConfig => {
+export const L2tpServerWrapper = (
+    serverConfig: L2tpServerConfig,
+    users: VSCredentials[] = [],
+    subnetConfig?: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Get VSNetwork from server config or default to "VPN"

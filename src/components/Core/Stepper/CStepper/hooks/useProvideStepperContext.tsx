@@ -2,7 +2,6 @@ import { useContextProvider, $, useSignal } from "@builder.io/qwik";
 import type { CStepperContext, CStepMeta } from "../types";
 import type { ContextId, Signal, QRL } from "@builder.io/qwik";
 
-
 /**
  * A hook to create and provide a CStepper context
  * @param contextId The context ID to use
@@ -43,14 +42,11 @@ export function useProvideStepperContext<T = any>({
   // For tracking validation status
   const validationInProgress = useSignal(false);
   const stepValidationErrors = useSignal<Record<number, string[]>>({});
-  
+
   // Create a local previousSteps at the root level
   const defaultPreviousSteps = useSignal<number[]>([]);
   // Use the provided previousSteps or the default one
   const internalPreviousSteps = previousSteps || defaultPreviousSteps;
-  
-  
-  
 
   // Safely call onStepComplete$ without returning the Promise
   const safelyCallOnStepComplete = $((stepId: number) => {
@@ -66,11 +62,10 @@ export function useProvideStepperContext<T = any>({
   // Create update step completion function
   const updateStepCompletion$ = $((stepId: number, isComplete: boolean) => {
     // Find and update step completion
-    steps.value = steps.value.map(step => 
-      step.id === stepId ? { ...step, isComplete } : step
+    steps.value = steps.value.map((step) =>
+      step.id === stepId ? { ...step, isComplete } : step,
     );
-    
-    
+
     // Explicitly return null instead of undefined to ensure it's not a promise
     return null;
   });
@@ -78,86 +73,85 @@ export function useProvideStepperContext<T = any>({
   // Add function to easily complete a step
   const completeStep$ = $((stepId?: number) => {
     // If no stepId is provided, complete the current active step
-    const idToComplete = stepId !== undefined 
-      ? stepId 
-      : steps.value[activeStep.value]?.id;
-    
+    const idToComplete =
+      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
+
     // Safety check for undefined id
     if (idToComplete === undefined) return null;
-    
+
     // Update the step completion status
-    steps.value = steps.value.map(step => 
-      step.id === idToComplete ? { ...step, isComplete: true } : step
+    steps.value = steps.value.map((step) =>
+      step.id === idToComplete ? { ...step, isComplete: true } : step,
     );
-    
+
     // Call the onStepComplete callback if provided
     if (onStepComplete$) {
       // Use the safe wrapper to avoid promise leakage
       safelyCallOnStepComplete(idToComplete);
     }
-    
-    
+
     // Explicitly return null to prevent promise leakage
     return null;
   });
-  
-  // Async step validation 
+
+  // Async step validation
   const validateStep$ = $(async (stepId?: number): Promise<boolean> => {
     // Default to current step if no ID is provided
-    const idToValidate = stepId !== undefined
-      ? stepId
-      : steps.value[activeStep.value]?.id;
-      
+    const idToValidate =
+      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
+
     // Safety check
     if (idToValidate === undefined) return false;
-    
+
     // Set validation in progress flag
     validationInProgress.value = true;
-    
+
     try {
       // Find the step
-      const stepIndex = steps.value.findIndex(step => step.id === idToValidate);
+      const stepIndex = steps.value.findIndex(
+        (step) => step.id === idToValidate,
+      );
       if (stepIndex === -1) return false;
-      
+
       // Get validation errors
       const errors = steps.value[stepIndex].validationErrors || [];
-      
+
       // Clear previous errors
       const newErrors = { ...stepValidationErrors.value };
       delete newErrors[idToValidate];
       stepValidationErrors.value = newErrors;
-      
+
       // Check if step has validation errors
       const isValid = errors.length === 0;
-      
+
       if (!isValid) {
         // Store validation errors for the step
         stepValidationErrors.value = {
           ...stepValidationErrors.value,
-          [idToValidate]: errors
+          [idToValidate]: errors,
         };
       }
-      
+
       return isValid;
     } catch (error) {
-      console.error('Step validation error:', error);
+      console.error("Step validation error:", error);
       return false;
     } finally {
       validationInProgress.value = false;
     }
   });
-  
+
   // Set validation errors for a step
   const setStepErrors$ = $((stepId: number, errors: string[]) => {
     // Update step with errors
-    steps.value = steps.value.map(step => 
-      step.id === stepId ? { ...step, validationErrors: errors } : step
+    steps.value = steps.value.map((step) =>
+      step.id === stepId ? { ...step, validationErrors: errors } : step,
     );
-    
+
     // Store validation errors
     stepValidationErrors.value = {
       ...stepValidationErrors.value,
-      [stepId]: errors
+      [stepId]: errors,
     };
   });
 
@@ -184,4 +178,4 @@ export function useProvideStepperContext<T = any>({
   useContextProvider(contextId, contextValue);
 
   return contextValue;
-} 
+}

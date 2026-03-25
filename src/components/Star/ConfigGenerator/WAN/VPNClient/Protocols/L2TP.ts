@@ -5,7 +5,10 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 
 // L2TP Client
 
@@ -95,14 +98,17 @@ export const L2TPClient = (config: L2tpClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const L2TPClientWrapper = ( configs: L2tpClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const L2TPClientWrapper = (
+    configs: L2tpClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((l2tpConfig) => {
         const vpnConfig = L2TPClient(l2tpConfig);
         const interfaceName = GenerateVCInterfaceName(l2tpConfig.Name, "L2TP");
         const endpointAddress = l2tpConfig.Server.Address;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(l2tpConfig.Name);
 

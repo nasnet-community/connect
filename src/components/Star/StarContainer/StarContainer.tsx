@@ -8,13 +8,8 @@ export const StarContainer = component$(() => {
   useProvideGlobalHelpSettings(false); // Start with auto-show disabled
 
   // Use custom hook to manage all StarContainer logic
-  const {
-    activeStep,
-    stepsStore,
-    state,
-    handleModeChange,
-    handleStepChange,
-  } = useStarContainer();
+  const { activeStep, stepsStore, state, handleModeChange, handleStepChange } =
+    useStarContainer();
 
   return (
     <div class="w-full pb-10">
@@ -27,7 +22,7 @@ export const StarContainer = component$(() => {
         enableHelp={true}
         helpOptions={{
           enableKeyboardShortcuts: true,
-          helpKey: '?'
+          helpKey: "?",
         }}
         onStepComplete$={(id) => {
           const stepIndex = stepsStore.steps.findIndex(

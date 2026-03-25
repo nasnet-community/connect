@@ -51,7 +51,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
               </button>
             </div>
           </div>
-          <div class="rounded-lg bg-surface-secondary/50 p-4 dark:bg-surface-dark-secondary/50">
+          <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 rounded-lg p-4">
             <pre class="max-h-[35vh] overflow-auto font-mono text-xs">
               <code>{props.currentConfig}</code>
             </pre>
@@ -141,7 +141,9 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                 {$localize`Download Configuration`}
               </button>
               <button
-                onClick$={() => navigator.clipboard.writeText(props.pastedConfig)}
+                onClick$={() =>
+                  navigator.clipboard.writeText(props.pastedConfig)
+                }
                 class="flex items-center gap-2 rounded-lg bg-primary-500 px-3 py-1.5 text-sm text-white hover:bg-primary-600"
               >
                 <svg
@@ -158,10 +160,10 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                   />
                 </svg>
                 {$localize`Copy Config`}
-                </button>
+              </button>
             </div>
           </div>
-          <div class="rounded-lg bg-surface-secondary/50 p-4 dark:bg-surface-dark-secondary/50">
+          <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 rounded-lg p-4">
             <pre class="max-h-[35vh] overflow-auto font-mono text-xs">
               <code>{props.pastedConfig}</code>
             </pre>

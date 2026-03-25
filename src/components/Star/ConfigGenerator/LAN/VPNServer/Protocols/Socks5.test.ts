@@ -5,7 +5,11 @@ import {
     Scoks5ServerFirewall,
     Scoks5ServerWrapper,
 } from "./Socks5";
-import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+    validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
 import type {
     Socks5ServerConfig,
     VSCredentials,
@@ -283,11 +287,14 @@ describe("Socks5 Protocol Tests", () => {
                 Network: "VPN",
             };
 
-            const users: VSCredentials[] = Array.from({ length: 25 }, (_, i) => ({
-                Username: `socks5_user${i + 1}`,
-                Password: `socks5_pass${i + 1}`,
-                VPNType: ["Socks5"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 25 },
+                (_, i) => ({
+                    Username: `socks5_user${i + 1}`,
+                    Password: `socks5_pass${i + 1}`,
+                    VPNType: ["Socks5"],
+                }),
+            );
 
             testWithOutput(
                 "Socks5ServerUsers",
@@ -408,8 +415,10 @@ describe("Socks5 Protocol Tests", () => {
 
             const users: VSCredentials[] = [
                 {
-                    Username: "very_long_socks5_username_with_many_characters_12345",
-                    Password: "VeryLongP@ssw0rd!Socks5#Many$Special%Characters&12345",
+                    Username:
+                        "very_long_socks5_username_with_many_characters_12345",
+                    Password:
+                        "VeryLongP@ssw0rd!Socks5#Many$Special%Characters&12345",
                     VPNType: ["Socks5"],
                 },
             ];
@@ -426,7 +435,12 @@ describe("Socks5 Protocol Tests", () => {
         });
 
         it("should handle all network types", () => {
-            const networks: Array<Socks5ServerConfig["Network"]> = ["VPN", "Domestic", "Foreign", "Split"];
+            const networks: Array<Socks5ServerConfig["Network"]> = [
+                "VPN",
+                "Domestic",
+                "Foreign",
+                "Split",
+            ];
 
             networks.forEach((network) => {
                 const config: Socks5ServerConfig = {
@@ -480,7 +494,17 @@ describe("Socks5 Protocol Tests", () => {
                 {
                     Username: "allmethods",
                     Password: "allpass",
-                    VPNType: ["Socks5", "Wireguard", "OpenVPN", "PPTP", "L2TP", "SSTP", "IKeV2", "SSH", "BackToHome"],
+                    VPNType: [
+                        "Socks5",
+                        "Wireguard",
+                        "OpenVPN",
+                        "PPTP",
+                        "L2TP",
+                        "SSTP",
+                        "IKeV2",
+                        "SSH",
+                        "BackToHome",
+                    ],
                 },
             ];
 

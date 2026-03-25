@@ -1,10 +1,14 @@
-import type { VPNClientType, VPNClient, WANInterfaceType } from "~/components/Star/StarContext";
+import type {
+    VPNClientType,
+    VPNClient,
+    WANInterfaceType,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
-    DNSForeward, 
+    DNSForeward,
     mergeMultipleConfigs,
     ScriptAndScheduler,
-    SchedulerGenerator
+    SchedulerGenerator,
 } from "~/components/Star/ConfigGenerator";
 
 // Check if a string is a Fully Qualified Domain Name (FQDN) vs an IP address
@@ -20,10 +24,13 @@ export const isFQDN = (address: string): boolean => {
     }
 
     // If it contains a dot and doesn't match IP pattern, likely an FQDN
-    return address.includes('.');
+    return address.includes(".");
 };
 
-export const GenerateVCInterfaceName = (Name: string, protocol: VPNClientType): string => {
+export const GenerateVCInterfaceName = (
+    Name: string,
+    protocol: VPNClientType,
+): string => {
     switch (protocol) {
         case "Wireguard":
             return `wireguard-client-${Name}`;
@@ -40,9 +47,13 @@ export const GenerateVCInterfaceName = (Name: string, protocol: VPNClientType): 
         default:
             return `vpn-client-${Name}`;
     }
-}
+};
 
-export const RouteToVPN = ( InterfaceName: string, name: string, checkIP?: string ): RouterConfig => {
+export const RouteToVPN = (
+    InterfaceName: string,
+    name: string,
+    checkIP?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip route": [],
     };
@@ -59,7 +70,7 @@ export const RouteToVPN = ( InterfaceName: string, name: string, checkIP?: strin
         const checkIPDistance = 1; // Distance 1 for individual routing table CheckIP routes
         const checkIPRoute = `add check-gateway=ping dst-address="${checkIP}" gateway="${InterfaceName}" routing-table="${tableName}" \\
             distance=${checkIPDistance} target-scope="11" comment="Route-to-VPN-${name}"`;
-        
+
         config["/ip route"].push(checkIPRoute);
     }
 
@@ -79,12 +90,17 @@ export const InterfaceList = (InterfaceName: string): RouterConfig => {
     return config;
 };
 
-export const AddressListEntry = (Address: string, InterfaceName: string, name: string, WanInterface?: WANInterfaceType): RouterConfig => {
+export const AddressListEntry = (
+    Address: string,
+    InterfaceName: string,
+    name: string,
+    WanInterface?: WANInterfaceType,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall address-list": [],
     };
 
-    const wanInterfaceInfo = `${WanInterface?.WANType}-${WanInterface?.WANName}`
+    const wanInterfaceInfo = `${WanInterface?.WANType}-${WanInterface?.WANName}`;
 
     config["/ip firewall address-list"].push(
         `add address="${Address}" list=VPNE comment="VPN-${name} Interface:${InterfaceName} WanInterface:${wanInterfaceInfo} Endpoint:${Address} - Endpoint for routing"`,
@@ -94,10 +110,10 @@ export const AddressListEntry = (Address: string, InterfaceName: string, name: s
     // This ensures VPN endpoint domains are resolved through domestic DNS servers
     if (isFQDN(Address)) {
         const dnsForward = DNSForeward(
-            Address, 
-            "Foreign", 
+            Address,
+            "Foreign",
             true,
-            `VPN Endpoint ${Address} - Route through Foreign DNS`
+            `VPN Endpoint ${Address} - Route through Foreign DNS`,
         );
         return mergeMultipleConfigs(config, dnsForward);
     }
@@ -122,8 +138,18 @@ export const VPNEndpointMangle = (): RouterConfig => {
     return config;
 };
 
-export const AddressList = (Address: string, InterfaceName: string, name: string, WanInterface?: WANInterfaceType): RouterConfig => {
-    const addressConfig = AddressListEntry(Address, InterfaceName, name, WanInterface);
+export const AddressList = (
+    Address: string,
+    InterfaceName: string,
+    name: string,
+    WanInterface?: WANInterfaceType,
+): RouterConfig => {
+    const addressConfig = AddressListEntry(
+        Address,
+        InterfaceName,
+        name,
+        WanInterface,
+    );
     const mangleConfig = VPNEndpointMangle();
 
     return {
@@ -132,7 +158,10 @@ export const AddressList = (Address: string, InterfaceName: string, name: string
     };
 };
 
-export const IPAddress = ( InterfaceName: string, Address: string ): RouterConfig => {
+export const IPAddress = (
+    InterfaceName: string,
+    Address: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip address": [],
     };
@@ -172,7 +201,13 @@ export const IPAddress = ( InterfaceName: string, Address: string ): RouterConfi
 //     return config;
 // };
 
-export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, name: string, WanInterface?: WANInterfaceType, checkIP?: string): RouterConfig => {
+export const BaseVPNConfig = (
+    InterfaceName: string,
+    EndpointAddress: string,
+    name: string,
+    WanInterface?: WANInterfaceType,
+    checkIP?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip address": [],
         "/ip firewall nat": [],
@@ -197,7 +232,12 @@ export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, n
     const routeConfig = RouteToVPN(InterfaceName, name, checkIP);
     config["/ip route"].push(...routeConfig["/ip route"]);
 
-    const addressListConfig = AddressListEntry(EndpointAddress, InterfaceName, name, WanInterface);
+    const addressListConfig = AddressListEntry(
+        EndpointAddress,
+        InterfaceName,
+        name,
+        WanInterface,
+    );
     config["/ip firewall address-list"].push(
         ...addressListConfig["/ip firewall address-list"],
     );
@@ -207,53 +247,60 @@ export const BaseVPNConfig = ( InterfaceName: string, EndpointAddress: string, n
 
 export const GetAllVPNInterfaceNames = (vpnClient: VPNClient): string[] => {
     const interfaceNames: string[] = [];
-    
+
     // Process Wireguard configs
     if (vpnClient.Wireguard) {
-        vpnClient.Wireguard.forEach(config => {
-            interfaceNames.push(GenerateVCInterfaceName(config.Name, "Wireguard"));
+        vpnClient.Wireguard.forEach((config) => {
+            interfaceNames.push(
+                GenerateVCInterfaceName(config.Name, "Wireguard"),
+            );
         });
     }
-    
+
     // Process OpenVPN configs
     if (vpnClient.OpenVPN) {
-        vpnClient.OpenVPN.forEach(config => {
-            interfaceNames.push(GenerateVCInterfaceName(config.Name, "OpenVPN"));
+        vpnClient.OpenVPN.forEach((config) => {
+            interfaceNames.push(
+                GenerateVCInterfaceName(config.Name, "OpenVPN"),
+            );
         });
     }
-    
+
     // Process PPTP configs
     if (vpnClient.PPTP) {
-        vpnClient.PPTP.forEach(config => {
+        vpnClient.PPTP.forEach((config) => {
             interfaceNames.push(GenerateVCInterfaceName(config.Name, "PPTP"));
         });
     }
-    
+
     // Process L2TP configs
     if (vpnClient.L2TP) {
-        vpnClient.L2TP.forEach(config => {
+        vpnClient.L2TP.forEach((config) => {
             interfaceNames.push(GenerateVCInterfaceName(config.Name, "L2TP"));
         });
     }
-    
+
     // Process SSTP configs
     if (vpnClient.SSTP) {
-        vpnClient.SSTP.forEach(config => {
+        vpnClient.SSTP.forEach((config) => {
             interfaceNames.push(GenerateVCInterfaceName(config.Name, "SSTP"));
         });
     }
-    
+
     // Process IKeV2 configs
     if (vpnClient.IKeV2) {
-        vpnClient.IKeV2.forEach(config => {
+        vpnClient.IKeV2.forEach((config) => {
             interfaceNames.push(GenerateVCInterfaceName(config.Name, "IKeV2"));
         });
     }
-    
+
     return interfaceNames;
 };
 
-export const GetVPNInterfaceName = (name: string, protocol: VPNClientType): string => {
+export const GetVPNInterfaceName = (
+    name: string,
+    protocol: VPNClientType,
+): string => {
     return GenerateVCInterfaceName(name, protocol);
 };
 
@@ -270,8 +317,8 @@ export const VPNEScript = (): RouterConfig => {
         "# Configuration variables",
         ':local addressListName "VPNE"',
         ':local scriptName "VPNE-Route-Manager"',
-        ':local debugMode false',
-        ':local quietMode false',
+        ":local debugMode false",
+        ":local quietMode false",
         ':local tablePrefix "to-"',
         "",
         "# Statistics counters",
@@ -294,7 +341,7 @@ export const VPNEScript = (): RouterConfig => {
         "    :local addr $1",
         "    :local isIP true",
         "    ",
-        '    # Check if it contains any letters (domains have letters, IPs don\'t)',
+        "    # Check if it contains any letters (domains have letters, IPs don't)",
         '    :local letters "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"',
         "    :for i from=0 to=([:len $addr] - 1) do={",
         "        :local char [:pick $addr $i ($i + 1)]",
@@ -303,7 +350,7 @@ export const VPNEScript = (): RouterConfig => {
         "        }",
         "    }",
         "    ",
-        '    # Additional check: must have at least one dot and start with a digit',
+        "    # Additional check: must have at least one dot and start with a digit",
         '    :if ($isIP && [:find $addr "."] < 0) do={',
         "        :set isIP false",
         "    }",
@@ -469,7 +516,7 @@ export const VPNEScript = (): RouterConfig => {
         "            ",
         "            :if (!$tableExists) do={",
         "                :if (!$quietMode) do={",
-        '                    :log error "[$scriptName] Routing table \'$routingTable\' does not exist, skipping $addr"',
+        "                    :log error \"[$scriptName] Routing table '$routingTable' does not exist, skipping $addr\"",
         "                }",
         "                :set skipped ($skipped + 1)",
         "            } else={",
@@ -633,7 +680,7 @@ export const VPNEScript = (): RouterConfig => {
             ":delay 10s",
             "/system script",
             "run VPNE-Routing-Manager",
-        ]
+        ],
     };
 
     const startupScheduler = SchedulerGenerator({

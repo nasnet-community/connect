@@ -56,7 +56,8 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
     await props.onViewDetails$(props.router);
   });
 
-  const primaryImage = props.router.images?.[0] || "/images/routers/placeholder.png";
+  const primaryImage =
+    props.router.images?.[0] || "/images/routers/placeholder.png";
 
   return (
     <div
@@ -80,26 +81,27 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
       )}
 
       <div class="relative flex h-full flex-col p-5 sm:p-6">
-        <div class="flex flex-1 items-center justify-center rounded-xl border border-border/40 bg-surface-secondary/40 p-4 dark:border-border-dark/30 dark:bg-surface-dark-secondary/40">
+        <div class="bg-surface-secondary/40 dark:bg-surface-dark-secondary/40 flex flex-1 items-center justify-center rounded-xl border border-border/40 p-4 dark:border-border-dark/30">
           <img
             src={primaryImage}
             alt={props.router.title}
             class="max-h-24 max-w-full object-contain sm:max-h-28"
             loading="lazy"
             onError$={(event) => {
-              (event.target as HTMLImageElement).src = "/images/routers/placeholder.png";
+              (event.target as HTMLImageElement).src =
+                "/images/routers/placeholder.png";
             }}
           />
         </div>
 
         <div class="mt-4 space-y-2">
           <h3
-            class="text-center text-xl font-semibold text-text transition-colors duration-300 dark:text-text-dark-default group-hover:text-primary-500 dark:group-hover:text-primary-400"
+            class="text-center text-xl font-semibold text-text transition-colors duration-300 group-hover:text-primary-500 dark:text-text-dark-default dark:group-hover:text-primary-400"
             title={props.router.title}
           >
             {props.router.title}
           </h3>
-          <p class="text-center text-sm text-text-secondary dark:text-text-dark-secondary">
+          <p class="text-text-secondary dark:text-text-dark-secondary text-center text-sm">
             {props.router.description}
           </p>
         </div>

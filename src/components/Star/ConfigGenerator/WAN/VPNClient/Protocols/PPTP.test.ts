@@ -62,7 +62,7 @@ describe("PPTP", () => {
             ConnectTo: "special.pptp.com",
             Credentials: {
                 Username: 'user"with"quotes',
-                Password: 'pass$with$special',
+                Password: "pass$with$special",
             },
         });
 
@@ -86,7 +86,9 @@ describe("PPTP", () => {
         expect(result["/ip route"]).toHaveLength(1);
         expect(result["/ip firewall address-list"]).toHaveLength(1);
         expect(result["/ip firewall mangle"]).toEqual([]);
-        expect(result["/interface pptp-client"][0]).toContain('name="pptp-client-vpn1"');
+        expect(result["/interface pptp-client"][0]).toContain(
+            'name="pptp-client-vpn1"',
+        );
         expect(result["/ip route"][0]).toContain('routing-table="to-VPN-vpn1"');
     });
 
@@ -109,10 +111,18 @@ describe("PPTP", () => {
         expect(result["/interface list member"]).toHaveLength(4);
         expect(result["/ip route"]).toHaveLength(2);
         expect(result["/ip firewall address-list"]).toHaveLength(2);
-        expect(result["/interface pptp-client"][0]).toContain('name="pptp-client-vpn1"');
-        expect(result["/interface pptp-client"][1]).toContain('name="pptp-client-vpn2"');
-        expect(result["/ip firewall address-list"][0]).toContain('address="pptp1.example.com"');
-        expect(result["/ip firewall address-list"][1]).toContain('address="pptp2.example.com"');
+        expect(result["/interface pptp-client"][0]).toContain(
+            'name="pptp-client-vpn1"',
+        );
+        expect(result["/interface pptp-client"][1]).toContain(
+            'name="pptp-client-vpn2"',
+        );
+        expect(result["/ip firewall address-list"][0]).toContain(
+            'address="pptp1.example.com"',
+        );
+        expect(result["/ip firewall address-list"][1]).toContain(
+            'address="pptp2.example.com"',
+        );
     });
 
     // Verifies the wrapper still returns an empty config object when there are no PPTP clients to build.

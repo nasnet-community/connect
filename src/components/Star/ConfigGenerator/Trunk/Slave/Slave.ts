@@ -1,11 +1,11 @@
-import type { 
-    RouterModels, 
-    WirelessConfig, 
-    Subnets, 
-    ExtraConfigState, 
+import type {
+    RouterModels,
+    WirelessConfig,
+    Subnets,
+    ExtraConfigState,
     StarState,
 } from "~/components/Star/StarContext";
-import { 
+import {
     type RouterConfig,
     mergeMultipleConfigs,
     removeEmptyArrays,
@@ -25,17 +25,17 @@ import {
     // sortRouterConfig,
 } from "~/components/Star/ConfigGenerator";
 
-
-
 export const SlaveC = (
     slaveRouter: RouterModels,
     subnets?: Subnets,
     wirelessConfigs?: WirelessConfig[],
-    extraConfig?: ExtraConfigState
+    extraConfig?: ExtraConfigState,
 ): RouterConfig => {
     // Validate slave router
     if (slaveRouter.isMaster) {
-        throw new Error("SlaveCG can only generate configuration for slave routers (isMaster must be false)");
+        throw new Error(
+            "SlaveCG can only generate configuration for slave routers (isMaster must be false)",
+        );
     }
 
     // If slave has no trunk interface configured, return empty
@@ -53,9 +53,11 @@ export const SlaveC = (
 
     // 2. Create station interface for trunk connectivity (wireless only)
     if (wirelessConfigs && wirelessConfigs.length > 0) {
-        configs.push(createStationTrunkInterface(trunkInterface, wirelessConfigs));
+        configs.push(
+            createStationTrunkInterface(trunkInterface, wirelessConfigs),
+        );
     }
-    
+
     // 3. Comment non-wireless trunk interfaces
     configs.push(commentTrunkInterface(trunkInterface));
 
@@ -80,7 +82,7 @@ export const SlaveC = (
         const wirelessConfig = configureSlaveWireless(
             wirelessConfigs,
             [slaveRouter],
-            subnets
+            subnets,
         );
         if (Object.keys(wirelessConfig).length > 0) {
             configs.push(wirelessConfig);
@@ -109,15 +111,15 @@ export const SlaveC = (
     }
 
     // Filter out empty configs and merge
-    const validConfigs = configs.filter(c => Object.keys(c).length > 0);
-    return validConfigs.length === 0 ? {} : mergeMultipleConfigs(...validConfigs);
+    const validConfigs = configs.filter((c) => Object.keys(c).length > 0);
+    return validConfigs.length === 0
+        ? {}
+        : mergeMultipleConfigs(...validConfigs);
 };
-
-
 
 export const SlaveCG = (
     state: StarState,
-    slaveRouter: RouterModels
+    slaveRouter: RouterModels,
 ): string => {
     // Extract parameters from state
     const subnets = state.LAN.Subnets;
@@ -135,7 +137,7 @@ export const SlaveCG = (
         "/interface ovpn-client": [],
         "/interface l2tp-client": [],
         "/interface ethernet": [],
-        
+
         "/interface veth": [],
         "/interface wireguard": [],
         "/interface wireguard peers": [],
@@ -225,14 +227,15 @@ export const SlaveCG = (
 
     try {
         // Generate configurations from each module
-        const SlaveConfig = SlaveC(slaveRouter, subnets, wirelessConfigs, extraConfig);
-
+        const SlaveConfig = SlaveC(
+            slaveRouter,
+            subnets,
+            wirelessConfigs,
+            extraConfig,
+        );
 
         // Merge all configurations
-        const finalConfig = mergeMultipleConfigs(
-            config,
-            SlaveConfig
-        );
+        const finalConfig = mergeMultipleConfigs(config, SlaveConfig);
 
         // Sort mangle rules according to priority
         // const sortedConfig = sortRouterConfig(finalConfig, ["/ip firewall mangle"]);
@@ -243,7 +246,6 @@ export const SlaveCG = (
         // Remove /ip dns static from slave configuration
         delete removedEmptyArrays["/ip dns static"];
         delete removedEmptyArrays["/interface list member"];
-
 
         const ELConfig = formatConfig(removedEmptyArrays);
         const formattedConfigEL = removeEmptyLines(ELConfig);

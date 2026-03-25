@@ -55,14 +55,15 @@ export const useUserCredential = ({
       const hasCredentials =
         u.Username.trim() !== "" && u.Password.trim() !== "";
       // In Easy mode, protocols are auto-assigned, so consider them valid
-      const hasProtocols = isEasyMode || (Array.isArray(u.VPNType) && u.VPNType.length > 0);
-      const hasValidProtocols = isEasyMode || (
-        Array.isArray(u.VPNType) &&
-        u.VPNType.every(
-          (protocol: VPNType) =>
-            stepper.data.enabledProtocols[protocol] === true,
-        )
-      );
+      const hasProtocols =
+        isEasyMode || (Array.isArray(u.VPNType) && u.VPNType.length > 0);
+      const hasValidProtocols =
+        isEasyMode ||
+        (Array.isArray(u.VPNType) &&
+          u.VPNType.every(
+            (protocol: VPNType) =>
+              stepper.data.enabledProtocols[protocol] === true,
+          ));
       return hasCredentials && hasProtocols && hasValidProtocols;
     });
 
@@ -209,9 +210,15 @@ export const useUserManagement = () => {
     }
 
     // Auto-assign protocols for Easy mode, empty array for Advanced mode
-    const defaultProtocols = isEasyMode ? ["OpenVPN", "Wireguard"] as VPNType[] : [];
-    
-    users.push({ Username: suggestedUsername, Password: "", VPNType: defaultProtocols });
+    const defaultProtocols = isEasyMode
+      ? (["OpenVPN", "Wireguard"] as VPNType[])
+      : [];
+
+    users.push({
+      Username: suggestedUsername,
+      Password: "",
+      VPNType: defaultProtocols,
+    });
   });
 
   const removeUser = $((index: number) => {

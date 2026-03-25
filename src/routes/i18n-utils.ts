@@ -16,7 +16,9 @@ import FA from "../locales/message.fa.json";
 // Make sure it's obvious when the default locale was selected
 const DEFAULT_LOCALE = "en";
 const TRANSLATION_BUNDLES = [EN, FA] as const;
-const SUPPORTED_LOCALES = new Set(TRANSLATION_BUNDLES.map(({ locale }) => locale));
+const SUPPORTED_LOCALES = new Set(
+  TRANSLATION_BUNDLES.map(({ locale }) => locale),
+);
 let getServerRenderLocale: (() => string | undefined) | undefined;
 
 /**
@@ -66,15 +68,16 @@ function getActiveLocale(): string {
 }
 
 function getTranslationsForLocale(locale: string) {
-  return $localizeFn.TRANSLATION_BY_LOCALE.get(locale)
-    ?? $localizeFn.TRANSLATION_BY_LOCALE.get(DEFAULT_LOCALE)
-    ?? {};
+  return (
+    $localizeFn.TRANSLATION_BY_LOCALE.get(locale) ??
+    $localizeFn.TRANSLATION_BY_LOCALE.get(DEFAULT_LOCALE) ??
+    {}
+  );
 }
 
 function getRawTranslationsForLocale(locale: string) {
-  return (
-    TRANSLATION_BUNDLES.find((bundle) => bundle.locale === locale) ?? EN
-  ).translations;
+  return (TRANSLATION_BUNDLES.find((bundle) => bundle.locale === locale) ?? EN)
+    .translations;
 }
 
 /**
@@ -147,9 +150,7 @@ export function setServerRenderLocaleGetter(
  * @returns The locale to use which will be stored in the `useEnvData('locale')`.
  */
 export function extractLang(locale: string): string {
-  return locale && SUPPORTED_LOCALES.has(locale)
-    ? locale
-    : DEFAULT_LOCALE;
+  return locale && SUPPORTED_LOCALES.has(locale) ? locale : DEFAULT_LOCALE;
 }
 
 /**
@@ -181,7 +182,9 @@ export function useI18n() {
     }
 
     const routeLocale = track(() => location.params.locale);
-    initBrowserTranslations(routeLocale || getDocumentLocale() || DEFAULT_LOCALE);
+    initBrowserTranslations(
+      routeLocale || getDocumentLocale() || DEFAULT_LOCALE,
+    );
   });
 }
 

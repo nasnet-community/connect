@@ -4,7 +4,7 @@ import { useStack } from "./hooks";
 
 /**
  * Enhanced Stack component - an advanced layout component for creating organized
- * vertical or horizontal layouts with mobile-first responsive design, 
+ * vertical or horizontal layouts with mobile-first responsive design,
  * RTL support, and touch optimization.
  *
  * The Stack component provides a comprehensive API for creating consistent
@@ -12,36 +12,32 @@ import { useStack } from "./hooks";
  * dividers, and mobile-specific behaviors.
  */
 const Stack = component$<StackProps>((props) => {
-  const {
-    as: _as = "div",
-    children: _children,
-    ...rest
-  } = props;
+  const { as: _as = "div", children: _children, ...rest } = props;
 
   // Use the enhanced useStack hook for all logic
-  const { 
-    combinedClassNames, 
+  const {
+    combinedClassNames,
     styleProperties,
     elementType,
     isMobile,
     isRtl,
     supportsContainerQueries,
-    effectiveDirection
+    effectiveDirection,
   } = useStack(props);
 
   const ElementAny = elementType as any;
 
   return (
-    <ElementAny 
-      {...rest} 
+    <ElementAny
+      {...rest}
       class={combinedClassNames}
       style={{
         ...styleProperties,
-        ...(props.style as Record<string, string> || {})
+        ...((props.style as Record<string, string>) || {}),
       }}
-      data-mobile={isMobile ? 'true' : 'false'}
-      data-rtl={isRtl ? 'true' : 'false'}
-      data-container-queries={supportsContainerQueries ? 'true' : 'false'}
+      data-mobile={isMobile ? "true" : "false"}
+      data-rtl={isRtl ? "true" : "false"}
+      data-container-queries={supportsContainerQueries ? "true" : "false"}
       data-direction={effectiveDirection}
       data-stack-component="true"
     >

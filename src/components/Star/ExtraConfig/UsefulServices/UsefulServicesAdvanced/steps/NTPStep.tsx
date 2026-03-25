@@ -1,4 +1,10 @@
-import { component$, useSignal, $, useTask$, useContext } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  $,
+  useTask$,
+  useContext,
+} from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { Card, CardHeader, CardBody, Input, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
@@ -13,7 +19,9 @@ export const NTPStep = component$(() => {
   const { servicesData } = context.data;
 
   // Create local signals for form state
-  const ntpServers = useSignal<string[]>(servicesData.ntp.servers || ["pool.ntp.org"]);
+  const ntpServers = useSignal<string[]>(
+    servicesData.ntp.servers || ["pool.ntp.org"],
+  );
   const newServerInput = useSignal("");
 
   // Popular NTP servers for quick add
@@ -25,7 +33,7 @@ export const NTPStep = component$(() => {
     "time.nist.gov",
     "1.pool.ntp.org",
     "2.pool.ntp.org",
-    "3.pool.ntp.org"
+    "3.pool.ntp.org",
   ];
 
   // Add NTP server
@@ -64,17 +72,18 @@ export const NTPStep = component$(() => {
       usefulServices: {
         certificate: currentServices.certificate,
         ntp: {
-          servers: [...servers],  // Create new array copy
+          servers: [...servers], // Create new array copy
         },
         graphing: currentServices.graphing,
         cloudDDNS: currentServices.cloudDDNS,
         upnp: currentServices.upnp,
         natpmp: currentServices.natpmp,
-      }
+      },
     });
 
     // Validate: At least one NTP server must be configured
-    const isComplete = servers.length > 0 && servers.every(server => server.trim() !== "");
+    const isComplete =
+      servers.length > 0 && servers.every((server) => server.trim() !== "");
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -89,37 +98,59 @@ export const NTPStep = component$(() => {
   });
 
   return (
-    <div class="space-y-8 animate-fade-in-up">
+    <div class="animate-fade-in-up space-y-8">
       {/* Enhanced modern header with glassmorphism */}
-      <div class="text-center space-y-6">
+      <div class="space-y-6 text-center">
         <div class="relative inline-flex items-center justify-center">
           {/* Subtle glow effect */}
-          <div class="absolute inset-0 w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500/15 via-secondary-500/15 to-primary-500/15 animate-pulse-slow"></div>
-          <div class="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white shadow-2xl shadow-primary-500/30 transition-all duration-500 hover:scale-110 hover:rotate-3 hover:shadow-primary-500/40">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 transition-transform duration-500 hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div class="absolute inset-0 h-24 w-24 animate-pulse-slow rounded-3xl bg-gradient-to-br from-primary-500/15 via-secondary-500/15 to-primary-500/15"></div>
+          <div class="relative inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white shadow-2xl shadow-primary-500/30 transition-all duration-500 hover:rotate-3 hover:scale-110 hover:shadow-primary-500/40">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 transition-transform duration-500 hover:rotate-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
         </div>
         <div class="space-y-3">
-          <h3 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent dark:from-white dark:via-gray-200 dark:to-white animate-gradient bg-300%">
+          <h3 class="animate-gradient bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-300% bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:via-gray-200 dark:to-white md:text-5xl">
             {$localize`NTP Time Synchronization`}
           </h3>
-          <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
             {$localize`Configure multiple NTP servers for accurate time synchronization across your network`}
           </p>
         </div>
       </div>
 
       {/* NTP Servers Configuration with glassmorphism */}
-      <Card class="relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl transition-all duration-300 hover:shadow-2xl">
+      <Card class="relative overflow-hidden border border-gray-200 bg-white shadow-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800">
         <CardHeader class="relative">
           <div class="flex items-start justify-between">
             <div class="space-y-2">
-              <h4 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <h4 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 text-primary-600 dark:text-primary-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width={2}
+                      d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+                    />
                   </svg>
                 </div>
                 {$localize`NTP Servers Configuration`}
@@ -140,24 +171,38 @@ export const NTPStep = component$(() => {
               {ntpServers.value.map((server, index) => (
                 <div
                   key={index}
-                  class="group/item flex items-center justify-between p-4 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl border border-primary-200/50 dark:border-primary-700/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary-500/10 animate-fade-in-up"
+                  class="group/item flex animate-fade-in-up items-center justify-between rounded-xl border border-primary-200/50 bg-gradient-to-r from-primary-50/50 to-secondary-50/50 p-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary-500/10 dark:border-primary-700/30 dark:from-primary-900/20 dark:to-secondary-900/20"
                 >
                   <div class="flex items-center gap-4">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-800/50 dark:to-primary-700/50 text-primary-600 dark:text-primary-300 transition-all duration-300 group-hover/item:scale-110 group-hover/item:rotate-6">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform duration-300 group-hover/item:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 text-primary-600 transition-all duration-300 group-hover/item:rotate-6 group-hover/item:scale-110 dark:from-primary-800/50 dark:to-primary-700/50 dark:text-primary-300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 transition-transform duration-300 group-hover/item:rotate-12"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                     </div>
                     <div>
-                      <p class="font-semibold text-gray-900 dark:text-white bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">{server}</p>
+                      <p class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text font-semibold text-gray-900 text-transparent dark:from-white dark:to-gray-300 dark:text-white">
+                        {server}
+                      </p>
                       <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {index === 0 ? 
+                        {index === 0 ? (
                           <span class="inline-flex items-center gap-1.5">
-                            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
                             {$localize`Primary server`}
-                          </span> : 
+                          </span>
+                        ) : (
                           $localize`Backup server ${index}`
-                        }
+                        )}
                       </p>
                     </div>
                   </div>
@@ -166,10 +211,21 @@ export const NTPStep = component$(() => {
                       variant="ghost"
                       size="sm"
                       onClick$={() => removeServer$(index)}
-                      class="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                      class="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </Button>
                   )}
@@ -215,22 +271,35 @@ export const NTPStep = component$(() => {
             <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
               {$localize`Popular NTP Servers`}
             </h5>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
               {popularServers
-                .filter(server => !ntpServers.value.includes(server))
+                .filter((server) => !ntpServers.value.includes(server))
                 .map((server, _index) => (
                   <Button
                     key={server}
                     variant="ghost"
                     size="sm"
                     onClick$={() => addPopularServer$(server)}
-                    class="group h-auto py-3 px-4 text-left border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20 hover:scale-[1.02] hover:shadow-md transition-all duration-300 rounded-xl animate-fade-in-up"
+                    class="group h-auto animate-fade-in-up rounded-xl border border-gray-200/50 bg-gradient-to-br from-white to-gray-50 px-4 py-3 text-left transition-all duration-300 hover:scale-[1.02] hover:border-primary-300 hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 hover:shadow-md dark:border-gray-700/50 dark:from-gray-800 dark:to-gray-900 dark:hover:border-primary-600 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20"
                   >
                     <div class="w-full space-y-1">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{server}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <p class="truncate text-sm font-medium text-gray-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
+                        {server}
+                      </p>
+                      <p class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
                         </svg>
                         {$localize`Click to add`}
                       </p>
@@ -241,8 +310,6 @@ export const NTPStep = component$(() => {
           </div>
         </CardBody>
       </Card>
-
-
     </div>
   );
 });

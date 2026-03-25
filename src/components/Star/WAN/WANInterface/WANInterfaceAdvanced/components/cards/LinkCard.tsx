@@ -17,24 +17,24 @@ export interface LinkCardProps {
 }
 
 export const LinkCard = component$<LinkCardProps>(
-  ({ 
-    link, 
-    status, 
-    errorCount, 
-    isExpanded, 
-    onToggle$, 
-    onRemove$, 
+  ({
+    link,
+    status,
+    errorCount,
+    isExpanded,
+    onToggle$,
+    onRemove$,
     showRemove = false,
     iconType = "interface",
-    class: className = ""
+    class: className = "",
   }) => {
     const cardStyle = getCardStyleByStatus(status);
-    
+
     return (
       <div
         key={link.id}
         class={`
-          relative transition-all duration-200 rounded-xl border
+          relative rounded-xl border transition-all duration-200
           ${cardStyle}
           ${className}
         `}
@@ -49,14 +49,14 @@ export const LinkCard = component$<LinkCardProps>(
           showRemove={showRemove}
           iconType={iconType}
         />
-        
+
         {/* Expandable Content */}
         {isExpanded && (
-          <div class="border-t border-gray-200 dark:border-gray-700 p-6 space-y-6">
+          <div class="space-y-6 border-t border-gray-200 p-6 dark:border-gray-700">
             <Slot />
           </div>
         )}
       </div>
     );
-  }
+  },
 );

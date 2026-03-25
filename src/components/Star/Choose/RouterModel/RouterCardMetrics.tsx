@@ -1,11 +1,11 @@
 import { component$ } from "@builder.io/qwik";
-import { 
-  LuCpu, 
-  LuMemoryStick, 
-  LuNetwork, 
+import {
+  LuCpu,
+  LuMemoryStick,
+  LuNetwork,
   LuHardDrive,
   LuZap,
-  LuActivity
+  LuActivity,
 } from "@qwikest/icons/lucide";
 import { type RouterData } from "./Constants";
 
@@ -78,22 +78,24 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
       <div class="grid grid-cols-2 gap-3">
         {/* CPU Card */}
         <div class="group/metric">
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <div class="p-1 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover/metric:scale-110 transition-transform">
+              <div class="rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-1 transition-transform group-hover/metric:scale-110">
                 <LuCpu class="h-3 w-3 text-blue-500" />
               </div>
-              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">CPU</span>
+              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                CPU
+              </span>
             </div>
             <span class="text-xs font-bold text-gray-800 dark:text-gray-200">
               {router.specs.CPU}
             </span>
           </div>
-          <div class="relative h-2 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
+          <div class="relative h-2 overflow-hidden rounded-full bg-gray-200/50 dark:bg-gray-700/50">
+            <div
               class={`
-                absolute inset-y-0 left-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full
-                ${isAnimated ? 'animate-pulse' : ''}
+                absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-400 to-blue-600
+                ${isAnimated ? "animate-pulse" : ""}
                 transition-all duration-700 ease-out
               `}
               style={`width: ${cpuPercentage}%`}
@@ -105,22 +107,24 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
 
         {/* Memory Card */}
         <div class="group/metric">
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <div class="p-1 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 group-hover/metric:scale-110 transition-transform">
+              <div class="rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-1 transition-transform group-hover/metric:scale-110">
                 <LuMemoryStick class="h-3 w-3 text-purple-500" />
               </div>
-              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">RAM</span>
+              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                RAM
+              </span>
             </div>
             <span class="text-xs font-bold text-gray-800 dark:text-gray-200">
               {router.specs.RAM}
             </span>
           </div>
-          <div class="relative h-2 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
+          <div class="relative h-2 overflow-hidden rounded-full bg-gray-200/50 dark:bg-gray-700/50">
+            <div
               class={`
-                absolute inset-y-0 left-0 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full
-                ${isAnimated ? 'animate-pulse' : ''}
+                absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-400 to-purple-600
+                ${isAnimated ? "animate-pulse" : ""}
                 transition-all duration-700 ease-out
               `}
               style={`width: ${ramPercentage}%`}
@@ -134,10 +138,12 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
         <div class="group/metric">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <div class="p-1 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover/metric:scale-110 transition-transform">
+              <div class="rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 p-1 transition-transform group-hover/metric:scale-110">
                 <LuHardDrive class="h-3 w-3 text-green-500" />
               </div>
-              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">Storage</span>
+              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Storage
+              </span>
             </div>
             <span class="text-xs font-bold text-gray-800 dark:text-gray-200">
               {storageValue}
@@ -149,12 +155,14 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
         <div class="group/metric">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <div class="p-1 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20 group-hover/metric:scale-110 transition-transform">
+              <div class="rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20 p-1 transition-transform group-hover/metric:scale-110">
                 <LuNetwork class="h-3 w-3 text-amber-500" />
               </div>
-              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">Ports</span>
+              <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Ports
+              </span>
             </div>
-            <span class="text-xs font-bold text-gray-800 dark:text-gray-200 text-right">
+            <span class="text-right text-xs font-bold text-gray-800 dark:text-gray-200">
               {ports[0]}
             </span>
           </div>
@@ -168,31 +176,31 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
     <div class="space-y-4">
       {/* CPU Performance with visual meter */}
       <div class="group/metric">
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover/metric:scale-110 transition-transform">
+            <div class="rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 p-1.5 transition-transform group-hover/metric:scale-110">
               <LuCpu class="h-4 w-4 text-blue-500" />
             </div>
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Processor
             </span>
           </div>
-          <span class="text-sm font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-sm font-bold text-transparent">
             {router.specs.CPU}
           </span>
         </div>
-        <div class="relative h-3 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden">
-          <div 
+        <div class="relative h-3 overflow-hidden rounded-full bg-gray-200/50 dark:bg-gray-700/50">
+          <div
             class={`
-              absolute inset-y-0 left-0 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 rounded-full
-              ${isAnimated ? 'animate-pulse' : ''}
+              absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600
+              ${isAnimated ? "animate-pulse" : ""}
               transition-all duration-1000 ease-out
             `}
             style={`width: ${cpuPercentage}%`}
           >
             <div class="absolute inset-0 bg-gradient-to-t from-white/0 to-white/40" />
             {/* Animated shine effect */}
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+            <div class="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent" />
           </div>
           {/* Performance indicator dots */}
           <div class="absolute inset-0 flex items-center justify-end pr-2">
@@ -203,30 +211,30 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
 
       {/* RAM with visual meter */}
       <div class="group/metric">
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 group-hover/metric:scale-110 transition-transform">
+            <div class="rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-1.5 transition-transform group-hover/metric:scale-110">
               <LuMemoryStick class="h-4 w-4 text-purple-500" />
             </div>
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Memory
             </span>
           </div>
-          <span class="text-sm font-bold bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-sm font-bold text-transparent">
             {router.specs.RAM}
           </span>
         </div>
-        <div class="relative h-3 bg-gray-200/50 dark:bg-gray-700/50 rounded-full overflow-hidden">
-          <div 
+        <div class="relative h-3 overflow-hidden rounded-full bg-gray-200/50 dark:bg-gray-700/50">
+          <div
             class={`
-              absolute inset-y-0 left-0 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full
-              ${isAnimated ? 'animate-pulse' : ''}
+              absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600
+              ${isAnimated ? "animate-pulse" : ""}
               transition-all duration-1000 ease-out
             `}
             style={`width: ${ramPercentage}%`}
           >
             <div class="absolute inset-0 bg-gradient-to-t from-white/0 to-white/40" />
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+            <div class="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent" />
           </div>
           <div class="absolute inset-0 flex items-center justify-end pr-2">
             <LuActivity class="h-2.5 w-2.5 text-white drop-shadow-lg" />
@@ -235,17 +243,17 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
       </div>
 
       {/* Storage Info Card */}
-      <div class="group/metric p-3 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200/30 dark:border-green-700/30">
+      <div class="group/metric rounded-xl border border-green-200/30 bg-gradient-to-br from-green-50 to-emerald-50 p-3 dark:border-green-700/30 dark:from-green-950/20 dark:to-emerald-950/20">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover/metric:scale-110 transition-transform">
+            <div class="rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 p-1.5 transition-transform group-hover/metric:scale-110">
               <LuHardDrive class="h-4 w-4 text-green-500" />
             </div>
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Storage
             </span>
           </div>
-          <span class="text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-sm font-bold text-transparent">
             {storageValue}
           </span>
         </div>
@@ -253,9 +261,9 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
 
       {/* Network Ports Pills */}
       <div class="group/metric">
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 group-hover/metric:scale-110 transition-transform">
+            <div class="rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 p-1.5 transition-transform group-hover/metric:scale-110">
               <LuNetwork class="h-4 w-4 text-amber-500" />
             </div>
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -267,10 +275,10 @@ export const RouterCardMetrics = component$<RouterCardMetricsProps>((props) => {
           {ports.map((port, index) => (
             <span
               key={port}
-              class="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 animate-fade-in"
+              class="inline-flex animate-fade-in items-center rounded-lg bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-300"
               style={`animation-delay: ${index * 100}ms`}
             >
-              <div class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 animate-pulse" />
+              <div class="mr-2 h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
               {port}
             </span>
           ))}

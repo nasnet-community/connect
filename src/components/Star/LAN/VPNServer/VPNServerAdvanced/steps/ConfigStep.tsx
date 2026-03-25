@@ -67,13 +67,15 @@ export const ConfigStep = component$<ConfigStepProps>(
     // Check if any protocols requiring certificates are enabled
     const requiresCertificateStep = $(() => {
       const certificateProtocols: VPNType[] = ["OpenVPN", "SSTP", "IKeV2"];
-      return certificateProtocols.some(protocol => enabledProtocols[protocol]);
+      return certificateProtocols.some(
+        (protocol) => enabledProtocols[protocol],
+      );
     });
 
     // Find existing Certificate step in stepper
     const findExistingCertificateStep = $(() => {
       const stepIndex = context.steps.value.findIndex(
-        (step) => step.title === $localize`Certificate Configuration`
+        (step) => step.title === $localize`Certificate Configuration`,
       );
       return stepIndex >= 0 ? context.steps.value[stepIndex].id : -1;
     });
@@ -95,7 +97,7 @@ export const ConfigStep = component$<ConfigStepProps>(
 
       // Find the protocols step position
       const protocolsStepIndex = context.steps.value.findIndex((step) =>
-        step.title.includes("Protocols")
+        step.title.includes("Protocols"),
       );
 
       if (protocolsStepIndex < 0) return -1;
@@ -105,7 +107,10 @@ export const ConfigStep = component$<ConfigStepProps>(
 
       // Create Certificate step component
       const CertificateStepWrapper$ = $(() => (
-        <CertificateStep enabledProtocols={enabledProtocols} certificateHook={certificateHook!} />
+        <CertificateStep
+          enabledProtocols={enabledProtocols}
+          certificateHook={certificateHook!}
+        />
       ));
 
       // Add the step
@@ -245,7 +250,7 @@ export const ConfigStep = component$<ConfigStepProps>(
         }
 
         // Also check for existing certificate step
-        if (!state.hasCertificateStep && await requiresCertificateStep()) {
+        if (!state.hasCertificateStep && (await requiresCertificateStep())) {
           const existingCertStepId = await findExistingCertificateStep();
           if (existingCertStepId >= 0) {
             state.certificateStepId = existingCertStepId;

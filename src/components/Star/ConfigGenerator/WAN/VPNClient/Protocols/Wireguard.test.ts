@@ -56,7 +56,9 @@ describe("Wireguard protocol", () => {
             }),
         );
 
-        expect(result["/interface wireguard"][0]).toContain('listen-port="13231"');
+        expect(result["/interface wireguard"][0]).toContain(
+            'listen-port="13231"',
+        );
         expect(result["/interface wireguard"][0]).toContain('mtu="1420"');
         expect(result["/interface wireguard peers"][0]).toContain(
             'preshared-key="psk-123="',
@@ -78,7 +80,10 @@ describe("Wireguard protocol", () => {
     // Verifies the wrapper merges the protocol config with the shared VPN base config sections.
     it("wraps a client with shared VPN routing and firewall rules", () => {
         const result = WireguardClientWrapper([
-            buildWireguardConfig({ Name: "wrapped", PeerEndpointAddress: "1.2.3.4" }),
+            buildWireguardConfig({
+                Name: "wrapped",
+                PeerEndpointAddress: "1.2.3.4",
+            }),
         ]);
 
         expect(result["/interface wireguard"]).toHaveLength(1);

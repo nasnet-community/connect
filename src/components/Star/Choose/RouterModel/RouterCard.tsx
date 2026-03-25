@@ -1,11 +1,11 @@
 import { $, component$, type QRL } from "@builder.io/qwik";
-import { 
-  LuRouter, 
-  LuWifi, 
-  LuInfo, 
-  LuCheck, 
+import {
+  LuRouter,
+  LuWifi,
+  LuInfo,
+  LuCheck,
   LuCpu,
-  LuMemoryStick
+  LuMemoryStick,
 } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { type RouterData } from "./Constants";
@@ -22,14 +22,14 @@ interface RouterCardProps {
 }
 
 export const RouterCard = component$<RouterCardProps>((props) => {
-  const { 
-    router, 
-    isSelected, 
-    isDisabled = false, 
-    badge, 
-    badgeVariant = "default", 
+  const {
+    router,
+    isSelected,
+    isDisabled = false,
+    badge,
+    badgeVariant = "default",
     onSelect$,
-    onViewDetails$
+    onViewDetails$,
   } = props;
 
   const getIcon = (iconType: string) => {
@@ -58,41 +58,41 @@ export const RouterCard = component$<RouterCardProps>((props) => {
   return (
     <div
       class={`
-        relative group h-full min-h-[220px] flex flex-col
-        rounded-xl overflow-hidden
+        group relative flex h-full min-h-[220px] flex-col
+        overflow-hidden rounded-xl
         transition-all duration-300
-        ${!isDisabled ? 'cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : 'cursor-not-allowed opacity-60'}
-        ${isSelected 
-          ? 'ring-2 ring-primary-500/60 shadow-lg shadow-primary-500/20' 
-          : 'shadow-md hover:shadow-lg'
+        ${!isDisabled ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.02]" : "cursor-not-allowed opacity-60"}
+        ${
+          isSelected
+            ? "shadow-lg shadow-primary-500/20 ring-2 ring-primary-500/60"
+            : "shadow-md hover:shadow-lg"
         }
       `}
       onClick$={handleClick}
     >
       {/* Simple background */}
-      <div class={`
+      <div
+        class={`
         absolute inset-0 
-        ${isSelected 
-          ? 'bg-gradient-to-br from-primary-50 to-white dark:from-primary-950 dark:to-gray-900' 
-          : 'bg-white dark:bg-gray-900'
+        ${
+          isSelected
+            ? "bg-gradient-to-br from-primary-50 to-white dark:from-primary-950 dark:to-gray-900"
+            : "bg-white dark:bg-gray-900"
         }
-      `} />
-      
+      `}
+      />
+
       {/* Content container */}
-      <div class="relative flex flex-col h-full p-4">
+      <div class="relative flex h-full flex-col p-4">
         {/* Badges */}
         <div class="absolute right-3 top-3 z-10 flex flex-col gap-1">
           {badge && (
-            <Badge
-              color={badgeVariant}
-              size="sm"
-              variant="solid"
-            >
+            <Badge color={badgeVariant} size="sm" variant="solid">
               {badge}
             </Badge>
           )}
           {isSelected && !isDisabled && (
-            <div class="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500 shadow-md">
+            <div class="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 shadow-md">
               <LuCheck class="h-3 w-3 text-white" />
               <span class="text-xs font-semibold text-white">{$localize`Selected`}</span>
             </div>
@@ -103,46 +103,48 @@ export const RouterCard = component$<RouterCardProps>((props) => {
         <div class="mb-3">
           <div class="flex items-start gap-3">
             {/* Icon container */}
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md">
-              <div class="text-white">
-                {getIcon(router.icon)}
-              </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md">
+              <div class="text-white">{getIcon(router.icon)}</div>
             </div>
-            
+
             {/* Title and description */}
             <div class="flex-1">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white mb-1 leading-tight break-words" title={router.title}>
+              <h3
+                class="mb-1 break-words text-base font-bold leading-tight text-gray-900 dark:text-white"
+                title={router.title}
+              >
                 {router.title}
               </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              <p class="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
                 {router.description}
               </p>
             </div>
           </div>
         </div>
 
-
         {/* Key Specs - Compact display */}
         <div class="mb-3 grid grid-cols-2 gap-2 text-xs">
           <div class="flex items-center gap-1">
             <LuCpu class="h-3 w-3 text-blue-500" />
-            <span class="text-gray-600 dark:text-gray-400 truncate">{router.specs.CPU}</span>
+            <span class="truncate text-gray-600 dark:text-gray-400">
+              {router.specs.CPU}
+            </span>
           </div>
           <div class="flex items-center gap-1">
             <LuMemoryStick class="h-3 w-3 text-purple-500" />
-            <span class="text-gray-600 dark:text-gray-400 truncate">{router.specs.RAM}</span>
+            <span class="truncate text-gray-600 dark:text-gray-400">
+              {router.specs.RAM}
+            </span>
           </div>
         </div>
-
 
         {/* Capabilities */}
         <div class="mb-3">
           <RouterCardCapabilities router={router} compact={true} />
         </div>
 
-
         {/* Action button */}
-        <div 
+        <div
           class="mt-auto"
           onClick$={(event) => {
             event.stopPropagation();
@@ -153,14 +155,15 @@ export const RouterCard = component$<RouterCardProps>((props) => {
             onClick$={handleDetailsClick}
             disabled={isDisabled}
             class={`
-              w-full rounded-lg px-3 py-2 font-medium text-sm
+              w-full rounded-lg px-3 py-2 text-sm font-medium
               transition-colors duration-200
-              ${isSelected 
-                ? 'bg-primary-500 text-white hover:bg-primary-600' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-primary-500 hover:text-white'
+              ${
+                isSelected
+                  ? "bg-primary-500 text-white hover:bg-primary-600"
+                  : "bg-gray-100 text-gray-700 hover:bg-primary-500 hover:text-white dark:bg-gray-800 dark:text-gray-300"
               }
               flex items-center justify-center gap-2
-              disabled:opacity-50 disabled:cursor-not-allowed
+              disabled:cursor-not-allowed disabled:opacity-50
             `}
           >
             <LuInfo class="h-3 w-3" />
@@ -168,7 +171,6 @@ export const RouterCard = component$<RouterCardProps>((props) => {
           </button>
         </div>
       </div>
-
     </div>
   );
 });

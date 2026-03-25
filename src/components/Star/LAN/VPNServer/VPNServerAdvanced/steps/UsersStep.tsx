@@ -3,7 +3,10 @@ import type { QRL } from "@builder.io/qwik";
 import { HiUserGroupOutline } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
 import { UserCredential } from "../../UserCredential/UserCredential";
-import type { VSCredentials, OpenVpnServerConfig } from "../../../../StarContext/Utils/VPNServerType";
+import type {
+  VSCredentials,
+  OpenVpnServerConfig,
+} from "../../../../StarContext/Utils/VPNServerType";
 import type { VPNType } from "../../../../StarContext/CommonType";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
@@ -34,12 +37,13 @@ export const UsersStep = component$<UsersStepProps>(
   }) => {
     // Get the context to pass enabled protocols to UserCredential
     const stepperContext = useStepperContext(VPNServerContextId);
-    
+
     // Access StarContext to get OpenVPN server names
     const starContext = useContext(StarContext);
     const vpnServerState = starContext.state.LAN.VPNServer;
-    const openVpnServers: OpenVpnServerConfig[] = vpnServerState?.OpenVpnServer || [];
-    
+    const openVpnServers: OpenVpnServerConfig[] =
+      vpnServerState?.OpenVpnServer || [];
+
     // Get all OpenVPN server names for display
     const openVpnServerNames = openVpnServers
       .map((server: OpenVpnServerConfig) => server.name)

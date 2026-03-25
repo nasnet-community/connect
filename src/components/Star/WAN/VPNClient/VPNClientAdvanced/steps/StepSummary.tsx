@@ -1,5 +1,8 @@
 import { component$, $, useSignal } from "@builder.io/qwik";
-import type { VPNClientAdvancedState, VPNClientConfig } from "../types/VPNClientAdvancedTypes";
+import type {
+  VPNClientAdvancedState,
+  VPNClientConfig,
+} from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNBox } from "../components/VPNBox/VPNBox";
 import { VPNBoxContent } from "../components/VPNBox/VPNBoxContent";
@@ -14,13 +17,14 @@ export const StepSummary = component$<StepSummaryProps>(
   ({ wizardState, wizardActions }) => {
     const editingVPN = useSignal<string | null>(null);
     const editedName = useSignal<string>("");
-    
+
     // Check if there are validation errors
-    const hasValidationErrors = Object.keys(wizardState.validationErrors).length > 0;
+    const hasValidationErrors =
+      Object.keys(wizardState.validationErrors).length > 0;
 
     // Sort VPNs by priority and filter out uninitialized VPNs
     const sortedVPNs = [...wizardState.vpnConfigs]
-      .filter(vpn => vpn.type !== undefined) // Only show configured VPNs
+      .filter((vpn) => vpn.type !== undefined) // Only show configured VPNs
       .sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     const startEdit = $((vpnId: string, currentName: string) => {
@@ -38,8 +42,6 @@ export const StepSummary = component$<StepSummaryProps>(
       editingVPN.value = null;
       editedName.value = "";
     });
-
-
 
     const getConfigSummary = (vpn: (typeof wizardState.vpnConfigs)[0]) => {
       const details: string[] = [];
@@ -103,8 +105,6 @@ export const StepSummary = component$<StepSummaryProps>(
 
       return details;
     };
-
-
 
     return (
       <div class="space-y-6">
@@ -302,8 +302,6 @@ export const StepSummary = component$<StepSummaryProps>(
             </VPNBox>
           ))}
         </div>
-
-
 
         {/* Info message */}
         <div class="mt-4 rounded-lg bg-info-50 p-4 dark:bg-info-900/20">

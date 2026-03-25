@@ -20,7 +20,10 @@ interface WireguardDraftConfig {
 
 export const useWireguardServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   // Get all existing WireGuard servers from StarContext
   const wireguardServers = vpnServerState.WireguardServers || [];
@@ -60,7 +63,7 @@ export const useWireguardServer = () => {
             mtu: 1420,
             vsNetwork: "VPN",
           },
-        ]
+        ],
   );
 
   // Update draft configuration for current tab
@@ -74,27 +77,27 @@ export const useWireguardServer = () => {
   // Add a new server tab with default configuration
   const addServerTab$ = $(() => {
     const newServerNumber = draftConfigs.value.length + 1;
-    
+
     // Get all existing VPN ports to avoid conflicts
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Also get ports from current draft configs (unsaved servers)
-    const draftPorts = draftConfigs.value.map(draft => ({
+    const draftPorts = draftConfigs.value.map((draft) => ({
       protocol: "Wireguard" as const,
       serverName: draft.name,
-      port: draft.listenPort
+      port: draft.listenPort,
     }));
-    
+
     // Combine saved and draft ports
     const combinedPorts = [...allPorts, ...draftPorts];
-    
+
     let nextPort = 51820 + newServerNumber - 1;
-    
+
     // Find next available port
-    while (combinedPorts.some(p => p.port === nextPort)) {
+    while (combinedPorts.some((p) => p.port === nextPort)) {
       nextPort++;
     }
-    
+
     const newDraft: WireguardDraftConfig = {
       name: `wg-server-${newServerNumber}`,
       privateKey: "",
@@ -123,7 +126,8 @@ export const useWireguardServer = () => {
       starContext.updateLAN$({
         VPNServer: {
           ...vpnServerState,
-          WireguardServers: updatedServers.length > 0 ? updatedServers : undefined,
+          WireguardServers:
+            updatedServers.length > 0 ? updatedServers : undefined,
         },
       });
     }
@@ -132,7 +136,8 @@ export const useWireguardServer = () => {
   // Save current tab configuration to StarContext
   const saveCurrentServer$ = $(() => {
     const currentIndex = activeTabIndex.value;
-    const currentDraft = draftConfigs.value[currentIndex] || draftConfigs.value[0];
+    const currentDraft =
+      draftConfigs.value[currentIndex] || draftConfigs.value[0];
 
     // Reset errors
     privateKeyError.value = "";
@@ -148,7 +153,10 @@ export const useWireguardServer = () => {
     // }
 
     // Validate interface address
-    if (!currentDraft.interfaceAddress || !currentDraft.interfaceAddress.includes("/")) {
+    if (
+      !currentDraft.interfaceAddress ||
+      !currentDraft.interfaceAddress.includes("/")
+    ) {
       addressError.value = $localize`Valid interface address with subnet is required (e.g., 192.168.110.1/24)`;
       isValid = false;
     }
@@ -158,7 +166,7 @@ export const useWireguardServer = () => {
     const portValidation = validatePort(
       currentDraft.listenPort,
       currentDraft.name,
-      allPorts
+      allPorts,
     );
 
     if (!portValidation.valid) {
@@ -174,7 +182,7 @@ export const useWireguardServer = () => {
     const serverConfig: WireguardServerConfig = {
       Interface: {
         Name: currentDraft.name,
-        PrivateKey: currentDraft.privateKey || "",  // Empty is acceptable
+        PrivateKey: currentDraft.privateKey || "", // Empty is acceptable
         PublicKey: "", // Would be derived from private key
         InterfaceAddress: currentDraft.interfaceAddress,
         ListenPort: currentDraft.listenPort,
@@ -221,7 +229,9 @@ export const useWireguardServer = () => {
 
       // Validate interface address
       if (!draft.interfaceAddress || !draft.interfaceAddress.includes("/")) {
-        errors.push(`${draft.name}: Valid interface address with subnet is required`);
+        errors.push(
+          `${draft.name}: Valid interface address with subnet is required`,
+        );
         hasError = true;
       }
 
@@ -229,7 +239,7 @@ export const useWireguardServer = () => {
       const portValidation = validatePort(
         draft.listenPort,
         draft.name,
-        allPorts
+        allPorts,
       );
 
       if (!portValidation.valid) {
@@ -242,7 +252,7 @@ export const useWireguardServer = () => {
         const serverConfig: WireguardServerConfig = {
           Interface: {
             Name: draft.name,
-            PrivateKey: draft.privateKey || "",  // Empty is acceptable
+            PrivateKey: draft.privateKey || "", // Empty is acceptable
             PublicKey: "", // Would be derived from private key
             InterfaceAddress: draft.interfaceAddress,
             ListenPort: draft.listenPort,
@@ -256,14 +266,20 @@ export const useWireguardServer = () => {
     }
 
     // Get FRESH state instead of using stale vpnServerState captured at initialization
-    const currentVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+    const currentVPNState = starContext.state.LAN.VPNServer || {
+      Users: [],
+      CertificatePassphrase: "",
+    };
 
     // Save all valid servers to StarContext
     // If we have valid servers, use them; otherwise keep existing servers
     starContext.updateLAN$({
       VPNServer: {
         ...currentVPNState,
-        WireguardServers: validServers.length > 0 ? validServers : currentVPNState.WireguardServers,
+        WireguardServers:
+          validServers.length > 0
+            ? validServers
+            : currentVPNState.WireguardServers,
       },
     });
 
@@ -298,24 +314,24 @@ export const useWireguardServer = () => {
 
   const updateListenPort$ = $((value: number) => {
     updateDraftConfig$({ listenPort: value });
-    
+
     // Get all saved ports
     const allPorts = getAllVPNServerPorts(starContext.state);
-    
+
     // Add draft ports (excluding current draft)
     const currentIndex = activeTabIndex.value;
     const draftPorts = draftConfigs.value
       .filter((_, index) => index !== currentIndex)
-      .map(draft => ({
+      .map((draft) => ({
         protocol: "Wireguard" as const,
         serverName: draft.name,
-        port: draft.listenPort
+        port: draft.listenPort,
       }));
-    
+
     const combinedPorts = [...allPorts, ...draftPorts];
     const currentDraft = draftConfigs.value[currentIndex];
     const validation = validatePort(value, currentDraft.name, combinedPorts);
-    
+
     if (!validation.valid) {
       portError.value = validation.error || "";
     } else {
@@ -391,7 +407,10 @@ export const useWireguardServer = () => {
 
   // Function to ensure default configuration when protocol is enabled
   const ensureDefaultConfig = $(() => {
-    if (!vpnServerState.WireguardServers || vpnServerState.WireguardServers.length === 0) {
+    if (
+      !vpnServerState.WireguardServers ||
+      vpnServerState.WireguardServers.length === 0
+    ) {
       // Initialize with one default server
       if (draftConfigs.value.length === 0) {
         draftConfigs.value = [
@@ -403,7 +422,7 @@ export const useWireguardServer = () => {
             listenPort: 51820,
             mtu: 1420,
             vsNetwork: "VPN",
-          }
+          },
         ];
       }
     }

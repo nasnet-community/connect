@@ -14,22 +14,22 @@ export interface CStepperContentProps {
 }
 
 export const CStepperContent = component$((props: CStepperContentProps) => {
-  const { 
-    currentStep, 
-    isLoading, 
-    activeStep, 
+  const {
+    currentStep,
+    isLoading,
+    activeStep,
     stepHeaderText,
     handleStepError,
-    hideStepHeader = false
+    hideStepHeader = false,
   } = props;
-  
-  const currentStepHasErrors = currentStep.validationErrors && 
-    currentStep.validationErrors.length > 0;
-  
+
+  const currentStepHasErrors =
+    currentStep.validationErrors && currentStep.validationErrors.length > 0;
+
   // Helper function to safely render step component with error boundary
   const renderStepComponent = $(() => {
     try {
-      if (typeof currentStep.component === 'function') {
+      if (typeof currentStep.component === "function") {
         // For functional components that have been wrapped with $()
         return currentStep.component({});
       } else {
@@ -39,7 +39,7 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       handleStepError(error);
-      
+
       return (
         <div class="rounded-md bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
           <p>Error rendering step component: {error.message}</p>
@@ -49,25 +49,25 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
   });
 
   return (
-    <div 
+    <div
       class={`rounded-xl border ${
-        currentStepHasErrors 
-          ? 'border-red-300 dark:border-red-800' 
-          : 'border-gray-200 dark:border-gray-700'
-      } bg-white shadow-sm dark:bg-gray-800 p-6`}
+        currentStepHasErrors
+          ? "border-red-300 dark:border-red-800"
+          : "border-gray-200 dark:border-gray-700"
+      } bg-white p-6 shadow-sm dark:bg-gray-800`}
       role="tabpanel"
       id={`cstepper-step-${activeStep}`}
       aria-labelledby={`step-tab-${activeStep}`}
     >
       {!hideStepHeader && (
         <>
-          <h2 
-            class="text-xl font-semibold text-gray-900 dark:text-white mb-4"
+          <h2
+            class="mb-4 text-xl font-semibold text-gray-900 dark:text-white"
             id={`step-heading-${activeStep}`}
           >
             {stepHeaderText}
           </h2>
-          <p 
+          <p
             class="mb-6 text-gray-600 dark:text-gray-400"
             id={`step-description-${activeStep}`}
           >
@@ -75,10 +75,10 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
           </p>
         </>
       )}
-      
+
       {/* Display validation errors if any */}
       {currentStepHasErrors && currentStep.validationErrors && (
-        <div 
+        <div
           class="mb-6 rounded-md bg-red-50 p-4 dark:bg-red-900/20"
           role="alert"
           aria-atomic="true"
@@ -93,7 +93,7 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
           </ul>
         </div>
       )}
-      
+
       {/* Loading state */}
       {isLoading ? (
         <div class="flex items-center justify-center py-12">
@@ -102,10 +102,8 @@ export const CStepperContent = component$((props: CStepperContentProps) => {
         </div>
       ) : (
         /* Step component with error boundary */
-        <div>
-          {renderStepComponent()}
-        </div>
+        <div>{renderStepComponent()}</div>
       )}
     </div>
   );
-}); 
+});

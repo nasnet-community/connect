@@ -1,4 +1,7 @@
-import { type RouterConfig, CommandShortner } from "~/components/Star/ConfigGenerator";
+import {
+    type RouterConfig,
+    CommandShortner,
+} from "~/components/Star/ConfigGenerator";
 import { SubnetToFirstUsableIP } from "~/components/Star/ConfigGenerator/utils/Subnet";
 import type {
     IpipTunnelConfig,
@@ -9,9 +12,12 @@ import type {
     SubnetConfig,
 } from "~/components/Star/StarContext";
 
-
 // Utility function to generate IP address configuration
-export const generateIPAddress = ( address: string, interfaceName: string, comment?: string ): RouterConfig => {
+export const generateIPAddress = (
+    address: string,
+    interfaceName: string,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip address": [],
     };
@@ -71,7 +77,11 @@ export const generateIPAddress = ( address: string, interfaceName: string, comme
 // };
 
 // Utility function to add tunnel interface to interface lists
-export const TunnelInterfaceList = ( interfaceName: string, networkType: string, comment?: string ): RouterConfig => {
+export const TunnelInterfaceList = (
+    interfaceName: string,
+    networkType: string,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface list member": [],
     };
@@ -87,7 +97,11 @@ export const TunnelInterfaceList = ( interfaceName: string, networkType: string,
 };
 
 // Utility function to add tunnel subnet to address lists
-export const TunnelAddressList = ( subnet: string, networkType: string, comment?: string ): RouterConfig => {
+export const TunnelAddressList = (
+    subnet: string,
+    networkType: string,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall address-list": [],
     };
@@ -107,21 +121,25 @@ export const extractSubnetPrefix = (subnet: string): string => {
 };
 
 // Helper function to build tunnel IP address with subnet prefix
-export const buildTunnelIPAddress = ( localAddress: string, subnet: SubnetConfig ): string => {
+export const buildTunnelIPAddress = (
+    localAddress: string,
+    subnet: SubnetConfig,
+): string => {
     const prefix = extractSubnetPrefix(subnet.subnet);
-    
+
     // If localAddress is empty or undefined, use the first usable IP from the subnet
-    const ip = localAddress && localAddress.trim() !== "" 
-        ? localAddress 
-        : SubnetToFirstUsableIP(subnet.subnet);
-    
+    const ip =
+        localAddress && localAddress.trim() !== ""
+            ? localAddress
+            : SubnetToFirstUsableIP(subnet.subnet);
+
     return `${ip}/${prefix}`;
 };
 
 // Helper function to handle IPsec and fast path logic (shared by IPIP, EoIP, GRE)
 export const handleIPsecAndFastPath = (
     params: string[],
-    config: { ipsecSecret?: string; allowFastPath?: boolean }
+    config: { ipsecSecret?: string; allowFastPath?: boolean },
 ): void => {
     // Business logic: if ipsecSecret is used, allowFastPath must be false
     if (config.ipsecSecret && config.allowFastPath !== false) {
@@ -134,34 +152,43 @@ export const handleIPsecAndFastPath = (
 // Helper function to add all subnet-based configurations for a tunnel
 export const addTunnelSubnetConfigurations = (
     configs: RouterConfig[],
-    tunnelConfig: IpipTunnelConfig | EoipTunnelConfig | GreTunnelConfig | VxlanInterfaceConfig,
+    tunnelConfig:
+        | IpipTunnelConfig
+        | EoipTunnelConfig
+        | GreTunnelConfig
+        | VxlanInterfaceConfig,
     subnet: SubnetConfig,
-    tunnelType: "IPIP" | "EoIP" | "GRE" | "VXLAN"
+    tunnelType: "IPIP" | "EoIP" | "GRE" | "VXLAN",
 ): void => {
     const networkType = tunnelConfig.NetworkType || "VPN";
-    
+
     // Add IP address to tunnel interface
-    configs.push(generateIPAddress(
-        buildTunnelIPAddress(tunnelConfig.localAddress, subnet),
-        tunnelConfig.name,
-        `${tunnelType} tunnel ${tunnelConfig.name}`
-    ));
+    configs.push(
+        generateIPAddress(
+            buildTunnelIPAddress(tunnelConfig.localAddress, subnet),
+            tunnelConfig.name,
+            `${tunnelType} tunnel ${tunnelConfig.name}`,
+        ),
+    );
 
     // Add interface to interface lists
-    configs.push(TunnelInterfaceList(
-        tunnelConfig.name,
-        networkType,
-        `${tunnelType} tunnel ${tunnelConfig.name}`
-    ));
+    configs.push(
+        TunnelInterfaceList(
+            tunnelConfig.name,
+            networkType,
+            `${tunnelType} tunnel ${tunnelConfig.name}`,
+        ),
+    );
 
     // Add subnet to address list
-    configs.push(TunnelAddressList(
-        subnet.subnet,
-        networkType,
-        `${tunnelType} tunnel subnet ${tunnelConfig.name}`
-    ));
+    configs.push(
+        TunnelAddressList(
+            subnet.subnet,
+            networkType,
+            `${tunnelType} tunnel subnet ${tunnelConfig.name}`,
+        ),
+    );
 };
-
 
 // Function to generate inbound traffic marking rules for tunnel protocols
 export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
@@ -231,24 +258,30 @@ export const TunnelInboundTraffic = (tunnel: Tunnel): RouterConfig => {
 };
 
 // Helper function to find matching subnet by name (follows VPNServer pattern)
-export const findSubnetByName = (tunnelName: string, subnetList?: SubnetConfig[]): SubnetConfig | undefined => {
+export const findSubnetByName = (
+    tunnelName: string,
+    subnetList?: SubnetConfig[],
+): SubnetConfig | undefined => {
     if (!subnetList || !Array.isArray(subnetList)) return undefined;
-    
+
     // Try exact name match
     let matched = subnetList.find((s) => s.name === tunnelName);
     if (matched) return matched;
-    
+
     // Try case-insensitive match
-    matched = subnetList.find((s) => s.name.toLowerCase() === tunnelName.toLowerCase());
+    matched = subnetList.find(
+        (s) => s.name.toLowerCase() === tunnelName.toLowerCase(),
+    );
     if (matched) return matched;
-    
+
     // Try with protocol prefix
-    matched = subnetList.find((s) => s.name.toLowerCase().includes(tunnelName.toLowerCase()));
+    matched = subnetList.find((s) =>
+        s.name.toLowerCase().includes(tunnelName.toLowerCase()),
+    );
     if (matched) return matched;
-    
+
     return undefined;
 };
-
 
 export const IPIPInterface = (ipip: IpipTunnelConfig): RouterConfig => {
     const config: RouterConfig = {
@@ -267,7 +300,9 @@ export const IPIPInterface = (ipip: IpipTunnelConfig): RouterConfig => {
     if (ipip.comment !== undefined)
         interfaceParams.push(`comment="${ipip.comment}"`);
     else
-        interfaceParams.push(`comment="${ipip.name} IPIP Tunnel for Network ${ipip.NetworkType}"`);
+        interfaceParams.push(
+            `comment="${ipip.name} IPIP Tunnel for Network ${ipip.NetworkType}"`,
+        );
     if (ipip.ipsecSecret !== undefined)
         interfaceParams.push(`ipsec-secret="${ipip.ipsecSecret}"`);
     if (ipip.dontFragment !== undefined)
@@ -298,7 +333,9 @@ export const EoipInterface = (eoip: EoipTunnelConfig): RouterConfig => {
     if (eoip.comment !== undefined)
         interfaceParams.push(`comment="${eoip.comment}"`);
     else
-        interfaceParams.push(`comment="${eoip.name} EoIP Tunnel for Network ${eoip.NetworkType}"`);
+        interfaceParams.push(
+            `comment="${eoip.name} EoIP Tunnel for Network ${eoip.NetworkType}"`,
+        );
     if (eoip.ipsecSecret !== undefined)
         interfaceParams.push(`ipsec-secret="${eoip.ipsecSecret}"`);
 
@@ -339,7 +376,9 @@ export const GreInterface = (gre: GreTunnelConfig): RouterConfig => {
     if (gre.comment !== undefined)
         interfaceParams.push(`comment="${gre.comment}"`);
     else
-        interfaceParams.push(`comment="${gre.name} GRE Tunnel for Network ${gre.NetworkType}"`);
+        interfaceParams.push(
+            `comment="${gre.name} GRE Tunnel for Network ${gre.NetworkType}"`,
+        );
     if (gre.ipsecSecret !== undefined)
         interfaceParams.push(`ipsec-secret="${gre.ipsecSecret}"`);
     if (gre.dontFragment !== undefined)
@@ -373,7 +412,9 @@ export const VxlanInterface = (vxlan: VxlanInterfaceConfig): RouterConfig => {
     if (vxlan.comment !== undefined)
         interfaceParams.push(`comment="${vxlan.comment}"`);
     else
-        interfaceParams.push(`comment="${vxlan.name} VXLAN Tunnel for Network ${vxlan.NetworkType}"`);
+        interfaceParams.push(
+            `comment="${vxlan.name} VXLAN Tunnel for Network ${vxlan.NetworkType}"`,
+        );
     if (vxlan.port !== undefined) interfaceParams.push(`port=${vxlan.port}`);
     if (vxlan.hw !== undefined)
         interfaceParams.push(`hw=${vxlan.hw ? "yes" : "no"}`);

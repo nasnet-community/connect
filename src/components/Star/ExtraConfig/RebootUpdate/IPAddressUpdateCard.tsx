@@ -12,7 +12,11 @@ interface IPAddressUpdateCardProps {
 }
 
 export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
-  ({ ipAddressUpdateEnabled: _ipAddressUpdateEnabled, ipAddressUpdateTime, ipAddressUpdateInterval }) => {
+  ({
+    ipAddressUpdateEnabled: _ipAddressUpdateEnabled,
+    ipAddressUpdateTime,
+    ipAddressUpdateInterval,
+  }) => {
     const handleIntervalChange = $((value: FrequencyValue) => {
       ipAddressUpdateInterval.value = value;
     });
@@ -30,7 +34,7 @@ export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
           <TimePicker
             time={ipAddressUpdateTime}
             onChange$={(type, value) => {
-              if (type === 'hour' || type === 'minute') {
+              if (type === "hour" || type === "minute") {
                 ipAddressUpdateTime[type] = value;
               }
             }}

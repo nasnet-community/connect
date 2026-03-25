@@ -16,33 +16,30 @@ import { useFlex } from "./hooks";
  * spacing, and mobile-specific behaviors.
  */
 const Flex = component$<FlexProps>((props) => {
-  const {
-    as: Element = "div",
-    ...rest
-  } = props;
+  const { as: Element = "div", ...rest } = props;
 
   // Use the enhanced useFlex hook for all logic
-  const { 
-    combinedClassNames, 
+  const {
+    combinedClassNames,
     styleProperties,
     isMobile,
     isRtl,
-    supportsContainerQueries
+    supportsContainerQueries,
   } = useFlex(props);
 
   const ElementAny = Element as any;
 
   return (
-    <ElementAny 
-      {...rest} 
+    <ElementAny
+      {...rest}
       class={combinedClassNames}
       style={{
         ...styleProperties,
-        ...(props.style as Record<string, string> || {})
+        ...((props.style as Record<string, string>) || {}),
       }}
-      data-mobile={isMobile ? 'true' : 'false'}
-      data-rtl={isRtl ? 'true' : 'false'}
-      data-container-queries={supportsContainerQueries ? 'true' : 'false'}
+      data-mobile={isMobile ? "true" : "false"}
+      data-rtl={isRtl ? "true" : "false"}
+      data-container-queries={supportsContainerQueries ? "true" : "false"}
     >
       <Slot />
     </ElementAny>
@@ -234,9 +231,10 @@ export const FlexItem = component$<FlexItemProps>((props) => {
   // Mobile-specific FlexItem features
   const touchTargetClasses = {
     "min-h-[32px] min-w-[32px]": touchTarget === "sm",
-    "min-h-[44px] min-w-[44px]": touchTarget === "md", 
+    "min-h-[44px] min-w-[44px]": touchTarget === "md",
     "min-h-[48px] min-w-[48px]": touchTarget === "lg",
-    "min-h-[44px] min-w-[44px] touch:min-h-[48px] touch:min-w-[48px]": touchTarget === "accessible",
+    "min-h-[44px] min-w-[44px] touch:min-h-[48px] touch:min-w-[48px]":
+      touchTarget === "accessible",
   };
 
   const mobilePriorityClasses = {
@@ -281,12 +279,12 @@ export const FlexItem = component$<FlexItemProps>((props) => {
   const ElementAny = Element as any;
 
   return (
-    <ElementAny 
-      {...rest} 
+    <ElementAny
+      {...rest}
       class={combinedClassNames}
       data-touch-target={touchTarget}
       data-mobile-priority={mobilePriority}
-      data-adaptive-size={adaptiveSize ? 'true' : 'false'}
+      data-adaptive-size={adaptiveSize ? "true" : "false"}
     >
       <Slot />
     </ElementAny>

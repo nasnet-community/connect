@@ -1,4 +1,10 @@
-import type { QRL, QwikIntrinsicElements, JSXNode, JSXOutput, SVGProps } from "@builder.io/qwik";
+import type {
+  QRL,
+  QwikIntrinsicElements,
+  JSXNode,
+  JSXOutput,
+  SVGProps,
+} from "@builder.io/qwik";
 
 /**
  * Available icon sizes with extended range for diverse use cases
@@ -40,11 +46,16 @@ export type IconInteractiveMode = boolean;
 /**
  * Props for the Icon component with enhanced features
  */
-export interface IconProps extends Omit<QwikIntrinsicElements["span"], "children" | "size"> {
+export interface IconProps
+  extends Omit<QwikIntrinsicElements["span"], "children" | "size"> {
   /**
    * The icon to display - can be a QRL icon function (with or without props), JSX element, or JSX output
    */
-  icon: QRL<() => JSXNode> | QRL<(props: SVGProps<SVGSVGElement>) => JSXNode> | JSXNode | JSXOutput;
+  icon:
+    | QRL<() => JSXNode>
+    | QRL<(props: SVGProps<SVGSVGElement>) => JSXNode>
+    | JSXNode
+    | JSXOutput;
 
   /**
    * Size of the icon with extended size options
@@ -99,13 +110,13 @@ export interface IconButtonProps extends IconProps {
    * Button-specific properties when icon is used as a button
    */
   onClick$?: QRL<() => void>;
-  
+
   /**
    * Whether the icon button is disabled
    * @default false
    */
   disabled?: boolean;
-  
+
   /**
    * Loading state for icon buttons
    * @default false
@@ -125,23 +136,23 @@ export interface IconGroupProps {
     label?: string;
     id?: string;
   }>;
-  
+
   /**
    * Shared size for all icons in the group
    */
   size?: IconSize;
-  
+
   /**
    * Shared color for all icons in the group
    */
   color?: IconColor;
-  
+
   /**
    * Spacing between icons
    * @default "md"
    */
   spacing?: "sm" | "md" | "lg";
-  
+
   /**
    * Direction of the icon group
    * @default "horizontal"
@@ -158,25 +169,30 @@ export interface IconConfig {
    * @default "md"
    */
   defaultSize?: IconSize;
-  
+
   /**
    * Default color for all icons
    * @default "current"
    */
   defaultColor?: IconColor;
-  
+
   /**
    * Whether to enable responsive behavior by default
    * @default false
    */
   defaultResponsive?: boolean;
-  
+
   /**
    * Custom size mappings for responsive behavior
    */
-  responsiveSizes?: Partial<Record<IconSize, {
-    mobile: string;
-    tablet: string;
-    desktop: string;
-  }>>;
+  responsiveSizes?: Partial<
+    Record<
+      IconSize,
+      {
+        mobile: string;
+        tablet: string;
+        desktop: string;
+      }
+    >
+  >;
 }
