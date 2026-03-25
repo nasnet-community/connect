@@ -72,23 +72,21 @@ export const UserCredential = component$<UserCredentialProps>(
     // Check if all enabled protocols are selected
     const allProtocolsSelected =
       enabledProtocolsList.length > 0 &&
-      enabledProtocolsList.every((protocol) =>
-        (user.VPNType || []).includes(protocol),
-      );
+      enabledProtocolsList.every((protocol) => user.VPNType.includes(protocol));
 
     // Handle Select All / Deselect All
     const handleSelectAll = $(async () => {
       if (allProtocolsSelected) {
         // Deselect all protocols
         for (const protocol of enabledProtocolsList) {
-          if ((user.VPNType || []).includes(protocol)) {
+          if (user.VPNType.includes(protocol)) {
             await handleProtocolToggle(protocol);
           }
         }
       } else {
         // Select all enabled protocols
         for (const protocol of enabledProtocolsList) {
-          if (!(user.VPNType || []).includes(protocol)) {
+          if (!user.VPNType.includes(protocol)) {
             await handleProtocolToggle(protocol);
           }
         }
@@ -255,11 +253,11 @@ export const UserCredential = component$<UserCredentialProps>(
 
                 {VPN_PROTOCOLS.map((protocol) => {
                   // Only show enabled protocols
-                  if (enabledProtocols && !enabledProtocols[protocol.id]) {
+                  if (enabledProtocols?.[protocol.id] === false) {
                     return null;
                   }
 
-                  const isSelected = (user.VPNType || []).includes(protocol.id);
+                  const isSelected = user.VPNType.includes(protocol.id);
 
                   return (
                     <div

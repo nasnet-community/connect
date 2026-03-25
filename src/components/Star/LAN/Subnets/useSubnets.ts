@@ -24,8 +24,6 @@ export const useSubnets = (): UseSubnetsReturn => {
     const wanSubnets: Array<{ value: number; name: string }> = [];
     const wanLinks = starContext.state.WAN.WANLink;
 
-    if (!wanLinks) return wanSubnets;
-
     // Check both Domestic and Foreign WAN links
     const allLinks = [
       ...(wanLinks.Domestic?.WANConfigs || []).map((c) => ({
@@ -48,12 +46,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
       const ipParts = ip.split(".").map((p) => parseInt(p, 10));
       const maskParts = mask.split(".").map((p) => parseInt(p, 10));
-      if (
-        !ipParts ||
-        !maskParts ||
-        ipParts.length !== 4 ||
-        maskParts.length !== 4
-      )
+      if (ipParts.length !== 4 || maskParts.length !== 4)
         return null;
       if (ipParts.some((n) => isNaN(n)) || maskParts.some((n) => isNaN(n)))
         return null;
@@ -243,9 +236,6 @@ export const useSubnets = (): UseSubnetsReturn => {
   const subnetConfigs = useComputed$<SubnetConfig[]>(() => {
     const configs: SubnetConfig[] = [];
     const networks = starContext.state.Choose.Networks;
-
-    // Return empty if Networks is not defined
-    if (!networks) return configs;
 
     // Base Networks - only show if enabled in Networks.BaseNetworks
     if (networks.BaseNetworks?.Split) {
@@ -711,7 +701,7 @@ export const useSubnets = (): UseSubnetsReturn => {
     for (const config of subnetConfigs.value) {
       const value = values.value[config.key];
 
-      if (value !== null && value !== undefined) {
+      if (value !== null) {
         // Range validation
         if (value < 1 || value > 254) {
           newErrors[config.key] = $localize`Value must be between 1-254`;
@@ -770,15 +760,12 @@ export const useSubnets = (): UseSubnetsReturn => {
 
     if (!hasSavedValues) {
       // Go through all configurations and set placeholder as default if not set
-      subnetConfigs.value.forEach((config) => {
-        if (
-          currentValues[config.key] === undefined ||
-          currentValues[config.key] === null
-        ) {
+      for (const config of subnetConfigs.value) {
+        if (currentValues[config.key] === null) {
           currentValues[config.key] = config.placeholder;
           hasChanges = true;
         }
-      });
+      }
 
       // Update values if we made changes
       if (hasChanges) {
@@ -844,7 +831,7 @@ export const useSubnets = (): UseSubnetsReturn => {
       const value = values.value[config.key];
 
       // Required field validation
-      if (config.isRequired && (value === null || value === undefined)) {
+      if (config.isRequired && value === null) {
         newErrors[config.key] = $localize`This subnet is required`;
         continue;
       }
@@ -956,7 +943,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
   // Get progress for a category
   const getCategoryProgress = $((category: SubnetCategory) => {
-    const configs = groupedConfigs.value[category] || [];
+    const configs = groupedConfigs.value[category];
     const configured = configs.filter(
       (c) => values.value[c.key] !== null,
     ).length;

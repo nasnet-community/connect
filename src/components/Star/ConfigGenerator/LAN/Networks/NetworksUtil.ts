@@ -25,7 +25,7 @@ export const shouldSkipMangleRules = (
                 return true;
             }
         }
-    } else if (networkType === "VPN") {
+    } else {
         if (vpnClient?.MultiLinkConfig?.loadBalanceMethod) {
             const method = vpnClient.MultiLinkConfig.loadBalanceMethod;
             if (method === "PCC" || method === "NTH") {
@@ -47,23 +47,23 @@ export const extractBridgeNames = (
     if (networks.BaseNetworks) {
         if (
             networks.BaseNetworks.Split &&
-            subnets?.BaseSubnets?.Split?.subnet
+            subnets?.BaseSubnets.Split?.subnet
         ) {
             bridgeNames.push("LANBridgeSplit");
         }
         if (
             networks.BaseNetworks.Domestic &&
-            subnets?.BaseSubnets?.Domestic?.subnet
+            subnets?.BaseSubnets.Domestic?.subnet
         ) {
             bridgeNames.push("LANBridgeDomestic");
         }
         if (
             networks.BaseNetworks.Foreign &&
-            subnets?.BaseSubnets?.Foreign?.subnet
+            subnets?.BaseSubnets.Foreign?.subnet
         ) {
             bridgeNames.push("LANBridgeForeign");
         }
-        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
+        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets.VPN?.subnet) {
             bridgeNames.push("LANBridgeVPN");
         }
     }
@@ -167,23 +167,23 @@ export const extractTableNames = (
     if (networks.BaseNetworks) {
         if (
             networks.BaseNetworks.Split &&
-            subnets?.BaseSubnets?.Split?.subnet
+            subnets?.BaseSubnets.Split?.subnet
         ) {
             tableNames.push("to-Split");
         }
         if (
             networks.BaseNetworks.Domestic &&
-            subnets?.BaseSubnets?.Domestic?.subnet
+            subnets?.BaseSubnets.Domestic?.subnet
         ) {
             tableNames.push("to-Domestic");
         }
         if (
             networks.BaseNetworks.Foreign &&
-            subnets?.BaseSubnets?.Foreign?.subnet
+            subnets?.BaseSubnets.Foreign?.subnet
         ) {
             tableNames.push("to-Foreign");
         }
-        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets?.VPN?.subnet) {
+        if (networks.BaseNetworks.VPN && subnets?.BaseSubnets.VPN?.subnet) {
             tableNames.push("to-VPN");
         }
     }

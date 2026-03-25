@@ -5,11 +5,7 @@ export function mergeRouterConfigs(...configs: RouterConfig[]): RouterConfig {
 
     configs.forEach((config) => {
         Object.entries(config).forEach(([key, value]) => {
-            if (merged[key]) {
-                merged[key] = [...merged[key], ...value];
-            } else {
-                merged[key] = [...value];
-            }
+            merged[key] = [...(merged[key] ?? []), ...value];
         });
     });
 
@@ -30,11 +26,7 @@ export const mergeConfigurations = (
     const mergedConfig = { ...baseConfig };
 
     Object.entries(newConfig).forEach(([key, value]) => {
-        if (mergedConfig[key]) {
-            mergedConfig[key] = [...mergedConfig[key], ...value];
-        } else {
-            mergedConfig[key] = value;
-        }
+        mergedConfig[key] = [...(mergedConfig[key] ?? []), ...value];
     });
 
     return mergedConfig;
@@ -44,7 +36,7 @@ export const removeEmptyArrays = (config: RouterConfig): RouterConfig => {
     const filteredConfig: RouterConfig = {};
 
     Object.entries(config).forEach(([key, value]) => {
-        if (value && value.length > 0) {
+        if (value.length > 0) {
             filteredConfig[key] = value;
         }
     });

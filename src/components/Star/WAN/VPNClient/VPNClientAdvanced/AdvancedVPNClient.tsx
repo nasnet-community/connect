@@ -261,21 +261,23 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         "[AdvancedVPNClient] Step 1: Identifying and removing empty VPNs",
       );
       // Identify empty VPNs (no type or incomplete config)
-      const emptyVPNs = advancedHooks.state.vpnConfigs.filter((vpn) => {
+      const emptyVPNs: (typeof advancedHooks.state.vpnConfigs)[number][] = [];
+      for (const vpn of advancedHooks.state.vpnConfigs) {
         if (!vpn.type) {
           console.log(
             `[AdvancedVPNClient] VPN ${vpn.name} (${vpn.id}) has no type - marking as empty`,
           );
-          return true;
+          emptyVPNs.push(vpn);
+          continue;
         }
-        const hasAllFields = validation.hasAllMandatoryFields$(vpn);
+        const hasAllFields = await validation.hasAllMandatoryFields$(vpn);
         if (!hasAllFields) {
           console.log(
             `[AdvancedVPNClient] VPN ${vpn.name} (${vpn.id}) is missing mandatory fields - marking as empty`,
           );
+          emptyVPNs.push(vpn);
         }
-        return !hasAllFields;
-      });
+      }
 
       console.log(
         "[AdvancedVPNClient] Found",
@@ -353,9 +355,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
       // Refresh step completion status
       console.log("[AdvancedVPNClient] Step 6: Refreshing step completion");
-      if (refreshStepCompletion$) {
-        await refreshStepCompletion$();
-      }
+      await refreshStepCompletion$();
 
       console.log("[AdvancedVPNClient] Promotional L2TP handling completed");
     });
@@ -617,7 +617,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       // Track config fields for Step 2 completion - simplified tracking
       track(() =>
         advancedHooks.state.vpnConfigs.map((vpn) => {
-          if (vpn.type && "config" in vpn && vpn.config) {
+          if (vpn.type && "config" in vpn) {
             const config = vpn.config as any;
             switch (vpn.type) {
               case "Wireguard":
@@ -741,7 +741,6 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       };
 
       // Debounce only structure changes, not completion updates
-      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         updateStepStructure();
       }, 100);
