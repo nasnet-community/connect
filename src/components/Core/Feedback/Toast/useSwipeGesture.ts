@@ -55,8 +55,6 @@ export function useSwipeGesture(
     let currentY = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (!enabled) return;
-
       isDragging.value = true;
       const touch = e.touches[0];
       startX = touch.clientX;
@@ -71,7 +69,7 @@ export function useSwipeGesture(
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging.value || !enabled) return;
+      if (!isDragging.value) return;
 
       const touch = e.touches[0];
       currentX = touch.clientX;
@@ -102,7 +100,7 @@ export function useSwipeGesture(
     };
 
     const handleTouchEnd = async (e: TouchEvent) => {
-      if (!isDragging.value || !enabled) return;
+      if (!isDragging.value) return;
 
       isDragging.value = false;
 

@@ -206,8 +206,7 @@ export const NATPMPStep = component$(() => {
 
     // Validate: Step is complete when NAT-PMP is disabled or when enabled with an interface selected
     const isComplete =
-      !natpmpEnabled.value ||
-      (natpmpEnabled.value && selectedInterface.value !== undefined);
+      !natpmpEnabled.value || selectedInterface.value !== undefined;
 
     // Find the current step and update its completion status
     const currentStepIndex = context.steps.value.findIndex(
@@ -658,7 +657,7 @@ export const NATPMPStep = component$(() => {
           })}
 
           {/* Selection validation warning */}
-          {natpmpEnabled.value && !selectedInterface.value && (
+          {!selectedInterface.value && (
             <Alert
               status="error"
               title={$localize`No Interface Selected`}

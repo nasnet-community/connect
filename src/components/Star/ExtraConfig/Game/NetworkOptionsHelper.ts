@@ -31,10 +31,10 @@ export const buildNetworkOptions = (
 
   // Check if LoadBalance is enabled for each link type
   const domesticLoadBalance = isLoadBalanceEnabled(
-    wanState?.WANLink?.Domestic?.MultiLinkConfig?.strategy,
+    wanState?.WANLink.Domestic?.MultiLinkConfig?.strategy,
   );
   const foreignLoadBalance = isLoadBalanceEnabled(
-    wanState?.WANLink?.Foreign?.MultiLinkConfig?.strategy,
+    wanState?.WANLink.Foreign?.MultiLinkConfig?.strategy,
   );
   const vpnLoadBalance = isLoadBalanceEnabled(
     wanState?.VPNClient?.MultiLinkConfig?.strategy,
@@ -161,9 +161,7 @@ export const groupNetworkOptions = (
 
   options.forEach((option) => {
     const category = option.category || "Other";
-    if (!grouped[category]) {
-      grouped[category] = [];
-    }
+    grouped[category] ??= [];
     grouped[category].push(option);
   });
 

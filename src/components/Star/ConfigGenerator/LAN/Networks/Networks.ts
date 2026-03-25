@@ -327,9 +327,9 @@ export const Networks = (
     const configs: RouterConfig[] = [];
 
     // Base Networks - check skipMangle per network type
-    if (subnets.BaseSubnets?.Split)
+    if (subnets.BaseSubnets.Split)
         configs.push(addNetwork(subnets.BaseSubnets.Split, "Split", SplitBase));
-    if (subnets.BaseSubnets?.Domestic) {
+    if (subnets.BaseSubnets.Domestic) {
         const skipMangle = shouldSkipMangleRules(
             "Domestic",
             wanLinks,
@@ -344,7 +344,7 @@ export const Networks = (
             ),
         );
     }
-    if (subnets.BaseSubnets?.Foreign) {
+    if (subnets.BaseSubnets.Foreign) {
         const skipMangle = shouldSkipMangleRules(
             "Foreign",
             wanLinks,
@@ -359,7 +359,7 @@ export const Networks = (
             ),
         );
     }
-    if (subnets.BaseSubnets?.VPN) {
+    if (subnets.BaseSubnets.VPN) {
         const skipMangle = shouldSkipMangleRules("VPN", wanLinks, vpnClient);
         configs.push(
             addNetwork(subnets.BaseSubnets.VPN, "VPN", VPNBase, skipMangle),

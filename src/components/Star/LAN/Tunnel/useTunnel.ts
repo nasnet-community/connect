@@ -258,8 +258,7 @@ export const useTunnel = () => {
       (tunnel) =>
         tunnel.name &&
         tunnel.localAddress &&
-        tunnel.remoteAddress &&
-        tunnel.tunnelId !== undefined,
+        tunnel.remoteAddress,
     );
   });
 
@@ -278,8 +277,7 @@ export const useTunnel = () => {
       (tunnel) =>
         tunnel.name &&
         tunnel.localAddress &&
-        tunnel.remoteAddress &&
-        tunnel.vni !== undefined,
+        tunnel.remoteAddress,
     );
   });
 
@@ -304,8 +302,7 @@ export const useTunnel = () => {
       (tunnel) =>
         tunnel.name &&
         tunnel.localAddress &&
-        tunnel.remoteAddress &&
-        tunnel.tunnelId !== undefined,
+        tunnel.remoteAddress,
     );
 
     // Check GRE tunnels validity
@@ -318,8 +315,7 @@ export const useTunnel = () => {
       (tunnel) =>
         tunnel.name &&
         tunnel.localAddress &&
-        tunnel.remoteAddress &&
-        tunnel.vni !== undefined,
+        tunnel.remoteAddress,
     );
 
     return hasTunnels && validIpip && validEoip && validGre && validVxlan;

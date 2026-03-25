@@ -225,8 +225,8 @@ export const NetworkTopologyGraph = component$(
             preserveAspectRatio="xMidYMid meet"
           >
             {connections.map((conn, index) => {
-              const fromNode = nodes[conn.from];
-              const toNode = nodes[conn.to];
+              const fromNode = nodes.at(conn.from);
+              const toNode = nodes.at(conn.to);
 
               if (!fromNode || !toNode) {
                 console.warn(
