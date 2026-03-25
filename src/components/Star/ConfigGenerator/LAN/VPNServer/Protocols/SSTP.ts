@@ -77,9 +77,7 @@ export const SstpServer = (
     // Configure SSTP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
 
-    if (Port) {
-        serverParams.push(`port=${Port}`);
-    }
+    serverParams.push(`port=${Port}`);
 
     if (Authentication) {
         serverParams.push(`authentication=mschap1,mschap2`);
@@ -168,7 +166,7 @@ export const SSTPVSBinding = (
         "": [],
     };
 
-    if (!credentials || credentials.length === 0) {
+    if (credentials.length === 0) {
         // config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
@@ -187,15 +185,14 @@ export const SSTPVSBinding = (
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
+    const usersByVpnType: Partial<Record<string, VSCredentials[]>> = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
             if (supportedVpnTypes.includes(vpnType)) {
-                if (!usersByVpnType[vpnType]) {
-                    usersByVpnType[vpnType] = [];
-                }
-                usersByVpnType[vpnType].push(user);
+                const vpnUsers = usersByVpnType[vpnType] ?? [];
+                vpnUsers.push(user);
+                usersByVpnType[vpnType] = vpnUsers;
             }
         });
     });
@@ -204,13 +201,14 @@ export const SSTPVSBinding = (
     const createdInterfaces: string[] = [];
 
     // SSTP Static Interface Bindings
-    if (usersByVpnType["SSTP"]) {
+    const sstpUsers = usersByVpnType["SSTP"] ?? [];
+    if (sstpUsers.length > 0) {
         // config[""].push("# SSTP Static Interface Bindings");
         // config[""].push(
         //     "# Creates static interface for each SSTP user for advanced firewall/queue rules",
         // );
 
-        usersByVpnType["SSTP"].forEach((user) => {
+        sstpUsers.forEach((user) => {
             const staticBindingName = `sstp-${user.Username}`;
 
             config["/interface sstp-server"].push(
@@ -312,12 +310,10 @@ export const SstpServerWrapper = (
     configs.push(SSTPServerFirewall([serverConfig]));
 
     // Merge configurations
-    const finalConfig = mergeRouterConfigs(...configs);
+    const finalConfig: Partial<RouterConfig> = mergeRouterConfigs(...configs);
 
     // Add summary comments
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    finalConfig[""] ??= [];
 
-    return CommandShortner(finalConfig);
+    return CommandShortner(finalConfig as RouterConfig);
 };

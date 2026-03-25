@@ -78,9 +78,7 @@ export const L2tpServer = (
     // Configure L2TP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
 
-    if (IPsec.UseIpsec) {
-        serverParams.push(`use-ipsec=${IPsec.UseIpsec}`);
-    }
+    serverParams.push(`use-ipsec=${IPsec.UseIpsec}`);
 
     if (IPsec.IpsecSecret) {
         serverParams.push(`ipsec-secret="${IPsec.IpsecSecret}"`);
@@ -214,15 +212,14 @@ export const L2TPVSBinding = (
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
+    const usersByVpnType: Partial<Record<string, VSCredentials[]>> = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
             if (supportedVpnTypes.includes(vpnType)) {
-                if (!usersByVpnType[vpnType]) {
-                    usersByVpnType[vpnType] = [];
-                }
-                usersByVpnType[vpnType].push(user);
+                const vpnUsers = usersByVpnType[vpnType] ?? [];
+                vpnUsers.push(user);
+                usersByVpnType[vpnType] = vpnUsers;
             }
         });
     });
@@ -231,13 +228,14 @@ export const L2TPVSBinding = (
     const createdInterfaces: string[] = [];
 
     // L2TP Static Interface Bindings
-    if (usersByVpnType["L2TP"]) {
+    const l2tpUsers = usersByVpnType["L2TP"] ?? [];
+    if (l2tpUsers.length > 0) {
         // config[""].push("# L2TP Static Interface Bindings");
         // config[""].push(
         //     "# Creates static interface for each L2TP user for advanced firewall/queue rules",
         // );
 
-        usersByVpnType["L2TP"].forEach((user) => {
+        l2tpUsers.forEach((user) => {
             const staticBindingName = `l2tp-${user.Username}`;
 
             config["/interface l2tp-server"].push(

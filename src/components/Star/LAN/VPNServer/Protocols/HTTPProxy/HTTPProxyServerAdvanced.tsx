@@ -12,53 +12,44 @@ import { Input } from "~/components/Core";
 import type { BaseNetworksType } from "~/components/Star/StarContext";
 
 export const HTTPProxyServerAdvanced = component$(() => {
-  const { advancedFormState } = useHTTPProxyServer();
+  const {
+    advancedFormState,
+    updateNetwork$: updateHttpProxyNetwork$,
+    updatePort$: updateHttpProxyPort$,
+    updateAllowedIPAddresses$: updateHttpProxyAllowedIPAddresses$,
+  } = useHTTPProxyServer();
 
   // Local state for form fields
   const selectedNetwork = useSignal<BaseNetworksType>("Split");
   const port = useSignal<number>(8080);
-  const allowedIPs = useSignal<string[]>(
-    advancedFormState?.AllowedIPAddresses || [],
-  );
+  const allowedIPs = useSignal<string[]>(advancedFormState.AllowedIPAddresses);
 
   // Local handlers
   const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
-    // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Network = network;
-    }
+    updateHttpProxyNetwork$(network);
   });
 
   const updatePort$ = $((value: number) => {
     port.value = value;
-    // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Port = value;
-    }
+    updateHttpProxyPort$(value);
   });
 
   const addIPAddress$ = $(() => {
     allowedIPs.value = [...allowedIPs.value, ""];
-    if (advancedFormState) {
-      advancedFormState.AllowedIPAddresses = allowedIPs.value;
-    }
+    updateHttpProxyAllowedIPAddresses$(allowedIPs.value);
   });
 
   const removeIPAddress$ = $((index: number) => {
     allowedIPs.value = allowedIPs.value.filter((_, i) => i !== index);
-    if (advancedFormState) {
-      advancedFormState.AllowedIPAddresses = allowedIPs.value;
-    }
+    updateHttpProxyAllowedIPAddresses$(allowedIPs.value);
   });
 
   const updateIPAddress$ = $((index: number, value: string) => {
     allowedIPs.value = allowedIPs.value.map((ip, i) =>
       i === index ? value : ip,
     );
-    if (advancedFormState) {
-      advancedFormState.AllowedIPAddresses = allowedIPs.value;
-    }
+    updateHttpProxyAllowedIPAddresses$(allowedIPs.value);
   });
 
   return (

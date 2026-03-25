@@ -76,9 +76,7 @@ export const PptpServer = (
 
     serverParams.push(`default-profile=${name}-profile`);
 
-    if (KeepaliveTimeout) {
-        serverParams.push(`keepalive-timeout=${KeepaliveTimeout}`);
-    }
+    serverParams.push(`keepalive-timeout=${KeepaliveTimeout}`);
 
     if (PacketSize?.MaxMtu) {
         serverParams.push(`max-mtu=${PacketSize.MaxMtu}`);
@@ -141,7 +139,7 @@ export const PPTPVSBinding = (
         "": [],
     };
 
-    if (!credentials || credentials.length === 0) {
+    if (credentials.length === 0) {
         // config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
@@ -160,15 +158,14 @@ export const PPTPVSBinding = (
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
+    const usersByVpnType: Partial<Record<string, VSCredentials[]>> = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
             if (supportedVpnTypes.includes(vpnType)) {
-                if (!usersByVpnType[vpnType]) {
-                    usersByVpnType[vpnType] = [];
-                }
-                usersByVpnType[vpnType].push(user);
+                const vpnUsers = usersByVpnType[vpnType] ?? [];
+                vpnUsers.push(user);
+                usersByVpnType[vpnType] = vpnUsers;
             }
         });
     });
@@ -177,13 +174,14 @@ export const PPTPVSBinding = (
     const createdInterfaces: string[] = [];
 
     // PPTP Static Interface Bindings
-    if (usersByVpnType["PPTP"]) {
+    const pptpUsers = usersByVpnType["PPTP"] ?? [];
+    if (pptpUsers.length > 0) {
         // config[""].push("# PPTP Static Interface Bindings");
         // config[""].push(
         //     "# Creates static interface for each PPTP user for advanced firewall/queue rules",
         // );
 
-        usersByVpnType["PPTP"].forEach((user) => {
+        pptpUsers.forEach((user) => {
             const staticBindingName = `pptp-${user.Username}`;
 
             config["/interface pptp-server"].push(
@@ -283,14 +281,12 @@ export const PptpServerWrapper = (
     configs.push(PPTPServerFirewall([serverConfig]));
 
     // Merge configurations
-    const finalConfig = mergeRouterConfigs(...configs);
+    const finalConfig: Partial<RouterConfig> = mergeRouterConfigs(...configs);
 
     // Add summary comments
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    finalConfig[""] ??= [];
 
-    return CommandShortner(finalConfig);
+    return CommandShortner(finalConfig as RouterConfig);
 };
 
 // // Check for PPTP Server
