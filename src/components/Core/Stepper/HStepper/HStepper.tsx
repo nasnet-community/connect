@@ -26,12 +26,12 @@ export const HStepper = component$((props: HStepperProps) => {
   if (
     hasEnhancedFeatures &&
     "hasError" in stepperData &&
-    stepperData.hasError?.value
+    stepperData.hasError.value
   ) {
     return (
       <StepperErrors
         hasError={stepperData.hasError.value}
-        errorMessage={stepperData.errorMessage?.value || ""}
+        errorMessage={stepperData.errorMessage.value}
         stepsLength={steps.value.length}
         stepperType="horizontal"
       />
@@ -45,7 +45,7 @@ export const HStepper = component$((props: HStepperProps) => {
   const currentStep = steps.value[activeStep.value];
 
   // Help system properties
-  const hasHelp = helpSystem?.currentStepHasHelp.value || false;
+  const hasHelp = helpSystem.currentStepHasHelp.value;
   const stepTitle = currentStep.title;
   const stepNumber = activeStep.value + 1;
   const totalSteps = steps.value.length;
@@ -124,11 +124,11 @@ export const HStepper = component$((props: HStepperProps) => {
               activeStep={activeStep.value}
               totalSteps={steps.value.length}
               currentStepIsComplete={
-                steps.value[activeStep.value].isComplete || false
+                steps.value[activeStep.value].isComplete === true
               }
               isLoading={
                 "isLoading" in stepperData
-                  ? stepperData.isLoading?.value
+                  ? stepperData.isLoading.value
                   : false
               }
               isLastStep={isLastStep}
@@ -139,24 +139,24 @@ export const HStepper = component$((props: HStepperProps) => {
               allowSkipSteps={props.allowSkipSteps}
               // Help system props
               hasHelp={hasHelp}
-              onShowHelp$={helpSystem?.openHelp$}
+              onShowHelp$={helpSystem.openHelp$}
               helpButtonLabel={`Get help for ${stepTitle}`}
-              isHelpOpen={helpSystem?.isHelpOpen.value || false}
+              isHelpOpen={helpSystem.isHelpOpen.value}
             />
           ) : (
             <HStepperNavigation
               activeStep={activeStep.value}
               totalSteps={steps.value.length}
               isCurrentStepComplete={
-                steps.value[activeStep.value].isComplete || false
+                steps.value[activeStep.value].isComplete === true
               }
               onPrevious$={handlePrev$}
               onNext$={handleNext$}
               // Help system props (if available)
               hasHelp={hasHelp}
-              onShowHelp$={helpSystem?.openHelp$}
+              onShowHelp$={helpSystem.openHelp$}
               helpButtonLabel={`Get help for ${stepTitle}`}
-              isHelpOpen={helpSystem?.isHelpOpen.value || false}
+              isHelpOpen={helpSystem.isHelpOpen.value}
             />
           )}
         </div>
@@ -164,7 +164,7 @@ export const HStepper = component$((props: HStepperProps) => {
       </div>
 
       {/* Help Modal */}
-      {props.enableHelp && helpSystem && (
+      {props.enableHelp && (
         <StepperHelpModal
           isOpen={helpSystem.isHelpOpen}
           onClose$={helpSystem.closeHelp$}

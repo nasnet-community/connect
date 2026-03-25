@@ -43,9 +43,8 @@ export const useWireguardServer = () => {
 
   // Draft configurations for each tab (not saved to StarContext until explicit save)
   const draftConfigs = useSignal<WireguardDraftConfig[]>(
-    wireguardServers && wireguardServers.length > 0
+    wireguardServers.length > 0
       ? wireguardServers
-          .filter((server: WireguardServerConfig) => server && server.Interface) // Filter out invalid servers
           .map((server: WireguardServerConfig) => ({
             name: server.Interface.Name,
             privateKey: server.Interface.PrivateKey || "",
@@ -179,6 +178,11 @@ export const useWireguardServer = () => {
     }
 
     // Create server config from draft
+    const existingPeers =
+      currentIndex < wireguardServers.length
+        ? wireguardServers[currentIndex].Peers
+        : [];
+
     const serverConfig: WireguardServerConfig = {
       Interface: {
         Name: currentDraft.name,
@@ -189,7 +193,7 @@ export const useWireguardServer = () => {
         Mtu: currentDraft.mtu,
         VSNetwork: currentDraft.vsNetwork,
       },
-      Peers: wireguardServers[currentIndex]?.Peers || [],
+      Peers: existingPeers,
     };
 
     // Update StarContext with the saved server
@@ -249,6 +253,7 @@ export const useWireguardServer = () => {
 
       // If valid, add to valid servers list
       if (!hasError) {
+        const existingPeers = i < wireguardServers.length ? wireguardServers[i].Peers : [];
         const serverConfig: WireguardServerConfig = {
           Interface: {
             Name: draft.name,
@@ -259,7 +264,7 @@ export const useWireguardServer = () => {
             Mtu: draft.mtu,
             VSNetwork: draft.vsNetwork,
           },
-          Peers: wireguardServers[i]?.Peers || [],
+          Peers: existingPeers,
         };
         validServers.push(serverConfig);
       }

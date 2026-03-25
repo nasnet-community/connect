@@ -35,7 +35,7 @@ const Flex = component$<FlexProps>((props) => {
       class={combinedClassNames}
       style={{
         ...styleProperties,
-        ...((props.style as Record<string, string>) || {}),
+        ...(props.style as Record<string, string>),
       }}
       data-mobile={isMobile ? "true" : "false"}
       data-rtl={isRtl ? "true" : "false"}
@@ -175,48 +175,44 @@ export const FlexItem = component$<FlexItemProps>((props) => {
   };
 
   const alignSelfClasses = (() => {
-    if (
-      typeof alignSelf === "object" &&
-      alignSelf !== null &&
-      !Array.isArray(alignSelf)
-    ) {
+    if (typeof alignSelf === "object" && !Array.isArray(alignSelf)) {
       const responsiveAlignSelf = alignSelf as ResponsiveValue<FlexAlign>;
       let classes: Record<string, boolean> = {};
 
       if (responsiveAlignSelf.base) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap.base[responsiveAlignSelf.base] || {}),
+          ...alignSelfClassMap.base[responsiveAlignSelf.base],
         };
       }
       if (responsiveAlignSelf.sm) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap.sm[responsiveAlignSelf.sm] || {}),
+          ...alignSelfClassMap.sm[responsiveAlignSelf.sm],
         };
       }
       if (responsiveAlignSelf.md) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap.md[responsiveAlignSelf.md] || {}),
+          ...alignSelfClassMap.md[responsiveAlignSelf.md],
         };
       }
       if (responsiveAlignSelf.lg) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap.lg[responsiveAlignSelf.lg] || {}),
+          ...alignSelfClassMap.lg[responsiveAlignSelf.lg],
         };
       }
       if (responsiveAlignSelf.xl) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap.xl[responsiveAlignSelf.xl] || {}),
+          ...alignSelfClassMap.xl[responsiveAlignSelf.xl],
         };
       }
       if (responsiveAlignSelf["2xl"]) {
         classes = {
           ...classes,
-          ...(alignSelfClassMap["2xl"][responsiveAlignSelf["2xl"]] || {}),
+          ...alignSelfClassMap["2xl"][responsiveAlignSelf["2xl"]],
         };
       }
 
@@ -224,7 +220,7 @@ export const FlexItem = component$<FlexItemProps>((props) => {
     }
 
     return alignSelf && typeof alignSelf === "string"
-      ? alignSelfClassMap.base[alignSelf as FlexAlign] || {}
+      ? alignSelfClassMap.base[alignSelf as FlexAlign]
       : {};
   })();
 

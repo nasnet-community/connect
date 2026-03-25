@@ -73,7 +73,7 @@ export const useOpenVPNServer = () => {
   const reconstructDrafts = (
     servers: OpenVpnServerConfig[],
   ): OpenVPNDraftConfig[] => {
-    if (!servers || servers.length === 0) {
+    if (servers.length === 0) {
       return [
         {
           name: "openvpn-1",
@@ -101,29 +101,19 @@ export const useOpenVPNServer = () => {
     }
 
     // Group servers by base name (without -tcp/-udp suffix)
-    const serverGroups: { [key: string]: OpenVpnServerConfig[] } = {};
+    const serverGroups = new Map<string, OpenVpnServerConfig[]>();
 
-    servers
-      .filter(
-        (server) =>
-          server &&
-          server.name &&
-          server.Certificate &&
-          server.Address &&
-          server.Encryption,
-      )
-      .forEach((server) => {
-        const baseName = server.name.replace(/-tcp$|-udp$/, "");
-        if (!serverGroups[baseName]) {
-          serverGroups[baseName] = [];
-        }
-        serverGroups[baseName].push(server);
-      });
+    servers.forEach((server) => {
+      const baseName = server.name.replace(/-tcp$|-udp$/, "");
+      const groupedServers = serverGroups.get(baseName) ?? [];
+      groupedServers.push(server);
+      serverGroups.set(baseName, groupedServers);
+    });
 
     const drafts: OpenVPNDraftConfig[] = [];
 
     // Process each group
-    Object.entries(serverGroups).forEach(([baseName, group]) => {
+    Array.from(serverGroups.entries()).forEach(([baseName, group]) => {
       // Check if this is a "both" protocol pair
       const tcpServer = group.find((s) => s.name.endsWith("-tcp"));
       const udpServer = group.find((s) => s.name.endsWith("-udp"));
@@ -133,7 +123,7 @@ export const useOpenVPNServer = () => {
         drafts.push({
           name: baseName,
           certificate: tcpServer.Certificate.Certificate || "server-cert",
-          enabled: tcpServer.enabled !== undefined ? tcpServer.enabled : true,
+          enabled: tcpServer.enabled,
           port: tcpServer.Port || 1194,
           tcpPort: tcpServer.Port || 1194,
           udpPort: udpServer.Port || 1195,
@@ -161,14 +151,16 @@ export const useOpenVPNServer = () => {
       } else {
         // Create individual drafts for non-paired servers
         group.forEach((server) => {
+          const protocol = server.Protocol || "udp";
+
           drafts.push({
             name: server.name.replace(/-tcp$|-udp$/, ""),
             certificate: server.Certificate.Certificate || "server-cert",
-            enabled: server.enabled !== undefined ? server.enabled : true,
+            enabled: server.enabled,
             port: server.Port || 1194,
-            tcpPort: server.Protocol === "tcp" ? server.Port || 1194 : 1194,
-            udpPort: server.Protocol === "udp" ? server.Port || 1195 : 1195,
-            protocol: (server.Protocol || "udp") as ProtocolType,
+            tcpPort: protocol === "tcp" ? server.Port || 1194 : 1194,
+            udpPort: protocol === "udp" ? server.Port || 1195 : 1195,
+            protocol,
             mode: server.Mode || "ip",
             vsNetwork: server.VSNetwork || "VPN",
             addressPool: server.Address.AddressPool || "192.168.78.0/24",
@@ -318,7 +310,7 @@ export const useOpenVPNServer = () => {
       const updatedServers = [...openVpnServers];
       // Remove servers that match the name prefix
       const filtered = updatedServers.filter(
-        (s) => !s.name.startsWith(removedDraft?.name || `openvpn-${index + 1}`),
+        (s) => !s.name.startsWith(removedDraft.name),
       );
       starContext.updateLAN$({
         VPNServer: {
