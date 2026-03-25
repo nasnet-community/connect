@@ -39,7 +39,6 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   const hasShownScrollHint = useSignal(false);
 
   // Auto-scroll to active step for 6+ steps
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     track(() => activeStep);
 
@@ -59,7 +58,6 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   });
 
   // Show scroll hint animation on mount (only once for 6+ steps)
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (
       steps.length > 5 &&

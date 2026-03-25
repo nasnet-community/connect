@@ -100,7 +100,6 @@ export const RTLProvider = component$<RTLProviderProps>(
     // Apply the direction to the HTML element
     // We need to use useVisibleTask$ here because we're directly manipulating the DOM
     // which can only be done on the client side
-    // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ track }) => {
       // Track the current direction and language to react to changes
       const currentDirection = track(() => state.currentDirection);

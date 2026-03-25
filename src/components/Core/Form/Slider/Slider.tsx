@@ -255,24 +255,12 @@ export const Slider = component$<SliderProps>((props) => {
     events.handleThumbMouseDown(e, "single");
   });
 
-  const handleSingleThumbKeyDown = $((e: KeyboardEvent) => {
-    events.handleThumbKeyDown(e, "single");
-  });
-
   const handleStartThumbMouseDown = $((e: MouseEvent) => {
     events.handleThumbMouseDown(e, "start");
   });
 
   const handleEndThumbMouseDown = $((e: MouseEvent) => {
     events.handleThumbMouseDown(e, "end");
-  });
-
-  const handleStartThumbKeyDown = $((e: KeyboardEvent) => {
-    events.handleThumbKeyDown(e, "start");
-  });
-
-  const handleEndThumbKeyDown = $((e: KeyboardEvent) => {
-    events.handleThumbKeyDown(e, "end");
   });
 
   // Convert style functions to work with markPercentages
@@ -283,7 +271,7 @@ export const Slider = component$<SliderProps>((props) => {
   };
 
   return (
-    <div class={styles.containerClasses} {...htmlProps}>
+    <div class={styles.containerClasses} data-slider-root="true" {...htmlProps}>
       {/* Label */}
       {label && (
         <FormLabel for={id} class={labelClass} required={props.required}>
@@ -356,7 +344,6 @@ export const Slider = component$<SliderProps>((props) => {
               thumbClass={`${styles.thumbClasses} slider-thumb-start`}
               positionStyle={startThumbPosition.value}
               onMouseDown={handleStartThumbMouseDown}
-              onKeyDown={handleStartThumbKeyDown}
               label={label}
               valueText={startValueText.value}
             />
@@ -377,7 +364,6 @@ export const Slider = component$<SliderProps>((props) => {
               thumbClass={`${styles.thumbClasses} slider-thumb-end`}
               positionStyle={endThumbPosition.value}
               onMouseDown={handleEndThumbMouseDown}
-              onKeyDown={handleEndThumbKeyDown}
               label={label}
               valueText={endValueText.value}
             />
@@ -394,7 +380,6 @@ export const Slider = component$<SliderProps>((props) => {
             positionStyle={singleThumbPosition.value}
             formatLabel={utilities.formatLabel}
             onMouseDown={handleSingleThumbMouseDown}
-            onKeyDown={handleSingleThumbKeyDown}
             label={label}
             valueText={singleValueText.value}
           />

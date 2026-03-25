@@ -1,4 +1,10 @@
-import { component$, type QRL, useComputed$, $ } from "@builder.io/qwik";
+import {
+  component$,
+  type QRL,
+  useComputed$,
+  useSignal,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 
 export interface TimeValue {
   hour: string;
@@ -87,6 +93,9 @@ export const TimePicker = component$<TimePickerProps>(
       _touchOptimized ??
       (typeof window !== "undefined" && "ontouchstart" in window);
     const _effectiveDir = dir;
+    const hourSelectRef = useSignal<HTMLSelectElement>();
+    const minuteSelectRef = useSignal<HTMLSelectElement>();
+    const secondSelectRef = useSignal<HTMLSelectElement>();
 
     // Memoized computation for hours based on format
     const hours = useComputed$(() => {
@@ -257,49 +266,78 @@ export const TimePicker = component$<TimePickerProps>(
       backgroundImage: dropdownArrowLight,
     };
 
-    const handleKeyDown$ = $((e: KeyboardEvent, field: keyof TimeValue) => {
-      if (disabled || readOnly) return;
+    useVisibleTask$(({ cleanup }) => {
+      const selectHandlers = new Map<
+        HTMLSelectElement,
+        (event: KeyboardEvent) => void
+      >();
 
-      const key = e.key;
-      const currentValue = parseInt(time[field] || "0");
+      const registerKeyHandler = (
+        select: HTMLSelectElement | undefined,
+        field: "hour" | "minute" | "second",
+      ) => {
+        if (!select) return;
 
-      if (key === "ArrowUp" || key === "ArrowDown") {
-        e.preventDefault();
-        let newValue = currentValue;
+        const handler = (event: KeyboardEvent) => {
+          if (disabled || readOnly) return;
+          if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
 
-        if (field === "hour") {
-          const maxHour = format === "12" ? 12 : 23;
-          const minHour = format === "12" ? 1 : 0;
-          newValue =
-            key === "ArrowUp"
-              ? currentValue >= maxHour
-                ? minHour
-                : currentValue + 1
-              : currentValue <= minHour
-                ? maxHour
-                : currentValue - 1;
-        } else if (field === "minute") {
-          newValue =
-            key === "ArrowUp"
-              ? currentValue >= 59
-                ? 0
-                : currentValue + minuteStep
-              : currentValue <= 0
-                ? 59
-                : currentValue - minuteStep;
-        } else if (field === "second") {
-          newValue =
-            key === "ArrowUp"
-              ? currentValue >= 59
-                ? 0
-                : currentValue + secondStep
-              : currentValue <= 0
-                ? 59
-                : currentValue - secondStep;
-        }
+          event.preventDefault();
 
-        onChange$(field, newValue.toString().padStart(2, "0"));
-      }
+          const currentValue = parseInt(select.value || "0", 10);
+          let newValue = currentValue;
+
+          if (field === "hour") {
+            const maxHour = format === "12" ? 12 : 23;
+            const minHour = format === "12" ? 1 : 0;
+            newValue =
+              event.key === "ArrowUp"
+                ? currentValue >= maxHour
+                  ? minHour
+                  : currentValue + 1
+                : currentValue <= minHour
+                  ? maxHour
+                  : currentValue - 1;
+          } else if (field === "minute") {
+            newValue =
+              event.key === "ArrowUp"
+                ? currentValue >= 59
+                  ? 0
+                  : currentValue + minuteStep
+                : currentValue <= 0
+                  ? 59
+                  : currentValue - minuteStep;
+          } else {
+            newValue =
+              event.key === "ArrowUp"
+                ? currentValue >= 59
+                  ? 0
+                  : currentValue + secondStep
+                : currentValue <= 0
+                  ? 59
+                  : currentValue - secondStep;
+          }
+
+          const nextValue = newValue.toString().padStart(2, "0");
+          if (select.value === nextValue) return;
+
+          select.value = nextValue;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+        };
+
+        selectHandlers.set(select, handler);
+        select.addEventListener("keydown", handler);
+      };
+
+      registerKeyHandler(hourSelectRef.value, "hour");
+      registerKeyHandler(minuteSelectRef.value, "minute");
+      registerKeyHandler(secondSelectRef.value, "second");
+
+      cleanup(() => {
+        selectHandlers.forEach((handler, select) => {
+          select.removeEventListener("keydown", handler);
+        });
+      });
     });
 
     return (
@@ -347,6 +385,7 @@ export const TimePicker = component$<TimePickerProps>(
               {$localize`Hours`}
             </label>
             <select
+              ref={hourSelectRef}
               id={id}
               name={name ? `${name}-hour` : undefined}
               value={time.hour}
@@ -357,7 +396,6 @@ export const TimePicker = component$<TimePickerProps>(
               onChange$={(e, currentTarget) =>
                 onChange$("hour", currentTarget.value)
               }
-              onKeyDown$={(e) => handleKeyDown$(e, "hour")}
               class={`${selectClasses} w-24`}
               style={selectStyle}
             >
@@ -402,6 +440,7 @@ export const TimePicker = component$<TimePickerProps>(
               {$localize`Minutes`}
             </label>
             <select
+              ref={minuteSelectRef}
               name={name ? `${name}-minute` : undefined}
               value={time.minute}
               disabled={disabled || loading}
@@ -410,7 +449,6 @@ export const TimePicker = component$<TimePickerProps>(
               onChange$={(e, currentTarget) =>
                 onChange$("minute", currentTarget.value)
               }
-              onKeyDown$={(e) => handleKeyDown$(e, "minute")}
               class={`${selectClasses} w-24`}
               style={selectStyle}
             >
@@ -455,6 +493,7 @@ export const TimePicker = component$<TimePickerProps>(
                   {$localize`Seconds`}
                 </label>
                 <select
+                  ref={secondSelectRef}
                   name={name ? `${name}-second` : undefined}
                   value={time.second || "00"}
                   disabled={disabled || loading}
@@ -463,7 +502,6 @@ export const TimePicker = component$<TimePickerProps>(
                   onChange$={(e, currentTarget) =>
                     onChange$("second", currentTarget.value)
                   }
-                  onKeyDown$={(e) => handleKeyDown$(e, "second")}
                   class={`${selectClasses} w-24`}
                   style={selectStyle}
                 >

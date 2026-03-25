@@ -45,7 +45,6 @@ export const ThemeToggle = component$<{
   });
 
   // Initialize theme state on client
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem("theme") as Theme | null;
