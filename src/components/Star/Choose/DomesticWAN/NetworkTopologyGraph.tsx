@@ -203,8 +203,8 @@ export const NetworkTopologyGraph = component$(
             >
               {/* Render connections between nodes with animated lines */}
               {connections.map((conn, index) => {
-                const fromNode = nodes[conn.from];
-                const toNode = nodes[conn.to];
+                const fromNode = nodes.at(conn.from);
+                const toNode = nodes.at(conn.to);
 
                 // Safety check: skip rendering if nodes don't exist
                 if (!fromNode || !toNode) {

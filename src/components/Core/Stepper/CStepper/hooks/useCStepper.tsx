@@ -250,9 +250,9 @@ export function useCStepper(props: CStepperProps) {
   });
 
   useTask$(({ track }) => {
-    track(() => steps.value[activeStep.value]?.isComplete);
+    track(() => steps.value.at(activeStep.value)?.isComplete);
 
-    const currentStep = steps.value[activeStep.value];
+    const currentStep = steps.value.at(activeStep.value);
     if (currentStep?.isComplete) {
       props.onStepComplete$?.(currentStep.id);
     }

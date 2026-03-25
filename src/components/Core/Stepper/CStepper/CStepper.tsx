@@ -189,7 +189,7 @@ export const CStepper = component$((props: CStepperProps) => {
   });
 
   // Help system properties
-  const hasHelp = helpSystem?.currentStepHasHelp.value || false;
+  const hasHelp = helpSystem.currentStepHasHelp.value;
 
   return (
     <div class="w-full" role="application" aria-label="Multi-step form">
@@ -242,9 +242,9 @@ export const CStepper = component$((props: CStepperProps) => {
           onComplete$={props.onComplete$ || $(() => {})}
           // Help system props
           hasHelp={hasHelp}
-          onShowHelp$={helpSystem?.openHelp$}
+          onShowHelp$={helpSystem.openHelp$}
           helpButtonLabel={`Get help for ${stepTitle}`}
-          isHelpOpen={helpSystem?.isHelpOpen.value || false}
+          isHelpOpen={helpSystem.isHelpOpen.value}
         />
 
         {/* Accessible progress indicator */}
@@ -258,7 +258,7 @@ export const CStepper = component$((props: CStepperProps) => {
       </div>
 
       {/* Help Modal */}
-      {props.enableHelp && helpSystem && (
+      {props.enableHelp && (
         <StepperHelpModal
           isOpen={helpSystem.isHelpOpen}
           onClose$={helpSystem.closeHelp$}
