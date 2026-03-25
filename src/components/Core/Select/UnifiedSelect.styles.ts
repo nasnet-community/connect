@@ -142,8 +142,8 @@ export const getSelectNativeClass = (
 
   // Add size-specific classes
   if (size === "sm") classes.push(styles.nativeSizeSm);
-  else if (size === "md") classes.push(styles.nativeSizeMd);
   else if (size === "lg") classes.push(styles.nativeSizeLg);
+  else classes.push(styles.nativeSizeMd);
 
   // Add validation state classes
   if (validation === "valid") classes.push(styles.nativeStateValid);
@@ -166,8 +166,8 @@ export const getSelectButtonClass = (
 
   // Add size-specific classes
   if (size === "sm") classes.push(styles.buttonSizeSm);
-  else if (size === "md") classes.push(styles.buttonSizeMd);
   else if (size === "lg") classes.push(styles.buttonSizeLg);
+  else classes.push(styles.buttonSizeMd);
 
   // Add disabled state
   if (disabled) classes.push(styles.buttonDisabled);

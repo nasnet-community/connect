@@ -44,7 +44,7 @@ function calculateSubnetInfo(
     ip: string,
     prefix: string | number,
 ): SubnetInfoInterface | null {
-    if (!ip || prefix === undefined || prefix === null) return null;
+    if (!ip) return null;
 
     try {
         // Parse and validate IP address

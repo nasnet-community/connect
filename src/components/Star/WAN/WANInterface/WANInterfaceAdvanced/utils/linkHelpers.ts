@@ -22,13 +22,9 @@ export const getLinkStatus = (
     return "incomplete";
   }
 
-  if (step === "connection") {
-    if (!link.connectionType) return "incomplete";
-    if (isLinkConfigurationComplete(link)) return "complete";
-    return "partial";
-  }
-
-  return "incomplete";
+  if (!link.connectionType) return "incomplete";
+  if (isLinkConfigurationComplete(link)) return "complete";
+  return "partial";
 };
 
 export const filterLinks = (

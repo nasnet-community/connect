@@ -78,10 +78,9 @@ export const Button = component$<ButtonProps>(
       if (!ripple || disabled || loading) return;
 
       const button = e.currentTarget as HTMLButtonElement;
-      if (!button || typeof button.getBoundingClientRect !== "function") return;
+        if (typeof button.getBoundingClientRect !== "function") return;
 
       const rect = button.getBoundingClientRect();
-      if (!rect) return;
 
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;

@@ -165,7 +165,7 @@ declare global {
 // Custom matcher for RouterConfig validation
 expect.extend({
   toBeValidRouterConfig(received: RouterConfig) {
-    const pass = received && typeof received === "object";
+    const pass = typeof received === "object";
 
     if (pass) {
       return {

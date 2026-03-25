@@ -288,7 +288,7 @@ export const VPNCard = component$<VPNCardProps>(
           )}
 
           {/* Quick Info when collapsed */}
-          {!isExpanded && vpn.type && "config" in vpn && vpn.config && (
+            {!isExpanded && vpn.type && (
             <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
               {vpn.type === "Wireguard" && vpn.config.PeerEndpointAddress && (
                 <p>

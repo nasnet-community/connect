@@ -73,11 +73,7 @@ export function useProvideStepperContext<T = any>({
   // Add function to easily complete a step
   const completeStep$ = $((stepId?: number) => {
     // If no stepId is provided, complete the current active step
-    const idToComplete =
-      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
-
-    // Safety check for undefined id
-    if (idToComplete === undefined) return null;
+    const idToComplete = stepId ?? steps.value[activeStep.value].id;
 
     // Update the step completion status
     steps.value = steps.value.map((step) =>
@@ -97,11 +93,7 @@ export function useProvideStepperContext<T = any>({
   // Async step validation
   const validateStep$ = $(async (stepId?: number): Promise<boolean> => {
     // Default to current step if no ID is provided
-    const idToValidate =
-      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
-
-    // Safety check
-    if (idToValidate === undefined) return false;
+    const idToValidate = stepId ?? steps.value[activeStep.value].id;
 
     // Set validation in progress flag
     validationInProgress.value = true;
