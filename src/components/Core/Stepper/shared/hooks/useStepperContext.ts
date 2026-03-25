@@ -133,10 +133,7 @@ export function useProvideStepperContext<
 
   // Complete step function
   const completeStep$ = $((stepId?: number) => {
-    const idToComplete =
-      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
-
-    if (idToComplete === undefined) return null;
+    const idToComplete = stepId ?? steps.value[activeStep.value].id;
 
     // Check if already complete (prevent duplicate calls in nested scenarios)
     const step = steps.value.find((s) => s.id === idToComplete);
@@ -159,10 +156,7 @@ export function useProvideStepperContext<
 
   // Async step validation
   const validateStep$ = $(async (stepId?: number): Promise<boolean> => {
-    const idToValidate =
-      stepId !== undefined ? stepId : steps.value[activeStep.value]?.id;
-
-    if (idToValidate === undefined) return false;
+    const idToValidate = stepId ?? steps.value[activeStep.value].id;
 
     // Set validation in progress flag
     validationInProgress.value = true;

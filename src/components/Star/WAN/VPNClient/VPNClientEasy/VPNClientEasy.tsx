@@ -85,7 +85,7 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
         } else if (!saved) {
           // Track failed VPN client configuration
           track("vpn_client_configured", {
-            vpn_protocol: vpnType.value || "unknown",
+            vpn_protocol: vpnType.value,
             step: "wan_config",
             component: "vpn_client_easy",
             configuration_completed: false,

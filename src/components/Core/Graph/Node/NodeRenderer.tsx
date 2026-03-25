@@ -7,10 +7,10 @@ import { networkNodeTypes, type NetworkNodeType } from "./NodeTypes";
  */
 export const NodeRenderer = component$<{ node: GraphNode }>((props) => {
   const { node } = props;
-  const nodeType = node.type as NetworkNodeType;
+  const nodeType = node.type;
 
   // Default rendering if the node type is not recognized
-  if (!nodeType || !networkNodeTypes[nodeType]) {
+  if (!isNetworkNodeType(nodeType)) {
     return renderBasicNode(node);
   }
 
@@ -18,11 +18,6 @@ export const NodeRenderer = component$<{ node: GraphNode }>((props) => {
   const definition = networkNodeTypes[nodeType];
   const IconComponent = definition.icon;
   const nodeSize = node.size || definition.size || 22;
-
-  // If the icon component is not available, render a basic node
-  if (!IconComponent) {
-    return renderBasicNode(node, definition.color);
-  }
 
   try {
     const iconSize = Math.floor(nodeSize * 0.9);
@@ -163,6 +158,10 @@ function renderBasicNode(node: GraphNode, color?: string) {
       </text>
     </g>
   );
+}
+
+function isNetworkNodeType(nodeType: GraphNode["type"]): nodeType is NetworkNodeType {
+  return typeof nodeType === "string" && nodeType in networkNodeTypes;
 }
 
 export default NodeRenderer;

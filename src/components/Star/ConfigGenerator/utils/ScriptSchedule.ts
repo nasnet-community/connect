@@ -257,7 +257,7 @@ export const OneTimeScript = (config: OneTimeScript): RouterConfig => {
     const enhancedScriptContent: RouterConfig = { ...ScriptContent };
 
     // Add the scheduler removal command at the end
-    if (!enhancedScriptContent["/system scheduler"]) {
+    if (!("/system scheduler" in enhancedScriptContent)) {
         enhancedScriptContent["/system scheduler"] = [];
     }
     enhancedScriptContent["/system scheduler"].push(
@@ -284,10 +284,9 @@ export const OneTimeScript = (config: OneTimeScript): RouterConfig => {
     const finalConfig = mergeRouterConfigs(scriptConfig, schedulerConfig);
 
     // Add overall comments
-    if (!finalConfig[""]) {
+    if (!("" in finalConfig)) {
         finalConfig[""] = [];
     }
-
     // finalConfig[""].unshift(
     //     `# One-Time Script Setup for '${name}':`,
     //     `# - Script named '${scriptName}' contains user content + scheduler cleanup`,

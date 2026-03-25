@@ -59,7 +59,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     if (interfaceData && interfaceData.WANConfigs[0]) {
       const interfaceConfig = interfaceData.WANConfigs[0].InterfaceConfig;
 
-      if (interfaceConfig.InterfaceName && selectedInterface.value === "") {
+      if (selectedInterface.value === "") {
         selectedInterface.value = interfaceConfig.InterfaceName;
 
         // Determine interface type from interface name

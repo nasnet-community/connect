@@ -109,7 +109,6 @@ export const TopNavigationMobileMenu = component$<TopNavigationMobileMenuProps>(
                             ? "border border-primary-200 bg-primary-50 text-primary-900 dark:border-primary-700 dark:bg-primary-900/30 dark:text-primary-100"
                             : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
                         }
-                        ${isDisabled ? "cursor-not-allowed opacity-50" : ""}
                       `}
                         aria-current={isActive ? "page" : undefined}
                         onClick$={handleItemClick$}
@@ -217,7 +216,6 @@ export const TopNavigationMobileMenu = component$<TopNavigationMobileMenuProps>(
                                       ? "bg-primary-25 border-l-4 border-primary-500 text-primary-800 dark:bg-primary-900/20 dark:text-primary-200"
                                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                                   }
-                                  ${subItemIsDisabled ? "cursor-not-allowed opacity-50" : ""}
                                 `}
                                   aria-current={
                                     subItemIsActive ? "page" : undefined

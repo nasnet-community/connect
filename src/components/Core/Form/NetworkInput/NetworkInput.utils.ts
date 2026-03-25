@@ -185,7 +185,7 @@ export const buildNetworkString = (
 
   // Use preset format
   const inputOctets = octets.slice(0, preset.inputFields);
-  const hasValidValues = inputOctets.some((o) => o !== null && o !== undefined);
+  const hasValidValues = inputOctets.some((o) => o !== null);
 
   if (!hasValidValues) {
     return "";
@@ -203,7 +203,7 @@ export const validateNetworkInput = (
   format: NetworkFormat,
   customValidation?: (value: any) => string | null,
 ): string | null => {
-  if (value === null || value === undefined || value === "") {
+  if (value === null || value === "") {
     return null; // Let required validation handle this
   }
 

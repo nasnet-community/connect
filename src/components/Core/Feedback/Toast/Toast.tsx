@@ -151,7 +151,7 @@ export const Toast = component$<ToastProps>(
       }
 
       // Apply swipe offset when dragging
-      if (isDragging.value && swipeOffset.value) {
+      if (isDragging.value) {
         return "transform-gpu";
       }
 
@@ -160,7 +160,7 @@ export const Toast = component$<ToastProps>(
 
     // Dynamic styles for swipe transform
     const dynamicStyles = useComputed$(() => {
-      if (isDragging.value && swipeOffset.value) {
+      if (isDragging.value) {
         const { x, y } = swipeOffset.value;
         const opacity = Math.max(0, 1 - Math.abs(x) / 200);
         return {

@@ -205,7 +205,7 @@ export function useAdvancedVPN(): UseAdvancedVPNReturn {
     const newErrors = { ...state.validationErrors };
     Object.keys(updates).forEach((field) => {
       const errorKey = `vpn-${id}-${field}`;
-      if (newErrors[errorKey]) {
+      if (Object.prototype.hasOwnProperty.call(newErrors, errorKey)) {
         delete newErrors[errorKey];
       }
     });

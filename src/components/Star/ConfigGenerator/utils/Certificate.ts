@@ -785,7 +785,7 @@ export const LetsEncrypt = (
     ];
 
     // Add comments to the beginning
-    if (!config[""]) {
+    if (!("" in config)) {
         config[""] = [];
     }
     config[""] = [...comments, ...config[""]];
@@ -2848,7 +2848,7 @@ export const AllCert = (config: AllCertConfig = {}): RouterConfig => {
     ];
 
     // Add comments to the beginning
-    if (!mergedConfig[""]) {
+    if (!("" in mergedConfig)) {
         mergedConfig[""] = [];
     }
     mergedConfig[""] = [...comments, ...mergedConfig[""]];
