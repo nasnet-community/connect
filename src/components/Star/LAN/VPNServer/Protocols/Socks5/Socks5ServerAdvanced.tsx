@@ -18,17 +18,13 @@ export const Socks5ServerAdvanced = component$(() => {
   const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Network = network;
-    }
+    advancedFormState.Network = network;
   });
 
   const updatePort$ = $((value: number) => {
     port.value = value;
     // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Port = value;
-    }
+    advancedFormState.Port = value;
   });
 
   return (

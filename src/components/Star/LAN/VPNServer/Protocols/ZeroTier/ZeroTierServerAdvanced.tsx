@@ -18,17 +18,13 @@ export const ZeroTierServerAdvanced = component$(() => {
   const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Network = network;
-    }
+    advancedFormState.Network = network;
   });
 
   const updateNetworkId$ = $((value: string) => {
     networkId.value = value;
     // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.ZeroTierNetworkID = value;
-    }
+    advancedFormState.ZeroTierNetworkID = value;
   });
 
   return (

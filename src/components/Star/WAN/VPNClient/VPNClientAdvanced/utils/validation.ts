@@ -304,8 +304,10 @@ export function validateOpenVPNConfig(
     config.AuthType === "CredentialsCertificate"
   ) {
     if (!config.Credentials?.Username || !config.Credentials.Password) {
+      const existingCredentialErrors =
+        "Credentials" in errors ? errors["Credentials"] : [];
       errors["Credentials"] = [
-        ...(errors["Credentials"] || []),
+        ...existingCredentialErrors,
         "Username and password required",
       ];
     }
