@@ -23,6 +23,19 @@ export interface UseVPNValidationReturn {
   >;
 }
 
+function appendError(
+  errors: Record<string, string[]>,
+  key: string,
+  message: string,
+) {
+  if (key in errors) {
+    errors[key] = [...errors[key], message];
+    return;
+  }
+
+  errors[key] = [message];
+}
+
 export function useVPNValidation(): UseVPNValidationReturn {
   // Validate IPv4 address
   const isValidIPv4 = $((ip: string): boolean => {
@@ -69,10 +82,11 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.InterfacePrivateKey ||
         config.InterfacePrivateKey.length !== 44
       ) {
-        errors[`${prefix}-config`] = [
-          ...(errors[`${prefix}-config`] || []),
+        appendError(
+          errors,
+          `${prefix}-config`,
           "Private key must be 44 characters (base64)",
-        ];
+        );
       }
 
       // Validate interface address
@@ -80,18 +94,20 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.InterfaceAddress ||
         !(await isValidCIDR(config.InterfaceAddress))
       ) {
-        errors[`${prefix}-config`] = [
-          ...(errors[`${prefix}-config`] || []),
+        appendError(
+          errors,
+          `${prefix}-config`,
           "Invalid interface address (use CIDR notation)",
-        ];
+        );
       }
 
       // Validate peer public key
       if (!config.PeerPublicKey || config.PeerPublicKey.length !== 44) {
-        errors[`${prefix}-config`] = [
-          ...(errors[`${prefix}-config`] || []),
+        appendError(
+          errors,
+          `${prefix}-config`,
           "Peer public key must be 44 characters (base64)",
-        ];
+        );
       }
 
       // Validate endpoint
@@ -99,17 +115,11 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.PeerEndpointAddress ||
         !(await isValidHostname(config.PeerEndpointAddress))
       ) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid peer endpoint address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid peer endpoint address");
       }
 
       if (!(await isValidPort(config.PeerEndpointPort))) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid peer endpoint port",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid peer endpoint port");
       }
 
       // Validate allowed IPs
@@ -118,10 +128,7 @@ export function useVPNValidation(): UseVPNValidationReturn {
       );
       for (const ip of allowedIPs) {
         if (!(await isValidCIDR(ip))) {
-          errors[`${prefix}-config`] = [
-            ...(errors[`${prefix}-config`] || []),
-            `Invalid allowed IP: ${ip}`,
-          ];
+          appendError(errors, `${prefix}-config`, `Invalid allowed IP: ${ip}`);
           break;
         }
       }
@@ -144,17 +151,11 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.Server.Address ||
         !(await isValidHostname(config.Server.Address))
       ) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server address");
       }
 
       if (!config.Server.Port || !(await isValidPort(config.Server.Port))) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server port",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server port");
       }
 
       // Validate authentication
@@ -163,10 +164,11 @@ export function useVPNValidation(): UseVPNValidationReturn {
         config.AuthType === "CredentialsCertificate"
       ) {
         if (!config.Credentials?.Username || !config.Credentials.Password) {
-          errors[`${prefix}-credentials`] = [
-            ...(errors[`${prefix}-credentials`] || []),
+          appendError(
+            errors,
+            `${prefix}-credentials`,
             "Username and password required",
-          ];
+          );
         }
       }
 
@@ -175,19 +177,21 @@ export function useVPNValidation(): UseVPNValidationReturn {
         config.AuthType === "CredentialsCertificate"
       ) {
         if (!config.Certificates?.CaCertificateContent) {
-          errors[`${prefix}-certificates`] = [
-            ...(errors[`${prefix}-certificates`] || []),
+          appendError(
+            errors,
+            `${prefix}-certificates`,
             "CA certificate required",
-          ];
+          );
         }
         if (
           !config.Certificates?.ClientCertificateContent ||
           !config.Certificates.ClientKeyContent
         ) {
-          errors[`${prefix}-certificates`] = [
-            ...(errors[`${prefix}-certificates`] || []),
+          appendError(
+            errors,
+            `${prefix}-certificates`,
             "Client certificate and key required",
-          ];
+          );
         }
       }
 
@@ -205,17 +209,15 @@ export function useVPNValidation(): UseVPNValidationReturn {
       const prefix = `vpn-${vpnId}`;
 
       if (!config.ConnectTo || !(await isValidHostname(config.ConnectTo))) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server address");
       }
 
       if (!config.Credentials.Username || !config.Credentials.Password) {
-        errors[`${prefix}-credentials`] = [
-          ...(errors[`${prefix}-credentials`] || []),
+        appendError(
+          errors,
+          `${prefix}-credentials`,
           "Username and password required",
-        ];
+        );
       }
 
       return errors;
@@ -235,24 +237,23 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.Server.Address ||
         !(await isValidHostname(config.Server.Address))
       ) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server address");
       }
 
       if (!config.Credentials.Username || !config.Credentials.Password) {
-        errors[`${prefix}-credentials`] = [
-          ...(errors[`${prefix}-credentials`] || []),
+        appendError(
+          errors,
+          `${prefix}-credentials`,
           "Username and password required",
-        ];
+        );
       }
 
       if (config.UseIPsec && !config.IPsecSecret) {
-        errors[`${prefix}-config`] = [
-          ...(errors[`${prefix}-config`] || []),
+        appendError(
+          errors,
+          `${prefix}-config`,
           "IPsec secret required when IPsec is enabled",
-        ];
+        );
       }
 
       return errors;
@@ -272,24 +273,19 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.Server.Address ||
         !(await isValidHostname(config.Server.Address))
       ) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server address");
       }
 
       if (!config.Server.Port || !(await isValidPort(config.Server.Port))) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server port",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server port");
       }
 
       if (!config.Credentials.Username || !config.Credentials.Password) {
-        errors[`${prefix}-credentials`] = [
-          ...(errors[`${prefix}-credentials`] || []),
+        appendError(
+          errors,
+          `${prefix}-credentials`,
           "Username and password required",
-        ];
+        );
       }
 
       return errors;
@@ -309,18 +305,12 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.ServerAddress ||
         !(await isValidHostname(config.ServerAddress))
       ) {
-        errors[`${prefix}-server`] = [
-          ...(errors[`${prefix}-server`] || []),
-          "Invalid server address",
-        ];
+        appendError(errors, `${prefix}-server`, "Invalid server address");
       }
 
       // Validate based on auth method
       if (config.AuthMethod === "pre-shared-key" && !config.PresharedKey) {
-        errors[`${prefix}-config`] = [
-          ...(errors[`${prefix}-config`] || []),
-          "Pre-shared key required",
-        ];
+        appendError(errors, `${prefix}-config`, "Pre-shared key required");
       }
 
       if (
@@ -331,20 +321,22 @@ export function useVPNValidation(): UseVPNValidationReturn {
           config.AuthMethod === "eap" &&
           (!config.Credentials?.Username || !config.Credentials.Password)
         ) {
-          errors[`${prefix}-credentials`] = [
-            ...(errors[`${prefix}-credentials`] || []),
+          appendError(
+            errors,
+            `${prefix}-credentials`,
             "Username and password required for EAP",
-          ];
+          );
         }
 
         if (
           config.AuthMethod === "digital-signature" &&
           !config.ClientCertificateName
         ) {
-          errors[`${prefix}-certificates`] = [
-            ...(errors[`${prefix}-certificates`] || []),
+          appendError(
+            errors,
+            `${prefix}-certificates`,
             "Client certificate required",
-          ];
+          );
         }
       }
 

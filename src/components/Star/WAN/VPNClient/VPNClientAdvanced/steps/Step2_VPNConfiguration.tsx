@@ -130,7 +130,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
           };
 
           // Track deep config fields based on VPN type
-          if (vpn.type && "config" in vpn && vpn.config) {
+          if (vpn.type && "config" in vpn) {
             const config = vpn.config as any;
 
             switch (vpn.type) {
@@ -377,9 +377,9 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
             {getFilteredVPNs().map((vpn, index) => {
               const isExpanded = expandedVPNId.value === vpn.id;
               const isComplete = vpnValidationState.value[vpn.id] || false;
-              const hasErrors = Object.keys(
-                wizardState.validationErrors || {},
-              ).some((key) => key.startsWith(`vpn-${vpn.id}`));
+              const hasErrors = Object.keys(wizardState.validationErrors).some(
+                (key) => key.startsWith(`vpn-${vpn.id}`),
+              );
 
               // Determine card status
               const getVPNStatus = () => {
@@ -614,7 +614,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "Wireguard" && (
                           <WireguardFields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,
@@ -628,7 +628,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "OpenVPN" && (
                           <OpenVPNFields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,
@@ -642,7 +642,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "L2TP" && (
                           <L2TPFields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,
@@ -655,7 +655,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "IKeV2" && (
                           <IKEv2Fields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,
@@ -668,7 +668,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "PPTP" && (
                           <PPTPFields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,
@@ -681,7 +681,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
 
                         {vpn.type === "SSTP" && (
                           <SSTFields
-                            config={vpn.config || {}}
+                            config={vpn.config}
                             onUpdate$={$((updates) =>
                               handleUpdateVPNConfig(vpn.id, {
                                 ...vpn.config,

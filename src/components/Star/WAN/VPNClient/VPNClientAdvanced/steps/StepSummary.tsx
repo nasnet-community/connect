@@ -48,7 +48,7 @@ export const StepSummary = component$<StepSummaryProps>(
 
       switch (vpn.type) {
         case "Wireguard":
-          if (vpn.config && "PeerEndpointAddress" in vpn.config) {
+          if ("PeerEndpointAddress" in vpn.config) {
             details.push(
               `Server: ${vpn.config.PeerEndpointAddress}:${vpn.config.PeerEndpointPort || 51820}`,
             );
@@ -56,18 +56,18 @@ export const StepSummary = component$<StepSummaryProps>(
           break;
 
         case "OpenVPN":
-          if (vpn.config && "Server" in vpn.config && vpn.config.Server) {
+          if ("Server" in vpn.config) {
             details.push(
               `Server: ${vpn.config.Server.Address}:${vpn.config.Server.Port || "1194"}`,
             );
             if ("AuthType" in vpn.config) {
-              details.push(`Auth: ${vpn.config.AuthType || "Certificate"}`);
+              details.push(`Auth: ${vpn.config.AuthType}`);
             }
           }
           break;
 
         case "L2TP":
-          if (vpn.config && "Server" in vpn.config && vpn.config.Server) {
+          if ("Server" in vpn.config) {
             details.push(`Server: ${vpn.config.Server.Address}`);
             if ("UseIPsec" in vpn.config) {
               details.push(
@@ -78,13 +78,13 @@ export const StepSummary = component$<StepSummaryProps>(
           break;
 
         case "PPTP":
-          if (vpn.config && "ConnectTo" in vpn.config) {
+          if ("ConnectTo" in vpn.config) {
             details.push(`Server: ${vpn.config.ConnectTo}`);
           }
           break;
 
         case "SSTP":
-          if (vpn.config && "Server" in vpn.config && vpn.config.Server) {
+          if ("Server" in vpn.config) {
             details.push(
               `Server: ${vpn.config.Server.Address}:${vpn.config.Server.Port || "443"}`,
             );
@@ -92,12 +92,10 @@ export const StepSummary = component$<StepSummaryProps>(
           break;
 
         case "IKeV2":
-          if (vpn.config && "ServerAddress" in vpn.config) {
+          if ("ServerAddress" in vpn.config) {
             details.push(`Server: ${vpn.config.ServerAddress}`);
             if ("AuthMethod" in vpn.config) {
-              details.push(
-                `Auth: ${vpn.config.AuthMethod || "pre-shared-key"}`,
-              );
+              details.push(`Auth: ${vpn.config.AuthMethod}`);
             }
           }
           break;
