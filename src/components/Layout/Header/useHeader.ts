@@ -1,4 +1,4 @@
-import { useSignal, useOnWindow, useVisibleTask$, $ } from "@builder.io/qwik";
+import { useSignal, useOnWindow, useTask$, $ } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
 import { buildLocalePath, getPathWithoutLocale } from "../../../utils/locale";
 
@@ -27,7 +27,11 @@ export const useHeader = () => {
   const currentLocale = detectedLocale;
   const locales = ["en", "fa"];
 
-  useVisibleTask$(() => {
+  useTask$(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
     isDarkMode.value = resolveTheme() === "dark";
   });
 

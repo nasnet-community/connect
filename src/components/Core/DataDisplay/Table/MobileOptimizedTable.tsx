@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, useOnWindow, $ } from "@builder.io/qwik";
 import type { TableProps, TableColumn } from "./Table.types";
 import { useTable } from "./hooks/useTable";
 import { TableHead } from "./components/TableHead";
@@ -65,15 +65,19 @@ export const MobileOptimizedTable = component$<TableProps>((props) => {
 
   const isMobile = useSignal(false);
 
-  // Check if we're on mobile
-  useVisibleTask$(() => {
-    const checkMobile = () => {
-      isMobile.value = window.innerWidth < 768;
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+  const updateMobileState = $(() => {
+    isMobile.value = window.innerWidth < 768;
   });
+
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    updateMobileState();
+  });
+
+  useOnWindow("resize", updateMobileState);
 
   const { sortedData, currentSort, isLoading, handleSort$, getRowId } =
     useTable(props);

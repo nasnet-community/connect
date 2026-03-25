@@ -2,7 +2,6 @@ import {
   component$,
   useTask$,
   Slot,
-  useVisibleTask$,
   useStore,
   $,
 } from "@builder.io/qwik";
@@ -98,45 +97,42 @@ export const RTLProvider = component$<RTLProviderProps>(
     });
 
     // Apply the direction to the HTML element
-    // We need to use useVisibleTask$ here because we're directly manipulating the DOM
-    // which can only be done on the client side
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track, cleanup }) => {
       // Track the current direction and language to react to changes
       const currentDirection = track(() => state.currentDirection);
       const currentLanguage = track(() => language);
 
-      if (isBrowser) {
-        document.documentElement.setAttribute("dir", currentDirection);
-
-        // Add direction as a class for CSS targeting
-        if (currentDirection === "rtl") {
-          document.documentElement.classList.add("rtl");
-          document.documentElement.classList.remove("ltr");
-        } else {
-          document.documentElement.classList.add("ltr");
-          document.documentElement.classList.remove("rtl");
-        }
-
-        // Set the lang attribute based on language prop if specified
-        if (currentLanguage !== "auto") {
-          document.documentElement.setAttribute("lang", currentLanguage);
-        }
+      if (!isBrowser) {
+        return;
       }
 
-      // Cleanup function
-      return () => {
-        if (isBrowser) {
-          // Only reset if we're unmounting the root RTLProvider
-          const hasParentRTL = document.querySelector(
-            '[data-rtl-parent="true"]',
-          );
-          if (!hasParentRTL) {
-            document.documentElement.setAttribute("dir", "ltr");
-            document.documentElement.classList.remove("rtl");
-            document.documentElement.classList.add("ltr");
-          }
+      document.documentElement.setAttribute("dir", currentDirection);
+
+      // Add direction as a class for CSS targeting
+      if (currentDirection === "rtl") {
+        document.documentElement.classList.add("rtl");
+        document.documentElement.classList.remove("ltr");
+      } else {
+        document.documentElement.classList.add("ltr");
+        document.documentElement.classList.remove("rtl");
+      }
+
+      // Set the lang attribute based on language prop if specified
+      if (currentLanguage !== "auto") {
+        document.documentElement.setAttribute("lang", currentLanguage);
+      }
+
+      cleanup(() => {
+        // Only reset if we're unmounting the root RTLProvider
+        const hasParentRTL = document.querySelector(
+          '[data-rtl-parent="true"]',
+        );
+        if (!hasParentRTL) {
+          document.documentElement.setAttribute("dir", "ltr");
+          document.documentElement.classList.remove("rtl");
+          document.documentElement.classList.add("ltr");
         }
-      };
+      });
     });
 
     return (

@@ -2,7 +2,7 @@ import {
   $,
   component$,
   useSignal,
-  useVisibleTask$,
+  useTask$,
   Slot,
 } from "@builder.io/qwik";
 import type { CSSProperties, GraphConfig } from "../types";
@@ -41,7 +41,11 @@ export const GraphContainer = component$<{
   const isTouch = useSignal(false);
 
   // Detect touch device for better UX
-  useVisibleTask$(() => {
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     isTouch.value = window.matchMedia(
       "(hover: none) and (pointer: coarse)",
     ).matches;

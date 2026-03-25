@@ -1,4 +1,4 @@
-import { component$, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useTask$, $ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import {
   cn,
@@ -80,7 +80,11 @@ export const ErrorMessage = component$<ErrorMessageProps>(
     if (!message) return null;
 
     // Set up auto-dismiss functionality
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       let timerId: number | undefined;
 
       if (autoDismissDuration && autoDismissDuration > 0) {

@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
 import type { FileInputErrorProps } from "../types";
 
 /**
@@ -12,7 +12,11 @@ export const FileInputError = component$<FileInputErrorProps>(
     const isVisible = useSignal(true);
 
     // Auto-dismiss functionality
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       if (autoDismissMs && autoDismissMs > 0) {
         const timer = setTimeout(() => {
           isVisible.value = false;
