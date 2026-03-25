@@ -28,27 +28,23 @@ export function useTabKeyboardNavigation({
       // Arrow right or down: move to next tab
       case "ArrowRight":
       case "ArrowDown":
-        event.preventDefault();
         nextIndex = (currentIndex + 1) % enabledTabs.length;
         break;
 
       // Arrow left or up: move to previous tab
       case "ArrowLeft":
       case "ArrowUp":
-        event.preventDefault();
         nextIndex =
           (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
         break;
 
       // Home: move to first tab
       case "Home":
-        event.preventDefault();
         nextIndex = 0;
         break;
 
       // End: move to last tab
       case "End":
-        event.preventDefault();
         nextIndex = enabledTabs.length - 1;
         break;
     }
@@ -56,12 +52,12 @@ export function useTabKeyboardNavigation({
     // If we have a new index, select that tab
     if (nextIndex !== null) {
       const nextTab = enabledTabs[nextIndex];
-      selectTab$(nextTab.id);
-
-      // Focus the tab button
       const tabButton = document.getElementById(`tab-${nextTab.id}`);
       if (tabButton) {
+        tabButton.click();
         tabButton.focus();
+      } else {
+        selectTab$(nextTab.id);
       }
     }
   });

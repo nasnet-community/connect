@@ -16,7 +16,6 @@ export interface RangeThumbProps {
   thumbClass: string;
   positionStyle: { [key: string]: string };
   onMouseDown: QRL<(e: MouseEvent, thumb: "start" | "end") => void>;
-  onKeyDown: QRL<(e: KeyboardEvent, thumb: "start" | "end") => void>;
   label?: string;
   valueText?: string; // Pre-resolved value text
 }
@@ -34,7 +33,6 @@ export const RangeThumb = component$((props: RangeThumbProps) => {
     thumbClass,
     positionStyle,
     onMouseDown,
-    onKeyDown,
     label,
     valueText,
   } = props;
@@ -70,7 +68,6 @@ export const RangeThumb = component$((props: RangeThumbProps) => {
         onMouseDown(mouseEvent, thumbType);
       })}
       preventdefault:touchstart
-      onKeyDown$={$((e: KeyboardEvent) => onKeyDown(e, thumbType))}
       data-value={value}
       data-thumb={thumbType}
     />

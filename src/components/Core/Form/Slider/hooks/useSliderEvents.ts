@@ -137,100 +137,6 @@ export function useSliderEvents({
     }
   });
 
-  // Handle keyboard navigation for thumbs
-  const handleThumbKeyDown = $(
-    (event: KeyboardEvent, thumb: "single" | "start" | "end") => {
-      if (disabled || readonly) return;
-
-      const stepSize = event.shiftKey ? step * 10 : step;
-      let newValue: number;
-
-      switch (event.key) {
-        case "ArrowRight":
-        case "ArrowUp":
-          if (thumb === "single") {
-            newValue = state.singleValue.value + stepSize;
-            updateSingleValue(newValue);
-          } else if (thumb === "start") {
-            newValue = state.startValue.value + stepSize;
-            updateStartValue(newValue);
-          } else {
-            newValue = state.endValue.value + stepSize;
-            updateEndValue(newValue);
-          }
-          event.preventDefault();
-          break;
-
-        case "ArrowLeft":
-        case "ArrowDown":
-          if (thumb === "single") {
-            newValue = state.singleValue.value - stepSize;
-            updateSingleValue(newValue);
-          } else if (thumb === "start") {
-            newValue = state.startValue.value - stepSize;
-            updateStartValue(newValue);
-          } else {
-            newValue = state.endValue.value - stepSize;
-            updateEndValue(newValue);
-          }
-          event.preventDefault();
-          break;
-
-        case "Home":
-          if (thumb === "single" || thumb === "start") {
-            newValue = min;
-            if (thumb === "single") {
-              updateSingleValue(newValue);
-            } else {
-              updateStartValue(newValue);
-            }
-          }
-          event.preventDefault();
-          break;
-
-        case "End":
-          if (thumb === "single" || thumb === "end") {
-            newValue = max;
-            if (thumb === "single") {
-              updateSingleValue(newValue);
-            } else {
-              updateEndValue(newValue);
-            }
-          }
-          event.preventDefault();
-          break;
-
-        case "PageUp":
-          if (thumb === "single") {
-            newValue = state.singleValue.value + stepSize * 10;
-            updateSingleValue(newValue);
-          } else if (thumb === "start") {
-            newValue = state.startValue.value + stepSize * 10;
-            updateStartValue(newValue);
-          } else {
-            newValue = state.endValue.value + stepSize * 10;
-            updateEndValue(newValue);
-          }
-          event.preventDefault();
-          break;
-
-        case "PageDown":
-          if (thumb === "single") {
-            newValue = state.singleValue.value - stepSize * 10;
-            updateSingleValue(newValue);
-          } else if (thumb === "start") {
-            newValue = state.startValue.value - stepSize * 10;
-            updateStartValue(newValue);
-          } else {
-            newValue = state.endValue.value - stepSize * 10;
-            updateEndValue(newValue);
-          }
-          event.preventDefault();
-          break;
-      }
-    },
-  );
-
   // Set up event listeners
   useVisibleTask$(({ cleanup }) => {
     const documentMouseMove = (e: MouseEvent) => handleMouseMove(e);
@@ -264,6 +170,102 @@ export function useSliderEvents({
       });
     };
     const documentMouseUp = () => handleMouseUp();
+    const sliderRoot = trackRef.value?.closest<HTMLElement>(
+      '[data-slider-root="true"]',
+    );
+    const thumbKeyHandlers = new Map<HTMLElement, (event: KeyboardEvent) => void>();
+
+    const updateThumbValue = (thumb: "single" | "start" | "end", value: number) => {
+      if (thumb === "single") {
+        void updateSingleValue(value);
+      } else if (thumb === "start") {
+        void updateStartValue(value);
+      } else {
+        void updateEndValue(value);
+      }
+    };
+
+    const createThumbKeyHandler = (thumb: "single" | "start" | "end") => {
+      return (event: KeyboardEvent) => {
+        if (disabled || readonly) return;
+
+        const stepSize = event.shiftKey ? step * 10 : step;
+        let newValue: number | null = null;
+
+        switch (event.key) {
+          case "ArrowRight":
+          case "ArrowUp":
+            newValue =
+              thumb === "single"
+                ? state.singleValue.value + stepSize
+                : thumb === "start"
+                  ? state.startValue.value + stepSize
+                  : state.endValue.value + stepSize;
+            break;
+
+          case "ArrowLeft":
+          case "ArrowDown":
+            newValue =
+              thumb === "single"
+                ? state.singleValue.value - stepSize
+                : thumb === "start"
+                  ? state.startValue.value - stepSize
+                  : state.endValue.value - stepSize;
+            break;
+
+          case "Home":
+            if (thumb === "single" || thumb === "start") {
+              newValue = min;
+            }
+            break;
+
+          case "End":
+            if (thumb === "single" || thumb === "end") {
+              newValue = max;
+            }
+            break;
+
+          case "PageUp":
+            newValue =
+              thumb === "single"
+                ? state.singleValue.value + stepSize * 10
+                : thumb === "start"
+                  ? state.startValue.value + stepSize * 10
+                  : state.endValue.value + stepSize * 10;
+            break;
+
+          case "PageDown":
+            newValue =
+              thumb === "single"
+                ? state.singleValue.value - stepSize * 10
+                : thumb === "start"
+                  ? state.startValue.value - stepSize * 10
+                  : state.endValue.value - stepSize * 10;
+            break;
+        }
+
+        if (newValue === null) return;
+
+        event.preventDefault();
+        updateThumbValue(thumb, newValue);
+      };
+    };
+
+    sliderRoot
+      ?.querySelectorAll<HTMLElement>("[data-thumb]")
+      .forEach((thumbElement) => {
+        const thumbType = thumbElement.dataset.thumb as
+          | "single"
+          | "start"
+          | "end"
+          | undefined;
+
+        if (!thumbType) return;
+
+        const handler = createThumbKeyHandler(thumbType);
+        thumbKeyHandlers.set(thumbElement, handler);
+        thumbElement.addEventListener("keydown", handler);
+      });
 
     document.addEventListener("mousemove", documentMouseMove);
     document.addEventListener("touchmove", documentTouchMove, {
@@ -277,12 +279,14 @@ export function useSliderEvents({
       document.removeEventListener("touchmove", documentTouchMove);
       document.removeEventListener("mouseup", documentMouseUp);
       document.removeEventListener("touchend", documentMouseUp);
+      thumbKeyHandlers.forEach((handler, thumbElement) => {
+        thumbElement.removeEventListener("keydown", handler);
+      });
     });
   });
 
   return {
     handleTrackClick,
     handleThumbMouseDown,
-    handleThumbKeyDown,
   };
 }

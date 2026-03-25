@@ -52,7 +52,6 @@ export const useStarContainer = (): StarContainerReturn => {
   });
 
   // Track session start when component mounts
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (!sessionStarted.value) {
       track("router_config_session_started", {

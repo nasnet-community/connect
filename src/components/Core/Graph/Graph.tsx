@@ -1,4 +1,4 @@
-import { $, component$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { GraphNode, GraphProps } from "./types";
 import { NodeRenderer } from "./Node/NodeRenderer";
 import { processConnections } from "./Traffic/TrafficUtils";
@@ -21,6 +21,7 @@ export const Graph = component$<GraphProps>((props) => {
   } = props;
 
   const mergedConfig = { ...defaultConfig, ...config };
+  const svgRef = useSignal<SVGSVGElement>();
 
   // Calculate viewBox - simplified to avoid useComputed$ issues
   const getViewBox = () => {
@@ -79,6 +80,55 @@ export const Graph = component$<GraphProps>((props) => {
 
   const nodeMap = getNodeMap();
 
+  useVisibleTask$(({ cleanup }) => {
+    if (!svgRef.value) return;
+
+    const keydownHandlers = new Map<Element, EventListener>();
+
+    svgRef.value
+      .querySelectorAll<SVGGElement>("[data-graph-action]")
+      .forEach((element) => {
+        const handler: EventListener = (event) => {
+          const keyboardEvent = event as KeyboardEvent;
+          if (keyboardEvent.key !== "Enter" && keyboardEvent.key !== " ") return;
+
+          keyboardEvent.preventDefault();
+
+          const graphAction = element.dataset.graphAction;
+          if (graphAction === "connection" && onConnectionClick$) {
+            const connectionId = element.dataset.connectionId;
+            const connection = processedConnections.find((item) => {
+              const itemId = item.id || `${item.from}-${item.to}`;
+              return String(itemId) === connectionId;
+            });
+
+            if (connection) {
+              void onConnectionClick$(connection);
+            }
+            return;
+          }
+
+          if (graphAction === "node" && onNodeClick$) {
+            const nodeId = element.dataset.nodeId;
+            const node = nodes.find((item) => String(item.id) === nodeId);
+
+            if (node) {
+              void onNodeClick$(node);
+            }
+          }
+        };
+
+        keydownHandlers.set(element, handler);
+        element.addEventListener("keydown", handler);
+      });
+
+    cleanup(() => {
+      keydownHandlers.forEach((handler, element) => {
+        element.removeEventListener("keydown", handler);
+      });
+    });
+  });
+
   return (
     <GraphContainer
       title={title}
@@ -86,6 +136,7 @@ export const Graph = component$<GraphProps>((props) => {
       connections={processedConnections}
     >
       <svg
+        ref={svgRef}
         class="h-full w-full"
         viewBox={computedViewBox}
         preserveAspectRatio={
@@ -119,6 +170,8 @@ export const Graph = component$<GraphProps>((props) => {
           return (
             <g
               key={`connection-${id}`}
+              data-graph-action={onConnectionClick$ ? "connection" : undefined}
+              data-connection-id={String(id)}
               onClick$={
                 onConnectionClick$
                   ? $(async () => {
@@ -136,16 +189,6 @@ export const Graph = component$<GraphProps>((props) => {
               role={onConnectionClick$ ? "button" : "img"}
               aria-label={`${connectionLabel}${connection.trafficType ? `, Traffic type: ${connection.trafficType}` : ""}`}
               tabindex={onConnectionClick$ ? 0 : -1}
-              onKeyDown$={
-                onConnectionClick$
-                  ? $(async (event: KeyboardEvent) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        await onConnectionClick$(connection);
-                      }
-                    })
-                  : undefined
-              }
             >
               <SingleConnectionRenderer
                 connection={connection}
@@ -160,6 +203,8 @@ export const Graph = component$<GraphProps>((props) => {
         {nodes.map((node, _index) => (
           <g
             key={`node-${node.id}`}
+            data-graph-action={onNodeClick$ ? "node" : undefined}
+            data-node-id={String(node.id)}
             onClick$={
               onNodeClick$
                 ? $(async () => {
@@ -178,16 +223,6 @@ export const Graph = component$<GraphProps>((props) => {
             aria-label={`${node.type || "Node"}: ${node.label} at position ${node.x}, ${node.y}`}
             aria-describedby={`node-desc-${node.id}`}
             tabindex={onNodeClick$ ? 0 : -1}
-            onKeyDown$={
-              onNodeClick$
-                ? $(async (event: KeyboardEvent) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      await onNodeClick$(node);
-                    }
-                  })
-                : undefined
-            }
           >
             <NodeRenderer node={node} />
           </g>

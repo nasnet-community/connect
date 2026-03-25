@@ -139,7 +139,6 @@ export const CertificateStep = component$(() => {
   });
 
   // Run validation on component mount and when values change
-  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     validateAndUpdate$();
   });
