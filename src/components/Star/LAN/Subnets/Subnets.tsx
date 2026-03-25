@@ -56,6 +56,12 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
   // Type assertion for the new categories
   const extendedGroupedConfigs = groupedConfigs as any;
+  const chooseNetworks = starContext.state.Choose.Networks;
+  const domesticNetworks = chooseNetworks.DomesticNetworks;
+  const foreignNetworks = chooseNetworks.ForeignNetworks;
+  const vpnClientNetworks = chooseNetworks.VPNClientNetworks;
+  const vpnServerNetworks = chooseNetworks.VPNServerNetworks;
+  const vpnServerState = starContext.state.LAN.VPNServer;
 
   // Create tabs configuration based on available subnets - make it reactive
   const tabs = useComputed$(() => {
@@ -213,6 +219,9 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       };
 
       const networks = starContext.state.Choose.Networks;
+      const vpnClientNetworks = networks.VPNClientNetworks;
+      const vpnServerNetworks = networks.VPNServerNetworks;
+      const tunnelNetworks = networks.TunnelNetworks;
       let vpnClientIndex = 0;
 
       // Map VPN client configs to protocols using the same order as in useSubnets
@@ -224,59 +233,59 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         let protocol = "";
         let _protocolIndex = 0;
 
-        if (networks?.VPNClientNetworks?.Wireguard?.length) {
-          if (vpnClientIndex <= networks.VPNClientNetworks.Wireguard.length) {
+        if (vpnClientNetworks?.Wireguard?.length) {
+          if (vpnClientIndex <= vpnClientNetworks.Wireguard.length) {
             protocol = "Wireguard";
             _protocolIndex = vpnClientIndex - 1;
           }
         }
-        let currentCount = networks?.VPNClientNetworks?.Wireguard?.length || 0;
+        let currentCount = vpnClientNetworks?.Wireguard?.length || 0;
 
-        if (!protocol && networks?.VPNClientNetworks?.OpenVPN?.length) {
+        if (!protocol && vpnClientNetworks?.OpenVPN?.length) {
           if (
             vpnClientIndex <=
-            currentCount + networks.VPNClientNetworks.OpenVPN.length
+            currentCount + vpnClientNetworks.OpenVPN.length
           ) {
             protocol = "OpenVPN";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
-          currentCount += networks.VPNClientNetworks.OpenVPN.length;
+          currentCount += vpnClientNetworks.OpenVPN.length;
         }
 
-        if (!protocol && networks?.VPNClientNetworks?.L2TP?.length) {
+        if (!protocol && vpnClientNetworks?.L2TP?.length) {
           if (
             vpnClientIndex <=
-            currentCount + networks.VPNClientNetworks.L2TP.length
+            currentCount + vpnClientNetworks.L2TP.length
           ) {
             protocol = "L2TP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
-          currentCount += networks.VPNClientNetworks.L2TP.length;
+          currentCount += vpnClientNetworks.L2TP.length;
         }
 
-        if (!protocol && networks?.VPNClientNetworks?.PPTP?.length) {
+        if (!protocol && vpnClientNetworks?.PPTP?.length) {
           if (
             vpnClientIndex <=
-            currentCount + networks.VPNClientNetworks.PPTP.length
+            currentCount + vpnClientNetworks.PPTP.length
           ) {
             protocol = "PPTP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
-          currentCount += networks.VPNClientNetworks.PPTP.length;
+          currentCount += vpnClientNetworks.PPTP.length;
         }
 
-        if (!protocol && networks?.VPNClientNetworks?.SSTP?.length) {
+        if (!protocol && vpnClientNetworks?.SSTP?.length) {
           if (
             vpnClientIndex <=
-            currentCount + networks.VPNClientNetworks.SSTP.length
+            currentCount + vpnClientNetworks.SSTP.length
           ) {
             protocol = "SSTP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
-          currentCount += networks.VPNClientNetworks.SSTP.length;
+          currentCount += vpnClientNetworks.SSTP.length;
         }
 
-        if (!protocol && networks?.VPNClientNetworks?.IKev2?.length) {
+        if (!protocol && vpnClientNetworks?.IKev2?.length) {
           protocol = "IKev2";
           _protocolIndex = vpnClientIndex - currentCount - 1;
         }
@@ -304,7 +313,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
         // Check if it's an array protocol (Wireguard, OpenVPN)
         if (
-          networks?.VPNServerNetworks?.Wireguard?.some(
+          vpnServerNetworks?.Wireguard?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -313,7 +322,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           }
           defaultSubnets.VPNServerSubnets.Wireguard.push(subnetConfig);
         } else if (
-          networks?.VPNServerNetworks?.OpenVPN?.some(
+          vpnServerNetworks?.OpenVPN?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -337,7 +346,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
         // Determine tunnel type from Networks
         if (
-          networks?.TunnelNetworks?.IPIP?.some(
+          tunnelNetworks?.IPIP?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -346,7 +355,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           }
           defaultSubnets.TunnelSubnets.IPIP.push(subnetConfig);
         } else if (
-          networks?.TunnelNetworks?.Eoip?.some(
+          tunnelNetworks?.Eoip?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -355,7 +364,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           }
           defaultSubnets.TunnelSubnets.Eoip.push(subnetConfig);
         } else if (
-          networks?.TunnelNetworks?.Gre?.some(
+          tunnelNetworks?.Gre?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -364,7 +373,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           }
           defaultSubnets.TunnelSubnets.Gre.push(subnetConfig);
         } else if (
-          networks?.TunnelNetworks?.Vxlan?.some(
+          tunnelNetworks?.Vxlan?.some(
             (name: string) => name === config.key,
           )
         ) {
@@ -390,9 +399,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         delete defaultSubnets.TunnelSubnets;
 
       await starContext.updateLAN$({ Subnets: defaultSubnets as any });
-      if (onComplete$) {
-        onComplete$();
-      }
+      onComplete$();
       return;
     }
 
@@ -420,7 +427,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     // Process base networks
     extendedGroupedConfigs.base.forEach((config: any) => {
       const value = values.value[config.key];
-      if (value !== null && value !== undefined) {
+      if (value !== null) {
         finalSubnets.BaseSubnets[config.key] = createSubnetConfig(
           config.key,
           value,
@@ -438,7 +445,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     // Process domestic WAN networks
     extendedGroupedConfigs["wan-domestic"]?.forEach((config: any) => {
       const value = values.value[config.key];
-      if (value !== null && value !== undefined) {
+      if (value !== null) {
         finalSubnets.DomesticSubnets.push(
           createSubnetConfig(config.label, value, config.mask),
         );
@@ -452,7 +459,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     // Process foreign WAN networks
     extendedGroupedConfigs["wan-foreign"]?.forEach((config: any) => {
       const value = values.value[config.key];
-      if (value !== null && value !== undefined) {
+      if (value !== null) {
         finalSubnets.ForeignSubnets.push(
           createSubnetConfig(config.label, value, config.mask),
         );
@@ -519,7 +526,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           currentIndex += vpnClients.IKeV2.length;
         }
 
-        if (protocol && value !== null && value !== undefined) {
+          if (protocol && value !== null) {
           vpnClientsByProtocol[protocol].push(
             createSubnetConfig(config.label, value, config.mask),
           );
@@ -543,7 +550,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       vpnServers.WireguardServers.forEach((server, index) => {
         const serverName = server.Interface.Name || `WireGuard${index + 1}`;
         const value = values.value[serverName];
-        if (value !== null && value !== undefined) {
+        if (value !== null) {
           wireguardConfigs.push(createSubnetConfig(serverName, value, 24));
         }
       });
@@ -558,7 +565,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
       vpnServers.OpenVpnServer.forEach((server, index) => {
         const serverName = server.name || `OpenVPN${index + 1}`;
         const value = values.value[serverName];
-        if (value !== null && value !== undefined) {
+        if (value !== null) {
           openvpnConfigs.push(createSubnetConfig(serverName, value, 24));
         }
       });
@@ -583,7 +590,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     singleServerProtocols.forEach(({ key, enabled }) => {
       if (enabled) {
         const value = values.value[key];
-        if (value !== null && value !== undefined) {
+          if (value !== null) {
           finalSubnets.VPNServerSubnets[key] = createSubnetConfig(
             key,
             value,
@@ -608,7 +615,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         configs.forEach((tunnel: any, index: number) => {
           const tunnelName = tunnel.name || `${key}${index + 1}`;
           const value = values.value[tunnelName];
-          if (value !== null && value !== undefined) {
+            if (value !== null) {
             tunnelConfigs.push(createSubnetConfig(tunnelName, value, 30));
           }
         });
@@ -636,9 +643,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     await starContext.updateLAN$({ Subnets: finalSubnets as any });
 
     // Complete step
-    if (onComplete$) {
-      onComplete$();
-    }
+    onComplete$();
   });
 
   return (
@@ -760,17 +765,14 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     </div>
 
                     {/* Domestic WAN Networks */}
-                    {starContext.state.Choose.Networks?.DomesticNetworks
-                      ?.length &&
-                      starContext.state.Choose.Networks?.DomesticNetworks
-                        ?.length > 0 && (
+                    {(domesticNetworks?.length ?? 0) > 0 && (
                         <div class="rounded-lg border border-orange-200 bg-orange-50/50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
                           <h4 class="mb-3 flex items-center gap-2 font-medium text-orange-700 dark:text-orange-300">
                             <LuHome class="h-4 w-4" />
                             {$localize`Domestic WAN Networks`}
                           </h4>
                           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {starContext.state.Choose.Networks?.DomesticNetworks?.map(
+                            {domesticNetworks?.map(
                               (networkName, index) => (
                                 <div
                                   key={index}
@@ -790,17 +792,14 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       )}
 
                     {/* Foreign WAN Networks */}
-                    {starContext.state.Choose.Networks?.ForeignNetworks
-                      ?.length &&
-                      starContext.state.Choose.Networks?.ForeignNetworks
-                        ?.length > 0 && (
+                    {(foreignNetworks?.length ?? 0) > 0 && (
                         <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                           <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-700 dark:text-blue-300">
                             <LuGlobe class="h-4 w-4" />
                             {$localize`Foreign WAN Networks`}
                           </h4>
                           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {starContext.state.Choose.Networks.ForeignNetworks.map(
+                            {foreignNetworks?.map(
                               (networkName, index) => (
                                 <div
                                   key={index}
@@ -820,30 +819,12 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       )}
 
                     {/* VPN Client Networks */}
-                    {((starContext.state.Choose.Networks?.VPNClientNetworks
-                      ?.Wireguard?.length &&
-                      starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.Wireguard?.length > 0) ||
-                      (starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.OpenVPN?.length &&
-                        starContext.state.Choose.Networks?.VPNClientNetworks
-                          ?.OpenVPN?.length > 0) ||
-                      (starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.L2TP?.length &&
-                        starContext.state.Choose.Networks?.VPNClientNetworks
-                          ?.L2TP?.length > 0) ||
-                      (starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.PPTP?.length &&
-                        starContext.state.Choose.Networks?.VPNClientNetworks
-                          ?.PPTP?.length > 0) ||
-                      (starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.SSTP?.length &&
-                        starContext.state.Choose.Networks?.VPNClientNetworks
-                          ?.SSTP?.length > 0) ||
-                      (starContext.state.Choose.Networks?.VPNClientNetworks
-                        ?.IKev2?.length &&
-                        starContext.state.Choose.Networks?.VPNClientNetworks
-                          ?.IKev2?.length > 0)) && (
+                    {((vpnClientNetworks?.Wireguard?.length ?? 0) > 0 ||
+                      (vpnClientNetworks?.OpenVPN?.length ?? 0) > 0 ||
+                      (vpnClientNetworks?.L2TP?.length ?? 0) > 0 ||
+                      (vpnClientNetworks?.PPTP?.length ?? 0) > 0 ||
+                      (vpnClientNetworks?.SSTP?.length ?? 0) > 0 ||
+                      (vpnClientNetworks?.IKev2?.length ?? 0) > 0) && (
                       <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4 dark:border-teal-800 dark:bg-teal-900/20">
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-teal-700 dark:text-teal-300">
                           <LuLock class="h-4 w-4" />
@@ -852,9 +833,6 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {(() => {
                             let clientIndex = 0;
-                            const vpnClientNetworks =
-                              starContext.state.Choose.Networks
-                                ?.VPNClientNetworks;
                             const elements: any[] = [];
 
                             // Wireguard clients
@@ -976,34 +954,29 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     )}
 
                     {/* VPN Server Networks if configured */}
-                    {starContext.state.LAN.VPNServer &&
-                      ((starContext.state.LAN.VPNServer.WireguardServers &&
-                        starContext.state.LAN.VPNServer.WireguardServers
+                    {vpnServerState &&
+                      ((vpnServerState.WireguardServers &&
+                        vpnServerState.WireguardServers
                           .length > 0) ||
-                        (starContext.state.LAN.VPNServer.OpenVpnServer &&
-                          starContext.state.LAN.VPNServer.OpenVpnServer.length >
+                        (vpnServerState.OpenVpnServer &&
+                          vpnServerState.OpenVpnServer.length >
                             0) ||
-                        starContext.state.LAN.VPNServer.L2tpServer?.enabled ||
-                        starContext.state.LAN.VPNServer.PptpServer?.enabled ||
-                        starContext.state.LAN.VPNServer.SstpServer?.enabled ||
-                        starContext.state.LAN.VPNServer.Ikev2Server ||
-                        starContext.state.Choose.Networks?.VPNServerNetworks
-                          ?.SSH ||
-                        starContext.state.Choose.Networks?.VPNServerNetworks
-                          ?.Socks5 ||
-                        starContext.state.Choose.Networks?.VPNServerNetworks
-                          ?.HTTPProxy ||
-                        starContext.state.Choose.Networks?.VPNServerNetworks
-                          ?.BackToHome ||
-                        starContext.state.Choose.Networks?.VPNServerNetworks
-                          ?.ZeroTier) && (
+                        vpnServerState.L2tpServer?.enabled ||
+                        vpnServerState.PptpServer?.enabled ||
+                        vpnServerState.SstpServer?.enabled ||
+                        vpnServerState.Ikev2Server ||
+                        vpnServerNetworks?.SSH ||
+                        vpnServerNetworks?.Socks5 ||
+                        vpnServerNetworks?.HTTPProxy ||
+                        vpnServerNetworks?.BackToHome ||
+                        vpnServerNetworks?.ZeroTier) && (
                         <div class="rounded-lg border border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-900/20">
                           <h4 class="mb-3 flex items-center gap-2 font-medium text-green-700 dark:text-green-300">
                             <LuShield class="h-4 w-4" />
                             {$localize`VPN Server Networks`}
                           </h4>
                           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {starContext.state.LAN.VPNServer.WireguardServers?.map(
+                            {vpnServerState.WireguardServers?.map(
                               (server, index) => (
                                 <div
                                   key={index}
@@ -1020,7 +993,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </div>
                               ),
                             )}
-                            {starContext.state.LAN.VPNServer.OpenVpnServer?.map(
+                            {vpnServerState.OpenVpnServer?.map(
                               (server, index) => (
                                 <div
                                   key={index}
@@ -1035,8 +1008,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </div>
                               ),
                             )}
-                            {starContext.state.LAN.VPNServer.L2tpServer
-                              ?.enabled && (
+                            {vpnServerState.L2tpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`L2TP`}:
@@ -1046,8 +1018,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.LAN.VPNServer.PptpServer
-                              ?.enabled && (
+                            {vpnServerState.PptpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`PPTP`}:
@@ -1057,8 +1028,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.LAN.VPNServer.SstpServer
-                              ?.enabled && (
+                            {vpnServerState.SstpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`SSTP`}:
@@ -1068,7 +1038,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.LAN.VPNServer.Ikev2Server && (
+                            {vpnServerState.Ikev2Server && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`IKEv2`}:
@@ -1078,8 +1048,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.Choose.Networks
-                              ?.VPNServerNetworks?.SSH && (
+                            {vpnServerNetworks?.SSH && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`SSH Server`}:
@@ -1089,8 +1058,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.Choose.Networks
-                              ?.VPNServerNetworks?.Socks5 && (
+                            {vpnServerNetworks?.Socks5 && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`Socks5 Proxy`}:
@@ -1100,8 +1068,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.Choose.Networks
-                              ?.VPNServerNetworks?.HTTPProxy && (
+                            {vpnServerNetworks?.HTTPProxy && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`HTTP Proxy`}:
@@ -1111,8 +1078,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.Choose.Networks
-                              ?.VPNServerNetworks?.BackToHome && (
+                            {vpnServerNetworks?.BackToHome && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`Back To Home`}:
@@ -1122,8 +1088,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                                 </span>
                               </div>
                             )}
-                            {starContext.state.Choose.Networks
-                              ?.VPNServerNetworks?.ZeroTier && (
+                            {vpnServerNetworks?.ZeroTier && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
                                   {$localize`ZeroTier`}:

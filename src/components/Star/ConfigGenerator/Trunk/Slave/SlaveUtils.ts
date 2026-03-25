@@ -226,7 +226,7 @@ export const createStationTrunkInterface = (
 
     // Add the name parameter to the command to create a named interface
     // Format: name="wifi{band}-Trunk"
-    if (config["/interface wifi"] && config["/interface wifi"][0]) {
+    if (config["/interface wifi"][0]) {
         const originalCommand = config["/interface wifi"][0];
         // Insert name parameter after the default-name find command
         const nameParam = `name="wifi${bandName}-Trunk" `;
@@ -862,9 +862,9 @@ export const addSlaveInterfacesToBridge = (
 
     // Determine target bridge name (prefer Split, fallback to VPN)
     let targetBridge: string | null = null;
-    if (subnets?.BaseSubnets?.Split) {
+    if (subnets?.BaseSubnets.Split) {
         targetBridge = "LANBridgeSplit";
-    } else if (subnets?.BaseSubnets?.VPN) {
+    } else if (subnets?.BaseSubnets.VPN) {
         targetBridge = "LANBridgeVPN";
     }
 
@@ -919,7 +919,7 @@ export const addSlaveInterfacesToBridge = (
     if (config["/interface ethernet"].length > 0) {
         result["/interface ethernet"] = config["/interface ethernet"];
     }
-    if (config["/interface sfp"] && config["/interface sfp"].length > 0) {
+    if (config["/interface sfp"].length > 0) {
         result["/interface sfp"] = config["/interface sfp"];
     }
     if (config["/interface bridge port"].length > 0) {
@@ -975,9 +975,9 @@ export const configureSlaveWireless = (
 
     // Determine network target (prefer Split, fallback to SingleVPN)
     let networkTarget: "Split" | "SingleVPN" | null = null;
-    if (subnets?.BaseSubnets?.Split) {
+    if (subnets?.BaseSubnets.Split) {
         networkTarget = "Split";
-    } else if (subnets?.BaseSubnets?.VPN) {
+    } else if (subnets?.BaseSubnets.VPN) {
         networkTarget = "SingleVPN";
     }
 
@@ -1131,19 +1131,17 @@ export const SlaveMDNS = (subnets?: Subnets): RouterConfig => {
 
     // Base Networks
     const baseNetworks = subnets.BaseSubnets;
-    if (baseNetworks) {
-        if (baseNetworks.Split) {
-            bridgeNames.push("LANBridgeSplit");
-        }
-        if (baseNetworks.Domestic) {
-            bridgeNames.push("LANBridgeDomestic");
-        }
-        if (baseNetworks.Foreign) {
-            bridgeNames.push("LANBridgeForeign");
-        }
-        if (baseNetworks.VPN) {
-            bridgeNames.push("LANBridgeVPN");
-        }
+    if (baseNetworks.Split) {
+        bridgeNames.push("LANBridgeSplit");
+    }
+    if (baseNetworks.Domestic) {
+        bridgeNames.push("LANBridgeDomestic");
+    }
+    if (baseNetworks.Foreign) {
+        bridgeNames.push("LANBridgeForeign");
+    }
+    if (baseNetworks.VPN) {
+        bridgeNames.push("LANBridgeVPN");
     }
 
     // Foreign Networks

@@ -125,7 +125,7 @@ export function useSliderEvents({
 
   // Handle touch movement during drag
   const handleTouchMove = $((event: TouchEvent) => {
-    if (!isDragging.value || !trackRef.value || !event.touches[0]) return;
+    if (!isDragging.value || !trackRef.value) return;
 
     event.preventDefault();
     const touch = event.touches[0];
