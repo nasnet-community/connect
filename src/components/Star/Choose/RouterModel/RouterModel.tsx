@@ -61,7 +61,7 @@ export const RouterModel = component$((props: RouterModelProps) => {
 
   const allMasterRouters = [...customRouters, ...masterRouters];
   const routerCategories = categorizeRouters(allMasterRouters);
-  const activeTab = useSignal<string>(routerCategories[0]?.id || "hAP");
+  const activeTab = useSignal<string>(routerCategories[0].id);
   const isModalOpen = useSignal(false);
   const selectedRouter = useSignal<RouterData | null>(null);
   const isCustomRouterModalOpen = useSignal(false);

@@ -21,16 +21,7 @@ import type { ToastService } from "./Toast.types";
  * ```
  */
 export function useToast(): ToastService {
-  const toastService = useContext(ToastServiceContext);
-
-  if (!toastService) {
-    throw new Error(
-      "useToast() must be used within a ToastContainer. " +
-        "Make sure ToastContainer is rendered at the root of your application.",
-    );
-  }
-
-  return toastService;
+  return useContext(ToastServiceContext);
 }
 
 export default useToast;

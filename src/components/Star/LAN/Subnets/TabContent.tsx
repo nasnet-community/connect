@@ -69,7 +69,7 @@ export const TabContent = component$<TabContentProps>(
     const metadata = tabMetadata[category];
 
     // Handle empty or undefined configs
-    if (!configs || configs.length === 0) {
+    if (configs.length === 0) {
       return (
         <div class="animate-in fade-in flex min-h-[400px] flex-col items-center justify-center duration-300">
           <div class="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">

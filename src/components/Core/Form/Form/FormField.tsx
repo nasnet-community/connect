@@ -94,13 +94,7 @@ export const FormField = component$<FormFieldProps>((props) => {
 });
 
 export const useFormFieldContext = () => {
-  const context = useContext(FormFieldContext);
-  if (!context) {
-    throw new Error(
-      "useFormFieldContext must be used within a FormField component",
-    );
-  }
-  return context;
+  return useContext(FormFieldContext);
 };
 
 export default FormField;

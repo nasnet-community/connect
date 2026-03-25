@@ -160,7 +160,7 @@ export const addTunnelSubnetConfigurations = (
     subnet: SubnetConfig,
     tunnelType: "IPIP" | "EoIP" | "GRE" | "VXLAN",
 ): void => {
-    const networkType = tunnelConfig.NetworkType || "VPN";
+    const networkType = tunnelConfig.NetworkType;
 
     // Add IP address to tunnel interface
     configs.push(

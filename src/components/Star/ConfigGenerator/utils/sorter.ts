@@ -369,7 +369,7 @@ export const getSubPriority = (
                 } else {
                     actionOrder = 10000000 + interfaceOrder + 4;
                 }
-            } else if (loadBalancingType === "PCC") {
+            } else {
                 // PCC order:
                 // 1. mark-connection chain=input (0)
                 // 2. mark-routing chain=output (1)

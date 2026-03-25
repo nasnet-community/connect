@@ -462,7 +462,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   if (isServer()) return false;
 
   try {
-    if (navigator.clipboard && window.isSecureContext) {
+    if ("clipboard" in navigator && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
       return true;
     } else {

@@ -155,10 +155,10 @@ export function useProgressBar(
     max,
     value,
     indeterminate,
-    showValue: showValue || false,
-    valuePosition: valuePosition || "right",
-    fullWidth: fullWidth || false,
-    className: className || "",
+    showValue,
+    valuePosition,
+    fullWidth,
+    className,
     ariaLabel,
   };
 }
