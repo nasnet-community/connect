@@ -69,7 +69,7 @@ export const useIKEv2Server = () => {
     addressPoolRanges:
       ikev2State.ipPools?.Ranges || "192.168.77.2-192.168.77.254",
     addressPoolName: ikev2State.ipPools?.Name || "ike2-pool",
-    authMethod: ikev2State.identities.authMethod || "digital-signature",
+    authMethod: ikev2State.identities.authMethod,
     presharedKey: ikev2State.identities.secret || "",
     eapMethods: ikev2State.identities.eapMethods || "eap-mschapv2",
     serverCertificate: ikev2State.identities.certificate || "",
@@ -110,33 +110,31 @@ export const useIKEv2Server = () => {
     let isValid = true;
 
     // Validate auth method and related fields
-    if (newConfig.identities.authMethod) {
-      if (newConfig.identities.authMethod === "pre-shared-key") {
-        if (
-          !newConfig.identities.secret ||
-          !newConfig.identities.secret.trim()
-        ) {
-          presharedKeyError.value = $localize`Pre-shared key is required for this authentication method`;
-          isValid = false;
-        } else if (newConfig.identities.secret.length < 8) {
-          presharedKeyError.value = $localize`Pre-shared key should be at least 8 characters long`;
-          isValid = false;
-        } else {
-          presharedKeyError.value = "";
-        }
+    if (newConfig.identities.authMethod === "pre-shared-key") {
+      if (
+        !newConfig.identities.secret ||
+        !newConfig.identities.secret.trim()
+      ) {
+        presharedKeyError.value = $localize`Pre-shared key is required for this authentication method`;
+        isValid = false;
+      } else if (newConfig.identities.secret.length < 8) {
+        presharedKeyError.value = $localize`Pre-shared key should be at least 8 characters long`;
+        isValid = false;
       } else {
         presharedKeyError.value = "";
-        if (
-          (newConfig.identities.authMethod === "digital-signature" ||
-            newConfig.identities.authMethod === "eap") &&
-          (!newConfig.identities.certificate ||
-            !newConfig.identities.certificate.trim())
-        ) {
-          certificateError.value = $localize`Certificate is required for this authentication method`;
-          isValid = false;
-        } else {
-          certificateError.value = "";
-        }
+      }
+    } else {
+      presharedKeyError.value = "";
+      if (
+        (newConfig.identities.authMethod === "digital-signature" ||
+          newConfig.identities.authMethod === "eap") &&
+        (!newConfig.identities.certificate ||
+          !newConfig.identities.certificate.trim())
+      ) {
+        certificateError.value = $localize`Certificate is required for this authentication method`;
+        isValid = false;
+      } else {
+        certificateError.value = "";
       }
     }
 

@@ -81,7 +81,7 @@ export function isInterfaceOccupied(
 export function getOccupiedInterfacesForRouter(
   routerModel: RouterModels,
 ): OccupiedInterface[] {
-  return routerModel.Interfaces.OccupiedInterfaces || [];
+  return routerModel.Interfaces.OccupiedInterfaces;
 }
 
 /**
@@ -95,7 +95,7 @@ export function getMasterOccupiedInterfaces(
   if (!masterRouter) {
     return [];
   }
-  return masterRouter.Interfaces.OccupiedInterfaces || [];
+  return masterRouter.Interfaces.OccupiedInterfaces;
 }
 
 /**

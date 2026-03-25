@@ -24,9 +24,9 @@ export const useHTTPProxyServer = () => {
 
   // Unified form state for both easy and advanced modes
   const formState = useStore({
-    port: httpProxyState.Port || 8080,
-    network: httpProxyState.Network || "Split",
-    allowedIPAddresses: httpProxyState.AllowedIPAddresses || [],
+    port: httpProxyState.Port,
+    network: httpProxyState.Network,
+    allowedIPAddresses: httpProxyState.AllowedIPAddresses,
     vsNetwork: httpProxyState.VSNetwork || "VPN",
   });
 

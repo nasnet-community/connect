@@ -48,15 +48,14 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
       onMouseDown$={onMouseDown}
       onTouchStart$={$((e: TouchEvent) => {
         // Convert TouchEvent to MouseEvent for consistent handling
-        if (e.touches[0]) {
-          const mouseEvent = {
-            preventDefault: () => e.preventDefault(),
-            stopPropagation: () => e.stopPropagation(),
-            clientX: e.touches[0].clientX || 0,
-            clientY: e.touches[0].clientY || 0,
-          } as MouseEvent;
-          onMouseDown(mouseEvent);
-        }
+        const touch = e.touches[0];
+        const mouseEvent = {
+          preventDefault: () => e.preventDefault(),
+          stopPropagation: () => e.stopPropagation(),
+          clientX: touch.clientX || 0,
+          clientY: touch.clientY || 0,
+        } as MouseEvent;
+        onMouseDown(mouseEvent);
       })}
       onKeyDown$={onKeyDown}
       data-value={value}

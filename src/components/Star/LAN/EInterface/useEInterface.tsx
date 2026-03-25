@@ -94,7 +94,7 @@ export const useEInterface = () => {
 
   const getAvailableEInterfaces = $(async () => {
     const routerModels = ctx.state.Choose.RouterModels;
-    if (!routerModels || routerModels.length === 0) {
+    if (routerModels.length === 0) {
       return [] as Ethernet[];
     }
 
@@ -105,7 +105,7 @@ export const useEInterface = () => {
 
     const usedWANInterfaces = await getUsedWANInterfaces();
 
-    return (masterModel.Interfaces.Interfaces.ethernet || []).filter(
+    return masterModel.Interfaces.Interfaces.ethernet.filter(
       (intf: string) => !usedWANInterfaces.includes(intf),
     ) as Ethernet[];
   });

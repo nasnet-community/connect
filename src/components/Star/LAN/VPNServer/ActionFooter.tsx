@@ -116,16 +116,12 @@ export const StepperActionFooter = component$<ActionFooterProps>(
 
     // Create safe wrapper functions that don't leak promises
     const safeCompleteStep = $(async (id: number) => {
-      if (stepper.completeStep$) {
-        await stepper.completeStep$(id);
-      }
+      await stepper.completeStep$(id);
       return null;
     });
 
     const safeNextStep = $(async () => {
-      if (stepper.nextStep$) {
-        await stepper.nextStep$();
-      }
+      await stepper.nextStep$();
       return null;
     });
 

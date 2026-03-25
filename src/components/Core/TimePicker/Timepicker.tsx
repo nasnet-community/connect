@@ -86,8 +86,7 @@ export const TimePicker = component$<TimePickerProps>(
     const _effectiveTouchOptimized =
       _touchOptimized ??
       (typeof window !== "undefined" && "ontouchstart" in window);
-    const _effectiveDir =
-      dir ?? (typeof document !== "undefined" ? document.dir : "ltr");
+    const _effectiveDir = dir;
 
     // Memoized computation for hours based on format
     const hours = useComputed$(() => {

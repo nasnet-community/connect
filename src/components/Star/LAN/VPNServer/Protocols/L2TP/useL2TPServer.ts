@@ -49,7 +49,7 @@ export const useL2TPServer = () => {
     authentication: [...(l2tpState.Authentication || ["mschap2", "mschap1"])],
     maxMru: l2tpState.PacketSize?.MaxMru || 1450,
     maxMtu: l2tpState.PacketSize?.MaxMtu || 1450,
-    useIpsec: l2tpState.IPsec.UseIpsec || "yes",
+    useIpsec: l2tpState.IPsec.UseIpsec,
     ipsecSecret: l2tpState.IPsec.IpsecSecret || "",
     keepaliveTimeout: l2tpState.KeepaliveTimeout || 30,
     allowFastPath:
@@ -82,7 +82,7 @@ export const useL2TPServer = () => {
 
     // Validate IPsec secret if required
     if (config.IPsec?.IpsecSecret !== undefined) {
-      const useIpsec = config.IPsec.UseIpsec || newConfig.IPsec.UseIpsec;
+      const useIpsec = config.IPsec.UseIpsec;
       if (
         (useIpsec === "yes" || useIpsec === "required") &&
         (!config.IPsec.IpsecSecret || !config.IPsec.IpsecSecret.trim())
