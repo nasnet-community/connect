@@ -7,7 +7,7 @@ import {
   LuShield,
   LuZap,
 } from "@qwikest/icons/lucide";
-import { Button, Newsletter } from "~/components/Core";
+import { Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
 import { subscribeToNewsletter } from "~/utils/newsletterAPI";
 import { generateUserUUID } from "~/utils/fingerprinting";
@@ -15,6 +15,10 @@ import { generateUserUUID } from "~/utils/fingerprinting";
 export const HeroSection = component$(() => {
   const location = useLocation();
   const locale = location.params.locale || "en";
+  const primaryActionClasses =
+    "group inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:from-purple-700 hover:to-blue-700 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-300/50 active:scale-[0.97]";
+  const secondaryActionClasses =
+    "group inline-flex items-center justify-center rounded-lg border-2 border-white/20 bg-white/10 px-8 py-4 text-lg font-semibold text-gray-800 backdrop-blur-md transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-200/50 active:scale-[0.97] dark:bg-black/10 dark:text-white dark:focus-visible:ring-gray-700/50";
 
   // Newsletter subscription handler with Supabase Edge Function integration
   const handleNewsletterSubscribe$ = $(
@@ -114,30 +118,19 @@ export const HeroSection = component$(() => {
 
         {/* Action Buttons */}
         <div class="flex animate-fade-in-up flex-col items-center justify-center gap-4 animation-delay-1000 sm:flex-row">
-          <Link href={`/${locale}/star/`}>
-            <Button
-              variant="primary"
-              size="lg"
-              class="group transform bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 text-lg font-semibold shadow-xl transition-all duration-300 hover:scale-105 hover:from-purple-700 hover:to-blue-700 hover:shadow-2xl"
-            >
-              {$localize`Get Started Free`}
-              <LuArrowRight class="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
+          <Link href={`/${locale}/star/`} class={primaryActionClasses}>
+            {$localize`Get Started Free`}
+            <LuArrowRight class="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
 
           <a
             href="https://youtu.be/h2XxMztE0vQ"
             target="_blank"
             rel="noopener noreferrer"
+            class={secondaryActionClasses}
           >
-            <Button
-              variant="outline"
-              size="lg"
-              class="group border border-white/20 bg-white/10 px-8 py-4 text-lg font-semibold text-gray-800 backdrop-blur-md hover:bg-white/20 dark:bg-black/10 dark:text-white"
-            >
-              <LuPlay class="mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-              {$localize`Watch Video`}
-            </Button>
+            <LuPlay class="mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+            {$localize`Watch Video`}
           </a>
         </div>
 
