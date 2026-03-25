@@ -170,7 +170,7 @@ export const MultiSlaveInterfaceSelector = component$(
                   );
                 });
                 finalModel.Interfaces.OccupiedInterfaces = occupied;
-              } else if (!model.isMaster) {
+              } else {
                 // Slave router: find its specific mapping by relative position among slaves
                 const nonMasterIndices =
                   starContext.state.Choose.RouterModels.map((rm, i) =>
@@ -196,9 +196,6 @@ export const MultiSlaveInterfaceSelector = component$(
                 } else {
                   finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
                 }
-              } else {
-                // Other routers: keep clean/empty OccupiedInterfaces
-                finalModel.Interfaces.OccupiedInterfaces = cleanOccupied;
               }
 
               // Validation: warn if there's a mismatch

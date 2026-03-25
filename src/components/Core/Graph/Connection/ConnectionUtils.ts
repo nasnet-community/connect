@@ -24,7 +24,7 @@ export const connectionStyles = {
  * Get the style properties for a specific connection type
  */
 export const getConnectionStyle = (connectionType?: ConnectionType) => {
-  if (!connectionType || !connectionStyles[connectionType]) {
+  if (!connectionType) {
     return { dashed: false, width: 2 }; // Default style
   }
   return connectionStyles[connectionType];

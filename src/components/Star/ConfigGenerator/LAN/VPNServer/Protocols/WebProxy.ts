@@ -11,7 +11,7 @@ export const WebProxyServer = (config: HTTPProxyServerConfig): RouterConfig => {
     };
 
     // Add access list configuration if AllowedIPAddresses are specified
-    if (config.AllowedIPAddresses && config.AllowedIPAddresses.length > 0) {
+    if (config.AllowedIPAddresses.length > 0) {
         const accessCommands = config.AllowedIPAddresses.filter(
             (ip) => ip.trim() !== "",
         ) // Filter out empty strings

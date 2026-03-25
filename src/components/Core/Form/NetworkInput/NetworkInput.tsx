@@ -140,7 +140,7 @@ export const NetworkInput = component$<NetworkInputProps>(
 
     // Convert value for display
     const displayValue = useComputed$(() => {
-      if (value === null || value === undefined) return "";
+      if (value === null) return "";
 
       if (mode === "octet" && typeof value === "number") {
         return value.toString();

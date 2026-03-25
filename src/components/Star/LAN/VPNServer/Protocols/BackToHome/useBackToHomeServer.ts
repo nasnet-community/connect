@@ -22,7 +22,7 @@ export const useBackToHomeServer = () => {
 
   // Unified form state for both easy and advanced modes
   const formState = useStore({
-    network: backToHomeState.Network || "Split",
+    network: backToHomeState.Network,
     vsNetwork: backToHomeState.VSNetwork || "VPN",
   });
 

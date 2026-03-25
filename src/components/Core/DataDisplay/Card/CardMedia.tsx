@@ -15,6 +15,14 @@ export const CardMedia = component$<CardMediaProps>((props) => {
     class: className = "",
   } = props;
 
+  const toNumberish = (value: string) => {
+    const numericValue = Number.parseFloat(value);
+    return Number.isFinite(numericValue) ? numericValue : undefined;
+  };
+
+  const widthAttribute = toNumberish(width);
+  const heightAttribute = toNumberish(height);
+
   // Compute overlay styles
   const overlayStyle: Record<string, string> = {};
 
@@ -31,6 +39,8 @@ export const CardMedia = component$<CardMediaProps>((props) => {
       <img
         src={src}
         alt={alt}
+        width={widthAttribute}
+        height={heightAttribute}
         class="h-full w-full transition-transform duration-300"
         style={{ objectFit }}
       />

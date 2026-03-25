@@ -122,7 +122,7 @@ export function useSwipeGestures({
   const handleTouchEnd$ = $(async () => {
     if (!swipeState.isSwping || !enabled || !isOpen) return;
 
-    const drawerElement = drawerRef.value as HTMLElement;
+    const drawerElement = drawerRef.value as HTMLElement | undefined;
     if (!drawerElement) return;
 
     const isHorizontal = placement === "left" || placement === "right";
