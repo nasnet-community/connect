@@ -91,26 +91,22 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     configs.push(AddCert("auto-detect"));
 
     // Merge all certificate configurations
-    const finalConfig: RouterConfig = {};
+    const finalConfig: Partial<RouterConfig> = {};
 
     configs.forEach((config) => {
         Object.keys(config).forEach((section) => {
-            if (!finalConfig[section]) {
-                finalConfig[section] = [];
-            }
-            finalConfig[section].push(...config[section]);
+            finalConfig[section] = [
+                ...(finalConfig[section] ?? []),
+                ...config[section],
+            ];
         });
     });
 
     // Add informational comments about which VPN servers require certificates
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    finalConfig[""] ??= [];
 
     // Ensure the /certificate section exists before trying to use unshift
-    if (!finalConfig["/certificate"]) {
-        finalConfig["/certificate"] = [];
-    }
+    finalConfig["/certificate"] ??= [];
 
     // finalConfig["/certificate"].unshift(
     //     "# Certificate configuration for VPN servers:",
@@ -134,7 +130,7 @@ export const VPNServerCertificate = (vpnServer: VPNServer): RouterConfig => {
     // Remove empty comment lines
     finalConfig[""] = finalConfig[""].filter((line) => line !== "");
 
-    return finalConfig;
+    return finalConfig as RouterConfig;
 };
 
 export const VPNServerWrapper = (
@@ -263,12 +259,10 @@ export const VPNServerWrapper = (
     }
 
     // Merge all VPN server configurations
-    const finalConfig = mergeRouterConfigs(...configs);
+    const finalConfig: Partial<RouterConfig> = mergeRouterConfigs(...configs);
 
     // Add summary header
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    finalConfig[""] ??= [];
 
-    return CommandShortner(finalConfig);
+    return CommandShortner(finalConfig as RouterConfig);
 };

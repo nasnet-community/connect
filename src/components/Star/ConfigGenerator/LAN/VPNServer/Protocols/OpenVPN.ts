@@ -500,7 +500,7 @@ export const OVPNVSBinding = (
 
     const { name } = serverConfig;
 
-    if (!credentials || credentials.length === 0) {
+    if (credentials.length === 0) {
         // config[""].push("# No credentials provided for VPN server binding");
         return config;
     }
@@ -516,15 +516,14 @@ export const OVPNVSBinding = (
     }
 
     // Group users by VPN type
-    const usersByVpnType: { [key: string]: VSCredentials[] } = {};
+    const usersByVpnType: Partial<Record<string, VSCredentials[]>> = {};
 
     filteredCredentials.forEach((user) => {
         user.VPNType.forEach((vpnType: string) => {
             if (supportedVpnTypes.includes(vpnType)) {
-                if (!usersByVpnType[vpnType]) {
-                    usersByVpnType[vpnType] = [];
-                }
-                usersByVpnType[vpnType].push(user);
+                const vpnUsers = usersByVpnType[vpnType] ?? [];
+                vpnUsers.push(user);
+                usersByVpnType[vpnType] = vpnUsers;
             }
         });
     });
@@ -533,8 +532,9 @@ export const OVPNVSBinding = (
     const createdInterfaces: string[] = [];
 
     // OpenVPN Static Interface Bindings
-    if (usersByVpnType["OpenVPN"]) {
-        usersByVpnType["OpenVPN"].forEach((user) => {
+    const openVpnUsers = usersByVpnType["OpenVPN"] ?? [];
+    if (openVpnUsers.length > 0) {
+        openVpnUsers.forEach((user) => {
             const staticBindingName = `ovpn-${name}-${user.Username}`;
 
             config["/interface ovpn-server"].push(
@@ -687,12 +687,10 @@ export const OVPNServerWrapper = (
     }
 
     // Merge configurations
-    const finalConfig = mergeRouterConfigs(...configs);
+    const finalConfig: Partial<RouterConfig> = mergeRouterConfigs(...configs);
 
     // Add summary comments
-    if (!finalConfig[""]) {
-        finalConfig[""] = [];
-    }
+    finalConfig[""] ??= [];
 
     // const ovpnUsers = users.filter((user) => user.VPNType.includes("OpenVPN"));
     // const serverNames = serverConfigs.map((config) => config.name).join(", ");
@@ -706,5 +704,5 @@ export const OVPNServerWrapper = (
     //     "",
     // );
 
-    return CommandShortner(finalConfig);
+    return CommandShortner(finalConfig as RouterConfig);
 };

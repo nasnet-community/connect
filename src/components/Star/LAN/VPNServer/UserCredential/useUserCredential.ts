@@ -68,9 +68,7 @@ export const useUserCredential = ({
     });
 
     // Update the context data stepState directly
-    if (stepper.data.stepState) {
-      stepper.data.stepState.users = isFormValid;
-    }
+    stepper.data.stepState.users = isFormValid;
 
     // Find the Users step and update its completion status
     const usersStepId = stepper.steps.value.find((step) =>
@@ -185,7 +183,7 @@ export const useUserManagement = () => {
       const hasCredentials =
         user.Username.trim() !== "" && user.Password.trim() !== "";
       // In Easy mode, protocols are auto-assigned, so consider them valid
-      const hasProtocols = isEasyMode || (user.VPNType.length || 0) > 0;
+      const hasProtocols = isEasyMode || user.VPNType.length > 0;
       return hasCredentials && hasProtocols;
     });
 
@@ -270,7 +268,7 @@ export const useUserManagement = () => {
   });
 
   const handleProtocolToggle = $((protocol: VPNType, index: number) => {
-    const userVpnTypes = users[index].VPNType || [];
+    const userVpnTypes = users[index].VPNType;
     const typeIndex = userVpnTypes.indexOf(protocol);
 
     if (typeIndex === -1) {
@@ -286,7 +284,7 @@ export const useUserManagement = () => {
       (user) =>
         user.Username.trim() !== "" &&
         user.Password.trim() !== "" &&
-        (user.VPNType.length || 0) > 0,
+        user.VPNType.length > 0,
     );
 
     // Always work with the most recent VPNServer object to prevent

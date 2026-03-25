@@ -36,7 +36,7 @@ export const IPIPInterfaceWrapper = (
 
     // Add subnet-based configurations if subnet is provided
     if (subnet && subnet.subnet) {
-        const networkType = ipip.NetworkType || "VPN";
+        const networkType = ipip.NetworkType;
         const tunnelType = "IPIP";
 
         // Add IP address to tunnel interface
@@ -81,7 +81,7 @@ export const EoipInterfaceWrapper = (
 
     // Add subnet-based configurations if subnet is provided
     if (subnet && subnet.subnet) {
-        const networkType = eoip.NetworkType || "VPN";
+        const networkType = eoip.NetworkType;
         const tunnelType = "EoIP";
 
         // Add IP address to tunnel interface
@@ -126,7 +126,7 @@ export const GreInterfaceWrapper = (
 
     // Add subnet-based configurations if subnet is provided
     if (subnet && subnet.subnet) {
-        const networkType = gre.NetworkType || "VPN";
+        const networkType = gre.NetworkType;
         const tunnelType = "GRE";
 
         // Add IP address to tunnel interface
@@ -171,7 +171,7 @@ export const VxlanInterfaceWrapper = (
 
     // Add subnet-based configurations if subnet is provided
     if (subnet && subnet.subnet) {
-        const networkType = vxlan.NetworkType || "VPN";
+        const networkType = vxlan.NetworkType;
         const tunnelType = "VXLAN";
 
         // Add IP address to tunnel interface

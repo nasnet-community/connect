@@ -174,7 +174,6 @@ export const ConfigStep = component$<ConfigStepProps>(
 
       const componentQrl =
         protocolFactories[protocol as keyof typeof protocolFactories];
-      if (!componentQrl) return -1;
 
       // Find the config step position
       const configStepIndex = context.steps.value.findIndex((step) =>
@@ -296,9 +295,7 @@ export const ConfigStep = component$<ConfigStepProps>(
         // If we have no enabled protocols, mark config step as complete and move on
         if (currentEnabledProtocols.length === 0) {
           // Directly update the step state in the context
-          if (context.data.stepState) {
-            context.data.stepState.config = true;
-          }
+          context.data.stepState.config = true;
 
           // Get the current step and mark it as complete
           const configStep = context.steps.value.find((step) =>

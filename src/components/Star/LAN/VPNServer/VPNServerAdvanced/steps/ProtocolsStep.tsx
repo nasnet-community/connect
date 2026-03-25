@@ -48,9 +48,7 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(
       const isEnabled = anyProtocolEnabled.value;
 
       // Directly update the context data's stepState
-      if (context.data.stepState) {
-        context.data.stepState.protocols = isEnabled;
-      }
+      context.data.stepState.protocols = isEnabled;
 
       // Complete the step if protocols are enabled
       if (isEnabled) {
