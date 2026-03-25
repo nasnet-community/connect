@@ -21,7 +21,7 @@ export const HeroSection = component$(() => {
     async (subscription: NewsletterSubscription) => {
       try {
         // Validate subscription object
-        if (!subscription || !subscription.email) {
+        if (!subscription.email) {
           console.error("Invalid subscription object:", subscription);
           throw new Error("Invalid subscription: email is required");
         }

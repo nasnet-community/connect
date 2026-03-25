@@ -51,10 +51,8 @@ export const useSSTPConfig = (
     serverAddress.value = existingConfig.Server.Address || "";
     port.value = existingConfig.Server.Port?.toString() || "443";
 
-    if (existingConfig.Credentials) {
-      username.value = existingConfig.Credentials.Username || "";
-      password.value = existingConfig.Credentials.Password || "";
-    }
+    username.value = existingConfig.Credentials.Username || "";
+    password.value = existingConfig.Credentials.Password || "";
 
     if (existingConfig.VerifyServerCertificate !== undefined) {
       verifyServerCertificate.value = existingConfig.VerifyServerCertificate;

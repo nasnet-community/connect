@@ -43,10 +43,8 @@ export const usePPTPConfig = (
     const existingConfig = starContext.state.WAN.VPNClient.PPTP[0];
     serverAddress.value = existingConfig.ConnectTo || "";
 
-    if (existingConfig.Credentials) {
-      username.value = existingConfig.Credentials.Username || "";
-      password.value = existingConfig.Credentials.Password || "";
-    }
+    username.value = existingConfig.Credentials.Username || "";
+    password.value = existingConfig.Credentials.Password || "";
 
     if (existingConfig.KeepaliveTimeout !== undefined) {
       keepaliveTimeout.value = existingConfig.KeepaliveTimeout.toString();

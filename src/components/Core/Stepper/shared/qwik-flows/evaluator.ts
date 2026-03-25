@@ -484,7 +484,9 @@ export class QwikStepUtils {
   ): QwikStepDefinition[] {
     return steps.map((step) => ({
       ...step,
-      isComplete: completions[step.id] ?? step.isComplete ?? false,
+      isComplete: Object.prototype.hasOwnProperty.call(completions, step.id)
+        ? completions[step.id]
+        : (step.isComplete ?? false),
     }));
   }
 }

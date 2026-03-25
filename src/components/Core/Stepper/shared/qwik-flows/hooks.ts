@@ -33,7 +33,7 @@ export function useQwikSteps(options: UseQwikStepsOptions): UseQwikStepsReturn {
   });
   const previousContext = useSignal<StepContext>({});
   const contextSignal = useSignal<StepContext>(
-    typeof context === "object" && context && !("resolve" in context)
+    typeof context === "object" && !("resolve" in context)
       ? (context as StepContext)
       : {},
   );
@@ -174,7 +174,7 @@ export function useQwikFlows(options: UseQwikFlowsOptions): UseQwikFlowsReturn {
   });
   const previousContext = useSignal<StepContext>({});
   const contextSignal = useSignal<StepContext>(
-    typeof context === "object" && context && !("resolve" in context)
+    typeof context === "object" && !("resolve" in context)
       ? (context as StepContext)
       : {},
   );
@@ -430,7 +430,10 @@ export function useQwikSimpleFlows(
 
     // Get steps from active flow
     let steps: QwikStepDefinition[] = [];
-    if (activeFlow && flowDefinitions[activeFlow]) {
+    if (
+      activeFlow !== undefined &&
+      Object.prototype.hasOwnProperty.call(flowDefinitions, activeFlow)
+    ) {
       steps = flowDefinitions[activeFlow].steps;
     }
 
@@ -438,7 +441,12 @@ export function useQwikSimpleFlows(
     if (options?.preserveCompletion) {
       steps = steps.map((step) => ({
         ...step,
-        isComplete: completions.value[step.id] ?? step.isComplete ?? false,
+        isComplete: Object.prototype.hasOwnProperty.call(
+          completions.value,
+          step.id,
+        )
+          ? completions.value[step.id]
+          : (step.isComplete ?? false),
       }));
     }
 
