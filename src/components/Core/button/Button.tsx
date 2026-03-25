@@ -1,4 +1,4 @@
-import { component$, Slot, type QRL, useSignal, $ } from "@builder.io/qwik";
+import { component$, Slot, type QRL } from "@builder.io/qwik";
 import { Spinner } from "../DataDisplay/Progress/Spinner";
 
 export type ButtonVariant =
@@ -34,7 +34,6 @@ export interface ButtonProps {
   iconOnly?: boolean;
   fullWidth?: boolean;
   responsive?: boolean;
-  ripple?: boolean;
   iconSize?: ButtonIconSize;
   radius?: ButtonRadius;
   shadow?: boolean;
@@ -63,7 +62,6 @@ export const Button = component$<ButtonProps>(
     iconOnly = false,
     fullWidth = false,
     responsive = false,
-    ripple = true,
     iconSize = "auto",
     radius = "md",
     shadow = false,
@@ -71,28 +69,6 @@ export const Button = component$<ButtonProps>(
     gradientDirection = "to-r",
     ...props
   }) => {
-    const isRippling = useSignal(false);
-    const rippleCoords = useSignal({ x: 0, y: 0 });
-
-    const handleRipple = $((e: MouseEvent) => {
-      if (!ripple || disabled || loading) return;
-
-      const button = e.currentTarget as HTMLButtonElement;
-        if (typeof button.getBoundingClientRect !== "function") return;
-
-      const rect = button.getBoundingClientRect();
-
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      rippleCoords.value = { x, y };
-      isRippling.value = true;
-
-      setTimeout(() => {
-        isRippling.value = false;
-      }, 600);
-    });
-
     const radiusClasses = {
       none: "rounded-none",
       sm: "rounded",
@@ -230,23 +206,7 @@ export const Button = component$<ButtonProps>(
         aria-label={ariaLabel}
         class={classes}
         onClick$={props.onClick$}
-        onMouseDown$={handleRipple}
       >
-        {ripple && isRippling.value && (
-          <span
-            class="pointer-events-none absolute animate-ripple"
-            style={{
-              left: `${rippleCoords.value.x}px`,
-              top: `${rippleCoords.value.y}px`,
-              width: "20px",
-              height: "20px",
-              transform: "translate(-50%, -50%)",
-              borderRadius: "50%",
-              backgroundColor: "currentColor",
-              opacity: "0.3",
-            }}
-          />
-        )}
         {leftIcon && (
           <span class={`${!iconOnly ? "mr-2" : ""} ${getIconClass()}`}>
             <Slot name="leftIcon" />
