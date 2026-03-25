@@ -160,7 +160,6 @@ export const Toggle = component$<ToggleProps>(
     // Handle keyboard navigation
     const handleKeyDown$ = $((event: KeyboardEvent) => {
       if (event.key === " " || event.key === "Enter") {
-        event.preventDefault();
         handleToggle$();
       }
     });
@@ -237,6 +236,7 @@ export const Toggle = component$<ToggleProps>(
             onFocus$={handleFocus$}
             onBlur$={handleBlur$}
             onKeyDown$={handleKeyDown$}
+            preventdefault:keydown={true}
             disabled={disabled || loading}
             required={required}
             role="switch"
