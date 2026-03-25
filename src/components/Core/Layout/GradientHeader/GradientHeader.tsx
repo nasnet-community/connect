@@ -227,9 +227,7 @@ export const GradientHeader = component$<GradientHeaderProps>(
                     onChange$={$((value: string) => {
                       const enabled = value === "enable";
                       toggleConfig.enabled.value = enabled;
-                      if (toggleConfig.onChange$) {
-                        toggleConfig.onChange$(enabled);
-                      }
+                      toggleConfig.onChange$(enabled);
                     })}
                     size={toggleConfig.size || "md"}
                     color={

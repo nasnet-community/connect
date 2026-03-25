@@ -50,7 +50,6 @@ export const RouterCard = component$<RouterCardProps>((props) => {
   });
 
   const handleDetailsClick = $((event: Event) => {
-    event.preventDefault();
     event.stopPropagation();
     onViewDetails$(router);
   });

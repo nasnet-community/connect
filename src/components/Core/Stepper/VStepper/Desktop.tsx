@@ -33,7 +33,7 @@ export const Desktop = component$((props: DesktopProps) => {
                 {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
               </span>
               <button
-                onClick$={() => onHelpClick$ && onHelpClick$()}
+                onClick$={() => onHelpClick$()}
                 class={`group flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
                   ${
                     helpButtonConfig.variant === "primary"

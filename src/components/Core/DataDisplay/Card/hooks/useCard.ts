@@ -21,7 +21,6 @@ export interface UseCardReturn {
   isPressed: Signal<boolean>;
   handleMouseEnter$: QRL<() => void>;
   handleMouseLeave$: QRL<() => void>;
-  handleClick$: QRL<(e: MouseEvent) => void>;
   handleTouchStart$: QRL<() => void>;
   handleTouchEnd$: QRL<() => void>;
   cardClasses: string;
@@ -57,13 +56,6 @@ export function useCard(params: UseCardParams, className = ""): UseCardReturn {
   const handleMouseLeave$ = $(() => {
     if (!disabled && (hoverable || clickable)) {
       isHovered.value = false;
-    }
-  });
-
-  const handleClick$ = $((e: MouseEvent) => {
-    if (disabled) {
-      e.preventDefault();
-      e.stopPropagation();
     }
   });
 
@@ -196,7 +188,6 @@ export function useCard(params: UseCardParams, className = ""): UseCardReturn {
     isPressed,
     handleMouseEnter$,
     handleMouseLeave$,
-    handleClick$,
     handleTouchStart$,
     handleTouchEnd$,
     cardClasses,

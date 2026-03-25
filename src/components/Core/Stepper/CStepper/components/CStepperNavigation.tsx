@@ -72,11 +72,11 @@ export const CStepperNavigation = component$(
         )}
 
         {/* Center - Help button */}
-        {hasHelp && onShowHelp$ && (
+        {hasHelp && (
           <div class="flex items-center">
             <button
               type="button"
-              onClick$={() => onShowHelp$ && onShowHelp$()}
+              onClick$={() => onShowHelp$?.()}
               class={`
               group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200
               ${

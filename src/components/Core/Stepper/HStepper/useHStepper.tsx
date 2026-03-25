@@ -137,7 +137,7 @@ export function useStepper(props: HStepperProps) {
     const currentStep =
       baseStepperResult.steps.value[baseStepperResult.activeStep.value];
     if (
-      currentStep?.isComplete &&
+      currentStep.isComplete &&
       baseStepperResult.activeStep.value <
         baseStepperResult.steps.value.length - 1
     ) {

@@ -28,7 +28,7 @@ export const Mobile = component$((props: MobileProps) => {
               {/* Help Button */}
               {showHelp && (
                 <button
-                  onClick$={() => onHelpClick$ && onHelpClick$()}
+                  onClick$={() => onHelpClick$()}
                   class={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
                     ${
                       helpButtonConfig.variant === "primary"

@@ -49,10 +49,10 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
       <div class="justify-self-center">
         <div class="flex flex-col items-center gap-2">
           {/* Help Button */}
-          {hasHelp && onShowHelp$ && (
+          {hasHelp && (
             <button
               type="button"
-              onClick$={() => onShowHelp$ && onShowHelp$()}
+              onClick$={() => onShowHelp$?.()}
               class={`
                 group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200
                 ${
