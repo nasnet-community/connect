@@ -155,7 +155,7 @@ export const ModernTabs = component$<ModernTabsProps>((props) => {
 
     const activeButton = containerRef.value.querySelector(
       `[data-category="${activeCategory}"]`,
-    ) as HTMLElement;
+    ) as HTMLElement | null;
     if (!activeButton) return;
 
     const containerRect = containerRef.value.getBoundingClientRect();

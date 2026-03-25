@@ -78,7 +78,7 @@ export const TabNavigation = component$<TabNavigationProps>(
       if (containerRef.value) {
         const activeElement = containerRef.value.querySelector(
           `[aria-selected="true"]`,
-        ) as HTMLElement;
+        ) as HTMLElement | null;
         if (activeElement) {
           activeElement.scrollIntoView({
             behavior: "smooth",

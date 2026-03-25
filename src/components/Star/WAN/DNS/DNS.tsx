@@ -46,9 +46,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
     if (!dnsEnabled.value) {
       // Save with default DNS configuration when disabled
       await saveConfiguration(false);
-      if (onComplete$) {
-        onComplete$();
-      }
+      onComplete$();
       return;
     }
 
@@ -242,9 +240,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                       key={config.type}
                       config={config}
                       error={validationErrors[config.type]}
-                      availablePresets={
-                        availablePresetsMap.value[config.type] || []
-                      }
+                      availablePresets={availablePresetsMap.value[config.type]}
                       onDNSChange$={updateDNS}
                       onCopyDNS$={copyDNSConfig}
                       onApplyPreset$={applyDNSPreset}

@@ -59,15 +59,14 @@ export const RangeThumb = component$((props: RangeThumbProps) => {
       onMouseDown$={$((e: MouseEvent) => onMouseDown(e, thumbType))}
       onTouchStart$={$((e: TouchEvent) => {
         // Convert TouchEvent to MouseEvent for consistent handling
-        if (e.touches[0]) {
-          const mouseEvent = {
-            preventDefault: () => e.preventDefault(),
-            stopPropagation: () => e.stopPropagation(),
-            clientX: e.touches[0].clientX || 0,
-            clientY: e.touches[0].clientY || 0,
-          } as MouseEvent;
-          onMouseDown(mouseEvent, thumbType);
-        }
+        const touch = e.touches[0];
+        const mouseEvent = {
+          preventDefault: () => e.preventDefault(),
+          stopPropagation: () => e.stopPropagation(),
+          clientX: touch.clientX || 0,
+          clientY: touch.clientY || 0,
+        } as MouseEvent;
+        onMouseDown(mouseEvent, thumbType);
       })}
       onKeyDown$={$((e: KeyboardEvent) => onKeyDown(e, thumbType))}
       data-value={value}

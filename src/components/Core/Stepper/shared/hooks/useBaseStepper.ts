@@ -93,7 +93,7 @@ export function useBaseStepper<S extends BaseStepMeta = BaseStepMeta>(
 
     // Check if current step is complete and we haven't already processed it
     if (
-      currentStep?.isComplete &&
+      currentStep.isComplete &&
       lastCompletedStep.value !== currentStep.id &&
       !completionInProgress.value
     ) {

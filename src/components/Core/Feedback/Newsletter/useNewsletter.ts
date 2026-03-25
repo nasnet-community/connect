@@ -133,7 +133,7 @@ export function useNewsletter({
       }
 
       // Ensure email has a value
-      const emailValue = email.value?.trim();
+      const emailValue = email.value.trim();
       if (!emailValue) {
         console.error("[Newsletter] Email value is empty or undefined");
         error.value = "Please enter a valid email address";
