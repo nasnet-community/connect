@@ -60,7 +60,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
 
     // Helper function to check if base network is disabled
     const isBaseNetworkDisabled = (networkKey: NetworkKey): boolean => {
-      const baseNetworks = starContext.state.Choose.Networks?.BaseNetworks;
+      const baseNetworks = starContext.state.Choose.Networks.BaseNetworks;
       if (!baseNetworks) return false; // If undefined, treat as enabled
 
       // Map networkKey to BaseNetworks property

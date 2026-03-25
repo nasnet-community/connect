@@ -23,8 +23,8 @@ export const useSocks5Server = () => {
 
   // Unified form state for both easy and advanced modes
   const formState = useStore({
-    port: socks5State.Port || 1080,
-    network: socks5State.Network || "Split",
+    port: socks5State.Port,
+    network: socks5State.Network,
     vsNetwork: socks5State.VSNetwork || "VPN",
   });
 

@@ -19,7 +19,7 @@ export const useSSHServer = () => {
 
   // Unified form state for both easy and advanced modes
   const formState = useStore({
-    network: sshState.Network || "Split",
+    network: sshState.Network,
     vsNetwork: sshState.VSNetwork || "VPN",
   });
 

@@ -16,9 +16,7 @@ export const SSHServerAdvanced = component$(() => {
   const updateNetwork$ = $((network: BaseNetworksType) => {
     selectedNetwork.value = network;
     // Update the global state if needed
-    if (advancedFormState) {
-      advancedFormState.Network = network;
-    }
+    advancedFormState.Network = network;
   });
 
   return (

@@ -135,7 +135,7 @@ def configure_slave_router(host, username, password):
     }) => {
       try {
         // Validate subscription object
-        if (!subscription || !subscription.email) {
+        if (!subscription.email) {
           console.error("Invalid subscription object:", subscription);
           throw new Error("Invalid subscription: email is required");
         }

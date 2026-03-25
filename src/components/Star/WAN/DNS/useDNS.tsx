@@ -499,7 +499,7 @@ export const useDNS = () => {
   // Copy DNS configuration to clipboard
   const copyDNSConfig = $(async (networkType: NetworkType) => {
     const config = dnsConfig[`${networkType}DNS` as keyof DNSConfig] as string;
-    if (config && navigator.clipboard) {
+      if (config) {
       try {
         await navigator.clipboard.writeText(config);
         return true;
