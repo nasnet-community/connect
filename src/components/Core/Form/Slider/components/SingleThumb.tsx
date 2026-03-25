@@ -9,7 +9,6 @@ export interface SingleThumbProps {
   positionStyle: { [key: string]: string };
   formatLabel: QRL<(value: number) => string | Promise<string>>;
   onMouseDown: QRL<(e: MouseEvent) => void>;
-  onTouchStart: QRL<(e: TouchEvent) => void>;
   onKeyDown: QRL<(e: KeyboardEvent) => void>;
   label?: string;
   min: number;
@@ -46,17 +45,19 @@ export const SingleThumb = component$((props: SingleThumbProps) => {
       class={thumbClass}
       style={positionStyle}
       onMouseDown$={onMouseDown}
+      preventdefault:mousedown
       onTouchStart$={$((e: TouchEvent) => {
         // Convert TouchEvent to MouseEvent for consistent handling
         const touch = e.touches[0];
         const mouseEvent = {
-          preventDefault: () => e.preventDefault(),
-          stopPropagation: () => e.stopPropagation(),
+          preventDefault: () => {},
+          stopPropagation: () => {},
           clientX: touch.clientX || 0,
           clientY: touch.clientY || 0,
         } as MouseEvent;
         onMouseDown(mouseEvent);
       })}
+      preventdefault:touchstart
       onKeyDown$={onKeyDown}
       data-value={value}
       data-thumb="single"

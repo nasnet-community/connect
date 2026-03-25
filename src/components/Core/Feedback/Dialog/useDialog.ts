@@ -1,7 +1,6 @@
 import {
   useSignal,
   useVisibleTask$,
-  useOnDocument,
   $,
   useId,
   useTask$,
@@ -149,8 +148,36 @@ export function useDialog(params: UseDialogParams): UseDialogReturn {
       // Set mounted state to true after first open
       mounted.value = true;
 
+      const handleDocumentKeyDown = (event: KeyboardEvent) => {
+        if (closeOnEsc && event.key === "Escape") {
+          event.preventDefault();
+          handleClose$();
+        }
+
+        if (
+          trapFocus &&
+          event.key === "Tab" &&
+          focusableElements.value.length > 0
+        ) {
+          const firstElement = focusableElements.value[0];
+          const lastElement =
+            focusableElements.value[focusableElements.value.length - 1];
+
+          if (event.shiftKey && document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          } else if (!event.shiftKey && document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
+      };
+
+      document.addEventListener("keydown", handleDocumentKeyDown);
+
       // Clean up when component is unmounted or dialog closes
       cleanup(() => {
+        document.removeEventListener("keydown", handleDocumentKeyDown);
         // Restore body scroll
         document.body.style.overflow = "";
         document.body.style.paddingRight = originalPaddingRight;
@@ -162,40 +189,6 @@ export function useDialog(params: UseDialogParams): UseDialogReturn {
       });
     }
   });
-
-  // Listen for Escape key press and handle focus trapping
-  useOnDocument(
-    "keydown",
-    $((event: KeyboardEvent) => {
-      if (closeOnEsc && isOpenSignal.value && event.key === "Escape") {
-        event.preventDefault();
-        handleClose$();
-      }
-
-      // Handle focus trapping with Tab key
-      if (
-        trapFocus &&
-        isOpenSignal.value &&
-        event.key === "Tab" &&
-        focusableElements.value.length > 0
-      ) {
-        const firstElement = focusableElements.value[0];
-        const lastElement =
-          focusableElements.value[focusableElements.value.length - 1];
-
-        // If shift+tab on first element, move to last element
-        if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault();
-          lastElement.focus();
-        }
-        // If tab on last element, move to first element
-        else if (!event.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault();
-          firstElement.focus();
-        }
-      }
-    }),
-  );
 
   return {
     dialogId,

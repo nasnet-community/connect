@@ -52,7 +52,7 @@ export function getStatusColors(
  */
 export function getResponsiveSizeClasses(
   size: FeedbackSize,
-  component: "alert" | "toast" | "dialog" | "drawer" = "alert",
+  component: "alert" | "toast" | "dialog" = "alert",
 ): string {
   const sizeMap = {
     alert: {
@@ -69,11 +69,6 @@ export function getResponsiveSizeClasses(
       sm: "mobile:max-w-full mobile:m-2 tablet:max-w-sm desktop:max-w-md",
       md: "mobile:max-w-full mobile:m-2 tablet:max-w-md desktop:max-w-lg",
       lg: "mobile:max-w-full mobile:m-2 tablet:max-w-lg desktop:max-w-xl",
-    },
-    drawer: {
-      sm: "mobile:w-full tablet:w-80 desktop:w-96",
-      md: "mobile:w-full tablet:w-96 desktop:w-[28rem]",
-      lg: "mobile:w-full tablet:w-[28rem] desktop:w-[32rem]",
     },
   };
 
@@ -133,25 +128,6 @@ export function getAnimationClasses(
     slideRight: "animate-slide-right",
     scaleUp: "animate-scale-up",
   }[animation];
-}
-
-/**
- * Get mobile-specific animation classes for drawers
- */
-export function getMobileDrawerAnimation(
-  placement: "left" | "right" | "top" | "bottom",
-  isVisible: boolean,
-): string {
-  if (!isVisible) {
-    return {
-      left: "-translate-x-full",
-      right: "translate-x-full",
-      top: "-translate-y-full",
-      bottom: "translate-y-full",
-    }[placement];
-  }
-
-  return "translate-x-0 translate-y-0";
 }
 
 /**

@@ -84,7 +84,6 @@ export function useSliderEvents({
     (event: MouseEvent, thumb: "single" | "start" | "end") => {
       if (disabled || readonly) return;
 
-      event.preventDefault();
       event.stopPropagation();
 
       isDragging.value = true;
@@ -104,39 +103,6 @@ export function useSliderEvents({
     } else {
       // For vertical orientation, invert the percentage
       percent = ((rect.bottom - event.clientY) / rect.height) * 100;
-    }
-
-    percent = Math.max(0, Math.min(100, percent));
-
-    // Handle async function using then() to chain actions
-    percentToValue(percent).then((newValue) => {
-      // Update the appropriate value based on which thumb is active
-      if (isRange) {
-        if (activeThumb.value === "start") {
-          updateStartValue(newValue);
-        } else if (activeThumb.value === "end") {
-          updateEndValue(newValue);
-        }
-      } else {
-        updateSingleValue(newValue);
-      }
-    });
-  });
-
-  // Handle touch movement during drag
-  const handleTouchMove = $((event: TouchEvent) => {
-    if (!isDragging.value || !trackRef.value) return;
-
-    event.preventDefault();
-    const touch = event.touches[0];
-    const rect = trackRef.value.getBoundingClientRect();
-    let percent: number = 0;
-
-    if (orientation === "horizontal") {
-      percent = ((touch.clientX - rect.left) / rect.width) * 100;
-    } else {
-      // For vertical orientation, invert the percentage
-      percent = ((rect.bottom - touch.clientY) / rect.height) * 100;
     }
 
     percent = Math.max(0, Math.min(100, percent));
@@ -268,7 +234,35 @@ export function useSliderEvents({
   // Set up event listeners
   useVisibleTask$(({ cleanup }) => {
     const documentMouseMove = (e: MouseEvent) => handleMouseMove(e);
-    const documentTouchMove = (e: TouchEvent) => handleTouchMove(e);
+    const documentTouchMove = (event: TouchEvent) => {
+      if (!isDragging.value || !trackRef.value) return;
+
+      event.preventDefault();
+      const touch = event.touches[0];
+      const rect = trackRef.value.getBoundingClientRect();
+      let percent: number = 0;
+
+      if (orientation === "horizontal") {
+        percent = ((touch.clientX - rect.left) / rect.width) * 100;
+      } else {
+        // For vertical orientation, invert the percentage
+        percent = ((rect.bottom - touch.clientY) / rect.height) * 100;
+      }
+
+      percent = Math.max(0, Math.min(100, percent));
+
+      percentToValue(percent).then((newValue) => {
+        if (isRange) {
+          if (activeThumb.value === "start") {
+            updateStartValue(newValue);
+          } else if (activeThumb.value === "end") {
+            updateEndValue(newValue);
+          }
+        } else {
+          updateSingleValue(newValue);
+        }
+      });
+    };
     const documentMouseUp = () => handleMouseUp();
 
     document.addEventListener("mousemove", documentMouseMove);

@@ -34,14 +34,11 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(
       isDragging.value = false;
     });
 
-    const handleDragOver = $((e: DragEvent, index: number) => {
-      e.preventDefault();
+    const handleDragOver = $((index: number) => {
       dragOverIndex.value = index;
     });
 
-    const handleDrop = $(async (e: DragEvent, dropIndex: number) => {
-      e.preventDefault();
-
+    const handleDrop = $(async (dropIndex: number) => {
       if (draggedIndex.value === null || draggedIndex.value === dropIndex) {
         return;
       }
@@ -212,8 +209,10 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(
                 draggable
                 onDragStart$={() => handleDragStart(index)}
                 onDragEnd$={handleDragEnd}
-                onDragOver$={(e) => handleDragOver(e, index)}
-                onDrop$={(e) => handleDrop(e, index)}
+                onDragOver$={() => handleDragOver(index)}
+                preventdefault:dragover
+                onDrop$={() => handleDrop(index)}
+                preventdefault:drop
                 class={`cursor-move rounded-lg border border-gray-200 bg-white p-4 transition-all duration-200 dark:border-gray-700 dark:bg-gray-800 ${
                   draggedIndex.value === index ? "opacity-50" : ""
                 } ${

@@ -110,9 +110,7 @@ export function useNewsletter({
   });
 
   // Handle form submission
-  const handleSubmit$ = $(async (event: Event): Promise<void> => {
-    event.preventDefault();
-
+  const handleSubmit$ = $(async (_event: Event): Promise<void> => {
     console.log("[Newsletter] Newsletter subscription started", {
       email: email.value,
     });
