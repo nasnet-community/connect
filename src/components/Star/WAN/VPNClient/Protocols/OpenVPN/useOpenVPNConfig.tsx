@@ -91,11 +91,11 @@ export const useOpenVPNConfig = (
     serverAddress.value = existingConfig.Server.Address || "";
     serverPort.value = existingConfig.Server.Port?.toString() || "1194";
     protocol.value = existingConfig.Protocol || "udp";
-    authType.value = existingConfig.AuthType || "Credentials";
+    authType.value = existingConfig.AuthType;
     username.value = existingConfig.Credentials?.Username || "";
     password.value = existingConfig.Credentials?.Password || "";
     cipher.value = existingConfig.Cipher || "aes-256-gcm";
-    auth.value = existingConfig.Auth || "sha256";
+    auth.value = existingConfig.Auth;
     clientCertName.value =
       existingConfig.Certificates?.ClientCertificateName || "";
     caCertName.value = existingConfig.Certificates?.CaCertificateName || "";
@@ -107,7 +107,7 @@ export const useOpenVPNConfig = (
     clientKeyContent.value =
       existingConfig.Certificates?.ClientKeyContent || "";
 
-    if (onIsValidChange$ && existingConfig) {
+    if (onIsValidChange$) {
       setTimeout(async () => {
         const { isValid } = await validateOpenVPNConfig(existingConfig);
         onIsValidChange$(isValid);
@@ -169,7 +169,7 @@ export const useOpenVPNConfig = (
         emptyFields.push("Supported Cipher (RouterOS limitation)");
       }
 
-      if (config.Auth && !supportedAuth.includes(config.Auth)) {
+      if (!supportedAuth.includes(config.Auth)) {
         emptyFields.push("Supported Auth Algorithm (RouterOS limitation)");
       }
 
@@ -186,7 +186,7 @@ export const useOpenVPNConfig = (
       username.value = parsedConfig.Credentials?.Username ?? "";
       password.value = parsedConfig.Credentials?.Password ?? "";
       cipher.value = parsedConfig.Cipher ?? "aes-256-gcm";
-      auth.value = parsedConfig.Auth ?? "sha256";
+      auth.value = parsedConfig.Auth;
       clientCertName.value =
         parsedConfig.Certificates?.ClientCertificateName ?? "";
       caCertName.value = parsedConfig.Certificates?.CaCertificateName ?? "";
@@ -303,7 +303,7 @@ export const useOpenVPNConfig = (
             } else if (inBlock === "tls-auth") {
               hasTlsAuth = true;
               blockContent[inBlock] += trimmedLine + "\\n";
-            } else if (inBlock === "tls-crypt") {
+            } else {
               hasTlsCrypt = true;
               blockContent[inBlock] += trimmedLine + "\\n";
             }
@@ -685,11 +685,11 @@ export const useOpenVPNConfig = (
         serverAddress.value = finalConfig.Server.Address || "";
         serverPort.value = finalConfig.Server.Port?.toString() || "1194";
         protocol.value = finalConfig.Protocol || "udp";
-        authType.value = finalConfig.AuthType || "Credentials";
+        authType.value = finalConfig.AuthType;
         username.value = finalConfig.Credentials?.Username || "";
         password.value = finalConfig.Credentials?.Password || "";
         cipher.value = finalConfig.Cipher || "aes-256-gcm";
-        auth.value = finalConfig.Auth || "sha256";
+        auth.value = finalConfig.Auth;
         clientCertName.value =
           finalConfig.Certificates?.ClientCertificateName || "";
         caCertName.value = finalConfig.Certificates?.CaCertificateName || "";
