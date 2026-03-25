@@ -264,10 +264,12 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   // Remove a VPN client
   const removeVPNClient$ = $((id: string) => {
+    const minVPNCount = state.minVPNCount ?? 1;
+
     // Cannot remove if we're at minimum count
-    if (state.vpnConfigs.length <= (state.minVPNCount || 1)) {
+    if (state.vpnConfigs.length <= minVPNCount) {
       console.warn(
-        `Cannot remove VPN client - minimum ${state.minVPNCount || 1} required`,
+        `Cannot remove VPN client - minimum ${minVPNCount} required`,
       );
       return;
     }
@@ -358,7 +360,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         );
         // Create default config for new type
         const newConfig = await createDefaultConfig$(updates.type);
-        if ("config" in newConfig && newConfig.config) {
+        if ("config" in newConfig) {
           (updatedVPN as any).config = newConfig.config;
         }
       }
@@ -400,7 +402,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         if (vpnUpdates.type && vpnUpdates.type !== currentVPN.type) {
           // Create default config for new type
           const newConfig = await createDefaultConfig$(vpnUpdates.type);
-          if ("config" in newConfig && newConfig.config) {
+          if ("config" in newConfig) {
             (updatedVPN as any).config = newConfig.config;
           }
         }
@@ -580,9 +582,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   const validateAll$ = $(() => {
     // Basic validation - check if all VPNs have required fields
-    return state.vpnConfigs.every(
-      (vpn) => vpn.name && vpn.type && vpn.enabled !== undefined,
-    );
+    return state.vpnConfigs.every((vpn) => vpn.name && vpn.type);
   });
 
   // Helper function to sync local state with StarContext
@@ -616,7 +616,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       }));
 
     const pptpConfigs = state.vpnConfigs
-      .filter((vpn) => vpn.type === "PPTP" && "config" in vpn)
+      .filter((vpn) => vpn.type === "PPTP")
       .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
@@ -748,7 +748,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     generateVPNClientName$,
     moveVPNPriority$,
     syncWithStarContext$,
-    foreignWANCount: state.minVPNCount || 1, // Use the stored minVPNCount with fallback
+    foreignWANCount: state.minVPNCount ?? 1,
     // Aliases
     addVPN$,
     removeVPN$,

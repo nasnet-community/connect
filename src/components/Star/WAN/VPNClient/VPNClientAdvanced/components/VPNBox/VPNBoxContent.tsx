@@ -13,6 +13,8 @@ export interface VPNBoxContentProps {
 
 export const VPNBoxContent = component$<VPNBoxContentProps>(
   ({ vpn, validationErrors = {}, onUpdate$ }) => {
+    const nameErrorKey = `vpn-${vpn.id}-name`;
+    const typeErrorKey = `vpn-${vpn.id}-type`;
     const vpnTypeOptions = [
       { value: "Wireguard", label: "Wireguard" },
       { value: "OpenVPN", label: "OpenVPN" },
@@ -47,9 +49,9 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                 placeholder={$localize`Enter VPN client name`}
                 class="mt-1"
               />
-              {validationErrors[`vpn-${vpn.id}-name`] && (
+              {nameErrorKey in validationErrors && (
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {validationErrors[`vpn-${vpn.id}-name`][0]}
+                  {validationErrors[nameErrorKey][0]}
                 </p>
               )}
             </div>
@@ -70,9 +72,9 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                 placeholder={$localize`Select VPN protocol`}
                 class="mt-1"
               />
-              {validationErrors[`vpn-${vpn.id}-type`] && (
+              {typeErrorKey in validationErrors && (
                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {validationErrors[`vpn-${vpn.id}-type`][0]}
+                  {validationErrors[typeErrorKey][0]}
                 </p>
               )}
             </div>

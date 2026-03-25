@@ -65,9 +65,7 @@ export const useIKEv2Config = (
     const existingConfig = starContext.state.WAN.VPNClient.IKeV2[0];
     serverAddress.value = existingConfig.ServerAddress || "";
 
-    if (existingConfig.AuthMethod) {
-      authMethod.value = existingConfig.AuthMethod;
-    }
+    authMethod.value = existingConfig.AuthMethod;
 
     if (existingConfig.PresharedKey) {
       presharedKey.value = existingConfig.PresharedKey;
@@ -124,10 +122,6 @@ export const useIKEv2Config = (
 
     if (!config.ServerAddress || config.ServerAddress.trim() === "") {
       emptyFields.push("ServerAddress");
-    }
-
-    if (!config.AuthMethod) {
-      emptyFields.push("AuthMethod");
     }
 
     if (

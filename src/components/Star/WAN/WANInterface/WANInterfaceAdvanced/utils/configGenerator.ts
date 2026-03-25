@@ -24,7 +24,7 @@ export function generateWANState(
   };
 
   // Create legacy WANLink format
-  if (foreignLink) {
+  if (advancedState.links.length > 0) {
     const foreignWANLink: WANLink = {
       WANConfigs: [
         {
@@ -48,7 +48,7 @@ export function generateWANState(
       Foreign: foreignWANLink,
     };
 
-    if (domesticLink) {
+    if (advancedState.links.length > 1) {
       const domesticWANLink: WANLink = {
         WANConfigs: [
           {

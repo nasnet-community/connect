@@ -530,9 +530,7 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
         }
 
         // Check priorities
-        const priorities = state.vpnConfigs
-          .map((vpn) => vpn.priority)
-          .filter((p) => p !== undefined && p !== null);
+        const priorities = state.vpnConfigs.map((vpn) => vpn.priority);
         const expectedPriorities = Array.from(
           { length: state.vpnConfigs.length },
           (_, i) => i + 1,

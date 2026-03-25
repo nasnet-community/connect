@@ -44,10 +44,8 @@ export const useL2TPConfig = (
     const existingConfig = starContext.state.WAN.VPNClient.L2TP[0];
     serverAddress.value = existingConfig.Server.Address || "";
 
-    if (existingConfig.Credentials) {
-      username.value = existingConfig.Credentials.Username || "";
-      password.value = existingConfig.Credentials.Password || "";
-    }
+    username.value = existingConfig.Credentials.Username || "";
+    password.value = existingConfig.Credentials.Password || "";
 
     if (existingConfig.UseIPsec !== undefined) {
       useIPsec.value = existingConfig.UseIPsec;
@@ -62,7 +60,7 @@ export const useL2TPConfig = (
       serverAddress.value &&
       username.value &&
       password.value &&
-      (!useIPsec.value || (useIPsec.value && ipsecSecret.value));
+      (!useIPsec.value || ipsecSecret.value);
 
     if (isConfigValid) {
       if (onIsValidChange$) {

@@ -162,7 +162,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       requestAnimationFrame(() => {
                         const newLink =
                           wizardState.links[wizardState.links.length - 1];
-                        if (newLink && wizardState.links.length > prevLength) {
+                        if (wizardState.links.length > prevLength) {
                           expandedLinkId.value = newLink.id;
                         }
                       });
@@ -320,10 +320,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                           requestAnimationFrame(() => {
                             const newLink =
                               wizardState.links[wizardState.links.length - 1];
-                            if (
-                              newLink &&
-                              wizardState.links.length > prevLength
-                            ) {
+                            if (wizardState.links.length > prevLength) {
                               expandedLinkId.value = newLink.id;
                             }
                           });

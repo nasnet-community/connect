@@ -2,9 +2,9 @@ import type { WANWizardState } from "../types";
 
 export const getLinkErrors = (
   linkId: string,
-  validationErrors: WANWizardState["validationErrors"],
+  validationErrors: WANWizardState["validationErrors"] = {},
 ): string[] => {
-  return Object.entries(validationErrors || {})
+  return Object.entries(validationErrors)
     .filter(([key]) => key.startsWith(`link-${linkId}`))
     .map(([, errors]) => errors)
     .flat() as string[];
@@ -13,15 +13,16 @@ export const getLinkErrors = (
 export const getFieldErrors = (
   linkId: string,
   field: string,
-  validationErrors: WANWizardState["validationErrors"],
+  validationErrors: WANWizardState["validationErrors"] = {},
 ): string[] => {
-  return (validationErrors || {})[`link-${linkId}-${field}`] || [];
+  const errorKey = `link-${linkId}-${field}`;
+  return errorKey in validationErrors ? validationErrors[errorKey] : [];
 };
 
 export const hasValidationErrors = (
-  validationErrors: WANWizardState["validationErrors"],
+  validationErrors: WANWizardState["validationErrors"] = {},
 ): boolean => {
-  return Object.keys(validationErrors || {}).length > 0;
+  return Object.keys(validationErrors).length > 0;
 };
 
 export const isLinkConfigurationComplete = (
@@ -46,11 +47,7 @@ export const isLinkConfigurationComplete = (
   }
 
   // For DHCP and LTE, automatically consider complete
-  if (link.connectionType === "DHCP" || link.connectionType === "LTE") {
-    return true;
-  }
-
-  return false;
+  return true;
 };
 
 export const isInterfaceConfigurationComplete = (
