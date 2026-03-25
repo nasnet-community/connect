@@ -19,7 +19,7 @@ import {
   NetworkDropdown,
   type ExtendedNetworks,
 } from "../../components/NetworkSelection";
-import { useWireguardServer } from "./useWireguardServer";
+import type { useWireguardServer } from "./useWireguardServer";
 
 interface WireguardServerAdvancedProps {
   hook: ReturnType<typeof useWireguardServer>;

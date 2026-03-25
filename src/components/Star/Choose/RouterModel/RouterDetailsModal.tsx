@@ -197,6 +197,8 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 <img
                                   src={router.images[currentImageIndex.value]}
                                   alt={router.title}
+                                  width="640"
+                                  height="440"
                                   class="max-h-full max-w-full rounded-lg object-contain"
                                   loading="lazy"
                                 />
@@ -590,6 +592,8 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                 <img
                   src={router.images[currentImageIndex.value]}
                   alt={router.title}
+                  width="1280"
+                  height="960"
                   class="max-h-full max-w-full object-contain"
                   loading="lazy"
                 />

@@ -2,7 +2,7 @@ import { Slot, component$, $ } from "@builder.io/qwik";
 import { FormLabel } from "../FormLabel";
 import { FormHelperText } from "../FormHelperText";
 import { FormErrorMessage } from "../FormErrorMessage";
-import type { FormFieldContextValue } from "./Form.types";
+import type { FormFieldContextValue, FormValidationRule } from "./Form.types";
 import {
   createContextId,
   useContext,
@@ -27,7 +27,7 @@ export interface FormFieldProps {
   readOnly?: boolean;
   class?: string;
   id?: string;
-  validate?: import("./Form.types").FormValidationRule[];
+  validate?: FormValidationRule[];
 }
 
 export const FormField = component$<FormFieldProps>((props) => {

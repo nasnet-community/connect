@@ -206,6 +206,8 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
                 <img
                   src={primaryImage}
                   alt={router.title}
+                  width="128"
+                  height="96"
                   class="max-h-full max-w-full object-contain drop-shadow-lg filter"
                   loading="lazy"
                   onError$={(event) => {

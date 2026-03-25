@@ -288,6 +288,8 @@ export const UserCredential = component$<UserCredentialProps>(
                         <img
                           src={protocol.logo}
                           alt={protocol.name}
+                          width="24"
+                          height="24"
                           class={`h-6 w-6 ${
                             isSelected
                               ? "dark:brightness-[1.1] dark:drop-shadow-[0_0_2px_rgba(79,70,229,0.3)] dark:hue-rotate-[180deg] dark:invert dark:saturate-[5] dark:sepia dark:filter"
