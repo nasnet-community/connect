@@ -132,7 +132,7 @@ export function useDrawer({
             // First try to focus a heading, if available
             const heading = drawerRef.value?.querySelector(
               "h1, h2, h3, h4, h5, h6",
-            ) as HTMLElement;
+            ) as HTMLElement | null;
             if (heading) {
               heading.focus();
             } else {
@@ -220,7 +220,7 @@ export function useDrawer({
   // Compute drawer size classes based on placement and size
   const sizeClass = useComputed$(() => {
     // Use responsive size classes from theme for mobile
-    if (state.isMobile && responsiveSize) {
+    if (state.isMobile) {
       return getResponsiveSizeClasses(responsiveSize, "drawer");
     }
 

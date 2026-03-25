@@ -175,7 +175,7 @@ export const Ikev2ServerUsers = (
 
     // Get configuration values
     const peerName = serverConfig.peer.name || "ikev2";
-    const authMethod = serverConfig.identities.authMethod || "eap";
+    const authMethod = serverConfig.identities.authMethod;
     const generatePolicy =
         serverConfig.identities.generatePolicy || "port-strict";
     const policyGroupName = serverConfig.policyGroup?.name || "ikev2-policies";
