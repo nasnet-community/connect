@@ -516,21 +516,16 @@ export const WireguardServer = (
         `listen-port=${ListenPort}`,
         `mtu=${Mtu}`,
         `comment="VPN Server: ${Name} on ${VSNetwork} Network"`,
+        `private-key="${PrivateKey}"`,
     ];
-
-    if (PrivateKey) {
-        interfaceParams.push(`private-key="${PrivateKey}"`);
-    }
 
     config["/interface wireguard"].push(`add ${interfaceParams.join(" ")}`);
 
     // Add IP address to interface
     const [ip, prefix] = subnet.split("/");
-    const network = prefix ? calculateNetworkAddress(ip, prefix) : null;
+    const network = calculateNetworkAddress(ip, prefix);
     let addressCommand = `add address="${subnet}" interface="${interfaceName}" comment="${interfaceName} Wireguard Server"`;
-    if (network) {
-        addressCommand += ` network="${network}"`;
-    }
+    addressCommand += ` network="${network}"`;
     config["/ip address"].push(addressCommand);
 
     // Add interface list members and address list via shared helpers
@@ -693,7 +688,7 @@ export const WireguardServerWrapper = (
         const ifaceName = wireguardConfig.Interface.Name;
 
         // Try to find matching subnet by name
-        const list = Array.isArray(subnetConfigs) ? subnetConfigs : [];
+        const list = subnetConfigs;
         let matchedSubnet = list.find((s) => s.name === ifaceName);
         if (!matchedSubnet)
             matchedSubnet = list.find(

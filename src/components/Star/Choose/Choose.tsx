@@ -76,7 +76,7 @@ export const Choose = component$((props: StepProps) => {
     async (subscription: NewsletterSubscription) => {
       try {
         // Validate subscription object
-        if (!subscription || !subscription.email) {
+        if (!subscription.email) {
           console.error("Invalid subscription object:", subscription);
           throw new Error("Invalid subscription: email is required");
         }
@@ -107,8 +107,8 @@ export const Choose = component$((props: StepProps) => {
             source: "router-configuration",
             step: "choose",
             email_domain: subscription.email.split("@")[1] || "unknown",
-            firmware: starContext.state.Choose.Firmware || "not-selected",
-            mode: starContext.state.Choose.Mode || "not-selected",
+            firmware: starContext.state.Choose.Firmware,
+            mode: starContext.state.Choose.Mode,
           });
         }
       } catch (error) {
@@ -247,7 +247,7 @@ export const Choose = component$((props: StepProps) => {
     // console.log('Firmware:', selectedFirmware, 'RouterMode:', selectedRouterMode); // Debug log
 
     // Set default RouterMode to "AP Mode" when in Easy mode
-    if (selectedMode === "easy" && !starContext.state.Choose.RouterMode) {
+    if (selectedMode === "easy") {
       starContext.updateChoose$({ RouterMode: "AP Mode" });
     }
 

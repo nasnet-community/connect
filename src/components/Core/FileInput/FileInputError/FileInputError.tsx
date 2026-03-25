@@ -112,7 +112,7 @@ export const FileInputError = component$<FileInputErrorProps>(
             <p class="text-sm font-medium text-error-800 dark:text-error-200">
               {error.message}
             </p>
-            {error.details !== undefined && error.details !== null && (
+            {error.details !== undefined && (
               <p class="mt-1 text-xs text-error-700 dark:text-error-300">
                 {typeof error.details === "string"
                   ? error.details
@@ -165,7 +165,7 @@ export const FileInputError = component$<FileInputErrorProps>(
               <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {error.message}
               </p>
-              {error.details !== undefined && error.details !== null && (
+              {error.details !== undefined && (
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {typeof error.details === "string"
                     ? error.details
@@ -213,7 +213,7 @@ export const FileInputError = component$<FileInputErrorProps>(
             </h3>
             <div class="mt-2 text-sm text-error-700 dark:text-error-300">
               <p>{error.message}</p>
-              {error.details !== undefined && error.details !== null && (
+              {error.details !== undefined && (
                 <p class="mt-1 text-xs opacity-90">
                   {typeof error.details === "string"
                     ? error.details

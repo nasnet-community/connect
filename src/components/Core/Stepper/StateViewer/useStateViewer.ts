@@ -37,7 +37,7 @@ export function useStateViewer(initialState: any) {
         .filter((router) => !router.isMaster)
         .map((router, index) => ({
           id: `slave-${index}`,
-          name: router.Model || `Slave Router ${index + 1}`,
+          name: router.Model,
         }));
 
       slaveRouters.value = slaves;
@@ -94,7 +94,7 @@ export function useStateViewer(initialState: any) {
     const state = track(() => initialState);
     if (Object.keys(state).length > 0) {
       const newState = JSON.parse(JSON.stringify(state));
-      const lastEntry = stateHistory.value[stateHistory.value.length - 1];
+      const lastEntry = stateHistory.value.at(-1);
 
       if (
         !lastEntry ||
@@ -140,9 +140,10 @@ export function useStateViewer(initialState: any) {
     try {
       // Extract slave router index from ID
       const slaveIndex = parseInt(selectedSlaveRouter.value.split("-")[1]);
-      const slaveRouterModel = (
-        initialState.Choose?.RouterModels as RouterModels[]
-      )?.filter((r) => !r.isMaster)[slaveIndex];
+      const slaveRouters =
+        (initialState.Choose?.RouterModels as RouterModels[] | undefined)
+          ?.filter((r) => !r.isMaster) ?? [];
+      const slaveRouterModel = slaveRouters.at(slaveIndex);
 
       if (!slaveRouterModel) {
         slaveConfigOutput.value = "Selected slave router not found";
@@ -253,16 +254,18 @@ export function useStateViewer(initialState: any) {
             );
             const slaveRouterModel = (
               parsedContext.Choose.RouterModels as RouterModels[]
-            )?.filter((r: RouterModels) => !r.isMaster)[slaveIndex];
+            )
+              .filter((r: RouterModels) => !r.isMaster)
+              .at(slaveIndex);
 
-            if (slaveRouterModel) {
+            if (!slaveRouterModel) {
+              pasteError.value = "Selected slave router not found in context";
+            } else {
               // Generate slave configuration (returns string directly)
               const slaveConfig = SlaveCG(parsedContext, slaveRouterModel);
 
               pastedSlaveConfig.value =
                 slaveConfig || "No configuration generated";
-            } else {
-              pasteError.value = "Selected slave router not found in context";
             }
           } catch (slaveError) {
             console.error("Slave config generation error:", slaveError);

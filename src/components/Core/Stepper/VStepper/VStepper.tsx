@@ -58,12 +58,12 @@ export const VStepper = component$((props: VStepperProps) => {
   if (
     hasEnhancedFeatures &&
     "hasError" in stepperData &&
-    stepperData.hasError?.value
+    stepperData.hasError.value
   ) {
     return (
       <StepperErrors
         hasError={stepperData.hasError.value}
-        errorMessage={stepperData.errorMessage?.value || ""}
+        errorMessage={stepperData.errorMessage.value}
         stepsLength={steps.value.length}
         stepperType="vertical"
       />
@@ -118,7 +118,7 @@ export const VStepper = component$((props: VStepperProps) => {
         allowStepNavigation={props.allowStepNavigation}
         onStepClick$={goToStep$}
         helpButton={props.helpButton}
-        onHelpClick$={helpSystem?.openHelp$}
+        onHelpClick$={helpSystem.openHelp$}
       />
 
       <Mobile
@@ -130,11 +130,11 @@ export const VStepper = component$((props: VStepperProps) => {
         allowStepNavigation={props.allowStepNavigation}
         onStepClick$={goToStep$}
         helpButton={props.helpButton}
-        onHelpClick$={helpSystem?.openHelp$}
+        onHelpClick$={helpSystem.openHelp$}
       />
 
       {/* Help Modal */}
-      {props.enableHelp && helpSystem && (
+      {props.enableHelp && (
         <StepperHelpModal
           isOpen={helpSystem.isHelpOpen}
           onClose$={helpSystem.closeHelp$}

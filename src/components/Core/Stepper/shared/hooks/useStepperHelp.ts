@@ -107,7 +107,7 @@ export const useStepperHelp = (
 
   // Computed signal for current step help availability
   const currentStepHasHelp = useComputed$(() => {
-    const current = steps.value[activeStep.value];
+    const current = steps.value.at(activeStep.value);
     return current ? stepHasHelp(current) : false;
   });
 
@@ -127,7 +127,7 @@ export const useStepperHelp = (
   // Open help for specific step
   const openHelp$ = $((stepId?: number) => {
     const targetStepId = stepId ?? activeStep.value;
-    const targetStep = steps.value[targetStepId];
+    const targetStep = steps.value.at(targetStepId);
 
     if (!targetStep || !stepHasHelp(targetStep)) {
       console.warn(`No help content available for step ${targetStepId}`);
@@ -225,7 +225,7 @@ export const useStepperHelp = (
     if (!autoShow || stepsLength === 0) return;
 
     // Get the current step
-    const currentStep = steps.value[currentStepIndex];
+    const currentStep = steps.value.at(currentStepIndex);
     if (!currentStep) return;
 
     // Check if current step has help and modal is not already open

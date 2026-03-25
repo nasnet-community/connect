@@ -111,14 +111,12 @@ export function useCodeBlock({
   });
 
   const copyToClipboard$ = $((codeText: string) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(codeText).then(() => {
-        copySuccess.value = true;
-        setTimeout(() => {
-          copySuccess.value = false;
-        }, 1500);
-      });
-    }
+    navigator.clipboard.writeText(codeText).then(() => {
+      copySuccess.value = true;
+      setTimeout(() => {
+        copySuccess.value = false;
+      }, 1500);
+    });
   });
 
   return {

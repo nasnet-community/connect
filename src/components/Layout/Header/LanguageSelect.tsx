@@ -50,10 +50,11 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
   // Ensure select value is correct after hydration
   useVisibleTask$(({ track }) => {
     track(() => props.currentLocale);
-    const selectElement = document.getElementById(
-      selectId,
-    ) as HTMLSelectElement;
-    if (selectElement && selectElement.value !== props.currentLocale) {
+    const selectElement = document.getElementById(selectId);
+    if (
+      selectElement instanceof HTMLSelectElement &&
+      selectElement.value !== props.currentLocale
+    ) {
       selectElement.value = props.currentLocale;
     }
   });
@@ -91,7 +92,7 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
                  dark:hover:border-gray-600
                  dark:hover:from-gray-700 dark:hover:to-gray-800
                  dark:hover:shadow-xl dark:hover:shadow-black/30`}
-          dir={currentLang.dir || "ltr"}
+          dir={currentLang.dir}
           aria-label={$localize`Select language`}
         >
           {props.locales.map((locale) => {

@@ -49,7 +49,7 @@ const hasCertificateDependentVPNServer = (vpnServer?: VPNServer): boolean => {
 
     const hasSstpServer = vpnServer.SstpServer?.enabled === true;
     const hasOpenVpnServer =
-        vpnServer.OpenVpnServer?.some((server) => server?.enabled === true) ===
+        vpnServer.OpenVpnServer?.some((server) => server.enabled === true) ===
         true;
     const hasIkev2Server = Boolean(vpnServer.Ikev2Server);
 
@@ -129,7 +129,7 @@ export const AccessServices = (Services: services): RouterConfig => {
         const setting =
             typeof serviceConfig === "string"
                 ? serviceConfig
-                : serviceConfig.type || "Disable";
+                : serviceConfig.type;
         const port =
             typeof serviceConfig === "object" ? serviceConfig.port : undefined;
 
@@ -139,7 +139,7 @@ export const AccessServices = (Services: services): RouterConfig => {
             command = `set ${service} disabled=yes`;
         } else if (setting === "Local") {
             command = `set ${service} address=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8`;
-        } else if (setting === "Enable") {
+        } else {
             command = `set ${service} disabled=no`;
         }
 
@@ -175,9 +175,7 @@ export const RUI = (ruiConfig: RUIConfig): RouterConfig => {
     }
 
     // Handle IP Address update script and scheduler
-    if (ruiConfig.IPAddressUpdate) {
-        configs.push(IPAddressUpdateFunc(ruiConfig.IPAddressUpdate));
-    }
+    configs.push(IPAddressUpdateFunc(ruiConfig.IPAddressUpdate));
 
     // Merge all configurations
     return mergeMultipleConfigs(...configs);
@@ -342,7 +340,7 @@ export const Game = (games: GameConfig[], networks: Networks): RouterConfig => {
     };
 
     // Only generate game routing rules if games are configured
-    if (games && games.length > 0) {
+    if (games.length > 0) {
         // Determine source address list based on Split network availability
         // If Split network exists, use "Split-LAN", otherwise use "VPN-LAN"
         const sourceAddressList = networks.BaseNetworks?.Split
@@ -457,9 +455,7 @@ export const ExtraCG = (
         configs.push(AccessServices(ExtraConfigState.services));
     }
 
-    if (ExtraConfigState.RUI) {
-        configs.push(RUI(ExtraConfigState.RUI));
-    }
+    configs.push(RUI(ExtraConfigState.RUI));
 
     // Generate Game mangle and raw rules only if Games are configured
     if (
