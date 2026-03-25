@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useOnWindow, useSignal, useTask$ } from "@builder.io/qwik";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -44,9 +44,11 @@ export const ThemeToggle = component$<{
     }, 500); // Slightly longer than our transition duration (300ms)
   });
 
-  // Initialize theme state on client
-  useVisibleTask$(() => {
-    // Check if theme is stored in localStorage
+  const syncThemeFromEnvironment = $(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const storedTheme = localStorage.getItem("theme") as Theme | null;
 
     if (storedTheme) {
@@ -60,22 +62,36 @@ export const ThemeToggle = component$<{
       theme.value = "system";
       document.documentElement.classList.toggle("dark", prefersDark);
     }
-
-    // Add listener for system preference changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (theme.value === "system") {
-        document.documentElement.classList.toggle("dark", e.matches);
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
   });
+
+  // Initialize theme state on client
+  useTask$(() => {
+    syncThemeFromEnvironment();
+  });
+
+  useOnWindow(
+    "load",
+    $(() => {
+      syncThemeFromEnvironment();
+    }),
+  );
+
+  useOnWindow(
+    "storage",
+    $(() => {
+      syncThemeFromEnvironment();
+    }),
+  );
+
+  useOnWindow(
+    "matchMedia('(prefers-color-scheme: dark)').change",
+    $((event: Event) => {
+      if (theme.value === "system") {
+        const mediaEvent = event as MediaQueryListEvent;
+        document.documentElement.classList.toggle("dark", mediaEvent.matches);
+      }
+    }),
+  );
 
   // Toggle through the themes: system -> light -> dark -> system
   const toggleTheme = $(() => {

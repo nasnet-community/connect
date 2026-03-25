@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
 import {
   LuGlobe,
   LuGlobe2,
@@ -43,7 +43,11 @@ export const NetworkTopologyGraph = component$(
     const isTouch = useSignal(false);
 
     // Detect touch device for better UX
-    useVisibleTask$(() => {
+    useTask$(() => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       isTouch.value = window.matchMedia(
         "(hover: none) and (pointer: coarse)",
       ).matches;

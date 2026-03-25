@@ -3,7 +3,6 @@ import {
   component$,
   type QRL,
   useSignal,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 import {
   LuInfo,
@@ -40,6 +39,7 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
 
   const cardRef = useSignal<HTMLDivElement>();
   const isHovered = useSignal(false);
+  const animationDelayMs = Math.floor(Math.random() * 2000);
 
   const handleClick = $(() => {
     if (!isDisabled) {
@@ -81,14 +81,6 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
     }
   });
 
-  // Add floating animation
-  useVisibleTask$(() => {
-    if (cardRef.value) {
-      const randomDelay = Math.random() * 2000;
-      cardRef.value.style.animationDelay = `${randomDelay}ms`;
-    }
-  });
-
   // Get the first image for display
   const primaryImage = router.images?.[0] || "/images/routers/placeholder.png";
 
@@ -113,6 +105,7 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
         ${!isDisabled ? "hover:scale-[1.02]" : "cursor-not-allowed opacity-60"}
         ${isSelected ? "animate-pulse-slow" : ""}
       `}
+      style={{ animationDelay: `${animationDelayMs}ms` }}
       onMouseMove$={handleMouseMove}
       onMouseEnter$={handleMouseEnter}
       onMouseLeave$={handleMouseLeave}

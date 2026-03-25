@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useTask$ } from "@builder.io/qwik";
 import { LuTrendingUp, LuActivity, LuZap } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
@@ -126,8 +126,12 @@ export const LoadBalanceSection = component$(() => {
   });
 
   // Animate traffic flow bars
-  useVisibleTask$(({ track, cleanup }) => {
+  useTask$(({ track, cleanup }) => {
     track(() => activeAlgorithm.value);
+
+    if (typeof window === "undefined") {
+      return;
+    }
 
     const interval = setInterval(() => {
       trafficFlow.value = trafficFlow.value.map(

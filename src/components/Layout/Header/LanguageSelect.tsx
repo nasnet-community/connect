@@ -3,7 +3,6 @@ import {
   type QRL,
   useSignal,
   useTask$,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 
 interface Language {
@@ -45,18 +44,6 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
   useTask$(({ track }) => {
     track(() => props.currentLocale);
     selectedLocale.value = props.currentLocale;
-  });
-
-  // Ensure select value is correct after hydration
-  useVisibleTask$(({ track }) => {
-    track(() => props.currentLocale);
-    const selectElement = document.getElementById(selectId);
-    if (
-      selectElement instanceof HTMLSelectElement &&
-      selectElement.value !== props.currentLocale
-    ) {
-      selectElement.value = props.currentLocale;
-    }
   });
 
   return (

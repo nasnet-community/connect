@@ -1,32 +1,39 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, useOnWindow, $ } from "@builder.io/qwik";
 
 export const MobileWarning = component$(() => {
   const showWarning = useSignal(false);
   const isChecked = useSignal(false);
 
-  // Check if device is mobile/tablet
-  useVisibleTask$(() => {
-    const checkDevice = () => {
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isMobile =
-        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/.test(
-          userAgent,
-        );
-      const isTablet = /ipad|android(?!.*mobile)|kindle|silk|tablet/.test(
+  const updateWarningVisibility = $(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile =
+      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/.test(
         userAgent,
       );
-      const isSmallScreen = window.innerWidth < 1024; // lg breakpoint in Tailwind
+    const isTablet = /ipad|android(?!.*mobile)|kindle|silk|tablet/.test(
+      userAgent,
+    );
+    const isSmallScreen = window.innerWidth < 1024;
 
-      if ((isMobile || isTablet || isSmallScreen) && !isChecked.value) {
-        showWarning.value = true;
-      }
-    };
-
-    checkDevice();
-    window.addEventListener("resize", checkDevice);
-
-    return () => window.removeEventListener("resize", checkDevice);
+    showWarning.value = (isMobile || isTablet || isSmallScreen) && !isChecked.value;
   });
+
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const dismissed = localStorage.getItem("mobile-warning-dismissed");
+    if (dismissed === "true") {
+      isChecked.value = true;
+      showWarning.value = false;
+      return;
+    }
+
+    updateWarningVisibility();
+  });
+
+  useOnWindow("resize", updateWarningVisibility);
 
   const handleContinue = $(() => {
     showWarning.value = false;
@@ -39,14 +46,6 @@ export const MobileWarning = component$(() => {
     showWarning.value = false;
     isChecked.value = true;
     localStorage.setItem("mobile-warning-dismissed", "true");
-  });
-
-  // Check localStorage on mount
-  useVisibleTask$(() => {
-    const dismissed = localStorage.getItem("mobile-warning-dismissed");
-    if (dismissed === "true") {
-      isChecked.value = true;
-    }
   });
 
   if (!showWarning.value) {

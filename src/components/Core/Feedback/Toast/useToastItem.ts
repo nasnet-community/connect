@@ -1,4 +1,4 @@
-import { $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 
 export interface UseToastItemParams {
@@ -30,7 +30,11 @@ export function useToastItem({
   const progressIntervalId = useSignal<number | undefined>(undefined);
 
   // Set up auto-dismiss timer if not persistent
-  useVisibleTask$(({ cleanup }) => {
+  useTask$(({ cleanup }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     // Set component as mounted for animation
     setTimeout(() => {
       isMounted.value = true;

@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, useOnWindow, $ } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuMenu, LuX, LuRouter } from "@qwikest/icons/lucide";
 import { Button } from "~/components/Core";
@@ -9,14 +9,19 @@ export const NavigationBar = component$(() => {
   const isScrolled = useSignal(false);
   const isMobileMenuOpen = useSignal(false);
 
-  useVisibleTask$(() => {
-    const handleScroll = () => {
-      isScrolled.value = window.scrollY > 20;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+  const updateScrollState = $(() => {
+    isScrolled.value = window.scrollY > 20;
   });
+
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    updateScrollState();
+  });
+
+  useOnWindow("scroll", updateScrollState);
 
   const navItems = [
     { name: $localize`Features`, href: "#features" },

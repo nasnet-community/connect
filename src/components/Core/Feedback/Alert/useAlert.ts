@@ -1,4 +1,4 @@
-import { $, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useStore, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 
 export interface UseAlertParams {
@@ -21,7 +21,11 @@ export function useAlert(params: UseAlertParams = {}): UseAlertReturn {
   });
 
   // Handle auto-close functionality
-  useVisibleTask$(({ cleanup }) => {
+  useTask$(({ cleanup }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     // Set mounted state for animations
     setTimeout(() => {
       state.isMounted = true;
