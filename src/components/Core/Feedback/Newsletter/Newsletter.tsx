@@ -543,7 +543,6 @@ export const Newsletter = component$<NewsletterProps>(
                           : "lg"
                   }
                   fullWidth={variant !== "hero"}
-                  ripple={true}
                   gradientDirection="to-r"
                   radius="lg"
                   shadow={true}
