@@ -138,17 +138,24 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
       };
 
       ctx.updateExtraConfig$({
-        usefulServices: defaultUsefulServices
+        usefulServices: defaultUsefulServices,
       });
     }
   });
 
   const serviceStates = useStore<ServiceState>({
-    certificate: ctx.state.ExtraConfig.usefulServices?.certificate?.SelfSigned ?? false,
-    ntp: ctx.state.ExtraConfig.usefulServices?.ntp?.servers.length ? true : false,
-    graphing: ctx.state.ExtraConfig.usefulServices?.graphing?.Interface ?? false,
-    DDNS: ctx.state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries.length ? true : false,
-    letsEncrypt: ctx.state.ExtraConfig.usefulServices?.certificate?.LetsEncrypt ?? false,
+    certificate:
+      ctx.state.ExtraConfig.usefulServices?.certificate?.SelfSigned ?? false,
+    ntp: ctx.state.ExtraConfig.usefulServices?.ntp?.servers.length
+      ? true
+      : false,
+    graphing:
+      ctx.state.ExtraConfig.usefulServices?.graphing?.Interface ?? false,
+    DDNS: ctx.state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries.length
+      ? true
+      : false,
+    letsEncrypt:
+      ctx.state.ExtraConfig.usefulServices?.certificate?.LetsEncrypt ?? false,
   });
 
   const handleSubmit = $(() => {
@@ -157,23 +164,19 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
       ...ctx.state.ExtraConfig.usefulServices,
       certificate: {
         SelfSigned: serviceStates.certificate,
-        LetsEncrypt: serviceStates.letsEncrypt
+        LetsEncrypt: serviceStates.letsEncrypt,
       },
-      ntp: serviceStates.ntp ?
-        { servers: ["pool.ntp.org"] } :
-        { servers: [] },
+      ntp: serviceStates.ntp ? { servers: ["pool.ntp.org"] } : { servers: [] },
       graphing: {
         Interface: serviceStates.graphing,
         Queue: serviceStates.graphing,
-        Resources: serviceStates.graphing
+        Resources: serviceStates.graphing,
       },
-      cloudDDNS: serviceStates.DDNS ?
-        { ddnsEntries: [] } :
-        { ddnsEntries: [] },
+      cloudDDNS: serviceStates.DDNS ? { ddnsEntries: [] } : { ddnsEntries: [] },
     };
 
     ctx.updateExtraConfig$({
-      usefulServices: usefulServicesConfig
+      usefulServices: usefulServicesConfig,
     });
     onComplete$();
   });
@@ -181,9 +184,9 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="animate-fade-in-up">
       {/* Simplified background elements */}
-      <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div class="absolute left-1/4 top-1/4 h-72 w-72 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/5 to-secondary-500/5"></div>
-        <div class="absolute right-1/3 bottom-1/3 h-64 w-64 animate-float rounded-full bg-gradient-to-br from-secondary-500/5 to-primary-500/5"></div>
+        <div class="absolute bottom-1/3 right-1/3 h-64 w-64 animate-float rounded-full bg-gradient-to-br from-secondary-500/5 to-primary-500/5"></div>
       </div>
 
       <div class="group relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl transition-all duration-300 hover:shadow-2xl dark:border-gray-700 dark:bg-gray-800">
@@ -191,15 +194,15 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
         <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/10 via-secondary-500/5 to-primary-500/10 p-px">
           <div class="h-full w-full rounded-3xl bg-white dark:bg-gray-800"></div>
         </div>
-        
+
         {/* Content container */}
         <div class="relative z-10">
           {/* Modern header section */}
           <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-10">
             {/* Header background pattern */}
             <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-            <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/5"></div>
-            
+            <div class="absolute right-0 top-0 h-64 w-64 -translate-y-32 translate-x-32 rounded-full bg-white/5"></div>
+
             <div class="relative flex items-center space-x-6">
               <div class="group/icon flex h-16 w-16 items-center justify-center rounded-2xl border border-white/30 bg-white/20 transition-all duration-300 hover:scale-110 hover:bg-white/30">
                 <svg
@@ -220,7 +223,7 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
               <div class="space-y-1">
                 <h2 class="text-3xl font-bold text-white">{$localize`Useful Services`}</h2>
                 <p class="text-lg text-white/90">{$localize`Easy Mode`}</p>
-                <p class="text-primary-100 max-w-md">{$localize`Quick enable/disable services for your network`}</p>
+                <p class="max-w-md text-primary-100">{$localize`Quick enable/disable services for your network`}</p>
               </div>
             </div>
           </div>
@@ -231,12 +234,12 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
               {SERVICES.map((service, index) => (
                 <div
                   key={service.id}
-                  class="group/card relative overflow-hidden rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/10 dark:border-gray-700/50 dark:from-gray-800 dark:to-gray-900 animate-fade-in-up"
+                  class="group/card relative animate-fade-in-up overflow-hidden rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/10 dark:border-gray-700/50 dark:from-gray-800 dark:to-gray-900"
                   style={`animation-delay: ${index * 100}ms`}
                 >
                   {/* Gradient overlay on hover */}
-                  <div class="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-secondary-500/0 to-primary-500/0 transition-opacity duration-500 opacity-0 group-hover/card:opacity-5"></div>
-                  
+                  <div class="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-secondary-500/0 to-primary-500/0 opacity-0 transition-opacity duration-500 group-hover/card:opacity-5"></div>
+
                   <div class="relative p-6">
                     <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                       <div class="flex items-center gap-4">
@@ -246,7 +249,7 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                           </div>
                         </div>
                         <div class="space-y-1">
-                          <h3 class="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+                          <h3 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-semibold text-transparent dark:from-white dark:to-gray-300">
                             {service.title}
                           </h3>
                           <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -257,8 +260,8 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
 
                       <Toggle
                         checked={serviceStates[service.id]}
-                        onChange$={$((checked) =>
-                          (serviceStates[service.id] = checked)
+                        onChange$={$(
+                          (checked) => (serviceStates[service.id] = checked),
                         )}
                         label={
                           serviceStates[service.id]
@@ -266,7 +269,9 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                             : $localize`Disabled`
                         }
                         size="lg"
-                        color={serviceStates[service.id] ? "primary" : "secondary"}
+                        color={
+                          serviceStates[service.id] ? "primary" : "secondary"
+                        }
                       />
                     </div>
                   </div>
@@ -281,11 +286,22 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                 class="group relative overflow-hidden rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary-500/25"
               >
                 {/* Shimmer effect on hover */}
-                <div class="absolute inset-0 -top-2 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:translate-x-full -skew-x-12"></div>
+                <div class="absolute inset-0 -top-2 h-full w-full -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:translate-x-full group-hover:opacity-100"></div>
                 <span class="relative flex items-center gap-2">
                   {$localize`Save Settings`}
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
                   </svg>
                 </span>
               </button>

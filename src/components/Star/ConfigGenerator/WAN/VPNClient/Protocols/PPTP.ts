@@ -5,25 +5,10 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 
 // PPTP Client
 
@@ -65,14 +50,17 @@ export const PPTPClient = (config: PptpClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const PPTPClientWrapper = ( configs: PptpClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const PPTPClientWrapper = (
+    configs: PptpClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((pptpConfig) => {
         const vpnConfig = PPTPClient(pptpConfig);
         const interfaceName = GenerateVCInterfaceName(pptpConfig.Name, "PPTP");
         const endpointAddress = pptpConfig.ConnectTo;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(pptpConfig.Name);
 

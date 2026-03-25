@@ -20,13 +20,13 @@ export type ComponentSize = "xs" | "sm" | "md" | "lg" | "xl";
 /**
  * Common variant types for styled components
  */
-export type ComponentVariant = 
-  | "default" 
-  | "primary" 
-  | "secondary" 
-  | "success" 
-  | "warning" 
-  | "error" 
+export type ComponentVariant =
+  | "default"
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "error"
   | "info";
 
 /**
@@ -96,16 +96,18 @@ export type Orientation = "portrait" | "landscape";
 /**
  * Responsive value that can be different at different breakpoints
  */
-export type ResponsiveValue<T> = T | {
-  base?: T;
-  "2xs"?: T;
-  xs?: T;
-  sm?: T;
-  md?: T;
-  lg?: T;
-  xl?: T;
-  "2xl"?: T;
-};
+export type ResponsiveValue<T> =
+  | T
+  | {
+      base?: T;
+      "2xs"?: T;
+      xs?: T;
+      sm?: T;
+      md?: T;
+      lg?: T;
+      xl?: T;
+      "2xl"?: T;
+    };
 
 /**
  * Responsive boolean properties
@@ -154,22 +156,31 @@ export type ThemeVariant = "light" | "dark" | "dim" | "high-contrast";
 /**
  * Color palette keys from Tailwind config
  */
-export type ColorPalette = 
-  | "primary" 
-  | "secondary" 
-  | "success" 
-  | "warning" 
-  | "error" 
-  | "info" 
+export type ColorPalette =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
   | "gray"
   | "surface";
 
 /**
  * Color shade options
  */
-export type ColorShade = 
-  | "50" | "100" | "200" | "300" | "400" 
-  | "500" | "600" | "700" | "800" | "900" | "950";
+export type ColorShade =
+  | "50"
+  | "100"
+  | "200"
+  | "300"
+  | "400"
+  | "500"
+  | "600"
+  | "700"
+  | "800"
+  | "900"
+  | "950";
 
 /**
  * Complete color specification
@@ -210,14 +221,14 @@ export type Position = "static" | "relative" | "absolute" | "fixed" | "sticky";
 /**
  * CSS display values (common ones)
  */
-export type Display = 
-  | "block" 
-  | "inline" 
-  | "inline-block" 
-  | "flex" 
-  | "inline-flex" 
-  | "grid" 
-  | "inline-grid" 
+export type Display =
+  | "block"
+  | "inline"
+  | "inline-block"
+  | "flex"
+  | "inline-flex"
+  | "grid"
+  | "inline-grid"
   | "hidden";
 
 /**
@@ -233,12 +244,12 @@ export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 /**
  * Justify content values
  */
-export type JustifyContent = 
-  | "start" 
-  | "end" 
-  | "center" 
-  | "between" 
-  | "around" 
+export type JustifyContent =
+  | "start"
+  | "end"
+  | "center"
+  | "between"
+  | "around"
   | "evenly";
 
 /**
@@ -249,12 +260,26 @@ export type AlignItems = "start" | "end" | "center" | "stretch" | "baseline";
 /**
  * Text alignment
  */
-export type TextAlign = "left" | "center" | "right" | "justify" | "start" | "end";
+export type TextAlign =
+  | "left"
+  | "center"
+  | "right"
+  | "justify"
+  | "start"
+  | "end";
 
 /**
  * Border radius sizes
  */
-export type BorderRadius = "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
+export type BorderRadius =
+  | "none"
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "full";
 
 // ====================
 // UTILITY TYPES
@@ -329,13 +354,13 @@ export type PolymorphicProps<T extends keyof JSX.IntrinsicElements> = {
 /**
  * Form field types
  */
-export type FieldType = 
-  | "text" 
-  | "email" 
-  | "password" 
-  | "number" 
-  | "tel" 
-  | "url" 
+export type FieldType =
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "tel"
+  | "url"
   | "search"
   | "textarea"
   | "select"
@@ -439,7 +464,16 @@ export interface SortConfig {
  */
 export interface FilterConfig {
   field: string;
-  operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "contains" | "startsWith" | "endsWith";
+  operator:
+    | "eq"
+    | "ne"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte"
+    | "contains"
+    | "startsWith"
+    | "endsWith";
   value: any;
 }
 
@@ -461,26 +495,26 @@ export interface SearchParams {
 /**
  * ARIA roles
  */
-export type AriaRole = 
-  | "button" 
-  | "link" 
-  | "tab" 
-  | "tabpanel" 
-  | "menu" 
+export type AriaRole =
+  | "button"
+  | "link"
+  | "tab"
+  | "tabpanel"
+  | "menu"
   | "menuitem"
-  | "dialog" 
-  | "alertdialog" 
-  | "alert" 
-  | "status" 
+  | "dialog"
+  | "alertdialog"
+  | "alert"
+  | "status"
   | "progressbar"
-  | "slider" 
-  | "spinbutton" 
-  | "textbox" 
-  | "combobox" 
+  | "slider"
+  | "spinbutton"
+  | "textbox"
+  | "combobox"
   | "listbox"
-  | "option" 
-  | "checkbox" 
-  | "radio" 
+  | "option"
+  | "checkbox"
+  | "radio"
   | "switch";
 
 /**
@@ -530,19 +564,23 @@ export type AnimationDuration = "none" | "fast" | "normal" | "slow" | "slower";
 /**
  * Animation easing functions
  */
-export type AnimationEasing = 
-  | "linear" 
-  | "ease" 
-  | "ease-in" 
-  | "ease-out" 
+export type AnimationEasing =
+  | "linear"
+  | "ease"
+  | "ease-in"
+  | "ease-out"
   | "ease-in-out"
-  | "bounce" 
+  | "bounce"
   | "elastic";
 
 /**
  * Animation direction
  */
-export type AnimationDirection = "normal" | "reverse" | "alternate" | "alternate-reverse";
+export type AnimationDirection =
+  | "normal"
+  | "reverse"
+  | "alternate"
+  | "alternate-reverse";
 
 /**
  * Animation fill mode
@@ -674,11 +712,11 @@ export interface FocusableProps {
 /**
  * Complete interactive component props
  */
-export interface InteractiveProps extends 
-  BaseProps, 
-  DisableableProps, 
-  ClickableProps, 
-  FocusableProps {}
+export interface InteractiveProps
+  extends BaseProps,
+    DisableableProps,
+    ClickableProps,
+    FocusableProps {}
 
 // ====================
 // CONTEXT TYPES

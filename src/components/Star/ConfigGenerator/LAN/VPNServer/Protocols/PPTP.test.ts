@@ -6,7 +6,11 @@ import {
     PPTPServerFirewall,
     PptpServerWrapper,
 } from "./PPTP";
-import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+    validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
 import type {
     PptpServerConfig,
     VSCredentials,
@@ -232,11 +236,14 @@ describe("PPTP Protocol Tests", () => {
                 Authentication: ["mschap2"],
             };
 
-            const users: VSCredentials[] = Array.from({ length: 30 }, (_, i) => ({
-                Username: `pptp_user${i + 1}`,
-                Password: `pptp_pass${i + 1}`,
-                VPNType: ["PPTP"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 30 },
+                (_, i) => ({
+                    Username: `pptp_user${i + 1}`,
+                    Password: `pptp_pass${i + 1}`,
+                    VPNType: ["PPTP"],
+                }),
+            );
 
             testWithOutput(
                 "PptpServerUsers",
@@ -341,16 +348,22 @@ describe("PPTP Protocol Tests", () => {
         });
 
         it("should handle multiple users for binding", () => {
-            const credentials: VSCredentials[] = Array.from({ length: 20 }, (_, i) => ({
-                Username: `binduser${i + 1}`,
-                Password: `bindpass${i + 1}`,
-                VPNType: ["PPTP"],
-            }));
+            const credentials: VSCredentials[] = Array.from(
+                { length: 20 },
+                (_, i) => ({
+                    Username: `binduser${i + 1}`,
+                    Password: `bindpass${i + 1}`,
+                    VPNType: ["PPTP"],
+                }),
+            );
 
             testWithOutput(
                 "PPTPVSBinding",
                 "PPTP bindings with many users",
-                { credentials: `Array of ${credentials.length} users`, VSNetwork: vsNetwork },
+                {
+                    credentials: `Array of ${credentials.length} users`,
+                    VSNetwork: vsNetwork,
+                },
                 () => PPTPVSBinding(credentials, vsNetwork),
             );
 
@@ -376,7 +389,10 @@ describe("PPTP Protocol Tests", () => {
             );
 
             const result = PPTPServerFirewall(serverConfigs);
-            validateRouterConfig(result, ["/ip firewall filter", "/ip firewall mangle"]);
+            validateRouterConfig(result, [
+                "/ip firewall filter",
+                "/ip firewall mangle",
+            ]);
         });
 
         it("should handle multiple PPTP server configs", () => {
@@ -507,11 +523,14 @@ describe("PPTP Protocol Tests", () => {
                 },
             };
 
-            const users: VSCredentials[] = Array.from({ length: 20 }, (_, i) => ({
-                Username: `pptpuser${i + 1}`,
-                Password: `pptppass${i + 1}`,
-                VPNType: ["PPTP"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 20 },
+                (_, i) => ({
+                    Username: `pptpuser${i + 1}`,
+                    Password: `pptppass${i + 1}`,
+                    VPNType: ["PPTP"],
+                }),
+            );
 
             testWithOutput(
                 "PptpServerWrapper",
@@ -632,7 +651,12 @@ describe("PPTP Protocol Tests", () => {
         });
 
         it("should handle different VSNetwork types", () => {
-            const networkTypes: VSNetwork[] = ["VPN", "Domestic", "Foreign", "Split"];
+            const networkTypes: VSNetwork[] = [
+                "VPN",
+                "Domestic",
+                "Foreign",
+                "Split",
+            ];
 
             networkTypes.forEach((network) => {
                 const config: PptpServerConfig = {

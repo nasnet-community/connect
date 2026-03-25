@@ -11,7 +11,14 @@ interface JsonTreeNodeProps {
 }
 
 export const JsonTreeNode = component$<JsonTreeNodeProps>((props) => {
-  const { nodeKey, value, level = 0, isLast = true, searchTerm, expandAll } = props;
+  const {
+    nodeKey,
+    value,
+    level = 0,
+    isLast = true,
+    searchTerm,
+    expandAll,
+  } = props;
   const isExpanded = useSignal(level < 2);
 
   // Watch for changes to expandAll signal
@@ -63,21 +70,16 @@ export const JsonTreeNode = component$<JsonTreeNodeProps>((props) => {
   const renderValue = () => {
     if (!isComplex) {
       const valueStr = valueType === "string" ? `"${value}"` : String(value);
-      return (
-        <span class={`ml-2 ${getValueColor(valueType)}`}>
-          {valueStr}
-        </span>
-      );
+      return <span class={`ml-2 ${getValueColor(valueType)}`}>{valueStr}</span>;
     }
 
     if (!isExpanded.value) {
-      const preview = valueType === "array"
-        ? `[${propertyCount} items]`
-        : `{${propertyCount} properties}`;
+      const preview =
+        valueType === "array"
+          ? `[${propertyCount} items]`
+          : `{${propertyCount} properties}`;
       return (
-        <span class="ml-2 text-gray-500 dark:text-gray-400">
-          {preview}
-        </span>
+        <span class="ml-2 text-gray-500 dark:text-gray-400">{preview}</span>
       );
     }
 
@@ -90,15 +92,18 @@ export const JsonTreeNode = component$<JsonTreeNodeProps>((props) => {
     }
   });
 
-  const isHighlighted = highlightMatch(nodeKey) || highlightMatch(String(value));
+  const isHighlighted =
+    highlightMatch(nodeKey) || highlightMatch(String(value));
 
   return (
-    <div class={`${level > 0 ? "ml-4" : ""} ${!isLast ? "border-l border-gray-200 dark:border-gray-700" : ""}`}>
+    <div
+      class={`${level > 0 ? "ml-4" : ""} ${!isLast ? "border-l border-gray-200 dark:border-gray-700" : ""}`}
+    >
       <div class="flex items-start">
         <button
           onClick$={handleToggle$}
           disabled={!isComplex}
-          class={`flex items-center gap-1 py-0.5 px-1 rounded hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/50 ${
+          class={`hover:bg-surface-secondary/50 dark:hover:bg-surface-dark-secondary/50 flex items-center gap-1 rounded px-1 py-0.5 ${
             !isComplex ? "cursor-default" : ""
           } ${isHighlighted ? "bg-yellow-100 dark:bg-yellow-900/20" : ""}`}
         >
@@ -119,7 +124,9 @@ export const JsonTreeNode = component$<JsonTreeNodeProps>((props) => {
               />
             </svg>
           )}
-          <span class={`font-mono text-sm ${level === 0 ? "font-semibold" : ""}`}>
+          <span
+            class={`font-mono text-sm ${level === 0 ? "font-semibold" : ""}`}
+          >
             {nodeKey}:
           </span>
           {renderValue()}
@@ -128,31 +135,29 @@ export const JsonTreeNode = component$<JsonTreeNodeProps>((props) => {
 
       {isComplex && isExpanded.value && (
         <div class="mt-1">
-          {valueType === "array" ? (
-            value.map((item: any, index: number) => (
-              <JsonTreeNode
-                key={`${nodeKey}-${index}`}
-                nodeKey={`[${index}]`}
-                value={item}
-                level={level + 1}
-                isLast={index === value.length - 1}
-                searchTerm={searchTerm}
-                expandAll={expandAll}
-              />
-            ))
-          ) : (
-            Object.entries(value).map(([key, val], index, entries) => (
-              <JsonTreeNode
-                key={`${nodeKey}-${key}`}
-                nodeKey={key}
-                value={val}
-                level={level + 1}
-                isLast={index === entries.length - 1}
-                searchTerm={searchTerm}
-                expandAll={expandAll}
-              />
-            ))
-          )}
+          {valueType === "array"
+            ? value.map((item: any, index: number) => (
+                <JsonTreeNode
+                  key={`${nodeKey}-${index}`}
+                  nodeKey={`[${index}]`}
+                  value={item}
+                  level={level + 1}
+                  isLast={index === value.length - 1}
+                  searchTerm={searchTerm}
+                  expandAll={expandAll}
+                />
+              ))
+            : Object.entries(value).map(([key, val], index, entries) => (
+                <JsonTreeNode
+                  key={`${nodeKey}-${key}`}
+                  nodeKey={key}
+                  value={val}
+                  level={level + 1}
+                  isLast={index === entries.length - 1}
+                  searchTerm={searchTerm}
+                  expandAll={expandAll}
+                />
+              ))}
         </div>
       )}
     </div>

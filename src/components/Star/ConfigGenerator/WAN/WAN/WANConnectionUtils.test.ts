@@ -30,8 +30,13 @@ describe("WANConnectionUtils Module", () => {
                 () => LTE("WAN-1", "Foreign", lteSettings),
             );
 
-            validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
-            expect(result["/interface lte"][0]).toContain('comment="WAN-1 to Foreign"');
+            validateRouterConfig(result, [
+                "/interface lte",
+                "/interface lte apn",
+            ]);
+            expect(result["/interface lte"][0]).toContain(
+                'comment="WAN-1 to Foreign"',
+            );
         });
 
         it("should configure LTE with custom APN", () => {
@@ -46,8 +51,13 @@ describe("WANConnectionUtils Module", () => {
                 () => LTE("WAN-2", "Domestic", lteSettings),
             );
 
-            validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
-            expect(result["/interface lte"][0]).toContain('comment="WAN-2 to Domestic"');
+            validateRouterConfig(result, [
+                "/interface lte",
+                "/interface lte apn",
+            ]);
+            expect(result["/interface lte"][0]).toContain(
+                'comment="WAN-2 to Domestic"',
+            );
         });
 
         it("should configure LTE with enterprise APN", () => {
@@ -62,9 +72,16 @@ describe("WANConnectionUtils Module", () => {
                 () => LTE("WAN-LTE", "Foreign", lteSettings),
             );
 
-            validateRouterConfig(result, ["/interface lte", "/interface lte apn"]);
-            expect(result["/interface lte"][0]).toContain('comment="WAN-LTE to Foreign"');
-            expect(result["/interface lte apn"][0]).toContain("enterprise.apn.carrier.com");
+            validateRouterConfig(result, [
+                "/interface lte",
+                "/interface lte apn",
+            ]);
+            expect(result["/interface lte"][0]).toContain(
+                'comment="WAN-LTE to Foreign"',
+            );
+            expect(result["/interface lte apn"][0]).toContain(
+                "enterprise.apn.carrier.com",
+            );
         });
     });
 
@@ -118,7 +135,9 @@ describe("WANConnectionUtils Module", () => {
         it("should set add-default-route to no", () => {
             const result = DHCPClient("Test-WAN", "Foreign", "ether1");
 
-            expect(result["/ip dhcp-client"][0]).toContain("add-default-route=no");
+            expect(result["/ip dhcp-client"][0]).toContain(
+                "add-default-route=no",
+            );
         });
 
         it("should disable peer DNS and NTP", () => {
@@ -160,7 +179,12 @@ describe("WANConnectionUtils Module", () => {
                     interfaceName: "VLAN100-ether1-WAN-1",
                     pppoeConfig,
                 },
-                () => PPPOEClient("WAN-VLAN", "VLAN100-ether1-WAN-1", pppoeConfig),
+                () =>
+                    PPPOEClient(
+                        "WAN-VLAN",
+                        "VLAN100-ether1-WAN-1",
+                        pppoeConfig,
+                    ),
             );
 
             validateRouterConfig(result, ["/interface pppoe-client"]);
@@ -190,7 +214,9 @@ describe("WANConnectionUtils Module", () => {
 
             const result = PPPOEClient("Test-WAN", "ether1", pppoeConfig);
 
-            expect(result["/interface pppoe-client"][0]).toContain("dial-on-demand=yes");
+            expect(result["/interface pppoe-client"][0]).toContain(
+                "dial-on-demand=yes",
+            );
         });
 
         it("should set add-default-route to no", () => {
@@ -201,7 +227,9 @@ describe("WANConnectionUtils Module", () => {
 
             const result = PPPOEClient("Test-WAN", "ether1", pppoeConfig);
 
-            expect(result["/interface pppoe-client"][0]).toContain("add-default-route=no");
+            expect(result["/interface pppoe-client"][0]).toContain(
+                "add-default-route=no",
+            );
         });
 
         it("should allow multiple authentication methods", () => {
@@ -212,7 +240,9 @@ describe("WANConnectionUtils Module", () => {
 
             const result = PPPOEClient("Test-WAN", "ether1", pppoeConfig);
 
-            expect(result["/interface pppoe-client"][0]).toContain("allow=chap,pap,mschap1,mschap2");
+            expect(result["/interface pppoe-client"][0]).toContain(
+                "allow=chap,pap,mschap1,mschap2",
+            );
         });
 
         it("should create interface with correct naming convention", () => {
@@ -223,7 +253,9 @@ describe("WANConnectionUtils Module", () => {
 
             const result = PPPOEClient("My-WAN", "ether1", pppoeConfig);
 
-            expect(result["/interface pppoe-client"][0]).toContain('name="pppoe-client-My-WAN"');
+            expect(result["/interface pppoe-client"][0]).toContain(
+                'name="pppoe-client-My-WAN"',
+            );
         });
     });
 
@@ -303,7 +335,9 @@ describe("WANConnectionUtils Module", () => {
 
             const result = StaticIP("My-Static-WAN", "ether1", staticIPConfig);
 
-            expect(result["/ip address"][0]).toContain('comment="My-Static-WAN"');
+            expect(result["/ip address"][0]).toContain(
+                'comment="My-Static-WAN"',
+            );
         });
     });
 
@@ -384,4 +418,3 @@ describe("WANConnectionUtils Module", () => {
         });
     });
 });
-

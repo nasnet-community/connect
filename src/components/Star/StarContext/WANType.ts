@@ -1,10 +1,13 @@
 import type { VPNClient } from "./Utils/VPNClientType";
-import type {
-  WANLinks
-} from "./Utils/WANLinkType";
+import type { WANLinks } from "./Utils/WANLinkType";
 
 // Re-export for convenience
-export type { WANLink, WANLinkConfig, InterfaceConfig, WANLinks } from "./Utils/WANLinkType";
+export type {
+  WANLink,
+  WANLinkConfig,
+  InterfaceConfig,
+  WANLinks,
+} from "./Utils/WANLinkType";
 
 export interface DOHConfig {
   domain?: string;

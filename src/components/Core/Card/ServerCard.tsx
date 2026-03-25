@@ -42,10 +42,12 @@ export const ServerCard = component$<ServerCardProps>(
         {/* Card Header with Title and Icon */}
         <div class={`mb-4 flex items-center gap-2 ${titleClass}`}>
           <div class="h-5 w-5 text-primary-500 dark:text-primary-400">
-            {isJSXElement ? icon : (() => {
-              const IconComponent = icon;
-              return <IconComponent />;
-            })()}
+            {isJSXElement
+              ? icon
+              : (() => {
+                  const IconComponent = icon;
+                  return <IconComponent />;
+                })()}
           </div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">
             {title}

@@ -52,22 +52,29 @@ export const Wireless = component$<StepProps>(
         });
       } else if (!isMultiSSID.value) {
         // Determine network based on enabled base networks
-        const { wifiTarget, networkName } = determineWirelessNetwork(starContext.state.Choose.Networks);
+        const { wifiTarget, networkName } = determineWirelessNetwork(
+          starContext.state.Choose.Networks,
+        );
 
         starContext.updateLAN$({
-          Wireless: [{
-            SSID: ssid.value,
-            Password: password.value,
-            isHide: isHide.value,
-            isDisabled: isDisabled.value,
-            SplitBand: splitBand.value,
-            WifiTarget: wifiTarget,
-            NetworkName: networkName,
-          }],
+          Wireless: [
+            {
+              SSID: ssid.value,
+              Password: password.value,
+              isHide: isHide.value,
+              isDisabled: isDisabled.value,
+              SplitBand: splitBand.value,
+              WifiTarget: wifiTarget,
+              NetworkName: networkName,
+            },
+          ],
         });
       } else {
-        const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
-        const enabledNetworks: import("~/components/Star/StarContext").WirelessConfig[] = [];
+        const isDomesticLinkEnabled =
+          starContext.state.Choose.WANLinkType === "domestic" ||
+          starContext.state.Choose.WANLinkType === "both";
+        const enabledNetworks: import("~/components/Star/StarContext").WirelessConfig[] =
+          [];
 
         if (!networks.foreign.isDisabled) {
           enabledNetworks.push({
@@ -123,7 +130,7 @@ export const Wireless = component$<StepProps>(
           if (!extraInterface.isDisabled && extraInterface.targetNetworkName) {
             const wifiTarget = determineWifiTarget(
               extraInterface.targetNetworkName,
-              starContext.state.Choose.Networks
+              starContext.state.Choose.Networks,
             );
 
             enabledNetworks.push({

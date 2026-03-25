@@ -3,23 +3,21 @@ import { Button } from "~/components/Core";
 
 export const NewsletterSignup = component$(() => {
   return (
-    <div class="mt-12 pt-8 border-t border-white/20">
-      <div class="max-w-md mx-auto text-center lg:text-left lg:mx-0">
-        <h3 class="text-lg font-semibold mb-2">
-          {$localize`Stay Updated`}
-        </h3>
-        <p class="text-gray-300 mb-4">
+    <div class="mt-12 border-t border-white/20 pt-8">
+      <div class="mx-auto max-w-md text-center lg:mx-0 lg:text-left">
+        <h3 class="mb-2 text-lg font-semibold">{$localize`Stay Updated`}</h3>
+        <p class="mb-4 text-gray-300">
           {$localize`Get the latest features, tutorials, and network optimization tips.`}
         </p>
         <div class="flex gap-2">
           <input
             type="email"
             placeholder={$localize`Enter your email`}
-            class="flex-1 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white placeholder-gray-400"
+            class="flex-1 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-purple-500 focus:outline-none"
           />
           <Button
             variant="primary"
-            class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-6"
+            class="bg-gradient-to-r from-purple-500 to-blue-500 px-6 hover:from-purple-600 hover:to-blue-600"
           >
             {$localize`Subscribe`}
           </Button>

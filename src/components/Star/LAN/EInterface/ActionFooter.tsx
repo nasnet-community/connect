@@ -16,7 +16,7 @@ interface ActionFooterProps {
 export const ActionFooter = component$<ActionFooterProps>(
   ({ onSave$, onReset$, isSaveDisabled = false }) => {
     return (
-      <div class="flex flex-col items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:flex-row md:justify-between dark:border-gray-700 dark:bg-gray-800">
+      <div class="flex flex-col items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:flex-row md:justify-between">
         <div class="flex items-center text-gray-500 dark:text-gray-400">
           <HiInformationCircleOutline class="mr-2 h-5 w-5" />
           <span class="text-sm">
@@ -47,8 +47,8 @@ export const ActionFooter = component$<ActionFooterProps>(
             text-center text-sm font-medium text-white hover:bg-primary-600 
             focus:outline-none focus:ring-4 focus:ring-primary-300 
             disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300 
-            md:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 
-            dark:focus:ring-primary-800 dark:disabled:bg-gray-700"
+            dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 
+            dark:disabled:bg-gray-700 md:w-auto"
           >
             <HiCheckCircleOutline class="h-5 w-5" />
             <span>{$localize`Save Settings`}</span>

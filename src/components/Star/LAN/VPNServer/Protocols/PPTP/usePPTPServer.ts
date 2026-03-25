@@ -9,7 +9,10 @@ type ViewMode = "easy" | "advanced";
 
 export const usePPTPServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   const pptpState = vpnServerState.PptpServer || {
     enabled: true,

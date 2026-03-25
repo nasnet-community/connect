@@ -11,7 +11,7 @@ This package provides three highly customizable stepper components for multi-ste
 - ✅ Fully accessible with ARIA attributes and keyboard navigation
 - ✅ Context-based state management for sharing data between steps
 - ✅ Lazy loading of step components for better performance
-- ✅ Customizable step indicators, transitions, and layouts  
+- ✅ Customizable step indicators, transitions, and layouts
 - ✅ RTL language support
 - ✅ Dark mode support
 - ✅ TypeScript support with comprehensive type definitions
@@ -42,19 +42,19 @@ export default component$(() => {
       title: "Personal Info",
       description: "Enter your personal details",
       component: <Step1 />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Contact Info",
       description: "Enter your contact information",
       component: <Step2 />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
-  
+
   return (
-    <CStepper 
+    <CStepper
       steps={steps}
       onStepComplete$={(id) => console.log(`Step ${id} completed`)}
       onComplete$={() => console.log("All steps completed!")}
@@ -68,15 +68,21 @@ export default component$(() => {
 For more complex forms, use context to share data between steps:
 
 ```tsx
-import { CStepper, createStepperContext, useStepperContext } from "~/components/Core/Stepper";
+import {
+  CStepper,
+  createStepperContext,
+  useStepperContext,
+} from "~/components/Core/Stepper";
 
 // Create a typed context
-const FormContext = createStepperContext<{ name: string; email: string }>("my-form");
+const FormContext = createStepperContext<{ name: string; email: string }>(
+  "my-form",
+);
 
 // In your main component
 export default component$(() => {
   return (
-    <CStepper 
+    <CStepper
       steps={steps}
       contextId={FormContext}
       contextValue={{ name: "", email: "" }}
@@ -87,26 +93,24 @@ export default component$(() => {
 // Inside a step component
 const Step1 = component$(() => {
   const context = useStepperContext(FormContext);
-  
+
   return (
     <div>
-      <input 
+      <input
         value={context.data.name}
         onInput$={(e) => {
           const input = e.target as HTMLInputElement;
           context.data.name = input.value;
-          
+
           // Mark step as complete if valid
           if (input.value.length > 2) {
             context.completeStep$();
           }
         }}
       />
-      
+
       {/* Navigation */}
-      <button onClick$={() => context.nextStep$()}>
-        Next
-      </button>
+      <button onClick$={() => context.nextStep$()}>Next</button>
     </div>
   );
 });
@@ -128,18 +132,18 @@ export default component$(() => {
       id: 1,
       title: "Step 1",
       component: <Step1Component />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Step 2",
       component: <Step2Component />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
-  
+
   return (
-    <HStepper 
+    <HStepper
       steps={steps}
       mode="easy" // "easy" or "advance"
       onModeChange$={(mode) => console.log(`Mode changed to ${mode}`)}
@@ -157,13 +161,13 @@ import { HStepper, useHStepperContext } from "~/components/Core/Stepper";
 // Inside a step component
 const Step1 = component$(() => {
   const stepper = useHStepperContext();
-  
+
   return (
     <div>
       {/* Component content */}
-      
+
       {/* Complete this step and go to next */}
-      <button 
+      <button
         onClick$={() => {
           stepper.completeStep$();
           stepper.nextStep$();
@@ -192,18 +196,18 @@ export default component$(() => {
       id: 1,
       title: "Account Setup",
       component: AccountSetupComponent,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Profile Details",
       component: ProfileDetailsComponent,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
-  
+
   return (
-    <VStepper 
+    <VStepper
       steps={steps}
       position="left" // or "right" for RTL
       preloadNext={true} // preload the next step for smoother transitions
@@ -222,7 +226,7 @@ const Step1 = component$(({ isComplete, onComplete$, isActive }) => {
   return (
     <div>
       {/* Your form fields */}
-      
+
       <button onClick$={onComplete$}>Complete this step</button>
     </div>
   );
@@ -255,4 +259,4 @@ If you're using an older version:
 1. Replace direct prop access with context API
 2. Use the new `completeStep$` function instead of manual completion
 3. Add required ARIA attributes if creating custom step components
-4. Update imports to use the consolidated paths 
+4. Update imports to use the consolidated paths

@@ -3,16 +3,16 @@ import type { StepProps } from "~/types/step";
 import { useVPNServerAdvanced } from "./useVPNServerAdvanced";
 import { VPNServerHeader } from "../VPNServerHeader";
 import { ActionFooter } from "../ActionFooter";
-import {
-  CStepper,
-  type CStepMeta,
-} from "~/components/Core/Stepper/CStepper";
+import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
 import { ProtocolsStep } from "./steps/ProtocolsStep";
 import { ConfigStep } from "./steps/ConfigStep";
 import { UsersStep } from "./steps/UsersStep";
 import type { PropFunction } from "@builder.io/qwik";
 import type { VPNType } from "../../../StarContext/CommonType";
-import { VPNServerContextId, type VPNServerContextData } from "./VPNServerContext";
+import {
+  VPNServerContextId,
+  type VPNServerContextData,
+} from "./VPNServerContext";
 
 export const VPNServerAdvanced = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
@@ -60,7 +60,12 @@ export const VPNServerAdvanced = component$<StepProps>(
     ));
 
     const ConfigStepWrapper$ = $((props: StepProps) => (
-      <ConfigStep {...props} enabledProtocols={enabledProtocols} vpnHooks={vpnHooks} certificateHook={certificateHook} />
+      <ConfigStep
+        {...props}
+        enabledProtocols={enabledProtocols}
+        vpnHooks={vpnHooks}
+        certificateHook={certificateHook}
+      />
     ));
 
     const UsersStepWrapper$ = $((props: StepProps) => (
@@ -101,20 +106,25 @@ export const VPNServerAdvanced = component$<StepProps>(
         isComplete: stepState.users,
       },
     ]);
-    
+
     // Update step completion state when stepState changes
     useTask$(({ track }) => {
       track(() => stepState.protocols);
       track(() => stepState.config);
       track(() => stepState.users);
-      
+
       // Update steps completion state without creating new array
       if (steps.value.length > 0) {
         steps.value = steps.value.map((step, index) => ({
           ...step,
-          isComplete: index === 0 ? stepState.protocols : 
-                      index === 1 ? stepState.config : 
-                      index === 2 ? stepState.users : false
+          isComplete:
+            index === 0
+              ? stepState.protocols
+              : index === 1
+                ? stepState.config
+                : index === 2
+                  ? stepState.users
+                  : false,
         }));
       }
     });

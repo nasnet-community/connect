@@ -1,4 +1,3 @@
-
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     WANLinkConfig,
@@ -11,23 +10,26 @@ import type { Band } from "~/components/Star/StarContext";
 import { StationMode } from "~/components/Star/ConfigGenerator";
 import { detectAvailableBands } from "~/components/Star/ConfigGenerator/LAN/Wireless/WirelessUtil";
 
-
-
-
-export const getInterfaceType = (interfaceName: string): "ethernet" | "wifi" | "sfp" | "lte" | null => {
+export const getInterfaceType = (
+    interfaceName: string,
+): "ethernet" | "wifi" | "sfp" | "lte" | null => {
     const name = interfaceName.toLowerCase();
-    
+
     if (name.startsWith("ether")) return "ethernet";
     if (name.startsWith("wifi") || name.startsWith("wlan")) return "wifi";
-    if (name.startsWith("sfp")) return "sfp";  // SFP uses ethernet config path
+    if (name.startsWith("sfp")) return "sfp"; // SFP uses ethernet config path
     if (name.startsWith("lte")) return "lte";
-    
-    return null;  // Not a physical interface
+
+    return null; // Not a physical interface
 };
 
-export const getInterfaceConfigPath = (interfaceType: "ethernet" | "wifi" | "sfp" | "lte"): string => {
+export const getInterfaceConfigPath = (
+    interfaceType: "ethernet" | "wifi" | "sfp" | "lte",
+): string => {
     // SFP interfaces use ethernet configuration path
-    return interfaceType === "sfp" ? "/interface ethernet" : `/interface ${interfaceType}`;
+    return interfaceType === "sfp"
+        ? "/interface ethernet"
+        : `/interface ${interfaceType}`;
 };
 
 export type InterfaceInfo = {
@@ -40,11 +42,11 @@ export const collectInterfaceInfo = (
     interfaceMap: Map<string, InterfaceInfo>,
     interfaceName: string,
     linkName: string,
-    networkType: "Foreign" | "Domestic"
+    networkType: "Foreign" | "Domestic",
 ): void => {
     const interfaceType = getInterfaceType(interfaceName);
-    
-    if (!interfaceType) return;  // Skip non-physical interfaces
+
+    if (!interfaceType) return; // Skip non-physical interfaces
 
     if (interfaceMap.has(interfaceName)) {
         // Interface already exists, add the link with its network type
@@ -83,7 +85,12 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
             if (interfaceName.toLowerCase().startsWith("lte")) {
                 return;
             }
-            collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Foreign");
+            collectInterfaceInfo(
+                interfaceMap,
+                interfaceName,
+                wanConfig.name,
+                "Foreign",
+            );
         });
     }
 
@@ -99,7 +106,12 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
             if (interfaceName.toLowerCase().startsWith("lte")) {
                 return;
             }
-            collectInterfaceInfo(interfaceMap, interfaceName, wanConfig.name, "Domestic");
+            collectInterfaceInfo(
+                interfaceMap,
+                interfaceName,
+                wanConfig.name,
+                "Domestic",
+            );
         });
     }
 
@@ -107,15 +119,15 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
     interfaceMap.forEach((info, interfaceName) => {
         // Format each link with its network type
         const linkInfo = info.links
-            .map(link => `${link.name}(${link.networkType})`)
+            .map((link) => `${link.name}(${link.networkType})`)
             .join(", ");
-        
+
         const comment = `WAN - ${linkInfo}`;
-        
+
         const configPath = getInterfaceConfigPath(info.type);
 
         config[configPath].push(
-            `set [ find default-name=${interfaceName} ] comment="${comment}"`
+            `set [ find default-name=${interfaceName} ] comment="${comment}"`,
         );
     });
 
@@ -127,10 +139,14 @@ export const InterfaceComment = (wanLinks: WANLinks): RouterConfig => {
     });
 
     return config;
-}
+};
 
 // MACVLAN
-export const MACVLAN = ( name: string, interfaceName: string, macAddress?: string ): RouterConfig => {
+export const MACVLAN = (
+    name: string,
+    interfaceName: string,
+    macAddress?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface macvlan": [],
     };
@@ -153,7 +169,11 @@ export const MACVLAN = ( name: string, interfaceName: string, macAddress?: strin
 };
 
 // VLAN
-export const VLAN = ( name: string, interfaceName: string, vlanId: number ): RouterConfig => {
+export const VLAN = (
+    name: string,
+    interfaceName: string,
+    vlanId: number,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface vlan": [],
     };
@@ -165,7 +185,12 @@ export const VLAN = ( name: string, interfaceName: string, vlanId: number ): Rou
 };
 
 // MACVLANOnVLAN
-export const MACVLANOnVLAN = ( name: string, interfaceName: string, macAddress: string, vlanId: number ): RouterConfig => {
+export const MACVLANOnVLAN = (
+    name: string,
+    interfaceName: string,
+    macAddress: string,
+    vlanId: number,
+): RouterConfig => {
     // First create VLAN interface
     const vlanConfig = VLAN(name, interfaceName, vlanId);
 
@@ -185,15 +210,27 @@ export const MACVLANOnVLAN = ( name: string, interfaceName: string, macAddress: 
 };
 
 // WirelessWAN
-export const WirelessWAN = ( SSID: string, password: string, band: Band, routerModels?: RouterModels[], name?: string ): RouterConfig => {
+export const WirelessWAN = (
+    SSID: string,
+    password: string,
+    band: Band,
+    routerModels?: RouterModels[],
+    name?: string,
+): RouterConfig => {
     // Detect available bands if routerModels provided
     let availableBands = undefined;
     if (routerModels && routerModels.length > 0) {
         availableBands = detectAvailableBands(routerModels);
     }
-    
+
     // Use StationMode function to configure wireless interface for WAN connection
-    const stationConfig = StationMode(SSID, password, band, availableBands, name);
+    const stationConfig = StationMode(
+        SSID,
+        password,
+        band,
+        availableBands,
+        name,
+    );
 
     return stationConfig;
 };
@@ -206,11 +243,13 @@ export const requiresAutoMACVLAN = (interfaceName: string): boolean => {
     return isWireless || isSFP || isEthernet;
 };
 
-export const getUnderlyingInterface = (WANLinkConfig: WANLinkConfig): string => {
+export const getUnderlyingInterface = (
+    WANLinkConfig: WANLinkConfig,
+): string => {
     const { InterfaceConfig, name } = WANLinkConfig;
     const { InterfaceName, VLANID, MacAddress } = InterfaceConfig;
     let underlyingInterface: string = InterfaceName;
-    
+
     // Build the underlying interface name using the same logic as interface creation
     if (MacAddress && VLANID) {
         // MACVLAN on VLAN
@@ -231,11 +270,9 @@ export const getUnderlyingInterface = (WANLinkConfig: WANLinkConfig): string => 
     return underlyingInterface;
 };
 
-
 export const GetWANInterface = (WANLink: WANLinkConfig): string => {
     const { name, InterfaceConfig, ConnectionConfig } = WANLink;
-    const { InterfaceName, VLANID, MacAddress } =
-        InterfaceConfig;
+    const { InterfaceName, VLANID, MacAddress } = InterfaceConfig;
 
     let finalInterfaceName: string;
 
@@ -270,7 +307,10 @@ export const GetWANInterface = (WANLink: WANLinkConfig): string => {
     return finalInterfaceName;
 };
 
-export const GetWANInterfaceWName = ( WANLinks: WANLinks, Name: string ): string => {
+export const GetWANInterfaceWName = (
+    WANLinks: WANLinks,
+    Name: string,
+): string => {
     // Search through Foreign WANConfigs first
     for (const config of WANLinks.Foreign?.WANConfigs || []) {
         if (config.name === Name) {
@@ -307,56 +347,59 @@ export const GetWANInterfaces = (WANLinks: WANLink): string[] => {
     return interfaces;
 };
 
-export const CheckLTEInterface = (WANLinks: WANLinks, availableLTEInterfaces: LTE[]): RouterConfig => {
+export const CheckLTEInterface = (
+    WANLinks: WANLinks,
+    availableLTEInterfaces: LTE[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/tool sms": [],
         "/interface lte": [],
     };
-    
+
     // Return empty config if no LTE interfaces available
     if (availableLTEInterfaces.length === 0) {
         return {};
     }
-    
+
     // Collect used LTE interfaces from WANLinks
     const usedLTEInterfaces = new Set<string>();
-    
+
     // Check Foreign WANConfigs
     if (WANLinks.Foreign?.WANConfigs) {
         WANLinks.Foreign.WANConfigs.forEach((wanConfig) => {
-            const interfaceName = wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
+            const interfaceName =
+                wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
             if (interfaceName.startsWith("lte")) {
                 usedLTEInterfaces.add(wanConfig.InterfaceConfig.InterfaceName);
             }
         });
     }
-    
+
     // Check Domestic WANConfigs
     if (WANLinks.Domestic?.WANConfigs) {
         WANLinks.Domestic.WANConfigs.forEach((wanConfig) => {
-            const interfaceName = wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
+            const interfaceName =
+                wanConfig.InterfaceConfig.InterfaceName.toLowerCase();
             if (interfaceName.startsWith("lte")) {
                 usedLTEInterfaces.add(wanConfig.InterfaceConfig.InterfaceName);
             }
         });
     }
-    
+
     // Enable SMS for used LTE interfaces
     usedLTEInterfaces.forEach((lteInterface) => {
         config["/tool sms"].push(
-            `set port=${lteInterface} receive-enabled=yes`
+            `set port=${lteInterface} receive-enabled=yes`,
         );
     });
-    
+
     // Disable unused LTE interfaces from available interfaces
     availableLTEInterfaces.forEach((lteInterface) => {
         if (!usedLTEInterfaces.has(lteInterface)) {
-            config["/interface lte"].push(
-                `set ${lteInterface} disabled=yes`
-            );
+            config["/interface lte"].push(`set ${lteInterface} disabled=yes`);
         }
     });
-    
+
     // Remove empty arrays
     if (config["/tool sms"].length === 0) {
         delete config["/tool sms"];
@@ -364,6 +407,6 @@ export const CheckLTEInterface = (WANLinks: WANLinks, availableLTEInterfaces: LT
     if (config["/interface lte"].length === 0) {
         delete config["/interface lte"];
     }
-    
+
     return config;
-}
+};

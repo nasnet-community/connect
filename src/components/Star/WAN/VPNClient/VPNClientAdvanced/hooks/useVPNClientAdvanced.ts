@@ -17,7 +17,9 @@ export interface UseVPNClientAdvancedReturn {
   addVPNClient$: QRL<() => void>;
   removeVPNClient$: QRL<(id: string) => void>;
   updateVPNClient$: QRL<(id: string, updates: Partial<VPNConfig>) => void>;
-  batchUpdateVPNs$: QRL<(updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => void>;
+  batchUpdateVPNs$: QRL<
+    (updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => void
+  >;
   toggleMode$: QRL<() => void>;
   setViewMode$: QRL<(mode: "expanded" | "compact") => void>;
   setMultiVPNStrategy$: QRL<(strategy: MultiVPNConfig) => void>;
@@ -44,36 +46,53 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   // Calculate Foreign WAN count from StarContext (non-reactive to prevent loops)
   const getForeignWANCount = $(() => {
     // Get Foreign WAN configs count from WANLink structure
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
-    console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs:', foreignWANConfigs);
-    console.log('[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs length:', foreignWANConfigs.length);
+    const foreignWANConfigs =
+      starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+    console.log(
+      "[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs:",
+      foreignWANConfigs,
+    );
+    console.log(
+      "[useVPNClientAdvanced] getForeignWANCount - Foreign WANConfigs length:",
+      foreignWANConfigs.length,
+    );
 
     // If no Foreign WAN configs, check if Foreign WAN is configured
-    if (foreignWANConfigs.length === 0 && starContext.state.WAN.WANLink.Foreign) {
-      console.log('[useVPNClientAdvanced] Foreign WAN exists but no configs, returning 1');
+    if (
+      foreignWANConfigs.length === 0 &&
+      starContext.state.WAN.WANLink.Foreign
+    ) {
+      console.log(
+        "[useVPNClientAdvanced] Foreign WAN exists but no configs, returning 1",
+      );
       return 1; // At least 1 VPN required for Foreign WAN
     }
 
-    console.log('[useVPNClientAdvanced] Final foreign count:', Math.max(1, foreignWANConfigs.length));
+    console.log(
+      "[useVPNClientAdvanced] Final foreign count:",
+      Math.max(1, foreignWANConfigs.length),
+    );
     return Math.max(1, foreignWANConfigs.length); // At least 1 VPN required
   });
 
   // Get default WAN interface with priority: Foreign > Domestic
   const getDefaultWANInterface$ = $(() => {
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
-    const domesticWANConfigs = starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
+    const foreignWANConfigs =
+      starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+    const domesticWANConfigs =
+      starContext.state.WAN.WANLink.Domestic?.WANConfigs || [];
 
     // Priority: Foreign first, then Domestic
     if (foreignWANConfigs.length > 0) {
       return {
-        WANType: 'Foreign' as const,
-        WANName: foreignWANConfigs[0].name || "Foreign WAN"
+        WANType: "Foreign" as const,
+        WANName: foreignWANConfigs[0].name || "Foreign WAN",
       };
     }
     if (domesticWANConfigs.length > 0) {
       return {
-        WANType: 'Domestic' as const,
-        WANName: domesticWANConfigs[0].name || "Domestic WAN"
+        WANType: "Domestic" as const,
+        WANName: domesticWANConfigs[0].name || "Domestic WAN",
       };
     }
 
@@ -93,9 +112,11 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   const vpnCounter = useSignal(1);
 
   // Generate consistent VPN client names
-  const generateVPNClientName$ = $((index: number, type: VPNType = "Wireguard") => {
-    return `${type} VPN ${index}`;
-  });
+  const generateVPNClientName$ = $(
+    (index: number, type: VPNType = "Wireguard") => {
+      return `${type} VPN ${index}`;
+    },
+  );
 
   // Create default config based on VPN type
   const createDefaultConfig$ = $((type?: VPNType) => {
@@ -199,7 +220,8 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     state.vpnConfigs = [...state.vpnConfigs, newVPNClient as VPNConfig];
 
     // Auto-assign to available Foreign WAN link
-    const foreignWANConfigs = starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
+    const foreignWANConfigs =
+      starContext.state.WAN.WANLink.Foreign?.WANConfigs || [];
     const foreignLinks = foreignWANConfigs.map((config, index) => ({
       id: config.name || `foreign-${index}`,
       name: config.name || `Foreign Link ${index + 1}`,
@@ -210,9 +232,9 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         .map((vpn) => vpn.assignedLink)
         .filter(Boolean);
       const availableLink = foreignLinks.find(
-        (link: any) => !assignedLinks.includes(link.id)
+        (link: any) => !assignedLinks.includes(link.id),
       );
-      
+
       if (availableLink) {
         newVPNClient.assignedLink = availableLink.id;
       }
@@ -234,7 +256,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         vpn.weight = index === 0 ? equalWeight + remainder : equalWeight;
       });
     }
-    
+
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
     subnets.generateCurrentSubnets$();
@@ -244,7 +266,9 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   const removeVPNClient$ = $((id: string) => {
     // Cannot remove if we're at minimum count
     if (state.vpnConfigs.length <= (state.minVPNCount || 1)) {
-      console.warn(`Cannot remove VPN client - minimum ${state.minVPNCount || 1} required`);
+      console.warn(
+        `Cannot remove VPN client - minimum ${state.minVPNCount || 1} required`,
+      );
       return;
     }
 
@@ -255,15 +279,23 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     state.vpnConfigs.forEach((vpn, index) => {
       vpn.priority = index + 1;
     });
-    
+
     // Update the priorities array
-    state.priorities = state.vpnConfigs.map(vpn => vpn.id);
-    console.log('[useVPNClientAdvanced] Priorities recalculated after removal:', state.vpnConfigs.map(v => ({ name: v.name, priority: v.priority })));
-    console.log('[useVPNClientAdvanced] Updated priorities array after removal:', state.priorities);
+    state.priorities = state.vpnConfigs.map((vpn) => vpn.id);
+    console.log(
+      "[useVPNClientAdvanced] Priorities recalculated after removal:",
+      state.vpnConfigs.map((v) => ({ name: v.name, priority: v.priority })),
+    );
+    console.log(
+      "[useVPNClientAdvanced] Updated priorities array after removal:",
+      state.priorities,
+    );
 
     // Remove multi-VPN strategy if we're back to single VPN
     if (state.vpnConfigs.length <= 1) {
-      console.log('[useVPNClientAdvanced] Single VPN remaining, removing multi-VPN strategy');
+      console.log(
+        "[useVPNClientAdvanced] Single VPN remaining, removing multi-VPN strategy",
+      );
       state.multiVPNStrategy = undefined;
     }
 
@@ -278,7 +310,10 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       state.vpnConfigs.forEach((vpn, index) => {
         vpn.weight = index === 0 ? equalWeight + remainder : equalWeight;
       });
-      console.log('[useVPNClientAdvanced] Weights recalculated after removal:', state.vpnConfigs.map(v => ({ name: v.name, weight: v.weight })));
+      console.log(
+        "[useVPNClientAdvanced] Weights recalculated after removal:",
+        state.vpnConfigs.map((v) => ({ name: v.name, weight: v.weight })),
+      );
     }
 
     // Remove validation errors for this VPN
@@ -289,94 +324,111 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       }
     });
     state.validationErrors = newErrors;
-    
+
     // Update Networks configuration when VPN clients change
     networks.generateCurrentNetworks$();
     subnets.generateCurrentSubnets$();
   });
 
   // Update a specific VPN client
-  const updateVPNClient$ = $(async (id: string, updates: Partial<VPNConfig>) => {
-    console.log(`[useVPNClientAdvanced] updateVPNClient$ called for ${id}:`, updates);
-    const vpnIndex = state.vpnConfigs.findIndex((vpn) => vpn.id === id);
-    if (vpnIndex === -1) {
-      console.log(`[useVPNClientAdvanced] VPN with id ${id} not found`);
-      return;
-    }
-
-    const currentVPN = state.vpnConfigs[vpnIndex];
-    console.log(`[useVPNClientAdvanced] Current VPN before update:`, currentVPN);
-    
-    const updatedVPN = { ...currentVPN, ...updates };
-
-    // Clear connection config when type changes
-    if (
-      updates.type &&
-      updates.type !== currentVPN.type
-    ) {
-      console.log(`[useVPNClientAdvanced] VPN type changed from ${currentVPN.type} to ${updates.type}, creating new config`);
-      // Create default config for new type
-      const newConfig = await createDefaultConfig$(updates.type);
-      if ('config' in newConfig && newConfig.config) {
-        (updatedVPN as any).config = newConfig.config;
+  const updateVPNClient$ = $(
+    async (id: string, updates: Partial<VPNConfig>) => {
+      console.log(
+        `[useVPNClientAdvanced] updateVPNClient$ called for ${id}:`,
+        updates,
+      );
+      const vpnIndex = state.vpnConfigs.findIndex((vpn) => vpn.id === id);
+      if (vpnIndex === -1) {
+        console.log(`[useVPNClientAdvanced] VPN with id ${id} not found`);
+        return;
       }
-    }
 
-    // Use Object.assign for proper Qwik reactivity
-    Object.assign(state.vpnConfigs[vpnIndex], updatedVPN);
-    console.log(`[useVPNClientAdvanced] VPN updated, new state:`, state.vpnConfigs[vpnIndex]);
-    
-    // Update priorities array to maintain consistency
-    state.priorities = state.vpnConfigs.map(vpn => vpn.id);
-    console.log('[useVPNClientAdvanced] Updated priorities array after VPN update:', state.priorities);
-    
-    // Update Networks configuration when VPN clients change
-    networks.generateCurrentNetworks$();
-    subnets.generateCurrentSubnets$();
-  });
+      const currentVPN = state.vpnConfigs[vpnIndex];
+      console.log(
+        `[useVPNClientAdvanced] Current VPN before update:`,
+        currentVPN,
+      );
 
-  // Batch update multiple VPN clients at once
-  const batchUpdateVPNs$ = $(async (updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => {
-    // Create a new array with all updates applied
-    const newVPNs = [...state.vpnConfigs];
-    
-    for (const { id, updates: vpnUpdates } of updates) {
-      const vpnIndex = newVPNs.findIndex((vpn) => vpn.id === id);
-      if (vpnIndex === -1) continue;
-
-      const currentVPN = newVPNs[vpnIndex];
-      const updatedVPN = { ...currentVPN, ...vpnUpdates };
+      const updatedVPN = { ...currentVPN, ...updates };
 
       // Clear connection config when type changes
-      if (
-        vpnUpdates.type &&
-        vpnUpdates.type !== currentVPN.type
-      ) {
+      if (updates.type && updates.type !== currentVPN.type) {
+        console.log(
+          `[useVPNClientAdvanced] VPN type changed from ${currentVPN.type} to ${updates.type}, creating new config`,
+        );
         // Create default config for new type
-        const newConfig = await createDefaultConfig$(vpnUpdates.type);
-        if ('config' in newConfig && newConfig.config) {
+        const newConfig = await createDefaultConfig$(updates.type);
+        if ("config" in newConfig && newConfig.config) {
           (updatedVPN as any).config = newConfig.config;
         }
       }
 
-      newVPNs[vpnIndex] = updatedVPN as VPNConfig;
-    }
+      // Use Object.assign for proper Qwik reactivity
+      Object.assign(state.vpnConfigs[vpnIndex], updatedVPN);
+      console.log(
+        `[useVPNClientAdvanced] VPN updated, new state:`,
+        state.vpnConfigs[vpnIndex],
+      );
 
-    // Update state once with all changes
-    state.vpnConfigs = newVPNs;
-    
-    // Update priorities array to maintain consistency
-    state.priorities = state.vpnConfigs.map(vpn => vpn.id);
-    console.log('[useVPNClientAdvanced] Batch update completed, updated priorities array:', state.priorities);
-    
-    // Update Networks configuration when VPN clients change
-    networks.generateCurrentNetworks$();
-    subnets.generateCurrentSubnets$();
-  });
+      // Update priorities array to maintain consistency
+      state.priorities = state.vpnConfigs.map((vpn) => vpn.id);
+      console.log(
+        "[useVPNClientAdvanced] Updated priorities array after VPN update:",
+        state.priorities,
+      );
+
+      // Update Networks configuration when VPN clients change
+      networks.generateCurrentNetworks$();
+      subnets.generateCurrentSubnets$();
+    },
+  );
+
+  // Batch update multiple VPN clients at once
+  const batchUpdateVPNs$ = $(
+    async (updates: Array<{ id: string; updates: Partial<VPNConfig> }>) => {
+      // Create a new array with all updates applied
+      const newVPNs = [...state.vpnConfigs];
+
+      for (const { id, updates: vpnUpdates } of updates) {
+        const vpnIndex = newVPNs.findIndex((vpn) => vpn.id === id);
+        if (vpnIndex === -1) continue;
+
+        const currentVPN = newVPNs[vpnIndex];
+        const updatedVPN = { ...currentVPN, ...vpnUpdates };
+
+        // Clear connection config when type changes
+        if (vpnUpdates.type && vpnUpdates.type !== currentVPN.type) {
+          // Create default config for new type
+          const newConfig = await createDefaultConfig$(vpnUpdates.type);
+          if ("config" in newConfig && newConfig.config) {
+            (updatedVPN as any).config = newConfig.config;
+          }
+        }
+
+        newVPNs[vpnIndex] = updatedVPN as VPNConfig;
+      }
+
+      // Update state once with all changes
+      state.vpnConfigs = newVPNs;
+
+      // Update priorities array to maintain consistency
+      state.priorities = state.vpnConfigs.map((vpn) => vpn.id);
+      console.log(
+        "[useVPNClientAdvanced] Batch update completed, updated priorities array:",
+        state.priorities,
+      );
+
+      // Update Networks configuration when VPN clients change
+      networks.generateCurrentNetworks$();
+      subnets.generateCurrentSubnets$();
+    },
+  );
 
   // Toggle between easy and advanced mode (disabled in advanced interface)
   const toggleMode$ = $(() => {
-    console.warn("Mode toggling is disabled in the VPN Client Advanced interface");
+    console.warn(
+      "Mode toggling is disabled in the VPN Client Advanced interface",
+    );
   });
 
   // Set view mode for compact/expanded display
@@ -419,7 +471,7 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     // Swap the VPN clients
     const vpns = [...state.vpnConfigs];
     [vpns[currentIndex], vpns[newIndex]] = [vpns[newIndex], vpns[currentIndex]];
-    
+
     // Update priorities
     vpns.forEach((vpn, index) => {
       vpn.priority = index + 1;
@@ -430,12 +482,21 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   // Refresh foreign WAN count from StarContext
   const refreshForeignWANCount$ = $(async () => {
-    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ called');
+    console.log("[useVPNClientAdvanced] refreshForeignWANCount$ called");
     const newCount = await getForeignWANCount();
-    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - old minVPNCount:', state.minVPNCount);
-    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - new minVPNCount:', newCount);
+    console.log(
+      "[useVPNClientAdvanced] refreshForeignWANCount$ - old minVPNCount:",
+      state.minVPNCount,
+    );
+    console.log(
+      "[useVPNClientAdvanced] refreshForeignWANCount$ - new minVPNCount:",
+      newCount,
+    );
     state.minVPNCount = newCount;
-    console.log('[useVPNClientAdvanced] refreshForeignWANCount$ - updated state.minVPNCount:', state.minVPNCount);
+    console.log(
+      "[useVPNClientAdvanced] refreshForeignWANCount$ - updated state.minVPNCount:",
+      state.minVPNCount,
+    );
   });
 
   // Reset advanced configuration to initial state
@@ -457,7 +518,10 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     if (!newVPN.name) {
       // Only generate type-specific name if type is provided
       if (newVPN.type) {
-        newVPN.name = await generateVPNClientName$(vpnCounter.value, newVPN.type);
+        newVPN.name = await generateVPNClientName$(
+          vpnCounter.value,
+          newVPN.type,
+        );
       } else {
         newVPN.name = `VPN ${vpnCounter.value}`;
       }
@@ -473,24 +537,34 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       const defaultWANInterface = await getDefaultWANInterface$();
       if (defaultWANInterface) {
         (newVPN as any).wanInterface = defaultWANInterface;
-        console.log(`[useVPNClientAdvanced] Auto-assigned WAN interface: ${defaultWANInterface.WANType} - ${defaultWANInterface.WANName}`);
+        console.log(
+          `[useVPNClientAdvanced] Auto-assigned WAN interface: ${defaultWANInterface.WANType} - ${defaultWANInterface.WANName}`,
+        );
       }
     }
 
-    console.log(`[useVPNClientAdvanced] Adding VPN with priority ${newVPN.priority}:`, newVPN);
+    console.log(
+      `[useVPNClientAdvanced] Adding VPN with priority ${newVPN.priority}:`,
+      newVPN,
+    );
     state.vpnConfigs = [...state.vpnConfigs, newVPN as VPNConfig];
 
     // Update the priorities array with the new VPN order
-    state.priorities = state.vpnConfigs.map(vpn => vpn.id);
-    console.log('[useVPNClientAdvanced] Updated priorities array:', state.priorities);
+    state.priorities = state.vpnConfigs.map((vpn) => vpn.id);
+    console.log(
+      "[useVPNClientAdvanced] Updated priorities array:",
+      state.priorities,
+    );
 
     // Initialize multi-VPN strategy if we now have multiple VPNs
     if (state.vpnConfigs.length > 1 && !state.multiVPNStrategy) {
-      console.log('[useVPNClientAdvanced] Multiple VPNs detected, initializing default strategy');
+      console.log(
+        "[useVPNClientAdvanced] Multiple VPNs detected, initializing default strategy",
+      );
       state.multiVPNStrategy = {
         strategy: "Failover",
         failoverCheckInterval: 10,
-        failoverTimeout: 30
+        failoverTimeout: 30,
       };
     }
   });
@@ -506,13 +580,15 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   const validateAll$ = $(() => {
     // Basic validation - check if all VPNs have required fields
-    return state.vpnConfigs.every(vpn => vpn.name && vpn.type && vpn.enabled !== undefined);
+    return state.vpnConfigs.every(
+      (vpn) => vpn.name && vpn.type && vpn.enabled !== undefined,
+    );
   });
 
   // Helper function to sync local state with StarContext
   const syncWithStarContext$ = $(() => {
-    console.log('[useVPNClientAdvanced] syncWithStarContext$ called');
-    console.log('[useVPNClientAdvanced] Current vpnConfigs:', state.vpnConfigs);
+    console.log("[useVPNClientAdvanced] syncWithStarContext$ called");
+    console.log("[useVPNClientAdvanced] Current vpnConfigs:", state.vpnConfigs);
 
     // Convert VPNClientAdvancedState to StarContext VPNClient structure
     const vpnClient: VPNClient = {};
@@ -520,63 +596,63 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     // Group VPN configs by type and convert to StarContext format
     // Include Name, WanInterface, priority, and weight fields from parent VPN object
     const wireguardConfigs = state.vpnConfigs
-      .filter(vpn => vpn.type === "Wireguard" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "Wireguard" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     const openVPNConfigs = state.vpnConfigs
-      .filter(vpn => vpn.type === "OpenVPN" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "OpenVPN" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     const pptpConfigs = state.vpnConfigs
-      .filter(vpn => vpn.type === "PPTP" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "PPTP" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     const l2tpConfigs = state.vpnConfigs
-      .filter(vpn => vpn.type === "L2TP" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "L2TP" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     const sstpConfigs = state.vpnConfigs
-      .filter(vpn => vpn.type === "SSTP" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "SSTP" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     const ikev2Configs = state.vpnConfigs
-      .filter(vpn => vpn.type === "IKeV2" && 'config' in vpn)
-      .map(vpn => ({
+      .filter((vpn) => vpn.type === "IKeV2" && "config" in vpn)
+      .map((vpn) => ({
         ...(vpn as any).config,
         Name: vpn.name,
         WanInterface: (vpn as any).wanInterface,
         priority: vpn.priority,
-        weight: vpn.weight
+        weight: vpn.weight,
       }));
 
     // Only add non-empty arrays to vpnClient
@@ -606,10 +682,14 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       };
 
       if (state.multiVPNStrategy.loadBalanceMethod) {
-        multiLinkConfig.loadBalanceMethod = state.multiVPNStrategy.loadBalanceMethod;
+        multiLinkConfig.loadBalanceMethod =
+          state.multiVPNStrategy.loadBalanceMethod;
       }
 
-      if (state.multiVPNStrategy.failoverCheckInterval || state.multiVPNStrategy.failoverTimeout) {
+      if (
+        state.multiVPNStrategy.failoverCheckInterval ||
+        state.multiVPNStrategy.failoverTimeout
+      ) {
         multiLinkConfig.FailoverConfig = {
           failoverCheckInterval: state.multiVPNStrategy.failoverCheckInterval,
           failoverTimeout: state.multiVPNStrategy.failoverTimeout,
@@ -617,7 +697,8 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       }
 
       if (state.multiVPNStrategy.roundRobinInterval) {
-        multiLinkConfig.roundRobinInterval = state.multiVPNStrategy.roundRobinInterval;
+        multiLinkConfig.roundRobinInterval =
+          state.multiVPNStrategy.roundRobinInterval;
       }
 
       vpnClient.MultiLinkConfig = multiLinkConfig;
@@ -626,8 +707,14 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     // Update StarContext with the new VPN configuration
     starContext.state.WAN.VPNClient = vpnClient;
 
-    console.log('[useVPNClientAdvanced] StarContext updated with VPN configuration:', vpnClient);
-    console.log('[useVPNClientAdvanced] StarContext.state.WAN.VPNClient:', starContext.state.WAN.VPNClient);
+    console.log(
+      "[useVPNClientAdvanced] StarContext updated with VPN configuration:",
+      vpnClient,
+    );
+    console.log(
+      "[useVPNClientAdvanced] StarContext.state.WAN.VPNClient:",
+      starContext.state.WAN.VPNClient,
+    );
 
     // Update Networks configuration after syncing
     networks.generateCurrentNetworks$();
@@ -636,12 +723,14 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
 
   const applyConfiguration$ = $(() => {
     // Apply configuration to StarContext
-    console.log('[useVPNClientAdvanced] Applying VPN configuration to StarContext');
+    console.log(
+      "[useVPNClientAdvanced] Applying VPN configuration to StarContext",
+    );
 
     // Sync with StarContext
     syncWithStarContext$();
 
-    console.log('[useVPNClientAdvanced] Configuration applied successfully');
+    console.log("[useVPNClientAdvanced] Configuration applied successfully");
   });
 
   return {
@@ -667,5 +756,4 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
     validateAll$,
     applyConfiguration$,
   };
-}
-
+};

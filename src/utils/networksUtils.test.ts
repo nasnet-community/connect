@@ -64,7 +64,9 @@ describe("networksUtils", () => {
       "ISP-Primary",
       "Foreign-Link-2",
     ]);
-    expect(getDomesticNetworkNames(wanLinks, "both")).toEqual(["Local-Primary"]);
+    expect(getDomesticNetworkNames(wanLinks, "both")).toEqual([
+      "Local-Primary",
+    ]);
     expect(getDomesticNetworkNames(wanLinks, "foreign")).toEqual([]);
   });
 

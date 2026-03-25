@@ -8,7 +8,7 @@ export const StateHeader = component$((props: StateHeaderProps) => {
 
       <button
         onClick$={props.onClose$}
-        class="absolute right-4 top-4 rounded-lg p-2 hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+        class="hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary absolute right-4 top-4 rounded-lg p-2"
       >
         <svg
           class="h-5 w-5"

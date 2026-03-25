@@ -1,8 +1,17 @@
-import { $, component$, useContext, useSignal, type PropFunction } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useSignal,
+  type PropFunction,
+} from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { StarContext } from "../../StarContext/StarContext";
 import { getMasterRouters, type RouterData } from "./Constants";
-import { type RouterInterfaces, type CPUArch } from "../../StarContext/ChooseType";
+import {
+  type RouterInterfaces,
+  type CPUArch,
+} from "../../StarContext/ChooseType";
 import { RouterDetailsModal } from "./RouterDetailsModal";
 import { CustomRouterModal } from "./CustomRouterModal";
 import { categorizeRouters } from "./RouterCategories";
@@ -16,36 +25,39 @@ interface RouterModelProps {
 export const RouterModel = component$((props: RouterModelProps) => {
   const starContext = useContext(StarContext);
   const masterRouters = getMasterRouters();
-  const selectedModels = starContext.state.Choose.RouterModels
-    .filter((rm) => rm.isMaster)
-    .map((rm) => rm.Model);
+  const selectedModels = starContext.state.Choose.RouterModels.filter(
+    (rm) => rm.isMaster,
+  ).map((rm) => rm.Model);
 
-  const customRouters = starContext.state.Choose.RouterModels
-    .filter((rm) => rm.isMaster && !masterRouters.some((router) => router.model === rm.Model))
-    .map((rm) => {
-      return {
-        model: rm.Model,
-        title: rm.Model,
-        description: rm.isCHR ? $localize`Custom Cloud Hosted Router` : $localize`Custom Router`,
-        icon: "router",
-        specs: {
-          CPU: rm.cpuArch || "Custom",
-          RAM: "N/A",
-          Storage: "N/A",
-          Ports: "Custom",
-          "Wi-Fi": "Custom",
-          Speed: "Custom",
-        },
-        features: [],
-        isWireless: !!rm.Interfaces.Interfaces.wireless?.length,
-        isLTE: !!rm.Interfaces.Interfaces.lte?.length,
-        isSFP: !!rm.Interfaces.Interfaces.sfp?.length,
-        interfaces: rm.Interfaces,
-        canBeMaster: true,
-        canBeSlave: true,
-        images: ["/images/routers/placeholder.png"],
-      } as RouterData;
-    });
+  const customRouters = starContext.state.Choose.RouterModels.filter(
+    (rm) =>
+      rm.isMaster && !masterRouters.some((router) => router.model === rm.Model),
+  ).map((rm) => {
+    return {
+      model: rm.Model,
+      title: rm.Model,
+      description: rm.isCHR
+        ? $localize`Custom Cloud Hosted Router`
+        : $localize`Custom Router`,
+      icon: "router",
+      specs: {
+        CPU: rm.cpuArch || "Custom",
+        RAM: "N/A",
+        Storage: "N/A",
+        Ports: "Custom",
+        "Wi-Fi": "Custom",
+        Speed: "Custom",
+      },
+      features: [],
+      isWireless: !!rm.Interfaces.Interfaces.wireless?.length,
+      isLTE: !!rm.Interfaces.Interfaces.lte?.length,
+      isSFP: !!rm.Interfaces.Interfaces.sfp?.length,
+      interfaces: rm.Interfaces,
+      canBeMaster: true,
+      canBeSlave: true,
+      images: ["/images/routers/placeholder.png"],
+    } as RouterData;
+  });
 
   const allMasterRouters = [...customRouters, ...masterRouters];
   const routerCategories = categorizeRouters(allMasterRouters);
@@ -55,7 +67,9 @@ export const RouterModel = component$((props: RouterModelProps) => {
   const isCustomRouterModalOpen = useSignal(false);
 
   const handleSelect = $(async (model: string) => {
-    const selectedRouterData = allMasterRouters.find((router) => router.model === model);
+    const selectedRouterData = allMasterRouters.find(
+      (router) => router.model === model,
+    );
     if (!selectedRouterData) return;
 
     track("router_model_selected", {
@@ -66,8 +80,12 @@ export const RouterModel = component$((props: RouterModelProps) => {
 
     const interfaces: RouterInterfaces = {
       Interfaces: {
-        ethernet: [...(selectedRouterData.interfaces.Interfaces.ethernet || [])],
-        wireless: [...(selectedRouterData.interfaces.Interfaces.wireless || [])],
+        ethernet: [
+          ...(selectedRouterData.interfaces.Interfaces.ethernet || []),
+        ],
+        wireless: [
+          ...(selectedRouterData.interfaces.Interfaces.wireless || []),
+        ],
         sfp: [...(selectedRouterData.interfaces.Interfaces.sfp || [])],
         lte: [...(selectedRouterData.interfaces.Interfaces.lte || [])],
       },
@@ -75,16 +93,17 @@ export const RouterModel = component$((props: RouterModelProps) => {
     };
 
     const existingModels = starContext.state.Choose.RouterModels;
-    const isAlreadySelected = existingModels.some((rm) => rm.Model === model && rm.isMaster);
+    const isAlreadySelected = existingModels.some(
+      (rm) => rm.Model === model && rm.isMaster,
+    );
 
     if (isAlreadySelected) {
       window.requestAnimationFrame(() => props.onComplete$?.());
       return;
     }
 
-    const existingCustomRouterModel = starContext.state.Choose.RouterModels.find(
-      (rm) => rm.Model === model,
-    );
+    const existingCustomRouterModel =
+      starContext.state.Choose.RouterModels.find((rm) => rm.Model === model);
 
     await starContext.updateChoose$({
       RouterModels: [
@@ -102,29 +121,33 @@ export const RouterModel = component$((props: RouterModelProps) => {
     window.requestAnimationFrame(() => props.onComplete$?.());
   });
 
-  const handleSaveCustomRouter = $(async (router: RouterData, isCHR: boolean, cpuArch: string) => {
-    track("custom_router_created", {
-      router_name: router.model,
-      is_chr: isCHR,
-      cpu_arch: cpuArch,
-      step: "choose",
-    });
+  const handleSaveCustomRouter = $(
+    async (router: RouterData, isCHR: boolean, cpuArch: string) => {
+      track("custom_router_created", {
+        router_name: router.model,
+        is_chr: isCHR,
+        cpu_arch: cpuArch,
+        step: "choose",
+      });
 
-    const newRouterModel = {
-      isMaster: true,
-      Model: router.model as any,
-      Interfaces: router.interfaces,
-      isCHR,
-      cpuArch: cpuArch as CPUArch,
-    };
+      const newRouterModel = {
+        isMaster: true,
+        Model: router.model as any,
+        Interfaces: router.interfaces,
+        isCHR,
+        cpuArch: cpuArch as CPUArch,
+      };
 
-    await starContext.updateChoose$({ RouterModels: [newRouterModel] });
+      await starContext.updateChoose$({ RouterModels: [newRouterModel] });
 
-    isCustomRouterModalOpen.value = false;
-    window.requestAnimationFrame(() => props.onComplete$?.());
-  });
+      isCustomRouterModalOpen.value = false;
+      window.requestAnimationFrame(() => props.onComplete$?.());
+    },
+  );
 
-  const activeCategory = routerCategories.find((category) => category.id === activeTab.value);
+  const activeCategory = routerCategories.find(
+    (category) => category.id === activeTab.value,
+  );
   const activeRouters = activeCategory?.routers || [];
 
   return (

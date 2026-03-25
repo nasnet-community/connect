@@ -1,4 +1,9 @@
-import type { Ikev2ServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import type {
+    Ikev2ServerConfig,
+    SubnetConfig,
+    VSCredentials,
+    VSNetwork,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
     CommandShortner,
@@ -11,7 +16,11 @@ import {
 
 // Main IKEv2 Server Function - Optimized for maximum compatibility and speed
 
-export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
+export const Ikev2Server = (
+    config: Ikev2ServerConfig,
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ip ipsec profile": [],
@@ -30,14 +39,21 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
     const ranges = SubnetToRange(subnet);
     const name = "ikev2"; // IKEv2 server name
 
-
     // 1. Build IP Pool configuration - Using provided subnet
-        routerConfig["/ip pool"].push(
-        ...generateIPPool({ name, ranges, comment: `IKEv2 ${name} client pool` })
+    routerConfig["/ip pool"].push(
+        ...generateIPPool({
+            name,
+            ranges,
+            comment: `IKEv2 ${name} client pool`,
+        }),
     );
 
     // Add VPN subnet to address list using shared helper
-    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} IKEv2 subnet`);
+    const addrCfg = VSAddressList(
+        subnet,
+        String(vsNetwork),
+        `${name} IKEv2 subnet`,
+    );
     Object.entries(addrCfg).forEach(([section, cmds]) => {
         routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
     });
@@ -84,10 +100,12 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
 
     // 4. Build Policy Group and Policy Template - Universal traffic routing
     const policyGroupName = config.policyGroup?.name || `${name}-policies`;
-    routerConfig["/ip ipsec policy group"].push(`add name="${policyGroupName}-server"`);
+    routerConfig["/ip ipsec policy group"].push(
+        `add name="${policyGroupName}-server"`,
+    );
 
     // Policy template allows all traffic from clients to VPN subnet
-        routerConfig["/ip ipsec policy"].push(
+    routerConfig["/ip ipsec policy"].push(
         `add dst-address="${subnet}" group="${policyGroupName}-server" proposal="${proposalName}" src-address=0.0.0.0/0 template=yes`,
     );
 
@@ -110,10 +128,14 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
 
     // Add split-include if specified for split tunneling
     if (config.modeConfigs?.splitInclude) {
-        modeConfigParams.push(`split-include=${config.modeConfigs.splitInclude}`);
+        modeConfigParams.push(
+            `split-include=${config.modeConfigs.splitInclude}`,
+        );
     }
 
-    routerConfig["/ip ipsec mode-config"].push(`add ${modeConfigParams.join(" ")}`);
+    routerConfig["/ip ipsec mode-config"].push(
+        `add ${modeConfigParams.join(" ")}`,
+    );
 
     // 6. Build IPsec Peer (passive=yes for server, NAT-T enabled)
     const peerName = config.peer.name || name;
@@ -130,11 +152,14 @@ export const Ikev2Server = (config: Ikev2ServerConfig, vsNetwork: VSNetwork, sub
     ];
     routerConfig["/ip ipsec peer"].push(`add ${peerParams.join(" ")}`);
 
-
     return CommandShortner(routerConfig);
 };
 
-export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCredentials[], _subnetConfig: SubnetConfig): RouterConfig => {
+export const Ikev2ServerUsers = (
+    serverConfig: Ikev2ServerConfig,
+    users: VSCredentials[],
+    _subnetConfig: SubnetConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip ipsec identity": [],
         "/ppp secret": [],
@@ -151,10 +176,10 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
     // Get configuration values
     const peerName = serverConfig.peer.name || "ikev2";
     const authMethod = serverConfig.identities.authMethod || "eap";
-    const generatePolicy = serverConfig.identities.generatePolicy || "port-strict";
+    const generatePolicy =
+        serverConfig.identities.generatePolicy || "port-strict";
     const policyGroupName = serverConfig.policyGroup?.name || "ikev2-policies";
     const modeConfigName = serverConfig.modeConfigs?.name || "ikev2-conf";
-
 
     // For EAP authentication, we need PPP secrets
     if (authMethod === "eap") {
@@ -167,7 +192,7 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
             ];
             config["/ppp secret"].push(`add ${secretParams.join(" ")}`);
         });
-    // config[""].push("");
+        // config[""].push("");
 
         // Single EAP identity for all users
         const identityParams: string[] = [
@@ -183,7 +208,9 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
 
         // Add certificate if specified
         if (serverConfig.identities.certificate) {
-            identityParams.push(`certificate=${serverConfig.identities.certificate}`);
+            identityParams.push(
+                `certificate=${serverConfig.identities.certificate}`,
+            );
         }
 
         config["/ip ipsec identity"].push(`add ${identityParams.join(" ")}`);
@@ -205,7 +232,9 @@ export const Ikev2ServerUsers = (serverConfig: Ikev2ServerConfig, users: VSCrede
     return CommandShortner(config);
 };
 
-export const IKEv2ServerFirewall = (serverConfigs: Ikev2ServerConfig[]): RouterConfig => {
+export const IKEv2ServerFirewall = (
+    serverConfigs: Ikev2ServerConfig[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -230,9 +259,13 @@ export const IKEv2ServerFirewall = (serverConfigs: Ikev2ServerConfig[]): RouterC
     });
 
     return config;
-}
+};
 
-export const Ikev2ServerWrapper = ( serverConfig: Ikev2ServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig ): RouterConfig => {
+export const Ikev2ServerWrapper = (
+    serverConfig: Ikev2ServerConfig,
+    users: VSCredentials[] = [],
+    subnetConfig?: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Get VSNetwork from server config or default to "VPN"
@@ -260,15 +293,3 @@ export const Ikev2ServerWrapper = ( serverConfig: Ikev2ServerConfig, users: VSCr
 
     return CommandShortner(finalConfig);
 };
-
-
-
-
-
-
-
-
-
-
-
-

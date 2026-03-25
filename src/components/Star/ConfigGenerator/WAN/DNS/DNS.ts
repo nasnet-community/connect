@@ -1,5 +1,17 @@
-import type { Networks, Subnets, WANLinks, VPNClient } from "~/components/Star/StarContext";
-import  { type RouterConfig, extractBridgeNames, mergeMultipleConfigs, DomesticCheckIPs, ForeignCheckIPs, combineMultiWANInterfaces } from "~/components/Star/ConfigGenerator";
+import type {
+    Networks,
+    Subnets,
+    WANLinks,
+    VPNClient,
+} from "~/components/Star/StarContext";
+import {
+    type RouterConfig,
+    extractBridgeNames,
+    mergeMultipleConfigs,
+    DomesticCheckIPs,
+    ForeignCheckIPs,
+    combineMultiWANInterfaces,
+} from "~/components/Star/ConfigGenerator";
 
 export const BaseDNSSettins = (): RouterConfig => {
     const config: RouterConfig = {
@@ -11,28 +23,41 @@ export const BaseDNSSettins = (): RouterConfig => {
     return config;
 };
 
-export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLinks, VPNClient?: VPNClient): RouterConfig => {
+export const DNSNAT = (
+    networks: Networks,
+    subnets?: Subnets,
+    WANLinks?: WANLinks,
+    VPNClient?: VPNClient,
+): RouterConfig => {
     const config: RouterConfig = {
-        "/ip firewall nat": []
+        "/ip firewall nat": [],
     };
 
     const natRules = config["/ip firewall nat"];
 
     // Get the exact same interfaces with CheckIPs as used in routing logic
     const allInterfaces = combineMultiWANInterfaces(VPNClient, WANLinks);
-    
+
     // Extract interfaces by network type
-    const foreignInterfaces = allInterfaces.filter(i => i.network === "Foreign");
-    const domesticInterfaces = allInterfaces.filter(i => i.network === "Domestic");
-    const vpnInterfaces = allInterfaces.filter(i => i.network === "VPN");
+    const foreignInterfaces = allInterfaces.filter(
+        (i) => i.network === "Foreign",
+    );
+    const domesticInterfaces = allInterfaces.filter(
+        (i) => i.network === "Domestic",
+    );
+    const vpnInterfaces = allInterfaces.filter((i) => i.network === "VPN");
 
     // Helper function to add DNS NAT rules for a network
-    const addDNSNATRules = (networkName: string, addressListName: string, checkIP: string) => {
+    const addDNSNATRules = (
+        networkName: string,
+        addressListName: string,
+        checkIP: string,
+    ) => {
         natRules.push(
-            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=udp src-address-list="${addressListName}" to-addresses=${checkIP}`
+            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=udp src-address-list="${addressListName}" to-addresses=${checkIP}`,
         );
         natRules.push(
-            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=tcp src-address-list="${addressListName}" to-addresses=${checkIP}`
+            `add action=dst-nat chain=dstnat comment="DNS ${networkName}" disabled=yes dst-port=53 protocol=tcp src-address-list="${addressListName}" to-addresses=${checkIP}`,
         );
     };
 
@@ -45,13 +70,20 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
         }
 
         // Domestic Network - uses first Domestic CheckIP from routing
-        if (networks.BaseNetworks.Domestic && subnets.BaseSubnets.Domestic?.subnet) {
-            const checkIP = domesticInterfaces[0]?.checkIP || DomesticCheckIPs[0];
+        if (
+            networks.BaseNetworks.Domestic &&
+            subnets.BaseSubnets.Domestic?.subnet
+        ) {
+            const checkIP =
+                domesticInterfaces[0]?.checkIP || DomesticCheckIPs[0];
             addDNSNATRules("Domestic", "Domestic-LAN", checkIP);
         }
 
         // Foreign Network - uses first Foreign CheckIP from routing
-        if (networks.BaseNetworks.Foreign && subnets.BaseSubnets.Foreign?.subnet) {
+        if (
+            networks.BaseNetworks.Foreign &&
+            subnets.BaseSubnets.Foreign?.subnet
+        ) {
             const checkIP = foreignInterfaces[0]?.checkIP || ForeignCheckIPs[0];
             addDNSNATRules("Foreign", "Foreign-LAN", checkIP);
         }
@@ -70,8 +102,15 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                 const networkName = subnet.name || "Domestic";
                 const addressListName = `Domestic-${networkName}-LAN`;
                 // Use corresponding Domestic interface by index, fallback to first if index out of bounds
-                const checkIP = domesticInterfaces[index]?.checkIP || domesticInterfaces[0]?.checkIP || DomesticCheckIPs[0];
-                addDNSNATRules(`Domestic-${networkName}`, addressListName, checkIP);
+                const checkIP =
+                    domesticInterfaces[index]?.checkIP ||
+                    domesticInterfaces[0]?.checkIP ||
+                    DomesticCheckIPs[0];
+                addDNSNATRules(
+                    `Domestic-${networkName}`,
+                    addressListName,
+                    checkIP,
+                );
             }
         });
     }
@@ -88,9 +127,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "WG-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -102,9 +150,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "OVPN-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -116,9 +173,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "L2TP-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -130,9 +196,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "PPTP-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -144,9 +219,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "SSTP-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -158,9 +242,18 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                     const networkName = subnet.name || "IKev2-Client";
                     const addressListName = `VPN-${networkName}-LAN`;
                     // Find matching VPN interface by name
-                    const vpnInterface = vpnInterfaces.find(i => i.name === networkName);
-                    const checkIP = vpnInterface?.checkIP || vpnInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                    addDNSNATRules(`VPN-${networkName}`, addressListName, checkIP);
+                    const vpnInterface = vpnInterfaces.find(
+                        (i) => i.name === networkName,
+                    );
+                    const checkIP =
+                        vpnInterface?.checkIP ||
+                        vpnInterfaces[0]?.checkIP ||
+                        ForeignCheckIPs[0];
+                    addDNSNATRules(
+                        `VPN-${networkName}`,
+                        addressListName,
+                        checkIP,
+                    );
                 }
             });
         }
@@ -173,16 +266,27 @@ export const DNSNAT = ( networks: Networks, subnets?: Subnets , WANLinks?: WANLi
                 const networkName = subnet.name || "Foreign";
                 const addressListName = `Foreign-${networkName}-LAN`;
                 // Use corresponding Foreign interface by index, fallback to first if index out of bounds
-                const checkIP = foreignInterfaces[index]?.checkIP || foreignInterfaces[0]?.checkIP || ForeignCheckIPs[0];
-                addDNSNATRules(`Foreign-${networkName}`, addressListName, checkIP);
+                const checkIP =
+                    foreignInterfaces[index]?.checkIP ||
+                    foreignInterfaces[0]?.checkIP ||
+                    ForeignCheckIPs[0];
+                addDNSNATRules(
+                    `Foreign-${networkName}`,
+                    addressListName,
+                    checkIP,
+                );
             }
         });
     }
 
     return config;
-}
+};
 
-export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+export const DNSForwarders = (
+    networks?: Networks,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns forwarders": [],
     };
@@ -197,7 +301,7 @@ export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnCli
     // Calculate counts for each interface type to match MainTableRoute CheckIP assignment
     const domesticWANCount = wanLinks?.Domestic?.WANConfigs.length || 0;
     const foreignWANCount = wanLinks?.Foreign?.WANConfigs.length || 0;
-    
+
     // Count VPN clients across all VPN types
     let vpnClientCount = 0;
     if (vpnClient) {
@@ -218,25 +322,42 @@ export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnCli
         // VPN clients use Foreign CheckIPs with offset based on foreign WAN count
         // This prevents overlap with Foreign WAN CheckIPs
         const vpnCheckIPOffset = foreignWANCount;
-        const vpnDNSServers = ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnClientCount).join(",");
-        forwarders.push(`add name=VPN dns-servers=${vpnDNSServers} verify-doh-cert=no`);
+        const vpnDNSServers = ForeignCheckIPs.slice(
+            vpnCheckIPOffset,
+            vpnCheckIPOffset + vpnClientCount,
+        ).join(",");
+        forwarders.push(
+            `add name=VPN dns-servers=${vpnDNSServers} verify-doh-cert=no`,
+        );
     } else if (networks.BaseNetworks.VPN) {
         // Fallback: Use CheckIP with offset if no VPN clients configured
         const vpnCheckIPOffset = foreignWANCount;
-        const vpnDNSServers = ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + 1).join(",");
-        forwarders.push(`add name=VPN dns-servers=${vpnDNSServers} verify-doh-cert=no`);
+        const vpnDNSServers = ForeignCheckIPs.slice(
+            vpnCheckIPOffset,
+            vpnCheckIPOffset + 1,
+        ).join(",");
+        forwarders.push(
+            `add name=VPN dns-servers=${vpnDNSServers} verify-doh-cert=no`,
+        );
     }
 
     // 2. Domestic Network - Use CheckIPs assigned to Domestic WAN interfaces (SECOND in MainTableRoute)
     // Matches the logic in convertWANLinkToMultiWAN for domestic links
     if (networks.BaseNetworks.Domestic && domesticWANCount > 0) {
         // Use exactly N CheckIPs based on domestic WAN count
-        const domesticDNSServers = DomesticCheckIPs.slice(0, domesticWANCount).join(",");
-        forwarders.push(`add name=Domestic dns-servers=${domesticDNSServers} verify-doh-cert=no`);
+        const domesticDNSServers = DomesticCheckIPs.slice(
+            0,
+            domesticWANCount,
+        ).join(",");
+        forwarders.push(
+            `add name=Domestic dns-servers=${domesticDNSServers} verify-doh-cert=no`,
+        );
     } else if (networks.BaseNetworks.Domestic) {
         // Fallback: Use first CheckIP if no WAN configs
         const domesticDNSServers = DomesticCheckIPs.slice(0, 1).join(",");
-        forwarders.push(`add name=Domestic dns-servers=${domesticDNSServers} verify-doh-cert=no`);
+        forwarders.push(
+            `add name=Domestic dns-servers=${domesticDNSServers} verify-doh-cert=no`,
+        );
     }
 
     // 3. Foreign Network - Use CheckIPs assigned to Foreign WAN interfaces (THIRD in MainTableRoute)
@@ -244,34 +365,45 @@ export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnCli
     // Foreign always starts from index 0 of ForeignCheckIPs
     if (networks.BaseNetworks.Foreign && foreignWANCount > 0) {
         // Use exactly N CheckIPs based on foreign WAN count
-        const foreignDNSServers = ForeignCheckIPs.slice(0, foreignWANCount).join(",");
-        forwarders.push(`add name=Foreign dns-servers=${foreignDNSServers} verify-doh-cert=no`);
+        const foreignDNSServers = ForeignCheckIPs.slice(
+            0,
+            foreignWANCount,
+        ).join(",");
+        forwarders.push(
+            `add name=Foreign dns-servers=${foreignDNSServers} verify-doh-cert=no`,
+        );
     } else if (networks.BaseNetworks.Foreign) {
         // Fallback: Use first CheckIP if no WAN configs
         const foreignDNSServers = ForeignCheckIPs.slice(0, 1).join(",");
-        forwarders.push(`add name=Foreign dns-servers=${foreignDNSServers} verify-doh-cert=no`);
+        forwarders.push(
+            `add name=Foreign dns-servers=${foreignDNSServers} verify-doh-cert=no`,
+        );
     }
 
     // 4. General Forwarder - Combine all Check IPs from VPN, Domestic, and Foreign
     // This serves as a catch-all forwarder using all available Check IPs
     const allCheckIPs: string[] = [];
-    
+
     // Collect VPN Check IPs (Foreign CheckIPs with offset)
     const vpnCheckIPOffset = foreignWANCount;
     const vpnCount = vpnClientCount > 0 ? vpnClientCount : 1;
-    allCheckIPs.push(...ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnCount));
-    
+    allCheckIPs.push(
+        ...ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnCount),
+    );
+
     // Collect Domestic Check IPs
     const domesticCount = domesticWANCount > 0 ? domesticWANCount : 1;
     allCheckIPs.push(...DomesticCheckIPs.slice(0, domesticCount));
-    
+
     // Collect Foreign Check IPs
     const foreignCount = foreignWANCount > 0 ? foreignWANCount : 1;
     allCheckIPs.push(...ForeignCheckIPs.slice(0, foreignCount));
-    
+
     // Create General forwarder with all Check IPs
     const generalDNSServers = allCheckIPs.join(",");
-    forwarders.push(`add name=General dns-servers=${generalDNSServers} verify-doh-cert=no`);
+    forwarders.push(
+        `add name=General dns-servers=${generalDNSServers} verify-doh-cert=no`,
+    );
 
     // Add DNS forwarders to configuration
     config["/ip dns forwarders"] = forwarders;
@@ -279,7 +411,11 @@ export const DNSForwarders = (  networks?: Networks, wanLinks?: WANLinks, vpnCli
     return config;
 };
 
-export const DNSV4 = (networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNClient): RouterConfig => {
+export const DNSV4 = (
+    networks?: Networks,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns": [],
     };
@@ -291,7 +427,7 @@ export const DNSV4 = (networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNC
     // Calculate counts matching DNSForwarders logic (lines 198-210)
     const domesticWANCount = wanLinks?.Domestic?.WANConfigs.length || 0;
     const foreignWANCount = wanLinks?.Foreign?.WANConfigs.length || 0;
-    
+
     let vpnClientCount = 0;
     if (vpnClient) {
         vpnClientCount += vpnClient.Wireguard?.length || 0;
@@ -304,20 +440,22 @@ export const DNSV4 = (networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNC
 
     // Collect CheckIPs in order: VPN -> Domestic -> Foreign
     const allCheckIPs: string[] = [];
-    
+
     // 1. VPN CheckIPs (Foreign CheckIPs with offset)
     const vpnCheckIPOffset = foreignWANCount;
     const vpnCount = vpnClientCount > 0 ? vpnClientCount : 1;
-    allCheckIPs.push(...ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnCount));
-    
+    allCheckIPs.push(
+        ...ForeignCheckIPs.slice(vpnCheckIPOffset, vpnCheckIPOffset + vpnCount),
+    );
+
     // 2. Domestic CheckIPs
     const domesticCount = domesticWANCount > 0 ? domesticWANCount : 1;
     allCheckIPs.push(...DomesticCheckIPs.slice(0, domesticCount));
-    
+
     // 3. Foreign CheckIPs
     const foreignCount = foreignWANCount > 0 ? foreignWANCount : 1;
     allCheckIPs.push(...ForeignCheckIPs.slice(0, foreignCount));
-    
+
     // Create DNS servers command
     const dnsServers = allCheckIPs.join(",");
     config["/ip dns"].push(`set servers=${dnsServers}`);
@@ -325,7 +463,7 @@ export const DNSV4 = (networks?: Networks, wanLinks?: WANLinks, vpnClient?: VPNC
     return config;
 };
 
-export const MDNS = ( networks: Networks, subnets?: Subnets ): RouterConfig => {
+export const MDNS = (networks: Networks, subnets?: Subnets): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns": [],
     };
@@ -387,7 +525,7 @@ export const DOH = (): RouterConfig => {
         `add address="8.8.8.8" name="dns.google" comment="DOH-Domain-Static-Entry"`,
         `add address="8.8.4.4" name="dns.google" comment="DOH-Domain-Static-Entry"`,
         `add address="2001:4860:4860::8888" name="dns.google" comment="DOH-Domain-Static-Entry"`,
-        `add address="2001:4860:4860::8844" name="dns.google" comment="DOH-Domain-Static-Entry"`, 
+        `add address="2001:4860:4860::8844" name="dns.google" comment="DOH-Domain-Static-Entry"`,
 
         // Cloudflare
         `add address="1.1.1.1" name="cloudflare-dns.com" comment="DOH-Domain-Static-Entry"`,
@@ -400,7 +538,6 @@ export const DOH = (): RouterConfig => {
         `add address="45.90.30.140" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
         `add address="2a07:a8c0::9d:4621" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
         `add address="2a07:a8c1::9d:4621" name="dns.nextdns.io" comment="DOH-Domain-Static-Entry"`,
-
     );
 
     config["/ip dns"].push(
@@ -411,18 +548,23 @@ export const DOH = (): RouterConfig => {
     return config;
 };
 
-export const DNSForeward = ( address: string, network: "Domestic" | "Foreign" | "VPN" | "General", matchSubdomain?: boolean, comment?: string ): RouterConfig => {
+export const DNSForeward = (
+    address: string,
+    network: "Domestic" | "Foreign" | "VPN" | "General",
+    matchSubdomain?: boolean,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip dns static": [],
     };
 
     // Build the FWD entry using the named forwarder from DNSForwarders
     let fwdCommand = `add name=${address} type=FWD forward-to=${network}`;
-    
+
     if (matchSubdomain !== undefined) {
         fwdCommand += ` match-subdomain=${matchSubdomain ? "yes" : "no"}`;
     }
-    
+
     if (comment) {
         fwdCommand += ` comment="${comment}"`;
     }
@@ -441,13 +583,18 @@ export const FRNDNSFWD = (): RouterConfig => {
     ];
 
     // Create DNS forward entries for all domains through Foreign forwarder
-    const configs: RouterConfig[] = Domains.map(domain => 
-        DNSForeward(domain, "Foreign", true, `Forward ${domain} via Foreign DNS`)
+    const configs: RouterConfig[] = Domains.map((domain) =>
+        DNSForeward(
+            domain,
+            "Foreign",
+            true,
+            `Forward ${domain} via Foreign DNS`,
+        ),
     );
 
     // Merge all DNS forward configurations
     return mergeMultipleConfigs(...configs);
-}
+};
 
 export const GeneralFWD = (): RouterConfig => {
     const Domains = [
@@ -464,15 +611,25 @@ export const GeneralFWD = (): RouterConfig => {
     ];
 
     // Create DNS forward entries for all domains through General forwarder
-    const configs: RouterConfig[] = Domains.map(domain => 
-        DNSForeward(domain, "General", false,`Forward ${domain} via General DNS`)
+    const configs: RouterConfig[] = Domains.map((domain) =>
+        DNSForeward(
+            domain,
+            "General",
+            false,
+            `Forward ${domain} via General DNS`,
+        ),
     );
 
     // Merge all DNS forward configurations
     return mergeMultipleConfigs(...configs);
-}
+};
 
-export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient ): RouterConfig => {
+export const DNS = (
+    networks: Networks,
+    subnets?: Subnets,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
+): RouterConfig => {
     return mergeMultipleConfigs(
         BaseDNSSettins(),
         DNSV4(networks, wanLinks, vpnClient),
@@ -487,4 +644,3 @@ export const DNS = ( networks: Networks,  subnets?: Subnets, wanLinks?: WANLinks
         RedirectDNS(),
     );
 };
-

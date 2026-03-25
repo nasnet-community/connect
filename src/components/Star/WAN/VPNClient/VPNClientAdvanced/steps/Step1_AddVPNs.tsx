@@ -74,7 +74,7 @@ export const Step1_AddVPNs = component$<Step1Props>(
           {wizardState.vpnConfigs.map((vpn: any, index: number) => {
             const vpnId = vpn.id;
             const hasErrors = getVPNErrors(vpnId).length > 0;
-            
+
             return (
               <VPNBox
                 key={vpnId}

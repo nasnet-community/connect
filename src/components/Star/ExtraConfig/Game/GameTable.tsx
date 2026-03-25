@@ -2,7 +2,10 @@ import { $, component$, useComputed$ } from "@builder.io/qwik";
 import { games } from "./GameData";
 import { useGameLogic } from "./useGame";
 import type { GameTableProps } from "./type";
-import { buildNetworkOptions, groupNetworkOptions } from "./NetworkOptionsHelper";
+import {
+  buildNetworkOptions,
+  groupNetworkOptions,
+} from "./NetworkOptionsHelper";
 
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
@@ -10,11 +13,11 @@ export const GameTable = component$<GameTableProps>(
 
     // Build network options from StarContext Networks
     const networkOptions = useComputed$(() =>
-      buildNetworkOptions(context.state.Choose.Networks, context.state.WAN)
+      buildNetworkOptions(context.state.Choose.Networks, context.state.WAN),
     );
 
     const groupedOptions = useComputed$(() =>
-      groupNetworkOptions(networkOptions.value)
+      groupNetworkOptions(networkOptions.value),
     );
 
     return (
@@ -70,15 +73,17 @@ export const GameTable = component$<GameTableProps>(
                         class="w-full rounded-lg border border-border bg-surface px-3 py-2 dark:border-border-dark dark:bg-surface-dark"
                       >
                         <option value="none">{$localize`Select Network`}</option>
-                        {Object.entries(groupedOptions.value).map(([category, options]) => (
-                          <optgroup key={category} label={category}>
-                            {options.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
+                        {Object.entries(groupedOptions.value).map(
+                          ([category, options]) => (
+                            <optgroup key={category} label={category}>
+                              {options.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ),
+                        )}
                       </select>
                     </td>
                   </tr>

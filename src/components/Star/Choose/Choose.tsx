@@ -31,7 +31,10 @@ const RouterModelStep = component$((props: StepProps) => (
 ));
 
 const SlaveRouterModelStep = component$((props: StepProps) => (
-  <SlaveRouterModel isComplete={props.isComplete} onComplete$={props.onComplete$} />
+  <SlaveRouterModel
+    isComplete={props.isComplete}
+    onComplete$={props.onComplete$}
+  />
 ));
 
 const WANLinkStep = component$((props: StepProps) => (
@@ -56,7 +59,6 @@ const SetupModeStep = component$((props: StepProps) => (
   <SetupMode isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
 
-
 export const Choose = component$((props: StepProps) => {
   const starContext = useContext(StarContext);
   const stepTitles = {
@@ -70,43 +72,51 @@ export const Choose = component$((props: StepProps) => {
   };
 
   // Handle newsletter subscription for router configuration tips
-  const handleNewsletterSubscription$ = $(async (subscription: NewsletterSubscription) => {
-    try {
-      // Validate subscription object
-      if (!subscription || !subscription.email) {
-        console.error("Invalid subscription object:", subscription);
-        throw new Error("Invalid subscription: email is required");
+  const handleNewsletterSubscription$ = $(
+    async (subscription: NewsletterSubscription) => {
+      try {
+        // Validate subscription object
+        if (!subscription || !subscription.email) {
+          console.error("Invalid subscription object:", subscription);
+          throw new Error("Invalid subscription: email is required");
+        }
+
+        // Generate userUUID using hardware fingerprinting
+        const userUUID = await generateUserUUID();
+
+        // Call the Supabase Edge Function
+        const result = await subscribeToNewsletter(
+          subscription.email,
+          userUUID,
+        );
+
+        if (!result.success) {
+          console.error("Newsletter subscription failed:", result.error);
+          throw new Error(
+            result.error_detail ||
+              result.error ||
+              "Failed to subscribe to newsletter",
+          );
+        }
+
+        console.log("Newsletter subscription successful:", subscription.email);
+
+        // Track newsletter signup from router configuration flow
+        if (typeof track !== "undefined") {
+          track("newsletter_subscription", {
+            source: "router-configuration",
+            step: "choose",
+            email_domain: subscription.email.split("@")[1] || "unknown",
+            firmware: starContext.state.Choose.Firmware || "not-selected",
+            mode: starContext.state.Choose.Mode || "not-selected",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to subscribe to newsletter:", error);
+        throw new Error($localize`Failed to subscribe. Please try again.`);
       }
-
-      // Generate userUUID using hardware fingerprinting
-      const userUUID = await generateUserUUID();
-
-      // Call the Supabase Edge Function
-      const result = await subscribeToNewsletter(subscription.email, userUUID);
-
-      if (!result.success) {
-        console.error("Newsletter subscription failed:", result.error);
-        throw new Error(result.error_detail || result.error || "Failed to subscribe to newsletter");
-      }
-
-      console.log("Newsletter subscription successful:", subscription.email);
-
-      // Track newsletter signup from router configuration flow
-      if (typeof track !== 'undefined') {
-        track("newsletter_subscription", {
-          source: "router-configuration",
-          step: "choose",
-          email_domain: subscription.email.split('@')[1] || 'unknown',
-          firmware: starContext.state.Choose.Firmware || 'not-selected',
-          mode: starContext.state.Choose.Mode || 'not-selected',
-        });
-      }
-
-    } catch (error) {
-      console.error("Failed to subscribe to newsletter:", error);
-      throw new Error($localize`Failed to subscribe. Please try again.`);
-    }
-  });
+    },
+  );
 
   // Create step building functions to avoid serialization issues
   const createMikroTikSteps = $(() => {
@@ -145,7 +155,10 @@ export const Choose = component$((props: StepProps) => {
     }
 
     // Add Slave Router Model step if Trunk Mode is selected (only in advance mode)
-    if (starContext.state.Choose.Mode === "advance" && starContext.state.Choose.RouterMode === "Trunk Mode") {
+    if (
+      starContext.state.Choose.Mode === "advance" &&
+      starContext.state.Choose.RouterMode === "Trunk Mode"
+    ) {
       baseSteps.push({
         id: nextId,
         title: stepTitles.slaveRouter,
@@ -220,9 +233,13 @@ export const Choose = component$((props: StepProps) => {
   // Handle router configuration step changes for the MikroTik flow
   useTask$(async ({ track }) => {
     const selectedMode = track(() => starContext.state.Choose.Mode);
-    const selectedWANLinkType = track(() => starContext.state.Choose.WANLinkType);
+    const selectedWANLinkType = track(
+      () => starContext.state.Choose.WANLinkType,
+    );
     const selectedRouterMode = track(() => starContext.state.Choose.RouterMode);
-    const selectedTrunkInterfaceType = track(() => starContext.state.Choose.TrunkInterfaceType);
+    const selectedTrunkInterfaceType = track(
+      () => starContext.state.Choose.TrunkInterfaceType,
+    );
     const routerModels = track(() => starContext.state.Choose.RouterModels);
 
     // console.log('=== FIRMWARE/ROUTER MODE CHANGE DETECTED ==='); // Debug log
@@ -237,64 +254,116 @@ export const Choose = component$((props: StepProps) => {
     // Clear MasterSlaveInterface when switching from Trunk Mode to AP Mode
     if (
       selectedRouterMode === "AP Mode" &&
-      starContext.state.Choose.RouterModels.some(rm => rm.MasterSlaveInterface)
+      starContext.state.Choose.RouterModels.some(
+        (rm) => rm.MasterSlaveInterface,
+      )
     ) {
       // Clear MasterSlaveInterface from all router models
-      const updatedModels = starContext.state.Choose.RouterModels.map(rm => ({
+      const updatedModels = starContext.state.Choose.RouterModels.map((rm) => ({
         ...rm,
-        MasterSlaveInterface: undefined
+        MasterSlaveInterface: undefined,
       }));
       starContext.updateChoose$({ RouterModels: updatedModels });
     }
 
     const getCurrentStepCompletion = (title: string) => {
-      return steps.value.find((step: StepItem) => step.title === title)?.isComplete || false;
+      return (
+        steps.value.find((step: StepItem) => step.title === title)
+          ?.isComplete || false
+      );
     };
 
-    const setStepCompletion = (targetSteps: StepItem[], title: string, isComplete: boolean) => {
-      const step = targetSteps.find((existingStep) => existingStep.title === title);
+    const setStepCompletion = (
+      targetSteps: StepItem[],
+      title: string,
+      isComplete: boolean,
+    ) => {
+      const step = targetSteps.find(
+        (existingStep) => existingStep.title === title,
+      );
       if (step) {
         step.isComplete = isComplete;
       }
     };
 
-    const previousRouterModeStepComplete = getCurrentStepCompletion(stepTitles.routerMode);
-    const hasMasterRouter = routerModels.some((routerModel) => routerModel.isMaster);
-    const hasSlaveRouter = routerModels.some((routerModel) => !routerModel.isMaster);
+    const previousRouterModeStepComplete = getCurrentStepCompletion(
+      stepTitles.routerMode,
+    );
+    const hasMasterRouter = routerModels.some(
+      (routerModel) => routerModel.isMaster,
+    );
+    const hasSlaveRouter = routerModels.some(
+      (routerModel) => !routerModel.isMaster,
+    );
     const masterRouterInterfaceConfigured = routerModels.some(
-      (routerModel) => routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
+      (routerModel) =>
+        routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
     );
     const slaveRouterInterfaceConfigured = routerModels.some(
-      (routerModel) => !routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
+      (routerModel) =>
+        !routerModel.isMaster && Boolean(routerModel.MasterSlaveInterface),
     );
-    const isTrunkMode = selectedMode === "advance" && selectedRouterMode === "Trunk Mode";
+    const isTrunkMode =
+      selectedMode === "advance" && selectedRouterMode === "Trunk Mode";
     const completionState = {
       setupMode: Boolean(selectedMode),
       wanLinkType: Boolean(selectedWANLinkType),
       routerModel: hasMasterRouter,
-      routerMode: selectedMode === "advance" ? Boolean(selectedRouterMode) : false,
+      routerMode:
+        selectedMode === "advance" ? Boolean(selectedRouterMode) : false,
       slaveRouter: isTrunkMode ? hasSlaveRouter : false,
       interfaceType: isTrunkMode ? Boolean(selectedTrunkInterfaceType) : false,
       trunkInterface:
-        isTrunkMode && masterRouterInterfaceConfigured && slaveRouterInterfaceConfigured,
+        isTrunkMode &&
+        masterRouterInterfaceConfigured &&
+        slaveRouterInterfaceConfigured,
     };
 
     const mikrotikSteps = await createMikroTikSteps();
-    setStepCompletion(mikrotikSteps, stepTitles.setupMode, completionState.setupMode);
-    setStepCompletion(mikrotikSteps, stepTitles.wanLinkType, completionState.wanLinkType);
-    setStepCompletion(mikrotikSteps, stepTitles.routerModel, completionState.routerModel);
-    setStepCompletion(mikrotikSteps, stepTitles.routerMode, completionState.routerMode);
-    setStepCompletion(mikrotikSteps, stepTitles.slaveRouter, completionState.slaveRouter);
-    setStepCompletion(mikrotikSteps, stepTitles.interfaceType, completionState.interfaceType);
-    setStepCompletion(mikrotikSteps, stepTitles.trunkInterface, completionState.trunkInterface);
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.setupMode,
+      completionState.setupMode,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.wanLinkType,
+      completionState.wanLinkType,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.routerModel,
+      completionState.routerModel,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.routerMode,
+      completionState.routerMode,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.slaveRouter,
+      completionState.slaveRouter,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.interfaceType,
+      completionState.interfaceType,
+    );
+    setStepCompletion(
+      mikrotikSteps,
+      stepTitles.trunkInterface,
+      completionState.trunkInterface,
+    );
 
-    const newSteps = [
-      ...mikrotikSteps,
-    ];
+    const newSteps = [...mikrotikSteps];
 
     const structureChanged =
       steps.value.length !== newSteps.length ||
-      steps.value.some((step: StepItem, index: number) => step.title !== newSteps[index]?.title);
+      steps.value.some(
+        (step: StepItem, index: number) =>
+          step.title !== newSteps[index]?.title,
+      );
 
     if (structureChanged) {
       steps.value = newSteps;
@@ -304,8 +373,13 @@ export const Choose = component$((props: StepProps) => {
     }
 
     // If RouterMode is complete with Trunk Mode, navigate to Slave Router step (only in advance mode)
-    const routerModeJustCompleted = !previousRouterModeStepComplete && completionState.routerMode;
-    if (selectedMode === "advance" && routerModeJustCompleted && selectedRouterMode === "Trunk Mode") {
+    const routerModeJustCompleted =
+      !previousRouterModeStepComplete && completionState.routerMode;
+    if (
+      selectedMode === "advance" &&
+      routerModeJustCompleted &&
+      selectedRouterMode === "Trunk Mode"
+    ) {
       const slaveRouterIndex = newSteps.findIndex(
         (step) => step.title === stepTitles.slaveRouter,
       );
@@ -338,7 +412,7 @@ export const Choose = component$((props: StepProps) => {
           compact={true}
           showPrivacyNotice={false}
           onSubscribe$={handleNewsletterSubscription$}
-          class="max-w-5xl mx-auto backdrop-blur-sm bg-gradient-to-br from-primary-50/80 to-secondary-50/80 dark:from-primary-dark-950/80 dark:to-secondary-dark-950/80 border border-primary-200/50 dark:border-primary-dark-700/50 shadow-md hover:shadow-lg transition-all duration-300"
+          class="mx-auto max-w-5xl border border-primary-200/50 bg-gradient-to-br from-primary-50/80 to-secondary-50/80 shadow-md backdrop-blur-sm transition-all duration-300 hover:shadow-lg dark:border-primary-dark-700/50 dark:from-primary-dark-950/80 dark:to-secondary-dark-950/80"
         />
       </div>
 
@@ -349,7 +423,9 @@ export const Choose = component$((props: StepProps) => {
         activeStep={activeStep.value}
         onStepComplete$={handleStepComplete}
         onStepChange$={(id: number) => {
-          const stepIndex = steps.value.findIndex((step: StepItem) => step.id === id);
+          const stepIndex = steps.value.findIndex(
+            (step: StepItem) => step.id === id,
+          );
           if (stepIndex > -1) {
             activeStep.value = stepIndex;
           }

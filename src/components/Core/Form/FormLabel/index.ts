@@ -6,7 +6,11 @@
  */
 
 import { FormLabel } from "./FormLabel";
-import type { FormLabelProps, FormLabelSize, FormLabelFluidSize } from "./FormLabel";
+import type {
+  FormLabelProps,
+  FormLabelSize,
+  FormLabelFluidSize,
+} from "./FormLabel";
 
 export {
   FormLabel,

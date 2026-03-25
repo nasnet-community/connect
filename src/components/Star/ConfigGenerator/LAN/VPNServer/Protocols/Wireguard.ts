@@ -1,14 +1,18 @@
-import type { WireguardInterfaceConfig, VSCredentials, WireguardServerConfig, SubnetConfig } from "~/components/Star/StarContext";
-import { 
-    CommandShortner, 
-    mergeRouterConfigs, 
-    calculateNetworkAddress, 
-    OneTimeScript, 
-    type RouterConfig, 
-    VSInterfaceList, 
+import type {
+    WireguardInterfaceConfig,
+    VSCredentials,
+    WireguardServerConfig,
+    SubnetConfig,
+} from "~/components/Star/StarContext";
+import {
+    CommandShortner,
+    mergeRouterConfigs,
+    calculateNetworkAddress,
+    OneTimeScript,
+    type RouterConfig,
+    VSInterfaceList,
     VSAddressList,
 } from "~/components/Star/ConfigGenerator";
-
 
 export const ExportWireGuard = (): RouterConfig => {
     // Create simplified WireGuard export script following RouterOS best practices
@@ -403,7 +407,11 @@ export const ExportWireGuard = (): RouterConfig => {
     });
 };
 
-export const WireguardPeerAddress = ( interfaceName: string, scriptName: string = "WireGuard-Peer-Update", startTime: string = "startup" ): RouterConfig => {
+export const WireguardPeerAddress = (
+    interfaceName: string,
+    scriptName: string = "WireGuard-Peer-Update",
+    startTime: string = "startup",
+): RouterConfig => {
     const scriptContent: RouterConfig = {
         "": [
             `:delay 120s;`,
@@ -478,7 +486,10 @@ export const WireguardPeerAddress = ( interfaceName: string, scriptName: string 
     });
 };
 
-export const WireguardServer = ( WireguardInterfaceConfig: WireguardInterfaceConfig, SubnetConfig: SubnetConfig ): RouterConfig => {
+export const WireguardServer = (
+    WireguardInterfaceConfig: WireguardInterfaceConfig,
+    SubnetConfig: SubnetConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface wireguard": [],
         "/ip address": [],
@@ -492,7 +503,7 @@ export const WireguardServer = ( WireguardInterfaceConfig: WireguardInterfaceCon
     const {
         Name,
         PrivateKey,
-        ListenPort ,
+        ListenPort,
         Mtu = 1420,
         VSNetwork,
     } = WireguardInterfaceConfig;
@@ -522,30 +533,35 @@ export const WireguardServer = ( WireguardInterfaceConfig: WireguardInterfaceCon
     }
     config["/ip address"].push(addressCommand);
 
-
     // Add interface list members and address list via shared helpers
-    const listsCfg = VSInterfaceList(interfaceName, String(VSNetwork), `${interfaceName} interface`);
-    const addrCfg = VSAddressList(subnet, String(VSNetwork), `${interfaceName} subnet`);
+    const listsCfg = VSInterfaceList(
+        interfaceName,
+        String(VSNetwork),
+        `${interfaceName} interface`,
+    );
+    const addrCfg = VSAddressList(
+        subnet,
+        String(VSNetwork),
+        `${interfaceName} subnet`,
+    );
     const mergedLists = mergeRouterConfigs(listsCfg, addrCfg);
     Object.entries(mergedLists).forEach(([section, cmds]) => {
         config[section] = (config[section] ?? []).concat(cmds);
     });
 
-
-
-
     return CommandShortner(config);
 };
 
-export const WireguardServerUsers = ( serverConfig: WireguardInterfaceConfig, users: VSCredentials[], SubnetConfig: SubnetConfig ): RouterConfig => {
+export const WireguardServerUsers = (
+    serverConfig: WireguardInterfaceConfig,
+    users: VSCredentials[],
+    SubnetConfig: SubnetConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface wireguard peers": [],
     };
 
     const { subnet } = SubnetConfig;
-
-
-
 
     // Interface Name
     const interfaceName = "wg-server-" + serverConfig.Name;
@@ -606,7 +622,9 @@ export const WireguardServerUsers = ( serverConfig: WireguardInterfaceConfig, us
     return CommandShortner(finalConfig);
 };
 
-export const WireguardServerFirewall = ( WireguardInterfaceConfig: WireguardInterfaceConfig ): RouterConfig => {
+export const WireguardServerFirewall = (
+    WireguardInterfaceConfig: WireguardInterfaceConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -627,9 +645,13 @@ export const WireguardServerFirewall = ( WireguardInterfaceConfig: WireguardInte
     );
 
     return config;
-}
+};
 
-export const SingleWSWrapper = ( wireguardConfig: WireguardServerConfig, users: VSCredentials[], SubnetConfig: SubnetConfig ): RouterConfig => {
+export const SingleWSWrapper = (
+    wireguardConfig: WireguardServerConfig,
+    users: VSCredentials[],
+    SubnetConfig: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Base server interface and address config
@@ -657,9 +679,13 @@ export const SingleWSWrapper = ( wireguardConfig: WireguardServerConfig, users: 
 
     const finalConfig = mergeRouterConfigs(...configs);
     return CommandShortner(finalConfig);
-}
+};
 
-export const WireguardServerWrapper = ( wireguardConfigs: WireguardServerConfig[], users: VSCredentials[], subnetConfigs: SubnetConfig[] ): RouterConfig => {
+export const WireguardServerWrapper = (
+    wireguardConfigs: WireguardServerConfig[],
+    users: VSCredentials[],
+    subnetConfigs: SubnetConfig[],
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Process each WireGuard server configuration
@@ -669,12 +695,31 @@ export const WireguardServerWrapper = ( wireguardConfigs: WireguardServerConfig[
         // Try to find matching subnet by name
         const list = Array.isArray(subnetConfigs) ? subnetConfigs : [];
         let matchedSubnet = list.find((s) => s.name === ifaceName);
-        if (!matchedSubnet) matchedSubnet = list.find((s) => s.name.toLowerCase() === ifaceName.toLowerCase());
-        if (!matchedSubnet) matchedSubnet = list.find((s) => s.name === `wg-server-${ifaceName}`);
-        if (!matchedSubnet) matchedSubnet = list.find((s) => s.name.toLowerCase() === `wg-server-${ifaceName}`.toLowerCase());
+        if (!matchedSubnet)
+            matchedSubnet = list.find(
+                (s) => s.name.toLowerCase() === ifaceName.toLowerCase(),
+            );
+        if (!matchedSubnet)
+            matchedSubnet = list.find(
+                (s) => s.name === `wg-server-${ifaceName}`,
+            );
+        if (!matchedSubnet)
+            matchedSubnet = list.find(
+                (s) =>
+                    s.name.toLowerCase() ===
+                    `wg-server-${ifaceName}`.toLowerCase(),
+            );
         // Backward-compatibility without hyphen
-        if (!matchedSubnet) matchedSubnet = list.find((s) => s.name === `wg-server${ifaceName}`);
-        if (!matchedSubnet) matchedSubnet = list.find((s) => s.name.toLowerCase() === `wg-server${ifaceName}`.toLowerCase());
+        if (!matchedSubnet)
+            matchedSubnet = list.find(
+                (s) => s.name === `wg-server${ifaceName}`,
+            );
+        if (!matchedSubnet)
+            matchedSubnet = list.find(
+                (s) =>
+                    s.name.toLowerCase() ===
+                    `wg-server${ifaceName}`.toLowerCase(),
+            );
 
         // Fallback to interface's own address if mapping not provided
         const effectiveSubnet: SubnetConfig = matchedSubnet || {
@@ -692,21 +737,9 @@ export const WireguardServerWrapper = ( wireguardConfigs: WireguardServerConfig[
     }
 
     configs.push(ExportWireGuard());
-    
+
     // Merge configurations
     const finalConfig = mergeRouterConfigs(...configs);
 
-
-
     return CommandShortner(finalConfig);
 };
-
-
-
-
-
-
-
-
-
-

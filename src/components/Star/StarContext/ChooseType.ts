@@ -1,7 +1,6 @@
 import type { Ethernet, Wireless, Sfp, LTE, RouterModel } from "./CommonType";
 import type { Networks } from "./Utils/Networks";
 
-
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 export type FirmwareType = "MikroTik";
 export type WANLinkType = "domestic" | "foreign" | "both";
@@ -9,7 +8,6 @@ export type TrunkInterfaceType = "wired" | "wireless";
 export type Mode = "easy" | "advance";
 export type MasterSlaveInterfaceType = Ethernet | Wireless | Sfp;
 export type CPUArch = "x64/x86" | "ARM" | "ARM64";
-
 
 export interface Interfaces {
   ethernet?: Ethernet[];

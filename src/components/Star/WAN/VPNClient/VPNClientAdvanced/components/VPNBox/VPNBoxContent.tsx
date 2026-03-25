@@ -1,6 +1,9 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import { Input, Select } from "~/components/Core";
-import type { VPNClientConfig, VPNType } from "../../types/VPNClientAdvancedTypes";
+import type {
+  VPNClientConfig,
+  VPNType,
+} from "../../types/VPNClientAdvancedTypes";
 
 export interface VPNBoxContentProps {
   vpn: VPNClientConfig;
@@ -82,7 +85,9 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                   checked={vpn.enabled}
                   onChange$={(e) => {
                     if (onUpdate$) {
-                      onUpdate$({ enabled: (e.target as HTMLInputElement).checked });
+                      onUpdate$({
+                        enabled: (e.target as HTMLInputElement).checked,
+                      });
                     }
                   }}
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
@@ -108,7 +113,9 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                   </label>
                   <Input
                     type="text"
-                    value={vpn.connectionConfig.wireguard.PeerEndpointAddress || ""}
+                    value={
+                      vpn.connectionConfig.wireguard.PeerEndpointAddress || ""
+                    }
                     onInput$={(e) => {
                       if (onUpdate$ && vpn.connectionConfig?.wireguard) {
                         onUpdate$({
@@ -116,7 +123,9 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                             ...vpn.connectionConfig,
                             wireguard: {
                               ...vpn.connectionConfig.wireguard,
-                              PeerEndpointAddress: (e.target as HTMLInputElement).value,
+                              PeerEndpointAddress: (
+                                e.target as HTMLInputElement
+                              ).value,
                             },
                           },
                         });
@@ -133,7 +142,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                   </label>
                   <Input
                     type="number"
-                    value={vpn.connectionConfig.wireguard.PeerEndpointPort.toString() || ""}
+                    value={
+                      vpn.connectionConfig.wireguard.PeerEndpointPort.toString() ||
+                      ""
+                    }
                     onInput$={(e) => {
                       if (onUpdate$ && vpn.connectionConfig?.wireguard) {
                         onUpdate$({
@@ -141,7 +153,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                             ...vpn.connectionConfig,
                             wireguard: {
                               ...vpn.connectionConfig.wireguard,
-                              PeerEndpointPort: parseInt((e.target as HTMLInputElement).value) || 51820,
+                              PeerEndpointPort:
+                                parseInt(
+                                  (e.target as HTMLInputElement).value,
+                                ) || 51820,
                             },
                           },
                         });
@@ -200,7 +215,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                               ...vpn.connectionConfig.openvpn,
                               Server: {
                                 ...vpn.connectionConfig.openvpn.Server,
-                                Port: parseInt((e.target as HTMLInputElement).value) || 1194,
+                                Port:
+                                  parseInt(
+                                    (e.target as HTMLInputElement).value,
+                                  ) || 1194,
                               },
                             },
                           },
@@ -225,5 +243,5 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
         </div>
       </div>
     );
-  }
+  },
 );

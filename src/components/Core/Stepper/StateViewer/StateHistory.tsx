@@ -37,17 +37,21 @@ export const StateHistory = component$((props: StateHistoryProps) => {
 
       {hasSlaveRouters && (
         <div class="space-y-3 rounded-lg border border-primary-200 bg-primary-50 p-3 dark:border-primary-800 dark:bg-primary-950">
-          <h5 class="text-sm font-medium text-text dark:text-text-dark">
+          <h5 class="dark:text-text-dark text-sm font-medium text-text">
             {$localize`Slave Router Configuration`}
           </h5>
-          
+
           <div class="space-y-2">
-            <label class="block text-xs font-medium text-text-secondary dark:text-text-dark-secondary">
+            <label class="text-text-secondary dark:text-text-dark-secondary block text-xs font-medium">
               {$localize`Select Slave Router`}
             </label>
             <select
               value={props.selectedSlaveRouter}
-              onChange$={(e) => props.onSlaveRouterChange$((e.target as HTMLSelectElement).value)}
+              onChange$={(e) =>
+                props.onSlaveRouterChange$(
+                  (e.target as HTMLSelectElement).value,
+                )
+              }
               class="w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {props.slaveRouters.map((router) => (
@@ -83,7 +87,7 @@ export const StateHistory = component$((props: StateHistoryProps) => {
       )}
 
       {props.entries.length === 0 ? (
-        <div class="text-sm text-text-secondary dark:text-text-dark-secondary">
+        <div class="text-text-secondary dark:text-text-dark-secondary text-sm">
           {$localize`No state history available`}
         </div>
       ) : (

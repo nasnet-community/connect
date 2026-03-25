@@ -88,7 +88,9 @@ export const Input = component$<InputProps>(
       "block",
       fluid ? "w-full" : "w-full",
       "border focus:outline-none focus:ring-2",
-      animate ? "transition-all duration-300 ease-out" : "transition-all duration-200",
+      animate
+        ? "transition-all duration-300 ease-out"
+        : "transition-all duration-200",
       "touch-manipulation", // Better touch support
     ].join(" ");
 
@@ -151,20 +153,47 @@ export const Input = component$<InputProps>(
       ? "cursor-not-allowed opacity-60 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 pointer-events-none select-none"
       : "hover:shadow-sm focus:shadow-md dark:hover:shadow-lg dark:focus:shadow-xl";
 
-
     const prefixSuffixClasses = {
       wrapper: "relative",
-      prefix: hasPrefixSlot ? (size === "sm" ? "ps-9" : size === "md" ? "ps-10" : size === "lg" ? "ps-12" : "ps-14") : "",
-      suffix: hasSuffixSlot ? (size === "sm" ? "pe-9" : size === "md" ? "pe-10" : size === "lg" ? "pe-12" : "pe-14") : "",
+      prefix: hasPrefixSlot
+        ? size === "sm"
+          ? "ps-9"
+          : size === "md"
+            ? "ps-10"
+            : size === "lg"
+              ? "ps-12"
+              : "ps-14"
+        : "",
+      suffix: hasSuffixSlot
+        ? size === "sm"
+          ? "pe-9"
+          : size === "md"
+            ? "pe-10"
+            : size === "lg"
+              ? "pe-12"
+              : "pe-14"
+        : "",
       slotPrefix: [
         "absolute inset-y-0 start-0 flex items-center",
-        size === "sm" ? "ps-2.5" : size === "md" ? "ps-3" : size === "lg" ? "ps-4" : "ps-5",
-        "text-gray-500 dark:text-gray-400 transition-colors duration-200"
+        size === "sm"
+          ? "ps-2.5"
+          : size === "md"
+            ? "ps-3"
+            : size === "lg"
+              ? "ps-4"
+              : "ps-5",
+        "text-gray-500 dark:text-gray-400 transition-colors duration-200",
       ].join(" "),
       slotSuffix: [
         "absolute inset-y-0 end-0 flex items-center",
-        size === "sm" ? "pe-2.5" : size === "md" ? "pe-3" : size === "lg" ? "pe-4" : "pe-5",
-        "text-gray-500 dark:text-gray-400 transition-colors duration-200"
+        size === "sm"
+          ? "pe-2.5"
+          : size === "md"
+            ? "pe-3"
+            : size === "lg"
+              ? "pe-4"
+              : "pe-5",
+        "text-gray-500 dark:text-gray-400 transition-colors duration-200",
       ].join(" "),
     };
 
@@ -207,19 +236,30 @@ export const Input = component$<InputProps>(
     });
 
     return (
-      <div class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""} group`}>
+      <div
+        class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""} group`}
+      >
         {label && (
           <label
             for={inputId}
             class={[
-              "mb-2 block font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200",
-              size === "sm" ? "text-xs" : size === "md" ? "text-sm" : size === "lg" ? "text-base" : "text-lg",
-              "rtl:text-end ltr:text-start",
+              "mb-2 block font-medium text-gray-900 transition-colors duration-200 dark:text-gray-100",
+              size === "sm"
+                ? "text-xs"
+                : size === "md"
+                  ? "text-sm"
+                  : size === "lg"
+                    ? "text-base"
+                    : "text-lg",
+              "ltr:text-start rtl:text-end",
             ].join(" ")}
           >
             {label}
             {required && (
-              <span class="ms-1 text-error-500 dark:text-error-400 animate-pulse" aria-label="required">
+              <span
+                class="ms-1 animate-pulse text-error-500 dark:text-error-400"
+                aria-label="required"
+              >
                 *
               </span>
             )}
@@ -253,10 +293,10 @@ export const Input = component$<InputProps>(
               validation === "invalid" && errorMessage
                 ? `${inputId}-error`
                 : validation === "warning" && warningMessage
-                ? `${inputId}-warning`
-                : helperText
-                ? `${inputId}-helper`
-                : undefined
+                  ? `${inputId}-warning`
+                  : helperText
+                    ? `${inputId}-helper`
+                    : undefined
             }
             {...props}
             class={inputClasses}
@@ -276,13 +316,13 @@ export const Input = component$<InputProps>(
         </div>
 
         {validation === "invalid" && errorMessage && (
-          <p 
+          <p
             id={`${inputId}-error`}
             class={[
-              "mt-2 text-error-600 dark:text-error-400 transition-colors duration-200",
+              "mt-2 text-error-600 transition-colors duration-200 dark:text-error-400",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
-              "rtl:text-end ltr:text-start",
+              "ltr:text-start rtl:text-end",
             ].join(" ")}
             role="alert"
           >
@@ -291,13 +331,13 @@ export const Input = component$<InputProps>(
         )}
 
         {validation === "warning" && warningMessage && (
-          <p 
+          <p
             id={`${inputId}-warning`}
             class={[
-              "mt-2 text-warning-600 dark:text-warning-400 transition-colors duration-200",
+              "mt-2 text-warning-600 transition-colors duration-200 dark:text-warning-400",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
-              "rtl:text-end ltr:text-start",
+              "ltr:text-start rtl:text-end",
             ].join(" ")}
             role="alert"
           >
@@ -306,12 +346,12 @@ export const Input = component$<InputProps>(
         )}
 
         {helperText && validation !== "invalid" && validation !== "warning" && (
-          <p 
+          <p
             id={`${inputId}-helper`}
             class={[
-              "mt-2 text-gray-500 dark:text-gray-400 transition-colors duration-200",
+              "mt-2 text-gray-500 transition-colors duration-200 dark:text-gray-400",
               size === "sm" ? "text-xs" : "text-sm",
-              "rtl:text-end ltr:text-start",
+              "ltr:text-start rtl:text-end",
             ].join(" ")}
           >
             {helperText}

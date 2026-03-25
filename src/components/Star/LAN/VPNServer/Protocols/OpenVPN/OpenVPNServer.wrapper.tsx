@@ -10,15 +10,23 @@ interface OpenVPNServerWrapperProps {
   hook?: ReturnType<typeof useOpenVPNServer>;
 }
 
-export const OpenVPNServerWrapper = component$<OpenVPNServerWrapperProps>(({ hook }) => {
-  const starContext = useContext(StarContext);
-  const mode = starContext.state.Choose.Mode as Mode;
+export const OpenVPNServerWrapper = component$<OpenVPNServerWrapperProps>(
+  ({ hook }) => {
+    const starContext = useContext(StarContext);
+    const mode = starContext.state.Choose.Mode as Mode;
 
-  // Use provided hook for Advanced mode, Easy mode creates its own
-  const defaultHook = useOpenVPNServer();
-  const openVpnHook = hook ?? defaultHook;
+    // Use provided hook for Advanced mode, Easy mode creates its own
+    const defaultHook = useOpenVPNServer();
+    const openVpnHook = hook ?? defaultHook;
 
-  return (
-    <>{mode === "easy" ? <OpenVPNServerEasy /> : <OpenVPNServerAdvanced hook={openVpnHook} />}</>
-  );
-});
+    return (
+      <>
+        {mode === "easy" ? (
+          <OpenVPNServerEasy />
+        ) : (
+          <OpenVPNServerAdvanced hook={openVpnHook} />
+        )}
+      </>
+    );
+  },
+);

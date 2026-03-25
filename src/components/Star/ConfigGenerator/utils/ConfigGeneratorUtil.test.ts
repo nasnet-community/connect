@@ -27,7 +27,9 @@ describe("ConfigGeneratorUtil", () => {
         expect(mergeConfigurations(left, right)["/ip route"]).toEqual([
             "add gateway=192.168.1.254",
         ]);
-        expect(mergeMultipleConfigs(left, right, left)["/system identity"]).toHaveLength(2);
+        expect(
+            mergeMultipleConfigs(left, right, left)["/system identity"],
+        ).toHaveLength(2);
     });
 
     // Verifies empty array sections are removed while populated sections are preserved.
@@ -71,7 +73,9 @@ describe("ConfigGeneratorUtil", () => {
         expect(result).toContain("/ip address");
         expect(result).toContain("/system identity");
         expect(result).not.toContain("/ip route");
-        expect(result.split("\n").every((line) => line.trim().length > 0)).toBe(true);
+        expect(result.split("\n").every((line) => line.trim().length > 0)).toBe(
+            true,
+        );
     });
 
     // Verifies CommandShortner leaves comments and short commands unchanged.

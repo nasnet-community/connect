@@ -1,7 +1,12 @@
-import { component$, type Signal, type QRL, $, useSignal, useTask$ } from "@builder.io/qwik";
 import {
-  HiServerOutline,
-} from "@qwikest/icons/heroicons";
+  component$,
+  type Signal,
+  type QRL,
+  $,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
+import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { SegmentedControl } from "~/components/Core";
 
 interface VPNServerHeaderProps {
@@ -12,7 +17,9 @@ interface VPNServerHeaderProps {
 export const VPNServerHeader = component$<VPNServerHeaderProps>(
   ({ vpnServerEnabled, onToggle$ }) => {
     // Create a mutable string signal for SegmentedControl
-    const enabledState = useSignal(vpnServerEnabled.value ? "enabled" : "disabled");
+    const enabledState = useSignal(
+      vpnServerEnabled.value ? "enabled" : "disabled",
+    );
 
     // Keep the string signal in sync with the boolean signal
     useTask$(({ track }) => {
@@ -45,7 +52,7 @@ export const VPNServerHeader = component$<VPNServerHeaderProps>(
               label: $localize`Disabled`,
             },
             {
-              value: "enabled", 
+              value: "enabled",
               label: $localize`Enabled`,
             },
           ]}

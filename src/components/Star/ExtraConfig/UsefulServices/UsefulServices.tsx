@@ -19,7 +19,10 @@ export const UsefulServices = component$<StepProps>(({ onComplete$ }) => {
         {mode === "easy" ? (
           <UsefulServicesEasy isComplete={false} onComplete$={onComplete$} />
         ) : (
-          <UsefulServicesAdvanced isComplete={false} onComplete$={onComplete$} />
+          <UsefulServicesAdvanced
+            isComplete={false}
+            onComplete$={onComplete$}
+          />
         )}
       </div>
     </div>

@@ -52,17 +52,20 @@ export const RadioInput = component$<RadioInputProps>(
     onBlur$,
     // ...props
   }) => {
-    const radioGroupId = id || `radio-group-${Math.random().toString(36).substring(2, 9)}`;
+    const radioGroupId =
+      id || `radio-group-${Math.random().toString(36).substring(2, 9)}`;
 
     const baseClasses = [
       "w-4 h-4 border focus:ring-2 focus:outline-none rounded-full",
-      animate ? "transition-all duration-300 ease-out" : "transition-all duration-200",
+      animate
+        ? "transition-all duration-300 ease-out"
+        : "transition-all duration-200",
       "touch-manipulation", // Better touch support
     ].join(" ");
 
     const sizeClasses = {
       sm: "w-3 h-3",
-      md: "w-4 h-4", 
+      md: "w-4 h-4",
       lg: "w-5 h-5",
       xl: "w-6 h-6",
     };
@@ -123,10 +126,15 @@ export const RadioInput = component$<RadioInputProps>(
       .filter(Boolean)
       .join(" ");
 
-
     const optionLabelClasses = [
       "text-gray-900 dark:text-slate-100 cursor-pointer select-none transition-all duration-200",
-      size === "sm" ? "text-xs" : size === "md" ? "text-sm" : size === "lg" ? "text-base" : "text-lg",
+      size === "sm"
+        ? "text-xs"
+        : size === "md"
+          ? "text-sm"
+          : size === "lg"
+            ? "text-base"
+            : "text-lg",
       "rtl:text-end ltr:text-start",
       "dark:drop-shadow-sm group-hover:dark:text-slate-50",
     ].join(" ");
@@ -158,26 +166,37 @@ export const RadioInput = component$<RadioInputProps>(
     });
 
     return (
-      <div class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""} group`}>
+      <div
+        class={`w-full ${animate ? "motion-safe:animate-fade-in" : ""} group`}
+      >
         {label && (
           <fieldset>
             <legend
               class={[
-                "mb-3 block font-medium text-gray-900 dark:text-slate-200 transition-colors duration-200",
-                size === "sm" ? "text-xs" : size === "md" ? "text-sm" : size === "lg" ? "text-base" : "text-lg",
-                "rtl:text-end ltr:text-start",
+                "mb-3 block font-medium text-gray-900 transition-colors duration-200 dark:text-slate-200",
+                size === "sm"
+                  ? "text-xs"
+                  : size === "md"
+                    ? "text-sm"
+                    : size === "lg"
+                      ? "text-base"
+                      : "text-lg",
+                "ltr:text-start rtl:text-end",
                 "dark:drop-shadow-sm",
               ].join(" ")}
             >
               {label}
               {required && (
-                <span class="ms-1 text-error-500 dark:text-red-400 dark:drop-shadow-sm animate-pulse" aria-label="required">
+                <span
+                  class="ms-1 animate-pulse text-error-500 dark:text-red-400 dark:drop-shadow-sm"
+                  aria-label="required"
+                >
                   *
                 </span>
               )}
             </legend>
 
-            <div 
+            <div
               class={containerClasses}
               role="radiogroup"
               aria-required={required}
@@ -186,10 +205,10 @@ export const RadioInput = component$<RadioInputProps>(
                 validation === "invalid" && errorMessage
                   ? `${radioGroupId}-error`
                   : validation === "warning" && warningMessage
-                  ? `${radioGroupId}-warning`
-                  : helperText
-                  ? `${radioGroupId}-helper`
-                  : undefined
+                    ? `${radioGroupId}-warning`
+                    : helperText
+                      ? `${radioGroupId}-helper`
+                      : undefined
               }
             >
               {options.map((option, index) => {
@@ -201,9 +220,11 @@ export const RadioInput = component$<RadioInputProps>(
                   <div
                     key={option.value}
                     class={[
-                      "flex items-start gap-3 group/option",
+                      "group/option flex items-start gap-3",
                       direction === "horizontal" ? "flex-row" : "flex-row",
-                      isOptionDisabled ? "opacity-50" : "dark:hover:bg-gray-700/50 rounded-md p-1 transition-all duration-200",
+                      isOptionDisabled
+                        ? "opacity-50"
+                        : "rounded-md p-1 transition-all duration-200 dark:hover:bg-gray-700/50",
                     ].join(" ")}
                   >
                     <input
@@ -223,7 +244,9 @@ export const RadioInput = component$<RadioInputProps>(
                       for={optionId}
                       class={[
                         optionLabelClasses,
-                        isOptionDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer group-hover/option:translate-x-1 transition-transform duration-200",
+                        isOptionDisabled
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer transition-transform duration-200 group-hover/option:translate-x-1",
                       ].join(" ")}
                     >
                       <div>
@@ -243,7 +266,7 @@ export const RadioInput = component$<RadioInputProps>(
         )}
 
         {!label && (
-          <div 
+          <div
             class={containerClasses}
             role="radiogroup"
             aria-required={required}
@@ -252,10 +275,10 @@ export const RadioInput = component$<RadioInputProps>(
               validation === "invalid" && errorMessage
                 ? `${radioGroupId}-error`
                 : validation === "warning" && warningMessage
-                ? `${radioGroupId}-warning`
-                : helperText
-                ? `${radioGroupId}-helper`
-                : undefined
+                  ? `${radioGroupId}-warning`
+                  : helperText
+                    ? `${radioGroupId}-helper`
+                    : undefined
             }
           >
             {options.map((option, index) => {
@@ -267,9 +290,11 @@ export const RadioInput = component$<RadioInputProps>(
                 <div
                   key={option.value}
                   class={[
-                    "flex items-start gap-3 group/option",
+                    "group/option flex items-start gap-3",
                     direction === "horizontal" ? "flex-row" : "flex-row",
-                    isOptionDisabled ? "opacity-50" : "dark:hover:bg-gray-700/50 rounded-md p-1 transition-all duration-200",
+                    isOptionDisabled
+                      ? "opacity-50"
+                      : "rounded-md p-1 transition-all duration-200 dark:hover:bg-gray-700/50",
                   ].join(" ")}
                 >
                   <input
@@ -279,7 +304,7 @@ export const RadioInput = component$<RadioInputProps>(
                     value={option.value}
                     checked={isChecked}
                     disabled={isOptionDisabled}
-                  required={required}
+                    required={required}
                     class={radioClasses}
                     onChange$={handleChange$}
                     onFocus$={handleFocus$}
@@ -289,7 +314,9 @@ export const RadioInput = component$<RadioInputProps>(
                     for={optionId}
                     class={[
                       optionLabelClasses,
-                      isOptionDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer group-hover/option:translate-x-1 transition-transform duration-200",
+                      isOptionDisabled
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer transition-transform duration-200 group-hover/option:translate-x-1",
                     ].join(" ")}
                   >
                     <div>
@@ -308,14 +335,14 @@ export const RadioInput = component$<RadioInputProps>(
         )}
 
         {validation === "invalid" && errorMessage && (
-          <p 
+          <p
             id={`${radioGroupId}-error`}
             class={[
-              "mt-2 text-error-600 dark:text-red-300 dark:drop-shadow-md transition-all duration-300",
+              "mt-2 text-error-600 transition-all duration-300 dark:text-red-300 dark:drop-shadow-md",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
-              "rtl:text-end ltr:text-start",
-              "dark:animate-pulse-subtle font-medium",
+              "ltr:text-start rtl:text-end",
+              "font-medium dark:animate-pulse-subtle",
             ].join(" ")}
             role="alert"
           >
@@ -324,14 +351,14 @@ export const RadioInput = component$<RadioInputProps>(
         )}
 
         {validation === "warning" && warningMessage && (
-          <p 
+          <p
             id={`${radioGroupId}-warning`}
             class={[
-              "mt-2 text-warning-600 dark:text-amber-300 dark:drop-shadow-md transition-all duration-300",
+              "mt-2 text-warning-600 transition-all duration-300 dark:text-amber-300 dark:drop-shadow-md",
               size === "sm" ? "text-xs" : "text-sm",
               animate ? "motion-safe:animate-slide-down" : "",
-              "rtl:text-end ltr:text-start",
-              "dark:animate-pulse-subtle font-medium",
+              "ltr:text-start rtl:text-end",
+              "font-medium dark:animate-pulse-subtle",
             ].join(" ")}
             role="alert"
           >
@@ -340,12 +367,12 @@ export const RadioInput = component$<RadioInputProps>(
         )}
 
         {helperText && validation !== "invalid" && validation !== "warning" && (
-          <p 
+          <p
             id={`${radioGroupId}-helper`}
             class={[
-              "mt-2 text-gray-500 dark:text-slate-400 transition-colors duration-200",
+              "mt-2 text-gray-500 transition-colors duration-200 dark:text-slate-400",
               size === "sm" ? "text-xs" : "text-sm",
-              "rtl:text-end ltr:text-start",
+              "ltr:text-start rtl:text-end",
               "dark:drop-shadow-sm",
             ].join(" ")}
           >

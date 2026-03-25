@@ -1,15 +1,15 @@
 // Core Icon component and types
 export { default as Icon } from "./Icon";
-export type { 
-  IconProps, 
-  IconSize, 
-  IconColor, 
+export type {
+  IconProps,
+  IconSize,
+  IconColor,
   IconWeight,
   IconButtonProps,
   IconGroupProps,
   IconConfig,
   IconResponsiveMode,
-  IconInteractiveMode
+  IconInteractiveMode,
 } from "./Icon.types";
 
 // Icon library

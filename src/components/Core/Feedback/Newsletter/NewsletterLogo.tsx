@@ -10,7 +10,7 @@ export const NewsletterLogo = component$(() => (
   <div class="flex flex-col items-center gap-2">
     <div class="group relative">
       <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 opacity-75 blur transition duration-300 group-hover:opacity-100"></div>
-      <div class="relative h-16 w-16 overflow-hidden rounded-full border-2 border-white dark:border-gray-800 shadow-lg">
+      <div class="relative h-16 w-16 overflow-hidden rounded-full border-2 border-white shadow-lg dark:border-gray-800">
         <img
           src={logo}
           alt={$localize`NASNET Connect Logo`}
@@ -23,7 +23,7 @@ export const NewsletterLogo = component$(() => (
     </div>
     <a
       href="/"
-      class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-3xl font-bold tracking-wider text-transparent transition-opacity hover:opacity-80 text-center"
+      class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-center text-3xl font-bold tracking-wider text-transparent transition-opacity hover:opacity-80"
     >
       {$localize`NASNET Connect`}
     </a>

@@ -27,24 +27,24 @@ export default component$(() => {
       id: 1,
       title: "Step 1",
       component: () => <Step1Component />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
-      title: "Step 2", 
+      title: "Step 2",
       component: () => <Step2Component />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 3,
       title: "Step 3",
       component: () => <Step3Component />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
-  
+
   return (
-    <VStepper 
+    <VStepper
       steps={steps}
       onStepComplete$={(id) => console.log(`Step ${id} completed`)}
       onStepChange$={(id) => console.log(`Changed to step ${id}`)}
@@ -61,10 +61,10 @@ export default component$(() => {
 ### Creating a Context
 
 ```tsx
-import { 
-  createVStepperContext, 
+import {
+  createVStepperContext,
   useVStepperContext,
-  useProvideVStepperContext 
+  useProvideVStepperContext,
 } from "~/components/Core/Stepper/VStepper";
 
 // Define your data interface
@@ -88,17 +88,17 @@ const FormStepperContext = createVStepperContext<FormData>("form-stepper");
 ```tsx
 const PersonalInfoStep = component$(() => {
   const context = useVStepperContext<FormData>(FormStepperContext);
-  
+
   return (
     <div class="space-y-4">
       <h2 class="text-xl font-semibold">Personal Information</h2>
-      
-      <input 
-        type="text" 
+
+      <input
+        type="text"
         value={context.data.personalInfo.name}
         onInput$={(_, el) => {
           context.data.personalInfo.name = el.value;
-          
+
           // Complete step automatically when name is provided
           if (el.value.trim()) {
             context.completeStep$();
@@ -106,7 +106,7 @@ const PersonalInfoStep = component$(() => {
         }}
         placeholder="Enter your name"
       />
-      
+
       <button
         onClick$={() => {
           if (context.data.personalInfo.name) {
@@ -125,33 +125,27 @@ const PersonalInfoStep = component$(() => {
 ### Context Wrapper Component
 
 ```tsx
-const VStepperContextWrapper = component$((props: { 
-  steps: StepItem[]; 
-  data: FormData; 
-}) => {
-  const scrollToStep$ = $((index: number) => {
-    const element = document.getElementById(`step-${index}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+const VStepperContextWrapper = component$(
+  (props: { steps: StepItem[]; data: FormData }) => {
+    const scrollToStep$ = $((index: number) => {
+      const element = document.getElementById(`step-${index}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    });
 
-  // Provide context
-  useProvideVStepperContext(
-    FormStepperContext,
-    props.steps,
-    0,
-    props.data,
-    scrollToStep$
-  );
+    // Provide context
+    useProvideVStepperContext(
+      FormStepperContext,
+      props.steps,
+      0,
+      props.data,
+      scrollToStep$,
+    );
 
-  return (
-    <VStepper 
-      steps={props.steps}
-      allowStepNavigation={true}
-    />
-  );
-});
+    return <VStepper steps={props.steps} allowStepNavigation={true} />;
+  },
+);
 ```
 
 ## Step Management Features
@@ -159,7 +153,7 @@ const VStepperContextWrapper = component$((props: {
 ### Enable Edit Mode
 
 ```tsx
-<VStepper 
+<VStepper
   steps={steps}
   isEditMode={true} // Enable step management UI
   dynamicStepComponent={() => <DynamicStepContent />}
@@ -170,7 +164,7 @@ const VStepperContextWrapper = component$((props: {
 When `isEditMode` is enabled, the VStepper component will display a management panel that allows users to:
 
 1. **Add new steps** with custom titles and positioning
-2. **Remove existing steps** from the workflow  
+2. **Remove existing steps** from the workflow
 3. **Reorder steps** by moving them up and down
 4. **View step status** (complete/incomplete)
 
@@ -183,24 +177,24 @@ export default component$(() => {
   const steps = useSignal<StepItem[]>([
     // initial steps...
   ]);
-  
+
   // Add a new step
   const addStep = $(() => {
     const newStep: StepItem = {
       id: Date.now(),
       title: "New Step",
       component: () => <NewStepComponent />,
-      isComplete: false
+      isComplete: false,
     };
-    
+
     steps.value = [...steps.value, newStep];
   });
-  
+
   return (
     <div>
       <button onClick$={addStep}>Add New Step</button>
-      
-      <VStepper 
+
+      <VStepper
         steps={steps.value}
         // other props...
       />
@@ -214,6 +208,7 @@ export default component$(() => {
 The VStepper context provides these functions for step management:
 
 ### Navigation Functions
+
 ```tsx
 // Navigate to a specific step by index
 context.goToStep$(2); // Go to step at index 2
@@ -221,7 +216,7 @@ context.goToStep$(2); // Go to step at index 2
 // Move to next step
 context.nextStep$();
 
-// Move to previous step  
+// Move to previous step
 context.prevStep$();
 
 // Scroll to a specific step
@@ -229,6 +224,7 @@ context.scrollToStep$(1);
 ```
 
 ### Step Completion Functions
+
 ```tsx
 // Complete the current step
 context.completeStep$();
@@ -241,6 +237,7 @@ context.updateStepCompletion$(stepId, true);
 ```
 
 ### Step Management Functions
+
 ```tsx
 // Add a new step (optionally at specific position)
 const newStepId = context.addStep$(newStep, 2); // Add at index 2
@@ -255,6 +252,7 @@ context.swapSteps$(1, 2); // Swap steps at index 1 and 2
 ## Props
 
 ### VStepper Props
+
 - `steps`: Array of step definitions
 - `activeStep`: (Optional) Initial active step index
 - `onStepComplete$`: (Optional) Called when a step is marked complete
@@ -268,6 +266,7 @@ context.swapSteps$(1, 2); // Swap steps at index 1 and 2
 - `dynamicStepComponent`: (Optional) Component to use for dynamically added steps
 
 ### StepItem Interface
+
 ```tsx
 interface StepItem {
   id: number;
@@ -292,6 +291,7 @@ The VStepper automatically adapts to mobile devices with:
 ## Examples
 
 ### Basic Example
+
 ```tsx
 export const BasicVStepperExample = component$(() => {
   const steps: StepItem[] = [
@@ -299,18 +299,18 @@ export const BasicVStepperExample = component$(() => {
       id: 1,
       title: "Personal Info",
       component: () => <PersonalInfoStep />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Review",
       component: () => <ReviewStep />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
 
   return (
-    <VStepper 
+    <VStepper
       steps={steps}
       position="left"
       allowStepNavigation={true}
@@ -321,40 +321,39 @@ export const BasicVStepperExample = component$(() => {
 ```
 
 ### Context Example
+
 ```tsx
 export const ContextVStepperExample = component$(() => {
   const formData = useStore<FormData>({
     personalInfo: { name: "", email: "" },
-    preferences: { theme: "light", notifications: true }
+    preferences: { theme: "light", notifications: true },
   });
 
-  return (
-    <VStepperContextWrapper 
-      steps={steps}
-      data={formData}
-    />
-  );
+  return <VStepperContextWrapper steps={steps} data={formData} />;
 });
 ```
 
 ### Management Example
+
 ```tsx
 export const ManagementVStepperExample = component$(() => {
   const isEditMode = useSignal(false);
-  const steps = useSignal<StepItem[]>([/* initial steps */]);
+  const steps = useSignal<StepItem[]>([
+    /* initial steps */
+  ]);
 
   return (
     <div>
       <label>
-        <input 
-          type="checkbox" 
+        <input
+          type="checkbox"
           checked={isEditMode.value}
-          onChange$={() => isEditMode.value = !isEditMode.value} 
+          onChange$={() => (isEditMode.value = !isEditMode.value)}
         />
         Enable Management Mode
       </label>
-      
-      <VStepper 
+
+      <VStepper
         steps={steps.value}
         isEditMode={isEditMode.value}
         dynamicStepComponent={() => <DynamicStepContent />}
@@ -378,7 +377,7 @@ The VStepper uses TailwindCSS classes and supports:
 The VStepper includes:
 
 - **Keyboard navigation** support
-- **Screen reader compatibility** 
+- **Screen reader compatibility**
 - **ARIA attributes** for accessibility
 - **Focus management** between steps
 - **Semantic HTML** structure
@@ -390,4 +389,4 @@ The VStepper includes:
 3. **Validate step completion** - Ensure data integrity before progression
 4. **Handle errors gracefully** - Provide feedback for validation issues
 5. **Use context wisely** - Share only necessary data between steps
-6. **Test responsiveness** - Verify mobile experience across devices 
+6. **Test responsiveness** - Verify mobile experience across devices

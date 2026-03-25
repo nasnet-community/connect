@@ -1,4 +1,10 @@
-import { component$, useVisibleTask$, $, useTask$, useSignal } from "@builder.io/qwik";
+import {
+  component$,
+  useVisibleTask$,
+  $,
+  useTask$,
+  useSignal,
+} from "@builder.io/qwik";
 import type { CStepperProps } from "./types";
 import { useCStepper } from "./hooks/useCStepper";
 import { CStepperContextId } from "./hooks/useStepperContext";
@@ -17,13 +23,13 @@ import { useStepperHelp } from "../shared/hooks/useStepperHelp";
 export const CStepper = component$((props: CStepperProps) => {
   // Initialize edit mode signal
   const isEditMode = useSignal(props.isEditMode || false);
-  
+
   // Get all stepper functionality from useCStepper hook
-  const { 
-    activeStep, 
-    steps, 
-    handleNext$, 
-    handlePrev$, 
+  const {
+    activeStep,
+    steps,
+    handleNext$,
+    handlePrev$,
     setStep$,
     hasError,
     errorMessage,
@@ -31,15 +37,11 @@ export const CStepper = component$((props: CStepperProps) => {
     handleStepError,
     addStep$,
     removeStep$,
-    swapSteps$
+    swapSteps$,
   } = useCStepper(props);
 
   // Initialize help system (always call hook, but use enableHelp flag)
-  const helpSystem = useStepperHelp(
-    steps,
-    activeStep,
-    props.helpOptions
-  );
+  const helpSystem = useStepperHelp(steps, activeStep, props.helpOptions);
 
   // Use the useProvideStepperContext hook to create and provide the context
   useProvideStepperContext({
@@ -54,13 +56,13 @@ export const CStepper = component$((props: CStepperProps) => {
     addStep$,
     removeStep$,
     swapSteps$,
-    allowSkipSteps: props.allowSkipSteps
+    allowSkipSteps: props.allowSkipSteps,
   });
 
   // Process extraSteps if provided
   useTask$(({ track }) => {
     track(() => props.extraSteps);
-    
+
     // Add extra steps if provided
     if (props.extraSteps && props.extraSteps.length > 0) {
       // We have to use for loop because we can't await Promise inside map
@@ -82,14 +84,16 @@ export const CStepper = component$((props: CStepperProps) => {
 
     // Focus the active step element after step change
     setTimeout(() => {
-      const activeStepEl = document.getElementById(`cstepper-step-${activeStep.value}`);
+      const activeStepEl = document.getElementById(
+        `cstepper-step-${activeStep.value}`,
+      );
       if (activeStepEl) {
         // Check if the parent container is visible and not hidden
         const isParentVisible = () => {
           let element = activeStepEl as HTMLElement | null;
           while (element) {
             const style = window.getComputedStyle(element);
-            if (style.display === 'none' || style.visibility === 'hidden') {
+            if (style.display === "none" || style.visibility === "hidden") {
               return false;
             }
             element = element.parentElement;
@@ -107,17 +111,22 @@ export const CStepper = component$((props: CStepperProps) => {
         const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
 
         // Find focusable element within the step
-        const focusableEl = activeStepEl.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const focusableEl = activeStepEl.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
         if (focusableEl) {
           // Always use preventScroll to avoid unwanted scrolling
           (focusableEl as HTMLElement).focus({ preventScroll: true });
 
           // Only scroll into view if element is not in viewport and user initiated the change
           if (!isInViewport && activeStep.value > 0) {
-            activeStepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            activeStepEl.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
           }
         } else {
-          activeStepEl.setAttribute('tabindex', '-1');
+          activeStepEl.setAttribute("tabindex", "-1");
           activeStepEl.focus({ preventScroll: true });
         }
       }
@@ -127,7 +136,7 @@ export const CStepper = component$((props: CStepperProps) => {
   // Render error state if there are issues with the stepper
   if (hasError.value) {
     return (
-      <CStepperErrors 
+      <CStepperErrors
         hasError={hasError.value}
         errorMessage={errorMessage.value}
         stepsLength={steps.value.length}
@@ -145,7 +154,9 @@ export const CStepper = component$((props: CStepperProps) => {
   const totalSteps = steps.value.length;
   const isLastStep = activeStep.value === totalSteps - 1;
   const currentStep = steps.value[activeStep.value];
-  const currentStepHasErrors = Boolean(currentStep.validationErrors && currentStep.validationErrors.length > 0);
+  const currentStepHasErrors = Boolean(
+    currentStep.validationErrors && currentStep.validationErrors.length > 0,
+  );
   const isOptional = Boolean(currentStep.isOptional);
   const isStepSkippable = Boolean(currentStep.skippable);
 
@@ -156,32 +167,34 @@ export const CStepper = component$((props: CStepperProps) => {
   useTask$(({ track }) => {
     track(() => steps.value);
     track(() => activeStep.value);
-    const stepCompletion = track(() => steps.value[activeStep.value]?.isComplete);
+    const stepCompletion = track(
+      () => steps.value[activeStep.value]?.isComplete,
+    );
 
     const newCompletionValue = stepCompletion || false;
     const previousValue = currentStepIsComplete.value;
-    
+
     currentStepIsComplete.value = newCompletionValue;
-    
+
     // Debug logging for step completion changes
     if (previousValue !== newCompletionValue) {
-      console.log('[CStepper] Step completion changed:', {
+      console.log("[CStepper] Step completion changed:", {
         activeStep: activeStep.value,
         stepTitle: steps.value[activeStep.value]?.title,
         previousComplete: previousValue,
         newComplete: newCompletionValue,
-        stepId: steps.value[activeStep.value]?.id
+        stepId: steps.value[activeStep.value]?.id,
       });
     }
   });
-  
+
   // Help system properties
   const hasHelp = helpSystem?.currentStepHasHelp.value || false;
 
   return (
     <div class="w-full" role="application" aria-label="Multi-step form">
       {/* Step Management UI (only visible in edit mode) */}
-      <CStepperManagement 
+      <CStepperManagement
         steps={steps.value}
         activeStep={activeStep.value}
         addStep$={addStep$}
@@ -190,9 +203,9 @@ export const CStepper = component$((props: CStepperProps) => {
         isEditMode={isEditMode.value}
         dynamicStepComponent={props.dynamicStepComponent}
       />
-      
+
       {/* Step Progress Indicator */}
-      <CStepperProgress 
+      <CStepperProgress
         steps={steps.value}
         activeStep={activeStep.value}
         onStepClick$={setStep$}
@@ -200,7 +213,7 @@ export const CStepper = component$((props: CStepperProps) => {
         useNumbers={props.useNumbers}
         allowSkipSteps={props.allowSkipSteps}
       />
-      
+
       {/* Step Content */}
       <div class="space-y-6">
         <CStepperContent
@@ -213,7 +226,7 @@ export const CStepper = component$((props: CStepperProps) => {
           handleStepError={handleStepError}
           hideStepHeader={props.hideStepHeader}
         />
-        
+
         {/* Navigation Buttons */}
         <CStepperNavigation
           activeStep={activeStep.value}
@@ -227,19 +240,20 @@ export const CStepper = component$((props: CStepperProps) => {
           onPrevious$={handlePrev$}
           onNext$={handleNext$}
           onComplete$={props.onComplete$ || $(() => {})}
-          
           // Help system props
           hasHelp={hasHelp}
           onShowHelp$={helpSystem?.openHelp$}
           helpButtonLabel={`Get help for ${stepTitle}`}
           isHelpOpen={helpSystem?.isHelpOpen.value || false}
         />
-        
+
         {/* Accessible progress indicator */}
         <div class="sr-only" aria-live="polite">
           {$localize`Step ${stepNumber} of ${totalSteps}\: ${stepTitle}`}
-          {currentStepIsComplete.value ? $localize`Step is complete` : $localize`Step is incomplete`}
-          {currentStepHasErrors ? $localize`Step has validation errors` : ''}
+          {currentStepIsComplete.value
+            ? $localize`Step is complete`
+            : $localize`Step is incomplete`}
+          {currentStepHasErrors ? $localize`Step has validation errors` : ""}
         </div>
       </div>
 
@@ -256,4 +270,4 @@ export const CStepper = component$((props: CStepperProps) => {
       )}
     </div>
   );
-}); 
+});

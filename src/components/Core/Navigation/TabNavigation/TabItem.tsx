@@ -81,9 +81,10 @@ export const TabItem = component$<TabItemProps>(
       <li
         class={`
           ${widthClass} 
-          ${variant === "underline" 
-            ? "mr-1 last:mr-0 mobile:mr-0.5 tablet:mr-1 desktop:mr-2" 
-            : ""
+          ${
+            variant === "underline"
+              ? "mr-1 last:mr-0 mobile:mr-0.5 tablet:mr-1 desktop:mr-2"
+              : ""
           }
           flex-shrink-0
         `}
@@ -114,11 +115,12 @@ export const TabItem = component$<TabItemProps>(
               <span
                 class={`
                   ${sizeClasses[size].count}
-                  rounded-full text-center font-medium
-                  px-1.5 py-0.5 mobile:px-1 mobile:py-0.5
-                  ${isActive 
-                    ? "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300" 
-                    : "bg-surface-secondary dark:bg-surface-dark-secondary text-gray-600 dark:text-gray-400"
+                  rounded-full px-1.5 py-0.5
+                  text-center font-medium mobile:px-1 mobile:py-0.5
+                  ${
+                    isActive
+                      ? "bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300"
+                      : "bg-surface-secondary dark:bg-surface-dark-secondary text-gray-600 dark:text-gray-400"
                   }
                   motion-safe:transition-colors
                 `}

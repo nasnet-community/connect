@@ -4,12 +4,16 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 
 // Wireguard Client
 
-export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig => {
+export const WireguardClient = (
+    config: WireguardClientConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/interface wireguard": [],
         "/interface wireguard peers": [],
@@ -54,14 +58,14 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
     }
 
     // if (PeerPersistentKeepalive) {
-        peerCommand += ` persistent-keepalive=25s`;
+    peerCommand += ` persistent-keepalive=25s`;
     // }
 
     routerConfig["/interface wireguard peers"].push(peerCommand);
 
     // Replace /32 with /30 for better routing compatibility
-    const finalInterfaceAddress = InterfaceAddress.endsWith('/32') 
-        ? InterfaceAddress.replace('/32', '/30') 
+    const finalInterfaceAddress = InterfaceAddress.endsWith("/32")
+        ? InterfaceAddress.replace("/32", "/30")
         : InterfaceAddress;
 
     routerConfig["/ip address"].push(
@@ -81,14 +85,20 @@ export const WireguardClient = ( config: WireguardClientConfig ): RouterConfig =
     return routerConfig;
 };
 
-export const WireguardClientWrapper = ( configs: WireguardClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const WireguardClientWrapper = (
+    configs: WireguardClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((wgConfig) => {
         const vpnConfig = WireguardClient(wgConfig);
-        const interfaceName = GenerateVCInterfaceName(wgConfig.Name, "Wireguard");
+        const interfaceName = GenerateVCInterfaceName(
+            wgConfig.Name,
+            "Wireguard",
+        );
         const endpointAddress = wgConfig.PeerEndpointAddress;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(wgConfig.Name);
 

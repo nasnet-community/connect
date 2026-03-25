@@ -1,4 +1,11 @@
-import { component$, type Signal, type QRL, useSignal, useTask$, $ } from "@builder.io/qwik";
+import {
+  component$,
+  type Signal,
+  type QRL,
+  useSignal,
+  useTask$,
+  $,
+} from "@builder.io/qwik";
 import {
   HiCubeTransparentOutline,
   HiCheckCircleOutline,
@@ -15,13 +22,13 @@ export const TunnelHeader = component$<TunnelHeaderProps>(
   ({ tunnelsEnabled, onToggle$ }) => {
     // Create a string signal for SegmentedControl
     const tunnelState = useSignal(tunnelsEnabled.value ? "enable" : "disable");
-    
+
     // Sync the string signal with the boolean signal
     useTask$(({ track }) => {
       track(() => tunnelsEnabled.value);
       tunnelState.value = tunnelsEnabled.value ? "enable" : "disable";
     });
-    
+
     return (
       <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div class="flex items-center gap-4">
@@ -42,16 +49,16 @@ export const TunnelHeader = component$<TunnelHeaderProps>(
         <SegmentedControl
           value={tunnelState}
           options={[
-            { 
-              value: "disable", 
+            {
+              value: "disable",
               label: $localize`Disable`,
-              icon: <HiXCircleOutline class="h-5 w-5" /> as any
+              icon: (<HiXCircleOutline class="h-5 w-5" />) as any,
             },
-            { 
-              value: "enable", 
+            {
+              value: "enable",
               label: $localize`Enable`,
-              icon: <HiCheckCircleOutline class="h-5 w-5" /> as any
-            }
+              icon: (<HiCheckCircleOutline class="h-5 w-5" />) as any,
+            },
           ]}
           onChange$={$((value: string) => {
             const enabled = value === "enable";

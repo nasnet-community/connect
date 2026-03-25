@@ -32,7 +32,12 @@ export const IKEv2ServerEasy = component$(() => {
 
         <ServerFormField
           label={$localize`Pre-shared Key`}
-          errorMessage={presharedKeyError.value || (!presharedKeyError.value ? $localize`Key must be at least 8 characters long for security` : undefined)}
+          errorMessage={
+            presharedKeyError.value ||
+            (!presharedKeyError.value
+              ? $localize`Key must be at least 8 characters long for security`
+              : undefined)
+          }
           required={true}
         >
           <div class="relative">

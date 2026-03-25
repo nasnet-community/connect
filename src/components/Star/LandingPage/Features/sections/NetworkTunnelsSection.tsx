@@ -17,29 +17,29 @@ export const NetworkTunnelsSection = component$(() => {
   const nodes: GraphNode[] = [
     // Main offices/sites
     createNode("DomesticService", "hq", 150, 150, {
-      label: $localize`Headquarters`
+      label: $localize`Headquarters`,
     }),
     createNode("DomesticService", "branch1", 350, 100, {
-      label: $localize`Branch Office 1`
+      label: $localize`Branch Office 1`,
     }),
     createNode("DomesticService", "branch2", 350, 200, {
-      label: $localize`Branch Office 2`
+      label: $localize`Branch Office 2`,
     }),
     createNode("DomesticService", "datacenter", 200, 300, {
-      label: $localize`Data Center`
+      label: $localize`Data Center`,
     }),
     // Tunnel endpoints
     createNode("WirelessRouter", "router-hq", 100, 150, {
-      label: $localize`HQ Router`
+      label: $localize`HQ Router`,
     }),
     createNode("WirelessRouter", "router-br1", 400, 100, {
-      label: $localize`Branch Router 1`
+      label: $localize`Branch Router 1`,
     }),
     createNode("WirelessRouter", "router-br2", 400, 200, {
-      label: $localize`Branch Router 2`
+      label: $localize`Branch Router 2`,
     }),
     createNode("EthernetRouter", "router-dc", 250, 300, {
-      label: $localize`DC Router`
+      label: $localize`DC Router`,
     }),
   ];
 
@@ -180,69 +180,121 @@ export const NetworkTunnelsSection = component$(() => {
   });
 
   return (
-    <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-slate-900 dark:via-gray-900 dark:to-zinc-900">
+    <section class="relative min-h-[80vh] overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 px-4 py-24 dark:from-slate-900 dark:via-gray-900 dark:to-zinc-900">
       {/* Tunnel portal effects with depth */}
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div class="relative w-96 h-96">
-            <div class="absolute inset-0 bg-gradient-to-r from-slate-500 to-zinc-500 rounded-full opacity-5 animate-pulse" />
-            <div class="absolute inset-8 bg-gradient-to-r from-slate-400 to-zinc-400 rounded-full opacity-5 animate-pulse animation-delay-1000" />
-            <div class="absolute inset-16 bg-gradient-to-r from-slate-300 to-zinc-300 rounded-full opacity-5 animate-pulse animation-delay-2000" />
-            <div class="absolute inset-24 bg-gradient-to-r from-slate-200 to-zinc-200 rounded-full opacity-5 animate-pulse animation-delay-3000" />
-            <div class="absolute inset-32 bg-gradient-to-r from-slate-100 to-zinc-100 rounded-full opacity-5 animate-pulse animation-delay-4000" />
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div class="relative h-96 w-96">
+            <div class="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-slate-500 to-zinc-500 opacity-5" />
+            <div class="absolute inset-8 animate-pulse rounded-full bg-gradient-to-r from-slate-400 to-zinc-400 opacity-5 animation-delay-1000" />
+            <div class="absolute inset-16 animate-pulse rounded-full bg-gradient-to-r from-slate-300 to-zinc-300 opacity-5 animation-delay-2000" />
+            <div class="absolute inset-24 animate-pulse rounded-full bg-gradient-to-r from-slate-200 to-zinc-200 opacity-5 animation-delay-3000" />
+            <div class="absolute inset-32 animate-pulse rounded-full bg-gradient-to-r from-slate-100 to-zinc-100 opacity-5 animation-delay-4000" />
           </div>
         </div>
       </div>
 
       {/* 3D tunnel perspective grid */}
       <div class="absolute inset-0 opacity-10">
-        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg
+          class="absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
           <defs>
-            <linearGradient id="tunnel-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient
+              id="tunnel-gradient"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
               <stop offset="0%" style="stop-color:#64748b;stop-opacity:0" />
               <stop offset="50%" style="stop-color:#64748b;stop-opacity:0.5" />
               <stop offset="100%" style="stop-color:#64748b;stop-opacity:0" />
             </linearGradient>
           </defs>
-          <line x1="50" y1="0" x2="0" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
-          <line x1="50" y1="0" x2="100" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
-          <line x1="50" y1="0" x2="20" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
-          <line x1="50" y1="0" x2="80" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
-          <line x1="50" y1="0" x2="40" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
-          <line x1="50" y1="0" x2="60" y2="100" stroke="url(#tunnel-gradient)" stroke-width="0.2" />
+          <line
+            x1="50"
+            y1="0"
+            x2="0"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
+          <line
+            x1="50"
+            y1="0"
+            x2="100"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
+          <line
+            x1="50"
+            y1="0"
+            x2="20"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
+          <line
+            x1="50"
+            y1="0"
+            x2="80"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
+          <line
+            x1="50"
+            y1="0"
+            x2="40"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
+          <line
+            x1="50"
+            y1="0"
+            x2="60"
+            y2="100"
+            stroke="url(#tunnel-gradient)"
+            stroke-width="0.2"
+          />
           <circle cx="50" cy="0" r="2" fill="#64748b" opacity="0.3" />
         </svg>
       </div>
 
       {/* Data streams through tunnel */}
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full">
-          <div class="w-full h-full bg-gradient-to-b from-transparent via-slate-500 to-transparent opacity-30 animate-slide-down" />
+        <div class="absolute left-1/2 top-0 h-full w-px -translate-x-1/2">
+          <div class="h-full w-full animate-slide-down bg-gradient-to-b from-transparent via-slate-500 to-transparent opacity-30" />
         </div>
-        <div class="absolute top-0 left-1/3 w-px h-full">
-          <div class="w-full h-full bg-gradient-to-b from-transparent via-gray-500 to-transparent opacity-20 animate-slide-down animation-delay-2000" />
+        <div class="absolute left-1/3 top-0 h-full w-px">
+          <div class="h-full w-full animate-slide-down bg-gradient-to-b from-transparent via-gray-500 to-transparent opacity-20 animation-delay-2000" />
         </div>
-        <div class="absolute top-0 right-1/3 w-px h-full">
-          <div class="w-full h-full bg-gradient-to-b from-transparent via-zinc-500 to-transparent opacity-20 animate-slide-down animation-delay-4000" />
+        <div class="absolute right-1/3 top-0 h-full w-px">
+          <div class="h-full w-full animate-slide-down bg-gradient-to-b from-transparent via-zinc-500 to-transparent opacity-20 animation-delay-4000" />
         </div>
       </div>
 
       {/* Tunnel entry/exit points */}
       <div class="absolute inset-0">
-        <div class="absolute top-10 left-1/2 -translate-x-1/2 w-8 h-8 border-2 border-slate-400 rounded-full opacity-20 animate-pulse" />
-        <div class="absolute bottom-10 left-1/4 w-6 h-6 border-2 border-gray-400 rounded-full opacity-15 animate-pulse animation-delay-2000" />
-        <div class="absolute bottom-10 right-1/4 w-6 h-6 border-2 border-zinc-400 rounded-full opacity-15 animate-pulse animation-delay-3000" />
+        <div class="absolute left-1/2 top-10 h-8 w-8 -translate-x-1/2 animate-pulse rounded-full border-2 border-slate-400 opacity-20" />
+        <div class="absolute bottom-10 left-1/4 h-6 w-6 animate-pulse rounded-full border-2 border-gray-400 opacity-15 animation-delay-2000" />
+        <div class="absolute bottom-10 right-1/4 h-6 w-6 animate-pulse rounded-full border-2 border-zinc-400 opacity-15 animation-delay-3000" />
       </div>
 
-      <div class="max-w-7xl mx-auto relative z-10">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="relative z-10 mx-auto max-w-7xl">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
           {/* Content Side */}
-          <div class="space-y-6 animate-fade-in-left">
+          <div class="animate-fade-in-left space-y-6">
             <Badge variant="outline" size="lg">
               {$localize`Enterprise Networking`}
             </Badge>
 
-            <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold">
+            <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-slate-600 to-gray-600 bg-clip-text text-transparent">
                 {$localize`Network Tunnels`}
               </span>
@@ -252,27 +304,31 @@ export const NetworkTunnelsSection = component$(() => {
               </span>
             </h2>
 
-            <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
               {$localize`Professional tunneling with IPIP, EoIP, GRE, and VXLAN protocols. Create site-to-site connections with enterprise-grade security.`}
             </p>
 
             <div class="grid grid-cols-2 gap-3">
               {["IPIP", "EoIP", "GRE", "VXLAN"].map((protocol) => (
-                <div key={protocol} class="bg-white/50 dark:bg-black/50 rounded-lg p-4 text-center">
-                  <LuNetwork class="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                  <span class="font-semibold text-gray-900 dark:text-white">{protocol}</span>
+                <div
+                  key={protocol}
+                  class="rounded-lg bg-white/50 p-4 text-center dark:bg-black/50"
+                >
+                  <LuNetwork class="mx-auto mb-2 h-8 w-8 text-gray-600" />
+                  <span class="font-semibold text-gray-900 dark:text-white">
+                    {protocol}
+                  </span>
                 </div>
               ))}
             </div>
-
           </div>
 
           {/* Visual Side - Interactive Network Tunnels Graph */}
-          <div class="relative animate-fade-in-right">
-            <div class="bg-white/50 dark:bg-black/20 rounded-2xl p-4 backdrop-blur-sm">
+          <div class="animate-fade-in-right relative">
+            <div class="rounded-2xl bg-white/50 p-4 backdrop-blur-sm dark:bg-black/20">
               {/* Protocol Controls */}
               <div class="mb-4">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {$localize`Tunnel Protocols`}
                 </h3>
                 <div class="grid grid-cols-2 gap-2">
@@ -283,16 +339,18 @@ export const NetworkTunnelsSection = component$(() => {
                       class={`flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all ${
                         protocol.active
                           ? "border-opacity-80"
-                          : "bg-gray-100/50 border-gray-300 text-gray-500 dark:bg-gray-800/50"
+                          : "border-gray-300 bg-gray-100/50 text-gray-500 dark:bg-gray-800/50"
                       }`}
                       style={{
-                        backgroundColor: protocol.active ? `${protocol.color}20` : undefined,
+                        backgroundColor: protocol.active
+                          ? `${protocol.color}20`
+                          : undefined,
                         borderColor: protocol.color,
                         color: protocol.active ? protocol.color : undefined,
                       }}
                     >
                       <span
-                        class={`w-2 h-2 rounded-full ${protocol.active ? 'animate-pulse' : ''}`}
+                        class={`h-2 w-2 rounded-full ${protocol.active ? "animate-pulse" : ""}`}
                         style={{ backgroundColor: protocol.color }}
                       ></span>
                       {protocol.name}
@@ -303,7 +361,7 @@ export const NetworkTunnelsSection = component$(() => {
 
               {/* Selected Node Info */}
               {selectedNode.value && (
-                <div class="mb-3 rounded-lg bg-slate-50 dark:bg-slate-900/30 p-3 border border-slate-200 dark:border-slate-700">
+                <div class="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/30">
                   <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
                     {$localize`Selected:`} {selectedNode.value}
                   </p>
@@ -313,12 +371,16 @@ export const NetworkTunnelsSection = component$(() => {
               {/* Graph Component */}
               <Graph
                 nodes={nodes}
-                connections={connections.filter(conn => {
+                connections={connections.filter((conn) => {
                   if (conn.trafficType === "VPN" && conn.label) {
-                    if (conn.label.includes("IPIP")) return activeTunnels.value.ipip;
-                    if (conn.label.includes("EoIP")) return activeTunnels.value.eoip;
-                    if (conn.label.includes("GRE")) return activeTunnels.value.gre;
-                    if (conn.label.includes("VXLAN")) return activeTunnels.value.vxlan;
+                    if (conn.label.includes("IPIP"))
+                      return activeTunnels.value.ipip;
+                    if (conn.label.includes("EoIP"))
+                      return activeTunnels.value.eoip;
+                    if (conn.label.includes("GRE"))
+                      return activeTunnels.value.gre;
+                    if (conn.label.includes("VXLAN"))
+                      return activeTunnels.value.vxlan;
                   }
                   return true;
                 })}
@@ -339,18 +401,23 @@ export const NetworkTunnelsSection = component$(() => {
               />
 
               {/* Active Tunnels Summary */}
-              <div class="mt-4 p-3 bg-gradient-to-r from-slate-500/10 to-gray-500/10 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div class="mt-4 rounded-lg border border-slate-200 bg-gradient-to-r from-slate-500/10 to-gray-500/10 p-3 dark:border-slate-700">
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="font-semibold text-gray-900 dark:text-white">
-                      {$localize`Active Tunnels:`} {Object.values(activeTunnels.value).filter(Boolean).length}/4
+                      {$localize`Active Tunnels:`}{" "}
+                      {
+                        Object.values(activeTunnels.value).filter(Boolean)
+                          .length
+                      }
+                      /4
                     </div>
                     <div class="text-xs text-gray-600 dark:text-gray-400">
                       {$localize`Enterprise-grade site-to-site connectivity`}
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
-                    <LuServer class="w-5 h-5 text-slate-500" />
+                    <LuServer class="h-5 w-5 text-slate-500" />
                     <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {$localize`Multi-Protocol`}
                     </span>
@@ -359,20 +426,26 @@ export const NetworkTunnelsSection = component$(() => {
               </div>
 
               {/* Performance Stats */}
-              <div class="grid grid-cols-3 gap-3 mt-4">
-                <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuNetwork class="w-6 h-6 text-slate-500 mx-auto mb-1" />
-                  <div class="text-lg font-bold text-gray-900 dark:text-white">4</div>
+              <div class="mt-4 grid grid-cols-3 gap-3">
+                <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
+                  <LuNetwork class="mx-auto mb-1 h-6 w-6 text-slate-500" />
+                  <div class="text-lg font-bold text-gray-900 dark:text-white">
+                    4
+                  </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Protocols`}</div>
                 </div>
-                <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuServer class="w-6 h-6 text-gray-500 mx-auto mb-1" />
-                  <div class="text-lg font-bold text-gray-900 dark:text-white">8</div>
+                <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
+                  <LuServer class="mx-auto mb-1 h-6 w-6 text-gray-500" />
+                  <div class="text-lg font-bold text-gray-900 dark:text-white">
+                    8
+                  </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Sites`}</div>
                 </div>
-                <div class="text-center bg-white/60 dark:bg-black/40 rounded-lg p-3">
-                  <LuNetwork class="w-6 h-6 text-zinc-500 mx-auto mb-1" />
-                  <div class="text-lg font-bold text-gray-900 dark:text-white">5</div>
+                <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
+                  <LuNetwork class="mx-auto mb-1 h-6 w-6 text-zinc-500" />
+                  <div class="text-lg font-bold text-gray-900 dark:text-white">
+                    5
+                  </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Tunnels`}</div>
                 </div>
               </div>

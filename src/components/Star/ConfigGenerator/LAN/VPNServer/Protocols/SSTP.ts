@@ -1,4 +1,9 @@
-import type { SstpServerConfig, SubnetConfig, VSCredentials, VSNetwork } from "~/components/Star/StarContext";
+import type {
+    SstpServerConfig,
+    SubnetConfig,
+    VSCredentials,
+    VSNetwork,
+} from "~/components/Star/StarContext";
 import {
     type RouterConfig,
     CommandShortner,
@@ -11,10 +16,11 @@ import {
     SubnetToRange,
 } from "~/components/Star/ConfigGenerator";
 
-
-
-
-export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subnetConfig: SubnetConfig): RouterConfig => {
+export const SstpServer = (
+    config: SstpServerConfig,
+    vsNetwork: VSNetwork,
+    subnetConfig: SubnetConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip pool": [],
         "/ppp profile": [],
@@ -45,7 +51,11 @@ export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subne
 
     // Generate IP pool for SSTP clients
     routerConfig["/ip pool"].push(
-        ...generateIPPool({ name, ranges, comment: `SSTP ${name} client pool` })
+        ...generateIPPool({
+            name,
+            ranges,
+            comment: `SSTP ${name} client pool`,
+        }),
     );
 
     // Create PPP profile using shared helper (profile name: `${name}-profile`)
@@ -55,14 +65,17 @@ export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subne
     });
 
     // Add VPN subnet to address list using shared helper
-    const addrCfg = VSAddressList(subnet, String(vsNetwork), `${name} SSTP subnet`);
+    const addrCfg = VSAddressList(
+        subnet,
+        String(vsNetwork),
+        `${name} SSTP subnet`,
+    );
     Object.entries(addrCfg).forEach(([section, cmds]) => {
         routerConfig[section] = (routerConfig[section] ?? []).concat(cmds);
     });
 
     // Configure SSTP server
     const serverParams: string[] = [`enabled=${formatBooleanValue(enabled)}`];
-
 
     if (Port) {
         serverParams.push(`port=${Port}`);
@@ -99,10 +112,7 @@ export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subne
     }
 
     if (VerifyClientCertificate !== undefined) {
-        serverParams.push(
-            `verify-client-certificate=no`,
-        );
-
+        serverParams.push(`verify-client-certificate=no`);
     }
 
     if (TlsVersion) {
@@ -116,7 +126,10 @@ export const SstpServer = (config: SstpServerConfig, vsNetwork: VSNetwork, subne
     return CommandShortner(routerConfig);
 };
 
-export const SstpServerUsers = (serverConfig: SstpServerConfig, users: VSCredentials[]): RouterConfig => {
+export const SstpServerUsers = (
+    serverConfig: SstpServerConfig,
+    users: VSCredentials[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ppp secret": [],
     };
@@ -145,7 +158,10 @@ export const SstpServerUsers = (serverConfig: SstpServerConfig, users: VSCredent
     return CommandShortner(config);
 };
 
-export const SSTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork): RouterConfig => {
+export const SSTPVSBinding = (
+    credentials: VSCredentials[],
+    VSNetwork: VSNetwork,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface sstp-server": [],
         "/interface list member": [],
@@ -184,7 +200,6 @@ export const SSTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
         });
     });
 
-
     // Keep track of created interfaces for interface list membership
     const createdInterfaces: string[] = [];
 
@@ -212,11 +227,11 @@ export const SSTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
         createdInterfaces.forEach((interfaceName) => {
             // Use VSInterfaceList helper to add interface to proper lists
             const interfaceListCfg = VSInterfaceList(
-                interfaceName, 
-                String(VSNetwork), 
-                `VPN binding interface for ${interfaceName}`
+                interfaceName,
+                String(VSNetwork),
+                `VPN binding interface for ${interfaceName}`,
             );
-            
+
             // Merge the interface list configuration
             Object.entries(interfaceListCfg).forEach(([section, cmds]) => {
                 config[section] = (config[section] ?? []).concat(cmds);
@@ -239,7 +254,9 @@ export const SSTPVSBinding = (credentials: VSCredentials[], VSNetwork: VSNetwork
     return config;
 };
 
-export const SSTPServerFirewall = (serverConfigs: SstpServerConfig[]): RouterConfig => {
+export const SSTPServerFirewall = (
+    serverConfigs: SstpServerConfig[],
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall filter": [],
         "/ip firewall mangle": [],
@@ -260,9 +277,13 @@ export const SSTPServerFirewall = (serverConfigs: SstpServerConfig[]): RouterCon
     });
 
     return config;
-}
+};
 
-export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCredentials[] = [], subnetConfig?: SubnetConfig ): RouterConfig => {
+export const SstpServerWrapper = (
+    serverConfig: SstpServerConfig,
+    users: VSCredentials[] = [],
+    subnetConfig?: SubnetConfig,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Get VSNetwork from server config or default to "VPN"
@@ -300,5 +321,3 @@ export const SstpServerWrapper = ( serverConfig: SstpServerConfig, users: VSCred
 
     return CommandShortner(finalConfig);
 };
-
-

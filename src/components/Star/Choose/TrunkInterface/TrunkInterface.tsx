@@ -1,4 +1,11 @@
-import { $, component$, useContext, useSignal, useTask$, type PropFunction } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useContext,
+  useSignal,
+  useTask$,
+  type PropFunction,
+} from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
 import { InterfaceSelector } from "./InterfaceSelector";
 import { WirelessBandSelector } from "./WirelessBandSelector";
@@ -55,15 +62,20 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
 
     // Clear any previously selected trunk interfaces (only from master router)
     const models = starContext.state.Choose.RouterModels;
-    const masterModel = models.find(model => model.isMaster);
+    const masterModel = models.find((model) => model.isMaster);
 
     if (masterModel?.MasterSlaveInterface) {
-      await interfaceManagement.releaseInterface$(masterModel.MasterSlaveInterface as InterfaceType);
+      await interfaceManagement.releaseInterface$(
+        masterModel.MasterSlaveInterface as InterfaceType,
+      );
     }
 
     // Mark the new interface as occupied for Trunk (only for master router)
     // Note: In wireless mode, both routers use the same band, but we only track master's interface
-    await interfaceManagement.markInterfaceAsOccupied$(interfaceName as InterfaceType, "Trunk");
+    await interfaceManagement.markInterfaceAsOccupied$(
+      interfaceName as InterfaceType,
+      "Trunk",
+    );
 
     // Update all router models with the same wireless interface
     const updatedModels = models.map((model) => {

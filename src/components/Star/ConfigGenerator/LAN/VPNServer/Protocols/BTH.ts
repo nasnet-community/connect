@@ -1,19 +1,10 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
 import type {
     BackToHomeServerConfig,
-    VSCredentials
+    VSCredentials,
 } from "~/components/Star/StarContext";
 // import type { Networks } from "~/components/Star/StarContext/CommonType";
 // import { mergeMultipleConfigs } from "../../../utils/ConfigGeneratorUtil";
-
-
-
-
-
-
-
-
-
 
 export const BTHServer = (config: BackToHomeServerConfig): RouterConfig => {
     if (!config.enabled) {
@@ -22,21 +13,24 @@ export const BTHServer = (config: BackToHomeServerConfig): RouterConfig => {
 
     const routerConfig: RouterConfig = {
         "/ip cloud": [
-            "set back-to-home-vpn=enabled ddns-enabled=yes ddns-update-interval=1m"
+            "set back-to-home-vpn=enabled ddns-enabled=yes ddns-update-interval=1m",
         ],
     };
 
     return routerConfig;
 };
 
-export const BTHServerUsers = ( users: VSCredentials[], _config?: BackToHomeServerConfig ): RouterConfig => {
+export const BTHServerUsers = (
+    users: VSCredentials[],
+    _config?: BackToHomeServerConfig,
+): RouterConfig => {
     const routerConfig: RouterConfig = {
         "/ip cloud back-to-home-user": [],
     };
 
     // Filter users that have BackToHome in their VPNType array
     const bthUsers = users.filter((user) =>
-        user.VPNType.includes("BackToHome")
+        user.VPNType.includes("BackToHome"),
     );
 
     // Only add users if there are BackToHome users
@@ -48,7 +42,7 @@ export const BTHServerUsers = ( users: VSCredentials[], _config?: BackToHomeServ
     bthUsers.forEach((user) => {
         routerConfig["/ip cloud back-to-home-user"].push(
             `add allow-lan=yes name="${user.Username}" \\
-    comment="Back-to-Home VPN User - ${user.Username}"`
+    comment="Back-to-Home VPN User - ${user.Username}"`,
         );
     });
 
@@ -58,33 +52,11 @@ export const BTHServerUsers = ( users: VSCredentials[], _config?: BackToHomeServ
 export const BTHServerFirewall = (): RouterConfig => {
     const config: RouterConfig = {};
 
-    
-
-    return config
-
-}
+    return config;
+};
 
 export const BTHServerWrapper = (): RouterConfig => {
-    const config: RouterConfig = {
+    const config: RouterConfig = {};
 
-    }
-
-    return config
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return config;
+};

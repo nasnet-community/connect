@@ -1,12 +1,16 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { LTESettings, PPPoEConfig, StaticIPConfig } from "~/components/Star/StarContext";
-
-
-
-
+import type {
+    LTESettings,
+    PPPoEConfig,
+    StaticIPConfig,
+} from "~/components/Star/StarContext";
 
 // LTE
-export const LTE = (name: string, Network: string, LTESettings: LTESettings): RouterConfig => {
+export const LTE = (
+    name: string,
+    Network: string,
+    LTESettings: LTESettings,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface lte": [],
         "/interface lte apn": [],
@@ -24,7 +28,11 @@ export const LTE = (name: string, Network: string, LTESettings: LTESettings): Ro
 };
 
 // DHCPClient
-export const DHCPClient = ( name: string, Network: string, Interface: string ): RouterConfig => {
+export const DHCPClient = (
+    name: string,
+    Network: string,
+    Interface: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip dhcp-client": [],
     };
@@ -57,7 +65,11 @@ export const DHCPClient = ( name: string, Network: string, Interface: string ): 
 };
 
 // PPPOEClient
-export const PPPOEClient = ( name: string, interfaceName: string, pppoeConfig: PPPoEConfig ): RouterConfig => {
+export const PPPOEClient = (
+    name: string,
+    interfaceName: string,
+    pppoeConfig: PPPoEConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface pppoe-client": [],
     };
@@ -97,7 +109,11 @@ export function calculateCIDR(subnet: string): number {
 }
 
 // StaticIP
-export const StaticIP = ( name: string, interfaceName: string, staticIPConfig: StaticIPConfig ): RouterConfig => {
+export const StaticIP = (
+    name: string,
+    interfaceName: string,
+    staticIPConfig: StaticIPConfig,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip address": [],
     };

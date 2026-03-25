@@ -24,7 +24,6 @@ export interface FrequencySelectorProps {
    */
   disabled?: boolean;
 
-
   /**
    * Which option to mark as recommended with a badge
    */

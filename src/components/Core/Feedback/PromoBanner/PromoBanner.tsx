@@ -50,7 +50,9 @@ export const PromoBanner = component$<PromoBannerProps>(
     // Calculate theme classes
     const surfaceClasses = getSurfaceElevation(surfaceElevation);
     const touchClasses = touchOptimized ? getTouchTargetClasses(size) : "";
-    const themeColorClasses = themeColors ? getStatusColors(colorVariant, "subtle") : "";
+    const themeColorClasses = themeColors
+      ? getStatusColors(colorVariant, "subtle")
+      : "";
     const sizeClasses = getResponsiveSizeClasses(size, "alert");
 
     // Determine layout classes
@@ -90,17 +92,20 @@ export const PromoBanner = component$<PromoBannerProps>(
           !themeColors && bgColorClass,
           surfaceClasses,
           sizeClasses,
-          className
+          className,
         )}
       >
         <div class={cn("flex items-center", getLayoutClasses())}>
           {imageUrl && (
-            <div class={cn(
-              "p-4",
-              layout === "vertical" && "w-full",
-              layout === "horizontal" && "w-1/3 flex-shrink-0",
-              layout === "responsive" && "mobile:w-full tablet:w-1/3 desktop:w-1/3 tablet:flex-shrink-0"
-            )}>
+            <div
+              class={cn(
+                "p-4",
+                layout === "vertical" && "w-full",
+                layout === "horizontal" && "w-1/3 flex-shrink-0",
+                layout === "responsive" &&
+                  "mobile:w-full tablet:w-1/3 tablet:flex-shrink-0 desktop:w-1/3",
+              )}
+            >
               <div class="relative">
                 <img
                   src={imageUrl}
@@ -111,27 +116,29 @@ export const PromoBanner = component$<PromoBannerProps>(
                   loading="lazy"
                 />
                 {/* Optional overlay for better text readability */}
-                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded opacity-0 hover:opacity-100 transition-opacity" />
+                <div class="absolute inset-0 rounded bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity hover:opacity-100" />
               </div>
             </div>
           )}
 
-          <div class={cn(
-            "flex-1 p-6 relative",
-            !imageUrl && "w-full"
-          )}>
+          <div class={cn("relative flex-1 p-6", !imageUrl && "w-full")}>
             {/* Dismiss button */}
             {dismissible && (
               <button
                 onClick$={onDismiss$}
                 class={cn(
-                  "absolute top-2 right-2 rounded-md text-current opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2",
+                  "absolute right-2 top-2 rounded-md text-current opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2",
                   touchClasses,
-                  "transition-opacity"
+                  "transition-opacity",
                 )}
                 aria-label="Dismiss banner"
               >
-                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path
                     fill-rule="evenodd"
                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -141,18 +148,30 @@ export const PromoBanner = component$<PromoBannerProps>(
               </button>
             )}
 
-            <h3 class={cn(
-              "font-bold text-current",
-              size === "sm" ? "text-base" : size === "lg" ? "text-xl" : "text-lg",
-              dismissible && "pr-8" // Add padding to avoid dismiss button
-            )}>
+            <h3
+              class={cn(
+                "font-bold text-current",
+                size === "sm"
+                  ? "text-base"
+                  : size === "lg"
+                    ? "text-xl"
+                    : "text-lg",
+                dismissible && "pr-8", // Add padding to avoid dismiss button
+              )}
+            >
               {title}
             </h3>
 
-            <p class={cn(
-              "text-current opacity-90 mt-2",
-              size === "sm" ? "text-sm" : size === "lg" ? "text-base" : "text-sm"
-            )}>
+            <p
+              class={cn(
+                "mt-2 text-current opacity-90",
+                size === "sm"
+                  ? "text-sm"
+                  : size === "lg"
+                    ? "text-base"
+                    : "text-sm",
+              )}
+            >
               {description}
             </p>
 
@@ -160,10 +179,10 @@ export const PromoBanner = component$<PromoBannerProps>(
               <button
                 onClick$={getCredentials$}
                 class={cn(
-                  "mt-4 rounded-lg bg-primary-500 px-4 py-2 text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                  "mt-4 rounded-lg bg-primary-500 px-4 py-2 text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                   touchOptimized && getTouchTargetClasses(size),
-                  size === "sm" && "text-sm px-3 py-1.5",
-                  size === "lg" && "text-base px-6 py-3"
+                  size === "sm" && "px-3 py-1.5 text-sm",
+                  size === "lg" && "px-6 py-3 text-base",
                 )}
                 disabled={loading.value}
               >
@@ -174,12 +193,14 @@ export const PromoBanner = component$<PromoBannerProps>(
             )}
 
             {success.value && (
-              <div class={cn(
-                "mt-4 rounded-lg px-4 py-2",
-                getStatusColors("success", "subtle"),
-                size === "sm" && "text-sm px-3 py-1.5",
-                size === "lg" && "text-base px-5 py-3"
-              )}>
+              <div
+                class={cn(
+                  "mt-4 rounded-lg px-4 py-2",
+                  getStatusColors("success", "subtle"),
+                  size === "sm" && "px-3 py-1.5 text-sm",
+                  size === "lg" && "px-5 py-3 text-base",
+                )}
+              >
                 {$localize`Credentials sent! Check your account.`}
               </div>
             )}

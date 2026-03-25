@@ -11,12 +11,12 @@ export const useVPNClientMode = (): UseVPNClientModeReturn => {
   // Get mode from global Choose.Mode since VPNClient doesn't have a mode property
   const vpnMode = useComputed$(() => {
     const globalMode = starContext.state.Choose.Mode;
-    
+
     // If global mode is "advance", VPNClient should be in advanced mode
     if (globalMode === "advance") {
       return "advanced";
     }
-    
+
     // Otherwise, default to easy mode
     return "easy";
   });

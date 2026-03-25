@@ -62,16 +62,11 @@ export const GREProtocol = component$(() => {
                       type="text"
                       value={tunnel.name}
                       onInput$={(event: Event, value: string) =>
-                        updateTunnelField$(
-                          index,
-                          "name",
-                          value,
-                        )
+                        updateTunnelField$(index, "name", value)
                       }
                       placeholder={$localize`Enter tunnel name`}
                     />
                   </div>
-
 
                   {/* Remote Address */}
                   <div>
@@ -82,11 +77,7 @@ export const GREProtocol = component$(() => {
                       type="text"
                       value={tunnel.remoteAddress}
                       onInput$={(event: Event, value: string) =>
-                        updateTunnelField$(
-                          index,
-                          "remoteAddress",
-                          value,
-                        )
+                        updateTunnelField$(index, "remoteAddress", value)
                       }
                       placeholder={$localize`Enter remote address`}
                     />
@@ -101,18 +92,12 @@ export const GREProtocol = component$(() => {
                       type="password"
                       value={tunnel.ipsecSecret || ""}
                       onInput$={(event: Event, value: string) =>
-                        updateTunnelField$(
-                          index,
-                          "ipsecSecret",
-                          value,
-                        )
+                        updateTunnelField$(index, "ipsecSecret", value)
                       }
                       placeholder={$localize`Enter IPsec secret (optional)`}
                     />
                   </div>
-
                 </div>
-
               </div>
             ))}
           </div>

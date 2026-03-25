@@ -1,9 +1,4 @@
-import {
-  $,
-  component$,
-  useContext,
-  type PropFunction,
-} from "@builder.io/qwik";
+import { $, component$, useContext, type PropFunction } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
 import { LuGlobe, LuGlobe2, LuSettings } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";

@@ -2,13 +2,13 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 
 /**
  * Twilio SendGrid Newsletter Subscription API Endpoint
- * 
+ *
  * This endpoint handles newsletter subscriptions by adding contacts to SendGrid.
- * 
+ *
  * Environment Variables Required:
  * - SENDGRID_API_KEY: Your SendGrid API key
  * - SENDGRID_LIST_IDS: (Optional) Comma-separated list of SendGrid list IDs
- * 
+ *
  * @see https://www.twilio.com/docs/sendgrid/api-reference/contacts/add-or-update-a-contact
  */
 
@@ -41,7 +41,7 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
   try {
     // Get SendGrid API key from environment
     const apiKey = env.get("SENDGRID_API_KEY");
-    
+
     if (!apiKey) {
       json(500, {
         success: false,
@@ -51,7 +51,7 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     }
 
     // Parse request body
-    const body = await request.json() as SubscriptionRequest;
+    const body = (await request.json()) as SubscriptionRequest;
     const { email, firstName, lastName, source } = body;
 
     console.log("[SendGrid API] Subscription request for email:", email);
@@ -82,20 +82,26 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     // Add custom fields
     // Get custom field ID from environment (e.g., "e1_T", "e2_T", etc.)
     const sourceFieldId = env.get("SENDGRID_SOURCE_FIELD_ID");
-    
+
     if (sourceFieldId) {
       contact.custom_fields = {
         [sourceFieldId]: "NasNetConnect", // Set Source field to "NasNetConnect"
       };
-      
+
       // Add additional source tracking if provided in request
-      const additionalSourceFieldId = env.get("SENDGRID_ADDITIONAL_SOURCE_FIELD_ID");
+      const additionalSourceFieldId = env.get(
+        "SENDGRID_ADDITIONAL_SOURCE_FIELD_ID",
+      );
       if (source && additionalSourceFieldId) {
         contact.custom_fields[additionalSourceFieldId] = source;
       }
     } else if (source) {
       // Fallback: if no custom field ID configured, just track in console
-      console.log("Source tracking:", source, "- Configure SENDGRID_SOURCE_FIELD_ID to add to contacts");
+      console.log(
+        "Source tracking:",
+        source,
+        "- Configure SENDGRID_SOURCE_FIELD_ID to add to contacts",
+      );
     }
 
     // Prepare SendGrid request
@@ -106,24 +112,33 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     // Add to lists if configured
     const listIds = env.get("SENDGRID_LIST_IDS");
     if (listIds) {
-      const lists = listIds.split(",").map(id => id.trim()).filter(Boolean);
+      const lists = listIds
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
       if (lists.length > 0) {
         sendGridRequest.list_ids = lists;
       }
     }
 
     // Make request to SendGrid API
-    console.log("[SendGrid API] Making API call to SendGrid with email:", contact.email);
+    console.log(
+      "[SendGrid API] Making API call to SendGrid with email:",
+      contact.email,
+    );
     console.log("[SendGrid API] Custom fields:", contact.custom_fields);
 
-    const response = await fetch("https://api.sendgrid.com/v3/marketing/contacts", {
-      method: "PUT",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      "https://api.sendgrid.com/v3/marketing/contacts",
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(sendGridRequest),
       },
-      body: JSON.stringify(sendGridRequest),
-    });
+    );
 
     console.log("[SendGrid API] Response status:", response.status);
 
@@ -131,33 +146,36 @@ export const onPost: RequestHandler = async ({ json, env, request }) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("SendGrid API error:", errorText);
-      
+
       json(response.status, {
         success: false,
         error: "Failed to subscribe",
-        details: response.status === 401 
-          ? "Invalid API key" 
-          : response.status === 400 
-          ? "Invalid request data"
-          : "Service unavailable",
+        details:
+          response.status === 401
+            ? "Invalid API key"
+            : response.status === 400
+              ? "Invalid request data"
+              : "Service unavailable",
       });
       return;
     }
 
-    const sendGridResponse = await response.json() as SendGridResponse;
+    const sendGridResponse = (await response.json()) as SendGridResponse;
 
     console.log("[SendGrid API] ✅ Success! Job ID:", sendGridResponse.job_id);
-    console.log("[SendGrid API] Email successfully added to SendGrid contacts:", email);
+    console.log(
+      "[SendGrid API] Email successfully added to SendGrid contacts:",
+      email,
+    );
 
     json(202, {
       success: true,
       message: "Successfully subscribed to newsletter",
       jobId: sendGridResponse.job_id,
     });
-
   } catch (error) {
     console.error("Newsletter subscription error:", error);
-    
+
     json(500, {
       success: false,
       error: "Internal server error",

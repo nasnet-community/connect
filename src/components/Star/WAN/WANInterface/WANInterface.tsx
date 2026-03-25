@@ -14,10 +14,12 @@ export const WANInterface = component$<WANInterfaceProps>((props) => {
 
   // If advanced mode is selected, show the advanced interface with mode
   if (isAdvancedMode) {
-    return <WANAdvanced 
-      mode={props.mode || "Foreign"}
-      onComplete$={props.onComplete$} 
-    />;
+    return (
+      <WANAdvanced
+        mode={props.mode || "Foreign"}
+        onComplete$={props.onComplete$}
+      />
+    );
   }
 
   // Otherwise, show the easy interface

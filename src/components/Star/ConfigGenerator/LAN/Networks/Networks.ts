@@ -1,5 +1,10 @@
 import type { RouterConfig } from "~/components/Star/ConfigGenerator";
-import type { Subnets, SubnetConfig, WANLinks, VPNClient } from "~/components/Star/StarContext";
+import type {
+    Subnets,
+    SubnetConfig,
+    WANLinks,
+    VPNClient,
+} from "~/components/Star/StarContext";
 import { mergeMultipleConfigs } from "~/components/Star/ConfigGenerator";
 import {
     SubnetToRange,
@@ -13,20 +18,25 @@ import {
 
 type NetworkType = "Domestic" | "Foreign" | "VPN" | "Split";
 
-
-
 // Network Base Generator
-export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, NetworkName?: string, includeMangle: boolean = false ): RouterConfig => {
+export const NetworkBaseGenerator = (
+    NetworkType: NetworkType,
+    Subnet: string,
+    NetworkName?: string,
+    includeMangle: boolean = false,
+): RouterConfig => {
     // Extract the prefix length from the subnet
     const [, prefix] = Subnet.split("/");
     const prefixLength = prefix || "24"; // Default to /24 if not specified
 
     // If NetworkName is provided, append it to NetworkType, otherwise use NetworkType alone
-    const FNetworkName = NetworkName ? `${NetworkType}-${NetworkName}` : NetworkType;
+    const FNetworkName = NetworkName
+        ? `${NetworkType}-${NetworkName}`
+        : NetworkType;
 
     const config: RouterConfig = {
         "/interface bridge": [
-            `add name="LANBridge${FNetworkName}" comment="${FNetworkName}"`
+            `add name="LANBridge${FNetworkName}" comment="${FNetworkName}"`,
         ],
         "/interface list": [
             `add name="${FNetworkName}-WAN" comment="${FNetworkName}"`,
@@ -45,7 +55,7 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
             `add address="${SubnetToFirstIP(Subnet)}/${prefixLength}" interface="LANBridge${FNetworkName}" network="${SubnetToNetwork(Subnet)}" comment="${FNetworkName}"`,
         ],
         "/routing table": [
-            `add fib name="to-${FNetworkName}" comment="${FNetworkName}"`
+            `add fib name="to-${FNetworkName}" comment="${FNetworkName}"`,
         ],
         "/interface list member": [
             `add interface="LANBridge${FNetworkName}" list="LAN" comment="${FNetworkName}"`,
@@ -69,7 +79,7 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
     // Add special route for VPN networks to route 192.168.100.0/24 through 100.64.0.1
     if (NetworkType === "VPN") {
         config["/ip route"].push(
-            `add comment="Route-to-Foreign-Foreign Link 1" distance=1 dst-address=192.168.100.0/24 gateway=100.64.0.1 routing-table="to-${FNetworkName}"`
+            `add comment="Route-to-Foreign-Foreign Link 1" distance=1 dst-address=192.168.100.0/24 gateway=100.64.0.1 routing-table="to-${FNetworkName}"`,
         );
     }
 
@@ -87,7 +97,6 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
             // `add action=mark-connection chain=forward comment="${FNetworkName} Connection" new-connection-mark="conn-${FNetworkName}" passthrough=yes src-address-list="${FNetworkName}-LAN"`,
             // `add action=mark-routing chain=prerouting comment="${FNetworkName} Routing" connection-mark="conn-${FNetworkName}" new-routing-mark="to-${FNetworkName}" passthrough=no src-address-list="${FNetworkName}-LAN"`,
             `add action=mark-routing chain=prerouting comment="${FNetworkName} Routing" new-routing-mark="to-${FNetworkName}" passthrough=no src-address-list="${FNetworkName}-LAN"`,
-        
         ];
     }
 
@@ -95,14 +104,18 @@ export const NetworkBaseGenerator = (NetworkType: NetworkType, Subnet: string, N
 };
 
 // Base Networks
-export const DomesticBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
+export const DomesticBase = (
+    NetworkName: string,
+    Subnet: string,
+    skipMangle: boolean = false,
+): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "Domestic"
     const baseConfig = NetworkBaseGenerator("Domestic", Subnet);
-    
+
     if (skipMangle) {
         return baseConfig;
     }
-    
+
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -111,21 +124,24 @@ export const DomesticBase = (NetworkName: string, Subnet: string, skipMangle: bo
             // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
             // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
             `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
-
         ],
     };
 
     return mergeMultipleConfigs(baseConfig, mangleConfig);
 };
 
-export const ForeignBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
+export const ForeignBase = (
+    NetworkName: string,
+    Subnet: string,
+    skipMangle: boolean = false,
+): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "Foreign"
     const baseConfig = NetworkBaseGenerator("Foreign", Subnet);
-    
+
     if (skipMangle) {
         return baseConfig;
     }
-    
+
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -134,21 +150,24 @@ export const ForeignBase = (NetworkName: string, Subnet: string, skipMangle: boo
             // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
             // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
             `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
-
         ],
     };
-    
+
     return mergeMultipleConfigs(baseConfig, mangleConfig);
 };
 
-export const VPNBase = (NetworkName: string, Subnet: string, skipMangle: boolean = false): RouterConfig => {
+export const VPNBase = (
+    NetworkName: string,
+    Subnet: string,
+    skipMangle: boolean = false,
+): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "VPN"
     const baseConfig = NetworkBaseGenerator("VPN", Subnet);
-    
+
     if (skipMangle) {
         return baseConfig;
     }
-    
+
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // `add action=mark-connection chain=prerouting comment="DNS ${NetworkName}-LAN" dst-port=53 new-connection-mark=dns-conn-${NetworkName} passthrough=yes protocol=udp src-address-list=${NetworkName}-LAN`,
@@ -157,17 +176,19 @@ export const VPNBase = (NetworkName: string, Subnet: string, skipMangle: boolean
             // `add action=mark-connection chain=forward comment="${NetworkName} Connection" new-connection-mark="conn-${NetworkName}" passthrough=yes src-address-list="${NetworkName}-LAN"`,
             // `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" connection-mark="conn-${NetworkName}" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
             `add action=mark-routing chain=prerouting comment="${NetworkName} Routing" new-routing-mark="to-${NetworkName}" passthrough=no src-address-list="${NetworkName}-LAN"`,
-
         ],
     };
 
     return mergeMultipleConfigs(baseConfig, mangleConfig);
 };
 
-export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => {
+export const SplitBase = (
+    NetworkName: string,
+    Subnet: string,
+): RouterConfig => {
     // Base networks don't use the NetworkName parameter - they are always named just "Split"
     const baseConfig = NetworkBaseGenerator("Split", Subnet);
-    
+
     const mangleConfig: RouterConfig = {
         "/ip firewall mangle": [
             // Split DOM IP/Domain/Game Traffic
@@ -181,16 +202,16 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
                 new-routing-mark="to-Foreign" passthrough=no src-address-list="Split-LAN"`,
             // Split DOM Traffic
             // `add action=mark-connection chain=forward comment="Split-DOM" dst-address-list="DOMAddList" \\
-                // new-connection-mark="conn-Split-DOM" passthrough=yes src-address-list="Split-LAN"`,
+            // new-connection-mark="conn-Split-DOM" passthrough=yes src-address-list="Split-LAN"`,
             // `add action=mark-routing chain=prerouting comment="Split-DOM" connection-mark="conn-Split-DOM" \\
-                // dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
+            // dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             `add action=mark-routing chain=prerouting comment="Split-DOM" \\
             dst-address-list="DOMAddList" new-routing-mark="to-Domestic" passthrough=no src-address-list="Split-LAN"`,
             // Split FRN Traffic
             // `add action=mark-connection chain=forward comment="Split-!DOM" dst-address-list="!DOMAddList"\\
-                // new-connection-mark="conn-Split-!DOM" passthrough=yes src-address-list="Split-LAN"`,
+            // new-connection-mark="conn-Split-!DOM" passthrough=yes src-address-list="Split-LAN"`,
             // `add action=mark-routing chain=prerouting comment="Split-!DOM" connection-mark="conn-Split-!DOM"\\
-                // dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
+            // dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
             `add action=mark-routing chain=prerouting comment="Split-!DOM"\\
             dst-address-list="!DOMAddList" new-routing-mark="to-VPN" passthrough=no src-address-list="Split-LAN"`,
         ],
@@ -200,7 +221,10 @@ export const SplitBase = (NetworkName: string, Subnet: string): RouterConfig => 
 };
 
 // Tunnel Network Base Generator - Uses .4 as gateway, .5+ for DHCP
-export const TunnelNetworkBaseGenerator = (NetworkName: string, Subnet: string): RouterConfig => {
+export const TunnelNetworkBaseGenerator = (
+    NetworkName: string,
+    Subnet: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface bridge": [`add name="LANBridge${NetworkName}"`],
         "/interface list": [
@@ -219,9 +243,7 @@ export const TunnelNetworkBaseGenerator = (NetworkName: string, Subnet: string):
         "/ip address": [
             `add address="${SubnetToTunnelGateway(Subnet)}" interface="LANBridge${NetworkName}" network="${SubnetToNetwork(Subnet)}"`,
         ],
-        "/routing table": [
-            `add fib name="to-${NetworkName}"`
-        ],
+        "/routing table": [`add fib name="to-${NetworkName}"`],
         "/interface list member": [
             `add interface="LANBridge${NetworkName}" list=LAN`,
             `add interface="LANBridge${NetworkName}" list="${NetworkName}-LAN"`,
@@ -242,65 +264,125 @@ export const TunnelNetworkBaseGenerator = (NetworkName: string, Subnet: string):
 };
 
 // Helper Functions
-export const addNetwork = ( 
-    network: SubnetConfig, 
-    defaultName: string, 
-    generator: (name: string, subnet: string, skipMangle?: boolean) => RouterConfig,
-    skipMangle: boolean = false
+export const addNetwork = (
+    network: SubnetConfig,
+    defaultName: string,
+    generator: (
+        name: string,
+        subnet: string,
+        skipMangle?: boolean,
+    ) => RouterConfig,
+    skipMangle: boolean = false,
 ): RouterConfig => {
     if (!network.subnet) return {};
     return generator(network.name || defaultName, network.subnet, skipMangle);
 };
 
-export const addNetworks = ( networks: SubnetConfig[], namePrefix: string, networkType: NetworkType ): RouterConfig => {
+export const addNetworks = (
+    networks: SubnetConfig[],
+    namePrefix: string,
+    networkType: NetworkType,
+): RouterConfig => {
     if (!networks.length) return {};
 
     const configs = networks
         .filter((net): net is SubnetConfig & { subnet: string } => !!net.subnet)
-        .map((net, i) => NetworkBaseGenerator(networkType, net.subnet, net.name || `${namePrefix}-${i + 1}`, true)); // Always include mangle rules for additional networks
+        .map((net, i) =>
+            NetworkBaseGenerator(
+                networkType,
+                net.subnet,
+                net.name || `${namePrefix}-${i + 1}`,
+                true,
+            ),
+        ); // Always include mangle rules for additional networks
 
     return configs.length === 0 ? {} : mergeMultipleConfigs(...configs);
 };
 
 // Helper function for Tunnel Networks - uses TunnelNetworkBaseGenerator
-export const addTunnelNetworks = ( networks: SubnetConfig[], namePrefix: string ): RouterConfig => {
+export const addTunnelNetworks = (
+    networks: SubnetConfig[],
+    namePrefix: string,
+): RouterConfig => {
     if (!networks.length) return {};
 
     const configs = networks
         .filter((net): net is SubnetConfig & { subnet: string } => !!net.subnet)
-        .map((net, i) => TunnelNetworkBaseGenerator(net.name || `${namePrefix}-${i + 1}`, net.subnet));
+        .map((net, i) =>
+            TunnelNetworkBaseGenerator(
+                net.name || `${namePrefix}-${i + 1}`,
+                net.subnet,
+            ),
+        );
 
     return configs.length === 0 ? {} : mergeMultipleConfigs(...configs);
 };
 
 // Main Networks Function
-export const Networks = (subnets: Subnets, wanLinks?: WANLinks, vpnClient?: VPNClient): RouterConfig => {
+export const Networks = (
+    subnets: Subnets,
+    wanLinks?: WANLinks,
+    vpnClient?: VPNClient,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Base Networks - check skipMangle per network type
-    if (subnets.BaseSubnets?.Split) configs.push(addNetwork(subnets.BaseSubnets.Split, "Split", SplitBase));
+    if (subnets.BaseSubnets?.Split)
+        configs.push(addNetwork(subnets.BaseSubnets.Split, "Split", SplitBase));
     if (subnets.BaseSubnets?.Domestic) {
-        const skipMangle = shouldSkipMangleRules("Domestic", wanLinks, vpnClient);
-        configs.push(addNetwork(subnets.BaseSubnets.Domestic, "Domestic", DomesticBase, skipMangle));
+        const skipMangle = shouldSkipMangleRules(
+            "Domestic",
+            wanLinks,
+            vpnClient,
+        );
+        configs.push(
+            addNetwork(
+                subnets.BaseSubnets.Domestic,
+                "Domestic",
+                DomesticBase,
+                skipMangle,
+            ),
+        );
     }
     if (subnets.BaseSubnets?.Foreign) {
-        const skipMangle = shouldSkipMangleRules("Foreign", wanLinks, vpnClient);
-        configs.push(addNetwork(subnets.BaseSubnets.Foreign, "Foreign", ForeignBase, skipMangle));
+        const skipMangle = shouldSkipMangleRules(
+            "Foreign",
+            wanLinks,
+            vpnClient,
+        );
+        configs.push(
+            addNetwork(
+                subnets.BaseSubnets.Foreign,
+                "Foreign",
+                ForeignBase,
+                skipMangle,
+            ),
+        );
     }
     if (subnets.BaseSubnets?.VPN) {
         const skipMangle = shouldSkipMangleRules("VPN", wanLinks, vpnClient);
-        configs.push(addNetwork(subnets.BaseSubnets.VPN, "VPN", VPNBase, skipMangle));
+        configs.push(
+            addNetwork(subnets.BaseSubnets.VPN, "VPN", VPNBase, skipMangle),
+        );
     }
 
     // Additional Networks
-    configs.push(addNetworks(subnets.ForeignSubnets ?? [], "Foreign", "Foreign"));
-    configs.push(addNetworks(subnets.DomesticSubnets ?? [], "Domestic", "Domestic"));
+    configs.push(
+        addNetworks(subnets.ForeignSubnets ?? [], "Foreign", "Foreign"),
+    );
+    configs.push(
+        addNetworks(subnets.DomesticSubnets ?? [], "Domestic", "Domestic"),
+    );
 
     // VPN Client Networks
     if (subnets.VPNClientSubnets) {
         const vpnClient = subnets.VPNClientSubnets;
-        configs.push(addNetworks(vpnClient.Wireguard ?? [], "WG-Client", "VPN"));
-        configs.push(addNetworks(vpnClient.OpenVPN ?? [], "OVPN-Client", "VPN"));
+        configs.push(
+            addNetworks(vpnClient.Wireguard ?? [], "WG-Client", "VPN"),
+        );
+        configs.push(
+            addNetworks(vpnClient.OpenVPN ?? [], "OVPN-Client", "VPN"),
+        );
         configs.push(addNetworks(vpnClient.L2TP ?? [], "L2TP-Client", "VPN"));
         configs.push(addNetworks(vpnClient.PPTP ?? [], "PPTP-Client", "VPN"));
         configs.push(addNetworks(vpnClient.SSTP ?? [], "SSTP-Client", "VPN"));
@@ -328,6 +410,8 @@ export const Networks = (subnets: Subnets, wanLinks?: WANLinks, vpnClient?: VPNC
     // }
 
     // Filter out empty configs and merge
-    const validConfigs = configs.filter(c => Object.keys(c).length > 0);
-    return validConfigs.length === 0 ? {} : mergeMultipleConfigs(...validConfigs);
+    const validConfigs = configs.filter((c) => Object.keys(c).length > 0);
+    return validConfigs.length === 0
+        ? {}
+        : mergeMultipleConfigs(...validConfigs);
 };

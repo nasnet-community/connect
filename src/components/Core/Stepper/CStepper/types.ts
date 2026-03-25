@@ -13,7 +13,7 @@ export interface CStepMeta {
   isOptional?: boolean;
   skippable?: boolean;
   validationErrors?: string[];
-  
+
   // Help system properties
   helpTitle?: string;
   helpContent?: string | JSX.Element;
@@ -32,12 +32,12 @@ export interface CStepperProps {
   contextValue?: any;
   allowNonLinearNavigation?: boolean;
   allowSkipSteps?: boolean;
-  validationMode?: 'onBlur' | 'onChange' | 'onSubmit';
+  validationMode?: "onBlur" | "onChange" | "onSubmit";
   customIcons?: Record<number, JSX.Element>;
   useNumbers?: boolean;
   isEditMode?: boolean;
   dynamicStepComponent?: any;
-  
+
   // Help system options
   enableHelp?: boolean;
   helpOptions?: {
@@ -47,7 +47,7 @@ export interface CStepperProps {
     onHelpOpen$?: QRL<(stepId: number) => void>;
     onHelpClose$?: QRL<(stepId: number) => void>;
   };
-  
+
   // UI customization
   hideStepHeader?: boolean;
   disableAutoFocus?: boolean;
@@ -60,7 +60,9 @@ export interface CStepperContext<T = any> {
   goToStep$: QRL<(step: number) => void>;
   nextStep$: QRL<() => void>;
   prevStep$: QRL<() => void>;
-  updateStepCompletion$: QRL<(stepId: number, isComplete: boolean) => void | null>;
+  updateStepCompletion$: QRL<
+    (stepId: number, isComplete: boolean) => void | null
+  >;
   completeStep$: QRL<(stepId?: number) => void | null>;
   addStep$: QRL<(newStep: CStepMeta, position?: number) => number>;
   removeStep$: QRL<(stepId: number) => boolean>;
@@ -69,4 +71,4 @@ export interface CStepperContext<T = any> {
   setStepErrors$?: QRL<(stepId: number, errors: string[]) => void>;
   allowSkipSteps?: boolean;
   data: T;
-} 
+}

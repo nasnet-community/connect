@@ -21,31 +21,29 @@ import { Newsletter } from "./Newsletter";
  * />
  * ```
  */
-export const NewsletterHero = component$<Partial<NewsletterProps>>(
-  (props) => {
-    // Hero variant defaults that can be overridden
-    const heroDefaults: Partial<NewsletterProps> = {
-      variant: "hero",
-      size: "md",
-      title: $localize`Get Product Updates`,
-      glassmorphism: true,
-      theme: "glass",
-      showLogo: false,
-      showPrivacyNotice: false,
-      compact: true,
-      animated: true,
-      surfaceElevation: "elevated",
-      fullWidth: false,
-      placeholder: $localize`Enter your email`,
-      buttonText: $localize`Subscribe`,
-    };
+export const NewsletterHero = component$<Partial<NewsletterProps>>((props) => {
+  // Hero variant defaults that can be overridden
+  const heroDefaults: Partial<NewsletterProps> = {
+    variant: "hero",
+    size: "md",
+    title: $localize`Get Product Updates`,
+    glassmorphism: true,
+    theme: "glass",
+    showLogo: false,
+    showPrivacyNotice: false,
+    compact: true,
+    animated: true,
+    surfaceElevation: "elevated",
+    fullWidth: false,
+    placeholder: $localize`Enter your email`,
+    buttonText: $localize`Subscribe`,
+  };
 
-    // Merge props with hero defaults
-    const mergedProps = {
-      ...heroDefaults,
-      ...props,
-    };
+  // Merge props with hero defaults
+  const mergedProps = {
+    ...heroDefaults,
+    ...props,
+  };
 
-    return <Newsletter {...mergedProps} />;
-  }
-);
+  return <Newsletter {...mergedProps} />;
+});

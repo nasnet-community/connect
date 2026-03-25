@@ -53,7 +53,7 @@ export const Text = component$<TextProps>(
     // Size mapping for enhanced Tailwind configuration
     const sizeMap = {
       "3xs": "text-3xs",
-      "2xs": "text-2xs", 
+      "2xs": "text-2xs",
       xs: "text-xs",
       sm: "text-sm",
       base: "text-base",
@@ -79,24 +79,27 @@ export const Text = component$<TextProps>(
 
     // Enhanced color system using design system colors
     const colorMap = {
-      primary: theme === "dark" 
-        ? "text-gray-100" 
-        : theme === "dim" 
-          ? "text-gray-200" 
-          : "text-gray-900",
-      secondary: theme === "dark" 
-        ? "text-gray-300" 
-        : theme === "dim" 
-          ? "text-gray-400" 
-          : "text-gray-700",
-      tertiary: theme === "dark" 
-        ? "text-gray-400" 
-        : theme === "dim" 
-          ? "text-gray-500" 
-          : "text-gray-500",
+      primary:
+        theme === "dark"
+          ? "text-gray-100"
+          : theme === "dim"
+            ? "text-gray-200"
+            : "text-gray-900",
+      secondary:
+        theme === "dark"
+          ? "text-gray-300"
+          : theme === "dim"
+            ? "text-gray-400"
+            : "text-gray-700",
+      tertiary:
+        theme === "dark"
+          ? "text-gray-400"
+          : theme === "dim"
+            ? "text-gray-500"
+            : "text-gray-500",
       inverse: "text-white dark:text-gray-900",
       accent: "text-primary-600 dark:text-primary-400",
-      success: "text-success-600 dark:text-success-400", 
+      success: "text-success-600 dark:text-success-400",
       warning: "text-warning-600 dark:text-warning-400",
       error: "text-error-600 dark:text-error-400",
       info: "text-info-600 dark:text-info-400",
@@ -115,35 +118,54 @@ export const Text = component$<TextProps>(
     // Build responsive classes with enhanced breakpoints
     const responsiveClasses = useComputed$(() => {
       if (!responsiveSize) return "";
-      
+
       const responsiveClassArray = [];
-      
+
       // Standard breakpoints
-      if (responsiveSize.base) responsiveClassArray.push(sizeMap[responsiveSize.base]);
-      if (responsiveSize["2xs"]) responsiveClassArray.push(`2xs:${sizeMap[responsiveSize["2xs"]]}`);
-      if (responsiveSize.xs) responsiveClassArray.push(`xs:${sizeMap[responsiveSize.xs]}`);
-      if (responsiveSize.sm) responsiveClassArray.push(`sm:${sizeMap[responsiveSize.sm]}`);
-      if (responsiveSize.md) responsiveClassArray.push(`md:${sizeMap[responsiveSize.md]}`);
-      if (responsiveSize.lg) responsiveClassArray.push(`lg:${sizeMap[responsiveSize.lg]}`);
-      if (responsiveSize.xl) responsiveClassArray.push(`xl:${sizeMap[responsiveSize.xl]}`);
-      if (responsiveSize["2xl"]) responsiveClassArray.push(`2xl:${sizeMap[responsiveSize["2xl"]]}`);
-      if (responsiveSize["3xl"]) responsiveClassArray.push(`3xl:${sizeMap[responsiveSize["3xl"]]}`);
-      if (responsiveSize["4xl"]) responsiveClassArray.push(`4xl:${sizeMap[responsiveSize["4xl"]]}`);
-      
+      if (responsiveSize.base)
+        responsiveClassArray.push(sizeMap[responsiveSize.base]);
+      if (responsiveSize["2xs"])
+        responsiveClassArray.push(`2xs:${sizeMap[responsiveSize["2xs"]]}`);
+      if (responsiveSize.xs)
+        responsiveClassArray.push(`xs:${sizeMap[responsiveSize.xs]}`);
+      if (responsiveSize.sm)
+        responsiveClassArray.push(`sm:${sizeMap[responsiveSize.sm]}`);
+      if (responsiveSize.md)
+        responsiveClassArray.push(`md:${sizeMap[responsiveSize.md]}`);
+      if (responsiveSize.lg)
+        responsiveClassArray.push(`lg:${sizeMap[responsiveSize.lg]}`);
+      if (responsiveSize.xl)
+        responsiveClassArray.push(`xl:${sizeMap[responsiveSize.xl]}`);
+      if (responsiveSize["2xl"])
+        responsiveClassArray.push(`2xl:${sizeMap[responsiveSize["2xl"]]}`);
+      if (responsiveSize["3xl"])
+        responsiveClassArray.push(`3xl:${sizeMap[responsiveSize["3xl"]]}`);
+      if (responsiveSize["4xl"])
+        responsiveClassArray.push(`4xl:${sizeMap[responsiveSize["4xl"]]}`);
+
       // Device-specific breakpoints
-      if (responsiveSize.mobile) responsiveClassArray.push(`mobile:${sizeMap[responsiveSize.mobile]}`);
-      if (responsiveSize["mobile-md"]) responsiveClassArray.push(`mobile-md:${sizeMap[responsiveSize["mobile-md"]]}`);
-      if (responsiveSize.tablet) responsiveClassArray.push(`tablet:${sizeMap[responsiveSize.tablet]}`);
-      if (responsiveSize.laptop) responsiveClassArray.push(`laptop:${sizeMap[responsiveSize.laptop]}`);
-      if (responsiveSize.desktop) responsiveClassArray.push(`desktop:${sizeMap[responsiveSize.desktop]}`);
-      
+      if (responsiveSize.mobile)
+        responsiveClassArray.push(`mobile:${sizeMap[responsiveSize.mobile]}`);
+      if (responsiveSize["mobile-md"])
+        responsiveClassArray.push(
+          `mobile-md:${sizeMap[responsiveSize["mobile-md"]]}`,
+        );
+      if (responsiveSize.tablet)
+        responsiveClassArray.push(`tablet:${sizeMap[responsiveSize.tablet]}`);
+      if (responsiveSize.laptop)
+        responsiveClassArray.push(`laptop:${sizeMap[responsiveSize.laptop]}`);
+      if (responsiveSize.desktop)
+        responsiveClassArray.push(`desktop:${sizeMap[responsiveSize.desktop]}`);
+
       return responsiveClassArray.join(" ");
     });
 
     // Build CSS classes with enhanced features
     const classes = [
       // Base styles with motion preferences
-      reduceMotion ? "motion-reduce:transition-none motion-safe:transition-colors motion-safe:duration-150" : "transition-colors duration-150",
+      reduceMotion
+        ? "motion-reduce:transition-none motion-safe:transition-colors motion-safe:duration-150"
+        : "transition-colors duration-150",
 
       // Container responsive styles
       containerResponsive && "@container",
@@ -154,7 +176,7 @@ export const Text = component$<TextProps>(
       // Font family
       {
         sans: "font-sans",
-        "sans-rtl": "font-sans-rtl", 
+        "sans-rtl": "font-sans-rtl",
         serif: "font-serif",
         "serif-rtl": "font-serif-rtl",
         mono: "font-mono",
@@ -165,7 +187,7 @@ export const Text = component$<TextProps>(
       // Font weight
       {
         light: "font-light",
-        normal: "font-normal", 
+        normal: "font-normal",
         medium: "font-medium",
         semibold: "font-semibold",
         bold: "font-bold",
@@ -182,8 +204,8 @@ export const Text = component$<TextProps>(
       }[align],
 
       // Enhanced color system
-      theme === "auto" 
-        ? colorMap[color] || `text-${color}` 
+      theme === "auto"
+        ? colorMap[color] || `text-${color}`
         : colorMap[color] || `${theme}:text-${color}`,
 
       // High contrast support
@@ -197,7 +219,7 @@ export const Text = component$<TextProps>(
       // Text transformation
       {
         uppercase: "uppercase",
-        lowercase: "lowercase", 
+        lowercase: "lowercase",
         capitalize: "capitalize",
         none: "",
       }[transform],
@@ -231,22 +253,25 @@ export const Text = component$<TextProps>(
       // Variant-specific styles with enhanced colors
       variant === "caption" && "text-sm text-gray-500 dark:text-gray-400",
       variant === "label" && "font-medium",
-      variant === "code" && [
-        "bg-surface-light-secondary dark:bg-surface-dark-secondary",
-        "text-primary-600 dark:text-primary-400",
-        "px-1.5 py-0.5 rounded font-mono border border-gray-200 dark:border-gray-700"
-      ].join(" "),
-      variant === "quote" && [
-        "border-s-4 border-primary-300 dark:border-primary-700",
-        "ps-4 italic text-gray-700 dark:text-gray-300"
-      ].join(" "),
+      variant === "code" &&
+        [
+          "bg-surface-light-secondary dark:bg-surface-dark-secondary",
+          "text-primary-600 dark:text-primary-400",
+          "px-1.5 py-0.5 rounded font-mono border border-gray-200 dark:border-gray-700",
+        ].join(" "),
+      variant === "quote" &&
+        [
+          "border-s-4 border-primary-300 dark:border-primary-700",
+          "ps-4 italic text-gray-700 dark:text-gray-300",
+        ].join(" "),
 
       // Interactive styles with touch support
-      onClick$ && [
-        "cursor-pointer",
-        touchOptimized ? "touch:active:scale-95" : "hover:underline",
-        "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-      ].join(" "),
+      onClick$ &&
+        [
+          "cursor-pointer",
+          touchOptimized ? "touch:active:scale-95" : "hover:underline",
+          "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+        ].join(" "),
 
       // Custom class
       className,

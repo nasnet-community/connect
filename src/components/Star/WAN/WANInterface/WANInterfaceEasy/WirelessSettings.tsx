@@ -10,9 +10,7 @@ export const WirelessSettings = component$<WirelessSettingsProps>(
           {$localize`Wireless Settings`}
         </h3>
 
-        <FormField
-          label={$localize`SSID (Network Name)`}
-        >
+        <FormField label={$localize`SSID (Network Name)`}>
           <Input
             type="text"
             value={ssid}

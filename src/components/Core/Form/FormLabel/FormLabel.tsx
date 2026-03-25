@@ -48,7 +48,8 @@ export const FormLabel = component$<FormLabelProps>(
     class: className,
   }) => {
     // Base classes with enhanced responsive behavior
-    const baseClasses = "font-medium transition-colors duration-200 motion-safe:transition-all motion-reduce:transition-none";
+    const baseClasses =
+      "font-medium transition-colors duration-200 motion-safe:transition-all motion-reduce:transition-none";
 
     // Enhanced size classes with responsive support
     const getSizeClasses = () => {
@@ -61,7 +62,7 @@ export const FormLabel = component$<FormLabelProps>(
       } else if (fluidSize === "auto") {
         return {
           sm: "text-xs mobile:text-xs tablet:text-sm desktop:text-sm",
-          md: "text-sm mobile:text-sm tablet:text-base desktop:text-base", 
+          md: "text-sm mobile:text-sm tablet:text-base desktop:text-base",
           lg: "text-base mobile:text-base tablet:text-lg desktop:text-xl",
         }[size];
       } else {
@@ -90,19 +91,20 @@ export const FormLabel = component$<FormLabelProps>(
     };
 
     // Enhanced touch optimization classes
-    const touchClasses = touchOptimized 
-      ? "touch:min-h-11 touch:flex touch:items-center mobile:min-h-[44px] tablet:min-h-[40px]" 
+    const touchClasses = touchOptimized
+      ? "touch:min-h-11 touch:flex touch:items-center mobile:min-h-[44px] tablet:min-h-[40px]"
       : "mobile:min-h-[20px] tablet:min-h-[18px]";
 
     // Screen reader only classes with better positioning
     const srOnlyClasses = srOnly ? "sr-only" : "block";
 
     // Enhanced responsive spacing and layout
-    const layoutClasses = "leading-6 mobile:leading-5 tablet:leading-6 desktop:leading-6 select-none";
+    const layoutClasses =
+      "leading-6 mobile:leading-5 tablet:leading-6 desktop:leading-6 select-none";
 
     // Enhanced focus states for accessibility with semantic colors
-    const focusClasses = !disabled 
-      ? "focus-within:outline-none focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-surface-dark-DEFAULT" 
+    const focusClasses = !disabled
+      ? "focus-within:outline-none focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-surface-dark-DEFAULT"
       : "";
 
     // RTL support with logical properties
@@ -120,7 +122,9 @@ export const FormLabel = component$<FormLabelProps>(
           // Semantic state colors with accessibility enhancements
           getStateClasses(),
           // Enhanced text selection for better UX
-          !error && !disabled && "selection:bg-surface-light-secondary dark:selection:bg-surface-dark-secondary",
+          !error &&
+            !disabled &&
+            "selection:bg-surface-light-secondary dark:selection:bg-surface-dark-secondary",
           error && "selection:bg-error-100 dark:selection:bg-error-900",
           success && "selection:bg-success-100 dark:selection:bg-success-900",
           warning && "selection:bg-warning-100 dark:selection:bg-warning-900",
@@ -149,11 +153,13 @@ export const FormLabel = component$<FormLabelProps>(
           "motion-reduce:transition-none",
           // Enhanced accessibility for assistive technologies
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
-          "dark:focus-visible:ring-primary-400 focus-visible:ring-offset-2",
+          "focus-visible:ring-offset-2 dark:focus-visible:ring-primary-400",
           "dark:focus-visible:ring-offset-surface-dark-DEFAULT",
           // Additional classes
           className || "",
-        ].filter(Boolean).join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-disabled={disabled ? "true" : undefined}
         aria-required={required ? "true" : undefined}
         aria-invalid={error ? "true" : undefined}
@@ -163,7 +169,7 @@ export const FormLabel = component$<FormLabelProps>(
         {children}
         <Slot />
         {required && !srOnly && (
-          <span 
+          <span
             class={[
               "ms-1 rtl:me-1 rtl:ms-0",
               // Semantic error colors for required indicator
@@ -174,7 +180,9 @@ export const FormLabel = component$<FormLabelProps>(
               "select-none",
               // Touch optimization
               "mobile:text-base tablet:text-sm desktop:text-sm",
-            ].filter(Boolean).join(" ")}
+            ]
+              .filter(Boolean)
+              .join(" ")}
             aria-hidden="true"
             aria-label="required"
           >

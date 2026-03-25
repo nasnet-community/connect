@@ -1,4 +1,10 @@
-import { component$, useStore, $, useContext, useTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  useStore,
+  $,
+  useContext,
+  useTask$,
+} from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { Services } from "./Services/Services";
 import { Game } from "./Game/Game";
@@ -42,9 +48,9 @@ export const ExtraConfig = component$<StepProps>((props) => {
           upnp: { linkType: "domestic" as const },
           natpmp: { linkType: "domestic" as const },
         };
-        
-        ctx.updateExtraConfig$({ 
-          usefulServices: defaultUsefulServices 
+
+        ctx.updateExtraConfig$({
+          usefulServices: defaultUsefulServices,
         });
       }
     }

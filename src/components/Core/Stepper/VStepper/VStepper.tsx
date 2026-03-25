@@ -12,10 +12,10 @@ import type { BaseStepMeta } from "../shared/types/base";
 
 export const VStepper = component$((props: VStepperProps) => {
   const stepperData = useVStepper(props);
-  
+
   // Check if we're using enhanced features to access additional properties
   const hasEnhancedFeatures = props.enableEnhancedFeatures;
-  
+
   const {
     activeStep,
     steps,
@@ -29,9 +29,9 @@ export const VStepper = component$((props: VStepperProps) => {
     swapSteps$,
     goToStep$,
   } = stepperData;
-  
+
   // Convert StepItem[] to BaseStepMeta[] for help system
-  const baseSteps: BaseStepMeta[] = steps.value.map(step => ({
+  const baseSteps: BaseStepMeta[] = steps.value.map((step) => ({
     id: step.id,
     title: step.title,
     component: step.component,
@@ -46,20 +46,24 @@ export const VStepper = component$((props: VStepperProps) => {
     helpData: step.helpData,
     hasHelp: step.hasHelp,
   }));
-  
+
   // Initialize help system (always call hook, but use enableHelp flag)
   const helpSystem = useStepperHelp(
     { value: baseSteps },
     activeStep,
-    props.helpOptions
+    props.helpOptions,
   );
-  
+
   // Show error state if enhanced features are enabled and there's an error
-  if (hasEnhancedFeatures && 'hasError' in stepperData && stepperData.hasError?.value) {
+  if (
+    hasEnhancedFeatures &&
+    "hasError" in stepperData &&
+    stepperData.hasError?.value
+  ) {
     return (
       <StepperErrors
         hasError={stepperData.hasError.value}
-        errorMessage={stepperData.errorMessage?.value || ''}
+        errorMessage={stepperData.errorMessage?.value || ""}
         stepsLength={steps.value.length}
         stepperType="vertical"
       />
@@ -81,7 +85,7 @@ export const VStepper = component$((props: VStepperProps) => {
           stepperType="vertical"
         />
       ) : props.isEditMode ? (
-        <VStepperManagement 
+        <VStepperManagement
           steps={steps.value}
           activeStep={activeStep.value}
           addStep$={addStep$ as any}
@@ -128,14 +132,14 @@ export const VStepper = component$((props: VStepperProps) => {
         helpButton={props.helpButton}
         onHelpClick$={helpSystem?.openHelp$}
       />
-      
+
       {/* Help Modal */}
       {props.enableHelp && helpSystem && (
         <StepperHelpModal
           isOpen={helpSystem.isHelpOpen}
           onClose$={helpSystem.closeHelp$}
           currentStep={baseSteps[activeStep.value]}
-          stepTitle={baseSteps[activeStep.value]?.title || ''}
+          stepTitle={baseSteps[activeStep.value]?.title || ""}
           stepNumber={activeStep.value + 1}
           totalSteps={baseSteps.length}
         />

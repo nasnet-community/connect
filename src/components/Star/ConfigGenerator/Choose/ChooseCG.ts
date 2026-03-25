@@ -3,10 +3,7 @@ import { mergeRouterConfigs } from "~/components/Star/ConfigGenerator";
 
 export const BaseConfig = (): RouterConfig => {
     const config: RouterConfig = {
-        "/interface list": [
-            `add name="WAN"`, 
-            `add name="LAN"`,
-        ],
+        "/interface list": [`add name="WAN"`, `add name="LAN"`],
         "/ip firewall address-list": [
             `add comment="LOCAL-IP" address="192.168.0.0/16" list="LOCAL-IP"`,
             `add comment="LOCAL-IP" address="172.16.0.0/12" list="LOCAL-IP"`,

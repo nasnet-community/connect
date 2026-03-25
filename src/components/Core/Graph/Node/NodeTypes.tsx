@@ -50,7 +50,7 @@ export interface NodeTypeDefinition {
 // These colors map to the custom color system defined in tailwind.config.js
 export const nodeColors = {
   user: "rgb(245 158 11)", // warning.DEFAULT from config (amber-500)
-  wan: "rgb(14 165 233)", // info.DEFAULT from config (sky-500)  
+  wan: "rgb(14 165 233)", // info.DEFAULT from config (sky-500)
   router: "rgb(34 197 94)", // success.DEFAULT from config (emerald-500)
   service: "rgb(139 92 246)", // Violet-500 - maps to secondary palette
   vpn: "rgb(99 102 241)", // Indigo-500 - matches config indigo shades

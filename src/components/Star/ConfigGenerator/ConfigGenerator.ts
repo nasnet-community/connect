@@ -1,9 +1,5 @@
-import type { 
-    StarState,
-    LTE,
-    Subnets,
-} from "~/components/Star/StarContext";
-import { 
+import type { StarState, LTE, Subnets } from "~/components/Star/StarContext";
+import {
     ChooseCG,
     WANCG,
     LANCG,
@@ -17,11 +13,9 @@ import {
     MasterCG,
 } from "~/components/Star/ConfigGenerator/";
 
-
 export interface RouterConfig {
     [key: string]: string[];
 }
-
 
 export const ConfigGenerator = (state: StarState): string => {
     const config: RouterConfig = {
@@ -36,7 +30,7 @@ export const ConfigGenerator = (state: StarState): string => {
         "/interface ovpn-client": [],
         "/interface l2tp-client": [],
         "/interface ethernet": [],
-        
+
         "/interface veth": [],
         "/interface wireguard": [],
         "/interface wireguard peers": [],
@@ -127,16 +121,25 @@ export const ConfigGenerator = (state: StarState): string => {
     try {
         // Generate configurations from each module
         const chooseConfig = ChooseCG();
-        
+
         // Extract available LTE interfaces from RouterModels
         const availableLTEInterfaces: LTE[] = [];
-        state.Choose.RouterModels.forEach(routerModel => {
+        state.Choose.RouterModels.forEach((routerModel) => {
             if (routerModel.Interfaces.Interfaces.lte) {
-                availableLTEInterfaces.push(...routerModel.Interfaces.Interfaces.lte);
+                availableLTEInterfaces.push(
+                    ...routerModel.Interfaces.Interfaces.lte,
+                );
             }
         });
-        
-        const wanConfig = WANCG(state.WAN, state.Choose.Networks, state.LAN.Subnets, availableLTEInterfaces, state.Choose.RouterModels, state.ExtraConfig.services);
+
+        const wanConfig = WANCG(
+            state.WAN,
+            state.Choose.Networks,
+            state.LAN.Subnets,
+            availableLTEInterfaces,
+            state.Choose.RouterModels,
+            state.ExtraConfig.services,
+        );
         const lanConfig = LANCG(state);
         const extraConfig = ExtraCG(
             state.ExtraConfig,
@@ -146,12 +149,16 @@ export const ConfigGenerator = (state: StarState): string => {
             state.WAN.VPNClient,
             state.Choose.Networks,
             state.Choose.RouterModels,
-            state.LAN.VPNServer
+            state.LAN.VPNServer,
         );
         const showConfig = ShowCG(state);
 
         // Generate Master/Trunk configuration if in Trunk Mode
-        const masterConfig = MasterCG(state.Choose, state.LAN.Subnets || {} as Subnets, state.LAN.Wireless);
+        const masterConfig = MasterCG(
+            state.Choose,
+            state.LAN.Subnets || ({} as Subnets),
+            state.LAN.Wireless,
+        );
 
         // Merge all configurations
         const finalConfig = mergeMultipleConfigs(
@@ -165,7 +172,9 @@ export const ConfigGenerator = (state: StarState): string => {
         );
 
         // Sort mangle rules according to priority
-        const sortedConfig = sortRouterConfig(finalConfig, ["/ip firewall mangle"]);
+        const sortedConfig = sortRouterConfig(finalConfig, [
+            "/ip firewall mangle",
+        ]);
 
         // Remove empty arrays
         const removedEmptyArrays = removeEmptyArrays(sortedConfig);

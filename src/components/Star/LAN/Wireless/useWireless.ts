@@ -1,12 +1,22 @@
 import { $, useContext, useSignal, useStore, useTask$ } from "@builder.io/qwik";
-import type { NetworkKey, Networks as LocalNetworks, ExtraWirelessInterface } from "./type";
+import type {
+  NetworkKey,
+  Networks as LocalNetworks,
+  ExtraWirelessInterface,
+} from "./type";
 import { generatePasswordFromAPI, generateSSIDFromAPI } from "~/utils/api";
 import { StarContext } from "~/components/Star/StarContext";
-import type { WirelessConfig, WifiTarget, Networks } from "~/components/Star/StarContext";
+import type {
+  WirelessConfig,
+  WifiTarget,
+  Networks,
+} from "~/components/Star/StarContext";
 import { getExtraNetworks, isBaseNetwork } from "./networkUtils";
 
 // Helper to determine wireless network based on enabled base networks
-export const determineWirelessNetwork = (networks: Networks): { wifiTarget: WifiTarget; networkName: string } => {
+export const determineWirelessNetwork = (
+  networks: Networks,
+): { wifiTarget: WifiTarget; networkName: string } => {
   const baseNetworks = networks.BaseNetworks;
 
   // Priority 1: Split network
@@ -51,8 +61,8 @@ export const useWirelessForm = () => {
       const wirelessInterfaces = model.Interfaces.Interfaces.wireless;
 
       if (wirelessInterfaces && wirelessInterfaces.length > 0) {
-        const has24 = wirelessInterfaces.some(iface => iface.includes("2.4"));
-        const has5 = wirelessInterfaces.some(iface => iface.includes("5"));
+        const has24 = wirelessInterfaces.some((iface) => iface.includes("2.4"));
+        const has5 = wirelessInterfaces.some((iface) => iface.includes("5"));
 
         // If any router has both bands, return true
         if (has24 && has5) {
@@ -117,7 +127,9 @@ export const useWirelessForm = () => {
   const extraInterfaces = useStore<ExtraWirelessInterface[]>([]);
 
   const buildWirelessConfigArray = $(() => {
-    const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+    const isDomesticLinkEnabled =
+      starContext.state.Choose.WANLinkType === "domestic" ||
+      starContext.state.Choose.WANLinkType === "both";
     const wirelessConfigs: WirelessConfig[] = [];
 
     if (!networks.foreign.isDisabled) {
@@ -183,7 +195,9 @@ export const useWirelessForm = () => {
       isLoading.value = { ...isLoading.value, allPasswords: true };
       const commonPassword = await generatePasswordFromAPI();
 
-      const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+      const isDomesticLinkEnabled =
+        starContext.state.Choose.WANLinkType === "domestic" ||
+        starContext.state.Choose.WANLinkType === "both";
 
       // Only set passwords for available networks based on DomesticLink setting
       const availableNetworks = isDomesticLinkEnabled
@@ -216,11 +230,14 @@ export const useWirelessForm = () => {
   });
 
   const toggleNetworkHide = $((network: NetworkKey, value?: boolean) => {
-    networks[network].isHide = value !== undefined ? value : !networks[network].isHide;
+    networks[network].isHide =
+      value !== undefined ? value : !networks[network].isHide;
   });
 
   const toggleNetworkDisabled = $((network: NetworkKey, value?: boolean) => {
-    const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+    const isDomesticLinkEnabled =
+      starContext.state.Choose.WANLinkType === "domestic" ||
+      starContext.state.Choose.WANLinkType === "both";
 
     // Don't allow enabling domestic or split networks when DomesticLink is false
     if (
@@ -230,7 +247,8 @@ export const useWirelessForm = () => {
       return;
     }
 
-    const newDisabledState = value !== undefined ? value : !networks[network].isDisabled;
+    const newDisabledState =
+      value !== undefined ? value : !networks[network].isDisabled;
 
     if (!newDisabledState) {
       // Enabling the network - just enable it
@@ -253,7 +271,8 @@ export const useWirelessForm = () => {
   });
 
   const toggleNetworkSplitBand = $((network: NetworkKey, value?: boolean) => {
-    networks[network].splitBand = value !== undefined ? value : !networks[network].splitBand;
+    networks[network].splitBand =
+      value !== undefined ? value : !networks[network].splitBand;
   });
 
   const toggleSingleHide = $(() => {
@@ -271,12 +290,14 @@ export const useWirelessForm = () => {
   // === EXTRA WIRELESS INTERFACES MANAGEMENT ===
 
   const addExtraInterface = $(() => {
-    const availableNetworks = getExtraNetworks(starContext.state.Choose.Networks);
+    const availableNetworks = getExtraNetworks(
+      starContext.state.Choose.Networks,
+    );
 
     // Find first unassigned network
-    const assignedNetworks = extraInterfaces.map(i => i.targetNetworkName);
+    const assignedNetworks = extraInterfaces.map((i) => i.targetNetworkName);
     const firstAvailable = availableNetworks.find(
-      net => !assignedNetworks.includes(net.name)
+      (net) => !assignedNetworks.includes(net.name),
     );
 
     if (firstAvailable) {
@@ -294,25 +315,23 @@ export const useWirelessForm = () => {
   });
 
   const removeExtraInterface = $((id: string) => {
-    const index = extraInterfaces.findIndex(i => i.id === id);
+    const index = extraInterfaces.findIndex((i) => i.id === id);
     if (index !== -1) {
       extraInterfaces.splice(index, 1);
     }
   });
 
-  const updateExtraInterfaceField = $((
-    id: string,
-    field: keyof ExtraWirelessInterface,
-    value: any
-  ) => {
-    const interface_ = extraInterfaces.find(i => i.id === id);
-    if (interface_) {
-      (interface_ as any)[field] = value;
-    }
-  });
+  const updateExtraInterfaceField = $(
+    (id: string, field: keyof ExtraWirelessInterface, value: any) => {
+      const interface_ = extraInterfaces.find((i) => i.id === id);
+      if (interface_) {
+        (interface_ as any)[field] = value;
+      }
+    },
+  );
 
   const selectExtraNetwork = $((id: string, networkName: string) => {
-    const interface_ = extraInterfaces.find(i => i.id === id);
+    const interface_ = extraInterfaces.find((i) => i.id === id);
     if (interface_) {
       interface_.targetNetworkName = networkName;
     }
@@ -321,7 +340,7 @@ export const useWirelessForm = () => {
   const generateExtraSSID = $(async (id: string) => {
     try {
       isLoading.value = { ...isLoading.value, [`${id}-ssid`]: true };
-      const interface_ = extraInterfaces.find(i => i.id === id);
+      const interface_ = extraInterfaces.find((i) => i.id === id);
       if (interface_) {
         interface_.ssid = await generateSSIDFromAPI();
       }
@@ -335,7 +354,7 @@ export const useWirelessForm = () => {
   const generateExtraPassword = $(async (id: string) => {
     try {
       isLoading.value = { ...isLoading.value, [`${id}-password`]: true };
-      const interface_ = extraInterfaces.find(i => i.id === id);
+      const interface_ = extraInterfaces.find((i) => i.id === id);
       if (interface_) {
         interface_.password = await generatePasswordFromAPI();
       }
@@ -349,7 +368,11 @@ export const useWirelessForm = () => {
   useTask$(async () => {
     const wirelessConfig = starContext.state.LAN.Wireless;
 
-    if (wirelessConfig && Array.isArray(wirelessConfig) && wirelessConfig.length > 0) {
+    if (
+      wirelessConfig &&
+      Array.isArray(wirelessConfig) &&
+      wirelessConfig.length > 0
+    ) {
       // Check if it's multi-SSID (more than one config)
       isMultiSSID.value = wirelessConfig.length > 1;
 
@@ -357,10 +380,13 @@ export const useWirelessForm = () => {
         // Multi-mode: map array items to network store
         wirelessConfig.forEach((config) => {
           const networkKey: NetworkKey =
-            config.WifiTarget === "Foreign" ? "foreign" :
-            config.WifiTarget === "Domestic" ? "domestic" :
-            config.WifiTarget === "Split" ? "split" :
-            "vpn";
+            config.WifiTarget === "Foreign"
+              ? "foreign"
+              : config.WifiTarget === "Domestic"
+                ? "domestic"
+                : config.WifiTarget === "Split"
+                  ? "split"
+                  : "vpn";
 
           networks[networkKey] = {
             ssid: config.SSID,
@@ -399,7 +425,9 @@ export const useWirelessForm = () => {
   // Handle DomesticLink changes - disable domestic and split networks when DomesticLink is false
   useTask$(({ track }) => {
     const isDomesticLinkEnabled = track(
-      () => (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both"),
+      () =>
+        starContext.state.Choose.WANLinkType === "domestic" ||
+        starContext.state.Choose.WANLinkType === "both",
     );
 
     if (!isDomesticLinkEnabled) {
@@ -462,18 +490,22 @@ export const useWirelessForm = () => {
       starContext.updateLAN$({ Wireless: wirelessConfigs });
     } else {
       // Single mode: determine network based on enabled base networks
-      const { wifiTarget, networkName } = determineWirelessNetwork(starContext.state.Choose.Networks);
+      const { wifiTarget, networkName } = determineWirelessNetwork(
+        starContext.state.Choose.Networks,
+      );
 
       starContext.updateLAN$({
-        Wireless: [{
-          SSID: ssid.value,
-          Password: password.value,
-          isHide: isHide.value,
-          isDisabled: isDisabled.value,
-          SplitBand: splitBand.value,
-          WifiTarget: wifiTarget,
-          NetworkName: networkName,
-        }],
+        Wireless: [
+          {
+            SSID: ssid.value,
+            Password: password.value,
+            isHide: isHide.value,
+            isDisabled: isDisabled.value,
+            SplitBand: splitBand.value,
+            WifiTarget: wifiTarget,
+            NetworkName: networkName,
+          },
+        ],
       });
     }
   });
@@ -519,7 +551,9 @@ export const useWirelessForm = () => {
     }
 
     if (isMultiSSID.value) {
-      const isDomesticLinkEnabled = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+      const isDomesticLinkEnabled =
+        starContext.state.Choose.WANLinkType === "domestic" ||
+        starContext.state.Choose.WANLinkType === "both";
 
       // Filter networks based on DomesticLink setting
       const availableNetworks = isDomesticLinkEnabled
@@ -539,14 +573,14 @@ export const useWirelessForm = () => {
 
       // Validate extra interfaces
       const enabledExtraInterfaces = extraInterfaces.filter(
-        (interface_) => !interface_.isDisabled
+        (interface_) => !interface_.isDisabled,
       );
 
       const allExtraInterfacesValid = enabledExtraInterfaces.every(
         (interface_) =>
           interface_.targetNetworkName.trim() !== "" &&
           interface_.ssid.trim() !== "" &&
-          interface_.password.trim() !== ""
+          interface_.password.trim() !== "",
       );
 
       isFormValid.value =
@@ -585,15 +619,21 @@ export const useWirelessForm = () => {
   useTask$(async () => {
     const wirelessConfig = starContext.state.LAN.Wireless;
 
-    if (wirelessConfig && Array.isArray(wirelessConfig) && wirelessConfig.length > 0) {
+    if (
+      wirelessConfig &&
+      Array.isArray(wirelessConfig) &&
+      wirelessConfig.length > 0
+    ) {
       // Filter for extra interfaces (NetworkName not in base networks)
-      const extras = wirelessConfig.filter(config => !isBaseNetwork(config.NetworkName));
+      const extras = wirelessConfig.filter(
+        (config) => !isBaseNetwork(config.NetworkName),
+      );
 
       // Only load if we don't have extras yet (to avoid overwriting user changes)
       if (extras.length > 0 && extraInterfaces.length === 0) {
         extraInterfaces.splice(0, extraInterfaces.length);
         const bothBands = await hasBothBands();
-        extras.forEach(config => {
+        extras.forEach((config) => {
           extraInterfaces.push({
             id: `extra-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             targetNetworkName: config.NetworkName,
@@ -602,7 +642,7 @@ export const useWirelessForm = () => {
             isHide: config.isHide,
             isDisabled: config.isDisabled,
             // Override splitBand to false if router only has one band
-            splitBand: bothBands ? (config.SplitBand || false) : false,
+            splitBand: bothBands ? config.SplitBand || false : false,
           });
         });
       }

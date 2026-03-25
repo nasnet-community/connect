@@ -26,26 +26,26 @@ export default component$(() => {
       title: "Step 1",
       description: "First step description",
       component: <Step1Component />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Step 2",
       description: "Second step description",
       component: <Step2Component />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 3,
       title: "Step 3",
       description: "Third step description",
       component: <Step3Component />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ];
-  
+
   return (
-    <CStepper 
+    <CStepper
       steps={steps}
       onStepComplete$={(id) => console.log(`Step ${id} completed`)}
       onStepChange$={(id) => console.log(`Changed to step ${id}`)}
@@ -60,7 +60,7 @@ export default component$(() => {
 You can enable step management in your CStepper to allow users to add, remove, and reorder steps:
 
 ```tsx
-<CStepper 
+<CStepper
   steps={steps}
   isEditMode={true} // Enable step management UI
   // other props...
@@ -90,17 +90,17 @@ export default component$(() => {
       title: "First Step",
       description: "This is the first step",
       component: <StepContent />,
-      isComplete: false
+      isComplete: false,
     },
     {
       id: 2,
       title: "Second Step",
       description: "This is the second step",
       component: <StepContent />,
-      isComplete: false
-    }
+      isComplete: false,
+    },
   ]);
-  
+
   // Function to add a new step
   const addStep = $(() => {
     const newStep: CStepMeta = {
@@ -108,18 +108,18 @@ export default component$(() => {
       title: `Step ${steps.value.length + 1}`,
       description: `This is step ${steps.value.length + 1}`,
       component: <StepContent />,
-      isComplete: false
+      isComplete: false,
     };
-    
+
     // Add to steps array
     steps.value = [...steps.value, newStep];
   });
-  
+
   return (
     <div>
       <button onClick$={addStep}>Add New Step</button>
-      
-      <CStepper 
+
+      <CStepper
         steps={steps.value}
         onComplete$={() => alert("All steps completed!")}
       />
@@ -134,25 +134,29 @@ For more complex use cases where you need to share data between steps, you can u
 
 ```tsx
 import { component$ } from "@builder.io/qwik";
-import { 
-  CStepper, 
-  createStepperContext, 
-  useStepperContext, 
-  type CStepMeta 
+import {
+  CStepper,
+  createStepperContext,
+  useStepperContext,
+  type CStepMeta,
 } from "~/components/Core/Stepper/CStepper";
 
 // Create a typed context for your stepper
-const MyStepperContext = createStepperContext<{ userData: { name: string; email: string } }>("my-stepper");
+const MyStepperContext = createStepperContext<{
+  userData: { name: string; email: string };
+}>("my-stepper");
 
 export default component$(() => {
   // Your steps...
-  const steps: CStepMeta[] = [/* ... */];
-  
+  const steps: CStepMeta[] = [
+    /* ... */
+  ];
+
   // Your data to share via context
   const contextValue = { userData: { name: "", email: "" } };
-  
+
   return (
-    <CStepper 
+    <CStepper
       steps={steps}
       contextId={MyStepperContext}
       contextValue={contextValue}
@@ -171,25 +175,25 @@ import { MyStepperContext } from "./YourContextFile";
 export const Step1Component = component$(() => {
   // Get the stepper context
   const stepper = useStepperContext(MyStepperContext);
-  
+
   return (
     <div>
-      <input 
+      <input
         type="text"
         value={stepper.data.userData.name}
         onInput$={(e) => {
           const input = e.target as HTMLInputElement;
           stepper.data.userData.name = input.value;
-          
+
           // Using the new completeStep$ function when input meets criteria
           if (input.value.length > 3) {
             stepper.completeStep$(); // Completes the current step
           }
         }}
       />
-      
+
       {/* Complete step with button */}
-      <button 
+      <button
         onClick$={() => {
           if (stepper.data.userData.name) {
             stepper.completeStep$(); // Complete current step
@@ -210,28 +214,32 @@ Here's how you can combine all these features:
 
 ```tsx
 import { component$, useSignal, useStore, $ } from "@builder.io/qwik";
-import { 
-  CStepper, 
-  createStepperContext, 
-  useStepperContext, 
-  type CStepMeta 
+import {
+  CStepper,
+  createStepperContext,
+  useStepperContext,
+  type CStepMeta,
 } from "~/components/Core/Stepper/CStepper";
 
 // Create a context
-const FormContext = createStepperContext<{ formData: Record<string, any> }>("form-context");
+const FormContext = createStepperContext<{ formData: Record<string, any> }>(
+  "form-context",
+);
 
 export default component$(() => {
   // Toggle for edit mode
   const isEditMode = useSignal(false);
-  
+
   // Store form data
-  const formData = useStore({ /* your data */ });
-  
+  const formData = useStore({
+    /* your data */
+  });
+
   // Initial steps
   const steps = useSignal<CStepMeta[]>([
     // Your initial steps here
   ]);
-  
+
   // Function to add a step programmatically
   const addSpecialStep = $(() => {
     const newStep: CStepMeta = {
@@ -239,30 +247,28 @@ export default component$(() => {
       title: "Special Step",
       description: "This step was added programmatically",
       component: <SpecialStepComponent />,
-      isComplete: false
+      isComplete: false,
     };
-    
+
     steps.value = [...steps.value, newStep];
   });
-  
+
   return (
     <div>
       <div class="controls">
         <label>
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={isEditMode.value}
-            onChange$={() => isEditMode.value = !isEditMode.value} 
+            onChange$={() => (isEditMode.value = !isEditMode.value)}
           />
           Enable Edit Mode
         </label>
-        
-        <button onClick$={addSpecialStep}>
-          Add Special Step
-        </button>
+
+        <button onClick$={addSpecialStep}>Add Special Step</button>
       </div>
-      
-      <CStepper 
+
+      <CStepper
         steps={steps.value}
         contextId={FormContext}
         contextValue={{ formData }}
@@ -286,6 +292,7 @@ The stepper context provides two functions for managing step completion:
 2. `completeStep$(stepId?)` - Marks a step as complete (defaults to current step if no ID provided)
 
 Example:
+
 ```tsx
 const stepper = useStepperContext(MyStepperContext);
 
@@ -305,11 +312,7 @@ When implementing custom step components, you can also handle step completion th
 
 ```tsx
 const StepComponent = component$(({ onComplete$ }) => {
-  return (
-    <button onClick$={() => onComplete$(1)}>
-      Complete Step
-    </button>
-  );
+  return <button onClick$={() => onComplete$(1)}>Complete Step</button>;
 });
 ```
 
@@ -355,7 +358,8 @@ const currentStepIndex = stepper.activeStep.value;
 const allSteps = stepper.steps.value;
 
 // Check if current step is complete
-const isCurrentStepComplete = stepper.steps.value[stepper.activeStep.value].isComplete;
+const isCurrentStepComplete =
+  stepper.steps.value[stepper.activeStep.value].isComplete;
 ```
 
 ## Props
@@ -367,4 +371,4 @@ const isCurrentStepComplete = stepper.steps.value[stepper.activeStep.value].isCo
 - `onComplete$`: (Optional) Called when all steps are completed
 - `contextId`: (Optional) Custom context ID for this stepper
 - `contextValue`: (Optional) Initial data to store in context
-- `isEditMode`: (Optional) Enable the step management UI 
+- `isEditMode`: (Optional) Enable the step management UI

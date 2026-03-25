@@ -94,19 +94,21 @@ export const FormErrorMessage = component$<FormErrorMessageProps>(
           "high-contrast:text-error-700 high-contrast:dark:text-error-300",
           "high-contrast:font-semibold",
           // RTL support with logical properties
-          "rtl:text-right ltr:text-left",
+          "ltr:text-left rtl:text-right",
           // Touch optimization with adequate target sizes
           "mobile:min-h-[20px] tablet:min-h-[18px] desktop:min-h-[16px]",
           // Improved focus accessibility for screen readers
           "focus-within:outline-none focus-within:ring-2 focus-within:ring-error-500",
-          "dark:focus-within:ring-error-400 focus-within:ring-offset-2",
+          "focus-within:ring-offset-2 dark:focus-within:ring-error-400",
           "dark:focus-within:ring-offset-surface-dark-DEFAULT",
           // Motion preferences for accessibility
           "motion-safe:transition-all motion-safe:duration-200",
           "motion-reduce:transition-none",
           // Additional classes
           className || "",
-        ].filter(Boolean).join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
         role={role}
         aria-describedby={ariaDescribedby}
       >

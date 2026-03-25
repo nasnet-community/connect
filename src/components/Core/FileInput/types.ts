@@ -3,7 +3,13 @@ import type { QRL, Signal } from "@builder.io/qwik";
 /**
  * Supported VPN protocol types
  */
-export type VPNProtocolType = "OpenVPN" | "Wireguard" | "L2TP" | "PPTP" | "SSTP" | "IKEv2";
+export type VPNProtocolType =
+  | "OpenVPN"
+  | "Wireguard"
+  | "L2TP"
+  | "PPTP"
+  | "SSTP"
+  | "IKEv2";
 
 /**
  * File validation result
@@ -17,7 +23,7 @@ export interface FileValidationResult {
 /**
  * File upload error types
  */
-export type FileUploadErrorType = 
+export type FileUploadErrorType =
   | "FILE_TOO_LARGE"
   | "INVALID_FORMAT"
   | "READ_ERROR"

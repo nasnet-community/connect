@@ -25,7 +25,9 @@ export const ShowConfig = component$<StepProps>(() => {
   const slaveRouterConfigs = useSignal<{ [key: number]: string }>({});
 
   // Get slave routers from context
-  const slaveRouters = ctx.state.Choose.RouterModels.filter(rm => !rm.isMaster);
+  const slaveRouters = ctx.state.Choose.RouterModels.filter(
+    (rm) => !rm.isMaster,
+  );
 
   // Get easy mode defaults hook
   const { applyEasyModeDefaults } = useEasyModeDefaults();
@@ -53,7 +55,10 @@ export const ShowConfig = component$<StepProps>(() => {
     if (slaveRouters.length > 0) {
       const slaveConfigs: { [key: number]: string } = {};
       for (let i = 0; i < slaveRouters.length; i++) {
-        slaveConfigs[i] = await generateSlaveRouterConfigPreview(slaveRouters[i], i);
+        slaveConfigs[i] = await generateSlaveRouterConfigPreview(
+          slaveRouters[i],
+          i,
+        );
       }
       slaveRouterConfigs.value = slaveConfigs;
     }
@@ -83,80 +88,97 @@ export const ShowConfig = component$<StepProps>(() => {
     await downloadFile(content, "rsc");
   });
 
+  const handleSlaveRouterDownload = $(
+    async (slaveRouter: (typeof slaveRouters)[0], index: number) => {
+      // Track slave router script download
+      track("config_downloaded", {
+        file_type: "mikrotik_slave",
+        format: "rsc",
+        step: "show_config",
+        router_model: slaveRouter.Model,
+        router_index: index,
+      });
 
-  const handleSlaveRouterDownload = $(async (slaveRouter: typeof slaveRouters[0], index: number) => {
-    // Track slave router script download
-    track("config_downloaded", {
-      file_type: "mikrotik_slave",
-      format: "rsc",
-      step: "show_config",
-      router_model: slaveRouter.Model,
-      router_index: index,
-    });
+      const content = await generateSlaveRouterScript(slaveRouter, index);
+      await downloadSlaveRouterFile(content, slaveRouter, index, "rsc");
+    },
+  );
 
-    const content = await generateSlaveRouterScript(slaveRouter, index);
-    await downloadSlaveRouterFile(content, slaveRouter, index, "rsc");
-  });
+  const handleSlaveRouterPythonDownload = $(
+    async (slaveRouter: (typeof slaveRouters)[0], index: number) => {
+      // Track slave router Python script download
+      track("config_downloaded", {
+        file_type: "python_slave",
+        format: "py",
+        step: "show_config",
+        router_model: slaveRouter.Model,
+        router_index: index,
+      });
 
-  const handleSlaveRouterPythonDownload = $(async (slaveRouter: typeof slaveRouters[0], index: number) => {
-    // Track slave router Python script download
-    track("config_downloaded", {
-      file_type: "python_slave",
-      format: "py",
-      step: "show_config",
-      router_model: slaveRouter.Model,
-      router_index: index,
-    });
-
-    // For now, use a placeholder Python script
-    const content = `# Python configuration for ${slaveRouter.Model} (Slave Router ${index + 1})
+      // For now, use a placeholder Python script
+      const content = `# Python configuration for ${slaveRouter.Model} (Slave Router ${index + 1})
 import routeros_api
 
 def configure_slave_router(host, username, password):
     # TODO: Implement slave router Python configuration
     pass`;
 
-    await downloadSlaveRouterFile(content, slaveRouter, index, "py");
-  });
+      await downloadSlaveRouterFile(content, slaveRouter, index, "py");
+    },
+  );
 
-  const handleNewsletterSubscribe = $(async (subscription: { email: string; timestamp: string; source?: string }) => {
-    try {
-      // Validate subscription object
-      if (!subscription || !subscription.email) {
-        console.error("Invalid subscription object:", subscription);
-        throw new Error("Invalid subscription: email is required");
+  const handleNewsletterSubscribe = $(
+    async (subscription: {
+      email: string;
+      timestamp: string;
+      source?: string;
+    }) => {
+      try {
+        // Validate subscription object
+        if (!subscription || !subscription.email) {
+          console.error("Invalid subscription object:", subscription);
+          throw new Error("Invalid subscription: email is required");
+        }
+
+        // Generate userUUID using hardware fingerprinting
+        const userUUID = await generateUserUUID();
+
+        // Call the Supabase Edge Function
+        const result = await subscribeToNewsletter(
+          subscription.email,
+          userUUID,
+        );
+
+        if (!result.success) {
+          console.error("Newsletter subscription failed:", result.error);
+          throw new Error(
+            result.error_detail ||
+              result.error ||
+              "Failed to subscribe to newsletter",
+          );
+        }
+
+        console.log(
+          `Newsletter subscription successful: ${subscription.email} at ${subscription.timestamp}`,
+        );
+
+        // Track newsletter subscription
+        track("newsletter_subscribed", {
+          location: "show_config",
+          email_domain: subscription.email.split("@")[1],
+          source: subscription.source || "show_config",
+        });
+      } catch (error) {
+        console.error("Newsletter subscription error:", error);
+        throw error;
       }
-
-      // Generate userUUID using hardware fingerprinting
-      const userUUID = await generateUserUUID();
-
-      // Call the Supabase Edge Function
-      const result = await subscribeToNewsletter(subscription.email, userUUID);
-
-      if (!result.success) {
-        console.error("Newsletter subscription failed:", result.error);
-        throw new Error(result.error_detail || result.error || "Failed to subscribe to newsletter");
-      }
-
-      console.log(`Newsletter subscription successful: ${subscription.email} at ${subscription.timestamp}`);
-
-      // Track newsletter subscription
-      track("newsletter_subscribed", {
-        location: "show_config",
-        email_domain: subscription.email.split('@')[1],
-        source: subscription.source || "show_config",
-      });
-
-    } catch (error) {
-      console.error("Newsletter subscription error:", error);
-      throw error;
-    }
-  });
+    },
+  );
 
   return (
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       {/* Newsletter Section - Moved to Top */}
-      <div class="container mx-auto px-4 pt-8 pb-4">
+      <div class="container mx-auto px-4 pb-4 pt-8">
         <Newsletter
           variant="horizontal"
           size="lg"
@@ -174,11 +196,13 @@ def configure_slave_router(host, username, password):
         />
       </div>
 
-      <Header title={
-        slaveRouters.length > 0
-          ? $localize`Master Router Configuration`
-          : $localize`Configuration Preview`
-      } />
+      <Header
+        title={
+          slaveRouters.length > 0
+            ? $localize`Master Router Configuration`
+            : $localize`Configuration Preview`
+        }
+      />
 
       <div class="container mx-auto px-4 pb-16">
         {/* Configuration Display - Conditional based on mode */}
@@ -194,28 +218,39 @@ def configure_slave_router(host, username, password):
           )}
         </div>
 
-
         {/* Display Slave Router Configurations */}
-        {slaveRouters.length > 0 && slaveRouters.map((slaveRouter, index) => (
-          <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
-            <div class="mb-8">
-              <Header
-                title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`}
-              />
-            </div>
-            <div class="mb-12">
-              {ctx.state.Choose.Mode === "easy" ? (
-                <EasyModeDownloadCard onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))} />
-              ) : (
-                <Code
-                  configPreview={slaveRouterConfigs.value[index] || $localize`Generating configuration...`}
-                  onPythonDownload$={$(() => handleSlaveRouterPythonDownload(slaveRouter, index))}
-                  onROSDownload$={$(() => handleSlaveRouterDownload(slaveRouter, index))}
+        {slaveRouters.length > 0 &&
+          slaveRouters.map((slaveRouter, index) => (
+            <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
+              <div class="mb-8">
+                <Header
+                  title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`}
                 />
-              )}
+              </div>
+              <div class="mb-12">
+                {ctx.state.Choose.Mode === "easy" ? (
+                  <EasyModeDownloadCard
+                    onROSDownload$={$(() =>
+                      handleSlaveRouterDownload(slaveRouter, index),
+                    )}
+                  />
+                ) : (
+                  <Code
+                    configPreview={
+                      slaveRouterConfigs.value[index] ||
+                      $localize`Generating configuration...`
+                    }
+                    onPythonDownload$={$(() =>
+                      handleSlaveRouterPythonDownload(slaveRouter, index),
+                    )}
+                    onROSDownload$={$(() =>
+                      handleSlaveRouterDownload(slaveRouter, index),
+                    )}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
         <ScriptGuide />
 

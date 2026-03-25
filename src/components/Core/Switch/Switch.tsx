@@ -25,7 +25,7 @@ export interface SwitchProps {
 
 /**
  * Switch component for toggling binary states with enhanced accessibility and responsiveness.
- * 
+ *
  * Features:
  * - Responsive design optimized for mobile, tablet, and desktop
  * - Full dark mode support using Tailwind theme colors
@@ -140,7 +140,8 @@ export const Switch = component$<SwitchProps>(
       currentVariant.focusRing,
       "dark:focus-within:ring-offset-surface-dark",
       checked ? currentVariant.trackChecked : currentVariant.trackUnchecked,
-      !disabled && "group-hover:shadow-md motion-safe:group-hover:scale-[1.02] motion-reduce:group-hover:scale-100",
+      !disabled &&
+        "group-hover:shadow-md motion-safe:group-hover:scale-[1.02] motion-reduce:group-hover:scale-100",
       trackClass,
     ]
       .filter(Boolean)
@@ -173,11 +174,7 @@ export const Switch = component$<SwitchProps>(
       .join(" ");
 
     return (
-      <label 
-        for={switchId} 
-        class={containerClass}
-        aria-disabled={disabled}
-      >
+      <label for={switchId} class={containerClass} aria-disabled={disabled}>
         {label && labelPosition === "left" && (
           <span class={labelClasses}>
             {label}
@@ -185,17 +182,15 @@ export const Switch = component$<SwitchProps>(
           </span>
         )}
 
-        <span class="sr-only">
-          {label || ariaLabel || "Toggle switch"}
-        </span>
-        
+        <span class="sr-only">{label || ariaLabel || "Toggle switch"}</span>
+
         <input
           type="checkbox"
           role="switch"
           id={switchId}
           checked={checked}
           onChange$={handleClick$}
-          class="sr-only peer"
+          class="peer sr-only"
           disabled={disabled}
           required={required}
           aria-checked={checked}
@@ -204,7 +199,7 @@ export const Switch = component$<SwitchProps>(
           aria-describedby={ariaDescribedBy}
           {...props}
         />
-        
+
         <span class={trackClasses}>
           <span class={thumbClasses} />
         </span>

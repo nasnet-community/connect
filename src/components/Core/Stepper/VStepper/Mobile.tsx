@@ -2,8 +2,16 @@ import { component$ } from "@builder.io/qwik";
 import type { MobileProps } from "./types";
 
 export const Mobile = component$((props: MobileProps) => {
-  const { activeStep, isStepsVisible, toggleStepsVisibility, allowStepNavigation = false, onStepClick$, helpButton, onHelpClick$ } = props;
-  
+  const {
+    activeStep,
+    isStepsVisible,
+    toggleStepsVisibility,
+    allowStepNavigation = false,
+    onStepClick$,
+    helpButton,
+    onHelpClick$,
+  } = props;
+
   const showHelp = !!onHelpClick$;
   const helpButtonConfig = helpButton || {};
 
@@ -12,21 +20,22 @@ export const Mobile = component$((props: MobileProps) => {
       <div class="border-t border-border/10 bg-surface/95 backdrop-blur-sm dark:bg-surface-dark/95">
         <div class="space-y-2 px-4 py-3">
           <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-text-secondary">
+            <span class="text-text-secondary text-sm font-medium">
               {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
             </span>
-            
+
             <div class="flex items-center gap-3">
               {/* Help Button */}
               {showHelp && (
                 <button
                   onClick$={() => onHelpClick$ && onHelpClick$()}
                   class={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
-                    ${helpButtonConfig.variant === 'primary'
-                      ? 'bg-primary-500/20 text-primary-600 hover:bg-primary-500/30'
-                      : helpButtonConfig.variant === 'secondary'
-                        ? 'bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30'
-                        : 'text-text-secondary hover:text-primary-500 hover:bg-primary-500/10'
+                    ${
+                      helpButtonConfig.variant === "primary"
+                        ? "bg-primary-500/20 text-primary-600 hover:bg-primary-500/30"
+                        : helpButtonConfig.variant === "secondary"
+                          ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30"
+                          : "text-text-secondary hover:bg-primary-500/10 hover:text-primary-500"
                     }`}
                   title={$localize`Get help (Press ? key)`}
                 >
@@ -48,7 +57,7 @@ export const Mobile = component$((props: MobileProps) => {
                   )}
                 </button>
               )}
-              
+
               {/* Show/Hide Steps Toggle */}
               <button
                 onClick$={() => toggleStepsVisibility()}
@@ -72,7 +81,11 @@ export const Mobile = component$((props: MobileProps) => {
                       ? "w-4 bg-primary-500/50"
                       : "w-4 bg-border dark:bg-border-dark"
                 } ${allowStepNavigation ? "cursor-pointer" : ""}`}
-                onClick$={allowStepNavigation && onStepClick$ ? () => onStepClick$(index) : undefined}
+                onClick$={
+                  allowStepNavigation && onStepClick$
+                    ? () => onStepClick$(index)
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -93,7 +106,11 @@ export const Mobile = component$((props: MobileProps) => {
               class={`flex items-center gap-3 rounded-lg p-2 ${
                 index === activeStep.value ? "bg-primary-500/10" : ""
               } ${allowStepNavigation ? "cursor-pointer hover:bg-primary-500/5" : ""}`}
-              onClick$={allowStepNavigation && onStepClick$ ? () => onStepClick$(index) : undefined}
+              onClick$={
+                allowStepNavigation && onStepClick$
+                  ? () => onStepClick$(index)
+                  : undefined
+              }
             >
               <div
                 class={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${

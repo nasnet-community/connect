@@ -3,10 +3,10 @@ import { type InlineCodeProps } from "./CodeDisplay.types";
 import { useInlineCode } from "./hooks/useInlineCode";
 
 export const InlineCode = component$<InlineCodeProps>(
-  ({ 
-    children, 
-    class: className = "", 
-    id, 
+  ({
+    children,
+    class: className = "",
+    id,
     noWrap = false,
     theme = "auto",
     size = "sm",

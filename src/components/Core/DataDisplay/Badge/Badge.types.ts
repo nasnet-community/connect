@@ -2,11 +2,13 @@ import type { JSXChildren, QRL } from "@builder.io/qwik";
 
 export type BadgeVariant = "solid" | "soft" | "outline";
 export type BadgeSize = "sm" | "md" | "lg";
-export type ResponsiveBadgeSize = BadgeSize | {
-  mobile?: BadgeSize;
-  tablet?: BadgeSize;
-  desktop?: BadgeSize;
-};
+export type ResponsiveBadgeSize =
+  | BadgeSize
+  | {
+      mobile?: BadgeSize;
+      tablet?: BadgeSize;
+      desktop?: BadgeSize;
+    };
 export type BadgeColor =
   | "default"
   | "primary"

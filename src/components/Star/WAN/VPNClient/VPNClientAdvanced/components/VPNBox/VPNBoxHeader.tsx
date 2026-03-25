@@ -56,25 +56,32 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
           {/* VPN Info */}
           <div>
             <div class="flex items-center gap-3">
-              <h3 class={[
-                "text-lg font-semibold",
-                hasErrors
-                  ? "text-red-800 dark:text-red-200"
-                  : "text-gray-900 dark:text-white"
-              ]}>
+              <h3
+                class={[
+                  "text-lg font-semibold",
+                  hasErrors
+                    ? "text-red-800 dark:text-red-200"
+                    : "text-gray-900 dark:text-white",
+                ]}
+              >
                 {vpn.name || `VPN ${index + 1}`}
               </h3>
-              <span class={[
-                "rounded-full px-2 py-1 text-xs font-medium",
-                hasErrors
-                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                  : "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300"
-              ]}>
+              <span
+                class={[
+                  "rounded-full px-2 py-1 text-xs font-medium",
+                  hasErrors
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                    : "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300",
+                ]}
+              >
                 {vpn.type}
               </span>
             </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {$localize`Priority`}: {vpn.priority} • {vpn.assignedWANLink ? $localize`Assigned to WAN Link` : $localize`No WAN Link assigned`}
+              {$localize`Priority`}: {vpn.priority} •{" "}
+              {vpn.assignedWANLink
+                ? $localize`Assigned to WAN Link`
+                : $localize`No WAN Link assigned`}
             </p>
           </div>
         </div>
@@ -89,8 +96,18 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
                 class="rounded border border-gray-300 bg-white p-1 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
                 title={$localize`Move up`}
               >
-                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                <svg
+                  class="h-3 w-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 15l7-7 7 7"
+                  />
                 </svg>
               </button>
             )}
@@ -100,8 +117,18 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
                 class="rounded border border-gray-300 bg-white p-1 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
                 title={$localize`Move down`}
               >
-                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                <svg
+                  class="h-3 w-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
             )}
@@ -117,13 +144,18 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               <svg
                 class={[
                   "h-4 w-4 transition-transform",
-                  isExpanded ? "rotate-180" : ""
+                  isExpanded ? "rotate-180" : "",
                 ]}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
           )}
@@ -135,7 +167,12 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               class="rounded-lg border border-red-300 bg-red-50 p-2 text-red-600 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
               title={$localize`Remove VPN Client`}
             >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -148,5 +185,5 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
         </div>
       </div>
     );
-  }
+  },
 );

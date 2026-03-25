@@ -119,16 +119,18 @@ export const Link = component$<LinkProps>(
     const getColorClasses = (): string => {
       const colorMap: Record<LinkColor, string> = {
         primary: "text-primary-600 dark:text-primary-400",
-        secondary: theme === "dark" 
-          ? "text-gray-300" 
-          : theme === "dim" 
-            ? "text-gray-400" 
-            : "text-gray-700",
-        tertiary: theme === "dark" 
-          ? "text-gray-400" 
-          : theme === "dim" 
-            ? "text-gray-500" 
-            : "text-gray-500",
+        secondary:
+          theme === "dark"
+            ? "text-gray-300"
+            : theme === "dim"
+              ? "text-gray-400"
+              : "text-gray-700",
+        tertiary:
+          theme === "dark"
+            ? "text-gray-400"
+            : theme === "dim"
+              ? "text-gray-500"
+              : "text-gray-500",
         inverse: "text-white dark:text-gray-900",
         accent: "text-secondary-600 dark:text-secondary-400",
         inherit: "text-inherit",
@@ -147,8 +149,8 @@ export const Link = component$<LinkProps>(
         "contrast-high": "text-contrast-high",
       };
 
-      return theme === "auto" 
-        ? colorMap[color] || `text-${color}` 
+      return theme === "auto"
+        ? colorMap[color] || `text-${color}`
         : colorMap[color] || `${theme}:text-${color}`;
     };
 
@@ -156,8 +158,8 @@ export const Link = component$<LinkProps>(
     const classes = [
       // Base styles with motion preferences and direction support
       "inline-flex items-center",
-      reduceMotion 
-        ? "motion-reduce:transition-none motion-safe:transition-all motion-safe:duration-150" 
+      reduceMotion
+        ? "motion-reduce:transition-none motion-safe:transition-all motion-safe:duration-150"
         : "transition-all duration-150",
 
       // Direction support
@@ -193,43 +195,64 @@ export const Link = component$<LinkProps>(
       highContrast && "high-contrast:text-black high-contrast:dark:text-white",
 
       // Variant styles with enhanced interactions
-      variant === "standard" && [
-        focusRing && "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
-        touchOptimized && "touch:active:scale-95",
-        rippleEffect && "relative overflow-hidden"
-      ].filter(Boolean).join(" "),
+      variant === "standard" &&
+        [
+          focusRing &&
+            "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
+          touchOptimized && "touch:active:scale-95",
+          rippleEffect && "relative overflow-hidden",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-      variant === "button" && [
-        "px-4 py-2 rounded-md border border-current",
-        "hover:bg-opacity-10 hover:bg-current",
-        "active:bg-opacity-20 active:bg-current",
-        focusRing && "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
-        touchOptimized && "touch:py-3 touch:px-5",
-        rippleEffect && "relative overflow-hidden"
-      ].filter(Boolean).join(" "),
+      variant === "button" &&
+        [
+          "px-4 py-2 rounded-md border border-current",
+          "hover:bg-opacity-10 hover:bg-current",
+          "active:bg-opacity-20 active:bg-current",
+          focusRing &&
+            "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
+          touchOptimized && "touch:py-3 touch:px-5",
+          rippleEffect && "relative overflow-hidden",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-      variant === "nav" && [
-        "py-2 px-1 border-b-2 border-transparent",
-        "hover:border-current",
-        "focus:outline-none focus:border-current",
-        touchOptimized && "touch:py-3"
-      ].filter(Boolean).join(" "),
+      variant === "nav" &&
+        [
+          "py-2 px-1 border-b-2 border-transparent",
+          "hover:border-current",
+          "focus:outline-none focus:border-current",
+          touchOptimized && "touch:py-3",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-      variant === "subtle" && [
-        "hover:opacity-80 focus:outline-none",
-        touchOptimized && "touch:opacity-70"
-      ].filter(Boolean).join(" "),
+      variant === "subtle" &&
+        [
+          "hover:opacity-80 focus:outline-none",
+          touchOptimized && "touch:opacity-70",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-      variant === "icon" && [
-        "gap-2",
-        focusRing && "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
-        touchOptimized && "touch:gap-3"
-      ].filter(Boolean).join(" "),
+      variant === "icon" &&
+        [
+          "gap-2",
+          focusRing &&
+            "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
+          touchOptimized && "touch:gap-3",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
-      variant === "breadcrumb" && [
-        "gap-1 hover:opacity-80 focus:outline-none",
-        touchOptimized && "touch:gap-2"
-      ].filter(Boolean).join(" "),
+      variant === "breadcrumb" &&
+        [
+          "gap-1 hover:opacity-80 focus:outline-none",
+          touchOptimized && "touch:gap-2",
+        ]
+          .filter(Boolean)
+          .join(" "),
 
       // Underline styles with enhanced animations
       {
@@ -242,9 +265,9 @@ export const Link = component$<LinkProps>(
           direction === "rtl" ? "after:right-0" : "after:left-0",
           "after:h-0.5 after:w-0 after:bg-current",
           "hover:after:w-full",
-          reduceMotion 
+          reduceMotion
             ? "motion-reduce:after:transition-none motion-safe:after:transition-all motion-safe:after:duration-300"
-            : "after:transition-all after:duration-300"
+            : "after:transition-all after:duration-300",
         ].join(" "),
       }[underline],
 
@@ -253,16 +276,18 @@ export const Link = component$<LinkProps>(
       active && variant !== "nav" && "font-semibold opacity-100",
 
       // Disabled state
-      disabled && [
-        "opacity-50 pointer-events-none cursor-default",
-        "focus:ring-0 focus:outline-none"
-      ].join(" "),
+      disabled &&
+        [
+          "opacity-50 pointer-events-none cursor-default",
+          "focus:ring-0 focus:outline-none",
+        ].join(" "),
 
       // Touch optimization
-      touchOptimized && [
-        "touch:min-h-[44px] touch:min-w-[44px]",
-        "touch:flex touch:items-center touch:justify-center"
-      ].join(" "),
+      touchOptimized &&
+        [
+          "touch:min-h-[44px] touch:min-w-[44px]",
+          "touch:flex touch:items-center touch:justify-center",
+        ].join(" "),
 
       // Print optimization
       printOptimized && "print:text-black print:no-underline",
@@ -271,7 +296,8 @@ export const Link = component$<LinkProps>(
       truncate && "truncate",
 
       // Ripple effect container
-      rippleEffect && "before:absolute before:inset-0 before:rounded-inherit before:bg-current before:opacity-0 hover:before:opacity-10 active:before:opacity-20 before:transition-opacity",
+      rippleEffect &&
+        "before:absolute before:inset-0 before:rounded-inherit before:bg-current before:opacity-0 hover:before:opacity-10 active:before:opacity-20 before:transition-opacity",
 
       // Custom class
       className,

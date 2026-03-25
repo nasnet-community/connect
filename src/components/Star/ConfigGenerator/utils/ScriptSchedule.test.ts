@@ -50,7 +50,9 @@ describe("ScriptSchedule utils", () => {
         expect(result["/system scheduler"]).toHaveLength(1);
         expect(result["/system scheduler"][0]).toContain("interval=00:00:00");
         expect(result["/system scheduler"][0]).toContain("name=nightly-check");
-        expect(result["/system scheduler"][0]).toContain('on-event="/log\\r\\ninfo \\"nightly\\""');
+        expect(result["/system scheduler"][0]).toContain(
+            'on-event="/log\\r\\ninfo \\"nightly\\""',
+        );
         expect(result["/system scheduler"][0]).toContain("start-time=startup");
     });
 
@@ -65,7 +67,9 @@ describe("ScriptSchedule utils", () => {
 
         expect(result["/system script"]).toHaveLength(1);
         expect(result["/system script"][0]).toContain('name="refresh-peers"');
-        expect(result["/system script"][0]).toContain('source="/system script\\r\\nrun updater"');
+        expect(result["/system script"][0]).toContain(
+            'source="/system script\\r\\nrun updater"',
+        );
     });
 
     // Verifies the combined helper produces both the script and a scheduler that runs it.
@@ -97,7 +101,9 @@ describe("ScriptSchedule utils", () => {
 
         expect(result["/system script"]).toHaveLength(1);
         expect(result["/system scheduler"]).toHaveLength(1);
-        expect(result["/system script"][0]).toContain("remove [find name=bootstrap];");
+        expect(result["/system script"][0]).toContain(
+            "remove [find name=bootstrap];",
+        );
         expect(result["/system scheduler"][0]).toContain("name=bootstrap");
         expect(result[""]).toEqual([]);
     });

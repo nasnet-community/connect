@@ -4,7 +4,7 @@ export interface StepperErrorsProps {
   hasError: boolean;
   errorMessage: string;
   stepsLength: number;
-  stepperType?: 'content' | 'vertical' | 'horizontal';
+  stepperType?: "content" | "vertical" | "horizontal";
 }
 
 /**
@@ -12,15 +12,23 @@ export interface StepperErrorsProps {
  * Provides consistent error handling UI across different steppers
  */
 export const StepperErrors = component$<StepperErrorsProps>((props) => {
-  const { hasError, errorMessage, stepsLength, stepperType = 'content' } = props;
+  const {
+    hasError,
+    errorMessage,
+    stepsLength,
+    stepperType = "content",
+  } = props;
 
   if (!hasError) return null;
 
   const getStepperTypeName = () => {
     switch (stepperType) {
-      case 'vertical': return 'Vertical Stepper';
-      case 'horizontal': return 'Horizontal Stepper';
-      default: return 'Stepper';
+      case "vertical":
+        return "Vertical Stepper";
+      case "horizontal":
+        return "Horizontal Stepper";
+      default:
+        return "Stepper";
     }
   };
 
@@ -48,10 +56,14 @@ export const StepperErrors = component$<StepperErrorsProps>((props) => {
               {getStepperTypeName()} Error
             </h3>
             <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-              <p>{errorMessage || 'An error occurred while rendering the stepper.'}</p>
+              <p>
+                {errorMessage ||
+                  "An error occurred while rendering the stepper."}
+              </p>
               {stepsLength === 0 && (
                 <p class="mt-1">
-                  No steps were provided. Please ensure at least one step is configured.
+                  No steps were provided. Please ensure at least one step is
+                  configured.
                 </p>
               )}
             </div>

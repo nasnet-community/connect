@@ -1,11 +1,11 @@
 import { component$ } from "@builder.io/qwik";
-import {
-  HiServerOutline,
-  HiLockClosedOutline,
-} from "@qwikest/icons/heroicons";
+import { HiServerOutline, HiLockClosedOutline } from "@qwikest/icons/heroicons";
 import { useIKEv2Server } from "./useIKEv2Server";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
-import { ServerFormField, SectionTitle } from "~/components/Core/Form/ServerField";
+import {
+  ServerFormField,
+  SectionTitle,
+} from "~/components/Core/Form/ServerField";
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { Input } from "~/components/Core/Input";
 import { NetworkDropdown } from "../../components/NetworkSelection";
@@ -40,7 +40,6 @@ export const IKEv2ServerAdvanced = component$(() => {
                 }}
               />
             </ServerFormField>
-
           </div>
         </div>
 
@@ -84,8 +83,6 @@ export const IKEv2ServerAdvanced = component$(() => {
                 </div>
               </ServerFormField>
             )}
-
-
           </div>
         </div>
 

@@ -9,7 +9,13 @@ export interface LinkStatisticsProps {
 }
 
 export const LinkStatistics = component$<LinkStatisticsProps>(
-  ({ activeLinks, configuredLinks, completedConnections, hasErrors, showCompleted = false }) => {
+  ({
+    activeLinks,
+    configuredLinks,
+    completedConnections,
+    hasErrors,
+    showCompleted = false,
+  }) => {
     return (
       <div class="mt-2 flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
         <span class="flex items-center gap-2">
@@ -28,11 +34,11 @@ export const LinkStatistics = component$<LinkStatisticsProps>(
         )}
         {hasErrors && (
           <span class="flex items-center gap-2">
-            <div class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+            <div class="h-2 w-2 animate-pulse rounded-full bg-red-500"></div>
             Issues Detected
           </span>
         )}
       </div>
     );
-  }
+  },
 );

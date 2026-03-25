@@ -34,7 +34,6 @@ export const PPPoEFields = component$<PPPoEFieldsProps>(
               });
             }}
             placeholder="PPPoE username"
-            
           />
         </FormField>
 
@@ -52,7 +51,6 @@ export const PPPoEFields = component$<PPPoEFieldsProps>(
               });
             }}
             placeholder="PPPoE password"
-            
           />
         </FormField>
       </div>

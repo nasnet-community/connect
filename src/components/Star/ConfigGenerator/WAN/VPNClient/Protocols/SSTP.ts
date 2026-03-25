@@ -5,8 +5,10 @@ import {
     mergeConfigurations,
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
-
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 
 // SSTP Client
 
@@ -94,14 +96,17 @@ export const SSTPClient = (config: SstpClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const SSTPClientWrapper = ( configs: SstpClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const SSTPClientWrapper = (
+    configs: SstpClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((sstpConfig) => {
         const vpnConfig = SSTPClient(sstpConfig);
         const interfaceName = GenerateVCInterfaceName(sstpConfig.Name, "SSTP");
         const endpointAddress = sstpConfig.Server.Address;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(sstpConfig.Name);
 

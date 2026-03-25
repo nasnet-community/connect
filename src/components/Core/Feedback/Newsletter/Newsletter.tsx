@@ -104,7 +104,9 @@ export const Newsletter = component$<NewsletterProps>(
       }
 
       if (success) {
-        console.log("[Newsletter] Success state detected - subscription completed");
+        console.log(
+          "[Newsletter] Success state detected - subscription completed",
+        );
       }
     });
 
@@ -122,7 +124,6 @@ export const Newsletter = component$<NewsletterProps>(
         isValid: isValid.value,
       });
     });
-
 
     // Get layout classes based on variant
     const getLayoutClasses = () => {
@@ -145,57 +146,77 @@ export const Newsletter = component$<NewsletterProps>(
     const getContainerClasses = () => {
       const baseClasses = [
         "relative overflow-hidden transition-all duration-700 group",
-        fullWidth ? "w-full" : variant === "hero" ? "max-w-2xl mx-auto" : "max-w-5xl mx-auto",
+        fullWidth
+          ? "w-full"
+          : variant === "hero"
+            ? "max-w-2xl mx-auto"
+            : "max-w-5xl mx-auto",
         animated ? "transform-gpu" : "",
       ];
 
       // Size classes with enhanced padding
-      const sizeClasses = variant === "hero" ? {
-        sm: "p-4 rounded-2xl",
-        md: "p-5 rounded-2xl",
-        lg: "p-6 rounded-2xl",
-      } : {
-        sm: compact ? "p-6 rounded-2xl" : "p-8 rounded-3xl",
-        md: compact ? "p-8 rounded-3xl" : "p-10 lg:p-12 rounded-3xl",
-        lg: compact ? "p-10 rounded-3xl" : "p-12 lg:p-16 rounded-3xl",
-      };
+      const sizeClasses =
+        variant === "hero"
+          ? {
+              sm: "p-4 rounded-2xl",
+              md: "p-5 rounded-2xl",
+              lg: "p-6 rounded-2xl",
+            }
+          : {
+              sm: compact ? "p-6 rounded-2xl" : "p-8 rounded-3xl",
+              md: compact ? "p-8 rounded-3xl" : "p-10 lg:p-12 rounded-3xl",
+              lg: compact ? "p-10 rounded-3xl" : "p-12 lg:p-16 rounded-3xl",
+            };
 
       // Premium glassmorphism and theme classes
       let surfaceClasses = "";
 
       if (variant === "hero") {
-        surfaceClasses = "bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl backdrop-saturate-150 border border-white/30 dark:border-gray-700/30";
+        surfaceClasses =
+          "bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl backdrop-saturate-150 border border-white/30 dark:border-gray-700/30";
       } else if (glassmorphism) {
-        surfaceClasses = "bg-white/80 dark:bg-gray-900/80 backdrop-blur-3xl backdrop-saturate-200 border-2 border-white/40 dark:border-primary-500/20";
+        surfaceClasses =
+          "bg-white/80 dark:bg-gray-900/80 backdrop-blur-3xl backdrop-saturate-200 border-2 border-white/40 dark:border-primary-500/20";
       } else if (themeColors) {
         switch (theme) {
           case "branded":
-            surfaceClasses = "bg-gradient-to-br from-white/95 via-primary-50/30 to-secondary-50/40 dark:from-gray-900/95 dark:via-primary-950/30 dark:to-secondary-950/40 backdrop-blur-2xl border-2 border-gradient-to-br from-primary-200/50 to-secondary-200/50 dark:from-primary-700/30 dark:to-secondary-700/30";
+            surfaceClasses =
+              "bg-gradient-to-br from-white/95 via-primary-50/30 to-secondary-50/40 dark:from-gray-900/95 dark:via-primary-950/30 dark:to-secondary-950/40 backdrop-blur-2xl border-2 border-gradient-to-br from-primary-200/50 to-secondary-200/50 dark:from-primary-700/30 dark:to-secondary-700/30";
             break;
           case "light":
-            surfaceClasses = "bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-2 border-gray-200/60 dark:border-gray-700/60";
+            surfaceClasses =
+              "bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-2 border-gray-200/60 dark:border-gray-700/60";
             break;
           case "dark":
-            surfaceClasses = "bg-gray-900/95 dark:bg-gray-950/95 backdrop-blur-2xl border-2 border-gray-700/60 dark:border-gray-800/60 text-white";
+            surfaceClasses =
+              "bg-gray-900/95 dark:bg-gray-950/95 backdrop-blur-2xl border-2 border-gray-700/60 dark:border-gray-800/60 text-white";
             break;
           case "glass":
-            surfaceClasses = "bg-white/70 dark:bg-gray-900/70 backdrop-blur-3xl backdrop-saturate-200 border-2 border-white/30 dark:border-gray-700/30";
+            surfaceClasses =
+              "bg-white/70 dark:bg-gray-900/70 backdrop-blur-3xl backdrop-saturate-200 border-2 border-white/30 dark:border-gray-700/30";
             break;
         }
       } else {
-        surfaceClasses = "bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-2 border-gray-200/60 dark:border-gray-700/60";
+        surfaceClasses =
+          "bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-2 border-gray-200/60 dark:border-gray-700/60";
       }
 
       // Premium elevation shadow with enhanced effects
-      const elevationClasses = variant === "hero" ? {
-        base: "shadow-md",
-        elevated: "shadow-lg hover:shadow-xl",
-        depressed: "shadow-inner shadow-gray-200/30 dark:shadow-gray-900/30",
-      } : {
-        base: "shadow-lg",
-        elevated: "shadow-2xl hover:shadow-primary/20 hover:shadow-3xl dark:shadow-dark-2xl dark:hover:shadow-primary-500/10 dark:hover:shadow-dark-3xl",
-        depressed: "shadow-inner shadow-gray-200/50 dark:shadow-gray-900/50",
-      };
+      const elevationClasses =
+        variant === "hero"
+          ? {
+              base: "shadow-md",
+              elevated: "shadow-lg hover:shadow-xl",
+              depressed:
+                "shadow-inner shadow-gray-200/30 dark:shadow-gray-900/30",
+            }
+          : {
+              base: "shadow-lg",
+              elevated:
+                "shadow-2xl hover:shadow-primary/20 hover:shadow-3xl dark:shadow-dark-2xl dark:hover:shadow-primary-500/10 dark:hover:shadow-dark-3xl",
+              depressed:
+                "shadow-inner shadow-gray-200/50 dark:shadow-gray-900/50",
+            };
 
       return [
         ...baseClasses,
@@ -204,7 +225,9 @@ export const Newsletter = component$<NewsletterProps>(
         elevationClasses[surfaceElevation],
         "",
         className,
-      ].filter(Boolean).join(" ");
+      ]
+        .filter(Boolean)
+        .join(" ");
     };
 
     // Get logo container classes
@@ -230,7 +253,7 @@ export const Newsletter = component$<NewsletterProps>(
 
       const baseClasses = "flex-1 space-y-5";
 
-      if (variant === "vertical" || (variant === "responsive")) {
+      if (variant === "vertical" || variant === "responsive") {
         return `${baseClasses} text-center md:text-start`;
       }
 
@@ -242,8 +265,10 @@ export const Newsletter = component$<NewsletterProps>(
       if (variant === "hero") {
         return "flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto";
       }
-      return "space-y-5 w-full max-w-md mx-auto" +
-        (variant === "horizontal" ? " md:mx-0" : "");
+      return (
+        "space-y-5 w-full max-w-md mx-auto" +
+        (variant === "horizontal" ? " md:mx-0" : "")
+      );
     };
 
     return (
@@ -255,15 +280,62 @@ export const Newsletter = component$<NewsletterProps>(
             <div class="absolute inset-0 bg-gradient-to-tr from-secondary-100/20 via-transparent to-primary-100/20 dark:from-secondary-950/10 dark:to-primary-950/10" />
 
             {/* Circuit pattern overlay */}
-            <svg class="absolute inset-0 w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              class="absolute inset-0 h-full w-full opacity-5 dark:opacity-10"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <defs>
-                <pattern id="circuit-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                  <circle cx="5" cy="5" r="1" fill="currentColor" class="text-primary-500" />
-                  <circle cx="95" cy="5" r="1" fill="currentColor" class="text-primary-500" />
-                  <circle cx="50" cy="50" r="2" fill="currentColor" class="text-secondary-500" />
-                  <circle cx="5" cy="95" r="1" fill="currentColor" class="text-primary-500" />
-                  <circle cx="95" cy="95" r="1" fill="currentColor" class="text-primary-500" />
-                  <path d="M5,5 L50,50 M50,50 L95,5 M50,50 L5,95 M50,50 L95,95" stroke="currentColor" stroke-width="0.5" fill="none" class="text-secondary-300 dark:text-secondary-700" opacity="0.3" />
+                <pattern
+                  id="circuit-pattern"
+                  x="0"
+                  y="0"
+                  width="100"
+                  height="100"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <circle
+                    cx="5"
+                    cy="5"
+                    r="1"
+                    fill="currentColor"
+                    class="text-primary-500"
+                  />
+                  <circle
+                    cx="95"
+                    cy="5"
+                    r="1"
+                    fill="currentColor"
+                    class="text-primary-500"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="2"
+                    fill="currentColor"
+                    class="text-secondary-500"
+                  />
+                  <circle
+                    cx="5"
+                    cy="95"
+                    r="1"
+                    fill="currentColor"
+                    class="text-primary-500"
+                  />
+                  <circle
+                    cx="95"
+                    cy="95"
+                    r="1"
+                    fill="currentColor"
+                    class="text-primary-500"
+                  />
+                  <path
+                    d="M5,5 L50,50 M50,50 L95,5 M50,50 L5,95 M50,50 L95,95"
+                    stroke="currentColor"
+                    stroke-width="0.5"
+                    fill="none"
+                    class="text-secondary-300 dark:text-secondary-700"
+                    opacity="0.3"
+                  />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#circuit-pattern)" />
@@ -288,195 +360,352 @@ export const Newsletter = component$<NewsletterProps>(
           {/* Premium animated background decorations */}
           {animated && (
             <>
-              <div class="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none rounded-3xl" />
-              <div class="absolute -inset-1 bg-gradient-to-r from-primary-400/30 via-secondary-400/30 to-primary-400/30 opacity-0 group-hover:opacity-100 blur-2xl transition-all duration-1000 pointer-events-none" />
+              <div class="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/10 to-secondary-500/10 opacity-0 transition-all duration-700 group-hover:opacity-100" />
+              <div class="pointer-events-none absolute -inset-1 bg-gradient-to-r from-primary-400/30 via-secondary-400/30 to-primary-400/30 opacity-0 blur-2xl transition-all duration-1000 group-hover:opacity-100" />
 
               {/* Static network accent elements */}
-              <div class="absolute top-10 -left-4 w-12 h-12 bg-primary-500/10 dark:bg-primary-400/10 rounded-full blur-xl opacity-60" />
-              <div class="absolute bottom-10 -right-4 w-16 h-16 bg-secondary-500/10 dark:bg-secondary-400/10 rounded-full blur-xl opacity-40" />
+              <div class="absolute -left-4 top-10 h-12 w-12 rounded-full bg-primary-500/10 opacity-60 blur-xl dark:bg-primary-400/10" />
+              <div class="absolute -right-4 bottom-10 h-16 w-16 rounded-full bg-secondary-500/10 opacity-40 blur-xl dark:bg-secondary-400/10" />
             </>
           )}
 
           <div class={getLayoutClasses() + " relative z-10"}>
-          {/* Small Logo Badge (optional) - hide for hero variant */}
-          {showLogo && variant !== "responsive" && variant !== "hero" && (
-            <div class={getLogoContainerClasses()}>
-              <div class="transform transition-all duration-500">
-                <NewsletterLogo />
-              </div>
-            </div>
-          )}
-
-          {/* Content Section */}
-          <div class={getContentContainerClasses()}>
-            {/* Enhanced Header with gradient text - simplified for hero variant */}
-            {variant !== "hero" && (
-              <div class="space-y-3">
-                <h2 class={`font-black bg-gradient-to-r from-gray-900 via-primary-500 to-secondary-500 dark:from-white dark:via-primary-400 dark:to-secondary-400 bg-clip-text text-transparent leading-tight bg-300% animate-gradient ${
-                  size === "sm" ? "text-2xl md:text-3xl" : size === "lg" ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
-                }`}>
-                  {title}
-                </h2>
-
-                <p class={`text-gray-600 dark:text-gray-300 font-medium leading-relaxed max-w-2xl mx-auto ${
-                  size === "sm" ? "text-sm md:text-base" : size === "lg" ? "text-lg md:text-xl" : "text-base md:text-lg"
-                }`}>
-                  {description}
-                </p>
+            {/* Small Logo Badge (optional) - hide for hero variant */}
+            {showLogo && variant !== "responsive" && variant !== "hero" && (
+              <div class={getLogoContainerClasses()}>
+                <div class="transform transition-all duration-500">
+                  <NewsletterLogo />
+                </div>
               </div>
             )}
 
-            {/* Hero variant title - compact and minimal */}
-            {variant === "hero" && title && (
-              <div class="text-center mb-4">
-                <h3 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-primary-600 dark:from-white dark:to-primary-400 bg-clip-text text-transparent">
-                  {title}
-                </h3>
-              </div>
-            )}
+            {/* Content Section */}
+            <div class={getContentContainerClasses()}>
+              {/* Enhanced Header with gradient text - simplified for hero variant */}
+              {variant !== "hero" && (
+                <div class="space-y-3">
+                  <h2
+                    class={`animate-gradient bg-gradient-to-r from-gray-900 via-primary-500 to-secondary-500 bg-300% bg-clip-text font-black leading-tight text-transparent dark:from-white dark:via-primary-400 dark:to-secondary-400 ${
+                      size === "sm"
+                        ? "text-2xl md:text-3xl"
+                        : size === "lg"
+                          ? "text-4xl md:text-5xl"
+                          : "text-3xl md:text-4xl"
+                    }`}
+                  >
+                    {title}
+                  </h2>
 
-            {/* Premium Form with floating label */}
-            <form class={getFormClasses()} onSubmit$={handleSubmit$} preventdefault:submit>
-              <div class={variant === "hero" ? "flex-1" : "relative group"}>
-                <Input
-                  type="email"
-                  value={email.value}
-                  placeholder={placeholder}
-                  id="newsletter-email"
-                  disabled={disabled || isLoading}
-                  required
-                  size={variant === "hero" ? "md" : size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
-                  validation={errorMessage ? "invalid" : isSuccess ? "valid" : "default"}
-                  onInput$={handleEmailInput$}
-                  onFocus$={handleFocus$}
-                  onBlur$={handleBlur$}
-                  class="w-full"
-                  hasSuffixSlot={true}
-                  fluid={true}
-                  animate={true}
-                  aria-label={$localize`Email address for newsletter subscription`}
-                  aria-describedby={errorMessage ? "newsletter-error" : showPrivacyNotice ? "newsletter-privacy" : undefined}
-                >
-                  <div q:slot="suffix">
-                    {/* Success checkmark with animation */}
-                    {isSuccess ? (
-                      <div class="relative">
-                        <div class="absolute inset-0 bg-success-500 rounded-full blur-lg animate-ping" />
-                        <svg class="h-6 w-6 text-success-500 relative animate-bounce-once" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </div>
-                    ) : (
-                      /* Email icon when not success */
-                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </div>
-                </Input>
-              </div>
-
-              {/* Error Message with animation - hide for hero variant */}
-              {errorMessage && variant !== "hero" && (
-                <div id="newsletter-error" class="text-error-600 dark:text-error-400 text-sm flex items-center gap-2 animate-slide-up bg-error-50/50 dark:bg-error-950/30 px-4 py-2 rounded-lg border border-error-200 dark:border-error-800">
-                  <svg class="h-4 w-4 flex-shrink-0 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="font-medium">{errorMessage}</span>
+                  <p
+                    class={`mx-auto max-w-2xl font-medium leading-relaxed text-gray-600 dark:text-gray-300 ${
+                      size === "sm"
+                        ? "text-sm md:text-base"
+                        : size === "lg"
+                          ? "text-lg md:text-xl"
+                          : "text-base md:text-lg"
+                    }`}
+                  >
+                    {description}
+                  </p>
                 </div>
               )}
 
-              {/* Premium Submit Button */}
-              <Button
-                type="submit"
-                disabled={disabled || isLoading || !isValid.value || isSuccess}
-                loading={isLoading}
-                variant={variant === "hero" ? "primary" : theme === "glass" ? "glass" : "primary"}
-                size={variant === "hero" ? "md" : size === "sm" ? "md" : size === "lg" ? "xl" : "lg"}
-                fullWidth={variant !== "hero"}
-                ripple={true}
-                gradientDirection="to-r"
-                radius="lg"
-                shadow={true}
-                pulse={false}
-                aria-label={isSuccess ? $localize`Successfully subscribed` : $localize`Subscribe to newsletter`}
-                class={variant === "hero" ? "!bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700 min-w-[120px]" : "mt-4 !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"}
+              {/* Hero variant title - compact and minimal */}
+              {variant === "hero" && title && (
+                <div class="mb-4 text-center">
+                  <h3 class="bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-xl font-bold text-transparent dark:from-white dark:to-primary-400 sm:text-2xl">
+                    {title}
+                  </h3>
+                </div>
+              )}
+
+              {/* Premium Form with floating label */}
+              <form
+                class={getFormClasses()}
+                onSubmit$={handleSubmit$}
+                preventdefault:submit
               >
-                {isSuccess ? (
-                  <div class="flex items-center justify-center gap-3">
-                    <svg class="h-5 w-5 animate-bounce-once" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                <div class={variant === "hero" ? "flex-1" : "group relative"}>
+                  <Input
+                    type="email"
+                    value={email.value}
+                    placeholder={placeholder}
+                    id="newsletter-email"
+                    disabled={disabled || isLoading}
+                    required
+                    size={
+                      variant === "hero"
+                        ? "md"
+                        : size === "sm"
+                          ? "md"
+                          : size === "lg"
+                            ? "xl"
+                            : "lg"
+                    }
+                    validation={
+                      errorMessage ? "invalid" : isSuccess ? "valid" : "default"
+                    }
+                    onInput$={handleEmailInput$}
+                    onFocus$={handleFocus$}
+                    onBlur$={handleBlur$}
+                    class="w-full"
+                    hasSuffixSlot={true}
+                    fluid={true}
+                    animate={true}
+                    aria-label={$localize`Email address for newsletter subscription`}
+                    aria-describedby={
+                      errorMessage
+                        ? "newsletter-error"
+                        : showPrivacyNotice
+                          ? "newsletter-privacy"
+                          : undefined
+                    }
+                  >
+                    <div q:slot="suffix">
+                      {/* Success checkmark with animation */}
+                      {isSuccess ? (
+                        <div class="relative">
+                          <div class="absolute inset-0 animate-ping rounded-full bg-success-500 blur-lg" />
+                          <svg
+                            class="animate-bounce-once relative h-6 w-6 text-success-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      ) : (
+                        /* Email icon when not success */
+                        <svg
+                          class="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </Input>
+                </div>
+
+                {/* Error Message with animation - hide for hero variant */}
+                {errorMessage && variant !== "hero" && (
+                  <div
+                    id="newsletter-error"
+                    class="flex animate-slide-up items-center gap-2 rounded-lg border border-error-200 bg-error-50/50 px-4 py-2 text-sm text-error-600 dark:border-error-800 dark:bg-error-950/30 dark:text-error-400"
+                  >
+                    <svg
+                      class="h-4 w-4 flex-shrink-0 animate-pulse"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd"
+                      />
                     </svg>
-                    <span class="tracking-widest">{$localize`CONNECTED!`}</span>
-                    <svg class="h-5 w-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                    </svg>
-                  </div>
-                ) : (
-                  <div class="flex items-center justify-center gap-3">
-                    {!isLoading && (
-                      <svg class="h-5 w-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0" />
-                      </svg>
-                    )}
-                    <span class={variant === "hero" ? "font-semibold" : "tracking-widest"}>{isLoading ? (variant === "hero" ? $localize`...` : $localize`CONNECTING...`) : buttonText}</span>
-                    {!isLoading && (
-                      <svg class="h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    )}
+                    <span class="font-medium">{errorMessage}</span>
                   </div>
                 )}
-              </Button>
 
-              {/* Privacy Notice with icons - hide for hero variant */}
-              {showPrivacyNotice && !isSuccess && variant !== "hero" && (
-                <div id="newsletter-privacy" class={`text-gray-500 dark:text-gray-400 text-center flex items-center justify-center gap-2 ${
-                  size === "sm" ? "text-xs" : "text-sm"
-                }`}>
-                  <svg class="h-4 w-4 opacity-60" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span>{privacyNoticeText}</span>
-                </div>
-              )}
-
-              {/* Enhanced Success Message - simplified for hero variant */}
-              {isSuccess && variant !== "hero" && (
-                <div class="text-center space-y-3 p-6 bg-success-50/30 dark:bg-success-950/20 rounded-2xl border border-success-200 dark:border-success-800 animate-slide-up">
-                  <div class="flex justify-center">
-                    <div class="p-3 bg-success-100 dark:bg-success-900 rounded-full">
-                      <svg class="h-8 w-8 text-success-600 dark:text-success-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                {/* Premium Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={
+                    disabled || isLoading || !isValid.value || isSuccess
+                  }
+                  loading={isLoading}
+                  variant={
+                    variant === "hero"
+                      ? "primary"
+                      : theme === "glass"
+                        ? "glass"
+                        : "primary"
+                  }
+                  size={
+                    variant === "hero"
+                      ? "md"
+                      : size === "sm"
+                        ? "md"
+                        : size === "lg"
+                          ? "xl"
+                          : "lg"
+                  }
+                  fullWidth={variant !== "hero"}
+                  ripple={true}
+                  gradientDirection="to-r"
+                  radius="lg"
+                  shadow={true}
+                  pulse={false}
+                  aria-label={
+                    isSuccess
+                      ? $localize`Successfully subscribed`
+                      : $localize`Subscribe to newsletter`
+                  }
+                  class={
+                    variant === "hero"
+                      ? "min-w-[120px] !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"
+                      : "mt-4 !bg-gradient-to-r !from-primary-500 !to-primary-600 hover:!from-primary-600 hover:!to-primary-700"
+                  }
+                >
+                  {isSuccess ? (
+                    <div class="flex items-center justify-center gap-3">
+                      <svg
+                        class="animate-bounce-once h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <span class="tracking-widest">{$localize`CONNECTED!`}</span>
+                      <svg
+                        class="h-5 w-5 animate-pulse"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
+                        />
                       </svg>
                     </div>
-                  </div>
-                  <div class="space-y-2">
-                    <p class="font-bold text-success-700 dark:text-success-300 text-lg">
-                      {$localize`Welcome to the NasNet!`}
-                    </p>
-                    <p class={`text-gray-600 dark:text-gray-400 ${
+                  ) : (
+                    <div class="flex items-center justify-center gap-3">
+                      {!isLoading && (
+                        <svg
+                          class="h-5 w-5 opacity-80"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0"
+                          />
+                        </svg>
+                      )}
+                      <span
+                        class={
+                          variant === "hero"
+                            ? "font-semibold"
+                            : "tracking-widest"
+                        }
+                      >
+                        {isLoading
+                          ? variant === "hero"
+                            ? $localize`...`
+                            : $localize`CONNECTING...`
+                          : buttonText}
+                      </span>
+                      {!isLoading && (
+                        <svg
+                          class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  )}
+                </Button>
+
+                {/* Privacy Notice with icons - hide for hero variant */}
+                {showPrivacyNotice && !isSuccess && variant !== "hero" && (
+                  <div
+                    id="newsletter-privacy"
+                    class={`flex items-center justify-center gap-2 text-center text-gray-500 dark:text-gray-400 ${
                       size === "sm" ? "text-xs" : "text-sm"
-                    }`}>
-                      {$localize`Check your email to confirm and activate your subscription.`}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick$={reset$}
-                    class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-semibold underline underline-offset-2 transition-colors"
+                    }`}
                   >
-                    {$localize`Subscribe another email`}
-                  </button>
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
+                    <svg
+                      class="h-4 w-4 opacity-60"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <span>{privacyNoticeText}</span>
+                  </div>
+                )}
 
-        {/* Enhanced CSS for premium animations */}
-        <style dangerouslySetInnerHTML={`
+                {/* Enhanced Success Message - simplified for hero variant */}
+                {isSuccess && variant !== "hero" && (
+                  <div class="animate-slide-up space-y-3 rounded-2xl border border-success-200 bg-success-50/30 p-6 text-center dark:border-success-800 dark:bg-success-950/20">
+                    <div class="flex justify-center">
+                      <div class="rounded-full bg-success-100 p-3 dark:bg-success-900">
+                        <svg
+                          class="h-8 w-8 text-success-600 dark:text-success-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <p class="text-lg font-bold text-success-700 dark:text-success-300">
+                        {$localize`Welcome to the NasNet!`}
+                      </p>
+                      <p
+                        class={`text-gray-600 dark:text-gray-400 ${
+                          size === "sm" ? "text-xs" : "text-sm"
+                        }`}
+                      >
+                        {$localize`Check your email to confirm and activate your subscription.`}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick$={reset$}
+                      class="text-sm font-semibold text-primary-600 underline underline-offset-2 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                    >
+                      {$localize`Subscribe another email`}
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
+
+          {/* Enhanced CSS for premium animations */}
+          <style
+            dangerouslySetInnerHTML={`
           @keyframes shine {
             0% { transform: translateX(-100%) skewX(-12deg); }
             100% { transform: translateX(200%) skewX(-12deg); }
@@ -540,9 +769,10 @@ export const Newsletter = component$<NewsletterProps>(
           .animation-delay-200 {
             animation-delay: 200ms;
           }
-        `} />
+        `}
+          />
+        </div>
       </div>
-    </div>
     );
   },
 );

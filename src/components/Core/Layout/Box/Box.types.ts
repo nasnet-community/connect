@@ -3,14 +3,16 @@ import type { JSXChildren, QwikIntrinsicElements } from "@builder.io/qwik";
 /**
  * Responsive value type for mobile-first design
  */
-export type ResponsiveValue<T> = T | {
-  base?: T;
-  sm?: T;
-  md?: T;
-  lg?: T;
-  xl?: T;
-  '2xl'?: T;
-};
+export type ResponsiveValue<T> =
+  | T
+  | {
+      base?: T;
+      sm?: T;
+      md?: T;
+      lg?: T;
+      xl?: T;
+      "2xl"?: T;
+    };
 export type BoxPadding =
   | "none"
   | "xs"
@@ -96,7 +98,12 @@ export type BoxBackgroundColor =
 /**
  * Enhanced shadow system with mobile-optimized shadows
  */
-export type BoxShadowEnhanced = BoxShadow | "mobile-card" | "mobile-nav" | "elevated" | "floating";
+export type BoxShadowEnhanced =
+  | BoxShadow
+  | "mobile-card"
+  | "mobile-nav"
+  | "elevated"
+  | "floating";
 
 export type BoxShadow = "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "inner";
 

@@ -14,75 +14,89 @@ interface OpenVPNFieldsProps {
 
 export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
   const { config, errors = {}, mode = "advanced", onUpdate$ } = props;
-  
+
   // State for config method and file content
   const configMethod = useSignal<"file" | "manual">("file");
   const configContent = useSignal("");
-  
+
   // Parse OpenVPN config file
   const parseOpenVPNConfig = $((content: string) => {
-    const lines = content.split('\n');
+    const lines = content.split("\n");
     const parsedConfig: Partial<OpenVpnClientConfig> = {
       Server: {
         Address: "",
-        Port: 1194
-      }
+        Port: 1194,
+      },
     };
-    
-    let caCertContent = '';
+
+    let caCertContent = "";
     const extraConfigLines: string[] = [];
     let inCaCert = false;
-    
+
     for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine || trimmedLine.startsWith('#') || trimmedLine.startsWith(';')) continue;
-      
+      if (
+        !trimmedLine ||
+        trimmedLine.startsWith("#") ||
+        trimmedLine.startsWith(";")
+      )
+        continue;
+
       // Handle CA certificate block
-      if (trimmedLine === '<ca>') {
+      if (trimmedLine === "<ca>") {
         inCaCert = true;
         continue;
-      } else if (trimmedLine === '</ca>') {
+      } else if (trimmedLine === "</ca>") {
         inCaCert = false;
         parsedConfig.Certificates = {
-          CaCertificateContent: caCertContent.trim()
+          CaCertificateContent: caCertContent.trim(),
         };
         continue;
       } else if (inCaCert) {
-        caCertContent += trimmedLine + '\n';
+        caCertContent += trimmedLine + "\n";
         continue;
       }
-      
+
       const [directive, ...valueParts] = trimmedLine.split(/\s+/);
       if (!directive) continue;
-      
-      const value = valueParts.join(' ').trim();
-      
+
+      const value = valueParts.join(" ").trim();
+
       switch (directive.toLowerCase()) {
-        case 'remote':
+        case "remote":
           const [address, port] = value.split(/\s+/);
           if (address) {
             parsedConfig.Server = {
               Address: address || "",
-              Port: parsedConfig.Server?.Port || 1194
+              Port: parsedConfig.Server?.Port || 1194,
             };
           }
           if (port) {
             parsedConfig.Server = {
               Address: parsedConfig.Server?.Address || "",
-              Port: parseInt(port) || 1194
+              Port: parseInt(port) || 1194,
             };
           }
           break;
-        case 'proto':
-          parsedConfig.Protocol = value.toLowerCase() === 'tcp' ? 'tcp' : 'udp';
+        case "proto":
+          parsedConfig.Protocol = value.toLowerCase() === "tcp" ? "tcp" : "udp";
           break;
-        case 'cipher':
-          const validCiphers = ["null", "aes128-cbc", "aes192-cbc", "aes256-cbc", "aes128-gcm", "aes192-gcm", "aes256-gcm", "blowfish128"];
+        case "cipher":
+          const validCiphers = [
+            "null",
+            "aes128-cbc",
+            "aes192-cbc",
+            "aes256-cbc",
+            "aes128-gcm",
+            "aes192-gcm",
+            "aes256-gcm",
+            "blowfish128",
+          ];
           if (validCiphers.includes(value as any)) {
             parsedConfig.Cipher = value as typeof parsedConfig.Cipher;
           }
           break;
-        case 'auth-user-pass':
+        case "auth-user-pass":
           // OpenVPN uses external auth, we'll need username/password to be filled manually
           break;
         default:
@@ -91,17 +105,17 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
           break;
       }
     }
-    
+
     // Note: ExtraConfig not available in current type, storing in a comment instead
-    
+
     return parsedConfig;
   });
-  
+
   // Handle config file upload
   const handleFileUpload$ = $(async (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    
+
     if (file) {
       try {
         const content = await file.text();
@@ -113,11 +127,11 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
           OVPNFileContent: content,
         });
       } catch (error) {
-        console.error('Failed to read config file:', error);
+        console.error("Failed to read config file:", error);
       }
     }
   });
-  
+
   // Handle config content change
   const handleConfigChange$ = $(async (content: string) => {
     configContent.value = content;
@@ -160,7 +174,7 @@ auth-user-pass
 cipher AES-256-GCM
 auth SHA256`}
           />
-          
+
           {/* Credentials for File Import */}
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -171,21 +185,19 @@ auth SHA256`}
                 type="text"
                 value={config.Credentials?.Username || ""}
                 onInput$={(event: Event, value: string) => {
-                  console.log('[OpenVPNFields] Username updated:', value);
-                  onUpdate$({ 
-                    Credentials: { 
-                      ...config.Credentials, 
+                  console.log("[OpenVPNFields] Username updated:", value);
+                  onUpdate$({
+                    Credentials: {
+                      ...config.Credentials,
                       Username: value,
-                      Password: config.Credentials?.Password || ""
-                    } 
+                      Password: config.Credentials?.Password || "",
+                    },
                   });
                 }}
                 placeholder="Your username"
                 validation={errors.Username ? "invalid" : "default"}
               />
-              {errors.Username && (
-                <ErrorMessage message={errors.Username} />
-              )}
+              {errors.Username && <ErrorMessage message={errors.Username} />}
             </div>
 
             <div>
@@ -196,24 +208,25 @@ auth SHA256`}
                 type="password"
                 value={config.Credentials?.Password || ""}
                 onInput$={(event: Event, value: string) => {
-                  console.log('[OpenVPNFields] Password updated:', value ? '***' : '(empty)');
+                  console.log(
+                    "[OpenVPNFields] Password updated:",
+                    value ? "***" : "(empty)",
+                  );
                   onUpdate$({
                     Credentials: {
                       ...config.Credentials,
                       Username: config.Credentials?.Username || "",
-                      Password: value
-                    }
+                      Password: value,
+                    },
                   });
                 }}
                 placeholder="Your password"
                 validation={errors.Password ? "invalid" : "default"}
               />
-              {errors.Password && (
-                <ErrorMessage message={errors.Password} />
-              )}
+              {errors.Password && <ErrorMessage message={errors.Password} />}
             </div>
           </div>
-          
+
           {/* Certificate Key Passphrase for File Import */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
@@ -223,7 +236,10 @@ auth SHA256`}
               type="password"
               value={config.keyPassphrase || ""}
               onInput$={(event: Event, value: string) => {
-                console.log('[OpenVPNFields] Key passphrase updated:', value ? '***' : '(empty)');
+                console.log(
+                  "[OpenVPNFields] Key passphrase updated:",
+                  value ? "***" : "(empty)",
+                );
                 onUpdate$({ keyPassphrase: value });
               }}
               placeholder={$localize`Optional passphrase for certificate private key`}
@@ -243,204 +259,204 @@ auth SHA256`}
       {configMethod.value === "manual" && (
         <div class="space-y-4">
           {/* Server Configuration */}
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Server Address`} *
-          </label>
-          <Input
-            type="text"
-            value={config.Server?.Address || ""}
-            onInput$={(event: Event, value: string) => {
-              console.log('[OpenVPNFields] Server Address updated:', value);
-              onUpdate$({
-                Server: {
-                  Address: value,
-                  Port: config.Server?.Port || 1194,
-                },
-              });
-            }}
-            placeholder="vpn.example.com"
-            validation={errors.ServerAddress ? "invalid" : "default"}
-          />
-          {errors.ServerAddress && (
-            <ErrorMessage message={errors.ServerAddress} />
-          )}
-        </div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Server Address`} *
+              </label>
+              <Input
+                type="text"
+                value={config.Server?.Address || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log("[OpenVPNFields] Server Address updated:", value);
+                  onUpdate$({
+                    Server: {
+                      Address: value,
+                      Port: config.Server?.Port || 1194,
+                    },
+                  });
+                }}
+                placeholder="vpn.example.com"
+                validation={errors.ServerAddress ? "invalid" : "default"}
+              />
+              {errors.ServerAddress && (
+                <ErrorMessage message={errors.ServerAddress} />
+              )}
+            </div>
 
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Server Port`} *
-          </label>
-          <Input
-            type="number"
-            value={config.Server?.Port?.toString() || ""}
-            onInput$={(event: Event, value: string) => {
-              console.log('[OpenVPNFields] Server Port updated:', value);
-              onUpdate$({
-                Server: {
-                  Address: config.Server?.Address || "",
-                  Port: parseInt(value) || 1194,
-                },
-              });
-            }}
-            placeholder="1194"
-            validation={errors.ServerPort ? "invalid" : "default"}
-          />
-          {errors.ServerPort && (
-            <ErrorMessage message={errors.ServerPort} />
-          )}
-        </div>
-      </div>
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Server Port`} *
+              </label>
+              <Input
+                type="number"
+                value={config.Server?.Port?.toString() || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log("[OpenVPNFields] Server Port updated:", value);
+                  onUpdate$({
+                    Server: {
+                      Address: config.Server?.Address || "",
+                      Port: parseInt(value) || 1194,
+                    },
+                  });
+                }}
+                placeholder="1194"
+                validation={errors.ServerPort ? "invalid" : "default"}
+              />
+              {errors.ServerPort && (
+                <ErrorMessage message={errors.ServerPort} />
+              )}
+            </div>
+          </div>
 
-      {/* Authentication */}
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Username`} *
-          </label>
-          <Input
-            type="text"
-            value={config.Credentials?.Username || ""}
-            onInput$={(event: Event, value: string) => {
-              console.log('[OpenVPNFields] Username updated:', value);
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
-                  Username: value,
-                  Password: config.Credentials?.Password || ""
-                } 
-              });
-            }}
-            placeholder="Your username"
-            validation={errors.Username ? "invalid" : "default"}
-          />
-          {errors.Username && (
-            <ErrorMessage message={errors.Username} />
-          )}
-        </div>
+          {/* Authentication */}
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Username`} *
+              </label>
+              <Input
+                type="text"
+                value={config.Credentials?.Username || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log("[OpenVPNFields] Username updated:", value);
+                  onUpdate$({
+                    Credentials: {
+                      ...config.Credentials,
+                      Username: value,
+                      Password: config.Credentials?.Password || "",
+                    },
+                  });
+                }}
+                placeholder="Your username"
+                validation={errors.Username ? "invalid" : "default"}
+              />
+              {errors.Username && <ErrorMessage message={errors.Username} />}
+            </div>
 
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Password`} *
-          </label>
-          <Input
-            type="text"
-            value={config.Credentials?.Password || ""}
-            onInput$={(event: Event, value: string) => {
-              console.log('[OpenVPNFields] Password updated:', value ? '***' : '(empty)');
-              onUpdate$({
-                Credentials: {
-                  ...config.Credentials,
-                  Username: config.Credentials?.Username || "",
-                  Password: value
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Password`} *
+              </label>
+              <Input
+                type="text"
+                value={config.Credentials?.Password || ""}
+                onInput$={(event: Event, value: string) => {
+                  console.log(
+                    "[OpenVPNFields] Password updated:",
+                    value ? "***" : "(empty)",
+                  );
+                  onUpdate$({
+                    Credentials: {
+                      ...config.Credentials,
+                      Username: config.Credentials?.Username || "",
+                      Password: value,
+                    },
+                  });
+                }}
+                placeholder="Your password"
+                validation={errors.Password ? "invalid" : "default"}
+              />
+              {errors.Password && <ErrorMessage message={errors.Password} />}
+            </div>
+          </div>
+
+          {/* Certificate Key Passphrase */}
+          <div>
+            <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+              {$localize`Certificate Key Passphrase`}
+            </label>
+            <Input
+              type="password"
+              value={config.keyPassphrase || ""}
+              onInput$={(event: Event, value: string) => {
+                console.log(
+                  "[OpenVPNFields] Key passphrase updated:",
+                  value ? "***" : "(empty)",
+                );
+                onUpdate$({ keyPassphrase: value });
+              }}
+              placeholder={$localize`Optional passphrase for certificate private key`}
+              validation={errors.keyPassphrase ? "invalid" : "default"}
+            />
+            {errors.keyPassphrase && (
+              <ErrorMessage message={errors.keyPassphrase} />
+            )}
+            <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
+              {$localize`Leave empty if your certificate doesn't require a passphrase`}
+            </p>
+          </div>
+
+          {/* Protocol and Cipher */}
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Protocol`}
+              </label>
+              <Select
+                value={config.Protocol || "udp"}
+                onChange$={(value: any) => onUpdate$({ Protocol: value })}
+                options={[
+                  { label: "UDP", value: "udp" },
+                  { label: "TCP", value: "tcp" },
+                ]}
+                placeholder="Select protocol"
+              />
+            </div>
+
+            <div>
+              <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                {$localize`Cipher`}
+              </label>
+              <Input
+                type="text"
+                value={config.Cipher || ""}
+                onInput$={(event: Event, value: string) =>
+                  onUpdate$({ Cipher: value as any })
                 }
-              });
-            }}
-            placeholder="Your password"
-            validation={errors.Password ? "invalid" : "default"}
-          />
-          {errors.Password && (
-            <ErrorMessage message={errors.Password} />
-          )}
-        </div>
-      </div>
+                placeholder="AES-256-CBC"
+              />
+            </div>
+          </div>
 
-      {/* Certificate Key Passphrase */}
-      <div>
-        <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-          {$localize`Certificate Key Passphrase`}
-        </label>
-        <Input
-          type="password"
-          value={config.keyPassphrase || ""}
-          onInput$={(event: Event, value: string) => {
-            console.log('[OpenVPNFields] Key passphrase updated:', value ? '***' : '(empty)');
-            onUpdate$({ keyPassphrase: value });
-          }}
-          placeholder={$localize`Optional passphrase for certificate private key`}
-          validation={errors.keyPassphrase ? "invalid" : "default"}
-        />
-        {errors.keyPassphrase && (
-          <ErrorMessage message={errors.keyPassphrase} />
-        )}
-        <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
-          {$localize`Leave empty if your certificate doesn't require a passphrase`}
-        </p>
-      </div>
-
-      {/* Protocol and Cipher */}
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Protocol`}
-          </label>
-          <Select
-            value={config.Protocol || "udp"}
-            onChange$={(value: any) =>
-              onUpdate$({ Protocol: value })
-            }
-            options={[
-              { label: "UDP", value: "udp" },
-              { label: "TCP", value: "tcp" }
-            ]}
-            placeholder="Select protocol"
-          />
-        </div>
-
-        <div>
-          <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Cipher`}
-          </label>
-          <Input
-            type="text"
-            value={config.Cipher || ""}
-            onInput$={(event: Event, value: string) =>
-              onUpdate$({ Cipher: value as any })
-            }
-            placeholder="AES-256-CBC"
-          />
-        </div>
-      </div>
-
-      {/* Advanced Settings */}
-      {mode === "advanced" && (
-        <>
-          <div>
-            <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`CA Certificate`}
-            </label>
-            <TextArea
-              value={config.Certificates?.CaCertificateContent || ""}
-              onInput$={(event: InputEvent, element: HTMLTextAreaElement) =>
-                onUpdate$({ 
-                  Certificates: {
-                    ...config.Certificates,
-                    CaCertificateContent: element.value
+          {/* Advanced Settings */}
+          {mode === "advanced" && (
+            <>
+              <div>
+                <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                  {$localize`CA Certificate`}
+                </label>
+                <TextArea
+                  value={config.Certificates?.CaCertificateContent || ""}
+                  onInput$={(event: InputEvent, element: HTMLTextAreaElement) =>
+                    onUpdate$({
+                      Certificates: {
+                        ...config.Certificates,
+                        CaCertificateContent: element.value,
+                      },
+                    })
                   }
-                })
-              }
-              placeholder="-----BEGIN CERTIFICATE-----"
-              rows={6}
-            />
-          </div>
+                  placeholder="-----BEGIN CERTIFICATE-----"
+                  rows={6}
+                />
+              </div>
 
-          <div>
-            <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Extra Configuration`}
-            </label>
-            <TextArea
-              value={""}
-              onInput$={(event: InputEvent, element: HTMLTextAreaElement) =>
-                // Note: ExtraConfig not available in current type
-                console.log('Extra config:', element.value)
-              }
-              placeholder="comp-lzo\npersist-key\npersist-tun"
-              rows={6}
-            />
-          </div>
-        </>
-      )}
+              <div>
+                <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
+                  {$localize`Extra Configuration`}
+                </label>
+                <TextArea
+                  value={""}
+                  onInput$={(event: InputEvent, element: HTMLTextAreaElement) =>
+                    // Note: ExtraConfig not available in current type
+                    console.log("Extra config:", element.value)
+                  }
+                  placeholder="comp-lzo\npersist-key\npersist-tun"
+                  rows={6}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

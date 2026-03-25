@@ -88,7 +88,7 @@ export const BadgeGroup = component$<BadgeGroupProps>((props) => {
   // Alignment classes - using logical alignment
   const alignClasses = {
     start: "justify-start",
-    center: "justify-center", 
+    center: "justify-center",
     end: "justify-end",
   }[align];
 

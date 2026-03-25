@@ -97,7 +97,7 @@ import {
   HiPlusCircleSolid,
   HiMinusCircleOutline,
   HiMinusCircleSolid,
-  
+
   // Additional Icons for Examples
   HiMagnifyingGlassOutline,
   HiStarOutline,

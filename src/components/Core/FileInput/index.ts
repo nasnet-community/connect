@@ -1,9 +1,9 @@
 /**
  * FileInput Module
- * 
+ *
  * Provides specialized components for handling VPN configuration files
  * with support for upload, paste, drag-and-drop, and validation.
- * 
+ *
  * @module FileInput
  */
 

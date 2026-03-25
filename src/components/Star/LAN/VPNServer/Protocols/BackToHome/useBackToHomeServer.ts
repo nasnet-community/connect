@@ -1,13 +1,19 @@
 import { useContext, $, useStore, useSignal } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext";
-import type { BackToHomeServerConfig, VSNetwork } from "~/components/Star/StarContext";
+import type {
+  BackToHomeServerConfig,
+  VSNetwork,
+} from "~/components/Star/StarContext";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const useBackToHomeServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   const backToHomeState = vpnServerState.BackToHomeServer || {
     enabled: true,
@@ -25,19 +31,22 @@ export const useBackToHomeServer = () => {
   const viewMode = useSignal<ViewMode>("advanced");
 
   // Core update function
-  const updateBackToHomeServer$ = $((config: Partial<BackToHomeServerConfig>) => {
-    const newConfig = {
-      ...backToHomeState,
-      ...config,
-    };
+  const updateBackToHomeServer$ = $(
+    (config: Partial<BackToHomeServerConfig>) => {
+      const newConfig = {
+        ...backToHomeState,
+        ...config,
+      };
 
-    starContext.updateLAN$({
-      VPNServer: {
-        ...vpnServerState,
-        BackToHomeServer: config.enabled === false && !config.Network ? undefined : newConfig,
-      },
-    });
-  });
+      starContext.updateLAN$({
+        VPNServer: {
+          ...vpnServerState,
+          BackToHomeServer:
+            config.enabled === false && !config.Network ? undefined : newConfig,
+        },
+      });
+    },
+  );
 
   // Advanced mode form update function
   const updateAdvancedForm$ = $((updatedValues: Partial<typeof formState>) => {

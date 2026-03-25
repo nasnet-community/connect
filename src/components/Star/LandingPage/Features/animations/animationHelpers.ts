@@ -16,7 +16,7 @@ export interface AnimationConfig {
 export const defaultAnimationConfig: AnimationConfig = {
   duration: 300,
   delay: 0,
-  easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  easing: "cubic-bezier(0.4, 0, 0.2, 1)",
   reducedMotion: false,
 };
 
@@ -25,17 +25,17 @@ export const defaultAnimationConfig: AnimationConfig = {
  */
 export const easingFunctions = {
   // Standard Material Design easing
-  standard: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  standard: "cubic-bezier(0.4, 0, 0.2, 1)",
   // Accelerate - starts slow, ends fast
-  accelerate: 'cubic-bezier(0.4, 0, 1, 1)',
+  accelerate: "cubic-bezier(0.4, 0, 1, 1)",
   // Decelerate - starts fast, ends slow
-  decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
+  decelerate: "cubic-bezier(0, 0, 0.2, 1)",
   // Sharp - very fast transition
-  sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+  sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
   // Smooth - gentle transition
-  smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  smooth: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
   // Bounce - playful bounce effect
-  bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+  bounce: "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
 } as const;
 
 /**
@@ -67,7 +67,7 @@ export const animationDurations = {
  */
 export function createStaggerDelay(
   index: number,
-  baseDelay: number = staggerDelays.md
+  baseDelay: number = staggerDelays.md,
 ): number {
   return index * baseDelay;
 }
@@ -76,8 +76,8 @@ export function createStaggerDelay(
  * Checks if user prefers reduced motion
  */
 export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
@@ -85,7 +85,7 @@ export function prefersReducedMotion(): boolean {
  */
 export function createAnimationTiming(
   duration: number = animationDurations.normal,
-  easing: string = easingFunctions.standard
+  easing: string = easingFunctions.standard,
 ): string {
   return `${duration}ms ${easing}`;
 }
@@ -95,33 +95,33 @@ export function createAnimationTiming(
  */
 export const animationClasses = {
   // Fade animations
-  fadeIn: 'animate-fade-in',
-  fadeInUp: 'animate-fade-in-up',
-  fadeInDown: 'animate-fade-in-down',
-  fadeInLeft: 'animate-fade-in-left',
-  fadeInRight: 'animate-fade-in-right',
+  fadeIn: "animate-fade-in",
+  fadeInUp: "animate-fade-in-up",
+  fadeInDown: "animate-fade-in-down",
+  fadeInLeft: "animate-fade-in-left",
+  fadeInRight: "animate-fade-in-right",
 
   // Scale animations
-  scaleIn: 'animate-scale-in',
-  scaleUp: 'animate-scale-up',
+  scaleIn: "animate-scale-in",
+  scaleUp: "animate-scale-up",
 
   // Slide animations
-  slideInUp: 'animate-slide-in-up',
-  slideInDown: 'animate-slide-in-down',
-  slideInLeft: 'animate-slide-in-left',
-  slideInRight: 'animate-slide-in-right',
+  slideInUp: "animate-slide-in-up",
+  slideInDown: "animate-slide-in-down",
+  slideInLeft: "animate-slide-in-left",
+  slideInRight: "animate-slide-in-right",
 
   // Bounce animations
-  bounceIn: 'animate-bounce-in',
+  bounceIn: "animate-bounce-in",
 
   // Pulse animations
-  pulse: 'animate-pulse',
-  pulseGlow: 'animate-pulse-glow',
+  pulse: "animate-pulse",
+  pulseGlow: "animate-pulse-glow",
 
   // Hover states
-  hoverScale: 'hover:scale-105',
-  hoverLift: 'hover:-translate-y-2',
-  hoverGlow: 'hover:shadow-2xl',
+  hoverScale: "hover:scale-105",
+  hoverLift: "hover:-translate-y-2",
+  hoverGlow: "hover:shadow-2xl",
 } as const;
 
 /**
@@ -129,7 +129,7 @@ export const animationClasses = {
  */
 export function createAnimationDelay(delay: number): Record<string, string> {
   return {
-    'animation-delay': `${delay}ms`,
+    "animation-delay": `${delay}ms`,
   };
 }
 
@@ -145,7 +145,7 @@ export function motionSafe(animationClass: string): string {
  */
 export const intersectionObserverOptions: IntersectionObserverInit = {
   threshold: 0.1,
-  rootMargin: '50px',
+  rootMargin: "50px",
 };
 
 /**
@@ -174,7 +174,7 @@ export const responsiveAnimations = {
  */
 export function createResponsiveAnimation(
   baseClass: string,
-  breakpoint: keyof typeof responsiveAnimations = 'desktop'
+  breakpoint: keyof typeof responsiveAnimations = "desktop",
 ): string {
   const config = responsiveAnimations[breakpoint];
   return `${baseClass} duration-[${config.duration}ms] ${motionSafe(baseClass)}`;
@@ -184,7 +184,7 @@ export function createResponsiveAnimation(
  * Performance-optimized CSS properties for hardware acceleration
  */
 export const performanceOptimizedStyles = {
-  transform: 'translateZ(0)',
-  backfaceVisibility: 'hidden' as const,
-  willChange: 'transform, opacity' as const,
+  transform: "translateZ(0)",
+  backfaceVisibility: "hidden" as const,
+  willChange: "transform, opacity" as const,
 } as const;

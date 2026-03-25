@@ -1,10 +1,5 @@
-import type {
-  WANWizardState,
-  WANLink,
-} from "../types";
-import type {
-  WANState,
-} from "../../../../StarContext/WANType";
+import type { WANWizardState, WANLink } from "../types";
+import type { WANState } from "../../../../StarContext/WANType";
 import type {
   Ethernet,
   Wireless,
@@ -31,16 +26,22 @@ export function generateWANState(
   // Create legacy WANLink format
   if (foreignLink) {
     const foreignWANLink: WANLink = {
-      WANConfigs: [{
-        name: foreignLink.name || "Foreign Link",
-        InterfaceConfig: {
-          InterfaceName: foreignLink.interfaceName as Ethernet | Wireless | Sfp | LTE,
-          WirelessCredentials: foreignLink.wirelessCredentials,
+      WANConfigs: [
+        {
+          name: foreignLink.name || "Foreign Link",
+          InterfaceConfig: {
+            InterfaceName: foreignLink.interfaceName as
+              | Ethernet
+              | Wireless
+              | Sfp
+              | LTE,
+            WirelessCredentials: foreignLink.wirelessCredentials,
+          },
+          ConnectionConfig: foreignLink.ConnectionConfig,
+          priority: foreignLink.priority,
+          weight: foreignLink.weight,
         },
-        ConnectionConfig: foreignLink.ConnectionConfig,
-        priority: foreignLink.priority,
-        weight: foreignLink.weight,
-      }]
+      ],
     };
 
     wanState.WANLink = {
@@ -49,16 +50,22 @@ export function generateWANState(
 
     if (domesticLink) {
       const domesticWANLink: WANLink = {
-        WANConfigs: [{
-          name: domesticLink.name || "Domestic Link",
-          InterfaceConfig: {
-            InterfaceName: domesticLink.interfaceName as Ethernet | Wireless | Sfp | LTE,
-            WirelessCredentials: domesticLink.wirelessCredentials,
+        WANConfigs: [
+          {
+            name: domesticLink.name || "Domestic Link",
+            InterfaceConfig: {
+              InterfaceName: domesticLink.interfaceName as
+                | Ethernet
+                | Wireless
+                | Sfp
+                | LTE,
+              WirelessCredentials: domesticLink.wirelessCredentials,
+            },
+            ConnectionConfig: domesticLink.ConnectionConfig,
+            priority: domesticLink.priority,
+            weight: domesticLink.weight,
           },
-          ConnectionConfig: domesticLink.ConnectionConfig,
-          priority: domesticLink.priority,
-          weight: domesticLink.weight,
-        }]
+        ],
       };
       wanState.WANLink!.Domestic = domesticWANLink;
     }
@@ -140,9 +147,7 @@ export function generateRouterOSCommands(
           commands.push(
             `/ip route add gateway=${gateway} distance=${index + 1}`,
           );
-          commands.push(
-            `/ip dns set servers=${DNS}`,
-          );
+          commands.push(`/ip dns set servers=${DNS}`);
         }
         break;
     }

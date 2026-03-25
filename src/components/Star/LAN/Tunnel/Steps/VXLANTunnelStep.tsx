@@ -64,11 +64,7 @@ export const VXLANTunnelStep = component$(() => {
 
     // Check if all tunnels have required fields
     for (const tunnel of stepper.data.vxlan) {
-      if (
-        !tunnel.name ||
-        !tunnel.remoteAddress ||
-        !tunnel.vni
-      ) {
+      if (!tunnel.name || !tunnel.remoteAddress || !tunnel.vni) {
         isValid = false;
         break;
       }
@@ -197,7 +193,6 @@ export const VXLANTunnelStep = component$(() => {
                   />
                 </ServerFormField>
 
-
                 {/* Remote Address */}
                 <ServerFormField label={$localize`Remote Address`} required>
                   <Input
@@ -209,7 +204,6 @@ export const VXLANTunnelStep = component$(() => {
                     placeholder={$localize`Enter remote address`}
                   />
                 </ServerFormField>
-
               </div>
             </Card>
           ))}

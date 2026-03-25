@@ -7,7 +7,7 @@ import { CardBody } from "../Card/CardBody";
  * SelectionCard component for interactive selection options.
  * Extends Card with selection state, badges, and icon support.
  * Commonly used for option selection, feature choices, and configuration steps.
- * 
+ *
  * @example
  * <SelectionCard
  *   isSelected={isSelected}
@@ -37,9 +37,12 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
   } = props;
 
   const badgeVariantClasses = {
-    default: "bg-surface-secondary/50 text-text-secondary dark:bg-surface-dark-secondary/50 dark:text-text-dark-secondary",
-    primary: "bg-primary-500/15 text-primary-500 dark:bg-primary-500/25 dark:text-primary-400",
-    success: "bg-success/15 text-success dark:bg-success/25 dark:text-success-light",
+    default:
+      "bg-surface-secondary/50 text-text-secondary dark:bg-surface-dark-secondary/50 dark:text-text-dark-secondary",
+    primary:
+      "bg-primary-500/15 text-primary-500 dark:bg-primary-500/25 dark:text-primary-400",
+    success:
+      "bg-success/15 text-success dark:bg-success/25 dark:text-success-light",
     warning: "bg-warning/10 text-warning dark:text-warning-light",
     info: "bg-info/15 text-info dark:bg-info/25 dark:text-info-light",
   };
@@ -53,7 +56,7 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
       class={`
         relative overflow-hidden transition-all duration-300
         ${isSelected && !isDisabled ? "ring-2 ring-primary-500" : ""}
-        ${isDisabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}
+        ${isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
         ${className}
       `}
       {...cardProps}
@@ -62,7 +65,9 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
       <div class="absolute right-4 top-4 z-10 flex gap-2">
         {/* Custom badge */}
         {badge && (
-          <div class={`rounded-full px-3 py-1 ${badgeVariantClasses[badgeVariant]}`}>
+          <div
+            class={`rounded-full px-3 py-1 ${badgeVariantClasses[badgeVariant]}`}
+          >
             <span class="text-xs font-medium">{badge}</span>
           </div>
         )}
@@ -119,19 +124,17 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
           )}
 
           {/* Children slot for custom content */}
-          {children && (
-            <Slot />
-          )}
+          {children && <Slot />}
         </div>
       </CardBody>
 
       {/* Gradient overlay for hover effect */}
       {!isDisabled && (
         <div
-          class="absolute inset-0 bg-gradient-to-br from-primary-500/10 
-          to-secondary-500/10 opacity-0 transition-opacity duration-300
-          group-hover:opacity-100 dark:from-primary-500/15 dark:to-secondary-500/15
-          pointer-events-none"
+          class="pointer-events-none absolute inset-0 bg-gradient-to-br 
+          from-primary-500/10 to-secondary-500/10 opacity-0 transition-opacity
+          duration-300 group-hover:opacity-100 dark:from-primary-500/15
+          dark:to-secondary-500/15"
         />
       )}
     </Card>

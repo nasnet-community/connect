@@ -3,13 +3,13 @@ import type { StepProps } from "~/types/step";
 import { useVPNServerEasy } from "./useVPNServerEasy";
 import { VPNServerHeader } from "../VPNServerHeader";
 import { ActionFooter } from "../ActionFooter";
-import {
-  CStepper,
-  type CStepMeta,
-} from "~/components/Core/Stepper/CStepper";
+import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
 import { CertificateStep } from "./steps/CertificateStep";
 import { EasyUsersStep } from "./steps/EasyUsersStep";
-import { VPNServerContextId, type VPNServerContextData } from "../VPNServerAdvanced/VPNServerContext";
+import {
+  VPNServerContextId,
+  type VPNServerContextData,
+} from "../VPNServerAdvanced/VPNServerContext";
 
 export const VPNServerEasy = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
@@ -69,7 +69,7 @@ export const VPNServerEasy = component$<StepProps>(
       // Track the reactive values to ensure proper reactivity
       const passphraseLength = certificatePassphrase.value.length;
       const validUsers = isValid.value;
-      
+
       return [
         {
           id: 0,
@@ -166,5 +166,5 @@ export const VPNServerEasy = component$<StepProps>(
         </div>
       </div>
     );
-  }
+  },
 );

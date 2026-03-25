@@ -35,14 +35,16 @@ export const L2TPServerEasy = component$(() => {
           </ServerFormField>
 
           {/* IPsec Usage Dropdown */}
-          <ServerFormField
-            label={$localize`Use IPsec`}
-          >
+          <ServerFormField label={$localize`Use IPsec`}>
             <UnifiedSelect
               value={easyFormState.useIpsec.toString()}
               onChange$={(value) => {
                 const stringValue = Array.isArray(value) ? value[0] : value;
-                if (stringValue === "yes" || stringValue === "no" || stringValue === "required") {
+                if (
+                  stringValue === "yes" ||
+                  stringValue === "no" ||
+                  stringValue === "required"
+                ) {
                   updateEasyUseIpsec$(stringValue);
                 }
               }}
@@ -59,7 +61,12 @@ export const L2TPServerEasy = component$(() => {
             <div class="relative">
               <ServerFormField
                 label={$localize`IPsec Secret Key`}
-                errorMessage={secretError.value || (!secretError.value ? $localize`Key used for encrypting L2TP/IPsec connections` : undefined)}
+                errorMessage={
+                  secretError.value ||
+                  (!secretError.value
+                    ? $localize`Key used for encrypting L2TP/IPsec connections`
+                    : undefined)
+                }
                 required={easyFormState.useIpsec === "required"}
               >
                 <Input

@@ -1,11 +1,11 @@
 import { useSignal, useTask$ } from "@builder.io/qwik";
-import type { 
-  GridProps, 
-  ResponsiveGridTemplateColumns, 
+import type {
+  GridProps,
+  ResponsiveGridTemplateColumns,
   ResponsiveGridGap,
   ContainerResponsiveValue,
   GridGap,
-  GridTemplateColumns
+  GridTemplateColumns,
 } from "../Grid.types";
 
 /**
@@ -52,12 +52,14 @@ export function useGrid(props: GridProps) {
     if (typeof document !== "undefined") {
       // Detect mobile device
       const userAgent = navigator.userAgent.toLowerCase();
-      const mobileKeywords = ['android', 'iphone', 'ipad', 'mobile', 'tablet'];
-      isMobile.value = mobileKeywords.some(keyword => userAgent.includes(keyword));
-      
+      const mobileKeywords = ["android", "iphone", "ipad", "mobile", "tablet"];
+      isMobile.value = mobileKeywords.some((keyword) =>
+        userAgent.includes(keyword),
+      );
+
       // Check container query support
-      isContainerQuery.value = 'container' in document.documentElement.style;
-      
+      isContainerQuery.value = "container" in document.documentElement.style;
+
       // Set up container width tracking if container queries are enabled
       if (containerQuery && isContainerQuery.value && gridElement.value) {
         const resizeObserver = new ResizeObserver((entries) => {
@@ -66,7 +68,7 @@ export function useGrid(props: GridProps) {
           }
         });
         resizeObserver.observe(gridElement.value);
-        
+
         return () => resizeObserver.disconnect();
       }
     }
@@ -74,8 +76,13 @@ export function useGrid(props: GridProps) {
 
   // Helper function to generate responsive classes
   const generateResponsiveClasses = <T>(
-    value: T | ResponsiveGridTemplateColumns | ResponsiveGridGap | ContainerResponsiveValue<T> | undefined,
-    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>
+    value:
+      | T
+      | ResponsiveGridTemplateColumns
+      | ResponsiveGridGap
+      | ContainerResponsiveValue<T>
+      | undefined,
+    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>,
   ): Record<string, boolean> => {
     if (value === undefined) return {};
 
@@ -87,14 +94,17 @@ export function useGrid(props: GridProps) {
       if (responsiveValue.base !== undefined) {
         classes = { ...classes, ...classGenerator(responsiveValue.base) };
       }
-      
+
       // Apply standard responsive breakpoints
-      const breakpoints = ['sm', 'md', 'lg', 'xl', '2xl'] as const;
-      breakpoints.forEach(bp => {
+      const breakpoints = ["sm", "md", "lg", "xl", "2xl"] as const;
+      breakpoints.forEach((bp) => {
         if (responsiveValue[bp] !== undefined) {
           const bpClasses = classGenerator(responsiveValue[bp]!, bp);
           const prefixedClasses = Object.fromEntries(
-            Object.entries(bpClasses).map(([key, val]) => [`${bp}:${key}`, val])
+            Object.entries(bpClasses).map(([key, val]) => [
+              `${bp}:${key}`,
+              val,
+            ]),
           );
           classes = { ...classes, ...prefixedClasses };
         }
@@ -102,12 +112,15 @@ export function useGrid(props: GridProps) {
 
       // Handle container queries (if supported)
       if (isContainerQuery.value) {
-        const containerBreakpoints = ['@sm', '@md', '@lg', '@xl'] as const;
-        containerBreakpoints.forEach(bp => {
+        const containerBreakpoints = ["@sm", "@md", "@lg", "@xl"] as const;
+        containerBreakpoints.forEach((bp) => {
           if (responsiveValue[bp] !== undefined) {
             const bpClasses = classGenerator(responsiveValue[bp]!);
             const containerClasses = Object.fromEntries(
-              Object.entries(bpClasses).map(([key, val]) => [`@container ${bp.substring(1)}:${key}`, val])
+              Object.entries(bpClasses).map(([key, val]) => [
+                `@container ${bp.substring(1)}:${key}`,
+                val,
+              ]),
             );
             classes = { ...classes, ...containerClasses };
           }
@@ -121,11 +134,14 @@ export function useGrid(props: GridProps) {
   };
 
   // Enhanced gap class generator with mobile-specific options
-  const generateGapClasses = (gapValue: GridGap | ResponsiveGridGap | undefined, prefix: string = ""): Record<string, boolean> => {
+  const generateGapClasses = (
+    gapValue: GridGap | ResponsiveGridGap | undefined,
+    prefix: string = "",
+  ): Record<string, boolean> => {
     if (!gapValue) return {};
-    
+
     const prefixStr = prefix ? `${prefix}-` : "";
-    
+
     return generateResponsiveClasses(gapValue, (gap: GridGap) => {
       const baseClasses = {
         [`${prefixStr}gap-0`]: gap === "none",
@@ -151,7 +167,9 @@ export function useGrid(props: GridProps) {
   };
 
   // Generate column classes with mobile-first approach
-  const generateColumnClasses = (cols: GridTemplateColumns | ResponsiveGridTemplateColumns): Record<string, boolean> => {
+  const generateColumnClasses = (
+    cols: GridTemplateColumns | ResponsiveGridTemplateColumns,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(cols, (column: GridTemplateColumns) => {
       // Handle mobile stacking override
       if (mobileStacking && isMobile.value && mobileBehavior === "stack") {
@@ -162,11 +180,12 @@ export function useGrid(props: GridProps) {
       if (adaptiveColumns && isMobile.value) {
         // Auto-adjust based on screen size
         if (column === "auto-fill" || column === "auto-fit") {
-          return { 
-            [`grid-cols-[repeat(${column},minmax(min(${minColumnWidth},100%),1fr))]`]: true 
+          return {
+            [`grid-cols-[repeat(${column},minmax(min(${minColumnWidth},100%),1fr))]`]:
+              true,
           };
         }
-        
+
         // Reduce columns on mobile if too many
         const numColumns = parseInt(column);
         if (!isNaN(numColumns) && numColumns > 2) {
@@ -189,13 +208,15 @@ export function useGrid(props: GridProps) {
         "grid-cols-11": column === "11",
         "grid-cols-12": column === "12",
         "grid-cols-none": column === "none",
-        [`grid-cols-[repeat(auto-fill,minmax(${minColumnWidth},1fr))]`]: column === "auto-fill",
-        [`grid-cols-[repeat(auto-fit,minmax(${minColumnWidth},1fr))]`]: column === "auto-fit",
+        [`grid-cols-[repeat(auto-fill,minmax(${minColumnWidth},1fr))]`]:
+          column === "auto-fill",
+        [`grid-cols-[repeat(auto-fit,minmax(${minColumnWidth},1fr))]`]:
+          column === "auto-fit",
       };
-      
+
       // Return only the classes that are true
       return Object.fromEntries(
-        Object.entries(classes).filter(([, value]) => value === true)
+        Object.entries(classes).filter(([, value]) => value === true),
       ) as Record<string, boolean>;
     });
   };
@@ -257,7 +278,7 @@ export function useGrid(props: GridProps) {
   // Mobile behavior classes
   const mobileClasses = (() => {
     if (!isMobile.value) return {};
-    
+
     switch (mobileBehavior) {
       case "scroll":
         return {
@@ -303,15 +324,18 @@ export function useGrid(props: GridProps) {
   // Accessibility classes
   const a11yClasses = {
     "focus-within:ring-2 focus-within:ring-primary-500": focusManagement,
-    "focus-visible:outline-2 focus-visible:outline-primary-500": keyboardNavigation,
+    "focus-visible:outline-2 focus-visible:outline-primary-500":
+      keyboardNavigation,
   };
 
   // Performance and scrolling classes
   const performanceClasses = {
     "will-change-transform": virtualizeItems,
     "scroll-smooth": scrollSnapType !== "none",
-    "snap-x snap-mandatory": scrollSnapType === "x" || scrollSnapType === "both",
-    "snap-y snap-mandatory": scrollSnapType === "y" || scrollSnapType === "both",
+    "snap-x snap-mandatory":
+      scrollSnapType === "x" || scrollSnapType === "both",
+    "snap-y snap-mandatory":
+      scrollSnapType === "y" || scrollSnapType === "both",
     "overscroll-contain": overscrollBehavior === "contain",
     "overscroll-none": overscrollBehavior === "none",
   };
@@ -328,7 +352,7 @@ export function useGrid(props: GridProps) {
   const baseClasses = {
     // Base grid
     grid: true,
-    
+
     // Layout classes
     ...gridTemplateColumnsClass,
     ...gridTemplateRowsClass,
@@ -336,12 +360,12 @@ export function useGrid(props: GridProps) {
     ...gridAutoFlowClass,
     ...justifyItemsClass,
     ...alignItemsClass,
-    
+
     // Mobile & Touch
     ...mobileClasses,
     ...touchClasses,
     ...safeAreaClasses,
-    
+
     // Advanced features
     ...containerClasses,
     ...a11yClasses,
@@ -351,11 +375,11 @@ export function useGrid(props: GridProps) {
 
   // Filter out undefined values and ensure all values are boolean
   const allClasses: Record<string, boolean> = Object.fromEntries(
-    Object.entries(baseClasses).filter(([, value]) => value !== undefined)
+    Object.entries(baseClasses).filter(([, value]) => value !== undefined),
   ) as Record<string, boolean>;
 
   // Performance optimization: filter classes efficiently
-  const classNames = optimize 
+  const classNames = optimize
     ? Object.entries(allClasses)
         .filter(([, value]) => value)
         .map(([className]) => className)
@@ -372,7 +396,7 @@ export function useGrid(props: GridProps) {
 
   // CSS custom properties for advanced features
   const styleProperties: Record<string, string> = {};
-  
+
   // Custom grid templates
   if (columnTemplate) {
     styleProperties.gridTemplateColumns = columnTemplate;
@@ -380,12 +404,12 @@ export function useGrid(props: GridProps) {
   if (rowTemplate) {
     styleProperties.gridTemplateRows = rowTemplate;
   }
-  
+
   // Container query setup
   if (containerQuery && isContainerQuery.value) {
     styleProperties.containerType = "inline-size";
   }
-  
+
   // Auto-sizing based on content
   if (autoSize !== "content") {
     styleProperties.gridAutoColumns = autoSize;
@@ -400,23 +424,25 @@ export function useGrid(props: GridProps) {
     combinedClassNames,
     styleProperties,
     gridElement,
-    
+
     // Additional state for component consumers
     isMobile: isMobile.value,
     supportsContainerQueries: isContainerQuery.value,
     containerWidth: containerWidth.value,
-    
+
     // Development debugging
-    ...(process.env.NODE_ENV === 'development' && {
+    ...(process.env.NODE_ENV === "development" && {
       debug: {
-        generatedClasses: Object.keys(allClasses).filter(key => allClasses[key]),
+        generatedClasses: Object.keys(allClasses).filter(
+          (key) => allClasses[key],
+        ),
         userClasses: props.class,
         mobileBehavior,
         touchMode,
         isMobile: isMobile.value,
         containerQuery,
         adaptiveColumns,
-      }
-    })
+      },
+    }),
   };
 }

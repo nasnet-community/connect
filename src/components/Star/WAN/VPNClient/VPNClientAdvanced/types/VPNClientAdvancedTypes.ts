@@ -15,7 +15,11 @@ export type VPNType =
   | "SSTP"
   | "IKeV2";
 
-export type MultiVPNStrategy = "Failover" | "RoundRobin" | "LoadBalance" | "Both";
+export type MultiVPNStrategy =
+  | "Failover"
+  | "RoundRobin"
+  | "LoadBalance"
+  | "Both";
 
 export interface MultiVPNConfig {
   strategy: MultiVPNStrategy;
@@ -34,7 +38,7 @@ export interface VPNClientConfig {
   weight?: number; // for load balancing
   assignedWANLink?: string; // Foreign WAN link ID this VPN is assigned to
   description?: string;
-  
+
   // Connection configuration based on VPN type
   connectionConfig?: {
     wireguard?: WireguardClientConfig;

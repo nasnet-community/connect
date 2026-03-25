@@ -1,12 +1,12 @@
 import { useSignal, useTask$ } from "@builder.io/qwik";
-import type { 
-  StackProps, 
+import type {
+  StackProps,
   ResponsiveStackValue,
   StackDirection,
   StackSpacing,
   StackJustify,
   StackAlign,
-  StackWrap
+  StackWrap,
 } from "../Stack.types";
 
 /**
@@ -50,27 +50,33 @@ export function useStack(props: StackProps) {
     if (typeof document !== "undefined") {
       // Detect mobile device
       const userAgent = navigator.userAgent.toLowerCase();
-      const mobileKeywords = ['android', 'iphone', 'ipad', 'mobile', 'tablet'];
-      isMobile.value = mobileKeywords.some(keyword => userAgent.includes(keyword));
-      
+      const mobileKeywords = ["android", "iphone", "ipad", "mobile", "tablet"];
+      isMobile.value = mobileKeywords.some((keyword) =>
+        userAgent.includes(keyword),
+      );
+
       // Detect RTL mode
-      const dir = document.documentElement.dir || document.dir || 
-                  getComputedStyle(document.documentElement).direction;
+      const dir =
+        document.documentElement.dir ||
+        document.dir ||
+        getComputedStyle(document.documentElement).direction;
       isRtl.value = dir === "rtl";
-      
+
       // Check container query support
-      isContainerQuery.value = 'container' in document.documentElement.style;
+      isContainerQuery.value = "container" in document.documentElement.style;
     }
   });
 
   // Type guard to check if a value is a responsive object
-  const isResponsiveObject = <T>(value: unknown): value is {
+  const isResponsiveObject = <T>(
+    value: unknown,
+  ): value is {
     base?: T;
     sm?: T;
     md?: T;
     lg?: T;
     xl?: T;
-    '2xl'?: T;
+    "2xl"?: T;
   } => {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   };
@@ -78,7 +84,7 @@ export function useStack(props: StackProps) {
   // Helper function to generate responsive classes
   const generateResponsiveClasses = <T>(
     value: T | ResponsiveStackValue<T> | undefined,
-    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>
+    classGenerator: (val: T, breakpoint?: string) => Record<string, boolean>,
   ): Record<string, boolean> => {
     if (value === undefined) return {};
 
@@ -89,14 +95,17 @@ export function useStack(props: StackProps) {
       if (value.base !== undefined) {
         classes = { ...classes, ...classGenerator(value.base) };
       }
-      
+
       // Apply standard responsive breakpoints
-      const breakpoints = ['sm', 'md', 'lg', 'xl', '2xl'] as const;
-      breakpoints.forEach(bp => {
+      const breakpoints = ["sm", "md", "lg", "xl", "2xl"] as const;
+      breakpoints.forEach((bp) => {
         if (value[bp] !== undefined) {
           const bpClasses = classGenerator(value[bp]!, bp);
           const prefixedClasses = Object.fromEntries(
-            Object.entries(bpClasses).map(([key, val]) => [`${bp}:${key}`, val])
+            Object.entries(bpClasses).map(([key, val]) => [
+              `${bp}:${key}`,
+              val,
+            ]),
           );
           classes = { ...classes, ...prefixedClasses };
         }
@@ -109,7 +118,9 @@ export function useStack(props: StackProps) {
   };
 
   // Enhanced spacing class generator with mobile-specific options
-  const generateSpacingClasses = (spacingValue: StackSpacing | ResponsiveStackValue<StackSpacing>): Record<string, boolean> => {
+  const generateSpacingClasses = (
+    spacingValue: StackSpacing | ResponsiveStackValue<StackSpacing>,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(spacingValue, (space: StackSpacing) => {
       // Base spacing classes
       const baseClasses = {
@@ -141,7 +152,9 @@ export function useStack(props: StackProps) {
   };
 
   // Generate direction classes with enhanced RTL support
-  const generateDirectionClasses = (dir: StackDirection | ResponsiveStackValue<StackDirection>): Record<string, boolean> => {
+  const generateDirectionClasses = (
+    dir: StackDirection | ResponsiveStackValue<StackDirection>,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(dir, (direction: StackDirection) => {
       // Use logical properties when RTL strategy is "logical"
       if (rtlStrategy === "logical" && supportRtl) {
@@ -175,7 +188,9 @@ export function useStack(props: StackProps) {
   };
 
   // Generate justify classes
-  const generateJustifyClasses = (justifyValue: StackJustify | ResponsiveStackValue<StackJustify>): Record<string, boolean> => {
+  const generateJustifyClasses = (
+    justifyValue: StackJustify | ResponsiveStackValue<StackJustify>,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(justifyValue, (just: StackJustify) => ({
       "justify-start": just === "start",
       "justify-center": just === "center",
@@ -187,7 +202,9 @@ export function useStack(props: StackProps) {
   };
 
   // Generate align classes
-  const generateAlignClasses = (alignValue: StackAlign | ResponsiveStackValue<StackAlign>): Record<string, boolean> => {
+  const generateAlignClasses = (
+    alignValue: StackAlign | ResponsiveStackValue<StackAlign>,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(alignValue, (al: StackAlign) => ({
       "items-start": al === "start",
       "items-center": al === "center",
@@ -198,7 +215,9 @@ export function useStack(props: StackProps) {
   };
 
   // Generate wrap classes
-  const generateWrapClasses = (wrapValue: StackWrap | ResponsiveStackValue<StackWrap>): Record<string, boolean> => {
+  const generateWrapClasses = (
+    wrapValue: StackWrap | ResponsiveStackValue<StackWrap>,
+  ): Record<string, boolean> => {
     return generateResponsiveClasses(wrapValue, (wr: StackWrap) => ({
       "flex-nowrap": wr === "nowrap",
       "flex-wrap": wr === "wrap",
@@ -207,7 +226,8 @@ export function useStack(props: StackProps) {
   };
 
   // Determine effective spacing (mobile override if specified)
-  const effectiveSpacing = isMobile.value && mobileSpacing ? mobileSpacing : spacing;
+  const effectiveSpacing =
+    isMobile.value && mobileSpacing ? mobileSpacing : spacing;
 
   // Generate all responsive classes
   const directionClasses = generateDirectionClasses(direction);
@@ -219,7 +239,7 @@ export function useStack(props: StackProps) {
   // Mobile behavior classes
   const mobileClasses = (() => {
     if (!isMobile.value) return {};
-    
+
     switch (mobileBehavior) {
       case "stack":
         return {
@@ -254,12 +274,15 @@ export function useStack(props: StackProps) {
   // Safe area classes
   const safeAreaClasses = (() => {
     if (!mobileSafe && !safeAreaInsets) return {};
-    
-    const areas = Array.isArray(safeAreaInsets) ? safeAreaInsets : 
-                  safeAreaInsets === true ? ["all"] : [];
-    
+
+    const areas = Array.isArray(safeAreaInsets)
+      ? safeAreaInsets
+      : safeAreaInsets === true
+        ? ["all"]
+        : [];
+
     let classes: Record<string, boolean> = {};
-    
+
     if (mobileSafe || areas.includes("all")) {
       classes = {
         "pb-safe-bottom": true,
@@ -293,7 +316,7 @@ export function useStack(props: StackProps) {
         }
       });
     }
-    
+
     return classes;
   })();
 
@@ -315,7 +338,7 @@ export function useStack(props: StackProps) {
 
   const dividerClasses = (() => {
     if (!dividers) return {};
-    
+
     const divDirection = getDividerDirection();
     const baseClasses = {
       "divide-y": divDirection === "column",
@@ -332,7 +355,7 @@ export function useStack(props: StackProps) {
         case "muted":
           return { "divide-gray-200 dark:divide-gray-700": true };
         case "touch":
-          return { 
+          return {
             "divide-gray-300 dark:divide-gray-600": true,
             "divide-y-2": divDirection === "column",
             "divide-x-2": divDirection === "row",
@@ -345,7 +368,8 @@ export function useStack(props: StackProps) {
     })();
 
     const thicknessClasses = {
-      "divide-y-[0.5px]": divDirection === "column" && dividerThickness === "thin",
+      "divide-y-[0.5px]":
+        divDirection === "column" && dividerThickness === "thin",
       "divide-x-[0.5px]": divDirection === "row" && dividerThickness === "thin",
       "divide-y-2": divDirection === "column" && dividerThickness === "thick",
       "divide-x-2": divDirection === "row" && dividerThickness === "thick",
@@ -362,30 +386,31 @@ export function useStack(props: StackProps) {
   // Accessibility classes
   const a11yClasses = {
     "focus-within:ring-2 focus-within:ring-primary-500": focusManagement,
-    "focus-visible:outline-2 focus-visible:outline-primary-500": focusManagement,
+    "focus-visible:outline-2 focus-visible:outline-primary-500":
+      focusManagement,
   };
 
   // Combine all classes and filter out undefined values
   const baseClasses = {
     // Base
     flex: true,
-    
+
     // Layout
     ...directionClasses,
     ...spacingClasses,
     ...justifyClasses,
     ...alignClasses,
     ...wrapClasses,
-    
+
     // Mobile & Touch
     ...mobileClasses,
     ...touchClasses,
     ...safeAreaClasses,
     ...touchTargetClasses,
-    
+
     // Visual
     ...dividerClasses,
-    
+
     // Advanced
     ...containerClasses,
     ...a11yClasses,
@@ -393,11 +418,11 @@ export function useStack(props: StackProps) {
 
   // Filter out undefined values and ensure all values are boolean
   const allClasses: Record<string, boolean> = Object.fromEntries(
-    Object.entries(baseClasses).filter(([, value]) => value !== undefined)
+    Object.entries(baseClasses).filter(([, value]) => value !== undefined),
   ) as Record<string, boolean>;
 
   // Performance optimization: filter classes efficiently
-  const classNames = optimize 
+  const classNames = optimize
     ? Object.entries(allClasses)
         .filter(([, value]) => value)
         .map(([className]) => className)
@@ -414,7 +439,7 @@ export function useStack(props: StackProps) {
 
   // CSS custom properties for advanced features
   const styleProperties: Record<string, string> = {};
-  
+
   // Container query setup
   if (containerQuery && isContainerQuery.value) {
     styleProperties.containerType = "inline-size";
@@ -432,7 +457,7 @@ export function useStack(props: StackProps) {
       styleProperties.WebkitOverflowScrolling = "touch";
       styleProperties.scrollBehavior = "smooth";
     }
-    
+
     if (touchMode === "scrollable") {
       styleProperties.touchAction = "pan-x pan-y";
     }
@@ -442,18 +467,20 @@ export function useStack(props: StackProps) {
     combinedClassNames,
     styleProperties,
     elementType: as,
-    
+
     // Additional state for component consumers
     isMobile: isMobile.value,
     isRtl: isRtl.value,
     supportsContainerQueries: isContainerQuery.value,
     containerWidth: containerWidth.value,
     effectiveDirection: getDividerDirection(),
-    
+
     // Development debugging
-    ...(process.env.NODE_ENV === 'development' && {
+    ...(process.env.NODE_ENV === "development" && {
       debug: {
-        generatedClasses: Object.keys(allClasses).filter(key => allClasses[key]),
+        generatedClasses: Object.keys(allClasses).filter(
+          (key) => allClasses[key],
+        ),
         userClasses: props.class,
         mobileBehavior,
         touchMode,
@@ -461,7 +488,7 @@ export function useStack(props: StackProps) {
         isRtl: isRtl.value,
         effectiveSpacing,
         rtlStrategy,
-      }
-    })
+      },
+    }),
   };
 }

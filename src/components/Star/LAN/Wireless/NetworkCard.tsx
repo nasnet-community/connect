@@ -1,8 +1,5 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
-import {
-  HiSparklesOutline,
-  HiWifiOutline,
-} from "@qwikest/icons/heroicons";
+import { HiSparklesOutline, HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
 import { NETWORK_DESCRIPTIONS } from "./constants";
 import { Toggle, Button } from "~/components/Core";

@@ -97,10 +97,12 @@ export const Graph = component$<GraphProps>((props) => {
       >
         {/* Accessibility description */}
         <desc id="graph-description">
-          Network graph showing {nodes.length} nodes and {processedConnections.length} connections.
-          Use arrow keys to navigate between nodes, Enter to select, and Tab to move between interactive elements.
+          Network graph showing {nodes.length} nodes and{" "}
+          {processedConnections.length} connections. Use arrow keys to navigate
+          between nodes, Enter to select, and Tab to move between interactive
+          elements.
         </desc>
-        
+
         {/* Background is handled by container, no need for rect here */}
 
         {/* Draw connections with accessibility support */}
@@ -110,9 +112,10 @@ export const Graph = component$<GraphProps>((props) => {
           if (!fromNode || !toNode) return null;
 
           const id = connection.id || `${connection.from}-${connection.to}`;
-          const connectionLabel = connection.label || 
+          const connectionLabel =
+            connection.label ||
             `Connection from ${fromNode.label} to ${toNode.label}`;
-          
+
           return (
             <g
               key={`connection-${id}`}

@@ -1,5 +1,13 @@
-import type { RouterModels, OccupiedInterface } from "../StarContext/ChooseType";
-import type { Ethernet, Wireless, Sfp, InterfaceType } from "../StarContext/CommonType";
+import type {
+  RouterModels,
+  OccupiedInterface,
+} from "../StarContext/ChooseType";
+import type {
+  Ethernet,
+  Wireless,
+  Sfp,
+  InterfaceType,
+} from "../StarContext/CommonType";
 
 export interface OccupiedInterfaceInfo {
   name: string;
@@ -21,24 +29,26 @@ export function addOccupiedInterface(
   currentOccupied: OccupiedInterface[],
   interfaceName: InterfaceType,
   usedBy: "Trunk" | "WAN" | "VPN" | "LAN" | "Other",
-  _routerModel?: string
+  _routerModel?: string,
 ): OccupiedInterface[] {
   const occupied = [...currentOccupied];
 
   // Check if interface is already occupied
-  const existingIndex = occupied.findIndex(item => item.interface === interfaceName);
+  const existingIndex = occupied.findIndex(
+    (item) => item.interface === interfaceName,
+  );
 
   if (existingIndex >= 0) {
     // Update existing entry
     occupied[existingIndex] = {
       interface: interfaceName as Ethernet | Wireless | Sfp,
-      UsedFor: usedBy
+      UsedFor: usedBy,
     };
   } else {
     // Add new entry
     occupied.push({
       interface: interfaceName as Ethernet | Wireless | Sfp,
-      UsedFor: usedBy
+      UsedFor: usedBy,
     });
   }
 
@@ -50,9 +60,9 @@ export function addOccupiedInterface(
  */
 export function removeOccupiedInterface(
   currentOccupied: OccupiedInterface[],
-  interfaceName: InterfaceType
+  interfaceName: InterfaceType,
 ): OccupiedInterface[] {
-  return currentOccupied.filter(item => item.interface !== interfaceName);
+  return currentOccupied.filter((item) => item.interface !== interfaceName);
 }
 
 /**
@@ -60,15 +70,17 @@ export function removeOccupiedInterface(
  */
 export function isInterfaceOccupied(
   occupied: OccupiedInterface[],
-  interfaceName: string
+  interfaceName: string,
 ): boolean {
-  return occupied.some(item => item.interface === interfaceName);
+  return occupied.some((item) => item.interface === interfaceName);
 }
 
 /**
  * Get occupied interfaces for a specific router model only
  */
-export function getOccupiedInterfacesForRouter(routerModel: RouterModels): OccupiedInterface[] {
+export function getOccupiedInterfacesForRouter(
+  routerModel: RouterModels,
+): OccupiedInterface[] {
   return routerModel.Interfaces.OccupiedInterfaces || [];
 }
 
@@ -76,8 +88,10 @@ export function getOccupiedInterfacesForRouter(routerModel: RouterModels): Occup
  * Get occupied interfaces from the master router only
  * This should be used for checking global interface availability
  */
-export function getMasterOccupiedInterfaces(routerModels: RouterModels[]): OccupiedInterface[] {
-  const masterRouter = routerModels.find(model => model.isMaster);
+export function getMasterOccupiedInterfaces(
+  routerModels: RouterModels[],
+): OccupiedInterface[] {
+  const masterRouter = routerModels.find((model) => model.isMaster);
   if (!masterRouter) {
     return [];
   }
@@ -89,13 +103,15 @@ export function getMasterOccupiedInterfaces(routerModels: RouterModels[]): Occup
  * Note: This includes interfaces from slave routers. For global availability checking,
  * use getMasterOccupiedInterfaces instead.
  */
-export function getAllOccupiedInterfaces(routerModels: RouterModels[]): OccupiedInterface[] {
+export function getAllOccupiedInterfaces(
+  routerModels: RouterModels[],
+): OccupiedInterface[] {
   const interfaceMap = new Map<string, OccupiedInterface>();
 
-  routerModels.forEach(model => {
+  routerModels.forEach((model) => {
     const occupied = model.Interfaces.OccupiedInterfaces;
 
-    occupied.forEach(item => {
+    occupied.forEach((item) => {
       interfaceMap.set(item.interface, item);
     });
   });
@@ -108,17 +124,17 @@ export function getAllOccupiedInterfaces(routerModels: RouterModels[]): Occupied
  */
 export function mergeOccupiedInterfaces(
   first: OccupiedInterface[],
-  second: OccupiedInterface[]
+  second: OccupiedInterface[],
 ): OccupiedInterface[] {
   const interfaceMap = new Map<string, OccupiedInterface>();
 
   // Add first list
-  first.forEach(item => {
+  first.forEach((item) => {
     interfaceMap.set(item.interface, item);
   });
 
   // Add second list (overwrites duplicates with second's UsedFor)
-  second.forEach(item => {
+  second.forEach((item) => {
     interfaceMap.set(item.interface, item);
   });
 
@@ -131,21 +147,21 @@ export function mergeOccupiedInterfaces(
 export function getOccupiedInterfacesMap(
   routerModels: RouterModels[],
   wanInterfaces?: string[],
-  trunkInterfaces?: string[]
+  trunkInterfaces?: string[],
 ): OccupiedInterfacesMap {
   const map: OccupiedInterfacesMap = {
     ethernet: [],
     wireless: [],
     sfp: [],
-    lte: []
+    lte: [],
   };
 
   // Add WAN interfaces
   if (wanInterfaces) {
-    wanInterfaces.forEach(iface => {
+    wanInterfaces.forEach((iface) => {
       const info: OccupiedInterfaceInfo = {
         name: iface,
-        usedBy: "WAN"
+        usedBy: "WAN",
       };
 
       if (iface.startsWith("ether")) {
@@ -162,10 +178,10 @@ export function getOccupiedInterfacesMap(
 
   // Add Trunk interfaces
   if (trunkInterfaces) {
-    trunkInterfaces.forEach(iface => {
+    trunkInterfaces.forEach((iface) => {
       const info: OccupiedInterfaceInfo = {
         name: iface,
-        usedBy: "Trunk"
+        usedBy: "Trunk",
       };
 
       if (iface.startsWith("ether")) {
@@ -195,9 +211,9 @@ export function clearOccupiedInterfaces(): OccupiedInterface[] {
  */
 export function getInterfaceUsage(
   occupied: OccupiedInterface[],
-  interfaceName: string
+  interfaceName: string,
 ): string | null {
-  const item = occupied.find(item => item.interface === interfaceName);
+  const item = occupied.find((item) => item.interface === interfaceName);
   return item ? item.UsedFor : null;
 }
 
@@ -206,11 +222,11 @@ export function getInterfaceUsage(
  */
 export function getInterfacesByUsage(
   occupied: OccupiedInterface[],
-  usedFor: string
+  usedFor: string,
 ): string[] {
   return occupied
-    .filter(item => item.UsedFor === usedFor)
-    .map(item => item.interface);
+    .filter((item) => item.UsedFor === usedFor)
+    .map((item) => item.interface);
 }
 
 /**
@@ -220,14 +236,27 @@ export function getInterfacesByUsage(
  * @returns Array of LTE interface names currently in use (e.g., ["lte1", "lte2"])
  */
 export function getUsedLTEInterfaces(
-  wanLinks: { Foreign?: { WANConfigs: Array<{ name: string; InterfaceConfig: { InterfaceName: string } }> }; Domestic?: { WANConfigs: Array<{ name: string; InterfaceConfig: { InterfaceName: string } }> } },
-  excludeLinkName?: string
+  wanLinks: {
+    Foreign?: {
+      WANConfigs: Array<{
+        name: string;
+        InterfaceConfig: { InterfaceName: string };
+      }>;
+    };
+    Domestic?: {
+      WANConfigs: Array<{
+        name: string;
+        InterfaceConfig: { InterfaceName: string };
+      }>;
+    };
+  },
+  excludeLinkName?: string,
 ): string[] {
   const usedLTEInterfaces = new Set<string>();
 
   // Check Foreign links
   if (wanLinks.Foreign?.WANConfigs) {
-    wanLinks.Foreign.WANConfigs.forEach(config => {
+    wanLinks.Foreign.WANConfigs.forEach((config) => {
       // Skip if this is the link being edited
       if (excludeLinkName && config.name === excludeLinkName) {
         return;
@@ -243,7 +272,7 @@ export function getUsedLTEInterfaces(
 
   // Check Domestic links
   if (wanLinks.Domestic?.WANConfigs) {
-    wanLinks.Domestic.WANConfigs.forEach(config => {
+    wanLinks.Domestic.WANConfigs.forEach((config) => {
       // Skip if this is the link being edited
       if (excludeLinkName && config.name === excludeLinkName) {
         return;

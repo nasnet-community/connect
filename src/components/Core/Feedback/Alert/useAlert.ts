@@ -15,7 +15,6 @@ export interface UseAlertReturn {
 }
 
 export function useAlert(params: UseAlertParams = {}): UseAlertReturn {
-  
   const state = useStore({
     isVisible: true,
     isMounted: false,

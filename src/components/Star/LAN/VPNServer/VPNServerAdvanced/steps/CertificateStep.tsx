@@ -3,10 +3,10 @@ import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
 import { Field } from "~/components/Core/Form/Field";
 import { Input } from "~/components/Core/Input";
-import { 
-  HiLockClosedOutline, 
-  HiEyeOutline, 
-  HiEyeSlashOutline
+import {
+  HiLockClosedOutline,
+  HiEyeOutline,
+  HiEyeSlashOutline,
 } from "@qwikest/icons/heroicons";
 import type { VPNType } from "../../../../StarContext/CommonType";
 
@@ -24,16 +24,22 @@ interface CertificateStepProps {
 export const CertificateStep = component$<CertificateStepProps>(
   ({ enabledProtocols, certificateHook }) => {
     const _context = useStepperContext(VPNServerContextId);
-    
+
     // Use certificate hook state instead of local state
-    const { certificatePassphrase, showPassphrase, passphraseError, updatePassphrase$, togglePassphraseVisibility$ } = certificateHook;
+    const {
+      certificatePassphrase,
+      showPassphrase,
+      passphraseError,
+      updatePassphrase$,
+      togglePassphraseVisibility$,
+    } = certificateHook;
 
     // Get enabled protocols that require certificates
     const protocolsRequiringCertificates = [
       { type: "OpenVPN" as VPNType, name: "OpenVPN" },
       { type: "SSTP" as VPNType, name: "SSTP" },
-      { type: "IKeV2" as VPNType, name: "IKEv2" }
-    ].filter(protocol => enabledProtocols[protocol.type]);
+      { type: "IKeV2" as VPNType, name: "IKEv2" },
+    ].filter((protocol) => enabledProtocols[protocol.type]);
 
     return (
       <div class="space-y-8">
@@ -47,7 +53,7 @@ export const CertificateStep = component$<CertificateStepProps>(
           </div>
 
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Configure certificates and security settings for VPN protocols that require them: ${protocolsRequiringCertificates.map(p => p.name).join(", ")}.`}
+            {$localize`Configure certificates and security settings for VPN protocols that require them: ${protocolsRequiringCertificates.map((p) => p.name).join(", ")}.`}
           </p>
         </div>
 
@@ -64,7 +70,9 @@ export const CertificateStep = component$<CertificateStepProps>(
               <Input
                 type={showPassphrase.value ? "text" : "password"}
                 value={certificatePassphrase.value}
-                onInput$={(_event: Event, value: string) => updatePassphrase$(value)}
+                onInput$={(_event: Event, value: string) =>
+                  updatePassphrase$(value)
+                }
                 placeholder={$localize`Enter certificate passphrase`}
                 hasSuffixSlot={true}
               >
@@ -73,7 +81,11 @@ export const CertificateStep = component$<CertificateStepProps>(
                   type="button"
                   onClick$={togglePassphraseVisibility$}
                   class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  aria-label={showPassphrase.value ? $localize`Hide passphrase` : $localize`Show passphrase`}
+                  aria-label={
+                    showPassphrase.value
+                      ? $localize`Hide passphrase`
+                      : $localize`Show passphrase`
+                  }
                 >
                   {showPassphrase.value ? (
                     <HiEyeSlashOutline class="h-5 w-5" />
@@ -97,15 +109,15 @@ export const CertificateStep = component$<CertificateStepProps>(
                     certificatePassphrase.value.length >= 16
                       ? "text-green-600 dark:text-green-400"
                       : certificatePassphrase.value.length >= 12
-                      ? "text-yellow-600 dark:text-yellow-400"
-                      : "text-orange-600 dark:text-orange-400"
+                        ? "text-yellow-600 dark:text-yellow-400"
+                        : "text-orange-600 dark:text-orange-400"
                   }
                 >
                   {certificatePassphrase.value.length >= 16
                     ? $localize`Strong`
                     : certificatePassphrase.value.length >= 12
-                    ? $localize`Medium`
-                    : $localize`Weak`}
+                      ? $localize`Medium`
+                      : $localize`Weak`}
                 </span>
               </div>
               <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
@@ -114,8 +126,8 @@ export const CertificateStep = component$<CertificateStepProps>(
                     certificatePassphrase.value.length >= 16
                       ? "w-full bg-green-500"
                       : certificatePassphrase.value.length >= 12
-                      ? "w-2/3 bg-yellow-500"
-                      : "w-1/3 bg-orange-500"
+                        ? "w-2/3 bg-yellow-500"
+                        : "w-1/3 bg-orange-500"
                   }`}
                 />
               </div>
@@ -134,12 +146,11 @@ export const CertificateStep = component$<CertificateStepProps>(
                 <li key={protocol.type} class="flex items-start gap-2">
                   <span class="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-blue-500" />
                   <span>
-                    {protocol.type === "OpenVPN" 
+                    {protocol.type === "OpenVPN"
                       ? $localize`OpenVPN will use this certificate for TLS encryption and client authentication`
                       : protocol.type === "SSTP"
-                      ? $localize`SSTP will use this certificate for HTTPS/SSL connections`
-                      : $localize`IKEv2 will use this certificate for digital signature authentication`
-                    }
+                        ? $localize`SSTP will use this certificate for HTTPS/SSL connections`
+                        : $localize`IKEv2 will use this certificate for digital signature authentication`}
                   </span>
                 </li>
               ))}
@@ -148,5 +159,5 @@ export const CertificateStep = component$<CertificateStepProps>(
         )}
       </div>
     );
-  }
+  },
 );

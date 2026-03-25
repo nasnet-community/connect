@@ -43,7 +43,9 @@ describe("VPNClientUtils", () => {
 
         expect(result["/ip route"]).toHaveLength(2);
         expect(result["/ip route"][0]).toContain('dst-address="0.0.0.0/0"');
-        expect(result["/ip route"][0]).toContain('gateway="wireguard-client-vpn1"');
+        expect(result["/ip route"][0]).toContain(
+            'gateway="wireguard-client-vpn1"',
+        );
         expect(result["/ip route"][0]).toContain('routing-table="to-VPN-vpn1"');
         expect(result["/ip route"][0]).toContain("scope=30");
         expect(result["/ip route"][0]).toContain("target-scope=10");
@@ -84,11 +86,21 @@ describe("VPNClientUtils", () => {
 
         expect(result["/ip firewall address-list"]).toHaveLength(1);
         expect(result["/ip firewall mangle"]).toHaveLength(3);
-        expect(result["/ip firewall mangle"][0]).toContain("action=mark-connection");
-        expect(result["/ip firewall mangle"][0]).toContain('new-connection-mark="conn-VPNE"');
-        expect(result["/ip firewall mangle"][1]).toContain("action=mark-routing");
-        expect(result["/ip firewall mangle"][1]).toContain('new-routing-mark="to-Foreign"');
-        expect(result["/ip firewall mangle"][2]).toContain('dst-address-list="VPNE"');
+        expect(result["/ip firewall mangle"][0]).toContain(
+            "action=mark-connection",
+        );
+        expect(result["/ip firewall mangle"][0]).toContain(
+            'new-connection-mark="conn-VPNE"',
+        );
+        expect(result["/ip firewall mangle"][1]).toContain(
+            "action=mark-routing",
+        );
+        expect(result["/ip firewall mangle"][1]).toContain(
+            'new-routing-mark="to-Foreign"',
+        );
+        expect(result["/ip firewall mangle"][2]).toContain(
+            'dst-address-list="VPNE"',
+        );
     });
 
     // Verifies the standalone mangle helper emits the same three endpoint-routing rules as the combined address-list wrapper.

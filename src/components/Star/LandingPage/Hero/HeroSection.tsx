@@ -1,6 +1,12 @@
 import { component$, $ } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
-import { LuPlay, LuArrowRight, LuRouter, LuShield, LuZap } from "@qwikest/icons/lucide";
+import {
+  LuPlay,
+  LuArrowRight,
+  LuRouter,
+  LuShield,
+  LuZap,
+} from "@qwikest/icons/lucide";
 import { Button, Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
 import { subscribeToNewsletter } from "~/utils/newsletterAPI";
@@ -11,57 +17,65 @@ export const HeroSection = component$(() => {
   const locale = location.params.locale || "en";
 
   // Newsletter subscription handler with Supabase Edge Function integration
-  const handleNewsletterSubscribe$ = $(async (subscription: NewsletterSubscription) => {
-    try {
-      // Validate subscription object
-      if (!subscription || !subscription.email) {
-        console.error("Invalid subscription object:", subscription);
-        throw new Error("Invalid subscription: email is required");
+  const handleNewsletterSubscribe$ = $(
+    async (subscription: NewsletterSubscription) => {
+      try {
+        // Validate subscription object
+        if (!subscription || !subscription.email) {
+          console.error("Invalid subscription object:", subscription);
+          throw new Error("Invalid subscription: email is required");
+        }
+
+        // Generate userUUID using hardware fingerprinting
+        const userUUID = await generateUserUUID();
+
+        // Call the Supabase Edge Function
+        const result = await subscribeToNewsletter(
+          subscription.email,
+          userUUID,
+        );
+
+        if (!result.success) {
+          console.error("Newsletter subscription failed:", result.error);
+          throw new Error(
+            result.error_detail ||
+              result.error ||
+              $localize`Subscription failed`,
+          );
+        }
+
+        console.log("Newsletter subscription successful:", subscription.email);
+
+        // Track with analytics if available
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag("event", "newsletter_subscribe", {
+            method: "supabase",
+            email_domain: subscription.email.split("@")[1] || "unknown",
+            source: "homepage-hero",
+          });
+        }
+      } catch (error) {
+        console.error("Newsletter subscription error:", error);
+        throw error;
       }
-
-      // Generate userUUID using hardware fingerprinting
-      const userUUID = await generateUserUUID();
-
-      // Call the Supabase Edge Function
-      const result = await subscribeToNewsletter(subscription.email, userUUID);
-
-      if (!result.success) {
-        console.error("Newsletter subscription failed:", result.error);
-        throw new Error(result.error_detail || result.error || $localize`Subscription failed`);
-      }
-
-      console.log("Newsletter subscription successful:", subscription.email);
-
-      // Track with analytics if available
-      if (typeof window !== "undefined" && (window as any).gtag) {
-        (window as any).gtag("event", "newsletter_subscribe", {
-          method: "supabase",
-          email_domain: subscription.email.split('@')[1] || 'unknown',
-          source: "homepage-hero",
-        });
-      }
-    } catch (error) {
-      console.error("Newsletter subscription error:", error);
-      throw error;
-    }
-  });
+    },
+  );
 
   return (
-    <section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    <section class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-20">
       {/* Hero Content */}
-      <div class="relative max-w-7xl mx-auto text-center z-20">
-
+      <div class="relative z-20 mx-auto max-w-7xl text-center">
         {/* Badge */}
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-md border border-white/20 mb-8 animate-fade-in-up">
-          <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+        <div class="mb-8 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 px-4 py-2 backdrop-blur-md">
+          <div class="h-2 w-2 animate-pulse rounded-full bg-green-400" />
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
             {$localize`Professional MikroTik Configuration`}
           </span>
         </div>
 
         {/* Main Headline */}
-        <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in-up animation-delay-200">
-          <span class="bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+        <h1 class="mb-6 animate-fade-in-up text-4xl font-bold animation-delay-200 md:text-6xl lg:text-7xl">
+          <span class="animate-gradient bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
             {$localize`Share, Secure & Optimize`}
           </span>
           <br />
@@ -69,60 +83,66 @@ export const HeroSection = component$(() => {
             {$localize`Your Starlink`}
           </span>
           <br />
-          <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+          <span class="animate-gradient bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             {$localize`Like a Pro`}
           </span>
         </h1>
 
         {/* Subtitle */}
-        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed animate-fade-in-up animation-delay-500">
+        <p class="mx-auto mb-10 max-w-3xl animate-fade-in-up text-lg leading-relaxed text-gray-600 animation-delay-500 dark:text-gray-300 md:text-xl">
           {$localize`Unlock the full potential of your Starlink connection with advanced networking powered by MikroTik routers. Seamlessly share your internet, secure it with VPN, and optimize for gaming and enterprise performance, all through NasNet Connect intelligent interface.`}
         </p>
 
         {/* Key Features Pills */}
-        <div class="flex flex-wrap justify-center gap-3 mb-10 animate-fade-in-up animation-delay-700">
+        <div class="animation-delay-700 mb-10 flex animate-fade-in-up flex-wrap justify-center gap-3">
           {[
             { icon: LuRouter, text: $localize`17+ Router Models` },
             { icon: LuShield, text: $localize`6 VPN Protocols` },
-            { icon: LuZap, text: $localize`Gaming Optimized` }
+            { icon: LuZap, text: $localize`Gaming Optimized` },
           ].map((feature, index) => (
             <div
               key={index}
-              class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300"
+              class="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md transition-all duration-300 hover:bg-white/20 dark:bg-black/10"
             >
               <feature.icon class="h-4 w-4 text-purple-500" />
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{feature.text}</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {feature.text}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Action Buttons */}
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animation-delay-1000">
+        <div class="flex animate-fade-in-up flex-col items-center justify-center gap-4 animation-delay-1000 sm:flex-row">
           <Link href={`/${locale}/star/`}>
             <Button
               variant="primary"
               size="lg"
-              class="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              class="group transform bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 text-lg font-semibold shadow-xl transition-all duration-300 hover:scale-105 hover:from-purple-700 hover:to-blue-700 hover:shadow-2xl"
             >
               {$localize`Get Started Free`}
-              <LuArrowRight class="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <LuArrowRight class="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </Link>
 
-          <a href="https://youtu.be/h2XxMztE0vQ" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://youtu.be/h2XxMztE0vQ"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
               variant="outline"
               size="lg"
-              class="group bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 hover:bg-white/20 px-8 py-4 text-lg font-semibold text-gray-800 dark:text-white"
+              class="group border border-white/20 bg-white/10 px-8 py-4 text-lg font-semibold text-gray-800 backdrop-blur-md hover:bg-white/20 dark:bg-black/10 dark:text-white"
             >
-              <LuPlay class="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+              <LuPlay class="mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
               {$localize`Watch Video`}
             </Button>
           </a>
         </div>
 
         {/* Newsletter Card */}
-        <div class="mt-16 animate-fade-in-up animation-delay-1100">
+        <div class="animation-delay-1100 mt-16 animate-fade-in-up">
           <Newsletter
             variant="hero"
             placeholder={$localize`Enter your email for updates`}
@@ -132,18 +152,21 @@ export const HeroSection = component$(() => {
         </div>
 
         {/* Trust Indicators */}
-        <div class="mt-16 animate-fade-in-up animation-delay-1200">
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <div class="animation-delay-1200 mt-16 animate-fade-in-up">
+          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {$localize`Trusted by network professionals worldwide`}
           </p>
-          <div class="flex flex-wrap justify-center items-center gap-8 opacity-60">
+          <div class="flex flex-wrap items-center justify-center gap-8 opacity-60">
             {[
               { name: "MikroTik", icon: "🏢" },
               { name: "Enterprise", icon: "🏛️" },
               { name: "Gaming", icon: "🎮" },
-              { name: "Security", icon: "🔒" }
+              { name: "Security", icon: "🔒" },
             ].map((brand, index) => (
-              <div key={index} class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div
+                key={index}
+                class="flex items-center gap-2 text-gray-600 dark:text-gray-400"
+              >
                 <span class="text-2xl">{brand.icon}</span>
                 <span class="font-medium">{brand.name}</span>
               </div>
@@ -153,33 +176,57 @@ export const HeroSection = component$(() => {
       </div>
 
       {/* Hero Visual Elements */}
-      <div class="absolute inset-0 pointer-events-none">
+      <div class="pointer-events-none absolute inset-0">
         {/* Glassmorphism Orbs */}
-        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl animate-float" />
-        <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-pink-400/20 rounded-full blur-3xl animate-float animation-delay-2000" />
-        <div class="absolute bottom-1/4 left-1/3 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-full blur-3xl animate-float animation-delay-4000" />
+        <div class="absolute left-1/4 top-1/4 h-72 w-72 animate-float rounded-full bg-gradient-to-br from-purple-400/20 to-blue-400/20 blur-3xl" />
+        <div class="absolute right-1/4 top-1/3 h-96 w-96 animate-float rounded-full bg-gradient-to-br from-blue-400/20 to-pink-400/20 blur-3xl animation-delay-2000" />
+        <div class="absolute bottom-1/4 left-1/3 h-80 w-80 animate-float rounded-full bg-gradient-to-br from-pink-400/20 to-purple-400/20 blur-3xl animation-delay-4000" />
 
         {/* Network Topology Lines */}
-        <svg class="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 1000 1000">
+        <svg
+          class="absolute inset-0 h-full w-full opacity-20"
+          viewBox="0 0 1000 1000"
+        >
           <defs>
-            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="lineGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:0.5" />
               <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:0.5" />
               <stop offset="100%" style="stop-color:#EC4899;stop-opacity:0.5" />
             </linearGradient>
           </defs>
           <g class="animate-pulse-slow">
-            <path d="M100,200 Q500,100 900,300" stroke="url(#lineGradient)" stroke-width="2" fill="none" />
-            <path d="M200,800 Q600,600 800,200" stroke="url(#lineGradient)" stroke-width="2" fill="none" />
-            <path d="M50,500 Q400,300 750,700" stroke="url(#lineGradient)" stroke-width="2" fill="none" />
+            <path
+              d="M100,200 Q500,100 900,300"
+              stroke="url(#lineGradient)"
+              stroke-width="2"
+              fill="none"
+            />
+            <path
+              d="M200,800 Q600,600 800,200"
+              stroke="url(#lineGradient)"
+              stroke-width="2"
+              fill="none"
+            />
+            <path
+              d="M50,500 Q400,300 750,700"
+              stroke="url(#lineGradient)"
+              stroke-width="2"
+              fill="none"
+            />
           </g>
         </svg>
       </div>
 
       {/* Scroll Indicator */}
-      <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div class="w-6 h-10 border-2 border-gray-400 dark:border-gray-600 rounded-full flex justify-center">
-          <div class="w-1 h-3 bg-gray-400 dark:bg-gray-600 rounded-full mt-2 animate-pulse" />
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 transform animate-bounce">
+        <div class="flex h-10 w-6 justify-center rounded-full border-2 border-gray-400 dark:border-gray-600">
+          <div class="mt-2 h-3 w-1 animate-pulse rounded-full bg-gray-400 dark:bg-gray-600" />
         </div>
       </div>
     </section>

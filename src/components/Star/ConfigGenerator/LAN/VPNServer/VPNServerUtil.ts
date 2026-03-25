@@ -175,8 +175,6 @@ export function formatBooleanValue(value: boolean): string {
 //     return config;
 // };
 
-
-
 // export function addCommonVPNConfiguration( config: RouterConfig, vpnServer: VPNServer ): void {
 //     const { Users } = vpnServer;
 
@@ -390,7 +388,7 @@ export function formatBooleanValue(value: boolean): string {
 // };
 
 // Function to generate inbound traffic marking rules for VPN server
-export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
+export const VSInboundTraffic = (vpnServer: VPNServer): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall mangle": [],
     };
@@ -401,7 +399,7 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
 
     // Add routing rule for outbound VPN replies
     // if (config["/ip firewall mangle"].length > 2) {
-        // More than just comments
+    // More than just comments
     config["/ip firewall mangle"].push(
         "",
         `add action=mark-routing chain=output comment="Route VPN Server Replies via Domestic WAN" \\
@@ -412,20 +410,28 @@ export const VSInboundTraffic = ( vpnServer: VPNServer ): RouterConfig => {
     return config;
 };
 
-export const VSInterfaceList = ( interfaceName: string, VSNetwork: string, comment?: string ): RouterConfig => {
+export const VSInterfaceList = (
+    interfaceName: string,
+    VSNetwork: string,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/interface list member": [],
     };
-    
+
     config["/interface list member"].push(
         `add interface="${interfaceName}" list="LAN" ${comment ? `comment="${comment}"` : ""}`,
         `add interface="${interfaceName}" list="${VSNetwork}-LAN" ${comment ? `comment="${comment}"` : ""}`,
     );
 
     return config;
-}
+};
 
-export const VSAddressList = ( subnet: string, VSNetwork: string, comment?: string ): RouterConfig => {
+export const VSAddressList = (
+    subnet: string,
+    VSNetwork: string,
+    comment?: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip firewall address-list": [],
     };
@@ -435,7 +441,7 @@ export const VSAddressList = ( subnet: string, VSNetwork: string, comment?: stri
     );
 
     return config;
-}
+};
 
 export const generateIPPool = (poolConfig: IPPoolConfig): string[] => {
     const poolParams: string[] = [
@@ -454,7 +460,11 @@ export const generateIPPool = (poolConfig: IPPoolConfig): string[] => {
     return [`add ${poolParams.join(" ")}`];
 };
 
-export const VSPorfile = (subnet: string, VSNetwork: string, name: string ): RouterConfig => {
+export const VSPorfile = (
+    subnet: string,
+    VSNetwork: string,
+    name: string,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ppp profile": [],
     };
@@ -464,12 +474,10 @@ export const VSPorfile = (subnet: string, VSNetwork: string, name: string ): Rou
     // LocalAddress and DNS Must be the first IP of the subnet use the functions in the Subnet
     const LocalAddress = SubnetToFirstIP(subnet);
 
-
-
     config["/ppp profile"].push(
         `add address-list="${VSNetwork}-LAN" dns-server="${LocalAddress}" interface-list="${VSNetwork}-LAN" local-address="${LocalAddress}" name="${ProfileName}" \\
         remote-address="${PoolName}" use-encryption=yes use-ipv6=no use-upnp=yes`,
     );
 
     return config;
-}
+};

@@ -166,7 +166,9 @@ export const useStarContainer = (): StarContainerReturn => {
             ]
               .filter(Boolean)
               .join(","),
-            wireless_enabled: !!(state.LAN.Wireless && state.LAN.Wireless.length > 0),
+            wireless_enabled: !!(
+              state.LAN.Wireless && state.LAN.Wireless.length > 0
+            ),
           });
           break;
         default:
@@ -175,8 +177,9 @@ export const useStarContainer = (): StarContainerReturn => {
             track("step_extra_config_completed", {
               ...baseEventData,
               gaming_rules_enabled: !!state.ExtraConfig.Games?.length,
-              ddns_enabled: !!state.ExtraConfig.usefulServices?.cloudDDNS
-                ?.ddnsEntries.length,
+              ddns_enabled:
+                !!state.ExtraConfig.usefulServices?.cloudDDNS?.ddnsEntries
+                  .length,
               auto_update_enabled: !!state.ExtraConfig.RUI.Update?.interval,
               auto_reboot_enabled: !!state.ExtraConfig.RUI.Reboot?.interval,
             });
@@ -195,9 +198,9 @@ export const useStarContainer = (): StarContainerReturn => {
               ).length,
               completion_time: new Date().toISOString(),
               firmware: state.Choose.Firmware,
-              router_models: state.Choose.RouterModels.map((rm) => rm.Model).join(
-                ",",
-              ),
+              router_models: state.Choose.RouterModels.map(
+                (rm) => rm.Model,
+              ).join(","),
               vpn_client_type: state.WAN.VPNClient?.Wireguard
                 ? "Wireguard"
                 : state.WAN.VPNClient?.OpenVPN
@@ -296,8 +299,7 @@ export const useStarContainer = (): StarContainerReturn => {
                 state.LAN.VPNServer?.OpenVpnServer ||
                 state.LAN.VPNServer?.Ikev2Server ||
                 state.LAN.VPNServer?.WireguardServers
-              ) ||
-              !!(state.LAN.Wireless && state.LAN.Wireless.length > 0),
+              ) || !!(state.LAN.Wireless && state.LAN.Wireless.length > 0),
           });
         }
         // Handle ShowConfig step entry (step 4 in easy mode, step 5 in advanced mode)
@@ -567,4 +569,3 @@ export const useStarContainer = (): StarContainerReturn => {
     handleStepChange,
   };
 };
-

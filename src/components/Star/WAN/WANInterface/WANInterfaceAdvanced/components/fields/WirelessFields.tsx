@@ -33,14 +33,10 @@ export const WirelessFields = component$<WirelessFieldsProps>(
               });
             }}
             placeholder="Enter network name"
-            
           />
         </FormField>
 
-        <FormField
-          label={$localize`Password`}
-          error={errors?.password?.[0]}
-        >
+        <FormField label={$localize`Password`} error={errors?.password?.[0]}>
           <PasswordField
             value={credentials?.Password || ""}
             onInput$={(event: Event, element: HTMLInputElement) => {
@@ -50,7 +46,6 @@ export const WirelessFields = component$<WirelessFieldsProps>(
               });
             }}
             placeholder="Min. 8 characters"
-            
           />
         </FormField>
       </div>

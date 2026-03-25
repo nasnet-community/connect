@@ -7,13 +7,13 @@ import type { Subnets } from "./Utils/Subnets";
 export type WirelessInterfaceType = "Master" | "Slave";
 
 export type WifiTarget =
-  | "Domestic" 
-  | "Foreign" 
+  | "Domestic"
+  | "Foreign"
   | "VPN"
-  | "Split"  
-  | "SingleDomestic" 
-  | "SingleForeign" 
-  | "SingleVPN" 
+  | "Split"
+  | "SingleDomestic"
+  | "SingleForeign"
+  | "SingleVPN";
 
 export interface WirelessConfig {
   SSID: string;
@@ -29,7 +29,6 @@ export interface EthernetInterfaceConfig {
   name: Ethernet | Sfp;
   bridge: string;
 }
-
 
 export interface LANState {
   Wireless?: WirelessConfig[];

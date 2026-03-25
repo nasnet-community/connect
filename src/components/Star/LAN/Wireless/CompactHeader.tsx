@@ -1,7 +1,7 @@
 import { component$, type QRL } from "@builder.io/qwik";
-import { 
-  HiExclamationTriangleOutline, 
-  HiSparklesOutline
+import {
+  HiExclamationTriangleOutline,
+  HiSparklesOutline,
 } from "@qwikest/icons/heroicons";
 import { Button } from "~/components/Core";
 
@@ -13,16 +13,18 @@ interface CompactHeaderProps {
 }
 
 export const CompactHeader = component$<CompactHeaderProps>(
-  ({ 
-    generateAllPasswords, 
+  ({
+    generateAllPasswords,
     isLoading,
     activeNetworksCount,
-    totalNetworksCount
+    totalNetworksCount,
   }) => {
     return (
-      <div class="rounded-lg border border-warning-200 bg-gradient-to-r 
-                  from-warning-50 to-warning-100 dark:border-warning-800 
-                  dark:from-warning-900/20 dark:to-warning-800/20 p-3 sm:p-4">
+      <div
+        class="rounded-lg border border-warning-200 bg-gradient-to-r 
+                  from-warning-50 to-warning-100 p-3 
+                  dark:border-warning-800 dark:from-warning-900/20 dark:to-warning-800/20 sm:p-4"
+      >
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {/* Left side - Info */}
           <div class="flex items-start gap-2">

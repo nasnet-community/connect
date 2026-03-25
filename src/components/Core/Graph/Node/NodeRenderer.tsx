@@ -122,7 +122,10 @@ function renderBasicNode(node: GraphNode, color?: string) {
       />
 
       {/* Node circle */}
-      <circle r={nodeSize - 4} fill={node.color || color || "rgb(251 191 36)"} />
+      <circle
+        r={nodeSize - 4}
+        fill={node.color || color || "rgb(251 191 36)"}
+      />
 
       {/* Node label with enhanced theme support */}
       <text

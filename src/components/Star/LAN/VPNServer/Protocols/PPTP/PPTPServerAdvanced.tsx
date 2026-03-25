@@ -3,13 +3,14 @@ import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { usePPTPServer } from "./usePPTPServer";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { SectionTitle } from "~/components/Core/Form/ServerField";
-import { NetworkDropdown, type ExtendedNetworks } from "../../components/NetworkSelection";
+import {
+  NetworkDropdown,
+  type ExtendedNetworks,
+} from "../../components/NetworkSelection";
 
 export const PPTPServerAdvanced = component$(() => {
-  const {
-    advancedFormState: _advancedFormState,
-  } = usePPTPServer();
-  
+  const { advancedFormState: _advancedFormState } = usePPTPServer();
+
   // Local network state (not part of VPN server config)
   const selectedNetwork = useSignal<ExtendedNetworks>("PPTP" as const);
 
@@ -36,7 +37,6 @@ export const PPTPServerAdvanced = component$(() => {
             label={$localize`Network`}
           />
         </div>
-
       </div>
     </ServerCard>
   );

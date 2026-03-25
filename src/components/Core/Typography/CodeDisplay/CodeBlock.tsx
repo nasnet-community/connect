@@ -67,50 +67,41 @@ export const CodeBlock = component$<CodeBlockProps>(
     const getThemeClasses = (): { container: string; pre: string } => {
       const baseContainer = [
         "code-block-container relative border overflow-hidden",
-        borderRadiusMap[borderRadius]
+        borderRadiusMap[borderRadius],
       ].join(" ");
 
-      const basePre = [
-        "m-0 font-mono",
-        sizeMap[size]
-      ].join(" ");
+      const basePre = ["m-0 font-mono", sizeMap[size]].join(" ");
 
       if (theme === "light") {
         return {
           container: [
             baseContainer,
-            "bg-surface-light-DEFAULT border-gray-200"
+            "bg-surface-light-DEFAULT border-gray-200",
           ].join(" "),
-          pre: [
-            basePre,
-            "bg-surface-light-secondary text-gray-900"
-          ].join(" ")
+          pre: [basePre, "bg-surface-light-secondary text-gray-900"].join(" "),
         };
       }
-      
+
       if (theme === "dark") {
         return {
           container: [
             baseContainer,
-            "bg-slate-900/95 border-slate-700/50 backdrop-blur-xl shadow-2xl shadow-blue-500/5"
+            "bg-slate-900/95 border-slate-700/50 backdrop-blur-xl shadow-2xl shadow-blue-500/5",
           ].join(" "),
           pre: [
             basePre,
-            "bg-slate-800/50 text-slate-100 backdrop-blur-sm"
-          ].join(" ")
+            "bg-slate-800/50 text-slate-100 backdrop-blur-sm",
+          ].join(" "),
         };
       }
-      
+
       if (theme === "dim") {
         return {
           container: [
             baseContainer,
-            "bg-surface-dim-DEFAULT border-gray-600"
+            "bg-surface-dim-DEFAULT border-gray-600",
           ].join(" "),
-          pre: [
-            basePre,
-            "bg-surface-dim-secondary text-gray-200"
-          ].join(" ")
+          pre: [basePre, "bg-surface-dim-secondary text-gray-200"].join(" "),
         };
       }
 
@@ -120,14 +111,14 @@ export const CodeBlock = component$<CodeBlockProps>(
           baseContainer,
           "bg-surface-light-DEFAULT dark:bg-slate-900/95",
           "border-gray-200 dark:border-slate-700/50",
-          "dark:backdrop-blur-xl dark:shadow-2xl dark:shadow-blue-500/5"
+          "dark:backdrop-blur-xl dark:shadow-2xl dark:shadow-blue-500/5",
         ].join(" "),
         pre: [
           basePre,
           "bg-surface-light-secondary dark:bg-slate-800/50",
           "text-gray-900 dark:text-slate-100",
-          "dark:backdrop-blur-sm"
-        ].join(" ")
+          "dark:backdrop-blur-sm",
+        ].join(" "),
       };
     };
 
@@ -136,32 +127,34 @@ export const CodeBlock = component$<CodeBlockProps>(
     // Build enhanced CSS classes
     const containerClasses = [
       themeClasses.container,
-      
+
       // Container responsive styles
       containerResponsive && "@container",
-      
+
       // High contrast support
       highContrast && "high-contrast:bg-white high-contrast:border-black",
-      
+
       // Direction support
       direction === "ltr" && "ltr:text-left",
       direction === "rtl" && "rtl:text-right",
-      
+
       // Touch optimization
       touchOptimized && "touch:rounded-lg",
-      
+
       // Print optimization
       printOptimized && "print:bg-white print:border print:border-black",
-      
+
       // Mobile scrolling optimization
       mobileScrolling && "mobile:overflow-x-auto",
-      
+
       // Motion preferences
-      reduceMotion ? "motion-reduce:transition-none" : "transition-all duration-300",
-      
+      reduceMotion
+        ? "motion-reduce:transition-none"
+        : "transition-all duration-300",
+
       // Dark mode enhancements
       "dark:hover:border-yellow-500/30 dark:hover:shadow-yellow-500/10",
-      
+
       className,
     ]
       .filter(Boolean)
@@ -169,33 +162,36 @@ export const CodeBlock = component$<CodeBlockProps>(
 
     const preClasses = [
       themeClasses.pre,
-      
+
       // Syntax highlighting with enhanced dark mode
-      "hljs-" + (theme === "auto" || theme === "system" ? "light dark:hljs-dark dark:selection:bg-yellow-500/20" : themeSignal.value),
-      
+      "hljs-" +
+        (theme === "auto" || theme === "system"
+          ? "light dark:hljs-dark dark:selection:bg-yellow-500/20"
+          : themeSignal.value),
+
       // Line numbers
       showLineNumbers ? "hljs-line-numbers" : "",
-      
+
       // Text wrapping with enhanced mobile support
-      !wrap 
+      !wrap
         ? [
             "whitespace-pre overflow-x-auto",
-            mobileScrolling && "mobile:overflow-x-scroll mobile:scrollbar-thin"
-          ].filter(Boolean).join(" ")
+            mobileScrolling && "mobile:overflow-x-scroll mobile:scrollbar-thin",
+          ]
+            .filter(Boolean)
+            .join(" ")
         : "whitespace-pre-wrap",
-      
+
       // High contrast support
       highContrast && "high-contrast:text-black high-contrast:bg-white",
-      
+
       // Touch optimization
-      touchOptimized && [
-        "touch:text-base touch:p-5",
-        "touch:leading-relaxed"
-      ].join(" "),
-      
+      touchOptimized &&
+        ["touch:text-base touch:p-5", "touch:leading-relaxed"].join(" "),
+
       // Print optimization
       printOptimized && "print:text-black print:bg-white",
-      
+
       // Focus styles for accessibility
       "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
     ]

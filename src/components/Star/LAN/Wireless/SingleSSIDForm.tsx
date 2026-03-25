@@ -32,7 +32,6 @@ export const SingleSSIDForm = component$<SingleSSIDFormProps>(
     mode = "advance",
     hasBothBands = true,
   }) => {
-
     return (
       <div class="space-y-6">
         <p class="dark:text-text-secondary-dark text-text-secondary">

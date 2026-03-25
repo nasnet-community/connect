@@ -6,9 +6,11 @@ import {
     mergeMultipleConfigs,
 } from "~/components/Star/ConfigGenerator";
 // import { GenerateOpenVPNCertificateScript } from "~/components/Star/ConfigGenerator";
-import { BaseVPNConfig, GenerateVCInterfaceName } from "~/components/Star/ConfigGenerator";
+import {
+    BaseVPNConfig,
+    GenerateVCInterfaceName,
+} from "~/components/Star/ConfigGenerator";
 import { ScriptGenerator } from "~/components/Star/ConfigGenerator/utils/ScriptSchedule";
-
 
 export interface OpenVPNImportConfig {
     /** Full content of the .ovpn configuration file */
@@ -41,7 +43,7 @@ export const GenerateOpenVPNImportScript = (
     } = config;
 
     // Sanitize filename by replacing spaces with hyphens
-    const sanitizedFileName = tempFileName.replace(/\s+/g, '-');
+    const sanitizedFileName = tempFileName.replace(/\s+/g, "-");
 
     // Build the script content as RouterConfig
     const scriptContent: RouterConfig = {
@@ -60,12 +62,12 @@ export const GenerateOpenVPNImportScript = (
             ':log info "OpenVPN Import Script: Starting import process..."',
             "",
             "# Step 1: Pre-flight checks - Verify interface name is not already in use",
-            ':log info "OpenVPN Import Script: Checking if interface \'$interfaceName\' already exists..."',
+            ":log info \"OpenVPN Import Script: Checking if interface '$interfaceName' already exists...\"",
             ":do {",
             "    :local interfaceExists [/interface/ovpn-client/find name=$interfaceName]",
             "    :if ([:len $interfaceExists] > 0) do={",
-            '        :log error "OpenVPN Import Script: Interface \'$interfaceName\' already exists. Please remove it first or choose a different name."',
-            '        :error "Interface \'$interfaceName\' already exists"',
+            "        :log error \"OpenVPN Import Script: Interface '$interfaceName' already exists. Please remove it first or choose a different name.\"",
+            "        :error \"Interface '$interfaceName' already exists\"",
             "    }",
             '    :log info "OpenVPN Import Script: Interface name is available."',
             "} on-error={",
@@ -74,7 +76,7 @@ export const GenerateOpenVPNImportScript = (
             "}",
             "",
             "# Step 2: Create temporary .ovpn file",
-            ':log info "OpenVPN Import Script: Creating temporary file \'$tempFileName\'..."',
+            ":log info \"OpenVPN Import Script: Creating temporary file '$tempFileName'...\"",
             "",
             "# Step 2a: Create empty file",
             ":do {",
@@ -87,16 +89,16 @@ export const GenerateOpenVPNImportScript = (
             "}",
             "",
             "# Step 2b: Verify .txt file was created and rename to .ovpn",
-            ":local txtFileName ($tempFileName . \".txt\")",
-            ':log info "OpenVPN Import Script: Looking for file \'$txtFileName\'..."',
+            ':local txtFileName ($tempFileName . ".txt")',
+            ":log info \"OpenVPN Import Script: Looking for file '$txtFileName'...\"",
             "",
             ":do {",
             "    :local txtFile [/file find name=$txtFileName]",
             "    :if ([:len $txtFile] = 0) do={",
-            '        :log error "OpenVPN Import Script: File \'$txtFileName\' was not created."',
+            "        :log error \"OpenVPN Import Script: File '$txtFileName' was not created.\"",
             '        :error "File not created"',
             "    }",
-            '    :log info "OpenVPN Import Script: Found file \'$txtFileName\', renaming to \'$tempFileName\'..."',
+            "    :log info \"OpenVPN Import Script: Found file '$txtFileName', renaming to '$tempFileName'...\"",
             "    /file set $txtFile name=$tempFileName",
             "    :delay 500ms",
             "} on-error={",
@@ -108,10 +110,10 @@ export const GenerateOpenVPNImportScript = (
             ":do {",
             "    :local ovpnFile [/file find name=$tempFileName]",
             "    :if ([:len $ovpnFile] = 0) do={",
-            '        :log error "OpenVPN Import Script: File \'$tempFileName\' does not exist after rename."',
+            "        :log error \"OpenVPN Import Script: File '$tempFileName' does not exist after rename.\"",
             '        :error "File not found after rename"',
             "    }",
-            '    :log info "OpenVPN Import Script: File \'$tempFileName\' exists, setting contents..."',
+            "    :log info \"OpenVPN Import Script: File '$tempFileName' exists, setting contents...\"",
             "} on-error={",
             '    :log error "OpenVPN Import Script: Failed to verify renamed file."',
             '    :error "Failed to verify file"',
@@ -123,7 +125,7 @@ export const GenerateOpenVPNImportScript = (
             "    :delay 1s",
             '    :log info "OpenVPN Import Script: File contents set, verifying..."',
             "    :local fileSize [/file get [/file find name=$tempFileName] size]",
-            '    :log info "OpenVPN Import Script: File \'$tempFileName\' created successfully with size: $fileSize bytes"',
+            "    :log info \"OpenVPN Import Script: File '$tempFileName' created successfully with size: $fileSize bytes\"",
             "    :if ($fileSize = 0) do={",
             '        :log error "OpenVPN Import Script: File has zero size, content was not set properly."',
             '        :error "File content is empty"',
@@ -190,16 +192,16 @@ export const GenerateOpenVPNImportScript = (
             "# Step 4: Rename the interface to the desired name",
             ":if ([:len $importedInterfaceName] > 0) do={",
             "    :if ($importedInterfaceName != $interfaceName) do={",
-            '        :log info "OpenVPN Import Script: Renaming interface from \'$importedInterfaceName\' to \'$interfaceName\'..."',
+            "        :log info \"OpenVPN Import Script: Renaming interface from '$importedInterfaceName' to '$interfaceName'...\"",
             "        :do {",
             "            /interface/ovpn-client/set [find name=$importedInterfaceName] name=$interfaceName use-peer-dns=no route-nopull=no add-default-route=no disabled=no",
-            '            :log info "OpenVPN Import Script: Interface renamed successfully to \'$interfaceName\'."',
+            "            :log info \"OpenVPN Import Script: Interface renamed successfully to '$interfaceName'.\"",
             "        } on-error={",
             '            :log error "OpenVPN Import Script: Failed to rename interface."',
             '            :error "Failed to rename interface"',
             "        }",
             "    } else={",
-            '        :log info "OpenVPN Import Script: Interface already has the desired name \'$interfaceName\'."',
+            "        :log info \"OpenVPN Import Script: Interface already has the desired name '$interfaceName'.\"",
             "    }",
             "} else={",
             '    :log warning "OpenVPN Import Script: Could not determine imported interface name. Please rename manually."',
@@ -242,7 +244,7 @@ export const GenerateOpenVPNImportScript = (
             "",
             "# Step 5b: Assign client certificate to interface if found",
             ":if ([:len $newClientCert] > 0) do={",
-            '    :log info "OpenVPN Import Script: Assigning certificate \'$newClientCert\' to interface \'$interfaceName\'..."',
+            "    :log info \"OpenVPN Import Script: Assigning certificate '$newClientCert' to interface '$interfaceName'...\"",
             "    :do {",
             "        /interface/ovpn-client/set [find name=$interfaceName] certificate=$newClientCert",
             '        :log info "OpenVPN Import Script: Certificate assigned successfully"',
@@ -256,8 +258,8 @@ export const GenerateOpenVPNImportScript = (
             "",
             "# Script completed successfully",
             ':log info "OpenVPN Import Script: Import process completed successfully!"',
-            ':log info "OpenVPN Import Script: Interface \'$interfaceName\' is now configured."',
-            ':put "OpenVPN client \'$interfaceName\' imported successfully!"',
+            ":log info \"OpenVPN Import Script: Interface '$interfaceName' is now configured.\"",
+            ":put \"OpenVPN client '$interfaceName' imported successfully!\"",
         ],
     };
 
@@ -270,17 +272,12 @@ export const GenerateOpenVPNImportScript = (
 
     // Add the command to run the script
     const runCommand: RouterConfig = {
-        "/system script": [
-            `run "${dynamicScriptName}"`,
-            `:delay 10s`
-        ],
+        "/system script": [`run "${dynamicScriptName}"`, `:delay 10s`],
     };
 
     // Merge script definition with run command
     return mergeConfigurations(scriptConfig, runCommand);
 };
-
-
 
 // OpenVPN Client
 
@@ -372,12 +369,18 @@ export const OpenVPNClient = (config: OpenVpnClientConfig): RouterConfig => {
     return CommandShortner(routerConfig);
 };
 
-export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[], checkIPMap?: Map<string, string> ): RouterConfig => {
+export const OpenVPNClientWrapper = (
+    configs: OpenVpnClientConfig[],
+    checkIPMap?: Map<string, string>,
+): RouterConfig => {
     const routerConfigs: RouterConfig[] = [];
 
     configs.forEach((ovpnConfig) => {
-        const interfaceName = GenerateVCInterfaceName(ovpnConfig.Name, "OpenVPN");
-        
+        const interfaceName = GenerateVCInterfaceName(
+            ovpnConfig.Name,
+            "OpenVPN",
+        );
+
         // Generate the VPN configuration (handles both file import and manual config)
         const vpnConfig = OpenVPNClient(ovpnConfig);
 
@@ -388,7 +391,7 @@ export const OpenVPNClientWrapper = ( configs: OpenVpnClientConfig[], checkIPMap
         }
 
         const endpointAddress = ovpnConfig.Server.Address;
-        
+
         // Use pre-assigned checkIP from map, or fallback to old behavior for backwards compatibility
         const checkIP = checkIPMap?.get(ovpnConfig.Name);
 

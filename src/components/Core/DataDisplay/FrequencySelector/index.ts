@@ -1,2 +1,6 @@
 export { FrequencySelector } from "./FrequencySelector";
-export type { FrequencySelectorProps, FrequencyValue, FrequencyOption } from "./FrequencySelector.types";
+export type {
+  FrequencySelectorProps,
+  FrequencyValue,
+  FrequencyOption,
+} from "./FrequencySelector.types";

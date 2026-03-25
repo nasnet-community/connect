@@ -1,7 +1,4 @@
-import {
-  component$,
-  $,
-} from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import { Wireless } from "./Wireless/Wireless";
 import { VPNServer } from "./VPNServer/VPNServer";
 import { Tunnel } from "./Tunnel/Tunnel";
@@ -46,7 +43,6 @@ const TunnelStep = component$((props: StepProps) => (
 const SubnetsStep = component$((props: StepProps) => (
   <Subnets isComplete={props.isComplete} onComplete$={props.onComplete$} />
 ));
-
 
 export const LAN = component$((props: StepProps) => {
   const { stepsStore, handleStepComplete, handleStepChange } = useLAN({

@@ -115,7 +115,7 @@ export const UsefulServicesAdvanced = component$<StepProps>(
     return (
       <div class="mx-auto w-full max-w-7xl animate-fade-in-up">
         {/* Simplified background decorative elements */}
-        <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
           <div class="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 animate-pulse-slow rounded-full bg-gradient-to-r from-primary-500/5 to-secondary-500/5"></div>
           <div class="absolute right-1/4 top-1/4 h-80 w-80 animate-float rounded-full bg-gradient-to-br from-secondary-500/5 to-primary-500/5 animation-delay-2000"></div>
         </div>
@@ -125,21 +125,21 @@ export const UsefulServicesAdvanced = component$<StepProps>(
           <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-500/10 via-secondary-500/5 to-primary-500/10 p-px">
             <div class="h-full w-full rounded-3xl bg-white dark:bg-gray-800"></div>
           </div>
-          
+
           {/* Content container */}
           <div class="relative z-10">
             {/* Enhanced modern header section */}
             <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 px-8 py-14">
               {/* Enhanced header background patterns */}
               <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-              <div class="absolute right-0 top-0 h-64 w-64 translate-x-32 -translate-y-32 rounded-full bg-white/5 animate-pulse-slow"></div>
-              <div class="absolute left-0 bottom-0 h-48 w-48 -translate-x-24 translate-y-24 rounded-full bg-secondary-500/5 animate-float"></div>
-              
-              <div class="relative flex flex-col md:flex-row items-start md:items-center gap-8">
-                <div class="group/icon flex h-24 w-24 items-center justify-center rounded-3xl border-2 border-white/30 bg-gradient-to-br from-white/25 to-white/15 transition-all duration-500 hover:scale-110 hover:rotate-3 hover:bg-white/35 hover:shadow-xl">
+              <div class="absolute right-0 top-0 h-64 w-64 -translate-y-32 translate-x-32 animate-pulse-slow rounded-full bg-white/5"></div>
+              <div class="absolute bottom-0 left-0 h-48 w-48 -translate-x-24 translate-y-24 animate-float rounded-full bg-secondary-500/5"></div>
+
+              <div class="relative flex flex-col items-start gap-8 md:flex-row md:items-center">
+                <div class="group/icon flex h-24 w-24 items-center justify-center rounded-3xl border-2 border-white/30 bg-gradient-to-br from-white/25 to-white/15 transition-all duration-500 hover:rotate-3 hover:scale-110 hover:bg-white/35 hover:shadow-xl">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-12 w-12 text-white transition-all duration-500 group-hover/icon:scale-110 group-hover/icon:rotate-12"
+                    class="h-12 w-12 text-white transition-all duration-500 group-hover/icon:rotate-12 group-hover/icon:scale-110"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -152,18 +152,16 @@ export const UsefulServicesAdvanced = component$<StepProps>(
                     />
                   </svg>
                 </div>
-                <div class="space-y-3 flex-1">
-                  <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight animate-gradient bg-gradient-to-r from-white via-primary-100 to-white bg-clip-text">{$localize`Useful Services`}</h2>
-                  <p class="text-xl text-white/95 font-medium">{$localize`Advanced Configuration Mode`}</p>
-                  <p class="text-primary-100/90 max-w-2xl leading-relaxed">{$localize`Configure advanced network services with detailed settings and modern interface for optimal performance`}</p>
+                <div class="flex-1 space-y-3">
+                  <h2 class="animate-gradient bg-gradient-to-r from-white via-primary-100 to-white bg-clip-text text-4xl font-bold tracking-tight text-white md:text-5xl">{$localize`Useful Services`}</h2>
+                  <p class="text-xl font-medium text-white/95">{$localize`Advanced Configuration Mode`}</p>
+                  <p class="max-w-2xl leading-relaxed text-primary-100/90">{$localize`Configure advanced network services with detailed settings and modern interface for optimal performance`}</p>
                 </div>
               </div>
-              
             </div>
 
             {/* Modern stepper content */}
             <div class="relative p-8">
-              
               <CStepper
                 steps={steps}
                 activeStep={0}

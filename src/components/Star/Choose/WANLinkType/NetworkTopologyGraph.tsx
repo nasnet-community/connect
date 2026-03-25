@@ -438,9 +438,7 @@ export const NetworkTopologyGraph = component$(
               handleCollapse();
             })}
           >
-            <div
-              class="expanded-graph-overlay flex min-h-screen w-screen items-center justify-center p-4 sm:p-6"
-            >
+            <div class="expanded-graph-overlay flex min-h-screen w-screen items-center justify-center p-4 sm:p-6">
               <div
                 class="expanded-graph-backdrop absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
                 onClick$={handleCollapse}

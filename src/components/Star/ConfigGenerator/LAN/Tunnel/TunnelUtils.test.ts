@@ -22,7 +22,11 @@ import {
 describe("Tunnel utilities", () => {
     // Verifies IP address helper emits quoted address, interface, and optional comment fields.
     it("builds address commands for tunnel interfaces", () => {
-        const result = generateIPAddress("10.10.10.1/30", "ipip-1", "Tunnel ip");
+        const result = generateIPAddress(
+            "10.10.10.1/30",
+            "ipip-1",
+            "Tunnel ip",
+        );
 
         expect(result["/ip address"]).toEqual([
             'add address="10.10.10.1/30" interface="ipip-1" comment="Tunnel ip"',
@@ -31,8 +35,16 @@ describe("Tunnel utilities", () => {
 
     // Verifies tunnel membership and address-list helpers add both LAN-scoped references.
     it("builds interface-list and address-list entries for tunnel networks", () => {
-        const interfaceList = TunnelInterfaceList("gre-1", "Foreign", "GRE uplink");
-        const addressList = TunnelAddressList("10.20.0.0/30", "Foreign", "GRE subnet");
+        const interfaceList = TunnelInterfaceList(
+            "gre-1",
+            "Foreign",
+            "GRE uplink",
+        );
+        const addressList = TunnelAddressList(
+            "10.20.0.0/30",
+            "Foreign",
+            "GRE subnet",
+        );
 
         expect(interfaceList["/interface list member"]).toEqual([
             'add interface="gre-1" list="LAN" comment="GRE uplink"',
@@ -45,17 +57,25 @@ describe("Tunnel utilities", () => {
 
     // Verifies subnet helpers preserve explicit addresses and fall back to the first usable host when needed.
     it("derives tunnel IP addresses from subnet definitions", () => {
-        const subnet: SubnetConfig = { name: "Tunnel-A", subnet: "10.255.1.0/30" };
+        const subnet: SubnetConfig = {
+            name: "Tunnel-A",
+            subnet: "10.255.1.0/30",
+        };
 
         expect(extractSubnetPrefix("10.255.1.0/30")).toBe("30");
-        expect(buildTunnelIPAddress("10.255.1.2", subnet)).toBe("10.255.1.2/30");
+        expect(buildTunnelIPAddress("10.255.1.2", subnet)).toBe(
+            "10.255.1.2/30",
+        );
         expect(buildTunnelIPAddress("", subnet)).toBe("10.255.1.1/30");
     });
 
     // Verifies IPsec-enabled tunnels force fast-path off, which is the current business rule.
     it("forces fast-path off when an IPsec secret is configured", () => {
         const params: string[] = [];
-        handleIPsecAndFastPath(params, { ipsecSecret: "secret", allowFastPath: true });
+        handleIPsecAndFastPath(params, {
+            ipsecSecret: "secret",
+            allowFastPath: true,
+        });
 
         expect(params).toEqual(["allow-fast-path=no"]);
     });
@@ -94,9 +114,15 @@ describe("Tunnel utilities", () => {
             { name: "gre-backhaul-1", subnet: "10.0.1.0/30" },
         ];
 
-        expect(findSubnetByName("Branch-A", subnets)?.subnet).toBe("10.0.0.0/30");
-        expect(findSubnetByName("branch-a", subnets)?.subnet).toBe("10.0.0.0/30");
-        expect(findSubnetByName("backhaul", subnets)?.subnet).toBe("10.0.1.0/30");
+        expect(findSubnetByName("Branch-A", subnets)?.subnet).toBe(
+            "10.0.0.0/30",
+        );
+        expect(findSubnetByName("branch-a", subnets)?.subnet).toBe(
+            "10.0.0.0/30",
+        );
+        expect(findSubnetByName("backhaul", subnets)?.subnet).toBe(
+            "10.0.1.0/30",
+        );
     });
 
     // Verifies IPIP interfaces honor the current default comment and fast-path logic when IPsec is enabled.
@@ -113,7 +139,9 @@ describe("Tunnel utilities", () => {
 
         expect(result).toContain("name=ipip-a");
         expect(result).toContain("remote-address=203.0.113.10");
-        expect(result).toContain('comment="ipip-a IPIP Tunnel for Network Foreign"');
+        expect(result).toContain(
+            'comment="ipip-a IPIP Tunnel for Network Foreign"',
+        );
         expect(result).toContain('ipsec-secret="ipsec-1"');
         expect(result).toContain("allow-fast-path=no");
     });

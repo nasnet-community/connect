@@ -8,7 +8,7 @@ export interface HelpSection {
   title: string;
   content: string | JSX.Element;
   icon?: JSX.Element;
-  type?: 'info' | 'tip' | 'warning' | 'example';
+  type?: "info" | "tip" | "warning" | "example";
 }
 
 /**
@@ -42,7 +42,7 @@ export interface BaseStepMeta {
   validationErrors?: string[];
   description?: string;
   icon?: any;
-  
+
   // Help system properties
   helpTitle?: string;
   helpContent?: string | JSX.Element;
@@ -61,17 +61,17 @@ export interface BaseStepperProps<T extends BaseStepMeta = BaseStepMeta> {
   onComplete$?: QRL<() => void>;
   contextId?: ContextId<any>;
   contextValue?: any;
-  
+
   // Navigation options
   allowNonLinearNavigation?: boolean;
   allowSkipSteps?: boolean;
-  
+
   // Enhanced features (opt-in for backward compatibility)
   enableEnhancedFeatures?: boolean;
   preventInfiniteLoops?: boolean;
   maxRenderCycles?: number;
   contextNamespace?: string;
-  
+
   // Help system options
   enableHelp?: boolean;
   helpOptions?: {
@@ -86,14 +86,19 @@ export interface BaseStepperProps<T extends BaseStepMeta = BaseStepMeta> {
 /**
  * Base context interface for stepper state sharing
  */
-export interface BaseStepperContext<T = any, S extends BaseStepMeta = BaseStepMeta> {
+export interface BaseStepperContext<
+  T = any,
+  S extends BaseStepMeta = BaseStepMeta,
+> {
   activeStep: Signal<number>;
   steps: Signal<S[]>;
   previousSteps?: Signal<number[]>;
   goToStep$: QRL<(step: number) => void>;
   nextStep$: QRL<() => void>;
   prevStep$: QRL<() => void>;
-  updateStepCompletion$?: QRL<(stepId: number, isComplete: boolean) => void | null>;
+  updateStepCompletion$?: QRL<
+    (stepId: number, isComplete: boolean) => void | null
+  >;
   completeStep$?: QRL<(stepId?: number) => void | null>;
   addStep$?: QRL<(newStep: S, position?: number) => number>;
   removeStep$?: QRL<(stepId: number) => boolean>;
@@ -101,7 +106,7 @@ export interface BaseStepperContext<T = any, S extends BaseStepMeta = BaseStepMe
   validateStep$?: QRL<(stepId?: number) => Promise<boolean>>;
   setStepErrors$?: QRL<(stepId: number, errors: string[]) => void>;
   data: T;
-  
+
   // Enhanced features
   renderCount?: Signal<number>;
   lastCompletedStep?: Signal<number | null>;
@@ -115,9 +120,8 @@ export interface StepperNavigationOptions {
   allowNonLinearNavigation?: boolean;
   allowSkipSteps?: boolean;
   allowStepNavigation?: boolean;
-  validationMode?: 'onBlur' | 'onChange' | 'onSubmit';
+  validationMode?: "onBlur" | "onChange" | "onSubmit";
 }
-
 
 /**
  * UI customization options
@@ -125,8 +129,8 @@ export interface StepperNavigationOptions {
 export interface StepperUIOptions {
   customIcons?: Record<number, JSX.Element>;
   useNumbers?: boolean;
-  position?: 'left' | 'right' | 'top' | 'bottom';
-  layout?: 'horizontal' | 'vertical' | 'content';
+  position?: "left" | "right" | "top" | "bottom";
+  layout?: "horizontal" | "vertical" | "content";
 }
 
 /**
@@ -146,28 +150,28 @@ export interface UseBaseStepperReturn<S extends BaseStepMeta = BaseStepMeta> {
   activeStep: Signal<number>;
   steps: Signal<S[]>;
   previousSteps: Signal<number[]>;
-  
+
   // Error and loading state
   hasError: Signal<boolean>;
   errorMessage: Signal<string>;
   isLoading: Signal<boolean>;
-  
+
   // Navigation functions
   handleNext$: QRL<() => void>;
   handlePrev$: QRL<() => void>;
   setStep$: QRL<(step: number) => void>;
-  
+
   // Step management
   completeStep$: QRL<(stepId?: number) => void>;
   addStep$: QRL<(newStep: S, position?: number) => number>;
   removeStep$: QRL<(stepId: number) => boolean>;
   swapSteps$: QRL<(sourceIndex: number, targetIndex: number) => boolean>;
   handleStepError: QRL<(error: Error) => void>;
-  
+
   // Loop prevention
   renderCount: Signal<number>;
   lastCompletedStep: Signal<number | null>;
-  
+
   // Help system (optional - only available when enableHelp is true)
   helpSystem?: {
     isHelpOpen: Signal<boolean>;
@@ -201,5 +205,5 @@ export interface StepperManagementProps<S extends BaseStepMeta = BaseStepMeta> {
   swapSteps$: QRL<(sourceIndex: number, targetIndex: number) => boolean>;
   isEditMode: boolean;
   dynamicStepComponent?: any;
-  stepperType?: 'content' | 'vertical' | 'horizontal';
+  stepperType?: "content" | "vertical" | "horizontal";
 }

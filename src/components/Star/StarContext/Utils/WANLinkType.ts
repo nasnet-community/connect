@@ -1,15 +1,9 @@
-import type {
-    InterfaceType,
-    WirelessCredentials,
-  } from "../CommonType";
+import type { InterfaceType, WirelessCredentials } from "../CommonType";
 import type { MultiLinkConfig } from "../Utils/MultiLinkType";
 
-
-
 export interface LTESettings {
-    apn: string;
+  apn: string;
 }
-
 
 export interface PPPoEConfig {
   username: string;
@@ -24,17 +18,17 @@ export interface StaticIPConfig {
 }
 
 export interface ConnectionConfig {
-    isDHCP?: boolean;
-    pppoe?: PPPoEConfig;
-    static?: StaticIPConfig;
-    lteSettings?: LTESettings;
+  isDHCP?: boolean;
+  pppoe?: PPPoEConfig;
+  static?: StaticIPConfig;
+  lteSettings?: LTESettings;
 }
 
 export interface InterfaceConfig {
-    InterfaceName: InterfaceType;
-    WirelessCredentials?: WirelessCredentials;
-    VLANID?: string;
-    MacAddress?: string;
+  InterfaceName: InterfaceType;
+  WirelessCredentials?: WirelessCredentials;
+  VLANID?: string;
+  MacAddress?: string;
 }
 
 export interface WANLinkConfig {
@@ -46,11 +40,11 @@ export interface WANLinkConfig {
 }
 
 export interface WANLink {
-    WANConfigs: WANLinkConfig[];
-    MultiLinkConfig?: MultiLinkConfig;
+  WANConfigs: WANLinkConfig[];
+  MultiLinkConfig?: MultiLinkConfig;
 }
 
-export interface WANLinks{
-    Foreign?: WANLink;
-    Domestic?: WANLink;
+export interface WANLinks {
+  Foreign?: WANLink;
+  Domestic?: WANLink;
 }

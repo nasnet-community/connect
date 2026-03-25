@@ -9,7 +9,10 @@ type ViewMode = "easy" | "advanced";
 
 export const useL2TPServer = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+  const vpnServerState = starContext.state.LAN.VPNServer || {
+    Users: [],
+    CertificatePassphrase: "",
+  };
 
   const l2tpState = vpnServerState.L2tpServer || {
     enabled: true,

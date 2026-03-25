@@ -46,12 +46,12 @@ export const Heading = component$<HeadingProps>(
           2: "text-4xl md:text-5xl lg:text-6xl", // Large for h2
           3: "text-3xl md:text-4xl lg:text-5xl", // Medium for h3
           4: "text-2xl md:text-3xl lg:text-4xl", // Smaller for h4
-          5: "text-xl md:text-2xl lg:text-3xl",  // Small for h5
-          6: "text-lg md:text-xl lg:text-2xl",   // Smallest for h6
+          5: "text-xl md:text-2xl lg:text-3xl", // Small for h5
+          6: "text-lg md:text-xl lg:text-2xl", // Smallest for h6
         };
         return levelSizeMap[sizeOrLevel];
       }
-      
+
       // Handle explicit size strings
       const sizeMap: Record<HeadingSize, string> = {
         xs: "text-xs",
@@ -82,21 +82,24 @@ export const Heading = component$<HeadingProps>(
     // Enhanced color system using design system colors
     const getColorClasses = (): string => {
       const colorMap: Record<HeadingColor, string> = {
-        primary: theme === "dark" 
-          ? "text-gray-100" 
-          : theme === "dim" 
-            ? "text-gray-200" 
-            : "text-gray-900",
-        secondary: theme === "dark" 
-          ? "text-gray-300" 
-          : theme === "dim" 
-            ? "text-gray-400" 
-            : "text-gray-700",
-        tertiary: theme === "dark" 
-          ? "text-gray-400" 
-          : theme === "dim" 
-            ? "text-gray-500" 
-            : "text-gray-500",
+        primary:
+          theme === "dark"
+            ? "text-gray-100"
+            : theme === "dim"
+              ? "text-gray-200"
+              : "text-gray-900",
+        secondary:
+          theme === "dark"
+            ? "text-gray-300"
+            : theme === "dim"
+              ? "text-gray-400"
+              : "text-gray-700",
+        tertiary:
+          theme === "dark"
+            ? "text-gray-400"
+            : theme === "dim"
+              ? "text-gray-500"
+              : "text-gray-500",
         inverse: "text-white dark:text-gray-900",
         accent: "text-primary-600 dark:text-primary-400",
         success: "text-success-600 dark:text-success-400",
@@ -114,43 +117,62 @@ export const Heading = component$<HeadingProps>(
         "contrast-high": "text-contrast-high",
       };
 
-      return theme === "auto" 
-        ? colorMap[color] || `text-${color}` 
+      return theme === "auto"
+        ? colorMap[color] || `text-${color}`
         : colorMap[color] || `${theme}:text-${color}`;
     };
 
     // Build responsive classes with enhanced breakpoints
     const responsiveClasses = useComputed$(() => {
       if (!responsiveSize) return "";
-      
+
       const responsiveClassArray = [];
-      
+
       // Standard breakpoints
-      if (responsiveSize.base) responsiveClassArray.push(getSize(responsiveSize.base));
-      if (responsiveSize["2xs"]) responsiveClassArray.push(`2xs:${getSize(responsiveSize["2xs"])}`);
-      if (responsiveSize.xs) responsiveClassArray.push(`xs:${getSize(responsiveSize.xs)}`);
-      if (responsiveSize.sm) responsiveClassArray.push(`sm:${getSize(responsiveSize.sm)}`);
-      if (responsiveSize.md) responsiveClassArray.push(`md:${getSize(responsiveSize.md)}`);
-      if (responsiveSize.lg) responsiveClassArray.push(`lg:${getSize(responsiveSize.lg)}`);
-      if (responsiveSize.xl) responsiveClassArray.push(`xl:${getSize(responsiveSize.xl)}`);
-      if (responsiveSize["2xl"]) responsiveClassArray.push(`2xl:${getSize(responsiveSize["2xl"])}`);
-      if (responsiveSize["3xl"]) responsiveClassArray.push(`3xl:${getSize(responsiveSize["3xl"])}`);
-      if (responsiveSize["4xl"]) responsiveClassArray.push(`4xl:${getSize(responsiveSize["4xl"])}`);
-      
+      if (responsiveSize.base)
+        responsiveClassArray.push(getSize(responsiveSize.base));
+      if (responsiveSize["2xs"])
+        responsiveClassArray.push(`2xs:${getSize(responsiveSize["2xs"])}`);
+      if (responsiveSize.xs)
+        responsiveClassArray.push(`xs:${getSize(responsiveSize.xs)}`);
+      if (responsiveSize.sm)
+        responsiveClassArray.push(`sm:${getSize(responsiveSize.sm)}`);
+      if (responsiveSize.md)
+        responsiveClassArray.push(`md:${getSize(responsiveSize.md)}`);
+      if (responsiveSize.lg)
+        responsiveClassArray.push(`lg:${getSize(responsiveSize.lg)}`);
+      if (responsiveSize.xl)
+        responsiveClassArray.push(`xl:${getSize(responsiveSize.xl)}`);
+      if (responsiveSize["2xl"])
+        responsiveClassArray.push(`2xl:${getSize(responsiveSize["2xl"])}`);
+      if (responsiveSize["3xl"])
+        responsiveClassArray.push(`3xl:${getSize(responsiveSize["3xl"])}`);
+      if (responsiveSize["4xl"])
+        responsiveClassArray.push(`4xl:${getSize(responsiveSize["4xl"])}`);
+
       // Device-specific breakpoints
-      if (responsiveSize.mobile) responsiveClassArray.push(`mobile:${getSize(responsiveSize.mobile)}`);
-      if (responsiveSize["mobile-md"]) responsiveClassArray.push(`mobile-md:${getSize(responsiveSize["mobile-md"])}`);
-      if (responsiveSize.tablet) responsiveClassArray.push(`tablet:${getSize(responsiveSize.tablet)}`);
-      if (responsiveSize.laptop) responsiveClassArray.push(`laptop:${getSize(responsiveSize.laptop)}`);
-      if (responsiveSize.desktop) responsiveClassArray.push(`desktop:${getSize(responsiveSize.desktop)}`);
-      
+      if (responsiveSize.mobile)
+        responsiveClassArray.push(`mobile:${getSize(responsiveSize.mobile)}`);
+      if (responsiveSize["mobile-md"])
+        responsiveClassArray.push(
+          `mobile-md:${getSize(responsiveSize["mobile-md"])}`,
+        );
+      if (responsiveSize.tablet)
+        responsiveClassArray.push(`tablet:${getSize(responsiveSize.tablet)}`);
+      if (responsiveSize.laptop)
+        responsiveClassArray.push(`laptop:${getSize(responsiveSize.laptop)}`);
+      if (responsiveSize.desktop)
+        responsiveClassArray.push(`desktop:${getSize(responsiveSize.desktop)}`);
+
       return responsiveClassArray.join(" ");
     });
 
     // Combine all classes with enhanced features
     const classes = [
       // Base styles with motion preferences
-      reduceMotion ? "motion-reduce:transition-none motion-safe:transition-colors motion-safe:duration-150" : "transition-colors duration-150",
+      reduceMotion
+        ? "motion-reduce:transition-none motion-safe:transition-colors motion-safe:duration-150"
+        : "transition-colors duration-150",
 
       // Container responsive styles
       containerResponsive && "@container",
@@ -162,7 +184,7 @@ export const Heading = component$<HeadingProps>(
       {
         sans: "font-sans",
         "sans-rtl": "font-sans-rtl",
-        serif: "font-serif", 
+        serif: "font-serif",
         "serif-rtl": "font-serif-rtl",
         display: "font-display",
         body: "font-body",

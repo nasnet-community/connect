@@ -38,6 +38,13 @@ export interface DNSPreset {
   description: string;
   primary: string;
   secondary: string;
-  category: "public" | "secure" | "fast" | "filtered" | "privacy" | "family" | "adblock";
+  category:
+    | "public"
+    | "secure"
+    | "fast"
+    | "filtered"
+    | "privacy"
+    | "family"
+    | "adblock";
   icon?: string;
 }

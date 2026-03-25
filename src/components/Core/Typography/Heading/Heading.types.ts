@@ -50,9 +50,28 @@ export type HeadingColor =
 /**
  * Heading size types (including fluid typography)
  */
-export type HeadingSize = 
-  | "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "8xl" | "9xl"
-  | "fluid-xs" | "fluid-sm" | "fluid-base" | "fluid-lg" | "fluid-xl" | "fluid-2xl" | "fluid-3xl" | "fluid-4xl";
+export type HeadingSize =
+  | "xs"
+  | "sm"
+  | "base"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "4xl"
+  | "5xl"
+  | "6xl"
+  | "7xl"
+  | "8xl"
+  | "9xl"
+  | "fluid-xs"
+  | "fluid-sm"
+  | "fluid-base"
+  | "fluid-lg"
+  | "fluid-xl"
+  | "fluid-2xl"
+  | "fluid-3xl"
+  | "fluid-4xl";
 
 /**
  * Available responsive size options (enhanced with custom breakpoints)
@@ -76,7 +95,7 @@ export type ResponsiveSize = {
   "3xl"?: HeadingLevel | HeadingSize;
   /** 2K/4K (2560px+) */
   "4xl"?: HeadingLevel | HeadingSize;
-  
+
   /** Base/default size (mobile-first) */
   base?: HeadingLevel | HeadingSize;
   /** Mobile devices (360px+) */

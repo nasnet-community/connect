@@ -19,7 +19,10 @@ const isLoadBalanceEnabled = (strategy?: string): boolean => {
  * Excludes Split network as per requirements
  * Excludes Base Networks when LoadBalance is enabled for that link type
  */
-export const buildNetworkOptions = (networks?: Networks, wanState?: WANState): NetworkOption[] => {
+export const buildNetworkOptions = (
+  networks?: Networks,
+  wanState?: WANState,
+): NetworkOption[] => {
   const options: NetworkOption[] = [];
 
   if (!networks) {
@@ -28,22 +31,30 @@ export const buildNetworkOptions = (networks?: Networks, wanState?: WANState): N
 
   // Check if LoadBalance is enabled for each link type
   const domesticLoadBalance = isLoadBalanceEnabled(
-    wanState?.WANLink?.Domestic?.MultiLinkConfig?.strategy
+    wanState?.WANLink?.Domestic?.MultiLinkConfig?.strategy,
   );
   const foreignLoadBalance = isLoadBalanceEnabled(
-    wanState?.WANLink?.Foreign?.MultiLinkConfig?.strategy
+    wanState?.WANLink?.Foreign?.MultiLinkConfig?.strategy,
   );
   const vpnLoadBalance = isLoadBalanceEnabled(
-    wanState?.VPNClient?.MultiLinkConfig?.strategy
+    wanState?.VPNClient?.MultiLinkConfig?.strategy,
   );
 
   // Add Base Networks (exclude Split and LoadBalance-enabled networks)
   if (networks.BaseNetworks) {
     if (networks.BaseNetworks.Domestic && !domesticLoadBalance) {
-      options.push({ value: "Domestic", label: $localize`Domestic`, category: "Base" });
+      options.push({
+        value: "Domestic",
+        label: $localize`Domestic`,
+        category: "Base",
+      });
     }
     if (networks.BaseNetworks.Foreign && !foreignLoadBalance) {
-      options.push({ value: "Foreign", label: $localize`Foreign`, category: "Base" });
+      options.push({
+        value: "Foreign",
+        label: $localize`Foreign`,
+        category: "Base",
+      });
     }
     if (networks.BaseNetworks.VPN && !vpnLoadBalance) {
       options.push({ value: "VPN", label: $localize`VPN`, category: "Base" });

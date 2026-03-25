@@ -18,13 +18,17 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
   // Check wireless capability for all selected routers
   const checkWirelessCapability = () => {
     const allRouters = starContext.state.Choose.RouterModels;
-    const routersWithoutWifi = allRouters.filter(routerModel => {
-      const routerData = routers.find(r => r.model === routerModel.Model);
-      return !routerData || !routerData.isWireless || !routerData.interfaces.Interfaces.wireless?.length;
+    const routersWithoutWifi = allRouters.filter((routerModel) => {
+      const routerData = routers.find((r) => r.model === routerModel.Model);
+      return (
+        !routerData ||
+        !routerData.isWireless ||
+        !routerData.interfaces.Interfaces.wireless?.length
+      );
     });
     return {
       hasWirelessCapability: routersWithoutWifi.length === 0,
-      routersWithoutWifi: routersWithoutWifi
+      routersWithoutWifi: routersWithoutWifi,
     };
   };
 
@@ -90,8 +94,10 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
       {/* Options grid */}
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {interfaceOptions.map((option) => {
-          const isWirelessDisabled = option.type === "wireless" && !wirelessCheck.hasWirelessCapability;
-          const isSelected = starContext.state.Choose.TrunkInterfaceType === option.type;
+          const isWirelessDisabled =
+            option.type === "wireless" && !wirelessCheck.hasWirelessCapability;
+          const isSelected =
+            starContext.state.Choose.TrunkInterfaceType === option.type;
           const badge = isWirelessDisabled ? (
             <div class="flex items-center gap-1 rounded-full bg-orange-500/15 px-3 py-1 dark:bg-orange-500/25">
               <LuAlertCircle class="h-3 w-3 text-orange-600 dark:text-orange-400" />
@@ -120,7 +126,11 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
               bodyClass="p-6"
               headingClass="text-xl"
               featureTextClass="text-sm"
-              class={isWirelessDisabled ? "bg-gray-100 dark:bg-gray-800" : "bg-surface/50 dark:bg-surface-dark/50"}
+              class={
+                isWirelessDisabled
+                  ? "bg-gray-100 dark:bg-gray-800"
+                  : "bg-surface/50 dark:bg-surface-dark/50"
+              }
             />
           );
         })}
@@ -128,29 +138,28 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
 
       {/* Wireless capability warning */}
       {!wirelessCheck.hasWirelessCapability && (
-        <div class="mx-auto max-w-3xl mt-6 p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/30 rounded-xl">
+        <div class="mx-auto mt-6 max-w-3xl rounded-xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900/30 dark:bg-orange-950/20">
           <div class="flex items-start gap-3">
-            <LuAlertCircle class="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <LuAlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
             <div>
-              <h4 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-1">
+              <h4 class="mb-1 text-sm font-semibold text-orange-800 dark:text-orange-200">
                 {$localize`Wireless Router + Access Point Not Available`}
               </h4>
-              <p class="text-sm text-orange-700 dark:text-orange-300 mb-2">
+              <p class="mb-2 text-sm text-orange-700 dark:text-orange-300">
                 {$localize`The following router(s) don't have Wi-Fi capability required for wireless trunk:`}
               </p>
-              <ul class="text-sm text-orange-700 dark:text-orange-300 list-disc list-inside space-y-1">
+              <ul class="list-inside list-disc space-y-1 text-sm text-orange-700 dark:text-orange-300">
                 {wirelessCheck.routersWithoutWifi.map((router) => (
                   <li key={router.Model}>{router.Model}</li>
                 ))}
               </ul>
-              <p class="text-xs text-orange-600 dark:text-orange-400 mt-2">
+              <p class="mt-2 text-xs text-orange-600 dark:text-orange-400">
                 {$localize`Please select routers with Wi-Fi capability or use wired trunk instead.`}
               </p>
             </div>
           </div>
         </div>
       )}
-
     </SelectionStepSection>
   );
 });

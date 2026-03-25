@@ -28,12 +28,9 @@ export function useList(params: UseListParams, className = ""): UseListReturn {
 
   // Responsive size classes with mobile optimization
   const sizeClasses = {
-    sm: [
-      "text-sm",
-      "mobile:text-xs",
-      "tablet:text-sm",
-      "desktop:text-sm",
-    ].join(" "),
+    sm: ["text-sm", "mobile:text-xs", "tablet:text-sm", "desktop:text-sm"].join(
+      " ",
+    ),
     md: [
       "text-base",
       "mobile:text-sm",
@@ -50,21 +47,9 @@ export function useList(params: UseListParams, className = ""): UseListReturn {
 
   // Responsive spacing classes
   const spacingClasses = {
-    compact: [
-      "space-y-1",
-      "mobile:space-y-0.5",
-      "tablet:space-y-1",
-    ].join(" "),
-    normal: [
-      "space-y-2",
-      "mobile:space-y-1.5",
-      "tablet:space-y-2",
-    ].join(" "),
-    relaxed: [
-      "space-y-3",
-      "mobile:space-y-2",
-      "tablet:space-y-3",
-    ].join(" "),
+    compact: ["space-y-1", "mobile:space-y-0.5", "tablet:space-y-1"].join(" "),
+    normal: ["space-y-2", "mobile:space-y-1.5", "tablet:space-y-2"].join(" "),
+    relaxed: ["space-y-3", "mobile:space-y-2", "tablet:space-y-3"].join(" "),
   }[spacing];
 
   // Marker classes for unordered lists
@@ -93,14 +78,10 @@ export function useList(params: UseListParams, className = ""): UseListReturn {
         : "";
 
   // Responsive padding with RTL support
-  const paddingClasses = variant !== "definition" 
-    ? [
-        "ps-6",
-        "mobile:ps-4",
-        "tablet:ps-5",
-        "desktop:ps-6",
-      ].join(" ")
-    : "";
+  const paddingClasses =
+    variant !== "definition"
+      ? ["ps-6", "mobile:ps-4", "tablet:ps-5", "desktop:ps-6"].join(" ")
+      : "";
 
   // Base classes with mobile optimizations
   const baseClasses = [
@@ -110,21 +91,21 @@ export function useList(params: UseListParams, className = ""): UseListReturn {
     variant !== "definition" ? markerClasses : "",
     nested ? "mt-2 mobile:mt-1.5" : "",
     paddingClasses,
-    
+
     // Mobile optimizations
     "marker:text-current", // Ensure marker color matches text
     "marker:mobile:text-sm", // Smaller markers on mobile
-    
+
     // Dark mode support
     "text-gray-900 dark:text-gray-100",
     "marker:text-gray-600 dark:marker:text-gray-400",
-    
+
     // Print optimizations
     "print:text-black print:marker:text-black",
-    
+
     // Accessibility
     "focus-within:outline-none",
-    
+
     className,
   ]
     .filter(Boolean)

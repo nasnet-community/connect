@@ -69,7 +69,6 @@ export const ScriptGuide = component$(() => {
           </div>
         </div>
 
-
         {/* Fullscreen Modal */}
         {isFullScreen.value && (
           <div

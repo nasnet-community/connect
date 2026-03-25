@@ -1,4 +1,3 @@
-
 /**
  * CIDR-aware Subnet Utility Functions
  * Handles proper subnet calculations for various CIDR block sizes
@@ -8,7 +7,11 @@
  * Convert IP address string to 32-bit integer
  */
 const ipToInt = (ip: string): number => {
-    return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+    return (
+        ip
+            .split(".")
+            .reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0
+    );
 };
 
 /**
@@ -19,15 +22,15 @@ const intToIp = (int: number): string => {
         (int >>> 24) & 255,
         (int >>> 16) & 255,
         (int >>> 8) & 255,
-        int & 255
-    ].join('.');
+        int & 255,
+    ].join(".");
 };
 
 /**
  * Get subnet mask as integer from CIDR prefix
  */
 const getSubnetMaskInt = (prefixLength: number): number => {
-    return (0xFFFFFFFF << (32 - prefixLength)) >>> 0;
+    return (0xffffffff << (32 - prefixLength)) >>> 0;
 };
 
 /**
@@ -68,14 +71,14 @@ export const SubnetToFirstUsableIP = (subnet: string): string => {
 export const SubnetToLastUsableIP = (subnet: string): string => {
     const [, prefix] = subnet.split("/");
     const prefixLength = parseInt(prefix, 10);
-    
+
     if (prefixLength >= 31) {
         // /31 networks have no broadcast address (RFC 3021) - return second IP
         const networkAddress = getNetworkAddress(subnet);
         const networkInt = ipToInt(networkAddress);
         return intToIp(networkInt + 1);
     }
-    
+
     const broadcastAddress = SubnetToBroadcast(subnet);
     const broadcastInt = ipToInt(broadcastAddress);
     return intToIp(broadcastInt - 1);
@@ -88,7 +91,7 @@ export const SubnetToLastUsableIP = (subnet: string): string => {
 export const SubnetToDHCPRange = (subnet: string): string => {
     const [, prefix] = subnet.split("/");
     const prefixLength = parseInt(prefix, 10);
-    
+
     // For very small subnets
     if (prefixLength >= 30) {
         if (prefixLength === 30) {
@@ -99,27 +102,27 @@ export const SubnetToDHCPRange = (subnet: string): string => {
             const dhcpIP = intToIp(networkInt + 2);
             return dhcpIP; // Single IP, not a range
         }
-        
+
         if (prefixLength === 31) {
             // /31: Two IPs, no broadcast (point-to-point links)
             // Not suitable for DHCP
             return "";
         }
-        
+
         // /32: Single host - no DHCP
         return "";
     }
-    
+
     // For all other subnets, use all available IPs except network, gateway, and broadcast
     const networkAddress = getNetworkAddress(subnet);
     const networkInt = ipToInt(networkAddress);
-    
+
     // DHCP starts from .2 (skip network .0 and gateway .1)
     const dhcpStart = intToIp(networkInt + 2);
-    
+
     // DHCP ends at last usable IP (before broadcast)
     const dhcpEnd = SubnetToLastUsableIP(subnet);
-    
+
     return `${dhcpStart}-${dhcpEnd}`;
 };
 
@@ -155,13 +158,13 @@ export const SubnetToTotalIPs = (subnet: string): number => {
 export const SubnetToUsableIPs = (subnet: string): number => {
     const [, prefix] = subnet.split("/");
     const prefixLength = parseInt(prefix, 10);
-    
+
     if (prefixLength >= 31) {
         // /31 networks have no broadcast address (RFC 3021) - 2 usable IPs
         // /32 networks have 1 usable IP (host route)
         return prefixLength === 31 ? 2 : 1;
     }
-    
+
     return Math.max(0, Math.pow(2, 32 - prefixLength) - 2);
 };
 
@@ -174,8 +177,8 @@ export const IsIPInSubnet = (ip: string, subnet: string): boolean => {
     const ipInt = ipToInt(ip);
     const networkInt = ipToInt(getNetworkAddress(subnet));
     const maskInt = getSubnetMaskInt(prefixLength);
-    
-    return ((ipInt & maskInt) >>> 0) === ((networkInt & maskInt) >>> 0);
+
+    return (ipInt & maskInt) >>> 0 === (networkInt & maskInt) >>> 0;
 };
 
 /**
@@ -184,26 +187,26 @@ export const IsIPInSubnet = (ip: string, subnet: string): boolean => {
 export const ValidateSubnet = (subnet: string): boolean => {
     const parts = subnet.split("/");
     if (parts.length !== 2) return false;
-    
+
     const [network, prefix] = parts;
     const prefixLength = parseInt(prefix, 10);
-    
+
     // Check prefix length
     if (isNaN(prefixLength) || prefixLength < 0 || prefixLength > 32) {
         return false;
     }
-    
+
     // Check IP format
     const ipParts = network.split(".");
     if (ipParts.length !== 4) return false;
-    
+
     for (const part of ipParts) {
         const num = parseInt(part, 10);
         if (isNaN(num) || num < 0 || num > 255) {
             return false;
         }
     }
-    
+
     return true;
 };
 
@@ -214,7 +217,7 @@ export const SSubnetInfo = (subnet: string) => {
     if (!ValidateSubnet(subnet)) {
         throw new Error(`Invalid subnet format: ${subnet}`);
     }
-    
+
     return {
         subnet: subnet,
         network: getNetworkAddress(subnet),
@@ -238,12 +241,14 @@ export const SSubnetInfo = (subnet: string) => {
  */
 export const SubnetToNetwork = (Subnet: string): string => {
     if (!ValidateSubnet(Subnet)) {
-        console.warn(`Invalid subnet format: ${Subnet}, falling back to simple calculation`);
+        console.warn(
+            `Invalid subnet format: ${Subnet}, falling back to simple calculation`,
+        );
         // Fallback to old logic for invalid format
         const [network, _mask] = Subnet.split("/");
         return network;
     }
-    
+
     return getNetworkAddress(Subnet);
 };
 
@@ -254,14 +259,16 @@ export const SubnetToNetwork = (Subnet: string): string => {
  */
 export const SubnetToRange = (Subnet: string): string => {
     if (!ValidateSubnet(Subnet)) {
-        console.warn(`Invalid subnet format: ${Subnet}, falling back to simple calculation`);
+        console.warn(
+            `Invalid subnet format: ${Subnet}, falling back to simple calculation`,
+        );
         // Fallback to old logic for invalid format
         const [network, _mask] = Subnet.split("/");
         const networkParts = network.split(".");
         const baseNetwork = networkParts.slice(0, 3).join(".");
         return `${baseNetwork}.2-${baseNetwork}.254`;
     }
-    
+
     return SubnetToDHCPRange(Subnet);
 };
 
@@ -272,7 +279,9 @@ export const SubnetToRange = (Subnet: string): string => {
  */
 export const SubnetToFirstIP = (Subnet: string): string => {
     if (!ValidateSubnet(Subnet)) {
-        console.warn(`Invalid subnet format: ${Subnet}, falling back to simple calculation`);
+        console.warn(
+            `Invalid subnet format: ${Subnet}, falling back to simple calculation`,
+        );
         // Fallback to old logic for invalid format
         const [network, _mask] = Subnet.split("/");
         const networkParts = network.split(".");

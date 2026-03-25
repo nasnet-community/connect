@@ -1,4 +1,4 @@
-import { 
+import {
     type RouterConfig,
     generateDomesticIPScript,
     LetsEncrypt,
@@ -27,7 +27,6 @@ import type {
     WANLinks,
     VPNServer,
 } from "~/components/Star/StarContext";
-
 
 // Base Extra Utils
 export const Clock = (): RouterConfig => {
@@ -88,12 +87,12 @@ export const CloudDDNS = (WANLinkType: WANLinkType): RouterConfig => {
 export const Logging = (): RouterConfig => {
     const config: RouterConfig = {
         "/system logging action": [
-            `add disk-file-count=10 disk-file-name=ConnectLog disk-lines-per-file=100 disk-stop-on-full=yes name=DiskC target=disk`
+            `add disk-file-count=10 disk-file-name=ConnectLog disk-lines-per-file=100 disk-stop-on-full=yes name=DiskC target=disk`,
         ],
         "/system logging": [
             `set 0 topics=info,!netwatch`,
-            `add action=DiskC disabled=no prefix="" regex="" topics=critical,error,info,warning`
-        ]
+            `add action=DiskC disabled=no prefix="" regex="" topics=critical,error,info,warning`,
+        ],
     };
 
     return config;
@@ -181,7 +180,9 @@ export const AUpdate = (updateConfig: IntervalConfig): RouterConfig => {
     return config;
 };
 
-export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterConfig => {
+export const IPAddressUpdateFunc = (
+    ipAddressConfig: IntervalConfig,
+): RouterConfig => {
     const { time, interval } = ipAddressConfig;
 
     if (!time || !interval) {
@@ -198,10 +199,10 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
             `add action=mark-routing chain=output comment="S4I Route" src-address=192.168.39.12 new-routing-mark="to-Foreign" passthrough=no`,
         ],
         "/interface bridge": [
-            `add comment="Foreign Table Address Holder" name="FTAH"`
+            `add comment="Foreign Table Address Holder" name="FTAH"`,
         ],
         "/ip address": [
-            `add comment="Foreign Table Address Holder" address=192.168.39.12/32 interface=FTAH network=192.168.39.12`
+            `add comment="Foreign Table Address Holder" address=192.168.39.12/32 interface=FTAH network=192.168.39.12`,
         ],
     };
 
@@ -210,21 +211,26 @@ export const IPAddressUpdateFunc = ( ipAddressConfig: IntervalConfig ): RouterCo
 };
 
 // Useful Services Utils
-export const Certificate = ( certificateConfig: CertificateConfig, vpnServer?: VPNServer ): RouterConfig => {
+export const Certificate = (
+    certificateConfig: CertificateConfig,
+    vpnServer?: VPNServer,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
 
     // Handle Self-Signed (Private) Certificate
     if (certificateConfig.SelfSigned) {
         configs.push(PrivateCert());
-        
+
         // Extract passphrase from VPNServer
         const certPassword = vpnServer?.CertificatePassphrase || "";
-        
+
         // Require passphrase when certificates are enabled
         if (!certPassword || certPassword.trim() === "") {
-            throw new Error("Certificate passphrase is required when self-signed certificates are enabled");
+            throw new Error(
+                "Certificate passphrase is required when self-signed certificates are enabled",
+            );
         }
-        
+
         configs.push(ExportCert(certPassword));
     }
 
@@ -255,8 +261,13 @@ export const NTP = (NTPConfig: NTPConfig): RouterConfig => {
     };
 
     // Create DNS forward entries for NTP servers through General forwarder
-    const dnsForwardConfigs: RouterConfig[] = servers.map(server => 
-        DNSForeward(server, "General", false, `Forward ${server} via General DNS for NTP`)
+    const dnsForwardConfigs: RouterConfig[] = servers.map((server) =>
+        DNSForeward(
+            server,
+            "General",
+            false,
+            `Forward ${server} via General DNS for NTP`,
+        ),
     );
 
     return mergeMultipleConfigs(config, ...dnsForwardConfigs);
@@ -293,7 +304,13 @@ export const DDNS = (_DDNSEntry: DDNSEntry): RouterConfig => {
     return config;
 };
 
-export const UPNP = ( UPNPConfig: UPNPConfig, subnets: Subnets, WANLinks: WANLinks, vpnClient?: VPNClient, networks?: Networks ): RouterConfig => {
+export const UPNP = (
+    UPNPConfig: UPNPConfig,
+    subnets: Subnets,
+    WANLinks: WANLinks,
+    vpnClient?: VPNClient,
+    networks?: Networks,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip upnp": ["set enabled=yes"],
         "/ip upnp interfaces": [],
@@ -309,23 +326,23 @@ export const UPNP = ( UPNPConfig: UPNPConfig, subnets: Subnets, WANLinks: WANLin
     // Add external (WAN) interfaces
     if (linkType === "foreign" && WANLinks.Foreign) {
         const interfaces = GetWANInterfaces(WANLinks.Foreign);
-        interfaces.forEach(iface => {
+        interfaces.forEach((iface) => {
             config["/ip upnp interfaces"].push(
-                `add interface="${iface}" type=external `
+                `add interface="${iface}" type=external `,
             );
         });
     } else if (linkType === "domestic" && WANLinks.Domestic) {
         const interfaces = GetWANInterfaces(WANLinks.Domestic);
-        interfaces.forEach(iface => {
+        interfaces.forEach((iface) => {
             config["/ip upnp interfaces"].push(
-                `add interface="${iface}" type=external `
+                `add interface="${iface}" type=external `,
             );
         });
     } else if (linkType === "vpn" && vpnClient) {
         const interfaces = GetAllVPNInterfaceNames(vpnClient);
-        interfaces.forEach(iface => {
+        interfaces.forEach((iface) => {
             config["/ip upnp interfaces"].push(
-                `add interface="${iface}" type=external `
+                `add interface="${iface}" type=external `,
             );
         });
     }
@@ -333,9 +350,9 @@ export const UPNP = ( UPNPConfig: UPNPConfig, subnets: Subnets, WANLinks: WANLin
     // Add internal (LAN bridge) interfaces
     if (networks) {
         const bridgeNames = extractBridgeNames(networks, subnets);
-        bridgeNames.forEach(bridgeName => {
+        bridgeNames.forEach((bridgeName) => {
             config["/ip upnp interfaces"].push(
-                `add interface="${bridgeName}" type=internal `
+                `add interface="${bridgeName}" type=internal `,
             );
         });
     }
@@ -343,7 +360,13 @@ export const UPNP = ( UPNPConfig: UPNPConfig, subnets: Subnets, WANLinks: WANLin
     return config;
 };
 
-export const NATPMP = ( NATPMPConfig: NATPMPConfig, subnets: Subnets, WANLinks: WANLinks, vpnClient?: VPNClient, networks?: Networks ): RouterConfig => {
+export const NATPMP = (
+    NATPMPConfig: NATPMPConfig,
+    subnets: Subnets,
+    WANLinks: WANLinks,
+    vpnClient?: VPNClient,
+    networks?: Networks,
+): RouterConfig => {
     const config: RouterConfig = {
         "/ip nat-pmp": ["set enabled=yes"],
         "/ip nat-pmp interfaces": [],
@@ -357,101 +380,146 @@ export const NATPMP = ( NATPMPConfig: NATPMPConfig, subnets: Subnets, WANLinks: 
     if (interfaceName) {
         // interfaceName contains the config name, need to resolve to actual interface
         let actualInterface: string | null = null;
-        
+
         // Search in Domestic links
         if (WANLinks.Domestic?.WANConfigs) {
-            const config = WANLinks.Domestic.WANConfigs.find(c => c.name === interfaceName);
+            const config = WANLinks.Domestic.WANConfigs.find(
+                (c) => c.name === interfaceName,
+            );
             if (config) {
                 actualInterface = GetWANInterface(config);
             }
         }
-        
+
         // Search in Foreign links if not found
         if (!actualInterface && WANLinks.Foreign?.WANConfigs) {
-            const config = WANLinks.Foreign.WANConfigs.find(c => c.name === interfaceName);
+            const config = WANLinks.Foreign.WANConfigs.find(
+                (c) => c.name === interfaceName,
+            );
             if (config) {
                 actualInterface = GetWANInterface(config);
             }
         }
-        
+
         // Search in VPN clients if not found
         if (!actualInterface && vpnClient) {
             // Check Wireguard
             if (vpnClient.Wireguard && vpnClient.Wireguard.length > 0) {
-                const vpn = vpnClient.Wireguard.find(v => v.Name === interfaceName);
+                const vpn = vpnClient.Wireguard.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
-                    actualInterface = GenerateVCInterfaceName(vpn.Name, "Wireguard");
+                    actualInterface = GenerateVCInterfaceName(
+                        vpn.Name,
+                        "Wireguard",
+                    );
                 }
             }
-            
+
             // Check OpenVPN
-            if (!actualInterface && vpnClient.OpenVPN && vpnClient.OpenVPN.length > 0) {
-                const vpn = vpnClient.OpenVPN.find(v => v.Name === interfaceName);
+            if (
+                !actualInterface &&
+                vpnClient.OpenVPN &&
+                vpnClient.OpenVPN.length > 0
+            ) {
+                const vpn = vpnClient.OpenVPN.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
-                    actualInterface = GenerateVCInterfaceName(vpn.Name, "OpenVPN");
+                    actualInterface = GenerateVCInterfaceName(
+                        vpn.Name,
+                        "OpenVPN",
+                    );
                 }
             }
-            
+
             // Check PPTP
-            if (!actualInterface && vpnClient.PPTP && vpnClient.PPTP.length > 0) {
-                const vpn = vpnClient.PPTP.find(v => v.Name === interfaceName);
+            if (
+                !actualInterface &&
+                vpnClient.PPTP &&
+                vpnClient.PPTP.length > 0
+            ) {
+                const vpn = vpnClient.PPTP.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
                     actualInterface = GenerateVCInterfaceName(vpn.Name, "PPTP");
                 }
             }
-            
+
             // Check L2TP
-            if (!actualInterface && vpnClient.L2TP && vpnClient.L2TP.length > 0) {
-                const vpn = vpnClient.L2TP.find(v => v.Name === interfaceName);
+            if (
+                !actualInterface &&
+                vpnClient.L2TP &&
+                vpnClient.L2TP.length > 0
+            ) {
+                const vpn = vpnClient.L2TP.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
                     actualInterface = GenerateVCInterfaceName(vpn.Name, "L2TP");
                 }
             }
-            
+
             // Check SSTP
-            if (!actualInterface && vpnClient.SSTP && vpnClient.SSTP.length > 0) {
-                const vpn = vpnClient.SSTP.find(v => v.Name === interfaceName);
+            if (
+                !actualInterface &&
+                vpnClient.SSTP &&
+                vpnClient.SSTP.length > 0
+            ) {
+                const vpn = vpnClient.SSTP.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
                     actualInterface = GenerateVCInterfaceName(vpn.Name, "SSTP");
                 }
             }
-            
+
             // Check IKeV2
-            if (!actualInterface && vpnClient.IKeV2 && vpnClient.IKeV2.length > 0) {
-                const vpn = vpnClient.IKeV2.find(v => v.Name === interfaceName);
+            if (
+                !actualInterface &&
+                vpnClient.IKeV2 &&
+                vpnClient.IKeV2.length > 0
+            ) {
+                const vpn = vpnClient.IKeV2.find(
+                    (v) => v.Name === interfaceName,
+                );
                 if (vpn) {
-                    actualInterface = GenerateVCInterfaceName(vpn.Name, "IKeV2");
+                    actualInterface = GenerateVCInterfaceName(
+                        vpn.Name,
+                        "IKeV2",
+                    );
                 }
             }
         }
-        
+
         // Add the resolved interface if found
         if (actualInterface) {
             config["/ip nat-pmp interfaces"].push(
-                `add interface="${actualInterface}" type=external `
+                `add interface="${actualInterface}" type=external `,
             );
         }
     } else if (linkType) {
         // Fall back to linkType-based interface detection
         if (linkType === "foreign" && WANLinks.Foreign) {
             const interfaces = GetWANInterfaces(WANLinks.Foreign);
-            interfaces.forEach(iface => {
+            interfaces.forEach((iface) => {
                 config["/ip nat-pmp interfaces"].push(
-                    `add interface="${iface}" type=external `
+                    `add interface="${iface}" type=external `,
                 );
             });
         } else if (linkType === "domestic" && WANLinks.Domestic) {
             const interfaces = GetWANInterfaces(WANLinks.Domestic);
-            interfaces.forEach(iface => {
+            interfaces.forEach((iface) => {
                 config["/ip nat-pmp interfaces"].push(
-                    `add interface="${iface}" type=external `
+                    `add interface="${iface}" type=external `,
                 );
             });
         } else if (linkType === "vpn" && vpnClient) {
             const interfaces = GetAllVPNInterfaceNames(vpnClient);
-            interfaces.forEach(iface => {
+            interfaces.forEach((iface) => {
                 config["/ip nat-pmp interfaces"].push(
-                    `add interface="${iface}" type=external `
+                    `add interface="${iface}" type=external `,
                 );
             });
         }
@@ -460,9 +528,9 @@ export const NATPMP = ( NATPMPConfig: NATPMPConfig, subnets: Subnets, WANLinks: 
     // Add internal (LAN bridge) interfaces
     if (networks) {
         const bridgeNames = extractBridgeNames(networks, subnets);
-        bridgeNames.forEach(bridgeName => {
+        bridgeNames.forEach((bridgeName) => {
             config["/ip nat-pmp interfaces"].push(
-                `add interface="${bridgeName}" type=internal `
+                `add interface="${bridgeName}" type=internal `,
             );
         });
     }

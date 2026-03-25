@@ -18,7 +18,7 @@ export const useHeader = () => {
   const isMenuOpen = useSignal(false);
   const isDarkMode = useSignal(false);
   const detectedLocale = location.params.locale || "en";
-  console.log('[Locale Detection]', {
+  console.log("[Locale Detection]", {
     urlPath: location.url.pathname,
     params: location.params,
     detectedLocale,
@@ -57,15 +57,18 @@ export const useHeader = () => {
 
   const handleLocaleChange$ = $((locale: string) => {
     const pathWithoutLocale = getPathWithoutLocale(window.location.pathname);
-    console.log('[Language Change Debug]', {
+    console.log("[Language Change Debug]", {
       currentPath: window.location.pathname,
       pathWithoutLocale,
       newLocale: locale,
-      currentLocale: currentLocale
+      currentLocale: currentLocale,
     });
 
     const newPath = buildLocalePath(locale, pathWithoutLocale);
-    console.log('[Language Change Debug] Navigating to:', newPath + window.location.search);
+    console.log(
+      "[Language Change Debug] Navigating to:",
+      newPath + window.location.search,
+    );
 
     // Navigate to the new locale path - the page will reload with the correct locale
     window.location.href = newPath + window.location.search;

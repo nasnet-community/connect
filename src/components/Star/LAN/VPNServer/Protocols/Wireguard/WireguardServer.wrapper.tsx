@@ -10,17 +10,23 @@ interface WireguardServerWrapperProps {
   hook?: ReturnType<typeof useWireguardServer>;
 }
 
-export const WireguardServerWrapper = component$<WireguardServerWrapperProps>(({ hook }) => {
-  const starContext = useContext(StarContext);
-  const mode = starContext.state.Choose.Mode as Mode;
+export const WireguardServerWrapper = component$<WireguardServerWrapperProps>(
+  ({ hook }) => {
+    const starContext = useContext(StarContext);
+    const mode = starContext.state.Choose.Mode as Mode;
 
-  // Use provided hook for Advanced mode, Easy mode creates its own
-  const defaultHook = useWireguardServer();
-  const wireguardHook = hook ?? defaultHook;
+    // Use provided hook for Advanced mode, Easy mode creates its own
+    const defaultHook = useWireguardServer();
+    const wireguardHook = hook ?? defaultHook;
 
-  return (
-    <>
-      {mode === "easy" ? <WireguardServerEasy /> : <WireguardServerAdvanced hook={wireguardHook} />}
-    </>
-  );
-});
+    return (
+      <>
+        {mode === "easy" ? (
+          <WireguardServerEasy />
+        ) : (
+          <WireguardServerAdvanced hook={wireguardHook} />
+        )}
+      </>
+    );
+  },
+);

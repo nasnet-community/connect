@@ -24,7 +24,7 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             type="text"
             value={config.Server?.Address || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[SSTFields] Server Address updated:', value);
+              console.log("[SSTFields] Server Address updated:", value);
               onUpdate$({
                 Server: {
                   Address: value,
@@ -48,7 +48,7 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             type="text"
             value={config.Server?.Port || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[SSTFields] Server Port updated:', value);
+              console.log("[SSTFields] Server Port updated:", value);
               onUpdate$({
                 Server: {
                   Address: config.Server?.Address || "",
@@ -71,21 +71,19 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Username || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[SSTFields] Username updated:', value);
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+              console.log("[SSTFields] Username updated:", value);
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: value,
-                  Password: config.Credentials?.Password || ""
-                } 
+                  Password: config.Credentials?.Password || "",
+                },
               });
             }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
-          {errors.Username && (
-            <ErrorMessage message={errors.Username} />
-          )}
+          {errors.Username && <ErrorMessage message={errors.Username} />}
         </div>
 
         <div>
@@ -96,21 +94,22 @@ export const SSTFields = component$<SSTFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Password || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[SSTFields] Password updated:', value ? '***' : '(empty)');
+              console.log(
+                "[SSTFields] Password updated:",
+                value ? "***" : "(empty)",
+              );
               onUpdate$({
                 Credentials: {
                   ...config.Credentials,
                   Username: config.Credentials?.Username || "",
-                  Password: value
-                }
+                  Password: value,
+                },
               });
             }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
-          {errors.Password && (
-            <ErrorMessage message={errors.Password} />
-          )}
+          {errors.Password && <ErrorMessage message={errors.Password} />}
         </div>
       </div>
     </div>

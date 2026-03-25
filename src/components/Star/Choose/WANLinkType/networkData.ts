@@ -63,5 +63,3 @@ export const domesticOnlyNetworkConnections: NetworkTopologyConnection[] = [
   { from: 1, to: 2, color: "#eab308", isDomestic: true },
   { from: 2, to: 3, color: "#eab308", isDomestic: true },
 ];
-
-

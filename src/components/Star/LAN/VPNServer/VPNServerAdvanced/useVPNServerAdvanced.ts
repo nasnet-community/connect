@@ -25,9 +25,9 @@ import { useCertificate } from "./useCertificate";
 
 export const useVPNServerAdvanced = () => {
   const starContext = useContext(StarContext);
-  const vpnServerState = starContext.state.LAN.VPNServer || { 
+  const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
-    CertificatePassphrase: ""
+    CertificatePassphrase: "",
   };
 
   // === PROTOCOL HOOKS FOR DEFAULT CONFIGS ===
@@ -192,7 +192,10 @@ export const useVPNServerAdvanced = () => {
 
       // Grab the latest VPN server configuration from StarContext to avoid stale references
       const latestConfig = {
-        ...(starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" }),
+        ...(starContext.state.LAN.VPNServer || {
+          Users: [],
+          CertificatePassphrase: "",
+        }),
       } as any;
 
       // Track which protocols are being enabled
@@ -203,7 +206,8 @@ export const useVPNServerAdvanced = () => {
       // Start with latest config and update users
       latestConfig.Users = userManagement.users;
       // Add certificate passphrase (access signal value directly)
-      latestConfig.CertificatePassphrase = certificateHook.certificatePassphrase.value;
+      latestConfig.CertificatePassphrase =
+        certificateHook.certificatePassphrase.value;
       // Remove SelectedNetworks (not part of StarContext types)
       if (latestConfig.SelectedNetworks) {
         delete latestConfig.SelectedNetworks;
@@ -236,18 +240,27 @@ export const useVPNServerAdvanced = () => {
           const openVpnResult = await openVpnHook.saveAllServers$();
           // After saving, get the updated servers from StarContext
           // IMPORTANT: Get the fresh state after saveAllServers$ has updated it
-          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+          const freshVPNState = starContext.state.LAN.VPNServer || {
+            Users: [],
+            CertificatePassphrase: "",
+          };
           latestConfig.OpenVpnServer = freshVPNState.OpenVpnServer || [];
           // Log validation results
           if (openVpnResult.errors.length > 0) {
             console.warn("OpenVPN validation errors:", openVpnResult.errors);
           }
-          console.log(`OpenVPN: Saved ${openVpnResult.saved} of ${openVpnResult.total} tabs`);
-          console.log(`OpenVPN servers in latestConfig:`, latestConfig.OpenVpnServer?.map((s: any) => s.name));
+          console.log(
+            `OpenVPN: Saved ${openVpnResult.saved} of ${openVpnResult.total} tabs`,
+          );
+          console.log(
+            `OpenVPN servers in latestConfig:`,
+            latestConfig.OpenVpnServer?.map((s: any) => s.name),
+          );
         } catch (error) {
           console.error("Error saving OpenVPN servers:", error);
           // Fallback to existing state
-          latestConfig.OpenVpnServer = (starContext.state.LAN.VPNServer as any)?.OpenVpnServer || [];
+          latestConfig.OpenVpnServer =
+            (starContext.state.LAN.VPNServer as any)?.OpenVpnServer || [];
         }
       }
 
@@ -265,18 +278,30 @@ export const useVPNServerAdvanced = () => {
           const wireguardResult = await wireguardHook.saveAllServers$();
           // After saving, get the updated servers from StarContext
           // IMPORTANT: Get the fresh state after saveAllServers$ has updated it
-          const freshVPNState = starContext.state.LAN.VPNServer || { Users: [], CertificatePassphrase: "" };
+          const freshVPNState = starContext.state.LAN.VPNServer || {
+            Users: [],
+            CertificatePassphrase: "",
+          };
           latestConfig.WireguardServers = freshVPNState.WireguardServers || [];
           // Log validation results
           if (wireguardResult.errors.length > 0) {
-            console.warn("Wireguard validation errors:", wireguardResult.errors);
+            console.warn(
+              "Wireguard validation errors:",
+              wireguardResult.errors,
+            );
           }
-          console.log(`Wireguard: Saved ${wireguardResult.saved} of ${wireguardResult.total} tabs`);
-          console.log(`Wireguard servers in latestConfig:`, latestConfig.WireguardServers?.map((s: any) => s.Interface?.Name));
+          console.log(
+            `Wireguard: Saved ${wireguardResult.saved} of ${wireguardResult.total} tabs`,
+          );
+          console.log(
+            `Wireguard servers in latestConfig:`,
+            latestConfig.WireguardServers?.map((s: any) => s.Interface?.Name),
+          );
         } catch (error) {
           console.error("Error saving WireGuard servers:", error);
           // Fallback to existing state
-          latestConfig.WireguardServers = (starContext.state.LAN.VPNServer as any)?.WireguardServers || [];
+          latestConfig.WireguardServers =
+            (starContext.state.LAN.VPNServer as any)?.WireguardServers || [];
         }
       }
 
@@ -284,31 +309,41 @@ export const useVPNServerAdvanced = () => {
       if (!enabledProtocols.Socks5) {
         latestConfig.Socks5Server = undefined;
       } else {
-        latestConfig.Socks5Server = (starContext.state.LAN.VPNServer as any)?.Socks5Server || socks5Hook.advancedFormState;
+        latestConfig.Socks5Server =
+          (starContext.state.LAN.VPNServer as any)?.Socks5Server ||
+          socks5Hook.advancedFormState;
       }
 
       if (!enabledProtocols.SSH) {
         latestConfig.SSHServer = undefined;
       } else {
-        latestConfig.SSHServer = (starContext.state.LAN.VPNServer as any)?.SSHServer || sshHook.advancedFormState;
+        latestConfig.SSHServer =
+          (starContext.state.LAN.VPNServer as any)?.SSHServer ||
+          sshHook.advancedFormState;
       }
 
       if (!enabledProtocols.HTTPProxy) {
         latestConfig.HTTPProxyServer = undefined;
       } else {
-        latestConfig.HTTPProxyServer = (starContext.state.LAN.VPNServer as any)?.HTTPProxyServer || httpProxyHook.advancedFormState;
+        latestConfig.HTTPProxyServer =
+          (starContext.state.LAN.VPNServer as any)?.HTTPProxyServer ||
+          httpProxyHook.advancedFormState;
       }
 
       if (!enabledProtocols.BackToHome) {
         latestConfig.BackToHomeServer = undefined;
       } else {
-        latestConfig.BackToHomeServer = (starContext.state.LAN.VPNServer as any)?.BackToHomeServer || backToHomeHook.advancedFormState;
+        latestConfig.BackToHomeServer =
+          (starContext.state.LAN.VPNServer as any)?.BackToHomeServer ||
+          backToHomeHook.advancedFormState;
       }
 
       if (!enabledProtocols.ZeroTier) {
         latestConfig.ZeroTierServer = undefined;
       } else {
-        latestConfig.ZeroTierServer = (starContext.state.LAN.VPNServer as any)?.ZeroTierServer || zeroTierHook.advancedFormState;
+        latestConfig.ZeroTierServer =
+          (starContext.state.LAN.VPNServer as any)?.ZeroTierServer ||
+          zeroTierHook.advancedFormState;
       }
 
       // Track VPN server configuration completion
@@ -332,17 +367,24 @@ export const useVPNServerAdvanced = () => {
       // Multi-instance protocols: Store interface names
       // Use latestConfig which contains all the saved servers
       if (enabledProtocols.Wireguard && latestConfig.WireguardServers) {
-        vpnServerNetworks.Wireguard = latestConfig.WireguardServers
-          .map((server: any) => server.Interface?.Name)
-          .filter((name: string) => name);
-        console.log("Networks - Wireguard servers:", vpnServerNetworks.Wireguard);
+        vpnServerNetworks.Wireguard = latestConfig.WireguardServers.map(
+          (server: any) => server.Interface?.Name,
+        ).filter((name: string) => name);
+        console.log(
+          "Networks - Wireguard servers:",
+          vpnServerNetworks.Wireguard,
+        );
       }
 
-      if (enabledProtocols.OpenVPN && latestConfig.OpenVpnServer && latestConfig.OpenVpnServer.length > 0) {
+      if (
+        enabledProtocols.OpenVPN &&
+        latestConfig.OpenVpnServer &&
+        latestConfig.OpenVpnServer.length > 0
+      ) {
         // Map all OpenVPN server names, including both TCP and UDP when "Both" protocol is selected
-        vpnServerNetworks.OpenVPN = latestConfig.OpenVpnServer
-          .map((server: any) => server.name)
-          .filter((name: string) => !!name);
+        vpnServerNetworks.OpenVPN = latestConfig.OpenVpnServer.map(
+          (server: any) => server.name,
+        ).filter((name: string) => !!name);
         console.log("Networks - OpenVPN servers:", vpnServerNetworks.OpenVPN);
       }
 
@@ -384,7 +426,10 @@ export const useVPNServerAdvanced = () => {
       }
 
       // Update Choose.Networks with VPNServerNetworks
-      console.log("Updating Choose.Networks with VPNServerNetworks:", vpnServerNetworks);
+      console.log(
+        "Updating Choose.Networks with VPNServerNetworks:",
+        vpnServerNetworks,
+      );
       starContext.updateChoose$({
         Networks: {
           ...starContext.state.Choose.Networks,

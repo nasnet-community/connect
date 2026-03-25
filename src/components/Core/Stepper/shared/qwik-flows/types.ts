@@ -4,8 +4,8 @@ import type { BaseStepMeta } from "../types";
 /**
  * Serializable condition operators for step visibility rules
  */
-export type ConditionOperator = 
-  | "equals" 
+export type ConditionOperator =
+  | "equals"
   | "not-equals"
   | "truthy"
   | "falsy"
@@ -181,7 +181,9 @@ export interface UseQwikFlowsOptions {
   /** Evaluation options */
   options?: StepEvaluationOptions;
   /** Callback when active flows change */
-  onFlowsChange$?: QRL<(activeFlows: string[], visibleSteps: QwikStepDefinition[]) => void>;
+  onFlowsChange$?: QRL<
+    (activeFlows: string[], visibleSteps: QwikStepDefinition[]) => void
+  >;
   /** Callback when context changes */
   onContextChange$?: QRL<(context: StepContext) => void>;
 }

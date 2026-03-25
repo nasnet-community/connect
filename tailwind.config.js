@@ -332,8 +332,10 @@ export default {
       // Background images for modern UI effects
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "grid-pattern": "url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%239C92AC%22 fill-opacity=%220.1%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+        "gradient-conic":
+          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "grid-pattern":
+          "url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%239C92AC%22 fill-opacity=%220.1%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
       },
       // Background size utilities for gradient animations
       backgroundSize: {
@@ -431,14 +433,14 @@ export default {
         "pulse-subtle": "pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         // Modern glassmorphism animations
         "pulse-slow": "pulseSlow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "float": "float 6s ease-in-out infinite",
-        "glow": "glow 2s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        glow: "glow 2s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
         "gradient-xy": "gradient-xy 15s ease infinite",
         "scale-in": "scale-in 0.3s ease-out",
         // Additional animations for router cards
         "fade-in-up": "fadeInUp 0.5s ease-out forwards",
-        "gradient": "gradient 3s ease infinite",
+        gradient: "gradient 3s ease infinite",
       },
       keyframes: {
         // Subtle pulse for separators
@@ -485,13 +487,13 @@ export default {
         },
         // Fade in up animation for router cards
         fadeInUp: {
-          "0%": { 
+          "0%": {
             opacity: "0",
-            transform: "translateY(20px)"
+            transform: "translateY(20px)",
           },
-          "100%": { 
+          "100%": {
             opacity: "1",
-            transform: "translateY(0)"
+            transform: "translateY(0)",
           },
         },
         // Gradient animation for text
@@ -981,12 +983,12 @@ export default {
     // Custom plugin for animation delays
     function ({ addUtilities }) {
       const animationDelays = {
-        '.animation-delay-200': { 'animation-delay': '200ms' },
-        '.animation-delay-500': { 'animation-delay': '500ms' },
-        '.animation-delay-1000': { 'animation-delay': '1000ms' },
-        '.animation-delay-2000': { 'animation-delay': '2000ms' },
-        '.animation-delay-3000': { 'animation-delay': '3000ms' },
-        '.animation-delay-4000': { 'animation-delay': '4000ms' },
+        ".animation-delay-200": { "animation-delay": "200ms" },
+        ".animation-delay-500": { "animation-delay": "500ms" },
+        ".animation-delay-1000": { "animation-delay": "1000ms" },
+        ".animation-delay-2000": { "animation-delay": "2000ms" },
+        ".animation-delay-3000": { "animation-delay": "3000ms" },
+        ".animation-delay-4000": { "animation-delay": "4000ms" },
       };
       addUtilities(animationDelays);
     },

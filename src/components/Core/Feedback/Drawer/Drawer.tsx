@@ -147,14 +147,8 @@ export const Drawer = component$<DrawerProps>(
               ? getMobileDrawerAnimation(placement, state.isVisible)
               : transformClass,
             // Mobile-specific styles
-            ...(state.isMobile &&
-              mobileAnimation &&
-              placement === "bottom"
-              ? [
-                  "rounded-t-2xl",
-                  "max-h-[90vh]",
-                  "overflow-hidden",
-                ]
+            ...(state.isMobile && mobileAnimation && placement === "bottom"
+              ? ["rounded-t-2xl", "max-h-[90vh]", "overflow-hidden"]
               : []),
             drawerClass,
             className,

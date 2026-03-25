@@ -3,7 +3,10 @@ import {
   StarContext,
   type StarContextType,
 } from "~/components/Star/StarContext";
-import type { Ethernet, EthernetInterfaceConfig } from "~/components/Star/StarContext";
+import type {
+  Ethernet,
+  EthernetInterfaceConfig,
+} from "~/components/Star/StarContext";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import { useNetworks } from "~/utils/useNetworks";
 
@@ -44,7 +47,7 @@ export const useEInterface = () => {
     // Flatten VPN client networks and add (only if MORE THAN ONE total)
     const allVPNClients: string[] = [];
     if (networks.VPNClientNetworks) {
-      Object.values(networks.VPNClientNetworks).forEach(names => {
+      Object.values(networks.VPNClientNetworks).forEach((names) => {
         if (names) allVPNClients.push(...names);
       });
     }
@@ -62,19 +65,26 @@ export const useEInterface = () => {
   // - DomesticLink false: VPN network is default (no domestic network available)
   const getDefaultNetwork = $(() => {
     // Explicitly check if true or false to avoid undefined/null issues
-    return (ctx.state.Choose.WANLinkType === "domestic" || ctx.state.Choose.WANLinkType === "both") ? "Split" : "VPN";
+    return ctx.state.Choose.WANLinkType === "domestic" ||
+      ctx.state.Choose.WANLinkType === "both"
+      ? "Split"
+      : "VPN";
   });
 
   const getUsedWANInterfaces = $(() => {
     const usedInterfaces: string[] = [];
 
     // Access interface name through WANConfigs structure
-    const foreignInterfaceName = ctx.state.WAN.WANLink.Foreign?.WANConfigs[0]?.InterfaceConfig.InterfaceName;
+    const foreignInterfaceName =
+      ctx.state.WAN.WANLink.Foreign?.WANConfigs[0]?.InterfaceConfig
+        .InterfaceName;
     if (foreignInterfaceName) {
       usedInterfaces.push(foreignInterfaceName);
     }
 
-    const domesticInterfaceName = ctx.state.WAN.WANLink.Domestic?.WANConfigs[0]?.InterfaceConfig.InterfaceName;
+    const domesticInterfaceName =
+      ctx.state.WAN.WANLink.Domestic?.WANConfigs[0]?.InterfaceConfig
+        .InterfaceName;
     if (domesticInterfaceName) {
       usedInterfaces.push(domesticInterfaceName);
     }

@@ -12,7 +12,12 @@ import {
   type StarState,
   type StarContextType,
 } from "./StarContext";
-import type { Mode, FirmwareType, RouterModeType, WANLinkType } from "./ChooseType";
+import type {
+  Mode,
+  FirmwareType,
+  RouterModeType,
+  WANLinkType,
+} from "./ChooseType";
 
 export const StarContextProvider = component$(() => {
   const state = useStore<StarState>({
@@ -22,7 +27,7 @@ export const StarContextProvider = component$(() => {
       RouterMode: "" as RouterModeType,
       WANLinkType: "" as WANLinkType,
       RouterModels: [],
-      Networks: {}
+      Networks: {},
     },
     WAN: {
       WANLink: {},
@@ -69,7 +74,11 @@ export const StarContextProvider = component$(() => {
   // Expose a minimal state snapshot for browser E2E tests running in dev mode.
   // This keeps Playwright assertions focused on actual stored wizard state.
   useVisibleTask$(({ track }) => {
-    if (!isDev || typeof window === "undefined" || !(window as any).__PLAYWRIGHT_TEST__) {
+    if (
+      !isDev ||
+      typeof window === "undefined" ||
+      !(window as any).__PLAYWRIGHT_TEST__
+    ) {
       return;
     }
 

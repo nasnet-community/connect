@@ -24,7 +24,7 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             type="text"
             value={config.Server?.Address || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[L2TPFields] Server Address updated:', value);
+              console.log("[L2TPFields] Server Address updated:", value);
               onUpdate$({
                 Server: {
                   ...config.Server,
@@ -48,10 +48,13 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             type="text"
             value={config.IPsecSecret || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[L2TPFields] IPsec Secret updated:', value ? '***' : '(empty)');
-              onUpdate$({ 
+              console.log(
+                "[L2TPFields] IPsec Secret updated:",
+                value ? "***" : "(empty)",
+              );
+              onUpdate$({
                 IPsecSecret: value,
-                UseIPsec: value.trim().length > 0
+                UseIPsec: value.trim().length > 0,
               });
             }}
             placeholder="Pre-shared key"
@@ -69,21 +72,19 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Username || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[L2TPFields] Username updated:', value);
-              onUpdate$({ 
-                Credentials: { 
-                  ...config.Credentials, 
+              console.log("[L2TPFields] Username updated:", value);
+              onUpdate$({
+                Credentials: {
+                  ...config.Credentials,
                   Username: value,
-                  Password: config.Credentials?.Password || ""
-                } 
+                  Password: config.Credentials?.Password || "",
+                },
               });
             }}
             placeholder="Your username"
             validation={errors.Username ? "invalid" : "default"}
           />
-          {errors.Username && (
-            <ErrorMessage message={errors.Username} />
-          )}
+          {errors.Username && <ErrorMessage message={errors.Username} />}
         </div>
 
         <div>
@@ -94,21 +95,22 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
             type="text"
             value={config.Credentials?.Password || ""}
             onInput$={(event: Event, value: string) => {
-              console.log('[L2TPFields] Password updated:', value ? '***' : '(empty)');
+              console.log(
+                "[L2TPFields] Password updated:",
+                value ? "***" : "(empty)",
+              );
               onUpdate$({
                 Credentials: {
                   ...config.Credentials,
                   Username: config.Credentials?.Username || "",
-                  Password: value
-                }
+                  Password: value,
+                },
               });
             }}
             placeholder="Your password"
             validation={errors.Password ? "invalid" : "default"}
           />
-          {errors.Password && (
-            <ErrorMessage message={errors.Password} />
-          )}
+          {errors.Password && <ErrorMessage message={errors.Password} />}
         </div>
       </div>
     </div>

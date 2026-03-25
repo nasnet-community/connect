@@ -52,37 +52,37 @@ export interface InlineCodeProps {
   class?: string;
   id?: string;
   noWrap?: boolean;
-  
+
   /**
    * Theme variant for color scheme
    * @default "auto"
    */
   theme?: CodeTheme;
-  
+
   /**
    * Size variant
    * @default "sm"
    */
   size?: CodeSize;
-  
+
   /**
    * Enable high contrast mode
    * @default false
    */
   highContrast?: boolean;
-  
+
   /**
    * Enable touch-optimized interactions
    * @default false
    */
   touchOptimized?: boolean;
-  
+
   /**
    * Text direction for RTL support
    * @default "auto"
    */
   direction?: "ltr" | "rtl" | "auto";
-  
+
   /**
    * Enable print-optimized styles
    * @default false
@@ -105,55 +105,55 @@ export interface CodeBlockProps {
   class?: string;
   id?: string;
   onCopy$?: QRL<() => void>;
-  
+
   /**
    * Size variant
    * @default "base"
    */
   size?: CodeSize;
-  
+
   /**
    * Enable high contrast mode
    * @default false
    */
   highContrast?: boolean;
-  
+
   /**
    * Respect reduced motion preferences
    * @default true
    */
   reduceMotion?: boolean;
-  
+
   /**
    * Enable touch-optimized interactions
    * @default false
    */
   touchOptimized?: boolean;
-  
+
   /**
    * Text direction for RTL support
    * @default "auto"
    */
   direction?: "ltr" | "rtl" | "auto";
-  
+
   /**
    * Enable container-based responsive sizing
    * @default false
    */
   containerResponsive?: boolean;
-  
+
   /**
    * Enable print-optimized styles
    * @default false
    */
   printOptimized?: boolean;
-  
+
   /**
    * Border radius variant
    * @default "md"
    */
   borderRadius?: "none" | "sm" | "md" | "lg" | "xl";
-  
+
   /**
    * Enable mobile-optimized scrolling
    * @default true

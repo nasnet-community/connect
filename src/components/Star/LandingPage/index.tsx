@@ -20,11 +20,14 @@ const getParticleStyle = (index: number) => {
 
 export const LandingPage = component$(() => {
   return (
-    <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-purple-900 overflow-hidden">
+    <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-blue-900 dark:to-purple-900">
       {/* Animated Background Pattern */}
-      <div class="fixed inset-0 pointer-events-none opacity-30 dark:opacity-20" aria-hidden="true">
-        <div class="absolute inset-0 bg-grid-pattern bg-[size:50px_50px] animate-pulse-slow" />
-        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 animate-gradient-xy" />
+      <div
+        class="pointer-events-none fixed inset-0 opacity-30 dark:opacity-20"
+        aria-hidden="true"
+      >
+        <div class="absolute inset-0 animate-pulse-slow bg-grid-pattern bg-[size:50px_50px]" />
+        <div class="absolute inset-0 animate-gradient-xy bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10" />
       </div>
 
       {/* Main Content */}
@@ -39,13 +42,12 @@ export const LandingPage = component$(() => {
         <RouterModelsSection />
       </main>
 
-
       {/* Floating Particles */}
-      <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+      <div class="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
         {Array.from({ length: PARTICLE_COUNT }, (_, i) => i).map((i) => (
           <div
             key={i}
-            class={`absolute w-2 h-2 bg-gradient-to-br from-purple-400/30 to-blue-400/30 rounded-full animate-float`}
+            class={`absolute h-2 w-2 animate-float rounded-full bg-gradient-to-br from-purple-400/30 to-blue-400/30`}
             style={getParticleStyle(i)}
           />
         ))}

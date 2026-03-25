@@ -1,6 +1,6 @@
 /**
  * NetworkInput Components
- * 
+ *
  * Flexible network address input components supporting various formats:
  * - IPv4 addresses with CIDR notation
  * - Subnet configuration with visual formatting

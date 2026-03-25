@@ -1,8 +1,5 @@
 import { $, type QRL } from "@builder.io/qwik";
-import type {
-  WANLinkConfig,
-  WANWizardState,
-} from "../types";
+import type { WANLinkConfig, WANWizardState } from "../types";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -130,10 +127,7 @@ export function useWANValidation(): UseWANValidationReturn {
           if (!staticConfig?.gateway || !ipRegex.test(staticConfig.gateway)) {
             errors[`${prefix}-static-gateway`] = ["Valid gateway is required"];
           }
-          if (
-        !staticConfig?.DNS ||
-        !ipRegex.test(staticConfig.DNS)
-          ) {
+          if (!staticConfig?.DNS || !ipRegex.test(staticConfig.DNS)) {
             errors[`${prefix}-static-dns1`] = ["Valid primary DNS is required"];
           }
           break;

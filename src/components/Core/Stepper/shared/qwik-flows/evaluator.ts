@@ -21,7 +21,7 @@ export class QwikStepEvaluator {
    */
   static evaluateCondition(
     condition: SerializableCondition | undefined,
-    context: StepContext
+    context: StepContext,
   ): boolean {
     if (!condition) return true;
 
@@ -44,7 +44,7 @@ export class QwikStepEvaluator {
    */
   private static evaluateSimpleCondition(
     condition: StepCondition,
-    context: StepContext
+    context: StepContext,
   ): boolean {
     const { field, operator, value } = condition;
     const contextValue = this.getNestedValue(context, field);
@@ -52,16 +52,16 @@ export class QwikStepEvaluator {
     switch (operator) {
       case "equals":
         return contextValue === value;
-      
+
       case "not-equals":
         return contextValue !== value;
-      
+
       case "truthy":
         return !!contextValue;
-      
+
       case "falsy":
         return !contextValue;
-      
+
       case "contains":
         if (typeof contextValue === "string" && typeof value === "string") {
           return contextValue.includes(value);
@@ -70,7 +70,7 @@ export class QwikStepEvaluator {
           return contextValue.includes(value);
         }
         return false;
-      
+
       case "not-contains":
         if (typeof contextValue === "string" && typeof value === "string") {
           return !contextValue.includes(value);
@@ -79,19 +79,19 @@ export class QwikStepEvaluator {
           return !contextValue.includes(value);
         }
         return true;
-      
+
       case "greater-than":
         return Number(contextValue) > Number(value);
-      
+
       case "less-than":
         return Number(contextValue) < Number(value);
-      
+
       case "in-array":
         return Array.isArray(value) && value.includes(contextValue);
-      
+
       case "not-in-array":
         return !Array.isArray(value) || !value.includes(contextValue);
-      
+
       default:
         console.warn(`[QwikStepEvaluator] Unknown operator: ${operator}`);
         return false;
@@ -103,7 +103,7 @@ export class QwikStepEvaluator {
    */
   private static evaluateComplexCondition(
     condition: ComplexCondition,
-    context: StepContext
+    context: StepContext,
   ): boolean {
     const { type, conditions } = condition;
 
@@ -111,13 +111,17 @@ export class QwikStepEvaluator {
 
     switch (type) {
       case "AND":
-        return conditions.every(cond => this.evaluateCondition(cond, context));
-      
+        return conditions.every((cond) =>
+          this.evaluateCondition(cond, context),
+        );
+
       case "OR":
-        return conditions.some(cond => this.evaluateCondition(cond, context));
-      
+        return conditions.some((cond) => this.evaluateCondition(cond, context));
+
       default:
-        console.warn(`[QwikStepEvaluator] Unknown complex condition type: ${type}`);
+        console.warn(
+          `[QwikStepEvaluator] Unknown complex condition type: ${type}`,
+        );
         return false;
     }
   }
@@ -126,8 +130,8 @@ export class QwikStepEvaluator {
    * Get nested value from object using dot notation
    */
   private static getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => {
-      return current && typeof current === 'object' ? current[key] : undefined;
+    return path.split(".").reduce((current, key) => {
+      return current && typeof current === "object" ? current[key] : undefined;
     }, obj);
   }
 
@@ -137,11 +141,11 @@ export class QwikStepEvaluator {
   static dependenciesChanged(
     dependencies: string[] | undefined,
     context: StepContext,
-    previousContext: StepContext
+    previousContext: StepContext,
   ): boolean {
     if (!dependencies || dependencies.length === 0) return false;
 
-    return dependencies.some(dep => {
+    return dependencies.some((dep) => {
       const current = this.getNestedValue(context, dep);
       const previous = this.getNestedValue(previousContext, dep);
       return current !== previous;
@@ -154,7 +158,7 @@ export class QwikStepEvaluator {
   static evaluateStep(
     step: QwikStepDefinition,
     context: StepContext,
-    options: StepEvaluationOptions = {}
+    options: StepEvaluationOptions = {},
   ): StepEvaluationResult {
     try {
       // Check if step should be visible based on condition
@@ -176,7 +180,8 @@ export class QwikStepEvaluator {
       return {
         step,
         visible: false,
-        error: error instanceof Error ? error.message : "Unknown evaluation error",
+        error:
+          error instanceof Error ? error.message : "Unknown evaluation error",
       };
     }
   }
@@ -187,22 +192,24 @@ export class QwikStepEvaluator {
   static evaluateSteps(
     steps: QwikStepDefinition[],
     context: StepContext,
-    options: StepEvaluationOptions = {}
+    options: StepEvaluationOptions = {},
   ): StepEvaluationResult[] {
-    let results = steps.map(step => this.evaluateStep(step, context, options));
+    let results = steps.map((step) =>
+      this.evaluateStep(step, context, options),
+    );
 
     // Filter to visible steps only
-    results = results.filter(result => result.visible);
+    results = results.filter((result) => result.visible);
 
     // Sort by priority and ID
     results.sort((a, b) => {
       const priorityA = a.step.priority ?? Number.MAX_SAFE_INTEGER;
       const priorityB = b.step.priority ?? Number.MAX_SAFE_INTEGER;
-      
+
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
-      
+
       return a.step.id - b.step.id;
     });
 
@@ -220,7 +227,7 @@ export class QwikStepEvaluator {
   static evaluateFlow(
     flow: QwikStepFlow,
     context: StepContext,
-    options: StepEvaluationOptions = {}
+    options: StepEvaluationOptions = {},
   ): FlowEvaluationResult {
     const errors: string[] = [];
 
@@ -239,9 +246,9 @@ export class QwikStepEvaluator {
 
       // Evaluate steps in this flow
       const stepResults = this.evaluateSteps(flow.steps, context, options);
-      
+
       // Collect any step errors
-      stepResults.forEach(result => {
+      stepResults.forEach((result) => {
         if (result.error) {
           errors.push(`Step ${result.step.id}: ${result.error}`);
         }
@@ -254,8 +261,12 @@ export class QwikStepEvaluator {
         errors,
       };
     } catch (error) {
-      errors.push(error instanceof Error ? error.message : "Unknown flow evaluation error");
-      
+      errors.push(
+        error instanceof Error
+          ? error.message
+          : "Unknown flow evaluation error",
+      );
+
       return {
         flow,
         active: false,
@@ -271,10 +282,12 @@ export class QwikStepEvaluator {
   static evaluateFlows(
     flows: QwikStepFlow[],
     context: StepContext,
-    options: StepEvaluationOptions = {}
+    options: StepEvaluationOptions = {},
   ): FlowEvaluationResult[] {
-    const results = flows.map(flow => this.evaluateFlow(flow, context, options));
-    
+    const results = flows.map((flow) =>
+      this.evaluateFlow(flow, context, options),
+    );
+
     // Sort by priority
     return results.sort((a, b) => {
       const priorityA = a.flow.priority ?? Number.MAX_SAFE_INTEGER;
@@ -287,17 +300,17 @@ export class QwikStepEvaluator {
    * Merge visible steps from multiple flows, removing duplicates
    */
   static mergeFlowSteps(
-    flowResults: FlowEvaluationResult[]
+    flowResults: FlowEvaluationResult[],
   ): QwikStepDefinition[] {
     const seenIds = new Set<number>();
     const mergedSteps: QwikStepDefinition[] = [];
 
     // Only process active flows
-    const activeFlows = flowResults.filter(result => result.active);
+    const activeFlows = flowResults.filter((result) => result.active);
 
     // Collect all visible steps
-    activeFlows.forEach(result => {
-      result.visibleSteps.forEach(stepResult => {
+    activeFlows.forEach((result) => {
+      result.visibleSteps.forEach((stepResult) => {
         if (!seenIds.has(stepResult.step.id)) {
           seenIds.add(stepResult.step.id);
           mergedSteps.push(stepResult.step);
@@ -309,11 +322,11 @@ export class QwikStepEvaluator {
     return mergedSteps.sort((a, b) => {
       const priorityA = a.priority ?? Number.MAX_SAFE_INTEGER;
       const priorityB = b.priority ?? Number.MAX_SAFE_INTEGER;
-      
+
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
-      
+
       return a.id - b.id;
     });
   }
@@ -323,14 +336,14 @@ export class QwikStepEvaluator {
    */
   static extractDependencies(
     dependencies: string[],
-    context: StepContext
+    context: StepContext,
   ): Record<string, any> {
     const result: Record<string, any> = {};
-    
-    dependencies.forEach(dep => {
+
+    dependencies.forEach((dep) => {
       result[dep] = this.getNestedValue(context, dep);
     });
-    
+
     return result;
   }
 }
@@ -413,7 +426,7 @@ export class QwikStepUtils {
     title: string,
     component: any,
     condition: SerializableCondition,
-    options?: Partial<QwikStepDefinition>
+    options?: Partial<QwikStepDefinition>,
   ): QwikStepDefinition {
     return {
       id,
@@ -432,7 +445,7 @@ export class QwikStepUtils {
     id: string,
     name: string,
     steps: QwikStepDefinition[],
-    options?: Partial<QwikStepFlow>
+    options?: Partial<QwikStepFlow>,
   ): QwikStepFlow {
     return {
       id,
@@ -451,7 +464,7 @@ export class QwikStepUtils {
     id: number,
     title: string,
     component: any,
-    options?: Partial<QwikStepDefinition>
+    options?: Partial<QwikStepDefinition>,
   ): QwikStepDefinition {
     return {
       id,
@@ -467,9 +480,9 @@ export class QwikStepUtils {
    */
   static preserveCompletionStatus(
     steps: QwikStepDefinition[],
-    completions: Record<number, boolean>
+    completions: Record<number, boolean>,
   ): QwikStepDefinition[] {
-    return steps.map(step => ({
+    return steps.map((step) => ({
       ...step,
       isComplete: completions[step.id] ?? step.isComplete ?? false,
     }));

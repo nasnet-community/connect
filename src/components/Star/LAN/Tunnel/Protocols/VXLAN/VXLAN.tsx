@@ -177,7 +177,6 @@ export const VXLANProtocol = component$(() => {
                       placeholder={$localize`Enter remote address`}
                     />
                   </div>
-
                 </div>
               </div>
             ))}

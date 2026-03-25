@@ -6,11 +6,21 @@ import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
 export const GamingOptimizationSection = component$(() => {
   // Create nodes for gaming optimization graph
   const nodes: GraphNode[] = [
-    createNode("GamingConsole", "console", 50, 200, { label: $localize`Gaming Console` }),
-    createNode("WirelessRouter", "router", 250, 200, { label: $localize`Router (QoS)` }),
-    createNode("GameServer", "gameserver1", 400, 100, { label: $localize`Game Server 1` }),
-    createNode("GameServer", "gameserver2", 400, 200, { label: $localize`Game Server 2` }),
-    createNode("GameServer", "gameserver3", 400, 300, { label: $localize`Game Server 3` }),
+    createNode("GamingConsole", "console", 50, 200, {
+      label: $localize`Gaming Console`,
+    }),
+    createNode("WirelessRouter", "router", 250, 200, {
+      label: $localize`Router (QoS)`,
+    }),
+    createNode("GameServer", "gameserver1", 400, 100, {
+      label: $localize`Game Server 1`,
+    }),
+    createNode("GameServer", "gameserver2", 400, 200, {
+      label: $localize`Game Server 2`,
+    }),
+    createNode("GameServer", "gameserver3", 400, 300, {
+      label: $localize`Game Server 3`,
+    }),
     createNode("User", "pc", 50, 100, { label: $localize`PC` }),
     createNode("WirelessUser", "mobile", 50, 300, { label: $localize`Mobile` }),
   ];
@@ -88,12 +98,12 @@ export const GamingOptimizationSection = component$(() => {
   });
 
   return (
-    <section class="relative min-h-[80vh] py-24 px-4 overflow-hidden bg-gradient-to-br from-pink-50 via-purple-50 to-violet-50 dark:from-slate-900 dark:via-pink-900 dark:to-purple-900">
+    <section class="relative min-h-[80vh] overflow-hidden bg-gradient-to-br from-pink-50 via-purple-50 to-violet-50 px-4 py-24 dark:from-slate-900 dark:via-pink-900 dark:to-purple-900">
       {/* Animated gradient orbs */}
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
-        <div class="absolute top-40 left-1/2 w-80 h-80 bg-violet-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
+        <div class="animate-blob absolute -right-40 -top-40 h-80 w-80 rounded-full bg-pink-400 opacity-20 mix-blend-multiply blur-xl filter" />
+        <div class="animate-blob absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-400 opacity-20 mix-blend-multiply blur-xl filter animation-delay-2000" />
+        <div class="animate-blob absolute left-1/2 top-40 h-80 w-80 rounded-full bg-violet-400 opacity-20 mix-blend-multiply blur-xl filter animation-delay-4000" />
       </div>
 
       {/* Gaming grid pattern */}
@@ -104,17 +114,17 @@ export const GamingOptimizationSection = component$(() => {
 
       {/* Floating particles */}
       <div class="absolute inset-0">
-        <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-pink-500 rounded-full animate-float" />
-        <div class="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-500 rounded-full animate-float animation-delay-2000" />
-        <div class="absolute bottom-1/4 left-1/2 w-2 h-2 bg-violet-500 rounded-full animate-float animation-delay-4000" />
-        <div class="absolute top-1/2 right-1/3 w-4 h-4 bg-orange-500 rounded-full animate-float animation-delay-3000" />
+        <div class="absolute left-1/4 top-1/4 h-2 w-2 animate-float rounded-full bg-pink-500" />
+        <div class="absolute right-1/4 top-3/4 h-3 w-3 animate-float rounded-full bg-purple-500 animation-delay-2000" />
+        <div class="absolute bottom-1/4 left-1/2 h-2 w-2 animate-float rounded-full bg-violet-500 animation-delay-4000" />
+        <div class="absolute right-1/3 top-1/2 h-4 w-4 animate-float rounded-full bg-orange-500 animation-delay-3000" />
       </div>
 
-      <div class="max-w-7xl mx-auto relative z-10">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="relative z-10 mx-auto max-w-7xl">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
           {/* Visual Side - Interactive Gaming Graph */}
-          <div class="relative animate-fade-in-left order-2 lg:order-1">
-            <div class="bg-white/80 dark:bg-black/40 backdrop-blur-lg rounded-2xl p-4 shadow-2xl">
+          <div class="animate-fade-in-left relative order-2 lg:order-1">
+            <div class="rounded-2xl bg-white/80 p-4 shadow-2xl backdrop-blur-lg dark:bg-black/40">
               <Graph
                 nodes={nodes}
                 connections={connections}
@@ -125,27 +135,27 @@ export const GamingOptimizationSection = component$(() => {
             </div>
             <div class="mt-4 flex justify-center gap-6">
               <div class="flex items-center gap-2">
-                <LuCpu class="w-5 h-5 text-pink-500" />
+                <LuCpu class="h-5 w-5 text-pink-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`QoS Enabled`}</span>
               </div>
               <div class="flex items-center gap-2">
-                <LuZap class="w-5 h-5 text-purple-500" />
+                <LuZap class="h-5 w-5 text-purple-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Low Latency`}</span>
               </div>
               <div class="flex items-center gap-2">
-                <LuAward class="w-5 h-5 text-violet-500" />
+                <LuAward class="h-5 w-5 text-violet-500" />
                 <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Priority Routing`}</span>
               </div>
             </div>
           </div>
 
           {/* Content Side */}
-          <div class="space-y-6 animate-fade-in-right order-1 lg:order-2">
+          <div class="animate-fade-in-right order-1 space-y-6 lg:order-2">
             <Badge color="secondary" variant="outline" size="lg">
               {$localize`Gaming Performance`}
             </Badge>
 
-            <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold">
+            <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
                 {$localize`Gaming`}
               </span>
@@ -155,7 +165,7 @@ export const GamingOptimizationSection = component$(() => {
               </span>
             </h2>
 
-            <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
               {$localize`Zero-lag gaming with comprehensive game database. Automatic port forwarding, traffic prioritization, and ping optimization for competitive gaming.`}
             </p>
 
@@ -173,7 +183,6 @@ export const GamingOptimizationSection = component$(() => {
                 <div class="text-sm text-gray-600 dark:text-gray-400">{$localize`Latency`}</div>
               </div>
             </div>
-
           </div>
         </div>
       </div>

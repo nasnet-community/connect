@@ -1,1 +1,1 @@
-export { StarContainer } from './StarContainer';
+export { StarContainer } from "./StarContainer";

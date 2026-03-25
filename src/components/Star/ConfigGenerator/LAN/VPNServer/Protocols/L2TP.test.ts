@@ -6,7 +6,11 @@ import {
     L2TPServerFirewall,
     L2tpServerWrapper,
 } from "./L2TP";
-import { testWithOutput, validateRouterConfig, validateRouterConfigStructure } from "~/test-utils/test-helpers";
+import {
+    testWithOutput,
+    validateRouterConfig,
+    validateRouterConfigStructure,
+} from "~/test-utils/test-helpers";
 import type {
     L2tpServerConfig,
     VSCredentials,
@@ -311,11 +315,14 @@ describe("L2TP Protocol Tests", () => {
                 },
             };
 
-            const users: VSCredentials[] = Array.from({ length: 30 }, (_, i) => ({
-                Username: `l2tp_user${i + 1}`,
-                Password: `l2tp_pass${i + 1}`,
-                VPNType: ["L2TP"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 30 },
+                (_, i) => ({
+                    Username: `l2tp_user${i + 1}`,
+                    Password: `l2tp_pass${i + 1}`,
+                    VPNType: ["L2TP"],
+                }),
+            );
 
             testWithOutput(
                 "L2tpServerUsers",
@@ -412,7 +419,10 @@ describe("L2TP Protocol Tests", () => {
             );
 
             const result = L2TPServerFirewall(serverConfigs);
-            validateRouterConfig(result, ["/ip firewall filter", "/ip firewall mangle"]);
+            validateRouterConfig(result, [
+                "/ip firewall filter",
+                "/ip firewall mangle",
+            ]);
         });
 
         it("should handle multiple L2TP servers", () => {
@@ -575,11 +585,14 @@ describe("L2TP Protocol Tests", () => {
                 },
             };
 
-            const users: VSCredentials[] = Array.from({ length: 20 }, (_, i) => ({
-                Username: `l2tpuser${i + 1}`,
-                Password: `l2tppass${i + 1}`,
-                VPNType: ["L2TP"],
-            }));
+            const users: VSCredentials[] = Array.from(
+                { length: 20 },
+                (_, i) => ({
+                    Username: `l2tpuser${i + 1}`,
+                    Password: `l2tppass${i + 1}`,
+                    VPNType: ["L2TP"],
+                }),
+            );
 
             testWithOutput(
                 "L2tpServerWrapper",

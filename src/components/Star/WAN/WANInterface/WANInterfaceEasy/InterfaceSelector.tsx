@@ -1,10 +1,15 @@
 import type { InterfaceSelectorProps } from "./types";
-import { component$, useResource$, Resource, useContext } from "@builder.io/qwik";
+import {
+  component$,
+  useResource$,
+  Resource,
+  useContext,
+} from "@builder.io/qwik";
 import { Select } from "~/components/Core";
 import { StarContext } from "../../../StarContext/StarContext";
 import {
   getMasterOccupiedInterfaces,
-  getUsedLTEInterfaces
+  getUsedLTEInterfaces,
 } from "../../../utils/InterfaceManagementUtils";
 
 const interfaceDisplayNames: Record<string, string> = {
@@ -49,7 +54,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
     const currentInterfaces = getInterfacesForType();
 
-    const disabledStates = useResource$<Array<{ disabled: boolean; reason?: string }>>(async ({ track }) => {
+    const disabledStates = useResource$<
+      Array<{ disabled: boolean; reason?: string }>
+    >(async ({ track }) => {
       track(() => selectedInterfaceType);
       track(() => availableInterfaces);
       track(() => starContext.state.Choose.RouterModels);
@@ -59,25 +66,28 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
 
       // Only check master router's occupied interfaces
       const occupiedInterfaces = getMasterOccupiedInterfaces(
-        starContext.state.Choose.RouterModels
+        starContext.state.Choose.RouterModels,
       );
 
       // Get list of LTE interfaces currently in use (excluding current link)
       const linkName = `${mode} Link`; // Easy mode uses consistent naming: "Foreign Link" or "Domestic Link"
       const usedLTEInterfaces = getUsedLTEInterfaces(
         starContext.state.WAN.WANLink,
-        linkName
+        linkName,
       );
 
       return Promise.all(
         currentInterfaces.map(async (iface) => {
           // Check if interface is occupied by Trunk (always block Trunk interfaces)
-          const usage = occupiedInterfaces.find(item => item.interface === iface)?.UsedFor;
+          const usage = occupiedInterfaces.find(
+            (item) => item.interface === iface,
+          )?.UsedFor;
           const isTrunk = usage === "Trunk";
 
           // Check if this is an LTE interface and if it's already in use
-          const isLTEInUse = selectedInterfaceType.toLowerCase() === "lte" &&
-                            usedLTEInterfaces.includes(iface);
+          const isLTEInUse =
+            selectedInterfaceType.toLowerCase() === "lte" &&
+            usedLTEInterfaces.includes(iface);
 
           const disabled = isTrunk || isLTEInUse;
           const reason = isTrunk ? "Trunk" : isLTEInUse ? "In Use" : undefined;
@@ -87,7 +97,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       );
     });
 
-    const getDisplayName = (iface: string, state: { disabled: boolean; reason?: string }) => {
+    const getDisplayName = (
+      iface: string,
+      state: { disabled: boolean; reason?: string },
+    ) => {
       const baseName = interfaceDisplayNames[iface] || iface;
       if (state.disabled && state.reason) {
         return `${baseName} (${state.reason})`;
@@ -102,10 +115,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
             {$localize`Select ${mode} Interface`}
           </label>
           <div class="rounded-lg bg-gray-100 p-4 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-            {!selectedInterfaceType 
+            {!selectedInterfaceType
               ? $localize`Please select an interface type first`
-              : $localize`No ${selectedInterfaceType} interfaces available`
-            }
+              : $localize`No ${selectedInterfaceType} interfaces available`}
           </div>
         </div>
       );
@@ -121,7 +133,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
           onPending={() => (
             <Select
               value={selectedInterface}
-              onChange$={(value: string | string[]) => onSelect(value as string)}
+              onChange$={(value: string | string[]) =>
+                onSelect(value as string)
+              }
               options={[
                 { value: "", label: $localize`Select interface` },
                 ...currentInterfaces.map((iface) => ({
@@ -135,7 +149,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
           onResolved={(states) => (
             <Select
               value={selectedInterface}
-              onChange$={(value: string | string[]) => onSelect(value as string)}
+              onChange$={(value: string | string[]) =>
+                onSelect(value as string)
+              }
               options={[
                 { value: "", label: $localize`Select interface` },
                 ...currentInterfaces.map((iface, index) => ({

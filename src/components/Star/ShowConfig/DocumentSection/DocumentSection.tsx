@@ -1,6 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { Card, CardHeader, CardBody, Button } from "~/components/Core";
-import { LuBookOpen, LuHelpCircle, LuExternalLink, LuYoutube, LuFileText, LuGlobe } from "@qwikest/icons/lucide";
+import {
+  LuBookOpen,
+  LuHelpCircle,
+  LuExternalLink,
+  LuYoutube,
+  LuFileText,
+  LuGlobe,
+} from "@qwikest/icons/lucide";
 
 interface DocumentationItem {
   title: string;
@@ -64,8 +71,8 @@ export const DocumentSection = component$(() => {
       {/* Documentation Resources Section */}
       <div>
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <LuBookOpen class="w-7 h-7 text-primary-500" />
+          <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
+            <LuBookOpen class="h-7 w-7 text-primary-500" />
             {$localize`Documentation & Resources`}
           </h2>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -73,7 +80,7 @@ export const DocumentSection = component$(() => {
           </p>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-4">
+        <div class="grid gap-4 md:grid-cols-2">
           {documentationItems.map((item, index) => (
             <Card
               key={index}
@@ -89,21 +96,21 @@ export const DocumentSection = component$(() => {
               <CardHeader class="pb-3">
                 <div class="flex items-start justify-between">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center group-hover:bg-primary-500/20 dark:group-hover:bg-primary-500/30 transition-colors">
-                      <item.icon class="w-5 h-5 text-primary-500 dark:text-primary-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500/10 transition-colors group-hover:bg-primary-500/20 dark:bg-primary-500/20 dark:group-hover:bg-primary-500/30">
+                      <item.icon class="h-5 w-5 text-primary-500 dark:text-primary-400" />
                     </div>
                     <div class="flex-1">
-                      <h3 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <h3 class="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
                         {item.title}
                         {item.badge && (
-                          <span class="px-2 py-0.5 text-xs rounded-full bg-primary-500/10 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400">
+                          <span class="rounded-full bg-primary-500/10 px-2 py-0.5 text-xs text-primary-600 dark:bg-primary-500/20 dark:text-primary-400">
                             {item.badge}
                           </span>
                         )}
                       </h3>
                     </div>
                   </div>
-                  <LuExternalLink class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                  <LuExternalLink class="h-4 w-4 text-gray-400 transition-colors group-hover:text-primary-500" />
                 </div>
               </CardHeader>
               <CardBody class="pt-0">
@@ -119,8 +126,8 @@ export const DocumentSection = component$(() => {
       {/* FAQ Section */}
       <div>
         <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <LuHelpCircle class="w-7 h-7 text-secondary-500" />
+          <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
+            <LuHelpCircle class="h-7 w-7 text-secondary-500" />
             {$localize`Frequently Asked Questions`}
           </h2>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
@@ -139,22 +146,22 @@ export const DocumentSection = component$(() => {
             >
               <CardBody>
                 <details class="group">
-                  <summary class="flex items-start gap-3 cursor-pointer list-none select-none">
-                    <div class="w-6 h-6 rounded-full bg-secondary-500/10 dark:bg-secondary-500/20 flex items-center justify-center mt-0.5 shrink-0">
+                  <summary class="flex cursor-pointer select-none list-none items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary-500/10 dark:bg-secondary-500/20">
                       <span class="text-xs font-semibold text-secondary-600 dark:text-secondary-400">
                         {index + 1}
                       </span>
                     </div>
                     <div class="flex-1">
-                      <h3 class="font-medium text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors">
+                      <h3 class="font-medium text-gray-900 transition-colors group-hover:text-primary-500 dark:text-white">
                         {item.question}
                       </h3>
-                      <div class="mt-3 text-sm text-gray-600 dark:text-gray-400 hidden group-open:block animate-fadeIn">
+                      <div class="animate-fadeIn mt-3 hidden text-sm text-gray-600 group-open:block dark:text-gray-400">
                         <p class="pl-9">{item.answer}</p>
                       </div>
                     </div>
                     <svg
-                      class="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180 shrink-0 mt-0.5"
+                      class="mt-0.5 h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -179,30 +186,34 @@ export const DocumentSection = component$(() => {
         variant="filled"
         elevation="md"
         radius="xl"
-        class="bg-gradient-to-br from-primary-500/5 to-secondary-500/5 dark:from-primary-500/10 dark:to-secondary-500/10 border border-primary-200/50 dark:border-primary-800/50"
+        class="border border-primary-200/50 bg-gradient-to-br from-primary-500/5 to-secondary-500/5 dark:border-primary-800/50 dark:from-primary-500/10 dark:to-secondary-500/10"
       >
-        <CardBody class="text-center py-8">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <CardBody class="py-8 text-center">
+          <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
             {$localize`Need More Help?`}
           </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
+          <p class="mx-auto mb-6 max-w-2xl text-gray-600 dark:text-gray-400">
             {$localize`If you can't find what you're looking for in our documentation or FAQ, our support team is here to help you with your router configuration.`}
           </p>
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <div class="flex flex-col justify-center gap-3 sm:flex-row">
             <Button
               variant="primary"
               size="md"
-              onClick$={() => window.open("https://t.me/joinNASNETGroup", "_blank")}
+              onClick$={() =>
+                window.open("https://t.me/joinNASNETGroup", "_blank")
+              }
             >
-              <LuGlobe class="w-4 h-4 mr-2" />
+              <LuGlobe class="mr-2 h-4 w-4" />
               {$localize`Visit Telegram Group`}
             </Button>
             <Button
               variant="secondary"
               size="md"
-              onClick$={() => window.open("https://www.starlink4iran.com/faqs/mcg/", "_blank")}
+              onClick$={() =>
+                window.open("https://www.starlink4iran.com/faqs/mcg/", "_blank")
+              }
             >
-              <LuBookOpen class="w-4 h-4 mr-2" />
+              <LuBookOpen class="mr-2 h-4 w-4" />
               {$localize`Browse Docs`}
             </Button>
           </div>

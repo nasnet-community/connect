@@ -97,16 +97,18 @@ const Icon = component$<IconProps>((props) => {
   }[size];
 
   // Responsive size classes for mobile-first approach
-  const responsiveSizeClasses = responsive ? {
-    "2xs": "w-3 h-3 mobile:w-4 mobile:h-4 tablet:w-2.5 tablet:h-2.5",
-    xs: "w-4 h-4 mobile:w-5 mobile:h-5 tablet:w-4 tablet:h-4",
-    sm: "w-5 h-5 mobile:w-6 mobile:h-6 tablet:w-5 tablet:h-5",
-    md: "w-6 h-6 mobile:w-7 mobile:h-7 tablet:w-6 tablet:h-6",
-    lg: "w-7 h-7 mobile:w-8 mobile:h-8 tablet:w-7 tablet:h-7",
-    xl: "w-8 h-8 mobile:w-10 mobile:h-10 tablet:w-8 tablet:h-8",
-    "2xl": "w-10 h-10 mobile:w-12 mobile:h-12 tablet:w-10 tablet:h-10",
-    "3xl": "w-12 h-12 mobile:w-14 mobile:h-14 tablet:w-12 tablet:h-12",
-  }[size] : sizeClasses;
+  const responsiveSizeClasses = responsive
+    ? {
+        "2xs": "w-3 h-3 mobile:w-4 mobile:h-4 tablet:w-2.5 tablet:h-2.5",
+        xs: "w-4 h-4 mobile:w-5 mobile:h-5 tablet:w-4 tablet:h-4",
+        sm: "w-5 h-5 mobile:w-6 mobile:h-6 tablet:w-5 tablet:h-5",
+        md: "w-6 h-6 mobile:w-7 mobile:h-7 tablet:w-6 tablet:h-6",
+        lg: "w-7 h-7 mobile:w-8 mobile:h-8 tablet:w-7 tablet:h-7",
+        xl: "w-8 h-8 mobile:w-10 mobile:h-10 tablet:w-8 tablet:h-8",
+        "2xl": "w-10 h-10 mobile:w-12 mobile:h-12 tablet:w-10 tablet:h-10",
+        "3xl": "w-12 h-12 mobile:w-14 mobile:h-14 tablet:w-12 tablet:h-12",
+      }[size]
+    : sizeClasses;
 
   // Enhanced color classes using the comprehensive theme system
   const colorClasses = {
@@ -146,29 +148,35 @@ const Icon = component$<IconProps>((props) => {
   ];
 
   // Combine all classes and filter out empty values
-  const combinedClasses = baseClasses
-    .filter(Boolean)
-    .join(" ");
+  const combinedClasses = baseClasses.filter(Boolean).join(" ");
 
   // Enhanced accessibility attributes
-  const accessibilityProps = label ? {
-    "aria-label": label,
-    role: "img",
-    "aria-hidden": undefined,
-  } : {
-    "aria-hidden": true,
-    role: undefined,
-  };
+  const accessibilityProps = label
+    ? {
+        "aria-label": label,
+        role: "img",
+        "aria-hidden": undefined,
+      }
+    : {
+        "aria-hidden": true,
+        role: undefined,
+      };
 
   // Interactive attributes for keyboard navigation
-  const interactiveProps = interactive ? {
-    tabIndex: 0,
-    role: label ? "button" : "img",
-  } : {};
+  const interactiveProps = interactive
+    ? {
+        tabIndex: 0,
+        role: label ? "button" : "img",
+      }
+    : {};
 
   // Helper function to check if icon is a QRL function
   const isQRLFunction = (icon: any): icon is QRL<any> => {
-    return icon && typeof icon === "function" && (icon.__brand === "QRL" || icon.__qrl);
+    return (
+      icon &&
+      typeof icon === "function" &&
+      (icon.__brand === "QRL" || icon.__qrl)
+    );
   };
 
   // Render the appropriate icon based on its type
@@ -176,7 +184,7 @@ const Icon = component$<IconProps>((props) => {
     if (isQRLFunction(icon)) {
       // For QRL icon functions, render as a component with SVG props
       const IconComponent = icon as any;
-      return <IconComponent class="w-full h-full" />;
+      return <IconComponent class="h-full w-full" />;
     } else {
       // For JSX elements or JSXOutput, render directly
       return icon;

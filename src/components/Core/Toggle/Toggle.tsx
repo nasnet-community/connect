@@ -5,7 +5,7 @@ import { Spinner } from "../DataDisplay/Progress/Spinner";
 
 /**
  * Modern Toggle component for binary on/off states.
- * 
+ *
  * A clean, reliable toggle switch optimized for both light and dark themes.
  * Simplified implementation focused on performance and accessibility.
  */
@@ -33,14 +33,17 @@ export const Toggle = component$<ToggleProps>(
     const isFocused = useSignal(false);
 
     // Simplified size configurations
-    const sizeConfig: Record<ToggleSize, {
-      container: string;
-      track: string;
-      thumb: string;
-      thumbTranslate: { on: string; off: string };
-      text: string;
-      icon: string;
-    }> = {
+    const sizeConfig: Record<
+      ToggleSize,
+      {
+        container: string;
+        track: string;
+        thumb: string;
+        thumbTranslate: { on: string; off: string };
+        text: string;
+        icon: string;
+      }
+    > = {
       sm: {
         container: "min-h-[44px]", // Touch-friendly minimum
         track: "h-5 w-9",
@@ -68,58 +71,73 @@ export const Toggle = component$<ToggleProps>(
     };
 
     // Simplified color configurations focusing on reliability
-    const colorConfig: Record<ToggleColor, {
-      track: { on: string; off: string };
-      thumb: string;
-      focus: string;
-    }> = {
+    const colorConfig: Record<
+      ToggleColor,
+      {
+        track: { on: string; off: string };
+        thumb: string;
+        focus: string;
+      }
+    > = {
       primary: {
         track: {
           on: "bg-primary-500 dark:bg-primary-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-primary-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-primary-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
       secondary: {
         track: {
           on: "bg-secondary-500 dark:bg-secondary-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-secondary-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-secondary-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
       success: {
         track: {
           on: "bg-green-500 dark:bg-green-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-green-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-green-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
       error: {
         track: {
           on: "bg-red-500 dark:bg-red-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-red-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-red-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
       warning: {
         track: {
           on: "bg-orange-500 dark:bg-orange-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-orange-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-orange-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
       info: {
         track: {
           on: "bg-blue-500 dark:bg-blue-400",
-          off: "bg-gray-300 dark:bg-gray-600"
+          off: "bg-gray-300 dark:bg-gray-600",
         },
-        thumb: "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
-        focus: "ring-2 ring-blue-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900"
+        thumb:
+          "bg-white shadow-md border border-gray-200 dark:bg-gray-100 dark:border-gray-300",
+        focus:
+          "ring-2 ring-blue-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900",
       },
     };
 
@@ -141,7 +159,7 @@ export const Toggle = component$<ToggleProps>(
 
     // Handle keyboard navigation
     const handleKeyDown$ = $((event: KeyboardEvent) => {
-      if (event.key === ' ' || event.key === 'Enter') {
+      if (event.key === " " || event.key === "Enter") {
         event.preventDefault();
         handleToggle$();
       }
@@ -157,16 +175,20 @@ export const Toggle = component$<ToggleProps>(
       "inline-flex items-center gap-3 select-none",
       disabled || loading ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
       className,
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     // Label element
     const labelElement = label && (
       <span
         class={[
-          "font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200",
+          "font-medium text-gray-900 transition-colors duration-200 dark:text-gray-100",
           sizeCfg.text,
           disabled ? "text-gray-500 dark:text-gray-400" : "",
-        ].filter(Boolean).join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         {label}
         {required && <span class="ml-1 text-red-500 dark:text-red-400">*</span>}
@@ -180,19 +202,27 @@ export const Toggle = component$<ToggleProps>(
       checked ? colorCfg.track.on : colorCfg.track.off,
       disabled || loading ? "cursor-not-allowed" : "cursor-pointer",
       !disabled && !loading && isFocused.value ? colorCfg.focus : "",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    // Simplified thumb classes  
+    // Simplified thumb classes
     const thumbClass = [
       "absolute top-1/2 -translate-y-1/2 rounded-full transition-transform duration-200",
       sizeCfg.thumb,
       colorCfg.thumb,
       "flex items-center justify-center",
       checked ? sizeCfg.thumbTranslate.on : sizeCfg.thumbTranslate.off,
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return (
-      <label for={toggleId} class={containerClass} aria-disabled={disabled || loading}>
+      <label
+        for={toggleId}
+        class={containerClass}
+        aria-disabled={disabled || loading}
+      >
         {/* Left-positioned label */}
         {labelPosition === "left" && labelElement}
 
@@ -221,7 +251,7 @@ export const Toggle = component$<ToggleProps>(
 
           {/* Screen reader support */}
           {!label && <VisuallyHidden>{ariaLabel || "Toggle"}</VisuallyHidden>}
-          
+
           {loading && (
             <VisuallyHidden aria-live="polite">
               {label || ariaLabel || "Toggle"} is loading
@@ -229,9 +259,9 @@ export const Toggle = component$<ToggleProps>(
           )}
 
           {/* Track (background) */}
-          <div 
-            class={trackClass} 
-            role="presentation" 
+          <div
+            class={trackClass}
+            role="presentation"
             aria-hidden="true"
             onClick$={handleToggle$}
           >
@@ -246,11 +276,11 @@ export const Toggle = component$<ToggleProps>(
                 <>
                   {/* Custom icons */}
                   {checked && checkedIcon && (
-                    <span 
-                      class={`${sizeCfg.icon} text-gray-700 dark:text-gray-300 flex items-center justify-center`}
+                    <span
+                      class={`${sizeCfg.icon} flex items-center justify-center text-gray-700 dark:text-gray-300`}
                       aria-hidden="true"
                     >
-                      {typeof checkedIcon === 'string' ? (
+                      {typeof checkedIcon === "string" ? (
                         <span dangerouslySetInnerHTML={checkedIcon} />
                       ) : (
                         checkedIcon
@@ -258,11 +288,11 @@ export const Toggle = component$<ToggleProps>(
                     </span>
                   )}
                   {!checked && uncheckedIcon && (
-                    <span 
-                      class={`${sizeCfg.icon} text-gray-500 dark:text-gray-400 flex items-center justify-center`}
+                    <span
+                      class={`${sizeCfg.icon} flex items-center justify-center text-gray-500 dark:text-gray-400`}
                       aria-hidden="true"
                     >
-                      {typeof uncheckedIcon === 'string' ? (
+                      {typeof uncheckedIcon === "string" ? (
                         <span dangerouslySetInnerHTML={uncheckedIcon} />
                       ) : (
                         uncheckedIcon

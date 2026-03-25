@@ -14,14 +14,14 @@ interface SimpleRouterCardProps {
 }
 
 export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
-  const { 
-    router, 
-    isSelected, 
-    isDisabled = false, 
-    badge, 
-    badgeVariant = "default", 
+  const {
+    router,
+    isSelected,
+    isDisabled = false,
+    badge,
+    badgeVariant = "default",
     onSelect$,
-    onViewDetails$
+    onViewDetails$,
   } = props;
 
   const handleClick = $(() => {
@@ -42,21 +42,22 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
   return (
     <div
       class={`
-        relative group h-full min-h-[280px] flex flex-col
-        rounded-xl border-2 overflow-hidden
-        transition-all duration-300 cursor-pointer
-        ${!isDisabled ? 'hover:-translate-y-1 hover:shadow-lg' : 'cursor-not-allowed opacity-60'}
-        ${isSelected 
-          ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/50 shadow-md' 
-          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-primary-300'
+        group relative flex h-full min-h-[280px] cursor-pointer
+        flex-col overflow-hidden rounded-xl
+        border-2 transition-all duration-300
+        ${!isDisabled ? "hover:-translate-y-1 hover:shadow-lg" : "cursor-not-allowed opacity-60"}
+        ${
+          isSelected
+            ? "border-primary-500 bg-primary-50 shadow-md dark:bg-primary-950/50"
+            : "border-gray-200 bg-white hover:border-primary-300 dark:border-gray-700 dark:bg-gray-900"
         }
       `}
       onClick$={handleClick}
     >
       {/* Selection indicator */}
       {isSelected && !isDisabled && (
-        <div class="absolute top-3 right-3 z-20">
-          <div class="flex items-center gap-1 px-2 py-1 rounded-full bg-primary-500 shadow-md">
+        <div class="absolute right-3 top-3 z-20">
+          <div class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 shadow-md">
             <LuCheck class="h-3 w-3 text-white" />
             <span class="text-xs font-semibold text-white">{$localize`Selected`}</span>
           </div>
@@ -65,43 +66,43 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
 
       {/* Badge */}
       {badge && (
-        <div class="absolute top-3 left-3 z-10">
-          <Badge
-            color={badgeVariant}
-            size="sm"
-            variant="solid"
-          >
+        <div class="absolute left-3 top-3 z-10">
+          <Badge color={badgeVariant} size="sm" variant="solid">
             {badge}
           </Badge>
         </div>
       )}
 
       {/* Router Image */}
-      <div class="flex-1 flex items-center justify-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-        <div class="w-full h-32 flex items-center justify-center">
+      <div class="flex flex-1 items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-6 dark:from-gray-800 dark:to-gray-900">
+        <div class="flex h-32 w-full items-center justify-center">
           <img
             src={primaryImage}
             alt={router.title}
-            class="max-w-full max-h-full object-contain filter hover:scale-105 transition-transform duration-300"
+            class="max-h-full max-w-full object-contain filter transition-transform duration-300 hover:scale-105"
             loading="lazy"
             onError$={(event) => {
               // Fallback to placeholder if image fails to load
-              (event.target as HTMLImageElement).src = "/images/routers/placeholder.png";
+              (event.target as HTMLImageElement).src =
+                "/images/routers/placeholder.png";
             }}
           />
         </div>
       </div>
 
       {/* Router Info */}
-      <div class="p-4 bg-white dark:bg-gray-900">
+      <div class="bg-white p-4 dark:bg-gray-900">
         <div class="mb-3">
-          <h3 class="font-bold text-gray-900 dark:text-white text-sm leading-tight line-clamp-2" title={router.title}>
+          <h3
+            class="line-clamp-2 text-sm font-bold leading-tight text-gray-900 dark:text-white"
+            title={router.title}
+          >
             {router.title}
           </h3>
         </div>
 
         {/* View Details Button */}
-        <div 
+        <div
           onClick$={(event) => {
             event.stopPropagation();
           }}
@@ -113,7 +114,7 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
             size="sm"
             class="w-full text-xs"
           >
-            <LuInfo class="h-3 w-3 mr-1" />
+            <LuInfo class="mr-1 h-3 w-3" />
             {$localize`View Details`}
           </Button>
         </div>

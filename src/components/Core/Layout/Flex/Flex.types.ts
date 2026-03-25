@@ -16,7 +16,19 @@ export type FlexAlignContent =
   | "between"
   | "around"
   | "stretch";
-export type FlexGap = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "safe" | "touch" | "touch-sm" | "touch-lg";
+export type FlexGap =
+  | "none"
+  | "xs"
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "2xl"
+  | "3xl"
+  | "safe"
+  | "touch"
+  | "touch-sm"
+  | "touch-lg";
 export type FlexBreakpoint = "sm" | "md" | "lg" | "xl" | "2xl";
 
 /**
@@ -55,27 +67,27 @@ export interface FlexProps
   as?: keyof QwikIntrinsicElements;
   children?: JSXChildren;
   class?: string;
-  
+
   // Mobile & Touch Optimization
   touchMode?: TouchMode;
   mobileBehavior?: MobileFlexBehavior;
   touchOptimized?: boolean;
-  
+
   // Container Queries
   containerQuery?: boolean;
   containerBreakpoint?: ContainerBreakpoint;
-  
+
   // Safe Area Support
   mobileSafe?: boolean;
   safeAreaInsets?: boolean;
-  
+
   // Performance
   optimize?: boolean;
-  
+
   // Accessibility
   focusManagement?: boolean;
   scrollBehavior?: "smooth" | "instant" | "auto";
-  
+
   // Advanced Mobile Features
   overscrollBehavior?: "auto" | "contain" | "none";
   scrollSnapType?: "none" | "x" | "y" | "both" | "mandatory" | "proximity";
@@ -90,7 +102,7 @@ export interface FlexItemProps
   as?: keyof QwikIntrinsicElements;
   children?: JSXChildren;
   class?: string;
-  
+
   // Mobile FlexItem Features
   touchTarget?: "none" | "sm" | "md" | "lg" | "accessible";
   mobilePriority?: "low" | "normal" | "high";

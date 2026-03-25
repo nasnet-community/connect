@@ -62,26 +62,30 @@ const useVStepperLegacy = (props: VStepperProps) => {
   // Step management functions
   const addStep$ = $((newStep: StepItem, position?: number) => {
     const newSteps = [...steps.value];
-    
-    if (position !== undefined && position >= 0 && position <= newSteps.length) {
+
+    if (
+      position !== undefined &&
+      position >= 0 &&
+      position <= newSteps.length
+    ) {
       // Insert at specific position
       newSteps.splice(position, 0, newStep);
     } else {
       // Append to end
       newSteps.push(newStep);
     }
-    
+
     steps.value = newSteps;
     return newStep.id;
   });
-  
+
   const removeStep$ = $((stepId: number) => {
-    const stepIndex = steps.value.findIndex(step => step.id === stepId);
-    
+    const stepIndex = steps.value.findIndex((step) => step.id === stepId);
+
     if (stepIndex >= 0) {
       const newSteps = [...steps.value];
       newSteps.splice(stepIndex, 1);
-      
+
       // Adjust active step if necessary
       if (activeStep.value >= newSteps.length) {
         activeStep.value = Math.max(0, newSteps.length - 1);
@@ -89,39 +93,41 @@ const useVStepperLegacy = (props: VStepperProps) => {
         // If we removed a step before the active one, adjust active step
         activeStep.value = Math.max(0, activeStep.value - 1);
       }
-      
+
       steps.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
 
   const swapSteps$ = $((sourceIndex: number, targetIndex: number) => {
     if (
-      sourceIndex >= 0 && 
-      sourceIndex < steps.value.length && 
-      targetIndex >= 0 && 
+      sourceIndex >= 0 &&
+      sourceIndex < steps.value.length &&
+      targetIndex >= 0 &&
       targetIndex < steps.value.length &&
       sourceIndex !== targetIndex
     ) {
       const newSteps = [...steps.value];
-      
+
       // Swap the steps
-      [newSteps[sourceIndex], newSteps[targetIndex]] = 
-      [newSteps[targetIndex], newSteps[sourceIndex]];
-      
+      [newSteps[sourceIndex], newSteps[targetIndex]] = [
+        newSteps[targetIndex],
+        newSteps[sourceIndex],
+      ];
+
       // Update active step if it was one of the swapped steps
       if (activeStep.value === sourceIndex) {
         activeStep.value = targetIndex;
       } else if (activeStep.value === targetIndex) {
         activeStep.value = sourceIndex;
       }
-      
+
       steps.value = newSteps;
       return true;
     }
-    
+
     return false;
   });
 
@@ -153,8 +159,8 @@ const useVStepperLegacy = (props: VStepperProps) => {
 
   const completeStep = $((index: number) => {
     // Update the step completion status
-    steps.value = steps.value.map((step, i) => 
-      i === index ? { ...step, isComplete: true } : step
+    steps.value = steps.value.map((step, i) =>
+      i === index ? { ...step, isComplete: true } : step,
     );
     props.onStepComplete$?.(steps.value[index].id);
   });
@@ -186,23 +192,23 @@ export const useVStepper = (props: VStepperProps) => {
   // Convert StepItem[] to BaseStepMeta[] for base stepper compatibility
   const convertedProps = {
     ...props,
-    steps: props.steps.map(step => ({
+    steps: props.steps.map((step) => ({
       ...step,
       helpContent: step.helpContent as any, // Type assertion for JSX.Element compatibility
-    }))
+    })),
   };
 
   // Always call all hooks at top level for Qwik compliance
   const baseStepperResult = useBaseStepper(convertedProps, {
-    contextNamespace: 'vstepper',
+    contextNamespace: "vstepper",
     preventInfiniteLoops: true,
-    maxRenderCycles: 15 // Higher limit for vertical stepper due to scrolling
+    maxRenderCycles: 15, // Higher limit for vertical stepper due to scrolling
   });
 
   // Always create these signals
   const isStepsVisibleEnhanced = useSignal(false);
   const location = useLocation();
-  
+
   // Always call legacy implementation
   const legacyResult = useVStepperLegacy(props);
 
@@ -268,15 +274,29 @@ export const useVStepper = (props: VStepperProps) => {
   useTask$(({ track }) => {
     // Only run enhanced logic if features are enabled
     if (!props.enableEnhancedFeatures) return;
-    
-    track(() => baseStepperResult.steps.value[baseStepperResult.activeStep.value]?.isComplete);
 
-    if (baseStepperResult.steps.value[baseStepperResult.activeStep.value]?.isComplete) {
-      props.onStepComplete$?.(baseStepperResult.steps.value[baseStepperResult.activeStep.value].id);
+    track(
+      () =>
+        baseStepperResult.steps.value[baseStepperResult.activeStep.value]
+          ?.isComplete,
+    );
 
-      if (baseStepperResult.activeStep.value < baseStepperResult.steps.value.length - 1) {
+    if (
+      baseStepperResult.steps.value[baseStepperResult.activeStep.value]
+        ?.isComplete
+    ) {
+      props.onStepComplete$?.(
+        baseStepperResult.steps.value[baseStepperResult.activeStep.value].id,
+      );
+
+      if (
+        baseStepperResult.activeStep.value <
+        baseStepperResult.steps.value.length - 1
+      ) {
         baseStepperResult.activeStep.value++;
-        props.onStepChange$?.(baseStepperResult.steps.value[baseStepperResult.activeStep.value].id);
+        props.onStepChange$?.(
+          baseStepperResult.steps.value[baseStepperResult.activeStep.value].id,
+        );
         scrollToStepEnhanced(baseStepperResult.activeStep.value);
       } else {
         scrollToBottomEnhanced();
@@ -302,7 +322,7 @@ export const useVStepper = (props: VStepperProps) => {
       hasError: baseStepperResult.hasError,
       errorMessage: baseStepperResult.errorMessage,
       isLoading: baseStepperResult.isLoading,
-      
+
       // VStepper-specific
       isStepsVisible: isStepsVisibleEnhanced,
       position,

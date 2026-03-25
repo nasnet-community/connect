@@ -100,18 +100,24 @@ export const PasswordField = component$<PasswordFieldProps>(
     // Determine size classes using semantic design system with proper mobile touch targets
     const sizeClasses = {
       sm: {
-        input: "py-1.5 px-3 pr-12 text-sm mobile:min-h-[44px] tablet:min-h-[36px] desktop:min-h-[32px]",
-        toggle: "right-1 w-10 h-10 mobile:w-11 mobile:h-11 tablet:w-9 tablet:h-9 desktop:w-8 desktop:h-8",
+        input:
+          "py-1.5 px-3 pr-12 text-sm mobile:min-h-[44px] tablet:min-h-[36px] desktop:min-h-[32px]",
+        toggle:
+          "right-1 w-10 h-10 mobile:w-11 mobile:h-11 tablet:w-9 tablet:h-9 desktop:w-8 desktop:h-8",
         icon: "w-4 h-4 mobile:w-5 mobile:h-5",
       },
       md: {
-        input: "py-2 px-3 pr-12 text-sm mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[36px]",
-        toggle: "right-1 w-10 h-10 mobile:w-11 mobile:h-11 tablet:w-10 tablet:h-10 desktop:w-9 desktop:h-9",
+        input:
+          "py-2 px-3 pr-12 text-sm mobile:min-h-[44px] tablet:min-h-[40px] desktop:min-h-[36px]",
+        toggle:
+          "right-1 w-10 h-10 mobile:w-11 mobile:h-11 tablet:w-10 tablet:h-10 desktop:w-9 desktop:h-9",
         icon: "w-5 h-5",
       },
       lg: {
-        input: "py-2.5 px-4 pr-14 text-base mobile:min-h-[44px] tablet:min-h-[44px] desktop:min-h-[40px]",
-        toggle: "right-1 w-11 h-11 mobile:w-12 mobile:h-12 tablet:w-11 tablet:h-11 desktop:w-10 desktop:h-10",
+        input:
+          "py-2.5 px-4 pr-14 text-base mobile:min-h-[44px] tablet:min-h-[44px] desktop:min-h-[40px]",
+        toggle:
+          "right-1 w-11 h-11 mobile:w-12 mobile:h-12 tablet:w-11 tablet:h-11 desktop:w-10 desktop:h-10",
         icon: "w-5 h-5 mobile:w-6 mobile:h-6",
       },
     }[size];
@@ -164,7 +170,7 @@ export const PasswordField = component$<PasswordFieldProps>(
                   ].join(" "),
               // Background states using surface colors with improved accessibility
               disabled
-                ? "bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-60"
+                ? "cursor-not-allowed bg-gray-100 opacity-60 dark:bg-gray-800"
                 : "bg-white dark:bg-gray-900",
               // Text colors using semantic system with improved readability
               "text-gray-900 dark:text-gray-100",
@@ -173,10 +179,11 @@ export const PasswordField = component$<PasswordFieldProps>(
               "focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:ring-offset-2",
               "dark:focus:ring-offset-gray-900",
               // Hover states with improved visual feedback
-              !disabled && [
-                "hover:border-gray-400 dark:hover:border-gray-500",
-                "hover:bg-gray-50 dark:hover:bg-gray-800",
-              ].join(" "),
+              !disabled &&
+                [
+                  "hover:border-gray-400 dark:hover:border-gray-500",
+                  "hover:bg-gray-50 dark:hover:bg-gray-800",
+                ].join(" "),
               // Enhanced mobile and responsive support
               "motion-safe:transition-all motion-reduce:transition-none",
               // Better text selection
@@ -196,7 +203,7 @@ export const PasswordField = component$<PasswordFieldProps>(
               (showPassword.value ? "Hide password" : "Show password")
             }
             class={[
-              "absolute top-1/2 -translate-y-1/2 flex items-center justify-center rounded-md",
+              "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-md",
               sizeClasses.toggle,
               // Enhanced mobile touch optimizations with proper hit targets
               "touch-manipulation",
@@ -295,7 +302,7 @@ export const PasswordStrengthIndicator = component$<{ password: string }>(
     return (
       <div class="space-y-1.5">
         <div class="flex items-center gap-3">
-          <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+          <div class="h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             <div
               class={[
                 "h-full rounded-full transition-all duration-300",
@@ -307,7 +314,7 @@ export const PasswordStrengthIndicator = component$<{ password: string }>(
           </div>
           <span
             class={[
-              "text-xs font-medium whitespace-nowrap mobile:text-sm",
+              "whitespace-nowrap text-xs font-medium mobile:text-sm",
               getStrengthTextColor(),
             ].join(" ")}
           >

@@ -1,17 +1,25 @@
-import { $, useSignal, useStore, useContext, useComputed$ } from "@builder.io/qwik";
+import {
+  $,
+  useSignal,
+  useStore,
+  useContext,
+  useComputed$,
+} from "@builder.io/qwik";
 import { StarContext } from "../../StarContext/StarContext";
-import type { 
-  NetworkType, 
-  ValidationErrors, 
-  NetworkDNSConfig, 
+import type {
+  NetworkType,
+  ValidationErrors,
+  NetworkDNSConfig,
   DOHNetworkInfo,
-  DNSPreset 
+  DNSPreset,
 } from "./types";
 import type { DNSConfig, DOHConfig } from "../../StarContext/WANType";
 
 export const useDNS = () => {
   const starContext = useContext(StarContext);
-  const isDomestic = (starContext.state.Choose.WANLinkType === "domestic" || starContext.state.Choose.WANLinkType === "both");
+  const isDomestic =
+    starContext.state.Choose.WANLinkType === "domestic" ||
+    starContext.state.Choose.WANLinkType === "both";
 
   // Initialize DNS configuration with existing state or defaults
   const dnsConfig = useStore<DNSConfig>({
@@ -37,7 +45,8 @@ export const useDNS = () => {
   });
 
   // IPv4 validation regex
-  const IPv4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const IPv4_REGEX =
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
   // DNS Presets for quick selection
   const dnsPresets: DNSPreset[] = [
@@ -47,28 +56,28 @@ export const useDNS = () => {
       description: "Fast and secure DNS with privacy protection",
       primary: "1.1.1.1",
       secondary: "1.0.0.1",
-      category: "fast"
+      category: "fast",
     },
     {
       name: "Google Public DNS",
       description: "Reliable and fast public DNS service",
       primary: "8.8.8.8",
       secondary: "8.8.4.4",
-      category: "public"
+      category: "public",
     },
     {
       name: "Quad9",
       description: "Security-focused DNS with threat protection",
       primary: "9.9.9.9",
       secondary: "149.112.112.112",
-      category: "secure"
+      category: "secure",
     },
     {
       name: "OpenDNS",
       description: "Fast DNS with content filtering options",
       primary: "208.67.222.222",
       secondary: "208.67.220.220",
-      category: "filtered"
+      category: "filtered",
     },
     // Ad-blocking & Privacy Options
     {
@@ -76,28 +85,28 @@ export const useDNS = () => {
       description: "Blocks ads, trackers, and malicious domains",
       primary: "94.140.14.14",
       secondary: "94.140.15.15",
-      category: "adblock"
+      category: "adblock",
     },
     {
       name: "AdGuard Family",
       description: "Blocks ads, trackers, and adult content",
       primary: "94.140.14.15",
       secondary: "94.140.15.16",
-      category: "family"
+      category: "family",
     },
     {
       name: "NextDNS",
       description: "Customizable DNS with privacy and security",
       primary: "45.90.28.0",
       secondary: "45.90.30.0",
-      category: "privacy"
+      category: "privacy",
     },
     {
       name: "Control D",
       description: "Advanced DNS filtering and control",
       primary: "76.76.2.0",
       secondary: "76.76.10.0",
-      category: "privacy"
+      category: "privacy",
     },
     // Security-focused Options
     {
@@ -105,35 +114,35 @@ export const useDNS = () => {
       description: "Blocks malware and adult content",
       primary: "1.1.1.3",
       secondary: "1.0.0.3",
-      category: "family"
+      category: "family",
     },
     {
       name: "Cloudflare Malware Blocking",
       description: "Blocks malware and phishing sites",
       primary: "1.1.1.2",
       secondary: "1.0.0.2",
-      category: "secure"
+      category: "secure",
     },
     {
       name: "CleanBrowsing Security",
       description: "Blocks malware, spam, and phishing",
       primary: "185.228.168.9",
       secondary: "185.228.169.9",
-      category: "secure"
+      category: "secure",
     },
     {
       name: "CleanBrowsing Family",
       description: "Family-safe browsing with content filters",
       primary: "185.228.168.168",
       secondary: "185.228.169.168",
-      category: "family"
+      category: "family",
     },
     {
       name: "Comodo Secure DNS",
       description: "Enterprise-grade DNS security",
       primary: "8.26.56.26",
       secondary: "8.20.247.20",
-      category: "secure"
+      category: "secure",
     },
     // Alternative & Regional Options
     {
@@ -141,22 +150,22 @@ export const useDNS = () => {
       description: "Stable and secure public DNS",
       primary: "64.6.64.6",
       secondary: "64.6.65.6",
-      category: "public"
+      category: "public",
     },
     {
       name: "DNS.WATCH",
       description: "German DNS with no logging",
       primary: "84.200.69.80",
       secondary: "84.200.70.40",
-      category: "privacy"
+      category: "privacy",
     },
     {
       name: "Alternate DNS",
       description: "Fast alternative public DNS",
       primary: "76.76.19.19",
       secondary: "76.223.122.150",
-      category: "public"
-    }
+      category: "public",
+    },
   ];
 
   // DOH Presets for DNS over HTTPS
@@ -166,63 +175,63 @@ export const useDNS = () => {
       description: "Fast and secure DNS over HTTPS",
       primary: "cloudflare-dns.com",
       secondary: "one.one.one.one",
-      category: "fast"
+      category: "fast",
     },
     {
       name: "Google",
       description: "Google's DNS over HTTPS service",
       primary: "dns.google",
       secondary: "dns.google.com",
-      category: "public"
+      category: "public",
     },
     {
       name: "Quad9",
       description: "Security-focused DNS over HTTPS",
       primary: "dns.quad9.net",
       secondary: "dns9.quad9.net",
-      category: "secure"
+      category: "secure",
     },
     {
       name: "AdGuard",
       description: "Ad-blocking DNS over HTTPS",
       primary: "dns.adguard.com",
       secondary: "dns-unfiltered.adguard.com",
-      category: "adblock"
+      category: "adblock",
     },
     {
       name: "NextDNS",
       description: "Privacy-focused DNS over HTTPS",
       primary: "dns.nextdns.io",
       secondary: "dns.nextdns.io",
-      category: "privacy"
+      category: "privacy",
     },
     {
       name: "Control D",
       description: "Advanced filtering DNS over HTTPS",
       primary: "dns.controld.com",
       secondary: "freedns.controld.com",
-      category: "filtered"
+      category: "filtered",
     },
     {
       name: "OpenDNS",
       description: "Cisco's DNS over HTTPS service",
       primary: "doh.opendns.com",
       secondary: "doh.familyshield.opendns.com",
-      category: "filtered"
+      category: "filtered",
     },
     {
       name: "CleanBrowsing",
       description: "Family-safe DNS over HTTPS",
       primary: "doh.cleanbrowsing.org",
       secondary: "family-filter-dns.cleanbrowsing.org",
-      category: "family"
-    }
+      category: "family",
+    },
   ];
 
   // Get currently used DNS IPs from presets to prevent duplicates
   const getUsedDNSPresets = useComputed$(() => {
     const usedDNS: string[] = [];
-    
+
     // Check each network type for preset usage
     Object.keys(selectedPresets).forEach((networkType) => {
       const preset = selectedPresets[networkType as NetworkType];
@@ -230,7 +239,7 @@ export const useDNS = () => {
         usedDNS.push(preset);
       }
     });
-    
+
     return usedDNS;
   });
 
@@ -238,8 +247,8 @@ export const useDNS = () => {
   const getAvailablePresetsForNetwork = $((networkType: NetworkType) => {
     const usedDNS = getUsedDNSPresets.value;
     const currentNetworkPreset = selectedPresets[networkType];
-    
-    return dnsPresets.filter(preset => {
+
+    return dnsPresets.filter((preset) => {
       // Allow current network's preset to remain available
       if (preset.primary === currentNetworkPreset) {
         return true;
@@ -257,16 +266,16 @@ export const useDNS = () => {
           label: $localize`Domestic Network DOH`,
           description: $localize`Secure DNS resolution for domestic network traffic`,
           networkColor: "orange",
-          networkIcon: "home"
+          networkIcon: "home",
         }
       : {
           target: "VPN",
           label: $localize`VPN Network DOH`,
           description: $localize`Secure DNS resolution for VPN network traffic`,
           networkColor: "green",
-          networkIcon: "shield"
+          networkIcon: "shield",
         };
-    
+
     return dohInfo;
   });
 
@@ -284,7 +293,8 @@ export const useDNS = () => {
         required: true,
         placeholder: "8.8.8.8",
         icon: "globe",
-        gradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/30 border-blue-200/60 dark:border-blue-700/50"
+        gradient:
+          "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/30 border-blue-200/60 dark:border-blue-700/50",
       },
       {
         type: "VPN",
@@ -294,7 +304,8 @@ export const useDNS = () => {
         required: true,
         placeholder: "1.1.1.1",
         icon: "shield",
-        gradient: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/30 border-green-200/60 dark:border-green-700/50"
+        gradient:
+          "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/30 border-green-200/60 dark:border-green-700/50",
       },
     ];
 
@@ -307,7 +318,8 @@ export const useDNS = () => {
         required: true,
         placeholder: "9.9.9.9",
         icon: "split",
-        gradient: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/30 border-purple-200/60 dark:border-purple-700/50"
+        gradient:
+          "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/30 border-purple-200/60 dark:border-purple-700/50",
       });
 
       configs.push({
@@ -318,7 +330,8 @@ export const useDNS = () => {
         required: true,
         placeholder: "208.67.222.222",
         icon: "home",
-        gradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/30 border-orange-200/60 dark:border-orange-700/50"
+        gradient:
+          "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/30 border-orange-200/60 dark:border-orange-700/50",
       });
     }
 
@@ -340,43 +353,47 @@ export const useDNS = () => {
         dnsConfig.DomesticDNS = value;
         break;
     }
-    
+
     // Clear preset selection if user manually types (not from preset)
-    const matchingPreset = dnsPresets.find(preset => preset.primary === value);
+    const matchingPreset = dnsPresets.find(
+      (preset) => preset.primary === value,
+    );
     if (!matchingPreset) {
       selectedPresets[networkType] = null;
     }
-    
+
     // Clear validation error when user types
     if (validationErrors[networkType]) {
       delete validationErrors[networkType];
     }
   });
 
-  const updateDOH = $((field: keyof DOHConfig | "enabled", value: string | boolean) => {
-    if (!dnsConfig.DOH) {
-      dnsConfig.DOH = {};
-    }
-    
-    if (field === "enabled") {
-      // Handle enabled state separately (not part of DOHConfig)
-      // Clear DOH fields if disabled
-      if (!value) {
-        dnsConfig.DOH.domain = "";
-        dnsConfig.DOH.bindingIP = "";
+  const updateDOH = $(
+    (field: keyof DOHConfig | "enabled", value: string | boolean) => {
+      if (!dnsConfig.DOH) {
+        dnsConfig.DOH = {};
       }
-    } else {
-      dnsConfig.DOH[field as keyof DOHConfig] = value as string;
-    }
 
-    // Clear validation errors for DOH fields
-    if (validationErrors.dohDomain) {
-      delete validationErrors.dohDomain;
-    }
-    if (validationErrors.dohBinding) {
-      delete validationErrors.dohBinding;
-    }
-  });
+      if (field === "enabled") {
+        // Handle enabled state separately (not part of DOHConfig)
+        // Clear DOH fields if disabled
+        if (!value) {
+          dnsConfig.DOH.domain = "";
+          dnsConfig.DOH.bindingIP = "";
+        }
+      } else {
+        dnsConfig.DOH[field as keyof DOHConfig] = value as string;
+      }
+
+      // Clear validation errors for DOH fields
+      if (validationErrors.dohDomain) {
+        delete validationErrors.dohDomain;
+      }
+      if (validationErrors.dohBinding) {
+        delete validationErrors.dohBinding;
+      }
+    },
+  );
 
   const validateAll = $(async () => {
     isValidating.value = true;
@@ -425,7 +442,7 @@ export const useDNS = () => {
     // }
 
     // Update validation errors
-    Object.keys(validationErrors).forEach(key => {
+    Object.keys(validationErrors).forEach((key) => {
       delete validationErrors[key];
     });
     Object.assign(validationErrors, errors);
@@ -466,10 +483,10 @@ export const useDNS = () => {
   const applyDNSPreset = $((networkType: NetworkType, preset: DNSPreset) => {
     // Clear any previous preset selection for this network
     selectedPresets[networkType] = null;
-    
+
     // Update the DNS value
     updateDNS(networkType, preset.primary);
-    
+
     // Track the new preset selection
     selectedPresets[networkType] = preset.primary;
   });
@@ -504,9 +521,9 @@ export const useDNS = () => {
       dnsConfig.DOH.domain = "";
       dnsConfig.DOH.bindingIP = "";
     }
-    
+
     // Clear validation errors
-    Object.keys(validationErrors).forEach(key => {
+    Object.keys(validationErrors).forEach((key) => {
       delete validationErrors[key];
     });
   });

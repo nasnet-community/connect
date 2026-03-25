@@ -45,12 +45,14 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
 
     // Only apply scroll behavior if we have more than 5 steps
     if (steps.length > 5 && scrollContainerRef.value) {
-      const activeStepEl = scrollContainerRef.value.querySelector(`[data-step-index="${activeStep}"]`);
+      const activeStepEl = scrollContainerRef.value.querySelector(
+        `[data-step-index="${activeStep}"]`,
+      );
       if (activeStepEl) {
         activeStepEl.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
         });
       }
     }
@@ -59,30 +61,39 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
   // Show scroll hint animation on mount (only once for 6+ steps)
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
-    if (steps.length > 5 && scrollContainerRef.value && !hasShownScrollHint.value) {
+    if (
+      steps.length > 5 &&
+      scrollContainerRef.value &&
+      !hasShownScrollHint.value
+    ) {
       hasShownScrollHint.value = true;
 
       // Delay to ensure component is fully rendered
       setTimeout(() => {
         if (scrollContainerRef.value) {
           // Subtle scroll right to hint scrollability
-          scrollContainerRef.value.scrollBy({ left: 100, behavior: 'smooth' });
+          scrollContainerRef.value.scrollBy({ left: 100, behavior: "smooth" });
 
           // Scroll back after a brief pause
           setTimeout(() => {
             if (scrollContainerRef.value) {
-              scrollContainerRef.value.scrollBy({ left: -100, behavior: 'smooth' });
+              scrollContainerRef.value.scrollBy({
+                left: -100,
+                behavior: "smooth",
+              });
             }
           }, 800);
         }
       }, 500);
     }
   });
-  
+
   return (
     <div class={rootClass} ref={containerRef}>
       {/* Mobile view: vertical stepper */}
-      <div class={`${showMobileLayout ? "flex" : "hidden"} justify-center w-full sm:hidden`}>
+      <div
+        class={`${showMobileLayout ? "flex" : "hidden"} w-full justify-center sm:hidden`}
+      >
         <div class="w-full max-w-xs pl-2">
           <StepperProgressDisplay
             steps={steps}
@@ -98,7 +109,7 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
       </div>
 
       {/* Desktop view: horizontal stepper */}
-      <div class="hidden sm:flex justify-center w-full px-2">
+      <div class="hidden w-full justify-center px-2 sm:flex">
         {/* For 5 or fewer steps: use existing full-width layout */}
         {steps.length <= 5 ? (
           <StepperProgressDisplay
@@ -118,10 +129,10 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
             {/* Scrollable container with snap */}
             <div
               ref={scrollContainerRef}
-              class="overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
+              class="snap-x snap-mandatory overflow-x-auto scroll-smooth pb-2"
               style={{
                 scrollbarWidth: "thin",
-                scrollbarColor: "rgb(209 213 219) transparent"
+                scrollbarColor: "rgb(209 213 219) transparent",
               }}
             >
               <StepperProgressDisplay
@@ -142,4 +153,4 @@ export const CStepperProgress = component$((props: CStepperProgressProps) => {
       </div>
     </div>
   );
-}); 
+});

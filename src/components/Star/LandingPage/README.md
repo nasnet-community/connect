@@ -28,40 +28,47 @@ export default component$(() => {
 ## Components Included
 
 ### 1. HeroSection
+
 - Animated background with floating particles
 - Gradient text effects
 - Feature pills and call-to-action buttons
 - Trust indicators
 
 ### 2. FeatureShowcase
+
 - 6 main feature cards with icons
 - Hover animations and glassmorphism effects
 - Progressive animation delays
 
 ### 3. RouterModelsSection
+
 - Interactive category filtering
 - 17+ router model cards
 - 3D hover effects and animations
 - Technical specifications display
 
 ### 4. VPNCapabilities
+
 - 6 VPN protocol showcase
 - Interactive protocol selection
 - Performance metrics visualization
 - Server/Client mode indicators
 
 ### 5. TechSpecsSection
+
 - Technical specifications grid
 - User testimonials
 - Trust indicators and stats
 - Professional metrics display
 
 ### 6. NavigationBar
+
 - Sticky navigation with glassmorphism
 - Mobile-responsive menu
 - Smooth scroll effects
 
 ### 7. FooterSection
+
 - Comprehensive footer links
 - Newsletter signup
 - Social media links
@@ -70,6 +77,7 @@ export default component$(() => {
 ## Customization
 
 All components use the existing Tailwind configuration with:
+
 - Custom color palette (primary, secondary, surface)
 - Animation utilities
 - Glassmorphism effects

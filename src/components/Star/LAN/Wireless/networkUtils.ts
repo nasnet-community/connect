@@ -13,7 +13,9 @@ export interface NetworkOption {
  * @param networks - Networks object from StarContext
  * @returns Array of network options
  */
-export function getAvailableNetworks(networks: Networks | undefined): NetworkOption[] {
+export function getAvailableNetworks(
+  networks: Networks | undefined,
+): NetworkOption[] {
   if (!networks) return [];
 
   const options: NetworkOption[] = [];
@@ -157,12 +159,14 @@ export function getAvailableNetworks(networks: Networks | undefined): NetworkOpt
  * @param networks - Networks object from StarContext
  * @returns Array of extra network options only
  */
-export function getExtraNetworks(networks: Networks | undefined): NetworkOption[] {
+export function getExtraNetworks(
+  networks: Networks | undefined,
+): NetworkOption[] {
   const allNetworks = getAvailableNetworks(networks);
   const baseNetworkNames = ["Foreign", "Domestic", "Split", "VPN"];
 
   return allNetworks.filter(
-    (network) => !baseNetworkNames.includes(network.name)
+    (network) => !baseNetworkNames.includes(network.name),
   );
 }
 
@@ -174,7 +178,7 @@ export function getExtraNetworks(networks: Networks | undefined): NetworkOption[
  */
 export function determineWifiTarget(
   networkName: string,
-  networks: Networks | undefined
+  networks: Networks | undefined,
 ): WifiTarget {
   if (!networks) return "Foreign";
 
@@ -220,6 +224,12 @@ export function determineWifiTarget(
  * @returns true if it's one of the 4 base networks
  */
 export function isBaseNetwork(networkName: string): boolean {
-  const baseNetworkNames = ["Foreign", "Domestic", "Split", "VPN", "single-network"];
+  const baseNetworkNames = [
+    "Foreign",
+    "Domestic",
+    "Split",
+    "VPN",
+    "single-network",
+  ];
   return baseNetworkNames.includes(networkName);
 }

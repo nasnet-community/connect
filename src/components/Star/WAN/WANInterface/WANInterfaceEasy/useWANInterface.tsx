@@ -58,12 +58,15 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     const interfaceData = starContext.state.WAN.WANLink[mode];
     if (interfaceData && interfaceData.WANConfigs[0]) {
       const interfaceConfig = interfaceData.WANConfigs[0].InterfaceConfig;
-      
+
       if (interfaceConfig.InterfaceName && selectedInterface.value === "") {
         selectedInterface.value = interfaceConfig.InterfaceName;
-        
+
         // Determine interface type from interface name
-        if (interfaceConfig.InterfaceName.includes("wifi") || interfaceConfig.InterfaceName.includes("wlan")) {
+        if (
+          interfaceConfig.InterfaceName.includes("wifi") ||
+          interfaceConfig.InterfaceName.includes("wlan")
+        ) {
           selectedInterfaceType.value = "Wireless";
         } else if (interfaceConfig.InterfaceName.includes("lte")) {
           selectedInterfaceType.value = "LTE";
@@ -114,8 +117,13 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     }
 
     // Create proper WANLink structure
-    const currentWANLink = starContext.state.WAN.WANLink[mode] || { WANConfigs: [] };
-    const existingConfig = currentWANLink.WANConfigs[0] || { name: `${mode} Link`, InterfaceConfig: { InterfaceName: selectedInterface.value } };
+    const currentWANLink = starContext.state.WAN.WANLink[mode] || {
+      WANConfigs: [],
+    };
+    const existingConfig = currentWANLink.WANConfigs[0] || {
+      name: `${mode} Link`,
+      InterfaceConfig: { InterfaceName: selectedInterface.value },
+    };
 
     // Prepare ConnectionConfig based on interface type
     // Easy mode defaults: LTE uses lteSettings, all others use DHCP
@@ -124,26 +132,28 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
       connectionConfig = {
         lteSettings: {
           apn: apn.value,
-        }
+        },
       };
     } else {
       // For Ethernet, Wireless, SFP - use DHCP in easy mode
       connectionConfig = {
-        isDHCP: true
+        isDHCP: true,
       };
     }
 
     updateData.WANLink[mode] = {
       ...currentWANLink,
-      WANConfigs: [{
-        ...existingConfig,
-        InterfaceConfig: {
-          ...existingConfig.InterfaceConfig,
-          InterfaceName: modeConfig.InterfaceName,
-          WirelessCredentials: modeConfig.WirelessCredentials,
+      WANConfigs: [
+        {
+          ...existingConfig,
+          InterfaceConfig: {
+            ...existingConfig.InterfaceConfig,
+            InterfaceName: modeConfig.InterfaceName,
+            WirelessCredentials: modeConfig.WirelessCredentials,
+          },
+          ConnectionConfig: connectionConfig,
         },
-        ConnectionConfig: connectionConfig
-      }]
+      ],
     };
 
     starContext.updateWAN$(updateData);
@@ -156,7 +166,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
   const handleInterfaceTypeSelect = $((type: string) => {
     selectedInterfaceType.value = type;
     selectedInterface.value = ""; // Reset interface when type changes
-    
+
     // Clear type-specific fields when type changes
     if (type !== "Wireless") {
       ssid.value = "";
@@ -165,7 +175,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     if (type !== "LTE") {
       apn.value = "";
     }
-    
+
     validateForm();
   });
 
@@ -179,7 +189,7 @@ export const useWANInterface = (mode: "Foreign" | "Domestic") => {
     await interfaceManagement.updateInterfaceOccupation$(
       previousInterface ? (previousInterface as InterfaceType) : null,
       value ? (value as InterfaceType) : null,
-      "WAN"
+      "WAN",
     );
   });
 

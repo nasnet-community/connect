@@ -22,7 +22,7 @@ export interface StepItem {
   isDisabled?: boolean;
   isOptional?: boolean;
   skippable?: boolean;
-  
+
   // Help system properties
   helpTitle?: string;
   helpContent?: string | JSX.Element;
@@ -44,12 +44,12 @@ export interface VStepperProps {
   allowStepNavigation?: boolean;
   isEditMode?: boolean;
   dynamicStepComponent?: any;
-  
+
   // Enhanced features (opt-in for backward compatibility)
   enableEnhancedFeatures?: boolean;
   allowNonLinearNavigation?: boolean;
   allowSkipSteps?: boolean;
-  
+
   // Help system properties
   enableHelp?: boolean;
   helpOptions?: UseStepperHelpOptions;
@@ -77,9 +77,9 @@ export interface DesktopProps {
   isComplete?: boolean;
   onStepClick$?: QRL<(index: number) => void>;
   allowStepNavigation?: boolean;
-  
+
   // Help system integration
-  helpButton?: VStepperProps['helpButton'];
+  helpButton?: VStepperProps["helpButton"];
   onHelpClick$?: QRL<() => void>;
 }
 
@@ -91,9 +91,9 @@ export interface MobileProps {
   isComplete?: boolean;
   onStepClick$?: QRL<(index: number) => void>;
   allowStepNavigation?: boolean;
-  
+
   // Help system integration
-  helpButton?: VStepperProps['helpButton'];
+  helpButton?: VStepperProps["helpButton"];
   onHelpClick$?: QRL<() => void>;
 }
 

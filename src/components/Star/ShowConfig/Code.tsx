@@ -12,13 +12,13 @@ interface CodeProps {
 export const Code = component$<CodeProps>(
   ({ configPreview, onROSDownload$ }) => {
     return (
-      <div class="rounded-2xl border border-gray-200 bg-white overflow-hidden dark:border-slate-700/50 dark:bg-slate-900/90 dark:shadow-2xl">
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/90 dark:shadow-2xl">
         {/* Header Section */}
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700/50 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 dark:bg-gradient-to-r dark:from-slate-800 dark:to-slate-850">
+        <div class="dark:to-slate-850 border-b border-gray-200 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 px-6 py-4 dark:border-slate-700/50 dark:bg-gradient-to-r dark:from-slate-800">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500/10 to-secondary-500/10 dark:bg-emerald-500/10 dark:border dark:border-emerald-500/30 flex items-center justify-center">
-                <LuTerminal class="w-5 h-5 text-primary-500 dark:text-emerald-400" />
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500/10 to-secondary-500/10 dark:border dark:border-emerald-500/30 dark:bg-emerald-500/10">
+                <LuTerminal class="h-5 w-5 text-primary-500 dark:text-emerald-400" />
               </div>
               <div>
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100">
@@ -46,13 +46,13 @@ export const Code = component$<CodeProps>(
                 onClick$={onROSDownload$}
                 class="min-w-[140px]"
               >
-                <LuDownload class="w-4 h-4 mr-2" />
+                <LuDownload class="mr-2 h-4 w-4" />
                 {$localize`Download .rsc`}
               </Button>
             </div>
           </div>
         </div>
-        
+
         {/* Code Content */}
         <div class="p-6">
           <CodeBlock

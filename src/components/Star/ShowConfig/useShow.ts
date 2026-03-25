@@ -33,47 +33,58 @@ export const useConfigGenerator = (state: StarState) => {
   /**
    * Generate slave router configuration using SlaveCG
    */
-  const generateSlaveRouterScript = $((_slaveRouter: RouterModels, _index: number) => {
-    try {
-      // Generate configuration using SlaveCG
-      const routerConfig = SlaveCG(
-        state,
-        _slaveRouter
-      );
+  const generateSlaveRouterScript = $(
+    (_slaveRouter: RouterModels, _index: number) => {
+      try {
+        // Generate configuration using SlaveCG
+        const routerConfig = SlaveCG(state, _slaveRouter);
 
-      // Format the configuration using the same utilities as main ConfigGenerator
-      // const removedEmptyArrays = removeEmptyArrays(routerConfig as RouterConfig);
-      // const formattedConfig = formatConfig(removedEmptyArrays);
-      // const finalConfig = removeEmptyLines(formattedConfig);
+        // Format the configuration using the same utilities as main ConfigGenerator
+        // const removedEmptyArrays = removeEmptyArrays(routerConfig as RouterConfig);
+        // const formattedConfig = formatConfig(removedEmptyArrays);
+        // const finalConfig = removeEmptyLines(formattedConfig);
 
-      // Add reboot command at the end
-      return `${routerConfig}`;
-    } catch (error) {
-      console.error(`Error generating slave router configuration for ${_slaveRouter.Model}:`, error);
-      
-      // Return error message as comment in script
-      return `# Error generating configuration for ${_slaveRouter.Model}
+        // Add reboot command at the end
+        return `${routerConfig}`;
+      } catch (error) {
+        console.error(
+          `Error generating slave router configuration for ${_slaveRouter.Model}:`,
+          error,
+        );
+
+        // Return error message as comment in script
+        return `# Error generating configuration for ${_slaveRouter.Model}
 # Error: ${error instanceof Error ? error.message : String(error)}
 # Please check your configuration and try again.`;
-    }
-  });
+      }
+    },
+  );
 
-  const generateSlaveRouterConfigPreview = $(async (slaveRouter: RouterModels, index: number) => {
-    return generateSlaveRouterScript(slaveRouter, index);
-  });
+  const generateSlaveRouterConfigPreview = $(
+    async (slaveRouter: RouterModels, index: number) => {
+      return generateSlaveRouterScript(slaveRouter, index);
+    },
+  );
 
-  const downloadSlaveRouterFile = $(async (content: string, slaveRouter: RouterModels, index: number, fileType: "py" | "rsc") => {
-    const timestamp = await getTimestamp();
-    const routerName = slaveRouter.Model.replace(/\s+/g, '-');
-    const filename = `slave_router_${routerName}_${index + 1}_config_${timestamp}.${fileType}`;
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  });
+  const downloadSlaveRouterFile = $(
+    async (
+      content: string,
+      slaveRouter: RouterModels,
+      index: number,
+      fileType: "py" | "rsc",
+    ) => {
+      const timestamp = await getTimestamp();
+      const routerName = slaveRouter.Model.replace(/\s+/g, "-");
+      const filename = `slave_router_${routerName}_${index + 1}_config_${timestamp}.${fileType}`;
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
+  );
 
   return {
     downloadFile,

@@ -60,12 +60,12 @@ export const useEasyModeDefaults = () => {
       ctx.updateExtraConfig$({
         usefulServices: {
           ntp: {
-            servers: ["pool.ntp.org", "time.cloudflare.com", "time.google.com"]
+            servers: ["pool.ntp.org", "time.cloudflare.com", "time.google.com"],
           },
           graphing: {
             Interface: true,
             Queue: true,
-            Resources: true
+            Resources: true,
           },
           certificate: {
             SelfSigned: true,

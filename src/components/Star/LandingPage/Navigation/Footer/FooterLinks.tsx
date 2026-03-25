@@ -17,15 +17,13 @@ export const FooterLinks = component$<FooterLinksProps>(({ sections }) => {
     <>
       {sections.map((section) => (
         <div key={section.title} class="lg:col-span-1">
-          <h3 class="text-lg font-semibold mb-4 text-white">
-            {section.title}
-          </h3>
+          <h3 class="mb-4 text-lg font-semibold text-white">{section.title}</h3>
           <ul class="space-y-2">
             {section.links.map((link) => (
               <li key={link.name}>
                 <a
                   href={link.href}
-                  class="text-gray-300 hover:text-white transition-colors duration-200 block py-1"
+                  class="block py-1 text-gray-300 transition-colors duration-200 hover:text-white"
                 >
                   {link.name}
                 </a>

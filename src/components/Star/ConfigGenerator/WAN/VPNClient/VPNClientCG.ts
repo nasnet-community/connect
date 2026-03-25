@@ -15,10 +15,10 @@ import {
     VPNEScript,
 } from "~/components/Star/ConfigGenerator";
 
-
-
-
-export const VPNSingleLink = ( vpnClient: VPNClient, checkIPOffset: number = 0 ): RouterConfig => {
+export const VPNSingleLink = (
+    vpnClient: VPNClient,
+    checkIPOffset: number = 0,
+): RouterConfig => {
     // Convert VPN client configurations to MultiWANInterface format
     const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient, checkIPOffset);
 
@@ -28,7 +28,7 @@ export const VPNSingleLink = ( vpnClient: VPNClient, checkIPOffset: number = 0 )
     }
 
     const singleInterface = vpnInterfaces[0];
-    
+
     // For a single VPN link, create routes in the VPN routing table
     const config: RouterConfig = {
         "/ip route": [
@@ -39,19 +39,22 @@ export const VPNSingleLink = ( vpnClient: VPNClient, checkIPOffset: number = 0 )
     // Add CheckIP route for failover monitoring
     if (singleInterface.checkIP) {
         const checkIPDistance = 1; // Distance 1 for single VPN link in to-VPN table
-        
+
         config["/ip route"].push(
             `add check-gateway=ping dst-address="${singleInterface.checkIP}" gateway="${singleInterface.gateway}" routing-table="to-VPN" \\
-            distance=${checkIPDistance} target-scope="11" comment="Route-to-VPN-${singleInterface.name}"`
+            distance=${checkIPDistance} target-scope="11" comment="Route-to-VPN-${singleInterface.name}"`,
         );
     }
 
     return config;
 };
 
-export const VPNMultiLink = ( VPNClient: VPNClient, checkIPOffset: number = 0 ): RouterConfig => {
+export const VPNMultiLink = (
+    VPNClient: VPNClient,
+    checkIPOffset: number = 0,
+): RouterConfig => {
     const configs: RouterConfig[] = [];
-    
+
     // Convert VPN client configurations to MultiWANInterface format
     const vpnInterfaces = convertVPNClientToMultiWAN(VPNClient, checkIPOffset);
 
@@ -71,10 +74,17 @@ export const VPNMultiLink = ( VPNClient: VPNClient, checkIPOffset: number = 0 ):
     // Handle different strategies based on configuration
     switch (multiLinkConfig.strategy) {
         case "LoadBalance": {
-            const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
+            const loadBalanceMethod =
+                multiLinkConfig.loadBalanceMethod || "PCC";
             // Only PCC and NTH are supported for LoadBalanceRoute
             if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
-                configs.push(LoadBalanceRoute(vpnInterfaces, loadBalanceMethod, "to-VPN"));
+                configs.push(
+                    LoadBalanceRoute(
+                        vpnInterfaces,
+                        loadBalanceMethod,
+                        "to-VPN",
+                    ),
+                );
             } else if (loadBalanceMethod === "ECMP") {
                 // ECMP would be handled differently - for now fallback to PCC
                 configs.push(LoadBalanceRoute(vpnInterfaces, "PCC", "to-VPN"));
@@ -97,10 +107,17 @@ export const VPNMultiLink = ( VPNClient: VPNClient, checkIPOffset: number = 0 ):
 
         case "Both": {
             // Combine load balancing with failover
-            const loadBalanceMethod = multiLinkConfig.loadBalanceMethod || "PCC";
+            const loadBalanceMethod =
+                multiLinkConfig.loadBalanceMethod || "PCC";
             // Only PCC and NTH are supported for LoadBalanceRoute
             if (loadBalanceMethod === "PCC" || loadBalanceMethod === "NTH") {
-                configs.push(LoadBalanceRoute(vpnInterfaces, loadBalanceMethod, "to-VPN"));
+                configs.push(
+                    LoadBalanceRoute(
+                        vpnInterfaces,
+                        loadBalanceMethod,
+                        "to-VPN",
+                    ),
+                );
             } else if (loadBalanceMethod === "ECMP") {
                 // ECMP would be handled differently - for now fallback to PCC
                 configs.push(LoadBalanceRoute(vpnInterfaces, "PCC", "to-VPN"));
@@ -114,23 +131,30 @@ export const VPNMultiLink = ( VPNClient: VPNClient, checkIPOffset: number = 0 ):
     }
 
     return mergeMultipleConfigs(...configs);
-}
+};
 
-
-export const VPNClientWrapper = ( vpnClient: VPNClient, wanLinks?: WANLinks ): RouterConfig => {
+export const VPNClientWrapper = (
+    vpnClient: VPNClient,
+    wanLinks?: WANLinks,
+): RouterConfig => {
     const { Wireguard, OpenVPN, PPTP, L2TP, SSTP, IKeV2 } = vpnClient;
 
     const configs: RouterConfig[] = [];
 
     // Calculate offset for VPN check IPs to avoid conflicts with Foreign WAN
     // If there are Foreign WAN links, offset VPN by their count
-    const foreignWANCount = wanLinks?.Foreign?.WANConfigs ? wanLinks.Foreign.WANConfigs.length : 0;
+    const foreignWANCount = wanLinks?.Foreign?.WANConfigs
+        ? wanLinks.Foreign.WANConfigs.length
+        : 0;
     const vpnCheckIPOffset = foreignWANCount;
 
     // Pre-convert all VPN clients to MultiWANInterface to get consistent CheckIPs
     // This ensures the same CheckIP is used across individual, aggregated, and main tables
-    const vpnInterfaces = convertVPNClientToMultiWAN(vpnClient, vpnCheckIPOffset);
-    
+    const vpnInterfaces = convertVPNClientToMultiWAN(
+        vpnClient,
+        vpnCheckIPOffset,
+    );
+
     // Create checkIP map for easy lookup by VPN name
     const vpnCheckIPMap = new Map<string, string>();
     vpnInterfaces.forEach((iface) => {
@@ -182,5 +206,3 @@ export const VPNClientWrapper = ( vpnClient: VPNClient, wanLinks?: WANLinks ): R
     // Merge all VPN client configurations
     return mergeMultipleConfigs(...configs);
 };
-
-

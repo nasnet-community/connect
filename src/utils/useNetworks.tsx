@@ -8,7 +8,7 @@ import { generateNetworks } from "./networksUtils";
  */
 export const useNetworks = () => {
   const starContext = useContext(StarContext);
-  
+
   /**
    * Generates the Networks configuration based on current state
    * and saves it to StarContext
@@ -18,7 +18,7 @@ export const useNetworks = () => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
 
     // Update StarContext with generated networks
@@ -35,10 +35,10 @@ export const useNetworks = () => {
     return generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
   });
-  
+
   /**
    * Checks if domestic link is available in current configuration
    * @returns true if domestic link is available
@@ -47,7 +47,7 @@ export const useNetworks = () => {
     const wanLinkType = starContext.state.Choose.WANLinkType;
     return wanLinkType === "domestic" || wanLinkType === "both";
   });
-  
+
   /**
    * Gets the current VPN client networks grouped by protocol
    * @returns VPNClientNetworks object with protocol-specific arrays or empty object
@@ -56,11 +56,11 @@ export const useNetworks = () => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
     return networks.VPNClientNetworks || {};
   });
-  
+
   /**
    * Gets the current base networks
    * @returns BaseNetworks object with availability flags
@@ -69,11 +69,11 @@ export const useNetworks = () => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
     return networks.BaseNetworks;
   });
-  
+
   /**
    * Gets the current Foreign network names
    * @returns Array of Foreign network names or empty array
@@ -82,11 +82,11 @@ export const useNetworks = () => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
     return networks.ForeignNetworks || [];
   });
-  
+
   /**
    * Gets the current Domestic network names
    * @returns Array of Domestic network names or empty array
@@ -95,11 +95,11 @@ export const useNetworks = () => {
     const networks = generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
     return networks.DomesticNetworks || [];
   });
-  
+
   /**
    * Generates a preview of what the Networks configuration would be
    * based on current state
@@ -109,7 +109,7 @@ export const useNetworks = () => {
     return generateNetworks(
       starContext.state.Choose.WANLinkType,
       starContext.state.WAN.WANLink,
-      starContext.state.WAN.VPNClient
+      starContext.state.WAN.VPNClient,
     );
   });
 
