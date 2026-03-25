@@ -61,8 +61,7 @@ export function useWANAdvanced(
       // Build InterfaceConfig with proper type mapping
       const interfaceConfig = {
         InterfaceName: (link.interfaceName ||
-          link.InterfaceConfig.InterfaceName ||
-          "ether1") as InterfaceType,
+          link.InterfaceConfig.InterfaceName) as InterfaceType,
         WirelessCredentials: link.wirelessCredentials,
         VLANID: link.vlanConfig?.enabled
           ? String(link.vlanConfig.id)
@@ -125,7 +124,7 @@ export function useWANAdvanced(
     // Update the appropriate mode in StarContext
     if (mode === "Foreign") {
       updatedWANLink.Foreign = wanLink;
-    } else if (mode === "Domestic") {
+    } else {
       updatedWANLink.Domestic = wanLink;
     }
 
@@ -300,7 +299,7 @@ export function useWANAdvanced(
   // Batch update multiple links in a single operation to prevent multiple renders
   const batchUpdateLinks$ = $(
     (updates: Array<{ id: string; updates: Partial<WANLinkConfig> }>) => {
-      if (!updates || updates.length === 0) return;
+      if (updates.length === 0) return;
 
       // Create a copy of all links
       const newLinks = [...state.links];

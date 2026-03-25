@@ -70,7 +70,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
                 : interfaceConfig.InterfaceName.includes("sfp")
                   ? "SFP"
                   : "Ethernet",
-            interfaceName: interfaceConfig.InterfaceName || "",
+            interfaceName: interfaceConfig.InterfaceName,
             InterfaceConfig: interfaceConfig,
             connectionType: "DHCP", // Default to DHCP
             connectionConfirmed: true, // DHCP doesn't require additional configuration
@@ -369,7 +369,6 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       };
 
       // Debounce the update with 500ms delay to prevent rapid updates
-      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         updateSteps();
       }, 500);

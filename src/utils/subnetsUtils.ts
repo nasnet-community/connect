@@ -47,28 +47,28 @@ export const generateSubnets = (
   const baseSubnets: BaseSubnets = {};
 
   if (networks.BaseNetworks?.Split) {
-    const existing = existingSubnets?.BaseSubnets?.Split;
+    const existing = existingSubnets?.BaseSubnets.Split;
     // Only preserve if subnet value exists (user configured it)
     baseSubnets.Split =
       existing && existing.subnet ? existing : createSubnetConfig("Split");
   }
 
   if (networks.BaseNetworks?.Domestic) {
-    const existing = existingSubnets?.BaseSubnets?.Domestic;
+    const existing = existingSubnets?.BaseSubnets.Domestic;
     // Only preserve if subnet value exists (user configured it)
     baseSubnets.Domestic =
       existing && existing.subnet ? existing : createSubnetConfig("Domestic");
   }
 
   if (networks.BaseNetworks?.Foreign) {
-    const existing = existingSubnets?.BaseSubnets?.Foreign;
+    const existing = existingSubnets?.BaseSubnets.Foreign;
     // Only preserve if subnet value exists (user configured it)
     baseSubnets.Foreign =
       existing && existing.subnet ? existing : createSubnetConfig("Foreign");
   }
 
   if (networks.BaseNetworks?.VPN) {
-    const existing = existingSubnets?.BaseSubnets?.VPN;
+    const existing = existingSubnets?.BaseSubnets.VPN;
     // Only preserve if subnet value exists (user configured it)
     baseSubnets.VPN =
       existing && existing.subnet ? existing : createSubnetConfig("VPN");

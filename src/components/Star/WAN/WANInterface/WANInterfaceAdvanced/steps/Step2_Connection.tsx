@@ -15,6 +15,7 @@ export const Step2_Connection = component$<Step2Props>(
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const hasAutoExpanded = useSignal(false);
+    const validationErrors = wizardState.validationErrors ?? {};
 
     // Auto-expand first card when entering step with multiple links (only once)
     useTask$(({ track }) => {
@@ -28,16 +29,15 @@ export const Step2_Connection = component$<Step2Props>(
     });
 
     const getLinkErrors = (linkId: string) => {
-      return Object.entries(wizardState.validationErrors || {})
+      return Object.entries(validationErrors)
         .filter(([key]) => key.startsWith(`link-${linkId}`))
         .map(([, errors]) => errors)
         .flat();
     };
 
     const getFieldErrors = (linkId: string, field: string) => {
-      return (
-        (wizardState.validationErrors || {})[`link-${linkId}-${field}`] || []
-      );
+      const errorKey = `link-${linkId}-${field}`;
+      return errorKey in validationErrors ? validationErrors[errorKey] : [];
     };
 
     // Simple non-reactive filtering to prevent loops
@@ -120,13 +120,9 @@ export const Step2_Connection = component$<Step2Props>(
         );
       }
       // For DHCP and LTE, automatically consider complete
-      if (l.connectionType === "DHCP" || l.connectionType === "LTE") {
-        return true;
-      }
-      return false;
+      return true;
     }).length;
-    const hasErrors =
-      Object.keys(wizardState.validationErrors || {}).length > 0;
+    const hasErrors = Object.keys(validationErrors).length > 0;
 
     // Get link status
     const getLinkStatus = (link: (typeof wizardState.links)[0]) => {
@@ -159,11 +155,7 @@ export const Step2_Connection = component$<Step2Props>(
         return "partial";
       }
 
-      if (link.connectionType === "DHCP" || link.connectionType === "LTE") {
-        return "complete";
-      }
-
-      return "incomplete";
+      return "complete";
     };
 
     const getConnectionIcon = (type: string) => {

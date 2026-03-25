@@ -17,9 +17,6 @@ export const useSubnets = () => {
   const generateCurrentSubnets$ = $(() => {
     const networks = starContext.state.Choose.Networks;
 
-    // Only generate if Networks exists
-    if (!networks) return;
-
     // Get existing subnets to preserve user configurations
     const existingSubnets = starContext.state.LAN.Subnets;
 
@@ -38,7 +35,6 @@ export const useSubnets = () => {
    */
   const getCurrentSubnets$ = $(() => {
     const networks = starContext.state.Choose.Networks;
-    if (!networks) return undefined;
 
     const existingSubnets = starContext.state.LAN.Subnets;
     return generateSubnets(networks, existingSubnets);
@@ -60,7 +56,6 @@ export const useSubnets = () => {
    */
   const previewSubnets$ = $(() => {
     const networks = starContext.state.Choose.Networks;
-    if (!networks) return undefined;
 
     const existingSubnets = starContext.state.LAN.Subnets;
     return generateSubnets(networks, existingSubnets);

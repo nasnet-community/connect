@@ -61,7 +61,7 @@ export function detectSuspiciousEnvironment(): {
           !window.outerHeight || window.outerHeight === 0,
           !window.outerWidth || window.outerWidth === 0,
           navigator.plugins.length === 0,
-          !navigator.mimeTypes || navigator.mimeTypes.length === 0,
+          navigator.mimeTypes.length === 0,
 
           // Chrome headless specific
           (window as any).chrome && !(window as any).chrome.runtime,
@@ -157,7 +157,7 @@ export function detectSuspiciousEnvironment(): {
     }
 
     // Missing expected properties
-    if (!window.history || window.history.length <= 1) {
+    if (window.history.length <= 1) {
       suspiciousFlags.push("minimal_history");
       riskScore += 5;
     }
@@ -258,11 +258,11 @@ export function verifyApplicationEnvironment(): {
   }
 
   // Check basic browser capabilities
-  if (!window.crypto) {
+  if (!window.isSecureContext) {
     issues.push("Missing crypto API");
   }
 
-  if (!localStorage) {
+  if (!("localStorage" in window)) {
     issues.push("Missing localStorage");
   }
 
