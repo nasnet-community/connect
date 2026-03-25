@@ -51,10 +51,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
       // Check if priorities need initialization
       if (!initState.prioritiesInitialized) {
         const needsPriorityInit = wizardState.vpnConfigs.some(
-          (vpn) =>
-            vpn.priority === undefined ||
-            vpn.priority === null ||
-            vpn.priority === 0,
+          (vpn) => vpn.priority === 0,
         );
 
         console.log("[StepPriorities] Priority initialization check:", {
@@ -88,8 +85,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         (strategy.value === "LoadBalance" || strategy.value === "Both")
       ) {
         const needsWeightInit = wizardState.vpnConfigs.some(
-          (vpn) =>
-            vpn.weight === undefined || vpn.weight === null || vpn.weight === 0,
+            (vpn) => vpn.weight === undefined || vpn.weight === 0,
         );
 
         if (needsWeightInit) {
@@ -250,12 +246,11 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         if (!wizardState.multiVPNStrategy?.roundRobinInterval) {
           updates.roundRobinInterval = 60;
         }
-      } else if (newStrategy === "Both" || newStrategy === "LoadBalance") {
+      } else {
         // LoadBalance & Both need weights initialized
         // Check if weights need initialization
         const needsWeightInit = wizardState.vpnConfigs.some(
-          (vpn) =>
-            vpn.weight === undefined || vpn.weight === null || vpn.weight === 0,
+          (vpn) => vpn.weight === undefined || vpn.weight === 0,
         );
 
         console.log(

@@ -46,10 +46,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       : [];
 
     // Check which interface types are available
-    const isEthernetAvailable = (interfaces.ethernet || []).length > 0;
-    const isWirelessAvailable = (interfaces.wireless || []).length > 0;
-    const isSFPAvailable = (interfaces.sfp || []).length > 0;
-    const isLTEAvailable = (interfaces.lte || []).length > 0;
+    const isEthernetAvailable = interfaces.ethernet.length > 0;
+    const isWirelessAvailable = interfaces.wireless.length > 0;
+    const isSFPAvailable = interfaces.sfp.length > 0;
+    const isLTEAvailable = interfaces.lte.length > 0;
 
     const interfaceTypes = [
       { type: "Ethernet", isAvailable: isEthernetAvailable },
@@ -95,19 +95,19 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       };
 
       if (link.interfaceType === "Ethernet") {
-        options = (interfaces.ethernet || []).map((iface: string) =>
+        options = interfaces.ethernet.map((iface: string) =>
           buildOption(iface),
         );
       } else if (link.interfaceType === "Wireless") {
-        options = (interfaces.wireless || []).map((iface: string) =>
+        options = interfaces.wireless.map((iface: string) =>
           buildOption(iface),
         );
       } else if (link.interfaceType === "SFP") {
-        options = (interfaces.sfp || []).map((iface: string) =>
+        options = interfaces.sfp.map((iface: string) =>
           buildOption(iface),
         );
       } else if (link.interfaceType === "LTE") {
-        options = (interfaces.lte || []).map((iface: string) =>
+        options = interfaces.lte.map((iface: string) =>
           buildOption(iface),
         );
       }
