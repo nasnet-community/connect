@@ -21,9 +21,6 @@ export const FormContext = createContextId<FormContextValue>("connect.form");
 // Hook to access the form context
 export const useFormContext = () => {
   const context = useContext(FormContext);
-  if (!context) {
-    throw new Error("useFormContext must be used within a FormProvider");
-  }
   return context;
 };
 
@@ -66,7 +63,7 @@ export const FormProvider = component$<FormOptions>((props) => {
     } = options;
 
     // If field already exists, just update options
-    if (state.fields[name]) {
+    if (name in state.fields) {
       state.fields[name] = {
         ...state.fields[name],
         validateOnBlur: fieldValidateOnBlur,
@@ -96,7 +93,7 @@ export const FormProvider = component$<FormOptions>((props) => {
 
   // Unregister a field from the form
   const unregisterField$ = $((name: string) => {
-    if (!state.fields[name]) return;
+    if (!(name in state.fields)) return;
 
     // Update state objects without creating unused variables
     const newFields = { ...state.fields };
@@ -234,7 +231,7 @@ export const FormProvider = component$<FormOptions>((props) => {
   // Validate a single field
   const validateField$ = $(async (name: string) => {
     const field = state.fields[name];
-    if (!field || !field.validate || field.validating) return;
+    if (!field.validate || field.validating) return;
 
     field.validating = true;
     updateFormValidationStatus$(state);
@@ -290,28 +287,26 @@ export const FormProvider = component$<FormOptions>((props) => {
   // Set field value
   const setFieldValue$ = $((name: string, value: any) => {
     // Register field if not already registered
-    if (!state.fields[name]) {
+    if (!(name in state.fields)) {
       registerField$(name, { initialValue: value });
     }
 
     // Update field and form state
     state.values[name] = value;
 
-    if (state.fields[name]) {
-      const field = state.fields[name];
-      field.value = value;
+    const field = state.fields[name];
+    field.value = value;
 
-      // Mark as dirty if value has changed
-      if (!field.dirty) {
-        field.dirty = true;
-        state.dirtyFields[name] = true;
-        state.isDirty = true;
-      }
+    // Mark as dirty if value has changed
+    if (!field.dirty) {
+      field.dirty = true;
+      state.dirtyFields[name] = true;
+      state.isDirty = true;
+    }
 
-      // Validate on change if configured
-      if (field.validateOnChange && field.validate) {
-        validateField$(name);
-      }
+    // Validate on change if configured
+    if (field.validateOnChange && field.validate) {
+      validateField$(name);
     }
   });
 
@@ -324,38 +319,34 @@ export const FormProvider = component$<FormOptions>((props) => {
 
   // Mark field as touched
   const setFieldTouched$ = $((name: string, touched = true) => {
-    if (!state.fields[name]) {
+    if (!(name in state.fields)) {
       registerField$(name);
     }
 
     state.touched[name] = touched;
 
-    if (state.fields[name]) {
-      state.fields[name].touched = touched;
+    state.fields[name].touched = touched;
 
-      // Validate on blur if field is touched and configured to validate on blur
-      if (
-        touched &&
-        state.fields[name].validateOnBlur &&
-        state.fields[name].validate
-      ) {
-        validateField$(name);
-      }
+    // Validate on blur if field is touched and configured to validate on blur
+    if (
+      touched &&
+      state.fields[name].validateOnBlur &&
+      state.fields[name].validate
+    ) {
+      validateField$(name);
     }
   });
 
   // Set error for a specific field
   const setFieldError$ = $((name: string, error?: string) => {
-    if (!state.fields[name]) {
+    if (!(name in state.fields)) {
       registerField$(name);
     }
 
     state.errors[name] = error;
 
-    if (state.fields[name]) {
-      state.fields[name].error = error;
-      updateFormValidationStatus$(state);
-    }
+    state.fields[name].error = error;
+    updateFormValidationStatus$(state);
   });
 
   // Create context value object
@@ -387,11 +378,6 @@ export const FormFieldContext = createContextId<{ name: string }>(
 // Hook to access the form field context
 export const useFormFieldContext = () => {
   const context = useContext(FormFieldContext);
-  if (!context) {
-    throw new Error(
-      "useFormFieldContext must be used within a FormField component",
-    );
-  }
   return context;
 };
 

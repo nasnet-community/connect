@@ -156,7 +156,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
       if (!file) return;
 
       // Validate file size
-      if (!validateFileSize(file)) return;
+      if (!(await validateFileSize(file))) return;
 
       localError.value = null;
 
@@ -263,12 +263,12 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   sm:text-base lg:flex-initial
                   lg:px-5
                   ${
-                    disabled || isLoading
+                    disabled
                       ? "cursor-not-allowed bg-gray-400 opacity-60 dark:bg-gray-600"
                       : "cursor-pointer bg-primary-500 focus-within:ring-primary-500 hover:bg-primary-600 hover:shadow-md active:scale-[0.98] dark:bg-primary-600 dark:focus-within:ring-primary-400 dark:focus-within:ring-offset-gray-900 dark:hover:bg-primary-700"
                   }
               `}
-              tabIndex={disabled || isLoading ? -1 : 0}
+              tabIndex={disabled ? -1 : 0}
             >
               <FileTypeIcon
                 fileType={vpnType}
@@ -280,14 +280,14 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                 type="file"
                 accept={acceptFileExtension}
                 class="sr-only"
-                disabled={disabled || isLoading}
+                disabled={disabled}
                 onChange$={handleFileUpload}
                 aria-label={$localize`Upload ${vpnType} configuration file`}
               />
             </label>
             <button
               onClick$={handlePaste}
-              disabled={disabled || isLoading}
+              disabled={disabled}
               class={`flex flex-1 items-center justify-center rounded-lg 
                   px-3 py-2 text-sm font-medium text-white
                   shadow-sm transition-all duration-200
@@ -296,7 +296,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   sm:text-base lg:flex-initial
                   lg:px-5
                   ${
-                    disabled || isLoading
+                    disabled
                       ? "cursor-not-allowed bg-gray-400 opacity-60 dark:bg-gray-600"
                       : "bg-secondary-500 hover:bg-secondary-600 hover:shadow-md focus:ring-secondary-500 active:scale-[0.98] dark:bg-secondary-600 dark:hover:bg-secondary-700 dark:focus:ring-secondary-400 dark:focus:ring-offset-gray-900"
                   }

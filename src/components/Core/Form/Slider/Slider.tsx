@@ -261,15 +261,13 @@ export const Slider = component$<SliderProps>((props) => {
 
   const handleSingleThumbTouchStart = $((e: TouchEvent) => {
     // Convert TouchEvent to MouseEvent for consistent handling
-    if (e.touches[0]) {
-      const mouseEvent = {
-        preventDefault: () => e.preventDefault(),
-        stopPropagation: () => e.stopPropagation(),
-        clientX: e.touches[0].clientX || 0,
-        clientY: e.touches[0].clientY || 0,
-      } as MouseEvent;
-      events.handleThumbMouseDown(mouseEvent, "single");
-    }
+    const mouseEvent = {
+      preventDefault: () => e.preventDefault(),
+      stopPropagation: () => e.stopPropagation(),
+      clientX: e.touches[0].clientX,
+      clientY: e.touches[0].clientY,
+    } as MouseEvent;
+    events.handleThumbMouseDown(mouseEvent, "single");
   });
 
   const handleStartThumbMouseDown = $((e: MouseEvent) => {
@@ -361,11 +359,9 @@ export const Slider = component$<SliderProps>((props) => {
               maxValue={state.endValue.value}
               constraints={{
                 min,
-                max:
-                  state.endValue.value -
-                  (isRangeType ? props.minRange || 0 : 0),
+                max: state.endValue.value - (props.minRange || 0),
               }}
-              minRange={isRangeType ? props.minRange : undefined}
+              minRange={props.minRange}
               disabled={props.disabled}
               readonly={props.readonly}
               thumbClass={`${styles.thumbClasses} slider-thumb-start`}
@@ -383,12 +379,10 @@ export const Slider = component$<SliderProps>((props) => {
               minValue={state.startValue.value}
               maxValue={max}
               constraints={{
-                min:
-                  state.startValue.value +
-                  (isRangeType ? props.minRange || 0 : 0),
+                min: state.startValue.value + (props.minRange || 0),
                 max,
               }}
-              minRange={isRangeType ? props.minRange : undefined}
+              minRange={props.minRange}
               disabled={props.disabled}
               readonly={props.readonly}
               thumbClass={`${styles.thumbClasses} slider-thumb-end`}
