@@ -1,4 +1,4 @@
-import { useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL, Signal } from "@builder.io/qwik";
 
 export interface UseSwipeGestureOptions {
@@ -41,7 +41,11 @@ export function useSwipeGesture(
   const touchStart = useSignal({ x: 0, y: 0 });
   const touchCurrent = useSignal({ x: 0, y: 0 });
 
-  useVisibleTask$(({ track, cleanup }) => {
+  useTask$(({ track, cleanup }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     track(() => elementRef.value);
     track(() => enabled);
 
