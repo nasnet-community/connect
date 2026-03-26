@@ -6,6 +6,14 @@ import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
 
+const toTestIdSegment = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+
 interface InterfaceSelectorProps {
   interfaceType: TrunkInterfaceType;
   selectedBand?: "2.4G" | "5G" | null;
@@ -245,6 +253,7 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
           {interfaces.map((interfaceName, index) => (
             <div
               key={`${id}-${routerModel ?? "router"}-${interfaceName}`}
+              data-testid={`trunk-interface-${id}-${toTestIdSegment(interfaceName)}`}
               onClick$={() =>
                 handleInterfaceSelect(interfaceName, isSlaveInterface)
               }

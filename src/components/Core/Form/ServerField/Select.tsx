@@ -12,6 +12,7 @@ export interface SelectProps {
   placeholder?: string;
   error?: boolean;
   class?: string;
+  "data-testid"?: string;
 }
 
 export const Select = component$<SelectProps>(
@@ -22,9 +23,11 @@ export const Select = component$<SelectProps>(
     placeholder,
     error = false,
     class: className = "",
+    "data-testid": testId,
   }) => {
     return (
       <select
+        data-testid={testId}
         value={value}
         onChange$={(e) => onChange$((e.target as HTMLSelectElement).value)}
         class={`w-full rounded-lg border px-4 py-2 ${

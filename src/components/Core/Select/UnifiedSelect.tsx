@@ -49,6 +49,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     loading = false,
     loadingText = "Loading options...",
     class: className = "",
+    "data-testid": testId,
     onChange$,
     onOpenChange$,
   } = props;
@@ -614,6 +615,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
         )}
 
         <select
+          data-testid={testId}
           id={id}
           name={name}
           required={required}
@@ -680,6 +682,7 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
 
       <div class={styles.customSelect}>
         <button
+          data-testid={testId}
           id={id}
           type="button"
           ref={buttonRef}

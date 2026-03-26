@@ -23,6 +23,7 @@ export interface SelectionCardProps {
   mediaClass?: string;
   headingClass?: string;
   featureTextClass?: string;
+  testId?: string;
   overflowVisible?: boolean;
   ignoreClickWithin?: string[];
 }
@@ -46,6 +47,7 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
     mediaClass,
     headingClass,
     featureTextClass,
+    testId,
     overflowVisible = false,
     ignoreClickWithin = [],
   } = props;
@@ -102,7 +104,7 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
     .join(" ");
 
   return (
-    <div onClick$={handleClick$} class={rootClasses}>
+    <div onClick$={handleClick$} class={rootClasses} data-testid={testId}>
       <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-500/5 to-secondary-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div class="relative">
