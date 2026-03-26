@@ -1,6 +1,5 @@
 import {
   useSignal,
-  useVisibleTask$,
   $,
   useId,
   useTask$,
@@ -108,7 +107,11 @@ export function useDialog(params: UseDialogParams): UseDialogReturn {
   });
 
   // Focus management and body scroll locking
-  useVisibleTask$(({ track, cleanup }) => {
+  useTask$(({ track, cleanup }) => {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      return;
+    }
+
     const isOpen = track(() => isOpenSignal.value);
 
     if (isOpen) {

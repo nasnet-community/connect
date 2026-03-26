@@ -3,7 +3,7 @@ import {
   type QRL,
   useComputed$,
   useSignal,
-  useVisibleTask$,
+  useTask$,
 } from "@builder.io/qwik";
 
 export interface TimeValue {
@@ -266,7 +266,15 @@ export const TimePicker = component$<TimePickerProps>(
       backgroundImage: dropdownArrowLight,
     };
 
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ track, cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      track(() => hourSelectRef.value);
+      track(() => minuteSelectRef.value);
+      track(() => secondSelectRef.value);
+
       const selectHandlers = new Map<
         HTMLSelectElement,
         (event: KeyboardEvent) => void

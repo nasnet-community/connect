@@ -2,7 +2,7 @@ import {
   component$,
   useSignal,
   $,
-  useVisibleTask$,
+  useTask$,
   useContext,
 } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
@@ -161,7 +161,11 @@ export const GraphingStep = component$(() => {
   });
 
   // Run validation on component mount and when values change
-  useVisibleTask$(() => {
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     validateAndUpdate$();
   });
 

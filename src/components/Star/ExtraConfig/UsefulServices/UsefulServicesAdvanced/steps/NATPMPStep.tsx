@@ -2,7 +2,7 @@ import {
   component$,
   useSignal,
   $,
-  useVisibleTask$,
+  useTask$,
   useContext,
 } from "@builder.io/qwik";
 import {
@@ -227,7 +227,11 @@ export const NATPMPStep = component$(() => {
   });
 
   // Run validation on component mount
-  useVisibleTask$(async () => {
+  useTask$(async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     validateAndUpdate$();
   });
 

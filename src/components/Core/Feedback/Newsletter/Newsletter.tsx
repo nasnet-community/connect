@@ -1,4 +1,4 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import type { NewsletterProps } from "./Newsletter.types";
 import { useNewsletter } from "./useNewsletter";
 import { NewsletterLogo } from "./NewsletterLogo";
@@ -85,7 +85,11 @@ export const Newsletter = component$<NewsletterProps>(
     const isFocused = useSignal(false);
 
     // Track state changes for debugging
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       const loading = track(() => isLoading);
       const success = track(() => isSuccess);
       const error = track(() => errorMessage);

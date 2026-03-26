@@ -2,7 +2,7 @@ import {
   component$,
   useStore,
   $,
-  useVisibleTask$,
+  useTask$,
   useContextProvider,
   createContextId,
 } from "@builder.io/qwik";
@@ -220,7 +220,11 @@ export const ToastContainer = component$<ToastContainerProps>(
     });
 
     // Add keyboard shortcuts for toast management
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ cleanup }) => {
+      if (typeof document === "undefined") {
+        return;
+      }
+
       const handleKeyDown = (event: KeyboardEvent) => {
         // Alt+T to focus on the first toast (common accessibility pattern)
         if (

@@ -2,7 +2,6 @@ import {
   component$,
   useStore,
   $,
-  useVisibleTask$,
   useTask$,
 } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
@@ -364,7 +363,11 @@ export const ConfigStep = component$<ConfigStepProps>(
     });
 
     // Ensure initial processing happens
-    useVisibleTask$(() => {
+    useTask$(() => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       if (!state.initialProcessingDone) {
         void processEnabledProtocols();
         state.initialProcessingDone = true;
