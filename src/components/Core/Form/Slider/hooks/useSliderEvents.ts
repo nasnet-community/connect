@@ -1,4 +1,4 @@
-import { $, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useTask$ } from "@builder.io/qwik";
 import type { useSliderState } from "./useSliderState";
 import type { useSliderUtilities } from "./useSliderUtilities";
 import type { SliderProps } from "../Slider.types";
@@ -138,7 +138,13 @@ export function useSliderEvents({
   });
 
   // Set up event listeners
-  useVisibleTask$(({ cleanup }) => {
+  useTask$(({ track, cleanup }) => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    track(() => trackRef.value);
+
     const documentMouseMove = (e: MouseEvent) => handleMouseMove(e);
     const documentTouchMove = (event: TouchEvent) => {
       if (!isDragging.value || !trackRef.value) return;

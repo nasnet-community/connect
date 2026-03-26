@@ -3,7 +3,6 @@ import {
   $,
   useSignal,
   useTask$,
-  useVisibleTask$,
   type QRL,
 } from "@builder.io/qwik";
 import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
@@ -49,7 +48,11 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     });
 
     // Initialize state on client after first paint to avoid blocking render
-    useVisibleTask$(async () => {
+    useTask$(async () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       console.log(
         "[AdvancedVPNClient] Initializing VPN Client Advanced component",
       );

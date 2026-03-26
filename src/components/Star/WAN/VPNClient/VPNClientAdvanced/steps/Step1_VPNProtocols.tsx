@@ -2,7 +2,7 @@ import {
   component$,
   $,
   useSignal,
-  useVisibleTask$,
+  useTask$,
   type QRL,
 } from "@builder.io/qwik";
 import { Alert, Input } from "~/components/Core";
@@ -37,7 +37,11 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
     const expandedVPNs = useSignal<Set<string>>(new Set());
 
     // Auto-expand the first VPN card when component mounts
-    useVisibleTask$(() => {
+    useTask$(() => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       if (wizardState.vpnConfigs.length > 0 && expandedVPNs.value.size === 0) {
         const firstVPN = wizardState.vpnConfigs[0];
         if (firstVPN.id) {

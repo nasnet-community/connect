@@ -3,7 +3,6 @@ import {
   useSignal,
   useContext,
   $,
-  useVisibleTask$,
   useTask$,
   type QRL,
 } from "@builder.io/qwik";
@@ -46,7 +45,11 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     // Note: Removed automatic step completion tracking to avoid potential render loops
 
     // Load persisted state on mount and initialize for single mode
-    useVisibleTask$(async () => {
+    useTask$(async () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       // Set advanced mode (moved from render function to prevent state mutation error)
       advancedHooks.state.mode = "advanced";
 
@@ -229,7 +232,11 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     });
 
     // Initialize steps immediately to prevent undefined errors
-    useVisibleTask$(async () => {
+    useTask$(async () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       if (!stepsInitialized.value) {
         // Initialize steps with proper structure based on link count
         steps.value = await createSteps();

@@ -1,4 +1,4 @@
-import { $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import {
   getL2TPCredentials,
@@ -38,7 +38,11 @@ export const useL2TPPromoBanner = (
   const isCaptchaLoaded = useSignal(false);
   const captchaWidgetId = useSignal<number | null>(null);
 
-  useVisibleTask$(() => {
+  useTask$(({ cleanup }) => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
     window.onCaptchaLoaded = () => {
       console.log("reCAPTCHA loaded");
       isCaptchaLoaded.value = true;
@@ -78,13 +82,15 @@ export const useL2TPPromoBanner = (
     script.defer = true;
     document.head.appendChild(script);
 
-    return () => {
-      document.head.removeChild(script);
+    cleanup(() => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
       window.onCaptchaLoaded = () => {};
       window.onCaptchaSuccess = () => {};
       window.onCaptchaExpired = () => {};
       window.onCaptchaError = () => {};
-    };
+    });
   });
 
   const validateCaptcha = $(async (token: string): Promise<boolean> => {

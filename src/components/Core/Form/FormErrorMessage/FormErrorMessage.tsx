@@ -1,4 +1,4 @@
-import { component$, Slot, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, Slot, useSignal, useTask$ } from "@builder.io/qwik";
 
 export type FormErrorMessageSize = "sm" | "md" | "lg";
 
@@ -59,16 +59,21 @@ export const FormErrorMessage = component$<FormErrorMessageProps>(
       : "";
 
     // Run only on the client to handle animation
-    useVisibleTask$(() => {
+    useTask$(({ cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       // Set mounted to true after component mounts
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         isMounted.value = true;
       }, 10);
 
       // Set mounted to false before component unmounts
-      return () => {
+      cleanup(() => {
+        clearTimeout(timeoutId);
         isMounted.value = false;
-      };
+      });
     });
 
     return (

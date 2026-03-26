@@ -3,7 +3,7 @@ import {
   $,
   useSignal,
   useStore,
-  useVisibleTask$,
+  useTask$,
 } from "@builder.io/qwik";
 import type {
   VPNClientAdvancedState,
@@ -34,7 +34,11 @@ export const StepPriorities = component$<StepPrioritiesProps>(
     });
 
     // Initialize weights and priorities once on mount
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       console.log(
         "[StepPriorities] useVisibleTask triggered, current VPNs:",
         wizardState.vpnConfigs.map((v) => ({

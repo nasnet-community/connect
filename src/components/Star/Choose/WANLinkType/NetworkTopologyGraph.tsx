@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
 import {
   LuGlobe,
   LuGlobe2,
@@ -42,7 +42,11 @@ export const NetworkTopologyGraph = component$(
     const isExpanded = useSignal(false);
     const dialogRef = useSignal<HTMLDialogElement>();
 
-    useVisibleTask$(({ track, cleanup }) => {
+    useTask$(({ track, cleanup }) => {
+      if (typeof document === "undefined" || typeof window === "undefined") {
+        return;
+      }
+
       track(() => isExpanded.value);
       track(() => dialogRef.value);
 

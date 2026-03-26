@@ -1,4 +1,4 @@
-import { component$, $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { TabNavigationProps } from "./TabNavigation.types";
 import { useTabStyles } from "./hooks/useTabStyles";
 import { TabItem } from "./TabItem";
@@ -59,22 +59,33 @@ export const TabNavigation = component$<TabNavigationProps>(
     });
 
     // Initialize scroll check on mount
-    useVisibleTask$(() => {
+    useTask$(({ track, cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      track(() => containerRef.value);
+
       checkScroll$();
       const container = containerRef.value;
       if (container) {
         container.addEventListener("scroll", checkScroll$);
         window.addEventListener("resize", checkScroll$);
-        return () => {
+        cleanup(() => {
           container.removeEventListener("scroll", checkScroll$);
           window.removeEventListener("resize", checkScroll$);
-        };
+        });
       }
     });
 
     // Scroll to active tab on mount and when active tab changes
-    useVisibleTask$(({ track }) => {
+    useTask$(({ track }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       track(() => activeTab);
+      track(() => containerRef.value);
       if (containerRef.value) {
         const activeElement = containerRef.value.querySelector(
           `[aria-selected="true"]`,

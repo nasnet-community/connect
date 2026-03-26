@@ -2,7 +2,7 @@ import {
   $,
   component$,
   useSignal,
-  useVisibleTask$,
+  useTask$,
   type QRL,
 } from "@builder.io/qwik";
 import {
@@ -168,8 +168,14 @@ export const ModernTabs = component$<ModernTabsProps>((props) => {
     indicatorRef.value.style.width = `${width}px`;
   });
 
-  useVisibleTask$(({ track }) => {
+  useTask$(({ track }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     track(() => activeCategory);
+    track(() => containerRef.value);
+    track(() => indicatorRef.value);
     updateIndicator();
   });
 

@@ -3,7 +3,6 @@ import {
   useSignal,
   useStore,
   useTask$,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 import { useContext } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
@@ -43,9 +42,12 @@ export const useUserCredential = ({
     // In Easy mode, protocols are auto-assigned, so consider them valid
     (isEasyMode || user.VPNType.length > 0);
 
-  // Use useVisibleTask$ to validate and update step completion
-  // This runs on the client and doesn't have serialization issues
-  useVisibleTask$(({ track }) => {
+  // Keep step completion in sync with the current credential validity.
+  useTask$(({ track }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     // Track the user and all users for validation
     track(() => user);
     track(() => stepper.data.users);
@@ -84,8 +86,7 @@ export const useUserCredential = ({
     }
   });
 
-  // Event handlers for inputs - they don't need to call validation explicitly
-  // as useVisibleTask$ will handle that reactively
+  // Event handlers for inputs - reactive validation is handled by useTask$.
   const handleUsernameChange = $(async (value: string) => {
     await onUsernameChange$(value, index);
   });

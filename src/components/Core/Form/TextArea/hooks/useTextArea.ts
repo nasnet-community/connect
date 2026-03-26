@@ -1,7 +1,6 @@
 import {
   useSignal,
   useTask$,
-  useVisibleTask$,
   $,
   useComputed$,
 } from "@builder.io/qwik";
@@ -113,7 +112,11 @@ export function useTextArea(props: TextAreaProps) {
   });
 
   // Set up auto-resize logic
-  useVisibleTask$(({ track }) => {
+  useTask$(({ track }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     track(() => textareaRef.value);
 
     if (!textareaRef.value) return;

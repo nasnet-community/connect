@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useTask$ } from "@builder.io/qwik";
 import type { GraphNode, GraphProps } from "./types";
 import { NodeRenderer } from "./Node/NodeRenderer";
 import { processConnections } from "./Traffic/TrafficUtils";
@@ -80,7 +80,13 @@ export const Graph = component$<GraphProps>((props) => {
 
   const nodeMap = getNodeMap();
 
-  useVisibleTask$(({ cleanup }) => {
+  useTask$(({ track, cleanup }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    track(() => svgRef.value);
+
     if (!svgRef.value) return;
 
     const keydownHandlers = new Map<Element, EventListener>();

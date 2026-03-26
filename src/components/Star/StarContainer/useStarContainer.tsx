@@ -4,7 +4,6 @@ import {
   useContext,
   $,
   useTask$,
-  useVisibleTask$,
   component$,
 } from "@builder.io/qwik";
 import { track } from "@vercel/analytics";
@@ -52,7 +51,11 @@ export const useStarContainer = (): StarContainerReturn => {
   });
 
   // Track session start when component mounts
-  useVisibleTask$(() => {
+  useTask$(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     if (!sessionStarted.value) {
       track("router_config_session_started", {
         user_mode: state.Choose.Mode,
