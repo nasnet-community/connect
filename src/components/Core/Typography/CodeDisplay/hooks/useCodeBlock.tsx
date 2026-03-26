@@ -1,4 +1,4 @@
-import { useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
+import { useSignal, useTask$, $ } from "@builder.io/qwik";
 import { type CodeBlockProps, type CodeTheme } from "../CodeDisplay.types";
 
 export function useCodeBlock({
@@ -21,7 +21,11 @@ export function useCodeBlock({
   const highlightedCode = useSignal(code);
   const themeSignal = useSignal<CodeTheme>(theme);
 
-  useVisibleTask$(({ track }) => {
+  useTask$(({ track, cleanup }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     track(() => code);
     track(() => language);
     track(() => highlight);
@@ -104,9 +108,9 @@ export function useCodeBlock({
       };
 
       mediaQuery.addEventListener("change", listener);
-      return () => {
+      cleanup(() => {
         mediaQuery.removeEventListener("change", listener);
-      };
+      });
     }
   });
 

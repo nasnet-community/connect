@@ -1,4 +1,4 @@
-import { $, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import type { GraphConfig, GraphNode, GraphConnection } from "../types";
 
 export interface UseGraphResult {
@@ -56,7 +56,11 @@ export const useGraph = (
   });
 
   // Ensure we clean up when the component unmounts
-  useVisibleTask$(({ cleanup }) => {
+  useTask$(({ cleanup }) => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
     // Handle ESC key to close expanded graph
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isExpanded.value) {

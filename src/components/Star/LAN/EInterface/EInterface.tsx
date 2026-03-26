@@ -1,6 +1,6 @@
 import {
   component$,
-  useVisibleTask$,
+  useTask$,
   $,
   useSignal,
   useContext,
@@ -98,7 +98,11 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
     allInterfaces.value = allIntfs;
   });
 
-  useVisibleTask$(async () => {
+  useTask$(async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     await initializeFromContext();
 
     // Generate available networks from StarContext

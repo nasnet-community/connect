@@ -2,7 +2,7 @@ import {
   $,
   component$,
   useSignal,
-  useVisibleTask$,
+  useTask$,
   type Signal,
   type QRL,
 } from "@builder.io/qwik";
@@ -71,7 +71,11 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
     });
 
     // Keyboard support for fullscreen image viewer
-    useVisibleTask$(({ cleanup }) => {
+    useTask$(({ cleanup }) => {
+      if (typeof document === "undefined") {
+        return;
+      }
+
       const handleKeyDown = (e: KeyboardEvent) => {
         if (isImageFullscreen.value) {
           switch (e.key) {

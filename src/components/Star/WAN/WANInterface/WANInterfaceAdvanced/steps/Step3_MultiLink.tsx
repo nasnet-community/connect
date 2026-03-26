@@ -1,4 +1,4 @@
-import { component$, $, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$ } from "@builder.io/qwik";
 import type { WANWizardState, MultiLinkUIConfig } from "../types";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
 import { Select, Input, FormLabel, FormHelperText } from "~/components/Core";
@@ -21,16 +21,24 @@ export const Step3_MultiLink = component$<Step3Props>(
     >(currentStrategy);
 
     // Initialize strategy if not set
-    useVisibleTask$(() => {
+    useTask$(({ cleanup }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
       // Only set initial strategy if none exists
       if (!wizardState.multiLinkStrategy) {
         // Use setTimeout to ensure state mutation happens after render
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           wizardActions.setMultiLinkStrategy$({
             strategy: "LoadBalance",
             loadBalanceMethod: "PCC",
           });
         }, 0);
+
+        cleanup(() => {
+          clearTimeout(timeoutId);
+        });
       }
     });
 

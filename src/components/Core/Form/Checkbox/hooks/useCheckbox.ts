@@ -1,4 +1,4 @@
-import { $, useId, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, useId, useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { CheckboxSize } from "../Checkbox.types";
 
@@ -31,7 +31,11 @@ export function useCheckbox(props: UseCheckboxProps) {
   const inputRef = useSignal<HTMLInputElement>();
 
   // Set indeterminate state (requires DOM access)
-  useVisibleTask$(({ track }) => {
+  useTask$(({ track }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     track(() => indeterminate);
     track(() => inputRef.value);
 

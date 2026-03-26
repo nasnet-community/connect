@@ -2,7 +2,6 @@ import {
   component$,
   useSignal,
   useTask$,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
@@ -42,10 +41,13 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(
       }
     });
 
-    // Use a useVisibleTask$ to update context when the component is visible
-    // This will only run on the client, so serialization is not an issue
-    useVisibleTask$(() => {
-      const isEnabled = anyProtocolEnabled.value;
+    // Mirror protocol enablement into step completion state on the client.
+    useTask$(({ track }) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const isEnabled = track(() => anyProtocolEnabled.value);
 
       // Directly update the context data's stepState
       context.data.stepState.protocols = isEnabled;

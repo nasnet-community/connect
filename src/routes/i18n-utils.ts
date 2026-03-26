@@ -5,7 +5,7 @@ import {
   ɵparseTranslation,
   ɵtranslate,
 } from "@angular/localize";
-import { getLocale, useVisibleTask$ } from "@builder.io/qwik";
+import { getLocale, useTask$ } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
 import type { RenderOptions } from "@builder.io/qwik/server";
 
@@ -176,8 +176,12 @@ export function useI18n() {
   // During development only, keep the browser translation catalog aligned with the
   // active route locale. Locale switches use a full page reload, but this also covers
   // the initial browser render after the dev server has reloaded modules.
-  useVisibleTask$(({ track }) => {
+  useTask$(({ track }) => {
     if (!import.meta.env.DEV) {
+      return;
+    }
+
+    if (typeof document === "undefined") {
       return;
     }
 
