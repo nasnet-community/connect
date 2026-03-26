@@ -246,9 +246,7 @@ export const Certificate = (
 export const NTP = (NTPConfig: NTPConfig): RouterConfig => {
     // Use provided servers or default to pool.ntp.org if empty j
     const servers =
-        NTPConfig.servers.length > 0
-            ? NTPConfig.servers
-            : ["pool.ntp.org"];
+        NTPConfig.servers.length > 0 ? NTPConfig.servers : ["pool.ntp.org"];
 
     const config: RouterConfig = {
         "/system ntp client": ["set enabled=yes"],

@@ -141,8 +141,9 @@ export function useStateViewer(initialState: any) {
       // Extract slave router index from ID
       const slaveIndex = parseInt(selectedSlaveRouter.value.split("-")[1]);
       const slaveRouters =
-        (initialState.Choose?.RouterModels as RouterModels[] | undefined)
-          ?.filter((r) => !r.isMaster) ?? [];
+        (
+          initialState.Choose?.RouterModels as RouterModels[] | undefined
+        )?.filter((r) => !r.isMaster) ?? [];
       const slaveRouterModel = slaveRouters.at(slaveIndex);
 
       if (!slaveRouterModel) {

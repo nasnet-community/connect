@@ -168,9 +168,9 @@ export const Step1_VPNConnections = component$<Step1VPNConnectionsProps>(
         <div class="space-y-4">
           {wizardState.vpnConfigs.map((vpn, index) => {
             const isExpanded = expandedVPN.value === vpn.id;
-              const hasErrors = Object.keys(wizardState.validationErrors).some(
-                (key) => key.startsWith(`vpn-${vpn.id}`),
-              );
+            const hasErrors = Object.keys(wizardState.validationErrors).some(
+              (key) => key.startsWith(`vpn-${vpn.id}`),
+            );
 
             // Determine card status
             const getVPNStatus = () => {

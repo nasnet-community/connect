@@ -1,10 +1,4 @@
-import {
-  component$,
-  $,
-  useSignal,
-  useTask$,
-  type QRL,
-} from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$, type QRL } from "@builder.io/qwik";
 import { CStepper, type CStepMeta } from "~/components/Core/Stepper/CStepper";
 import { SegmentedControl } from "~/components/Core";
 import { useVPNClientAdvanced } from "./hooks/useVPNClientAdvanced";

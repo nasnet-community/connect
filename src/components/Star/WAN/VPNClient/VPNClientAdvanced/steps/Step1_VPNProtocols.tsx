@@ -1,10 +1,4 @@
-import {
-  component$,
-  $,
-  useSignal,
-  useTask$,
-  type QRL,
-} from "@builder.io/qwik";
+import { component$, $, useSignal, useTask$, type QRL } from "@builder.io/qwik";
 import { Alert, Input } from "~/components/Core";
 import type {
   VPNClientAdvancedState,

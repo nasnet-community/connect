@@ -44,15 +44,14 @@ export const useWireguardServer = () => {
   // Draft configurations for each tab (not saved to StarContext until explicit save)
   const draftConfigs = useSignal<WireguardDraftConfig[]>(
     wireguardServers.length > 0
-      ? wireguardServers
-          .map((server: WireguardServerConfig) => ({
-            name: server.Interface.Name,
-            privateKey: server.Interface.PrivateKey || "",
-            interfaceAddress: server.Interface.InterfaceAddress,
-            listenPort: server.Interface.ListenPort || 51820,
-            mtu: server.Interface.Mtu || 1420,
-            vsNetwork: server.Interface.VSNetwork || "VPN",
-          }))
+      ? wireguardServers.map((server: WireguardServerConfig) => ({
+          name: server.Interface.Name,
+          privateKey: server.Interface.PrivateKey || "",
+          interfaceAddress: server.Interface.InterfaceAddress,
+          listenPort: server.Interface.ListenPort || 51820,
+          mtu: server.Interface.Mtu || 1420,
+          vsNetwork: server.Interface.VSNetwork || "VPN",
+        }))
       : [
           {
             name: "wg-server-1",
@@ -253,7 +252,8 @@ export const useWireguardServer = () => {
 
       // If valid, add to valid servers list
       if (!hasError) {
-        const existingPeers = i < wireguardServers.length ? wireguardServers[i].Peers : [];
+        const existingPeers =
+          i < wireguardServers.length ? wireguardServers[i].Peers : [];
         const serverConfig: WireguardServerConfig = {
           Interface: {
             Name: draft.name,

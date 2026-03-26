@@ -253,10 +253,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         }
 
         if (!protocol && vpnClientNetworks?.L2TP?.length) {
-          if (
-            vpnClientIndex <=
-            currentCount + vpnClientNetworks.L2TP.length
-          ) {
+          if (vpnClientIndex <= currentCount + vpnClientNetworks.L2TP.length) {
             protocol = "L2TP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
@@ -264,10 +261,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         }
 
         if (!protocol && vpnClientNetworks?.PPTP?.length) {
-          if (
-            vpnClientIndex <=
-            currentCount + vpnClientNetworks.PPTP.length
-          ) {
+          if (vpnClientIndex <= currentCount + vpnClientNetworks.PPTP.length) {
             protocol = "PPTP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
@@ -275,10 +269,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         }
 
         if (!protocol && vpnClientNetworks?.SSTP?.length) {
-          if (
-            vpnClientIndex <=
-            currentCount + vpnClientNetworks.SSTP.length
-          ) {
+          if (vpnClientIndex <= currentCount + vpnClientNetworks.SSTP.length) {
             protocol = "SSTP";
             _protocolIndex = vpnClientIndex - currentCount - 1;
           }
@@ -345,37 +336,27 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         );
 
         // Determine tunnel type from Networks
-        if (
-          tunnelNetworks?.IPIP?.some(
-            (name: string) => name === config.key,
-          )
-        ) {
+        if (tunnelNetworks?.IPIP?.some((name: string) => name === config.key)) {
           if (!defaultSubnets.TunnelSubnets.IPIP) {
             defaultSubnets.TunnelSubnets.IPIP = [];
           }
           defaultSubnets.TunnelSubnets.IPIP.push(subnetConfig);
         } else if (
-          tunnelNetworks?.Eoip?.some(
-            (name: string) => name === config.key,
-          )
+          tunnelNetworks?.Eoip?.some((name: string) => name === config.key)
         ) {
           if (!defaultSubnets.TunnelSubnets.Eoip) {
             defaultSubnets.TunnelSubnets.Eoip = [];
           }
           defaultSubnets.TunnelSubnets.Eoip.push(subnetConfig);
         } else if (
-          tunnelNetworks?.Gre?.some(
-            (name: string) => name === config.key,
-          )
+          tunnelNetworks?.Gre?.some((name: string) => name === config.key)
         ) {
           if (!defaultSubnets.TunnelSubnets.Gre) {
             defaultSubnets.TunnelSubnets.Gre = [];
           }
           defaultSubnets.TunnelSubnets.Gre.push(subnetConfig);
         } else if (
-          tunnelNetworks?.Vxlan?.some(
-            (name: string) => name === config.key,
-          )
+          tunnelNetworks?.Vxlan?.some((name: string) => name === config.key)
         ) {
           if (!defaultSubnets.TunnelSubnets.Vxlan) {
             defaultSubnets.TunnelSubnets.Vxlan = [];
@@ -526,7 +507,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           currentIndex += vpnClients.IKeV2.length;
         }
 
-          if (protocol && value !== null) {
+        if (protocol && value !== null) {
           vpnClientsByProtocol[protocol].push(
             createSubnetConfig(config.label, value, config.mask),
           );
@@ -590,7 +571,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     singleServerProtocols.forEach(({ key, enabled }) => {
       if (enabled) {
         const value = values.value[key];
-          if (value !== null) {
+        if (value !== null) {
           finalSubnets.VPNServerSubnets[key] = createSubnetConfig(
             key,
             value,
@@ -615,7 +596,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         configs.forEach((tunnel: any, index: number) => {
           const tunnelName = tunnel.name || `${key}${index + 1}`;
           const value = values.value[tunnelName];
-            if (value !== null) {
+          if (value !== null) {
             tunnelConfigs.push(createSubnetConfig(tunnelName, value, 30));
           }
         });
@@ -766,57 +747,53 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
 
                     {/* Domestic WAN Networks */}
                     {(domesticNetworks?.length ?? 0) > 0 && (
-                        <div class="rounded-lg border border-orange-200 bg-orange-50/50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
-                          <h4 class="mb-3 flex items-center gap-2 font-medium text-orange-700 dark:text-orange-300">
-                            <LuHome class="h-4 w-4" />
-                            {$localize`Domestic WAN Networks`}
-                          </h4>
-                          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {domesticNetworks?.map(
-                              (networkName, index) => (
-                                <div
-                                  key={index}
-                                  class="flex justify-between text-sm"
-                                >
-                                  <span class="text-gray-600 dark:text-gray-400">
-                                    {networkName}:
-                                  </span>
-                                  <span class="font-mono text-gray-900 dark:text-gray-100">
-                                    192.168.{21 + index}.0/24
-                                  </span>
-                                </div>
-                              ),
-                            )}
-                          </div>
+                      <div class="rounded-lg border border-orange-200 bg-orange-50/50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
+                        <h4 class="mb-3 flex items-center gap-2 font-medium text-orange-700 dark:text-orange-300">
+                          <LuHome class="h-4 w-4" />
+                          {$localize`Domestic WAN Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          {domesticNetworks?.map((networkName, index) => (
+                            <div
+                              key={index}
+                              class="flex justify-between text-sm"
+                            >
+                              <span class="text-gray-600 dark:text-gray-400">
+                                {networkName}:
+                              </span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">
+                                192.168.{21 + index}.0/24
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     {/* Foreign WAN Networks */}
                     {(foreignNetworks?.length ?? 0) > 0 && (
-                        <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                          <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-700 dark:text-blue-300">
-                            <LuGlobe class="h-4 w-4" />
-                            {$localize`Foreign WAN Networks`}
-                          </h4>
-                          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            {foreignNetworks?.map(
-                              (networkName, index) => (
-                                <div
-                                  key={index}
-                                  class="flex justify-between text-sm"
-                                >
-                                  <span class="text-gray-600 dark:text-gray-400">
-                                    {networkName}:
-                                  </span>
-                                  <span class="font-mono text-gray-900 dark:text-gray-100">
-                                    192.168.{31 + index}.0/24
-                                  </span>
-                                </div>
-                              ),
-                            )}
-                          </div>
+                      <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                        <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-700 dark:text-blue-300">
+                          <LuGlobe class="h-4 w-4" />
+                          {$localize`Foreign WAN Networks`}
+                        </h4>
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          {foreignNetworks?.map((networkName, index) => (
+                            <div
+                              key={index}
+                              class="flex justify-between text-sm"
+                            >
+                              <span class="text-gray-600 dark:text-gray-400">
+                                {networkName}:
+                              </span>
+                              <span class="font-mono text-gray-900 dark:text-gray-100">
+                                192.168.{31 + index}.0/24
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     {/* VPN Client Networks */}
                     {((vpnClientNetworks?.Wireguard?.length ?? 0) > 0 ||
@@ -956,11 +933,9 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     {/* VPN Server Networks if configured */}
                     {vpnServerState &&
                       ((vpnServerState.WireguardServers &&
-                        vpnServerState.WireguardServers
-                          .length > 0) ||
+                        vpnServerState.WireguardServers.length > 0) ||
                         (vpnServerState.OpenVpnServer &&
-                          vpnServerState.OpenVpnServer.length >
-                            0) ||
+                          vpnServerState.OpenVpnServer.length > 0) ||
                         vpnServerState.L2tpServer?.enabled ||
                         vpnServerState.PptpServer?.enabled ||
                         vpnServerState.SstpServer?.enabled ||

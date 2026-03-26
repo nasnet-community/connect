@@ -1,4 +1,10 @@
-import { component$, useSignal, useTask$, useOnWindow, $ } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  useTask$,
+  useOnWindow,
+  $,
+} from "@builder.io/qwik";
 import type { TableProps, TableColumn } from "./Table.types";
 import { useTable } from "./hooks/useTable";
 import { TableHead } from "./components/TableHead";

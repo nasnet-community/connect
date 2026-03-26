@@ -1,10 +1,4 @@
-import {
-  component$,
-  useTask$,
-  Slot,
-  useStore,
-  $,
-} from "@builder.io/qwik";
+import { component$, useTask$, Slot, useStore, $ } from "@builder.io/qwik";
 import { isBrowser } from "@builder.io/qwik/build";
 
 export type RTLDirection = "rtl" | "ltr";
@@ -124,9 +118,7 @@ export const RTLProvider = component$<RTLProviderProps>(
 
       cleanup(() => {
         // Only reset if we're unmounting the root RTLProvider
-        const hasParentRTL = document.querySelector(
-          '[data-rtl-parent="true"]',
-        );
+        const hasParentRTL = document.querySelector('[data-rtl-parent="true"]');
         if (!hasParentRTL) {
           document.documentElement.setAttribute("dir", "ltr");
           document.documentElement.classList.remove("rtl");

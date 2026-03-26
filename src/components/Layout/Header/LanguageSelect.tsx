@@ -1,9 +1,4 @@
-import {
-  component$,
-  type QRL,
-  useSignal,
-  useTask$,
-} from "@builder.io/qwik";
+import { component$, type QRL, useSignal, useTask$ } from "@builder.io/qwik";
 
 interface Language {
   code: string;

@@ -1,9 +1,4 @@
-import {
-  $,
-  component$,
-  type QRL,
-  useSignal,
-} from "@builder.io/qwik";
+import { $, component$, type QRL, useSignal } from "@builder.io/qwik";
 import {
   LuInfo,
   LuCheck,

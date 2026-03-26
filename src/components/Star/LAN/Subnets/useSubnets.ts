@@ -46,8 +46,7 @@ export const useSubnets = (): UseSubnetsReturn => {
 
       const ipParts = ip.split(".").map((p) => parseInt(p, 10));
       const maskParts = mask.split(".").map((p) => parseInt(p, 10));
-      if (ipParts.length !== 4 || maskParts.length !== 4)
-        return null;
+      if (ipParts.length !== 4 || maskParts.length !== 4) return null;
       if (ipParts.some((n) => isNaN(n)) || maskParts.some((n) => isNaN(n)))
         return null;
 

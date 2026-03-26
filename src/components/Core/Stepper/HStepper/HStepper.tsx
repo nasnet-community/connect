@@ -127,9 +127,7 @@ export const HStepper = component$((props: HStepperProps) => {
                 steps.value[activeStep.value].isComplete === true
               }
               isLoading={
-                "isLoading" in stepperData
-                  ? stepperData.isLoading.value
-                  : false
+                "isLoading" in stepperData ? stepperData.isLoading.value : false
               }
               isLastStep={isLastStep}
               onPrevious$={handlePrev$}

@@ -89,10 +89,10 @@ export const WANInterfaceSelector = component$<WANInterfaceSelectorProps>(
               if (value) {
                 const interfaceName = value as string;
                 const wanType = wanInterfaceData.value.typeMap[interfaceName];
-                  onSelect$({
-                    WANType: wanType,
-                    WANName: interfaceName,
-                  });
+                onSelect$({
+                  WANType: wanType,
+                  WANName: interfaceName,
+                });
               }
             }}
             disabled={disabled}

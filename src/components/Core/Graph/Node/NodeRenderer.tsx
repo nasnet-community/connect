@@ -160,7 +160,9 @@ function renderBasicNode(node: GraphNode, color?: string) {
   );
 }
 
-function isNetworkNodeType(nodeType: GraphNode["type"]): nodeType is NetworkNodeType {
+function isNetworkNodeType(
+  nodeType: GraphNode["type"],
+): nodeType is NetworkNodeType {
   return typeof nodeType === "string" && nodeType in networkNodeTypes;
 }
 

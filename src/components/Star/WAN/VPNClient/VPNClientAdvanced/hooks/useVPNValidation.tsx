@@ -115,7 +115,11 @@ export function useVPNValidation(): UseVPNValidationReturn {
         !config.PeerEndpointAddress ||
         !(await isValidHostname(config.PeerEndpointAddress))
       ) {
-        appendError(errors, `${prefix}-server`, "Invalid peer endpoint address");
+        appendError(
+          errors,
+          `${prefix}-server`,
+          "Invalid peer endpoint address",
+        );
       }
 
       if (!(await isValidPort(config.PeerEndpointPort))) {
