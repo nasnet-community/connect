@@ -255,10 +255,7 @@ export const useTunnel = () => {
     if (!tunnelsEnabled.value || eoipTunnels.length === 0) return true;
 
     return eoipTunnels.every(
-      (tunnel) =>
-        tunnel.name &&
-        tunnel.localAddress &&
-        tunnel.remoteAddress,
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
   });
 
@@ -274,10 +271,7 @@ export const useTunnel = () => {
     if (!tunnelsEnabled.value || vxlanTunnels.length === 0) return true;
 
     return vxlanTunnels.every(
-      (tunnel) =>
-        tunnel.name &&
-        tunnel.localAddress &&
-        tunnel.remoteAddress,
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
   });
 
@@ -299,10 +293,7 @@ export const useTunnel = () => {
 
     // Check EOIP tunnels validity
     const validEoip = eoipTunnels.every(
-      (tunnel) =>
-        tunnel.name &&
-        tunnel.localAddress &&
-        tunnel.remoteAddress,
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
 
     // Check GRE tunnels validity
@@ -312,10 +303,7 @@ export const useTunnel = () => {
 
     // Check VXLAN tunnels validity
     const validVxlan = vxlanTunnels.every(
-      (tunnel) =>
-        tunnel.name &&
-        tunnel.localAddress &&
-        tunnel.remoteAddress,
+      (tunnel) => tunnel.name && tunnel.localAddress && tunnel.remoteAddress,
     );
 
     return hasTunnels && validIpip && validEoip && validGre && validVxlan;

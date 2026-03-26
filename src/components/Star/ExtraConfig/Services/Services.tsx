@@ -546,7 +546,8 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                               const port =
                                 typeof currentService === "string"
                                   ? service.defaultPort
-                                  : currentService.port ?? service.defaultPort;
+                                  : (currentService.port ??
+                                    service.defaultPort);
 
                               // Mutate the existing proxy directly (Qwik best practice)
                               ctx.state.ExtraConfig.services[service.name] = {

@@ -1,4 +1,10 @@
-import { component$, useSignal, useTask$, useOnWindow, $ } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  useTask$,
+  useOnWindow,
+  $,
+} from "@builder.io/qwik";
 
 export const MobileWarning = component$(() => {
   const showWarning = useSignal(false);
@@ -15,7 +21,8 @@ export const MobileWarning = component$(() => {
     );
     const isSmallScreen = window.innerWidth < 1024;
 
-    showWarning.value = (isMobile || isTablet || isSmallScreen) && !isChecked.value;
+    showWarning.value =
+      (isMobile || isTablet || isSmallScreen) && !isChecked.value;
   });
 
   useTask$(() => {

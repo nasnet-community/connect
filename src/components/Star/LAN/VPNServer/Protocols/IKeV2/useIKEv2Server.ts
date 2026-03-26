@@ -111,10 +111,7 @@ export const useIKEv2Server = () => {
 
     // Validate auth method and related fields
     if (newConfig.identities.authMethod === "pre-shared-key") {
-      if (
-        !newConfig.identities.secret ||
-        !newConfig.identities.secret.trim()
-      ) {
+      if (!newConfig.identities.secret || !newConfig.identities.secret.trim()) {
         presharedKeyError.value = $localize`Pre-shared key is required for this authentication method`;
         isValid = false;
       } else if (newConfig.identities.secret.length < 8) {

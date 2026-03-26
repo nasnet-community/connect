@@ -1,4 +1,10 @@
-import { $, component$, useOnWindow, useSignal, useTask$ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useOnWindow,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
 
 export type Theme = "light" | "dark" | "system";
 

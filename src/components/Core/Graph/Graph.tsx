@@ -96,7 +96,8 @@ export const Graph = component$<GraphProps>((props) => {
       .forEach((element) => {
         const handler: EventListener = (event) => {
           const keyboardEvent = event as KeyboardEvent;
-          if (keyboardEvent.key !== "Enter" && keyboardEvent.key !== " ") return;
+          if (keyboardEvent.key !== "Enter" && keyboardEvent.key !== " ")
+            return;
 
           keyboardEvent.preventDefault();
 

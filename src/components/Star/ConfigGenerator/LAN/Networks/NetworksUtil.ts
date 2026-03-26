@@ -45,10 +45,7 @@ export const extractBridgeNames = (
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (
-            networks.BaseNetworks.Split &&
-            subnets?.BaseSubnets.Split?.subnet
-        ) {
+        if (networks.BaseNetworks.Split && subnets?.BaseSubnets.Split?.subnet) {
             bridgeNames.push("LANBridgeSplit");
         }
         if (
@@ -165,10 +162,7 @@ export const extractTableNames = (
 
     // Base Networks - use the network type as the name
     if (networks.BaseNetworks) {
-        if (
-            networks.BaseNetworks.Split &&
-            subnets?.BaseSubnets.Split?.subnet
-        ) {
+        if (networks.BaseNetworks.Split && subnets?.BaseSubnets.Split?.subnet) {
             tableNames.push("to-Split");
         }
         if (

@@ -1,10 +1,4 @@
-import {
-  component$,
-  $,
-  useSignal,
-  useStore,
-  useTask$,
-} from "@builder.io/qwik";
+import { component$, $, useSignal, useStore, useTask$ } from "@builder.io/qwik";
 import type {
   VPNClientAdvancedState,
   MultiVPNStrategy,
@@ -89,7 +83,7 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         (strategy.value === "LoadBalance" || strategy.value === "Both")
       ) {
         const needsWeightInit = wizardState.vpnConfigs.some(
-            (vpn) => vpn.weight === undefined || vpn.weight === 0,
+          (vpn) => vpn.weight === undefined || vpn.weight === 0,
         );
 
         if (needsWeightInit) {

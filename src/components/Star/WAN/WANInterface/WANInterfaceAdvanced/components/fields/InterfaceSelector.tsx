@@ -103,13 +103,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
           buildOption(iface),
         );
       } else if (link.interfaceType === "SFP") {
-        options = interfaces.sfp.map((iface: string) =>
-          buildOption(iface),
-        );
+        options = interfaces.sfp.map((iface: string) => buildOption(iface));
       } else if (link.interfaceType === "LTE") {
-        options = interfaces.lte.map((iface: string) =>
-          buildOption(iface),
-        );
+        options = interfaces.lte.map((iface: string) => buildOption(iface));
       }
 
       return options;

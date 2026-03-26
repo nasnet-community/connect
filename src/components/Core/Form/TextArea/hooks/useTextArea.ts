@@ -1,9 +1,4 @@
-import {
-  useSignal,
-  useTask$,
-  $,
-  useComputed$,
-} from "@builder.io/qwik";
+import { useSignal, useTask$, $, useComputed$ } from "@builder.io/qwik";
 import type { TextAreaProps } from "../TextArea.types";
 import { useForm } from "../../Form/hooks/useForm";
 

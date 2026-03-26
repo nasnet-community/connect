@@ -1,8 +1,4 @@
-import {
-  component$,
-  useSignal,
-  useTask$,
-} from "@builder.io/qwik";
+import { component$, useSignal, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
 import { ProtocolList } from "../../Protocols/ProtocolList";

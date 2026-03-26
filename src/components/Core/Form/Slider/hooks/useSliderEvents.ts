@@ -179,9 +179,15 @@ export function useSliderEvents({
     const sliderRoot = trackRef.value?.closest<HTMLElement>(
       '[data-slider-root="true"]',
     );
-    const thumbKeyHandlers = new Map<HTMLElement, (event: KeyboardEvent) => void>();
+    const thumbKeyHandlers = new Map<
+      HTMLElement,
+      (event: KeyboardEvent) => void
+    >();
 
-    const updateThumbValue = (thumb: "single" | "start" | "end", value: number) => {
+    const updateThumbValue = (
+      thumb: "single" | "start" | "end",
+      value: number,
+    ) => {
       if (thumb === "single") {
         void updateSingleValue(value);
       } else if (thumb === "start") {
