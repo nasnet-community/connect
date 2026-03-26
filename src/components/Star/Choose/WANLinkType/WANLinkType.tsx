@@ -119,6 +119,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
               key={String(option.value)}
               value={option.value}
               isSelected={wanLinkType === option.value}
+              testId={`wan-link-${option.value}`}
               icon={option.icon}
               title={option.title}
               description={option.description}
@@ -136,6 +137,7 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
               key={String(option.value)}
               value={option.value}
               isSelected={wanLinkType === option.value}
+              testId={`wan-link-${option.value}`}
               icon={option.icon}
               title={option.title}
               description={option.description}

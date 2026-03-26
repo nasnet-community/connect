@@ -78,6 +78,7 @@ export const RouterMode = component$((props: RouterModeProps) => {
             key={option.mode}
             value={option.mode}
             isSelected={selectedMode === option.mode && !option.disabled}
+            testId={`router-mode-${option.mode === "AP Mode" ? "single" : "trunk"}`}
             icon={option.icon}
             title={option.title}
             description={option.description}

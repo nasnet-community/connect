@@ -15,6 +15,7 @@ export interface OptionCardProps {
   graph: JSXOutput;
   onSelect$: PropFunction<(value: any) => void>;
   isHorizontal?: boolean;
+  testId?: string;
 }
 
 export const OptionCard = component$((props: OptionCardProps) => {
@@ -28,6 +29,7 @@ export const OptionCard = component$((props: OptionCardProps) => {
       features={props.features}
       media={props.graph}
       onSelect$={props.onSelect$}
+      testId={props.testId}
       orientation={props.isHorizontal ? "horizontal" : "vertical"}
       overflowVisible={true}
       bodyClass={props.isHorizontal ? "p-6" : "p-6"}

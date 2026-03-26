@@ -3,6 +3,14 @@ import { LuInfo } from "@qwikest/icons/lucide";
 import { Button } from "~/components/Core";
 import { type RouterData } from "./Constants";
 
+const toTestIdSegment = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+
 interface ClassyRouterCardProps {
   router: RouterData;
   isSelected: boolean;
@@ -59,6 +67,7 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
 
   return (
     <div
+      data-testid={`router-card-${toTestIdSegment(props.router.model)}`}
       class={`
         group relative h-full min-h-[260px] rounded-2xl border backdrop-blur-xl transition-all duration-300
         ${!props.isDisabled ? "cursor-pointer" : "cursor-not-allowed opacity-60"}

@@ -224,6 +224,11 @@ export interface SelectProps {
   "aria-describedby"?: string;
 
   /**
+   * Test hook for end-to-end automation
+   */
+  "data-testid"?: string;
+
+  /**
    * Whether the select is in a loading state
    * When true, shows loading spinner and disables interactions
    * @default false

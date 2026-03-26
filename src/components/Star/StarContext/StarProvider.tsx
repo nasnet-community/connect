@@ -82,26 +82,20 @@ export const StarContextProvider = component$(() => {
       return;
     }
 
-    const chooseSnapshot = () => ({
-      Mode: state.Choose.Mode,
-      Firmware: state.Choose.Firmware,
-      RouterMode: state.Choose.RouterMode,
-      WANLinkType: state.Choose.WANLinkType,
-      TrunkInterfaceType: state.Choose.TrunkInterfaceType,
-      RouterModels: state.Choose.RouterModels.map((routerModel) => ({
-        Model: routerModel.Model,
-        isMaster: routerModel.isMaster,
-        MasterSlaveInterface: routerModel.MasterSlaveInterface,
-        isCHR: routerModel.isCHR,
-        cpuArch: routerModel.cpuArch,
-      })),
-    });
+    const snapshot = () =>
+      JSON.parse(
+        JSON.stringify({
+          Choose: state.Choose,
+          WAN: state.WAN,
+          LAN: state.LAN,
+          ExtraConfig: state.ExtraConfig,
+          ShowConfig: state.ShowConfig,
+        }),
+      );
 
-    track(() => JSON.stringify(chooseSnapshot()));
+    track(() => JSON.stringify(snapshot()));
 
-    (window as any).__NASNET_TEST_STATE__ = {
-      Choose: chooseSnapshot(),
-    };
+    (window as any).__NASNET_TEST_STATE__ = snapshot();
   });
 
   useContextProvider(StarContext, contextValue);

@@ -42,6 +42,7 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
 
           {/* Download Button */}
           <Button
+            data-testid="easy-download-configuration"
             variant="primary"
             size="lg"
             onClick$={onROSDownload$}

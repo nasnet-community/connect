@@ -104,6 +104,7 @@ export const SetupMode = component$((props: StepProps) => {
             key={option.id}
             value={option.mode}
             isSelected={selectedMode === option.mode && !option.disabled}
+            testId={`setup-mode-${option.mode}`}
             icon={option.icon}
             title={option.title}
             description={option.description}

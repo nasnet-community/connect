@@ -27,6 +27,7 @@ export interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   class?: string;
+  "data-testid"?: string;
   onClick$?: QRL<() => void>;
   "aria-label"?: string;
   leftIcon?: boolean;

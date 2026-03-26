@@ -41,6 +41,7 @@ export const Code = component$<CodeProps>(
                 {$localize`Download .py`}
               </Button> */}
               <Button
+                data-testid="advanced-download-rsc"
                 variant="primary"
                 size="sm"
                 onClick$={onROSDownload$}

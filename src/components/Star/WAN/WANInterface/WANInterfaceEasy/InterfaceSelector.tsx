@@ -132,6 +132,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
           value={disabledStates}
           onPending={() => (
             <Select
+              data-testid={`wan-interface-select-${selectedInterfaceType.toLowerCase()}`}
               value={selectedInterface}
               onChange$={(value: string | string[]) =>
                 onSelect(value as string)
@@ -148,6 +149,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
           )}
           onResolved={(states) => (
             <Select
+              data-testid={`wan-interface-select-${selectedInterfaceType.toLowerCase()}`}
               value={selectedInterface}
               onChange$={(value: string | string[]) =>
                 onSelect(value as string)

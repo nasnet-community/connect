@@ -116,6 +116,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
               key={option.type}
               value={option.type}
               isSelected={isSelected && !isWirelessDisabled}
+              testId={`trunk-interface-type-${option.type}`}
               icon={option.icon}
               title={option.title}
               description={option.description}
