@@ -25,15 +25,25 @@ interface LocaleReport {
 }
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const localesDir = path.resolve(scriptDir, "../../locales");
+const messagesDir = path.resolve(scriptDir, "../../../messages");
 const args = new Set(process.argv.slice(2));
 const outputJson = args.has("--json");
 const outputMarkdown = args.has("--markdown");
 
 const readLocaleCatalog = async (locale: AppLocale): Promise<LocaleCatalog> => {
-  const filePath = path.join(localesDir, `message.${locale}.json`);
+  const filePath = path.join(messagesDir, `${locale}.json`);
   const fileContents = await readFile(filePath, "utf8");
-  return JSON.parse(fileContents) as LocaleCatalog;
+  const parsed = JSON.parse(fileContents) as Record<string, unknown>;
+  const translations = Object.fromEntries(
+    Object.entries(parsed).filter(
+      ([key, value]) => !key.startsWith("$") && typeof value === "string",
+    ),
+  ) as Record<string, string>;
+
+  return {
+    locale,
+    translations,
+  };
 };
 
 const formatPercent = (value: number) => `${value.toFixed(1)}%`;
