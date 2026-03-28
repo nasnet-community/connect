@@ -5,7 +5,6 @@ import { LuTerminal, LuDownload } from "@qwikest/icons/lucide";
 
 interface CodeProps {
   configPreview: string;
-  onPythonDownload$: PropFunction<() => void>;
   onROSDownload$: PropFunction<() => void>;
 }
 
@@ -30,16 +29,6 @@ export const Code = component$<CodeProps>(
               </div>
             </div>
             <div class="flex items-center gap-3">
-              {/* Commented out Python download for now
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick$={onPythonDownload$}
-                class="min-w-[140px]"
-              >
-                <LuDownload class="w-4 h-4 mr-2" />
-                {$localize`Download .py`}
-              </Button> */}
               <Button
                 data-testid="advanced-download-rsc"
                 variant="primary"

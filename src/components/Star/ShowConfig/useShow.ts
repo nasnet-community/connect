@@ -11,7 +11,7 @@ export const useConfigGenerator = (state: StarState) => {
     return now.toISOString().replace(/[:.]/g, "-").slice(0, 19);
   });
 
-  const downloadFile = $(async (content: string, fileType: "py" | "rsc") => {
+  const downloadFile = $(async (content: string, fileType: "rsc") => {
     const timestamp = await getTimestamp();
     const filename = `router_config_${timestamp}.${fileType}`;
     const blob = new Blob([content], { type: "text/plain" });
@@ -21,10 +21,6 @@ export const useConfigGenerator = (state: StarState) => {
     a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
-  });
-
-  const generatePythonScript = $(() => {
-    return `import routeros_api\n\ndef configure_router(host, username, password):\n...`;
   });
 
   const generateROSScript = $(() => ConfigGenerator(state));
@@ -71,7 +67,7 @@ export const useConfigGenerator = (state: StarState) => {
       content: string,
       slaveRouter: RouterModels,
       index: number,
-      fileType: "py" | "rsc",
+      fileType: "rsc",
     ) => {
       const timestamp = await getTimestamp();
       const routerName = slaveRouter.Model.replace(/\s+/g, "-");
@@ -88,7 +84,6 @@ export const useConfigGenerator = (state: StarState) => {
 
   return {
     downloadFile,
-    generatePythonScript,
     generateROSScript,
     generateConfigPreview,
     generateSlaveRouterScript,
