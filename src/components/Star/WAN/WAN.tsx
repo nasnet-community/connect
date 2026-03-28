@@ -92,7 +92,7 @@ export const WAN = component$((props: StepProps) => {
   });
 
   return (
-    <div class="container mx-auto w-full px-4">
+    <div class="container mx-auto w-full px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0 2xl:px-0">
       <VStepper
         steps={stepsStore.steps}
         activeStep={stepsStore.activeStep}

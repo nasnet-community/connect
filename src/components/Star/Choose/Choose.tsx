@@ -405,7 +405,7 @@ export const Choose = component$((props: StepProps) => {
   });
 
   return (
-    <div class="container mx-auto w-full px-4">
+    <div class="container mx-auto w-full px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0 2xl:px-0">
       {/* Newsletter Section - Router Configuration Tips */}
       <div class="mb-8 md:mb-10">
         <Newsletter

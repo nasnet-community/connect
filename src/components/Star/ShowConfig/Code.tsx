@@ -3,6 +3,7 @@ import type { PropFunction } from "@builder.io/qwik";
 import { CodeBlock, Button } from "~/components/Core";
 import { LuTerminal, LuDownload } from "@qwikest/icons/lucide";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { showConfigPanelClass } from "./theme";
 
 interface CodeProps {
   configPreview: string;
@@ -14,19 +15,18 @@ export const Code = component$<CodeProps>(
     const locale = useMessageLocale();
 
     return (
-      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/90 dark:shadow-2xl">
-        {/* Header Section */}
-        <div class="dark:to-slate-850 border-b border-gray-200 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 px-6 py-4 dark:border-slate-700/50 dark:bg-gradient-to-r dark:from-slate-800">
+      <div class={showConfigPanelClass}>
+        <div class="dark:bg-surface-dark-secondary/60 border-b border-gray-200 bg-surface/50 px-6 py-4 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500/10 to-secondary-500/10 dark:border dark:border-emerald-500/30 dark:bg-emerald-500/10">
-                <LuTerminal class="h-5 w-5 text-primary-500 dark:text-emerald-400" />
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500/10 text-primary-500 dark:bg-primary-500/15 dark:text-primary-400">
+                <LuTerminal class="h-5 w-5" />
               </div>
               <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                   {semanticMessages.show_config_advanced_title({}, { locale })}
                 </h2>
-                <p class="text-sm text-gray-600 dark:text-slate-400">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
                   {semanticMessages.show_config_advanced_subtitle(
                     {},
                     { locale },
@@ -52,7 +52,6 @@ export const Code = component$<CodeProps>(
           </div>
         </div>
 
-        {/* Code Content */}
         <div class="p-6">
           <CodeBlock
             code={configPreview}

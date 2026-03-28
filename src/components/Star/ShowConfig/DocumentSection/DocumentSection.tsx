@@ -9,6 +9,7 @@ import {
   LuFileText,
   LuGlobe,
 } from "@qwikest/icons/lucide";
+import { showConfigHelpCardClass } from "../theme";
 
 interface DocumentationItem {
   title: string;
@@ -129,15 +130,14 @@ export const DocumentSection = component$(() => {
   ];
 
   return (
-    <div class="mt-12 space-y-8">
-      {/* Documentation Resources Section */}
+    <div class="space-y-6 md:space-y-7">
       <div>
-        <div class="mb-6">
+        <div class="mb-4 md:mb-5">
           <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
             <LuBookOpen class="h-7 w-7 text-primary-500" />
             {semanticMessages.show_config_documentation_title({}, { locale })}
           </h2>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">
+          <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400 md:text-base">
             {semanticMessages.show_config_documentation_description(
               {},
               { locale },
@@ -145,7 +145,7 @@ export const DocumentSection = component$(() => {
           </p>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2">
+        <div class="grid gap-3 md:grid-cols-2">
           {documentationItems.map((item, index) => (
             <Card
               key={index}
@@ -158,7 +158,7 @@ export const DocumentSection = component$(() => {
               target="_blank"
               class="group"
             >
-              <CardHeader class="pb-3">
+              <CardHeader class="pb-2">
                 <div class="flex items-start justify-between">
                   <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500/10 transition-colors group-hover:bg-primary-500/20 dark:bg-primary-500/20 dark:group-hover:bg-primary-500/30">
@@ -179,7 +179,7 @@ export const DocumentSection = component$(() => {
                 </div>
               </CardHeader>
               <CardBody class="pt-0">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-400">
                   {item.description}
                 </p>
               </CardBody>
@@ -188,9 +188,8 @@ export const DocumentSection = component$(() => {
         </div>
       </div>
 
-      {/* FAQ Section */}
       <div>
-        <div class="mb-6">
+        <div class="mb-4 md:mb-5">
           <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
             <LuHelpCircle class="h-7 w-7 text-secondary-500" />
             {semanticMessages.show_config_documentation_faq_title(
@@ -198,7 +197,7 @@ export const DocumentSection = component$(() => {
               { locale },
             )}
           </h2>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">
+          <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400 md:text-base">
             {semanticMessages.show_config_documentation_faq_description(
               {},
               { locale },
@@ -206,7 +205,7 @@ export const DocumentSection = component$(() => {
           </p>
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-3">
           {faqItems.map((item, index) => (
             <Card
               key={index}
@@ -252,21 +251,20 @@ export const DocumentSection = component$(() => {
         </div>
       </div>
 
-      {/* Additional Help Card */}
       <Card
         variant="filled"
         elevation="md"
         radius="xl"
-        class="border border-primary-200/50 bg-gradient-to-br from-primary-500/5 to-secondary-500/5 dark:border-primary-800/50 dark:from-primary-500/10 dark:to-secondary-500/10"
+        class={showConfigHelpCardClass}
       >
-        <CardBody class="py-8 text-center">
+        <CardBody class="py-6 text-center">
           <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
             {semanticMessages.show_config_documentation_help_title(
               {},
               { locale },
             )}
           </h3>
-          <p class="mx-auto mb-6 max-w-2xl text-gray-600 dark:text-gray-400">
+          <p class="mx-auto mb-5 max-w-2xl text-sm leading-6 text-gray-600 dark:text-gray-400 md:text-base">
             {semanticMessages.show_config_documentation_help_description(
               {},
               { locale },
