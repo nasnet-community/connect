@@ -1,4 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface ModeToggleProps {
   mode: "easy" | "advanced";
@@ -6,6 +7,7 @@ export interface ModeToggleProps {
 }
 
 export const ModeToggle = component$<ModeToggleProps>(({ mode, onToggle$ }) => {
+  const locale = useMessageLocale();
   return (
     <div class="flex items-center justify-center">
       <div class="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
@@ -21,7 +23,7 @@ export const ModeToggle = component$<ModeToggleProps>(({ mode, onToggle$ }) => {
           `}
           disabled={mode === "easy"}
         >
-          {$localize`Easy Mode`}
+          {semanticMessages.wan_advanced_easy_mode({}, { locale })}
         </button>
         <button
           onClick$={onToggle$}
@@ -35,7 +37,7 @@ export const ModeToggle = component$<ModeToggleProps>(({ mode, onToggle$ }) => {
           `}
           disabled={mode === "advanced"}
         >
-          {$localize`Advanced Mode`}
+          {semanticMessages.wan_advanced_advanced_mode({}, { locale })}
         </button>
       </div>
     </div>

@@ -1,7 +1,9 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Header = component$<{ mode: "Foreign" | "Domestic" }>(
   ({ mode }) => {
+    const locale = useMessageLocale();
     return (
       <div class="flex items-center space-x-4">
         <div class="rounded-full bg-primary-100 p-3 dark:bg-primary-900">
@@ -26,13 +28,25 @@ export const Header = component$<{ mode: "Foreign" | "Domestic" }>(
         <div>
           <h2 class="text-text-default text-xl font-semibold dark:text-text-dark-default">
             {mode === "Foreign"
-              ? $localize`Foreign Network Connection`
-              : $localize`Domestic Network Connection`}
+              ? semanticMessages.wan_easy_connection_foreign_title(
+                  {},
+                  { locale },
+                )
+              : semanticMessages.wan_easy_connection_domestic_title(
+                  {},
+                  { locale },
+                )}
           </h2>
           <p class="text-text-muted dark:text-text-dark-muted">
             {mode === "Foreign"
-              ? $localize`Configure your foreign network connection (WAN)`
-              : $localize`Configure your domestic network connection`}
+              ? semanticMessages.wan_easy_connection_foreign_description(
+                  {},
+                  { locale },
+                )
+              : semanticMessages.wan_easy_connection_domestic_description(
+                  {},
+                  { locale },
+                )}
           </p>
         </div>
       </div>

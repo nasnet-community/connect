@@ -28,9 +28,11 @@ import {
 } from "@qwikest/icons/lucide";
 import { TabContent } from "./TabContent";
 import { useSubnets } from "./useSubnets";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
 
   // Check if subnets are already configured
   const _hasSubnetsConfigured = !!(
@@ -76,7 +78,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs.base?.length > 0) {
       tabList.push({
         id: "base",
-        label: $localize`Base`,
+        label: semanticMessages.subnets_tab_base({}, { locale }),
         icon: <LuNetwork class="h-4 w-4" />,
         count: extendedGroupedConfigs.base.filter(
           (c: any) => values.value[c.key] !== null,
@@ -88,7 +90,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs["wan-domestic"]?.length > 0) {
       tabList.push({
         id: "wan-domestic",
-        label: $localize`Domestic`,
+        label: semanticMessages.subnets_tab_domestic({}, { locale }),
         icon: <LuHome class="h-4 w-4" />,
         count: extendedGroupedConfigs["wan-domestic"].filter(
           (c: any) => values.value[c.key] !== null,
@@ -100,7 +102,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs["wan-foreign"]?.length > 0) {
       tabList.push({
         id: "wan-foreign",
-        label: $localize`Foreign`,
+        label: semanticMessages.subnets_tab_foreign({}, { locale }),
         icon: <LuGlobe class="h-4 w-4" />,
         count: extendedGroupedConfigs["wan-foreign"].filter(
           (c: any) => values.value[c.key] !== null,
@@ -112,7 +114,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs["vpn-client"]?.length > 0) {
       tabList.push({
         id: "vpn-client",
-        label: $localize`VPN Client`,
+        label: semanticMessages.subnets_tab_vpn_client({}, { locale }),
         icon: <LuLock class="h-4 w-4" />,
         count: extendedGroupedConfigs["vpn-client"].filter(
           (c: any) => values.value[c.key] !== null,
@@ -124,7 +126,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs.vpn?.length > 0) {
       tabList.push({
         id: "vpn",
-        label: $localize`VPN Server`,
+        label: semanticMessages.subnets_tab_vpn_server({}, { locale }),
         icon: <LuShield class="h-4 w-4" />,
         count: extendedGroupedConfigs.vpn.filter(
           (c: any) => values.value[c.key] !== null,
@@ -136,7 +138,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     if (extendedGroupedConfigs.tunnel?.length > 0) {
       tabList.push({
         id: "tunnel",
-        label: $localize`Tunnel`,
+        label: semanticMessages.subnets_tab_tunnel({}, { locale }),
         icon: <LuRoute class="h-4 w-4" />,
         count: extendedGroupedConfigs.tunnel.filter(
           (c: any) => values.value[c.key] !== null,
@@ -633,8 +635,8 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
         <div class="space-y-8">
           {/* Modern Header */}
           <GradientHeader
-            title={$localize`Network Subnets`}
-            description={$localize`Configure IP subnets for your network segments with smart validation and conflict detection`}
+            title={semanticMessages.subnets_title({}, { locale })}
+            description={semanticMessages.subnets_description({}, { locale })}
             icon={<LuNetwork class="h-10 w-10" />}
             toggleConfig={{
               enabled: subnetsEnabled,
@@ -643,7 +645,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                   await onDisabled$();
                 }
               }),
-              label: $localize`Enable Subnets`,
+              label: semanticMessages.subnets_enable_label({}, { locale }),
             }}
             gradient={{
               direction: "to-br",
@@ -652,9 +654,27 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
               to: "primary-100",
             }}
             features={[
-              { label: $localize`Smart IP validation`, color: "primary-500" },
-              { label: $localize`Conflict detection`, color: "green-500" },
-              { label: $localize`Auto-suggestions`, color: "blue-500" },
+              {
+                label: semanticMessages.subnets_feature_validation(
+                  {},
+                  { locale },
+                ),
+                color: "primary-500",
+              },
+              {
+                label: semanticMessages.subnets_feature_conflicts(
+                  {},
+                  { locale },
+                ),
+                color: "green-500",
+              },
+              {
+                label: semanticMessages.subnets_feature_suggestions(
+                  {},
+                  { locale },
+                ),
+                color: "blue-500",
+              },
             ]}
             showFeaturesWhen={subnetsEnabled.value}
           />
@@ -670,10 +690,13 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       <LuNetwork class="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-gray-700 dark:text-gray-300">
-                      {$localize`Using Default Network Configuration`}
+                      {semanticMessages.subnets_default_title({}, { locale })}
                     </h3>
                     <p class="mx-auto max-w-md text-sm text-gray-600 dark:text-gray-400">
-                      {$localize`The following default subnets will be used. Enable subnet configuration above to customize these values.`}
+                      {semanticMessages.subnets_default_description(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
 
@@ -683,7 +706,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                     <div class="rounded-lg border border-primary-200 bg-primary-50/50 p-4 dark:border-primary-800 dark:bg-primary-900/20">
                       <h4 class="mb-3 flex items-center gap-2 font-medium text-primary-700 dark:text-primary-300">
                         <LuNetwork class="h-4 w-4" />
-                        {$localize`Base Networks`}
+                        {semanticMessages.subnets_section_base({}, { locale })}
                       </h4>
                       <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         {starContext.state.Choose.WANLinkType === "domestic" ||
@@ -691,7 +714,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                           <>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Split Network`}:
+                                {semanticMessages.subnets_label_split(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.10.0/24
@@ -699,7 +726,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             </div>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Domestic Network`}:
+                                {semanticMessages.subnets_label_domestic(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.20.0/24
@@ -707,7 +738,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             </div>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Foreign Network`}:
+                                {semanticMessages.subnets_label_foreign(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.30.0/24
@@ -715,7 +750,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             </div>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`VPN Network`}:
+                                {semanticMessages.subnets_label_vpn(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.40.0/24
@@ -726,7 +765,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                           <>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`VPN Network`}:
+                                {semanticMessages.subnets_label_vpn(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.10.0/24
@@ -734,7 +777,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             </div>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Foreign Network`}:
+                                {semanticMessages.subnets_label_foreign(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 192.168.30.0/24
@@ -750,7 +797,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       <div class="rounded-lg border border-orange-200 bg-orange-50/50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-orange-700 dark:text-orange-300">
                           <LuHome class="h-4 w-4" />
-                          {$localize`Domestic WAN Networks`}
+                          {semanticMessages.subnets_section_wan_domestic(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {domesticNetworks?.map((networkName, index) => (
@@ -775,7 +825,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-700 dark:text-blue-300">
                           <LuGlobe class="h-4 w-4" />
-                          {$localize`Foreign WAN Networks`}
+                          {semanticMessages.subnets_section_wan_foreign(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {foreignNetworks?.map((networkName, index) => (
@@ -805,7 +858,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4 dark:border-teal-800 dark:bg-teal-900/20">
                         <h4 class="mb-3 flex items-center gap-2 font-medium text-teal-700 dark:text-teal-300">
                           <LuLock class="h-4 w-4" />
-                          {$localize`VPN Client Networks`}
+                          {semanticMessages.subnets_section_vpn_client(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {(() => {
@@ -948,7 +1004,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                         <div class="rounded-lg border border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-900/20">
                           <h4 class="mb-3 flex items-center gap-2 font-medium text-green-700 dark:text-green-300">
                             <LuShield class="h-4 w-4" />
-                            {$localize`VPN Server Networks`}
+                            {semanticMessages.subnets_section_vpn_server(
+                              {},
+                              { locale },
+                            )}
                           </h4>
                           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             {vpnServerState.WireguardServers?.map(
@@ -986,7 +1045,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerState.L2tpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`L2TP`}:
+                                  {semanticMessages.subnets_protocol_l2tp(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.150.0/24
@@ -996,7 +1059,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerState.PptpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`PPTP`}:
+                                  {semanticMessages.subnets_protocol_pptp(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.130.0/24
@@ -1006,7 +1073,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerState.SstpServer?.enabled && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`SSTP`}:
+                                  {semanticMessages.subnets_protocol_sstp(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.140.0/24
@@ -1016,7 +1087,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerState.Ikev2Server && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`IKEv2`}:
+                                  {semanticMessages.subnets_protocol_ikev2(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.160.0/24
@@ -1026,7 +1101,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerNetworks?.SSH && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`SSH Server`}:
+                                  {semanticMessages.subnets_label_ssh_server(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.165.0/24
@@ -1036,7 +1115,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerNetworks?.Socks5 && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`Socks5 Proxy`}:
+                                  {semanticMessages.subnets_label_socks5_proxy(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.155.0/24
@@ -1046,7 +1129,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerNetworks?.HTTPProxy && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`HTTP Proxy`}:
+                                  {semanticMessages.subnets_label_http_proxy(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.156.0/24
@@ -1056,7 +1143,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerNetworks?.BackToHome && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`Back To Home`}:
+                                  {semanticMessages.subnets_label_back_to_home(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.157.0/24
@@ -1066,7 +1157,11 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                             {vpnServerNetworks?.ZeroTier && (
                               <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">
-                                  {$localize`ZeroTier`}:
+                                  {semanticMessages.subnets_label_zerotier(
+                                    {},
+                                    { locale },
+                                  )}
+                                  :
                                 </span>
                                 <span class="font-mono text-gray-900 dark:text-gray-100">
                                   192.168.158.0/24
@@ -1090,7 +1185,10 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                         <div class="rounded-lg border border-purple-200 bg-purple-50/50 p-4 dark:border-purple-800 dark:bg-purple-900/20">
                           <h4 class="mb-3 flex items-center gap-2 font-medium text-purple-700 dark:text-purple-300">
                             <LuRoute class="h-4 w-4" />
-                            {$localize`Tunnel Networks`}
+                            {semanticMessages.subnets_section_tunnel(
+                              {},
+                              { locale },
+                            )}
                           </h4>
                           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                             {starContext.state.LAN.Tunnel.IPIP?.map(
@@ -1167,7 +1265,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                 <CardFooter>
                   <div class="flex w-full items-center justify-end">
                     <Button onClick$={handleSave$} size="lg" class="px-8">
-                      {$localize`Save & Continue`}
+                      {semanticMessages.subnets_save_continue({}, { locale })}
                     </Button>
                   </div>
                 </CardFooter>
@@ -1179,18 +1277,18 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
               {/* Warning Alert about Subnet Configuration */}
               <Alert
                 status="warning"
-                title={$localize`Important Network Configuration Notice`}
+                title={semanticMessages.subnets_notice_title({}, { locale })}
                 class="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20"
               >
                 <div class="flex gap-3">
                   <LuInfo class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
                   <div class="space-y-2">
                     <p class="text-sm text-gray-700 dark:text-gray-300">
-                      {$localize`We've established a systematic subnet configuration that helps organize and manage your network effectively. These values follow best practices for network segmentation and routing.`}
+                      {semanticMessages.subnets_notice_body({}, { locale })}
                     </p>
                     <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">
                       ⚠️{" "}
-                      {$localize`Warning: Only modify these settings if you have technical networking knowledge. Incorrect subnet values may cause network connectivity issues and routing problems.`}
+                      {semanticMessages.subnets_notice_warning({}, { locale })}
                     </p>
                   </div>
                 </div>
@@ -1313,19 +1411,28 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                         <>
                           <LuAlertTriangle class="h-5 w-5 text-red-500" />
                           <span class="text-sm text-red-600 dark:text-red-400">
-                            {$localize`Please fix ${Object.keys(errors.value).length} error(s)`}
+                            {semanticMessages.subnets_fix_error_count(
+                              { count: Object.keys(errors.value).length },
+                              { locale },
+                            )}
                           </span>
                         </>
                       ) : isValid.value ? (
                         <>
                           <LuCheckCircle class="h-5 w-5 text-green-500" />
                           <span class="text-sm text-green-600 dark:text-green-400">
-                            {$localize`Configuration valid`}
+                            {semanticMessages.subnets_configuration_valid(
+                              {},
+                              { locale },
+                            )}
                           </span>
                         </>
                       ) : (
                         <span class="text-sm text-gray-500 dark:text-gray-400">
-                          {$localize`Configure your network subnets`}
+                          {semanticMessages.subnets_status_configure(
+                            {},
+                            { locale },
+                          )}
                         </span>
                       )}
                     </div>
@@ -1339,7 +1446,7 @@ export const Subnets = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
                       }
                       class="px-8 font-medium shadow-lg transition-shadow hover:shadow-xl"
                     >
-                      {$localize`Save & Continue`}
+                      {semanticMessages.subnets_save_continue({}, { locale })}
                     </Button>
                   </div>
                 </CardFooter>

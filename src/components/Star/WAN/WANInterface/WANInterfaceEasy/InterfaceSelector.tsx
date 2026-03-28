@@ -11,6 +11,7 @@ import {
   getMasterOccupiedInterfaces,
   getUsedLTEInterfaces,
 } from "../../../utils/InterfaceManagementUtils";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const interfaceDisplayNames: Record<string, string> = {
   ether1: "Ethernet 1",
@@ -36,6 +37,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     onSelect,
     mode,
   }) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext);
     const getInterfacesForType = () => {
       switch (selectedInterfaceType.toLowerCase()) {
@@ -112,12 +114,18 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       return (
         <div class="space-y-2">
           <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
-            {$localize`Select ${mode} Interface`}
+            {semanticMessages.wan_easy_select_mode_interface(
+              { mode },
+              { locale },
+            )}
           </label>
           <div class="rounded-lg bg-gray-100 p-4 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
             {!selectedInterfaceType
-              ? $localize`Please select an interface type first`
-              : $localize`No ${selectedInterfaceType} interfaces available`}
+              ? semanticMessages.wan_easy_select_type_first({}, { locale })
+              : semanticMessages.wan_easy_no_interfaces(
+                  { interfaceType: selectedInterfaceType },
+                  { locale },
+                )}
           </div>
         </div>
       );
@@ -126,7 +134,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
     return (
       <div class="space-y-2">
         <label class="text-text-secondary dark:text-text-dark-secondary text-sm font-medium">
-          {$localize`Select ${selectedInterfaceType} Interface`}
+          {semanticMessages.wan_easy_select_type_interface(
+            { interfaceType: selectedInterfaceType },
+            { locale },
+          )}
         </label>
         <Resource
           value={disabledStates}
@@ -138,7 +149,13 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 onSelect(value as string)
               }
               options={[
-                { value: "", label: $localize`Select interface` },
+                {
+                  value: "",
+                  label: semanticMessages.wan_easy_select_interface(
+                    {},
+                    { locale },
+                  ),
+                },
                 ...currentInterfaces.map((iface) => ({
                   value: iface,
                   label: getDisplayName(iface, { disabled: true }),
@@ -155,7 +172,13 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 onSelect(value as string)
               }
               options={[
-                { value: "", label: $localize`Select interface` },
+                {
+                  value: "",
+                  label: semanticMessages.wan_easy_select_interface(
+                    {},
+                    { locale },
+                  ),
+                },
                 ...currentInterfaces.map((iface, index) => ({
                   value: iface,
                   label: getDisplayName(iface, states[index]),

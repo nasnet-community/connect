@@ -1,0 +1,74 @@
+name: Translation Coverage
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "messages/**"
+      - "src/i18n/**"
+      - "crowdin.yml"
+      - ".github/workflows/translation-coverage.yml"
+  schedule:
+    - cron: "17 4 * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  translation-coverage:
+    name: Update Translation Coverage Issue
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile semantic catalogs
+        run: npm run i18n:compile
+
+      - name: Generate translation coverage report
+        run: npm run i18n:validate -- --markdown > translation-coverage.md
+
+      - name: Update pinned issue
+        if: ${{ vars.TRANSLATION_COVERAGE_ISSUE_NUMBER != '' }}
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ vars.TRANSLATION_COVERAGE_ISSUE_NUMBER }}
+        with:
+          script: |
+            const fs = require("node:fs");
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            const report = fs.readFileSync("translation-coverage.md", "utf8").trim();
+
+            if (!issueNumber) {
+              core.setFailed("TRANSLATION_COVERAGE_ISSUE_NUMBER is not configured as a repository variable.");
+              return;
+            }
+
+            const body = [
+              "# Translation Coverage Dashboard",
+              "",
+              "This issue is updated automatically from repository translation validation.",
+              "Crowdin project status can be appended in a later phase once the API integration is enabled.",
+              "",
+              report,
+            ].join("\n");
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body,
+            });

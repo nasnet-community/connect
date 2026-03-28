@@ -9,8 +9,10 @@ import {
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { Input } from "~/components/Core/Input";
 import { NetworkDropdown } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const IKEv2ServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const {
     advancedFormState,
     showPassword,
@@ -23,16 +25,20 @@ export const IKEv2ServerAdvanced = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`IKEv2 Server`}
+      title={semanticMessages.vpn_server_ikev2_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6 md:space-y-8">
         {/* Basic Settings */}
         <div>
-          <SectionTitle title={$localize`Basic Settings`} />
+          <SectionTitle
+            title={semanticMessages.vpn_server_basic_settings({}, { locale })}
+          />
           <div class="space-y-4">
             {/* Network Selection */}
-            <ServerFormField label={$localize`Network`}>
+            <ServerFormField
+              label={semanticMessages.vpn_server_network_label({}, { locale })}
+            >
               <NetworkDropdown
                 selectedNetwork={"VPN" as const}
                 onNetworkChange$={(network) => {
@@ -45,10 +51,17 @@ export const IKEv2ServerAdvanced = component$(() => {
 
         {/* Authentication */}
         <div>
-          <SectionTitle title={$localize`Authentication`} />
+          <SectionTitle
+            title={semanticMessages.vpn_server_authentication({}, { locale })}
+          />
           <div class="space-y-4">
             {/* Client Authentication Method */}
-            <ServerFormField label={$localize`Client Authentication Method`}>
+            <ServerFormField
+              label={semanticMessages.vpn_server_client_auth_method(
+                {},
+                { locale },
+              )}
+            >
               <UnifiedSelect
                 options={authMethods}
                 value={advancedFormState.authMethod}
@@ -59,7 +72,10 @@ export const IKEv2ServerAdvanced = component$(() => {
             {/* Pre-shared Key */}
             {advancedFormState.authMethod === "pre-shared-key" && (
               <ServerFormField
-                label={$localize`Pre-shared Key`}
+                label={semanticMessages.vpn_server_preshared_key(
+                  {},
+                  { locale },
+                )}
                 errorMessage={presharedKeyError.value}
               >
                 <div class="relative">
@@ -67,7 +83,10 @@ export const IKEv2ServerAdvanced = component$(() => {
                     type={showPassword.value ? "text" : "password"}
                     value={advancedFormState.presharedKey}
                     onChange$={(_, value) => updatePresharedKey$(value)}
-                    placeholder={$localize`Enter pre-shared key`}
+                    placeholder={semanticMessages.vpn_server_enter_preshared_key(
+                      {},
+                      { locale },
+                    )}
                     validation={presharedKeyError.value ? "invalid" : "default"}
                     hasSuffixSlot={true}
                   >
@@ -89,10 +108,16 @@ export const IKEv2ServerAdvanced = component$(() => {
         {/* Certificate Configuration Note */}
         <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
           <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-            {$localize`Certificate Configuration`}
+            {semanticMessages.vpn_server_certificate_configuration_title(
+              {},
+              { locale },
+            )}
           </h4>
           <p class="text-sm text-blue-700 dark:text-blue-300">
-            {$localize`IKEv2 server certificates are configured in the Certificate step when using digital signature authentication. This ensures consistent certificate management across all protocols.`}
+            {semanticMessages.vpn_server_ikev2_certificate_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
       </div>

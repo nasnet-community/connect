@@ -3,6 +3,7 @@ import type {
   FrequencySelectorProps,
   FrequencyOption,
 } from "./FrequencySelector.types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * FrequencySelector component for selecting frequency intervals (Daily, Weekly, Monthly).
@@ -17,6 +18,7 @@ import type {
  * />
  */
 export const FrequencySelector = component$<FrequencySelectorProps>((props) => {
+  const locale = useMessageLocale();
   const {
     value,
     onChange$,
@@ -27,9 +29,15 @@ export const FrequencySelector = component$<FrequencySelectorProps>((props) => {
   } = props;
 
   const frequencyOptions: FrequencyOption[] = [
-    { value: "Daily", label: "Daily" },
-    { value: "Weekly", label: "Weekly" },
-    { value: "Monthly", label: "Monthly" },
+    { value: "Daily", label: semanticMessages.frequency_daily({}, { locale }) },
+    {
+      value: "Weekly",
+      label: semanticMessages.frequency_weekly({}, { locale }),
+    },
+    {
+      value: "Monthly",
+      label: semanticMessages.frequency_monthly({}, { locale }),
+    },
   ];
 
   return (
@@ -66,12 +74,12 @@ export const FrequencySelector = component$<FrequencySelectorProps>((props) => {
                   }
                 `}
               >
-                {$localize`${option.label}`}
+                {option.label}
               </button>
               {isRecommended && (
                 <div class="mt-1 text-center">
                   <span class="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                    {$localize`Recommended`}
+                    {semanticMessages.shared_recommended({}, { locale })}
                   </span>
                 </div>
               )}

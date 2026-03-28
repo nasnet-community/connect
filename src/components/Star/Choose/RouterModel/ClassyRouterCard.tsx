@@ -2,6 +2,7 @@ import { $, component$, useSignal, useTask$, type QRL } from "@builder.io/qwik";
 import { LuInfo } from "@qwikest/icons/lucide";
 import { Button } from "~/components/Core";
 import { type RouterData } from "./Constants";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const toTestIdSegment = (value: string) =>
   value
@@ -24,6 +25,7 @@ interface ClassyRouterCardProps {
 }
 
 export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
+  const locale = useMessageLocale();
   const optimisticSelected = useSignal(props.isSelected);
 
   useTask$(({ track }) => {
@@ -83,7 +85,7 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
 
       {optimisticSelected.value && !props.isDisabled && (
         <div class="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-success/10 px-2 py-1 text-sm text-success dark:bg-success/20 dark:text-success-light">
-          {$localize`Selected`}
+          {semanticMessages.star_selection_card_selected({}, { locale })}
         </div>
       )}
 
@@ -132,7 +134,7 @@ export const ClassyRouterCard = component$<ClassyRouterCardProps>((props) => {
               `}
             >
               <LuInfo class="mr-2 h-4 w-4" />
-              {$localize`View Details`}
+              {semanticMessages.router_view_details({}, { locale })}
             </Button>
           </div>
         </div>

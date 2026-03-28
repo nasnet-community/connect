@@ -18,8 +18,10 @@ import {
 } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const CloudDDNSStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
   const starCtx = useContext(StarContext);
@@ -45,15 +47,55 @@ export const CloudDDNSStep = component$(() => {
     { value: "dyndns", label: "DynDNS" },
     { value: "duckdns", label: "Duck DNS" },
     { value: "cloudflare", label: "Cloudflare" },
-    { value: "custom", label: $localize`Custom Provider` },
+    {
+      value: "custom",
+      label: semanticMessages.useful_services_ddns_custom_provider(
+        {},
+        {
+          locale,
+        },
+      ),
+    },
   ];
 
   // Update interval options
   const updateIntervalOptions = [
-    { value: "5m", label: $localize`5 minutes` },
-    { value: "10m", label: $localize`10 minutes` },
-    { value: "30m", label: $localize`30 minutes` },
-    { value: "1h", label: $localize`1 hour` },
+    {
+      value: "5m",
+      label: semanticMessages.useful_services_ddns_interval_5m(
+        {},
+        {
+          locale,
+        },
+      ),
+    },
+    {
+      value: "10m",
+      label: semanticMessages.useful_services_ddns_interval_10m(
+        {},
+        {
+          locale,
+        },
+      ),
+    },
+    {
+      value: "30m",
+      label: semanticMessages.useful_services_ddns_interval_30m(
+        {},
+        {
+          locale,
+        },
+      ),
+    },
+    {
+      value: "1h",
+      label: semanticMessages.useful_services_ddns_interval_1h(
+        {},
+        {
+          locale,
+        },
+      ),
+    },
   ];
 
   // Add new DDNS entry
@@ -164,10 +206,15 @@ export const CloudDDNSStep = component$(() => {
           </svg>
         </div>
         <h3 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-gray-300">
-          {$localize`Dynamic DNS`}
+          {semanticMessages.useful_services_ddns_title({}, { locale })}
         </h3>
         <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-          {$localize`Configure multiple DDNS providers to maintain consistent domain access`}
+          {semanticMessages.useful_services_ddns_description(
+            {},
+            {
+              locale,
+            },
+          )}
         </p>
       </div>
 
@@ -196,10 +243,18 @@ export const CloudDDNSStep = component$(() => {
                 </div>
                 <div>
                   <h4 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {$localize`Enable Dynamic DNS`}
+                    {semanticMessages.useful_services_ddns_enable(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-gray-600 dark:text-gray-400">
-                    {$localize`Maintain a consistent domain name despite IP changes`}
+                    {semanticMessages.useful_services_ddns_enable_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -235,8 +290,11 @@ export const CloudDDNSStep = component$(() => {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                {$localize`Configured DDNS Entries`} ({ddnsEntries.value.length}
-                )
+                {semanticMessages.useful_services_ddns_configured_entries(
+                  {},
+                  { locale },
+                )}{" "}
+                ({ddnsEntries.value.length})
               </h4>
             </CardHeader>
             <CardBody>
@@ -276,7 +334,12 @@ export const CloudDDNSStep = component$(() => {
                               <span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
                               {provider?.label}
                             </span>
-                            • {$localize`Updates every`} {entry.updateInterval}
+                            •{" "}
+                            {semanticMessages.useful_services_ddns_updates_every(
+                              {},
+                              { locale },
+                            )}{" "}
+                            {entry.updateInterval}
                           </p>
                         </div>
                       </div>
@@ -328,17 +391,31 @@ export const CloudDDNSStep = component$(() => {
                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
-                {$localize`Add DDNS Entry`}
+                {semanticMessages.useful_services_ddns_add_entry(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h4>
               <p class="text-gray-600 dark:text-gray-400">
-                {$localize`Configure a new Dynamic DNS provider`}
+                {semanticMessages.useful_services_ddns_add_entry_description(
+                  {},
+                  { locale },
+                )}
               </p>
             </CardHeader>
             <CardBody class="space-y-6">
               <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField
-                  label={$localize`Provider`}
-                  helperText={$localize`Select DDNS service provider`}
+                  label={semanticMessages.useful_services_ddns_provider_label(
+                    {},
+                    { locale },
+                  )}
+                  helperText={semanticMessages.useful_services_ddns_provider_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Select
                     options={providerOptions}
@@ -353,8 +430,14 @@ export const CloudDDNSStep = component$(() => {
                 </FormField>
 
                 <FormField
-                  label={$localize`Update Interval`}
-                  helperText={$localize`How often to check for IP changes`}
+                  label={semanticMessages.useful_services_ddns_update_interval_label(
+                    {},
+                    { locale },
+                  )}
+                  helperText={semanticMessages.useful_services_ddns_update_interval_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Select
                     options={updateIntervalOptions}
@@ -372,13 +455,22 @@ export const CloudDDNSStep = component$(() => {
               {/* Custom Server URL for custom provider */}
               {newEntryProvider.value === "custom" && (
                 <FormField
-                  label={$localize`Custom Server URL`}
+                  label={semanticMessages.useful_services_ddns_custom_url_label(
+                    {},
+                    { locale },
+                  )}
                   required
-                  helperText={$localize`Enter the full URL for your DDNS update endpoint`}
+                  helperText={semanticMessages.useful_services_ddns_custom_url_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Input
                     type="text"
-                    placeholder={$localize`https://your-ddns-server.com/update`}
+                    placeholder={semanticMessages.useful_services_ddns_custom_url_placeholder(
+                      {},
+                      { locale },
+                    )}
                     value={newEntryCustomURL.value}
                     onInput$={(e: any) => {
                       newEntryCustomURL.value = e.target.value;
@@ -389,13 +481,22 @@ export const CloudDDNSStep = component$(() => {
 
               <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <FormField
-                  label={$localize`Hostname`}
+                  label={semanticMessages.useful_services_ddns_hostname_label(
+                    {},
+                    { locale },
+                  )}
                   required
-                  helperText={$localize`Your dynamic DNS hostname`}
+                  helperText={semanticMessages.useful_services_ddns_hostname_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Input
                     type="text"
-                    placeholder={$localize`yourhost.ddns.net`}
+                    placeholder={semanticMessages.useful_services_ddns_hostname_placeholder(
+                      {},
+                      { locale },
+                    )}
                     value={newEntryHostname.value}
                     onInput$={(e: any) => {
                       newEntryHostname.value = e.target.value;
@@ -404,13 +505,22 @@ export const CloudDDNSStep = component$(() => {
                 </FormField>
 
                 <FormField
-                  label={$localize`Username/Email`}
+                  label={semanticMessages.useful_services_ddns_username_label(
+                    {},
+                    { locale },
+                  )}
                   required
-                  helperText={$localize`Your DDNS service account`}
+                  helperText={semanticMessages.useful_services_ddns_username_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Input
                     type="text"
-                    placeholder={$localize`Enter username or email`}
+                    placeholder={semanticMessages.useful_services_ddns_username_placeholder(
+                      {},
+                      { locale },
+                    )}
                     value={newEntryUsername.value}
                     onInput$={(e: any) => {
                       newEntryUsername.value = e.target.value;
@@ -419,13 +529,22 @@ export const CloudDDNSStep = component$(() => {
                 </FormField>
 
                 <FormField
-                  label={$localize`Password/API Key`}
+                  label={semanticMessages.useful_services_ddns_password_label(
+                    {},
+                    { locale },
+                  )}
                   required
-                  helperText={$localize`Your service password or API token`}
+                  helperText={semanticMessages.useful_services_ddns_password_helper(
+                    {},
+                    { locale },
+                  )}
                 >
                   <Input
                     type="password"
-                    placeholder={$localize`Enter password or API key`}
+                    placeholder={semanticMessages.useful_services_ddns_password_placeholder(
+                      {},
+                      { locale },
+                    )}
                     value={newEntryPassword.value}
                     onInput$={(e: any) => {
                       newEntryPassword.value = e.target.value;
@@ -458,7 +577,12 @@ export const CloudDDNSStep = component$(() => {
                       d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                     />
                   </svg>
-                  {$localize`Add DDNS Entry`}
+                  {semanticMessages.useful_services_ddns_add_entry(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </Button>
               </div>
             </CardBody>
@@ -485,7 +609,15 @@ export const CloudDDNSStep = component$(() => {
               />
             </svg>
             <span class="font-medium text-primary-700 dark:text-primary-300">
-              {`${ddnsEntries.value.length} ${ddnsEntries.value.length === 1 ? $localize`DDNS entry configured` : $localize`DDNS entries configured`}`}
+              {ddnsEntries.value.length === 1
+                ? semanticMessages.useful_services_ddns_summary_singular(
+                    { count: String(ddnsEntries.value.length) },
+                    { locale },
+                  )
+                : semanticMessages.useful_services_ddns_summary_plural(
+                    { count: String(ddnsEntries.value.length) },
+                    { locale },
+                  )}
             </span>
           </div>
         </div>

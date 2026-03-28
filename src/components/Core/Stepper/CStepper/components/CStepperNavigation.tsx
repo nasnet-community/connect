@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface CStepperNavigationProps {
   activeStep: number;
@@ -13,8 +14,6 @@ export interface CStepperNavigationProps {
   onPrevious$: QRL<() => void>;
   onNext$: QRL<() => Promise<void>>;
   onComplete$: QRL<() => Promise<void>>;
-
-  // Help system props
   hasHelp?: boolean;
   onShowHelp$?: QRL<() => void>;
   helpButtonLabel?: string;
@@ -23,6 +22,7 @@ export interface CStepperNavigationProps {
 
 export const CStepperNavigation = component$(
   (props: CStepperNavigationProps) => {
+    const locale = useMessageLocale();
     const {
       activeStep,
       currentStepIsComplete,
@@ -35,14 +35,15 @@ export const CStepperNavigation = component$(
       onPrevious$,
       onNext$,
       onComplete$,
-      // Help system props
       hasHelp = false,
       onShowHelp$,
-      helpButtonLabel = "Get help for this step",
+      helpButtonLabel,
       isHelpOpen = false,
     } = props;
 
-    // Determine if the next button should be disabled
+    const resolvedHelpButtonLabel =
+      helpButtonLabel || semanticMessages.stepper_help_button({}, { locale });
+
     const isNextDisabled =
       currentStepHasErrors ||
       (!allowSkipSteps &&
@@ -54,40 +55,31 @@ export const CStepperNavigation = component$(
 
     return (
       <div class="flex items-center justify-between">
-        {/* Back button */}
         {activeStep > 0 ? (
           <button
             onClick$={onPrevious$}
-            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 
-                text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 
-                focus:ring-gray-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 
-                dark:text-gray-200 dark:hover:bg-gray-600"
-            aria-label="Go to previous step"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            aria-label={semanticMessages.stepper_aria_previous({}, { locale })}
             type="button"
           >
-            <span>{$localize`Back`}</span>
+            <span>{semanticMessages.shared_back({}, { locale })}</span>
           </button>
         ) : (
           <div></div>
         )}
 
-        {/* Center - Help button */}
         {hasHelp && (
           <div class="flex items-center">
             <button
               type="button"
               onClick$={() => onShowHelp$?.()}
-              class={`
-              group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200
-              ${
+              class={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 ${
                 isHelpOpen
                   ? "border-2 border-primary-300 bg-primary-100 text-primary-700 dark:border-primary-600 dark:bg-primary-900/50 dark:text-primary-300"
                   : "border-2 border-transparent bg-gray-100 text-gray-600 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-400"
-              }
-              focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-            `}
-              aria-label={helpButtonLabel}
-              title={helpButtonLabel}
+              } focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
+              aria-label={resolvedHelpButtonLabel}
+              title={resolvedHelpButtonLabel}
             >
               <svg
                 class={`h-5 w-5 transition-transform duration-200 ${isHelpOpen ? "scale-110" : "group-hover:scale-110"}`}
@@ -103,7 +95,6 @@ export const CStepperNavigation = component$(
                 />
               </svg>
 
-              {/* Pulse animation for attention */}
               {!isHelpOpen && (
                 <span class="absolute -right-1 -top-1 flex h-3 w-3">
                   <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75"></span>
@@ -114,7 +105,6 @@ export const CStepperNavigation = component$(
           </div>
         )}
 
-        {/* Next/Complete button */}
         <button
           onClick$={async () => {
             if (!isNextDisabled) {
@@ -122,29 +112,31 @@ export const CStepperNavigation = component$(
             }
           }}
           disabled={isNextDisabled}
-          class={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-              ${
-                currentStepHasErrors
-                  ? "cursor-not-allowed bg-red-300 text-white dark:bg-red-800/50"
-                  : currentStepIsComplete ||
-                      isOptional ||
-                      allowSkipSteps ||
-                      isStepSkippable
-                    ? "bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700"
-                    : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-              }`}
-          aria-label={isLastStep ? "Complete all steps" : "Go to next step"}
+          class={`inline-flex items-center gap-2 rounded-lg px-6 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+            currentStepHasErrors
+              ? "cursor-not-allowed bg-red-300 text-white dark:bg-red-800/50"
+              : currentStepIsComplete ||
+                  isOptional ||
+                  allowSkipSteps ||
+                  isStepSkippable
+                ? "bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700"
+                : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+          }`}
+          aria-label={
+            isLastStep
+              ? semanticMessages.stepper_aria_complete_all({}, { locale })
+              : semanticMessages.stepper_aria_next({}, { locale })
+          }
           aria-disabled={isNextDisabled}
           type="button"
           data-testid="stepper-next-button"
         >
           <span>
             {isLoading
-              ? $localize`Processing...`
+              ? semanticMessages.shared_processing({}, { locale })
               : isLastStep
-                ? $localize`Save & Complete`
-                : $localize`Next`}
+                ? semanticMessages.shared_save_complete({}, { locale })
+                : semanticMessages.shared_next({}, { locale })}
           </span>
         </button>
       </div>

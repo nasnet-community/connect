@@ -1,4 +1,6 @@
 import type { IconName } from "../utils/iconMapper";
+import { semanticMessages } from "~/i18n/semantic";
+import { normalizeLocale, type AppLocale } from "~/i18n/config";
 
 export const routerModels = [
   {
@@ -57,16 +59,76 @@ export const routerModels = [
   },
 ];
 
-export const routerCategories = [
-  { id: "all", name: $localize`All Models`, icon: "LuRouter" as IconName },
-  { id: "wifi6", name: $localize`WiFi 6`, icon: "LuWifi" as IconName },
-  { id: "5g", name: $localize`5G / LTE`, icon: "LuZap" as IconName },
-  { id: "enterprise", name: $localize`Enterprise`, icon: "LuCpu" as IconName },
-];
+export const getRouterCategories = (locale: string = "en") => {
+  const resolvedLocale = normalizeLocale(locale) as AppLocale;
 
-export const routerStats = [
-  { number: "17+", label: $localize`Router Models` },
-  { number: "100%", label: $localize`Auto-Detection` },
-  { number: "6", label: $localize`VPN Protocols` },
-  { number: "∞", label: $localize`Configurations` },
-];
+  return [
+    {
+      id: "all",
+      name: semanticMessages.landing_router_models_category_all(
+        {},
+        { locale: resolvedLocale },
+      ),
+      icon: "LuRouter" as IconName,
+    },
+    {
+      id: "wifi6",
+      name: semanticMessages.landing_router_models_category_wifi6(
+        {},
+        { locale: resolvedLocale },
+      ),
+      icon: "LuWifi" as IconName,
+    },
+    {
+      id: "5g",
+      name: semanticMessages.landing_router_models_category_5g(
+        {},
+        { locale: resolvedLocale },
+      ),
+      icon: "LuZap" as IconName,
+    },
+    {
+      id: "enterprise",
+      name: semanticMessages.landing_router_models_category_enterprise(
+        {},
+        { locale: resolvedLocale },
+      ),
+      icon: "LuCpu" as IconName,
+    },
+  ];
+};
+
+export const getRouterStats = (locale: string = "en") => {
+  const resolvedLocale = normalizeLocale(locale) as AppLocale;
+
+  return [
+    {
+      number: "17+",
+      label: semanticMessages.landing_router_models_stat_router_models(
+        {},
+        { locale: resolvedLocale },
+      ),
+    },
+    {
+      number: "100%",
+      label: semanticMessages.landing_router_models_stat_auto_detection(
+        {},
+        { locale: resolvedLocale },
+      ),
+    },
+    {
+      number: "6",
+      label: semanticMessages.landing_router_models_stat_vpn_protocols(
+        {},
+        { locale: resolvedLocale },
+      ),
+    },
+    {
+      number: "∞",
+      label: semanticMessages.landing_router_models_stat_configurations(
+        {},
+        { locale: resolvedLocale },
+      ),
+    },
+  ];
+};

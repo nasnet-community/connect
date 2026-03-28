@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { WANLinkConfig } from "../../types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface LinkBoxHeaderProps {
   link: WANLinkConfig;
@@ -20,6 +21,7 @@ export const LinkBoxHeader = component$<LinkBoxHeaderProps>(
     onToggleExpanded$,
     hasErrors,
   }) => {
+    const locale = useMessageLocale();
     // Get connection type display
     const getConnectionDisplay = () => {
       switch (link.connectionType) {
@@ -180,7 +182,7 @@ export const LinkBoxHeader = component$<LinkBoxHeaderProps>(
                       clip-rule="evenodd"
                     />
                   </svg>
-                  {$localize`Has Errors`}
+                  {semanticMessages.wan_advanced_has_errors({}, { locale })}
                 </span>
               )}
             </div>

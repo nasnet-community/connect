@@ -6,6 +6,7 @@ import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
 import { routers } from "../RouterModel/Constants";
 import { SelectionCard } from "../shared/SelectionCard";
 import { SelectionStepSection } from "../shared/SelectionStepSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface InterfaceTypeProps {
   isComplete?: boolean;
@@ -13,6 +14,7 @@ interface InterfaceTypeProps {
 }
 
 export const InterfaceType = component$((props: InterfaceTypeProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
 
   // Check wireless capability for all selected routers
@@ -60,36 +62,57 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
     {
       type: "wired" as TrunkInterfaceType,
       icon: <LuCable class="h-8 w-8" />,
-      title: $localize`Wired Router + Access Point`,
-      description: $localize`High-speed cable-based trunk connection for maximum performance`,
+      title: semanticMessages.star_interface_type_wired_title({}, { locale }),
+      description: semanticMessages.star_interface_type_wired_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Up to 10 Gbps throughput`,
-        $localize`Ultra-low latency (<1ms)`,
-        $localize`Rock-solid reliability`,
-        $localize`Ideal for backbone links`,
+        semanticMessages.star_interface_type_feature_performance(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_interface_type_feature_latency({}, { locale }),
+        semanticMessages.star_interface_type_feature_reliability(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_interface_type_feature_wired_backbone(
+          {},
+          { locale },
+        ),
       ],
-      badge: $localize`Recommended`,
+      badge: semanticMessages.star_interface_type_wired_badge({}, { locale }),
       badgeClass:
         "bg-primary-500/15 text-primary-500 dark:bg-primary-500/25 dark:text-primary-400",
     },
     {
       type: "wireless" as TrunkInterfaceType,
       icon: <LuWifi class="h-8 w-8" />,
-      title: $localize`Wireless Router + Access Point`,
-      description: $localize`Point-to-point wireless trunk for flexible deployments`,
+      title: semanticMessages.star_interface_type_wireless_title(
+        {},
+        { locale },
+      ),
+      description: semanticMessages.star_interface_type_wireless_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`No cabling required`,
-        $localize`Quick deployment`,
-        $localize`802.11ax/ac support`,
-        $localize`Ideal for bridging buildings`,
+        semanticMessages.star_interface_type_feature_cabling({}, { locale }),
+        semanticMessages.star_interface_type_feature_deployment({}, { locale }),
+        semanticMessages.star_interface_type_feature_support({}, { locale }),
+        semanticMessages.star_interface_type_feature_bridging({}, { locale }),
       ],
     },
   ];
 
   return (
     <SelectionStepSection
-      title={$localize`Select Interface Type`}
-      description={$localize`Choose the type of connection for your trunk network`}
+      title={semanticMessages.star_interface_type_section_title({}, { locale })}
+      description={semanticMessages.star_interface_type_section_description(
+        {},
+        { locale },
+      )}
     >
       {/* Options grid */}
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
@@ -102,7 +125,7 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
             <div class="flex items-center gap-1 rounded-full bg-orange-500/15 px-3 py-1 dark:bg-orange-500/25">
               <LuAlertCircle class="h-3 w-3 text-orange-600 dark:text-orange-400" />
               <span class="text-xs font-medium text-orange-600 dark:text-orange-400">
-                {$localize`No Wi-Fi`}
+                {semanticMessages.star_interface_type_no_wifi({}, { locale })}
               </span>
             </div>
           ) : option.badge && !isSelected ? (
@@ -144,10 +167,16 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
             <LuAlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
             <div>
               <h4 class="mb-1 text-sm font-semibold text-orange-800 dark:text-orange-200">
-                {$localize`Wireless Router + Access Point Not Available`}
+                {semanticMessages.star_interface_type_warning_title(
+                  {},
+                  { locale },
+                )}
               </h4>
               <p class="mb-2 text-sm text-orange-700 dark:text-orange-300">
-                {$localize`The following router(s) don't have Wi-Fi capability required for wireless trunk:`}
+                {semanticMessages.star_interface_type_warning_description(
+                  {},
+                  { locale },
+                )}
               </p>
               <ul class="list-inside list-disc space-y-1 text-sm text-orange-700 dark:text-orange-300">
                 {wirelessCheck.routersWithoutWifi.map((router) => (
@@ -155,7 +184,10 @@ export const InterfaceType = component$((props: InterfaceTypeProps) => {
                 ))}
               </ul>
               <p class="mt-2 text-xs text-orange-600 dark:text-orange-400">
-                {$localize`Please select routers with Wi-Fi capability or use wired trunk instead.`}
+                {semanticMessages.star_interface_type_warning_fallback(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
           </div>

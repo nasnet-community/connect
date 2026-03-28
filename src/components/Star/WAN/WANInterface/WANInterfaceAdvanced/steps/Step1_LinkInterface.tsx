@@ -16,6 +16,7 @@ import {
   getLinkStatistics,
 } from "../utils/linkHelpers";
 import { getLinkErrors, getFieldErrors } from "../utils/validationUtils";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step1Props {
   wizardState: WANWizardState;
@@ -25,6 +26,7 @@ export interface Step1Props {
 
 export const Step1_LinkInterface = component$<Step1Props>(
   ({ wizardState, wizardActions, mode = "Foreign" }) => {
+    const locale = useMessageLocale();
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const viewMode = useSignal<"grid" | "list">("grid");
@@ -77,11 +79,20 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 <div>
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {mode === "Foreign"
-                      ? $localize`Foreign WAN Links`
-                      : $localize`Domestic WAN Links`}
+                      ? semanticMessages.wan_advanced_foreign_wan_links(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.wan_advanced_domestic_wan_links(
+                          {},
+                          { locale },
+                        )}
                   </h3>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {$localize`Configure multiple WAN connections for load balancing and failover`}
+                    {semanticMessages.wan_advanced_links_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -106,12 +117,18 @@ export const Step1_LinkInterface = component$<Step1Props>(
                   </svg>
                 </div>
                 <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-                  {$localize`No WAN links configured`}
+                  {semanticMessages.wan_advanced_no_links({}, { locale })}
                 </h3>
                 <p class="mx-auto mb-6 max-w-sm text-gray-500 dark:text-gray-400">
                   {mode === "Foreign"
-                    ? $localize`Create your first foreign WAN connection. You can add multiple links for load balancing and failover.`
-                    : $localize`Create your first domestic WAN connection. You can add multiple links for load balancing and failover.`}
+                    ? semanticMessages.wan_advanced_create_first_foreign(
+                        {},
+                        { locale },
+                      )
+                    : semanticMessages.wan_advanced_create_first_domestic(
+                        {},
+                        { locale },
+                      )}
                 </p>
                 <button
                   onClick$={$(async () => {
@@ -133,8 +150,14 @@ export const Step1_LinkInterface = component$<Step1Props>(
                     />
                   </svg>
                   {mode === "Foreign"
-                    ? $localize`Add Foreign Link`
-                    : $localize`Add Domestic Link`}
+                    ? semanticMessages.wan_advanced_add_foreign_link(
+                        {},
+                        { locale },
+                      )
+                    : semanticMessages.wan_advanced_add_domestic_link(
+                        {},
+                        { locale },
+                      )}
                 </button>
               </div>
             </Card>
@@ -149,8 +172,14 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 <div class="flex items-center justify-between">
                   <h2 class="text-xl font-medium text-gray-900 dark:text-white">
                     {mode === "Foreign"
-                      ? $localize`Configure Foreign WAN Interface`
-                      : $localize`Configure Domestic WAN Interface`}
+                      ? semanticMessages.wan_advanced_configure_foreign_interface(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.wan_advanced_configure_domestic_interface(
+                          {},
+                          { locale },
+                        )}
                   </h2>
                   <button
                     onClick$={$(async () => {
@@ -182,7 +211,10 @@ export const Step1_LinkInterface = component$<Step1Props>(
                         d="M12 4v16m8-8H4"
                       />
                     </svg>
-                    {$localize`Add Another Link`}
+                    {semanticMessages.wan_advanced_add_another_link(
+                      {},
+                      { locale },
+                    )}
                   </button>
                 </div>
 
@@ -191,7 +223,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                   {/* Name Input Field */}
                   <div class="mb-6">
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Link Name`}
+                      {semanticMessages.wan_advanced_link_name({}, { locale })}
                     </label>
                     <Input
                       type="text"
@@ -199,7 +231,10 @@ export const Step1_LinkInterface = component$<Step1Props>(
                       onInput$={(event: Event, value: string) => {
                         handleInterfaceUpdate(singleLink.id, { name: value });
                       }}
-                      placeholder={$localize`Enter a custom name for this WAN link`}
+                      placeholder={semanticMessages.wan_advanced_link_name_placeholder(
+                        {},
+                        { locale },
+                      )}
                       class="w-full"
                     />
                   </div>
@@ -341,8 +376,14 @@ export const Step1_LinkInterface = component$<Step1Props>(
                           />
                         </svg>
                         {wizardState.links.length === 1
-                          ? $localize`Add Another Link`
-                          : $localize`Add Interface`}
+                          ? semanticMessages.wan_advanced_add_another_link(
+                              {},
+                              { locale },
+                            )
+                          : semanticMessages.wan_advanced_add_interface(
+                              {},
+                              { locale },
+                            )}
                       </button>
                     </div>
 
@@ -413,7 +454,10 @@ export const Step1_LinkInterface = component$<Step1Props>(
                         {/* Name Input Field */}
                         <div>
                           <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {$localize`Link Name`}
+                            {semanticMessages.wan_advanced_link_name(
+                              {},
+                              { locale },
+                            )}
                           </label>
                           <Input
                             type="text"
@@ -421,7 +465,10 @@ export const Step1_LinkInterface = component$<Step1Props>(
                             onInput$={(event: Event, value: string) => {
                               handleInterfaceUpdate(link.id, { name: value });
                             }}
-                            placeholder={$localize`Enter a custom name for this WAN link`}
+                            placeholder={semanticMessages.wan_advanced_link_name_placeholder(
+                              {},
+                              { locale },
+                            )}
                             class="w-full"
                           />
                         </div>
@@ -535,7 +582,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                     />
                   </svg>
                   <p class="text-sm text-blue-700 dark:text-blue-300">
-                    {$localize`In Easy Mode, DHCP connection type will be used by default. Switch to Advanced Mode for more options.`}
+                    {semanticMessages.wan_advanced_easy_hint({}, { locale })}
                   </p>
                 </div>
               </div>

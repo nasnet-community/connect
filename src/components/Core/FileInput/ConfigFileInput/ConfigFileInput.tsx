@@ -3,6 +3,7 @@ import type { ConfigFileInputProps, FileUploadError } from "../types";
 import { FileInputError } from "../FileInputError";
 import { FileInputSkeleton } from "../FileInputSkeleton";
 import { FileTypeIcon } from "../FileTypeIcon";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * ConfigFileInput Component
@@ -27,6 +28,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
     autoResize = false,
     testId,
   }) => {
+    const locale = useMessageLocale();
     const localError = useSignal<FileUploadError | null>(error);
     const isValidating = useSignal(false);
     const textareaRef = useSignal<HTMLTextAreaElement>();
@@ -41,18 +43,36 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
     const defaultPlaceholder = (() => {
       switch (vpnType) {
         case "OpenVPN":
-          return $localize`Paste your OpenVPN configuration here. The file should include directives like 'remote', 'proto', 'dev', etc.`;
+          return semanticMessages.config_file_input_placeholder_openvpn(
+            {},
+            { locale },
+          );
         case "L2TP":
-          return $localize`Paste your L2TP configuration here.`;
+          return semanticMessages.config_file_input_placeholder_l2tp(
+            {},
+            { locale },
+          );
         case "PPTP":
-          return $localize`Paste your PPTP configuration here.`;
+          return semanticMessages.config_file_input_placeholder_pptp(
+            {},
+            { locale },
+          );
         case "SSTP":
-          return $localize`Paste your SSTP configuration here.`;
+          return semanticMessages.config_file_input_placeholder_sstp(
+            {},
+            { locale },
+          );
         case "IKEv2":
-          return $localize`Paste your IKEv2 configuration here.`;
+          return semanticMessages.config_file_input_placeholder_ikev2(
+            {},
+            { locale },
+          );
         case "Wireguard":
         default:
-          return $localize`Paste your Wireguard configuration here. The file should include [Interface] and [Peer] sections.`;
+          return semanticMessages.config_file_input_placeholder_wireguard(
+            {},
+            { locale },
+          );
       }
     })();
 
@@ -60,8 +80,14 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
       if (file.size > maxFileSize) {
         localError.value = {
           type: "FILE_TOO_LARGE",
-          message: $localize`File size exceeds ${Math.round(maxFileSize / 1024 / 1024)}MB limit`,
-          details: $localize`File size: ${Math.round(file.size / 1024)}KB`,
+          message: semanticMessages.config_file_input_file_size_exceeds(
+            { sizeMb: String(Math.round(maxFileSize / 1024 / 1024)) },
+            { locale },
+          ),
+          details: semanticMessages.config_file_input_file_size_details(
+            { sizeKb: String(Math.round(file.size / 1024)) },
+            { locale },
+          ),
           retryable: false,
         };
         return false;
@@ -86,14 +112,22 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                 !content.includes("[Peer]")
               ) {
                 errors.push(
-                  $localize`Missing required [Interface] or [Peer] sections`,
+                  semanticMessages.config_file_input_missing_wireguard_sections(
+                    {},
+                    { locale },
+                  ),
                 );
                 isValid = false;
               }
               break;
             case "OpenVPN":
               if (!content.includes("remote") && !content.includes("client")) {
-                errors.push($localize`Missing required OpenVPN directives`);
+                errors.push(
+                  semanticMessages.config_file_input_missing_openvpn_directives(
+                    {},
+                    { locale },
+                  ),
+                );
                 isValid = false;
               }
               break;
@@ -103,7 +137,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
           if (!isValid) {
             localError.value = {
               type: "VALIDATION_ERROR",
-              message: $localize`Invalid ${vpnType} configuration format`,
+              message: semanticMessages.config_file_input_invalid_format(
+                { vpnType },
+                { locale },
+              ),
               details: errors.join(", "),
               retryable: false,
             };
@@ -140,8 +177,14 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
       } catch (err) {
         localError.value = {
           type: "READ_ERROR",
-          message: $localize`Failed to read clipboard contents`,
-          details: $localize`Please check clipboard permissions`,
+          message: semanticMessages.config_file_input_clipboard_failed(
+            {},
+            { locale },
+          ),
+          details: semanticMessages.config_file_input_clipboard_permissions(
+            {},
+            { locale },
+          ),
           retryable: true,
         };
       }
@@ -170,7 +213,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
         reader.onerror = () => {
           localError.value = {
             type: "READ_ERROR",
-            message: $localize`Failed to read file`,
+            message: semanticMessages.config_file_input_file_failed(
+              {},
+              { locale },
+            ),
             details: reader.error?.message,
             retryable: true,
           };
@@ -182,7 +228,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
       } catch (err) {
         localError.value = {
           type: "UNKNOWN_ERROR",
-          message: $localize`An unexpected error occurred`,
+          message: semanticMessages.config_file_input_unexpected(
+            {},
+            { locale },
+          ),
           details: err instanceof Error ? err.message : String(err),
           retryable: true,
         };
@@ -223,7 +272,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
               ${localError.value ? "border-error-500 dark:border-error-400" : ""}
               ${autoResize ? "overflow-hidden" : ""}
             `}
-              aria-label={$localize`${vpnType} configuration input`}
+              aria-label={semanticMessages.config_file_input_aria_input(
+                { vpnType },
+                { locale },
+              )}
               aria-invalid={!!localError.value}
               aria-describedby={
                 localError.value
@@ -240,7 +292,8 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                 id="char-count"
                 class="absolute bottom-2 end-2 text-xs text-gray-500 dark:text-gray-400"
               >
-                {config.length} {$localize`characters`}
+                {config.length}{" "}
+                {semanticMessages.config_file_input_characters({}, { locale })}
               </div>
             )}
 
@@ -275,14 +328,17 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                 size="sm"
                 class="mr-1.5 sm:mr-2"
               />
-              {$localize`Upload`}
+              {semanticMessages.shared_upload({}, { locale })}
               <input
                 type="file"
                 accept={acceptFileExtension}
                 class="sr-only"
                 disabled={disabled}
                 onChange$={handleFileUpload}
-                aria-label={$localize`Upload ${vpnType} configuration file`}
+                aria-label={semanticMessages.config_file_input_aria_upload(
+                  { vpnType },
+                  { locale },
+                )}
               />
             </label>
             <button
@@ -302,7 +358,10 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   }
               `}
               type="button"
-              aria-label={$localize`Paste configuration from clipboard`}
+              aria-label={semanticMessages.config_file_input_aria_paste(
+                {},
+                { locale },
+              )}
             >
               <svg
                 class="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5"
@@ -318,7 +377,7 @@ export const ConfigFileInput = component$<ConfigFileInputProps>(
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-              {$localize`Paste`}
+              {semanticMessages.shared_paste({}, { locale })}
             </button>
           </div>
         </div>

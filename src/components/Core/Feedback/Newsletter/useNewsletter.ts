@@ -12,6 +12,7 @@ export function useNewsletter({
   onSubscribe$,
   initialLoading = false,
   validateEmail = true,
+  messages,
   // _customValidation$ = null,
 }: UseNewsletterParams = {}): UseNewsletterReturn {
   // State for the newsletter form
@@ -26,6 +27,12 @@ export function useNewsletter({
 
   // Store the subscription handler - it's already a QRL so it's serializable
   const subscriptionHandler = onSubscribe$;
+  const invalidEmailMessage =
+    messages?.invalidEmail || "Please enter a valid email address";
+  const requiredEmailMessage =
+    messages?.requiredEmail || "Email address is required";
+  const subscribeFailedMessage =
+    messages?.subscribeFailed || "Failed to subscribe. Please try again.";
 
   // Handle email input changes
   const handleEmailInput$ = $(async (event: Event) => {
@@ -52,7 +59,7 @@ export function useNewsletter({
       }
 
       if (!isValid.value && emailValue.length > 5) {
-        error.value = $localize`Please enter a valid email address`;
+        error.value = invalidEmailMessage;
         console.log("[Newsletter] Email validation failed:", {
           email: emailValue,
         });
@@ -77,7 +84,7 @@ export function useNewsletter({
     });
 
     if (!emailValue) {
-      error.value = $localize`Email address is required`;
+      error.value = requiredEmailMessage;
       isValid.value = false;
       console.warn("[Newsletter] Validation failed: Email is required");
       return false;
@@ -89,7 +96,7 @@ export function useNewsletter({
       const isValidFormat = emailRegex.test(emailValue);
 
       if (!isValidFormat) {
-        error.value = $localize`Please enter a valid email address`;
+        error.value = invalidEmailMessage;
         isValid.value = false;
         console.warn("[Newsletter] Validation failed: Invalid email format", {
           email: emailValue,
@@ -134,7 +141,7 @@ export function useNewsletter({
       const emailValue = email.value.trim();
       if (!emailValue) {
         console.error("[Newsletter] Email value is empty or undefined");
-        error.value = "Please enter a valid email address";
+        error.value = invalidEmailMessage;
         loading.value = false;
         return;
       }
@@ -196,7 +203,7 @@ export function useNewsletter({
           stack: err.stack,
         });
       } else {
-        error.value = $localize`Failed to subscribe. Please try again.`;
+        error.value = subscribeFailedMessage;
         console.error("[Newsletter] Unknown error type:", err);
       }
     } finally {

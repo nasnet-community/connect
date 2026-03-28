@@ -1,5 +1,7 @@
 import type { Networks } from "~/components/Star/StarContext/Utils/Networks";
 import type { WANState } from "~/components/Star/StarContext/WANType";
+import { semanticMessages } from "~/i18n/semantic";
+import type { AppLocale } from "~/i18n/config";
 
 export interface NetworkOption {
   value: string;
@@ -22,6 +24,7 @@ const isLoadBalanceEnabled = (strategy?: string): boolean => {
 export const buildNetworkOptions = (
   networks?: Networks,
   wanState?: WANState,
+  locale?: AppLocale,
 ): NetworkOption[] => {
   const options: NetworkOption[] = [];
 
@@ -45,19 +48,23 @@ export const buildNetworkOptions = (
     if (networks.BaseNetworks.Domestic && !domesticLoadBalance) {
       options.push({
         value: "Domestic",
-        label: $localize`Domestic`,
+        label: semanticMessages.game_network_domestic({}, { locale }),
         category: "Base",
       });
     }
     if (networks.BaseNetworks.Foreign && !foreignLoadBalance) {
       options.push({
         value: "Foreign",
-        label: $localize`Foreign`,
+        label: semanticMessages.game_network_foreign({}, { locale }),
         category: "Base",
       });
     }
     if (networks.BaseNetworks.VPN && !vpnLoadBalance) {
-      options.push({ value: "VPN", label: $localize`VPN`, category: "Base" });
+      options.push({
+        value: "VPN",
+        label: semanticMessages.game_network_vpn({}, { locale }),
+        category: "Base",
+      });
     }
   }
 

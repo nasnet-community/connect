@@ -2,8 +2,10 @@ import { $, component$, useSignal } from "@builder.io/qwik";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const VPNServerSection = component$(() => {
+  const locale = useMessageLocale();
   const selectedNode = useSignal<string | null>(null);
   const activeConnections = useSignal<Record<string, boolean>>({
     wireguard: true,
@@ -22,27 +24,52 @@ export const VPNServerSection = component$(() => {
   // Graph nodes for VPN server topology
   const nodes: GraphNode[] = [
     createNode("VPNServer", "vpn-server", 250, 200, {
-      label: $localize`VPN Server`,
+      label: semanticMessages.landing_vpn_server_node({}, { locale }),
     }),
     // Client devices from different locations
     createNode("WirelessUser", "client1", 100, 100, {
-      label: $localize`Mobile Client`,
+      label: semanticMessages.landing_vpn_server_mobile_client(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("EthernetUser", "client2", 400, 100, {
-      label: $localize`Desktop Client`,
+      label: semanticMessages.landing_vpn_server_desktop_client(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("LTEUser", "client3", 100, 300, {
-      label: $localize`Remote Worker`,
+      label: semanticMessages.landing_vpn_server_remote_worker(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("User", "client4", 400, 300, {
-      label: $localize`Branch Office`,
+      label: semanticMessages.landing_tunnels_branch_office_1({}, { locale }),
     }),
     // External services
     createNode("DomesticService", "internal-srv", 150, 200, {
-      label: $localize`Internal Services`,
+      label: semanticMessages.landing_vpn_server_internal_services(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("ForeignService", "external-srv", 350, 200, {
-      label: $localize`External Access`,
+      label: semanticMessages.landing_vpn_server_external_access(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
   ];
 
@@ -53,7 +80,12 @@ export const VPNServerSection = component$(() => {
       from: "client1",
       to: "vpn-server",
       trafficType: "VPN",
-      label: $localize`WireGuard Tunnel`,
+      label: semanticMessages.landing_vpn_server_wireguard_tunnel(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeConnections.value.wireguard,
       dashed: true,
       width: 3,
@@ -63,7 +95,12 @@ export const VPNServerSection = component$(() => {
       from: "client2",
       to: "vpn-server",
       trafficType: "VPN",
-      label: $localize`OpenVPN Tunnel`,
+      label: semanticMessages.landing_vpn_server_openvpn_tunnel(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeConnections.value.openvpn,
       dashed: true,
       width: 3,
@@ -73,7 +110,7 @@ export const VPNServerSection = component$(() => {
       from: "client3",
       to: "vpn-server",
       trafficType: "VPN",
-      label: $localize`L2TP/IPSec`,
+      label: semanticMessages.landing_vpn_server_l2tp({}, { locale }),
       animated: activeConnections.value.l2tp,
       dashed: true,
       width: 2,
@@ -83,7 +120,12 @@ export const VPNServerSection = component$(() => {
       from: "client4",
       to: "vpn-server",
       trafficType: "VPN",
-      label: $localize`IKEv2 Tunnel`,
+      label: semanticMessages.landing_vpn_server_ikev2_tunnel(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeConnections.value.ikev2,
       dashed: true,
       width: 2,
@@ -94,7 +136,12 @@ export const VPNServerSection = component$(() => {
       from: "vpn-server",
       to: "internal-srv",
       trafficType: "Domestic",
-      label: $localize`Internal Access`,
+      label: semanticMessages.landing_vpn_server_internal_access(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: true,
       width: 2,
       color: "#84cc16",
@@ -103,7 +150,12 @@ export const VPNServerSection = component$(() => {
       from: "vpn-server",
       to: "external-srv",
       trafficType: "Foreign",
-      label: $localize`External Access`,
+      label: semanticMessages.landing_vpn_server_external_access(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: true,
       width: 2,
       color: "#9333ea",
@@ -277,21 +329,36 @@ export const VPNServerSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-left space-y-6">
             <Badge color="info" variant="outline" size="lg">
-              {$localize`Remote Access`}
+              {semanticMessages.landing_vpn_server_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
-                {$localize`VPN Server`}
+                {semanticMessages.landing_vpn_server_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Global Access`}
+                {semanticMessages.landing_vpn_server_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Multi-protocol server supporting 11 VPN types. Enable remote access, content freedom through foreign links, and secure connectivity worldwide.`}
+              {semanticMessages.landing_vpn_server_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
 
             <div class="grid grid-cols-3 gap-3">
@@ -326,7 +393,12 @@ export const VPNServerSection = component$(() => {
               {/* Protocol Controls */}
               <div class="mb-4">
                 <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {$localize`Active Protocols`}
+                  {semanticMessages.landing_vpn_server_active_protocols(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h3>
                 <div class="grid grid-cols-3 gap-2">
                   {protocols.map((protocol) => (
@@ -362,7 +434,8 @@ export const VPNServerSection = component$(() => {
               {selectedNode.value && (
                 <div class="mb-3 rounded-lg border border-teal-200 bg-teal-50 p-3 dark:border-teal-700 dark:bg-teal-900/30">
                   <p class="text-sm font-medium text-teal-800 dark:text-teal-200">
-                    {$localize`Selected:`} {selectedNode.value}
+                    {semanticMessages.landing_shared_selected({}, { locale })}{" "}
+                    {selectedNode.value}
                   </p>
                 </div>
               )}
@@ -383,16 +456,43 @@ export const VPNServerSection = component$(() => {
                   }
                   return true;
                 })}
-                title={$localize`VPN Server Connections`}
+                title={semanticMessages.landing_vpn_server_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={{
                   width: "100%",
                   height: "420px",
                   viewBox: "0 0 500 420",
                   showLegend: true,
                   legendItems: [
-                    { color: "#6366f1", label: $localize`VPN Tunnels` },
-                    { color: "#84cc16", label: $localize`Internal Access` },
-                    { color: "#9333ea", label: $localize`External Access` },
+                    {
+                      color: "#6366f1",
+                      label: semanticMessages.landing_vpn_server_vpn_tunnels(
+                        {},
+                        {
+                          locale,
+                        },
+                      ),
+                    },
+                    {
+                      color: "#84cc16",
+                      label:
+                        semanticMessages.landing_vpn_server_internal_access(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#9333ea",
+                      label:
+                        semanticMessages.landing_vpn_server_external_access(
+                          {},
+                          { locale },
+                        ),
+                    },
                   ],
                 }}
                 onNodeClick$={handleNodeClick}
@@ -404,15 +504,36 @@ export const VPNServerSection = component$(() => {
                   <div class="text-xl font-bold text-teal-600">
                     {protocols.filter((p) => p.active).length}
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Active Protocols`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_vpn_server_active_protocols(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <div class="text-xl font-bold text-blue-600">4</div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Connected Clients`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_vpn_server_connected_clients(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <div class="text-xl font-bold text-purple-600">256bit</div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Encryption`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_vpn_server_encryption(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

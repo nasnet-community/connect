@@ -16,6 +16,7 @@ import { TunnelSummaryStep } from "./Steps/TunnelSummaryStep";
 import type { PropFunction } from "@builder.io/qwik";
 import type { TunnelStepperData } from "./types";
 import { ActionFooter } from "./ActionFooter";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Create a typed context for Tunnel
 export const TunnelContextId = createStepperContext<TunnelStepperData>(
@@ -23,6 +24,7 @@ export const TunnelContextId = createStepperContext<TunnelStepperData>(
 );
 
 export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
+  const locale = useMessageLocale();
   const {
     tunnelsEnabled,
     ipipTunnels,
@@ -42,43 +44,71 @@ export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
     return [
       {
         id: 0,
-        title: $localize`Select Protocol`,
-        description: $localize`Choose the tunnel protocol you want to configure.`,
+        title: semanticMessages.tunnel_step_select_protocol({}, { locale }),
+        description: semanticMessages.tunnel_step_select_protocol_description(
+          {},
+          { locale },
+        ),
         component: <TunnelProtocolStep />,
         isComplete: false,
       },
       {
         id: 1,
-        title: $localize`IPIP Tunnels`,
-        description: $localize`Configure IP over IP tunnels to connect remote networks.`,
+        title: semanticMessages.tunnel_step_ipip({}, { locale }),
+        description: semanticMessages.tunnel_step_ipip_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <IPIPTunnelStep />,
         isComplete: true, // Step completion is managed in the step component
       },
       {
         id: 2,
-        title: $localize`EOIP Tunnels`,
-        description: $localize`Configure Ethernet over IP tunnels for bridging remote Ethernet segments.`,
+        title: semanticMessages.tunnel_step_eoip({}, { locale }),
+        description: semanticMessages.tunnel_step_eoip_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <EOIPTunnelStep />,
         isComplete: true, // Step completion is managed in the step component
       },
       {
         id: 3,
-        title: $localize`GRE Tunnels`,
-        description: $localize`Configure Generic Routing Encapsulation tunnels.`,
+        title: semanticMessages.tunnel_step_gre({}, { locale }),
+        description: semanticMessages.tunnel_step_gre_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <GRETunnelStep />,
         isComplete: true, // Step completion is managed in the step component
       },
       {
         id: 4,
-        title: $localize`VXLAN Tunnels`,
-        description: $localize`Configure Virtual Extensible LAN tunnels for scaling network overlays.`,
+        title: semanticMessages.tunnel_step_vxlan({}, { locale }),
+        description: semanticMessages.tunnel_step_vxlan_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <VXLANTunnelStep />,
         isComplete: true, // Step completion is managed in the step component
       },
       {
         id: 5,
-        title: $localize`Summary`,
-        description: $localize`Review your tunnel configuration before saving.`,
+        title: semanticMessages.tunnel_step_summary({}, { locale }),
+        description: semanticMessages.tunnel_step_summary_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <TunnelSummaryStep />,
         isComplete: false, // Completion is managed in the step component
       },
@@ -117,7 +147,7 @@ export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
           <div class="space-y-4">
             <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
               <p class="text-gray-700 dark:text-gray-300">
-                {$localize`Network tunneling is currently disabled. Enable it using the toggle above to configure tunnel settings.`}
+                {semanticMessages.tunnel_disabled_message({}, { locale })}
               </p>
             </div>
             <ActionFooter
@@ -125,7 +155,7 @@ export const Tunnel = component$<StepProps>(({ onComplete$, onDisabled$ }) => {
               onSave$={$(async () => {
                 await saveSettings$(onComplete$);
               })}
-              saveText={$localize`Save`}
+              saveText={semanticMessages.shared_save({}, { locale })}
             />
           </div>
         ) : (

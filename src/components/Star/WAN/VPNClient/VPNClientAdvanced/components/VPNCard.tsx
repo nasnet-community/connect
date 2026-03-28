@@ -1,6 +1,7 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import { Card, Alert, Input } from "~/components/Core";
 import type { VPNConfig } from "../types/VPNClientAdvancedTypes";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNCardProps {
   vpn: VPNConfig;
@@ -30,6 +31,7 @@ export const VPNCard = component$<VPNCardProps>(
     onTest$,
     children,
   }) => {
+    const locale = useMessageLocale();
     const hasErrors = Object.keys(validationErrors).some(
       (key) =>
         key.startsWith(`vpn-${vpn.id}`) && validationErrors[key].length > 0,
@@ -169,7 +171,10 @@ export const VPNCard = component$<VPNCardProps>(
                 <button
                   onClick$={() => onTest$(vpn.id)}
                   class="rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-sm text-blue-600 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                  title={$localize`Test Connection`}
+                  title={semanticMessages.vpn_client_advanced_test_connection(
+                    {},
+                    { locale },
+                  )}
                 >
                   <svg
                     class="h-4 w-4"
@@ -196,9 +201,15 @@ export const VPNCard = component$<VPNCardProps>(
                       ? "border border-yellow-300 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 dark:border-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400"
                       : "border border-green-300 bg-green-50 text-green-600 hover:bg-green-100 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400"
                   }`}
-                  title={vpn.enabled ? $localize`Disable` : $localize`Enable`}
+                  title={
+                    vpn.enabled
+                      ? semanticMessages.shared_disable({}, { locale })
+                      : semanticMessages.shared_enable({}, { locale })
+                  }
                 >
-                  {vpn.enabled ? $localize`Disable` : $localize`Enable`}
+                  {vpn.enabled
+                    ? semanticMessages.shared_disable({}, { locale })
+                    : semanticMessages.shared_enable({}, { locale })}
                 </button>
               )}
 
@@ -207,7 +218,11 @@ export const VPNCard = component$<VPNCardProps>(
                 <button
                   onClick$={() => onToggleExpanded$(vpn.id)}
                   class="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-                  title={isExpanded ? $localize`Collapse` : $localize`Expand`}
+                  title={
+                    isExpanded
+                      ? semanticMessages.shared_collapse({}, { locale })
+                      : semanticMessages.shared_expand({}, { locale })
+                  }
                 >
                   <svg
                     class={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -230,7 +245,12 @@ export const VPNCard = component$<VPNCardProps>(
                 <button
                   onClick$={() => onRemove$(vpn.id)}
                   class="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-                  title={$localize`Remove VPN`}
+                  title={semanticMessages.vpn_client_advanced_remove_vpn(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 >
                   <svg
                     class="h-4 w-4"
@@ -269,7 +289,12 @@ export const VPNCard = component$<VPNCardProps>(
               {/* Name Input Field */}
               <div class="mb-4">
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`Connection Name`}
+                  {semanticMessages.vpn_client_advanced_connection_name(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </label>
                 <Input
                   type="text"
@@ -279,7 +304,10 @@ export const VPNCard = component$<VPNCardProps>(
                       onUpdate$(vpn.id, { name: value });
                     }
                   }}
-                  placeholder={$localize`Enter a custom name for this VPN connection`}
+                  placeholder={semanticMessages.vpn_client_advanced_connection_name_placeholder(
+                    {},
+                    { locale },
+                  )}
                   class="w-full"
                 />
               </div>
@@ -292,35 +320,69 @@ export const VPNCard = component$<VPNCardProps>(
             <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
               {vpn.type === "Wireguard" && vpn.config.PeerEndpointAddress && (
                 <p>
-                  {$localize`Server:`} {vpn.config.PeerEndpointAddress}:
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.PeerEndpointAddress}:
                   {vpn.config.PeerEndpointPort || 51820}
                 </p>
               )}
               {vpn.type === "OpenVPN" && vpn.config.Server.Address && (
                 <p>
-                  {$localize`Server:`} {vpn.config.Server.Address}:
-                  {vpn.config.Server.Port || "1194"}
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.Server.Address}:{vpn.config.Server.Port || "1194"}
                 </p>
               )}
               {vpn.type === "L2TP" && vpn.config.Server.Address && (
                 <p>
-                  {$localize`Server:`} {vpn.config.Server.Address}
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.Server.Address}
                 </p>
               )}
               {vpn.type === "PPTP" && vpn.config.ConnectTo && (
                 <p>
-                  {$localize`Server:`} {vpn.config.ConnectTo}
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.ConnectTo}
                 </p>
               )}
               {vpn.type === "SSTP" && vpn.config.Server.Address && (
                 <p>
-                  {$localize`Server:`} {vpn.config.Server.Address}:
-                  {vpn.config.Server.Port || "443"}
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.Server.Address}:{vpn.config.Server.Port || "443"}
                 </p>
               )}
               {vpn.type === "IKeV2" && vpn.config.ServerAddress && (
                 <p>
-                  {$localize`Server:`} {vpn.config.ServerAddress}
+                  {semanticMessages.vpn_client_advanced_server_label(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}{" "}
+                  {vpn.config.ServerAddress}
                 </p>
               )}
             </div>

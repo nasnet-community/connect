@@ -1,7 +1,9 @@
 import { $, useSignal, useContext } from "@builder.io/qwik";
 import { StarContext } from "../../../StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const useCertificate = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -18,7 +20,12 @@ export const useCertificate = () => {
   // Validate passphrase
   const validatePassphrase = $((value: string) => {
     if (value.length > 0 && value.length < 10) {
-      passphraseError.value = $localize`Passphrase must be at least 10 characters`;
+      passphraseError.value = semanticMessages.vpn_server_passphrase_min(
+        {},
+        {
+          locale,
+        },
+      );
       return false;
     }
     passphraseError.value = "";

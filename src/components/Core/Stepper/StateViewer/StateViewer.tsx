@@ -6,8 +6,10 @@ import { StateHistory } from "./StateHistory";
 import { ContextPaster } from "./ContextPaster";
 import { ConfigViewer } from "./ConfigViewer";
 import { useStateViewer } from "./useStateViewer";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const StateViewer = component$(() => {
+  const locale = useMessageLocale();
   const context = useContext(StarContext);
   const {
     isOpen,
@@ -51,9 +53,11 @@ export const StateViewer = component$(() => {
       <button
         onClick$={() => (isOpen.value = true)}
         class="fixed bottom-4 right-4 z-50 rounded-full bg-primary-500 p-3 text-white shadow-lg hover:bg-primary-600"
-        aria-label={$localize`Open Developer Tools`}
+        aria-label={semanticMessages.state_viewer_open_devtools({}, { locale })}
       >
-        <span class="sr-only">{$localize`Open Developer Tools`}</span>
+        <span class="sr-only">
+          {semanticMessages.state_viewer_open_devtools({}, { locale })}
+        </span>
         <svg
           class="h-6 w-6"
           fill="none"

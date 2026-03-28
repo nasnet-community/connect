@@ -1,6 +1,7 @@
 import { component$, $, useComputed$ } from "@builder.io/qwik";
 import type { Signal } from "@builder.io/qwik";
 import { Select, type SelectOption } from "~/components/Core/Select";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Organize timezones by continent
 export const TIMEZONES = {
@@ -69,6 +70,7 @@ interface TimezoneCardProps {
 
 export const TimezoneCard = component$<TimezoneCardProps>(
   ({ selectedTimezone }) => {
+    const locale = useMessageLocale();
     // Convert the timezone data to SelectOption format
     const timezoneOptions = useComputed$(() => {
       const options: SelectOption[] = [];
@@ -99,9 +101,12 @@ export const TimezoneCard = component$<TimezoneCardProps>(
           <Select
             options={timezoneOptions.value}
             value={selectedTimezone.value}
-            label={$localize`Timezone`}
+            label={semanticMessages.reboot_timezone_label({}, { locale })}
             onChange$={handleTimezoneChange}
-            placeholder={$localize`Search your city or timezone...`}
+            placeholder={semanticMessages.reboot_timezone_placeholder(
+              {},
+              { locale },
+            )}
             searchable={true}
             clearable={true}
             maxHeight="300px"

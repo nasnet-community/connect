@@ -9,8 +9,10 @@ import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { SelectionCard } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GraphingStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
   const starCtx = useContext(StarContext);
@@ -31,7 +33,10 @@ export const GraphingStep = component$(() => {
   const graphingOptions = [
     {
       id: "interface",
-      title: $localize`Interface Monitoring`,
+      title: semanticMessages.useful_services_graphing_interface(
+        {},
+        { locale },
+      ),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +58,7 @@ export const GraphingStep = component$(() => {
     },
     {
       id: "queue",
-      title: $localize`Queue Management`,
+      title: semanticMessages.useful_services_graphing_queue({}, { locale }),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +80,10 @@ export const GraphingStep = component$(() => {
     },
     {
       id: "resources",
-      title: $localize`System Resources`,
+      title: semanticMessages.useful_services_graphing_resources(
+        {},
+        { locale },
+      ),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -195,10 +203,15 @@ export const GraphingStep = component$(() => {
         </div>
         <div class="space-y-3">
           <h3 class="animate-gradient bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-300% bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:via-gray-200 dark:to-white md:text-5xl">
-            {$localize`Network Graphing`}
+            {semanticMessages.useful_services_graphing_title({}, { locale })}
           </h3>
           <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-            {$localize`Enable comprehensive network monitoring with real-time graphs and performance analytics`}
+            {semanticMessages.useful_services_graphing_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </div>
       </div>
@@ -207,10 +220,18 @@ export const GraphingStep = component$(() => {
       <div class="space-y-6">
         <div class="text-center">
           <h4 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-            {$localize`Choose Monitoring Types`}
+            {semanticMessages.useful_services_graphing_choose_title(
+              {},
+              {
+                locale,
+              },
+            )}
           </h4>
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Select the types of network data you want to monitor and visualize`}
+            {semanticMessages.useful_services_graphing_choose_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
 

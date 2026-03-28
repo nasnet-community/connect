@@ -1,6 +1,7 @@
 import { component$, type QRL, useComputed$, $ } from "@builder.io/qwik";
 import type { WANWizardState } from "../types";
 import { Alert, Card } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step4Props {
   wizardState: WANWizardState;
@@ -10,6 +11,7 @@ export interface Step4Props {
 
 export const Step4_Summary = component$<Step4Props>(
   ({ wizardState, onEdit$, onValidate$: _onValidate$ }) => {
+    const locale = useMessageLocale();
     // Use useComputed$ for sorted links to avoid mutations during render
     const sortedLinksByPriority = useComputed$(() => {
       return [...wizardState.links].sort(
@@ -118,10 +120,13 @@ export const Step4_Summary = component$<Step4Props>(
         <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-white">
           <div class="relative z-10">
             <h2 class="text-3xl font-bold">
-              {$localize`Configuration Summary`}
+              {semanticMessages.wan_advanced_summary_title({}, { locale })}
             </h2>
             <p class="mt-2 text-primary-100">
-              {$localize`Review your WAN configuration before deploying to your router`}
+              {semanticMessages.wan_advanced_review_before_deploy(
+                {},
+                { locale },
+              )}
             </p>
           </div>
           {/* Background Pattern */}
@@ -148,7 +153,10 @@ export const Step4_Summary = component$<Step4Props>(
               </svg>
               <div class="ml-3">
                 <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                  {$localize`Configuration Issues Detected`}
+                  {semanticMessages.wan_advanced_issues_detected(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <div class="mt-2 text-sm text-red-700 dark:text-red-300">
                   <ul class="list-inside list-disc space-y-1">
@@ -176,10 +184,16 @@ export const Step4_Summary = component$<Step4Props>(
               </svg>
               <div class="ml-3">
                 <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
-                  {$localize`Configuration Ready`}
+                  {semanticMessages.wan_advanced_configuration_ready(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <p class="mt-1 text-sm text-green-700 dark:text-green-300">
-                  {$localize`Your WAN configuration has been validated successfully.`}
+                  {semanticMessages.wan_advanced_validated_successfully(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>
@@ -191,7 +205,10 @@ export const Step4_Summary = component$<Step4Props>(
           <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 dark:from-gray-800 dark:to-gray-700">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`WAN Links Overview`}
+                {semanticMessages.wan_advanced_wan_links_overview(
+                  {},
+                  { locale },
+                )}
               </h3>
               <button
                 onClick$={() => handleEditStep(0)}
@@ -210,7 +227,10 @@ export const Step4_Summary = component$<Step4Props>(
                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                   />
                 </svg>
-                {$localize`Edit Configuration`}
+                {semanticMessages.wan_advanced_edit_configuration(
+                  {},
+                  { locale },
+                )}
               </button>
             </div>
           </div>
@@ -232,7 +252,12 @@ export const Step4_Summary = component$<Step4Props>(
                     <div class="flex items-center gap-4">
                       {/* Priority Badge */}
                       <div class="flex flex-col items-center">
-                        <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{$localize`Priority`}</span>
+                        <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          {semanticMessages.wan_advanced_priority(
+                            {},
+                            { locale },
+                          )}
+                        </span>
                         <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 font-bold text-white shadow-lg">
                           {index + 1}
                         </div>
@@ -280,8 +305,16 @@ export const Step4_Summary = component$<Step4Props>(
                               />
                             </svg>
                             {link.interfaceType ||
-                              $localize`No interface selected`}{" "}
-                            • {link.interfaceName || $localize`Not selected`}
+                              semanticMessages.wan_advanced_no_interface_selected(
+                                {},
+                                { locale },
+                              )}{" "}
+                            •{" "}
+                            {link.interfaceName ||
+                              semanticMessages.wan_advanced_not_selected(
+                                {},
+                                { locale },
+                              )}
                           </span>
                           {link.connectionType && (
                             <>
@@ -338,7 +371,11 @@ export const Step4_Summary = component$<Step4Props>(
                             wizardState.multiLinkStrategy?.strategy !==
                               "Failover" && (
                               <span class="inline-flex items-center rounded-md bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                                {link.weight}% {$localize`weight`}
+                                {link.weight}%{" "}
+                                {semanticMessages.wan_advanced_weight(
+                                  {},
+                                  { locale },
+                                )}
                               </span>
                             )}
                         </div>
@@ -367,7 +404,11 @@ export const Step4_Summary = component$<Step4Props>(
                                 </div>
                                 <div class="text-sm">
                                   <p class="text-gray-600 dark:text-gray-400">
-                                    {$localize`Username`}:{" "}
+                                    {semanticMessages.wan_advanced_username(
+                                      {},
+                                      { locale },
+                                    )}
+                                    :{" "}
                                     <span class="font-medium text-gray-900 dark:text-white">
                                       {link.connectionConfig.pppoe.username}
                                     </span>
@@ -456,12 +497,18 @@ export const Step4_Summary = component$<Step4Props>(
                       {!isConfigured ? (
                         <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                           <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
-                          {$localize`Not Configured`}
+                          {semanticMessages.wan_advanced_not_configured(
+                            {},
+                            { locale },
+                          )}
                         </span>
                       ) : (
                         <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                           <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-                          {$localize`Ready`}
+                          {semanticMessages.wan_advanced_link_ready(
+                            {},
+                            { locale },
+                          )}
                         </span>
                       )}
                     </div>
@@ -481,7 +528,10 @@ export const Step4_Summary = component$<Step4Props>(
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 dark:from-gray-800 dark:to-gray-700">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  {$localize`Multi-WAN Strategy`}
+                  {semanticMessages.wan_advanced_multi_wan_strategy(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <button
                   onClick$={() => handleEditStep(2)}
@@ -500,7 +550,10 @@ export const Step4_Summary = component$<Step4Props>(
                       d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                     />
                   </svg>
-                  {$localize`Edit Strategy`}
+                  {semanticMessages.wan_advanced_edit_configuration(
+                    {},
+                    { locale },
+                  )}
                 </button>
               </div>
             </div>
@@ -524,7 +577,9 @@ export const Step4_Summary = component$<Step4Props>(
                     </svg>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Strategy`}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {semanticMessages.wan_advanced_strategy({}, { locale })}
+                    </p>
                     <p class="font-semibold text-gray-900 dark:text-white">
                       {getStrategyDisplay(
                         wizardState.multiLinkStrategy.strategy,
@@ -551,7 +606,12 @@ export const Step4_Summary = component$<Step4Props>(
                       </svg>
                     </div>
                     <div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Check Interval`}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {semanticMessages.wan_advanced_check_interval(
+                          {},
+                          { locale },
+                        )}
+                      </p>
                       <p class="font-semibold text-gray-900 dark:text-white">
                         {wizardState.multiLinkStrategy.failoverCheckInterval}s
                       </p>
@@ -577,7 +637,9 @@ export const Step4_Summary = component$<Step4Props>(
                       </svg>
                     </div>
                     <div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Timeout`}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {semanticMessages.wan_advanced_timeout({}, { locale })}
+                      </p>
                       <p class="font-semibold text-gray-900 dark:text-white">
                         {wizardState.multiLinkStrategy.failoverTimeout}s
                       </p>
@@ -606,12 +668,16 @@ export const Step4_Summary = component$<Step4Props>(
                           d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
                         />
                       </svg>
-                      {$localize`Load Balance Settings`}
+                      {semanticMessages.wan_advanced_load_balance_settings(
+                        {},
+                        { locale },
+                      )}
                     </h4>
                     <div class="space-y-3">
                       <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-3 dark:from-blue-900/20 dark:to-blue-800/20">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                          {$localize`Method`}:{" "}
+                          {semanticMessages.wan_advanced_method({}, { locale })}
+                          :{" "}
                           <span class="font-medium text-gray-900 dark:text-white">
                             {wizardState.multiLinkStrategy.loadBalanceMethod ||
                               "PCC"}
@@ -663,12 +729,20 @@ export const Step4_Summary = component$<Step4Props>(
                           d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                         />
                       </svg>
-                      {$localize`Failover Settings`}
+                      {semanticMessages.wan_advanced_failover_settings(
+                        {},
+                        { locale },
+                      )}
                     </h4>
                     <div class="space-y-3">
                       <div class="grid grid-cols-2 gap-2">
                         <div class="rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-100 p-3 dark:from-yellow-900/20 dark:to-yellow-800/20">
-                          <p class="text-xs text-gray-500 dark:text-gray-400">{$localize`Check Interval`}</p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {semanticMessages.wan_advanced_check_interval(
+                              {},
+                              { locale },
+                            )}
+                          </p>
                           <p class="text-lg font-bold text-yellow-700 dark:text-yellow-300">
                             {
                               wizardState.multiLinkStrategy
@@ -678,14 +752,24 @@ export const Step4_Summary = component$<Step4Props>(
                           </p>
                         </div>
                         <div class="rounded-lg bg-gradient-to-r from-red-50 to-red-100 p-3 dark:from-red-900/20 dark:to-red-800/20">
-                          <p class="text-xs text-gray-500 dark:text-gray-400">{$localize`Timeout`}</p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {semanticMessages.wan_advanced_timeout(
+                              {},
+                              { locale },
+                            )}
+                          </p>
                           <p class="text-lg font-bold text-red-700 dark:text-red-300">
                             {wizardState.multiLinkStrategy.failoverTimeout}s
                           </p>
                         </div>
                       </div>
                       <div class="space-y-2">
-                        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{$localize`Priority Order`}</p>
+                        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          {semanticMessages.wan_advanced_priority_order(
+                            {},
+                            { locale },
+                          )}
+                        </p>
                         {sortedLinksByPriority.value.map((link, index) => (
                           <div
                             key={link.id}
@@ -708,7 +792,10 @@ export const Step4_Summary = component$<Step4Props>(
                               </span>
                               {index === 0 && (
                                 <span class="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                  {$localize`Primary`}
+                                  {semanticMessages.wan_advanced_primary(
+                                    {},
+                                    { locale },
+                                  )}
                                 </span>
                               )}
                             </div>

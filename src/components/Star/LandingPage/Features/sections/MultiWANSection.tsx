@@ -3,8 +3,10 @@ import { LuGlobe, LuHome, LuActivity } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const MultiWANSection = component$(() => {
+  const locale = useMessageLocale();
   const selectedNode = useSignal<string | null>(null);
   const activeTrafficTypes = useSignal<Record<string, boolean>>({
     domestic: true,
@@ -15,19 +17,19 @@ export const MultiWANSection = component$(() => {
   // Graph nodes for network topology
   const nodes: GraphNode[] = [
     createNode("WirelessRouter", "router", 250, 200, {
-      label: $localize`MikroTik Router`,
+      label: semanticMessages.landing_multiwan_router({}, { locale }),
     }),
     createNode("DomesticWAN", "domestic-isp", 100, 100, {
-      label: $localize`Domestic ISP`,
+      label: semanticMessages.landing_multiwan_domestic_isp({}, { locale }),
     }),
     createNode("ForeignWAN", "foreign-isp", 400, 100, {
-      label: $localize`Foreign ISP`,
+      label: semanticMessages.landing_multiwan_foreign_isp({}, { locale }),
     }),
     createNode("DomesticWAN", "backup1", 100, 300, {
-      label: $localize`Backup Link 1`,
+      label: semanticMessages.landing_multiwan_backup_1({}, { locale }),
     }),
     createNode("ForeignWAN", "backup2", 400, 300, {
-      label: $localize`Backup Link 2`,
+      label: semanticMessages.landing_multiwan_backup_2({}, { locale }),
     }),
   ];
 
@@ -37,7 +39,12 @@ export const MultiWANSection = component$(() => {
       from: "router",
       to: "domestic-isp",
       trafficType: "Domestic",
-      label: $localize`Primary Domestic`,
+      label: semanticMessages.landing_multiwan_primary_domestic(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeTrafficTypes.value.domestic,
       width: 3,
     },
@@ -45,7 +52,12 @@ export const MultiWANSection = component$(() => {
       from: "router",
       to: "foreign-isp",
       trafficType: "Foreign",
-      label: $localize`Primary Foreign`,
+      label: semanticMessages.landing_multiwan_primary_foreign(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeTrafficTypes.value.foreign,
       width: 3,
     },
@@ -53,7 +65,12 @@ export const MultiWANSection = component$(() => {
       from: "router",
       to: "backup1",
       trafficType: "Domestic",
-      label: $localize`Backup Domestic`,
+      label: semanticMessages.landing_multiwan_backup_domestic(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeTrafficTypes.value.backup,
       dashed: true,
       width: 2,
@@ -62,7 +79,12 @@ export const MultiWANSection = component$(() => {
       from: "router",
       to: "backup2",
       trafficType: "Foreign",
-      label: $localize`Backup Foreign`,
+      label: semanticMessages.landing_multiwan_backup_foreign(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: activeTrafficTypes.value.backup,
       dashed: true,
       width: 2,
@@ -157,21 +179,31 @@ export const MultiWANSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-left space-y-6">
             <Badge color="primary" variant="outline" size="lg">
-              {$localize`Multi-WAN Technology`}
+              {semanticMessages.landing_multiwan_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                {$localize`Multiple WAN`}
+                {semanticMessages.landing_multiwan_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Link Types`}
+                {semanticMessages.landing_multiwan_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Domestic + Foreign links with intelligent routing. Experience optimal performance with geographic-based traffic distribution and automatic failover protection.`}
+              {semanticMessages.landing_multiwan_description({}, { locale })}
             </p>
 
             <div class="space-y-4">
@@ -181,10 +213,20 @@ export const MultiWANSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Smart Routing`}
+                    {semanticMessages.landing_multiwan_smart_routing(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Automatically routes traffic through optimal links based on destination`}
+                    {semanticMessages.landing_multiwan_smart_routing_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -195,10 +237,20 @@ export const MultiWANSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Link Redundancy`}
+                    {semanticMessages.landing_multiwan_link_redundancy(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`2-8 WAN links support with automatic failover and load balancing`}
+                    {semanticMessages.landing_multiwan_link_redundancy_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -209,10 +261,20 @@ export const MultiWANSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Geographic Optimization`}
+                    {semanticMessages.landing_multiwan_geo_optimization(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Separate domestic and foreign traffic for optimal performance`}
+                    {semanticMessages.landing_multiwan_geo_optimization_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -240,7 +302,12 @@ export const MultiWANSection = component$(() => {
                   <span
                     class={`h-2 w-2 rounded-full ${activeTrafficTypes.value.domestic ? "bg-green-500" : "bg-gray-400"}`}
                   ></span>
-                  {$localize`Domestic Traffic`}
+                  {semanticMessages.landing_wireless_domestic_traffic(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
                 <button
                   onClick$={() =>
@@ -258,7 +325,12 @@ export const MultiWANSection = component$(() => {
                   <span
                     class={`h-2 w-2 rounded-full ${activeTrafficTypes.value.foreign ? "bg-purple-500" : "bg-gray-400"}`}
                   ></span>
-                  {$localize`Foreign Traffic`}
+                  {semanticMessages.landing_wireless_foreign_traffic(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
                 <button
                   onClick$={() =>
@@ -276,7 +348,12 @@ export const MultiWANSection = component$(() => {
                   <span
                     class={`h-2 w-2 rounded-full ${activeTrafficTypes.value.backup ? "bg-orange-500" : "bg-gray-400"}`}
                   ></span>
-                  {$localize`Backup Links`}
+                  {semanticMessages.landing_multiwan_backup_links(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
               </div>
 
@@ -284,7 +361,8 @@ export const MultiWANSection = component$(() => {
               {selectedNode.value && (
                 <div class="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/30">
                   <p class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    {$localize`Selected:`} {selectedNode.value}
+                    {semanticMessages.landing_shared_selected({}, { locale })}{" "}
+                    {selectedNode.value}
                   </p>
                 </div>
               )}
@@ -307,16 +385,40 @@ export const MultiWANSection = component$(() => {
                     return false;
                   return true;
                 })}
-                title={$localize`Multi-WAN Network Topology`}
+                title={semanticMessages.landing_multiwan_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={{
                   width: "100%",
                   height: "400px",
                   viewBox: "0 0 500 400",
                   showLegend: true,
                   legendItems: [
-                    { color: "#84cc16", label: $localize`Domestic Link` },
-                    { color: "#9333ea", label: $localize`Foreign Link` },
-                    { color: "#f97316", label: $localize`Backup Link` },
+                    {
+                      color: "#84cc16",
+                      label:
+                        semanticMessages.landing_load_balance_domestic_link(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#9333ea",
+                      label: semanticMessages.landing_load_balance_foreign_link(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#f97316",
+                      label: semanticMessages.landing_load_balance_backup_link(
+                        {},
+                        { locale },
+                      ),
+                    },
                   ],
                 }}
                 onNodeClick$={handleNodeClick}
@@ -329,19 +431,40 @@ export const MultiWANSection = component$(() => {
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">
                     2-8
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`WAN Links`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_multiwan_stat_links(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">
                     99.9%
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Uptime`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_load_balance_uptime(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">
                     Zero
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Downtime`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_multiwan_stat_downtime(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

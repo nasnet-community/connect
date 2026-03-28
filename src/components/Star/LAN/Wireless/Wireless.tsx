@@ -9,9 +9,11 @@ import { StarContext } from "../../StarContext/StarContext";
 import type { WirelessConfig } from "../../StarContext/LANType";
 import type { StepProps } from "~/types/step";
 import { determineWifiTarget } from "./networkUtils";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Wireless = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext);
     const {
       wirelessEnabled,
@@ -170,7 +172,7 @@ export const Wireless = component$<StepProps>(
           {!wirelessEnabled.value && (
             <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
               <p class="text-gray-700 dark:text-gray-300">
-                {$localize`Wireless networking is currently disabled. Enable it using the toggle above to configure wireless settings.`}
+                {semanticMessages.wireless_step_disabled_notice({}, { locale })}
               </p>
             </div>
           )}

@@ -18,9 +18,3 @@ declare module "*.gif" {
   const content: string;
   export default content;
 }
-
-// Global declaration for Angular-style localization function
-declare const $localize: (
-  template: TemplateStringsArray,
-  ...substitutions: any[]
-) => string;

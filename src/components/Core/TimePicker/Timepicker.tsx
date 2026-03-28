@@ -5,6 +5,7 @@ import {
   useSignal,
   useTask$,
 } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface TimeValue {
   hour: string;
@@ -81,6 +82,7 @@ export const TimePicker = component$<TimePickerProps>(
     dir = "auto",
     _touchOptimized,
   }) => {
+    const locale = useMessageLocale();
     // Note: These variables are kept for future development but prefixed with underscore
     const _isDropdownOpen = false;
     const _selectedField: keyof TimeValue | null = null;
@@ -390,7 +392,7 @@ export const TimePicker = component$<TimePickerProps>(
               ${sizeClasses[size].fieldLabel}
             `}
             >
-              {$localize`Hours`}
+              {semanticMessages.timepicker_hours({}, { locale })}
             </label>
             <select
               ref={hourSelectRef}
@@ -398,7 +400,10 @@ export const TimePicker = component$<TimePickerProps>(
               name={name ? `${name}-hour` : undefined}
               value={time.hour}
               disabled={disabled || loading}
-              aria-label={$localize`Select hour`}
+              aria-label={semanticMessages.timepicker_select_hour(
+                {},
+                { locale },
+              )}
               aria-invalid={error}
               aria-describedby={errorMessage ? `${id}-error` : undefined}
               onChange$={(e, currentTarget) =>
@@ -445,14 +450,17 @@ export const TimePicker = component$<TimePickerProps>(
               ${sizeClasses[size].fieldLabel}
             `}
             >
-              {$localize`Minutes`}
+              {semanticMessages.timepicker_minutes({}, { locale })}
             </label>
             <select
               ref={minuteSelectRef}
               name={name ? `${name}-minute` : undefined}
               value={time.minute}
               disabled={disabled || loading}
-              aria-label={$localize`Select minute`}
+              aria-label={semanticMessages.timepicker_select_minute(
+                {},
+                { locale },
+              )}
               aria-invalid={error}
               onChange$={(e, currentTarget) =>
                 onChange$("minute", currentTarget.value)
@@ -498,14 +506,17 @@ export const TimePicker = component$<TimePickerProps>(
                   ${sizeClasses[size].fieldLabel}
                 `}
                 >
-                  {$localize`Seconds`}
+                  {semanticMessages.timepicker_seconds({}, { locale })}
                 </label>
                 <select
                   ref={secondSelectRef}
                   name={name ? `${name}-second` : undefined}
                   value={time.second || "00"}
                   disabled={disabled || loading}
-                  aria-label={$localize`Select second`}
+                  aria-label={semanticMessages.timepicker_select_second(
+                    {},
+                    { locale },
+                  )}
                   aria-invalid={error}
                   onChange$={(e, currentTarget) =>
                     onChange$("second", currentTarget.value)
@@ -544,13 +555,16 @@ export const TimePicker = component$<TimePickerProps>(
                   ${sizeClasses[size].fieldLabel}
                 `}
                 >
-                  {$localize`Period`}
+                  {semanticMessages.timepicker_period({}, { locale })}
                 </label>
                 <select
                   name={name ? `${name}-period` : undefined}
                   value={time.period || "AM"}
                   disabled={disabled || loading}
-                  aria-label={$localize`Select AM or PM`}
+                  aria-label={semanticMessages.timepicker_select_period(
+                    {},
+                    { locale },
+                  )}
                   aria-invalid={error}
                   onChange$={(e, currentTarget) =>
                     onChange$("period", currentTarget.value)
@@ -558,8 +572,12 @@ export const TimePicker = component$<TimePickerProps>(
                   class={`${selectClasses} w-24`}
                   style={selectStyle}
                 >
-                  <option value="AM">AM</option>
-                  <option value="PM">PM</option>
+                  <option value="AM">
+                    {semanticMessages.timepicker_period_am({}, { locale })}
+                  </option>
+                  <option value="PM">
+                    {semanticMessages.timepicker_period_pm({}, { locale })}
+                  </option>
                 </select>
               </div>
             </>
@@ -572,7 +590,7 @@ export const TimePicker = component$<TimePickerProps>(
                 type="button"
                 onClick$={onClear$}
                 disabled={disabled || loading}
-                aria-label={$localize`Clear time`}
+                aria-label={semanticMessages.timepicker_clear({}, { locale })}
                 class={`
                 ${sizeClasses[size].clearButton}
                 rounded-lg text-gray-400 transition-colors

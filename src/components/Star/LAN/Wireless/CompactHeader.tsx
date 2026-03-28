@@ -4,6 +4,7 @@ import {
   HiSparklesOutline,
 } from "@qwikest/icons/heroicons";
 import { Button } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CompactHeaderProps {
   generateAllPasswords: QRL<() => Promise<void>>;
@@ -19,6 +20,7 @@ export const CompactHeader = component$<CompactHeaderProps>(
     activeNetworksCount,
     totalNetworksCount,
   }) => {
+    const locale = useMessageLocale();
     return (
       <div
         class="rounded-lg border border-warning-200 bg-gradient-to-r 
@@ -31,10 +33,16 @@ export const CompactHeader = component$<CompactHeaderProps>(
             <HiExclamationTriangleOutline class="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-500" />
             <div>
               <h3 class="text-sm font-medium text-warning-700 dark:text-warning-300">
-                {$localize`Multiple Networks Configuration`}
+                {semanticMessages.wireless_compact_header_title({}, { locale })}
               </h3>
               <p class="mt-0.5 text-xs text-warning-600 dark:text-warning-400">
-                {$localize`${activeNetworksCount} of ${totalNetworksCount} networks active`}
+                {semanticMessages.wireless_compact_header_status(
+                  {
+                    activeNetworksCount: String(activeNetworksCount),
+                    totalNetworksCount: String(totalNetworksCount),
+                  },
+                  { locale },
+                )}
               </p>
             </div>
           </div>
@@ -52,8 +60,18 @@ export const CompactHeader = component$<CompactHeaderProps>(
               class="min-w-[140px] sm:min-w-[180px]"
             >
               <HiSparklesOutline q:slot="leftIcon" class="h-4 w-4" />
-              <span class="hidden sm:inline">{$localize`Generate Common Password`}</span>
-              <span class="sm:hidden">{$localize`Common Pass`}</span>
+              <span class="hidden sm:inline">
+                {semanticMessages.wireless_compact_header_generate_common_password(
+                  {},
+                  { locale },
+                )}
+              </span>
+              <span class="sm:hidden">
+                {semanticMessages.wireless_compact_header_common_password_short(
+                  {},
+                  { locale },
+                )}
+              </span>
             </Button>
           </div>
         </div>

@@ -2,22 +2,26 @@ import { component$, $ } from "@builder.io/qwik";
 import { LuShield, LuLock } from "@qwikest/icons/lucide";
 import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const VPNClientSection = component$(() => {
+  const locale = useMessageLocale();
   // Create nodes for the VPN graph
   const nodes: GraphNode[] = [
-    createNode("User", "client", 50, 200, { label: $localize`Your Device` }),
+    createNode("User", "client", 50, 200, {
+      label: semanticMessages.landing_vpn_client_your_device({}, { locale }),
+    }),
     createNode("WirelessRouter", "router", 150, 200, {
-      label: $localize`Router`,
+      label: semanticMessages.landing_vpn_client_router({}, { locale }),
     }),
     createNode("VPNClient", "vpnclient", 250, 200, {
-      label: $localize`VPN Client`,
+      label: semanticMessages.landing_vpn_client_node({}, { locale }),
     }),
     createNode("VPNServer", "vpnserver", 350, 200, {
-      label: $localize`VPN Server`,
+      label: semanticMessages.landing_vpn_server_node({}, { locale }),
     }),
     createNode("ForeignWAN", "internet", 450, 200, {
-      label: $localize`Internet`,
+      label: semanticMessages.landing_vpn_client_internet({}, { locale }),
     }),
   ];
 
@@ -28,21 +32,31 @@ export const VPNClientSection = component$(() => {
       to: "router",
       color: "#6366f1",
       animated: true,
-      label: $localize`Local Connection`,
+      label: semanticMessages.landing_vpn_client_local_connection(
+        {},
+        {
+          locale,
+        },
+      ),
     },
     {
       from: "router",
       to: "vpnclient",
       color: "#6366f1",
       animated: true,
-      label: $localize`To VPN`,
+      label: semanticMessages.landing_vpn_client_to_vpn({}, { locale }),
     },
     {
       from: "vpnclient",
       to: "vpnserver",
       trafficType: "VPN",
       animated: true,
-      label: $localize`Encrypted Tunnel`,
+      label: semanticMessages.landing_vpn_client_encrypted_tunnel(
+        {},
+        {
+          locale,
+        },
+      ),
       width: 4,
       packetColors: ["#22c55e", "#3b82f6", "#8b5cf6"],
     },
@@ -51,7 +65,12 @@ export const VPNClientSection = component$(() => {
       to: "internet",
       color: "#10b981",
       animated: true,
-      label: $localize`Secure Connection`,
+      label: semanticMessages.landing_vpn_client_secure_connection(
+        {},
+        {
+          locale,
+        },
+      ),
       arrowHead: true,
     },
   ];
@@ -64,9 +83,28 @@ export const VPNClientSection = component$(() => {
     showLegend: true,
     expandOnHover: true,
     legendItems: [
-      { color: "#6366f1", label: $localize`Local Traffic` },
-      { color: "#f97316", label: $localize`VPN Tunnel` },
-      { color: "#10b981", label: $localize`Protected Traffic` },
+      {
+        color: "#6366f1",
+        label: semanticMessages.landing_vpn_client_local_traffic(
+          {},
+          {
+            locale,
+          },
+        ),
+      },
+      {
+        color: "#f97316",
+        label: semanticMessages.landing_vpn_client_vpn_tunnel({}, { locale }),
+      },
+      {
+        color: "#10b981",
+        label: semanticMessages.landing_vpn_client_protected_traffic(
+          {},
+          {
+            locale,
+          },
+        ),
+      },
     ],
   };
 
@@ -151,7 +189,12 @@ export const VPNClientSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`VPN Connection Flow`}
+                title={semanticMessages.landing_vpn_client_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={graphConfig}
                 onNodeClick$={handleNodeClick$}
               />
@@ -159,15 +202,36 @@ export const VPNClientSection = component$(() => {
             <div class="mt-4 flex justify-center gap-6">
               <div class="flex items-center gap-2">
                 <LuShield class="h-5 w-5 text-indigo-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Military-grade Encryption`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_vpn_client_military_encryption(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <LuLock class="h-5 w-5 text-purple-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Secure Tunnel`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_vpn_client_secure_tunnel(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <LuLock class="h-5 w-5 text-blue-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Privacy Protected`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_vpn_client_privacy_protected(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -175,21 +239,36 @@ export const VPNClientSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-right order-1 space-y-6 lg:order-2">
             <Badge color="primary" variant="outline" size="lg">
-              {$localize`Privacy & Security`}
+              {semanticMessages.landing_vpn_client_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {$localize`VPN Client`}
+                {semanticMessages.landing_vpn_client_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Protection`}
+                {semanticMessages.landing_vpn_client_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Military-grade encryption with 6 VPN protocols. Enhanced privacy, secure connections, and anonymous browsing capabilities for all your devices.`}
+              {semanticMessages.landing_vpn_client_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
 
             <div class="grid grid-cols-3 gap-3">

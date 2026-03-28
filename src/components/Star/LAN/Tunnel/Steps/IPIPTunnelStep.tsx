@@ -11,8 +11,10 @@ import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
 import { Field } from "~/components/Core/Form/Field";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const IPIPTunnelStep = component$(() => {
+  const locale = useMessageLocale();
   const stepper = useStepperContext(TunnelContextId);
 
   // Auto-complete step if tunnels are disabled - moved to useTask$
@@ -105,7 +107,7 @@ export const IPIPTunnelStep = component$(() => {
     return (
       <Card>
         <p class="text-gray-700 dark:text-gray-300">
-          {$localize`Network tunnels are disabled. This step is skipped.`}
+          {semanticMessages.tunnel_step_skipped({}, { locale })}
         </p>
       </Card>
     );
@@ -119,17 +121,22 @@ export const IPIPTunnelStep = component$(() => {
             <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`IPIP Tunnels`}
+                {semanticMessages.tunnel_step_ipip({}, { locale })}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {$localize`Configure IP-in-IP tunnels to encapsulate IP packets inside IP packets`}
+                {semanticMessages.tunnel_ipip_detail_description(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
           </div>
 
           <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
-            {$localize`Add Tunnel`}
+            {semanticMessages.tunnel_add({}, { locale })}
           </Button>
         </div>
       </Card>
@@ -137,7 +144,7 @@ export const IPIPTunnelStep = component$(() => {
       {stepper.data.ipip.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
-            {$localize`No IPIP tunnels configured. Click "Add Tunnel" to create one.`}
+            {semanticMessages.tunnel_no_ipip_configured({}, { locale })}
           </p>
         </Card>
       ) : (
@@ -146,7 +153,10 @@ export const IPIPTunnelStep = component$(() => {
             <Card key={index}>
               <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
-                  {$localize`IPIP Tunnel ${index + 1}`}
+                  {semanticMessages.tunnel_ipip_item_title(
+                    { index: String(index + 1) },
+                    { locale },
+                  )}
                 </h4>
                 <Button
                   onClick$={() => removeTunnel$(index)}
@@ -155,44 +165,67 @@ export const IPIPTunnelStep = component$(() => {
                   class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 >
                   <HiTrashOutline q:slot="leftIcon" class="h-5 w-5" />
-                  {$localize`Remove`}
+                  {semanticMessages.shared_remove({}, { locale })}
                 </Button>
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
-                <Field label={$localize`Name`} required>
+                <Field
+                  label={semanticMessages.tunnel_field_name({}, { locale })}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.name}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "name", value)
                     }
-                    placeholder={$localize`Enter tunnel name`}
+                    placeholder={semanticMessages.tunnel_field_name_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
 
                 {/* Remote Address */}
-                <Field label={$localize`Remote Address`} required>
+                <Field
+                  label={semanticMessages.tunnel_field_remote_address(
+                    {},
+                    { locale },
+                  )}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "remoteAddress", value)
                     }
-                    placeholder={$localize`Enter remote address`}
+                    placeholder={semanticMessages.tunnel_field_remote_address_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
 
                 {/* IPsec Secret */}
-                <Field label={$localize`IPsec Secret`}>
+                <Field
+                  label={semanticMessages.tunnel_field_ipsec_secret(
+                    {},
+                    { locale },
+                  )}
+                >
                   <Input
                     type="text"
                     value={tunnel.ipsecSecret || ""}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "ipsecSecret", value)
                     }
-                    placeholder={$localize`Enter IPsec secret (optional)`}
+                    placeholder={semanticMessages.tunnel_field_ipsec_secret_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
               </div>

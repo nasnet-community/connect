@@ -8,6 +8,7 @@ import {
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../../StarContext/StarContext";
 import { Toggle } from "~/components/Core/Toggle";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ServiceState {
   [key: string]: boolean;
@@ -16,8 +17,6 @@ interface ServiceState {
 const SERVICES = [
   {
     id: "certificate",
-    title: $localize`Certificate`,
-    description: $localize`Manage SSL/TLS certificates for secure connections`,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -37,8 +36,6 @@ const SERVICES = [
   },
   {
     id: "ntp",
-    title: $localize`NTP Client/Server`,
-    description: $localize`Synchronize time across your network devices`,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -58,8 +55,6 @@ const SERVICES = [
   },
   {
     id: "graphing",
-    title: $localize`Graphing`,
-    description: $localize`Visualize network performance and statistics`,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -79,8 +74,6 @@ const SERVICES = [
   },
   {
     id: "DDNS",
-    title: $localize`Cloud/DDNS`,
-    description: $localize`Dynamic DNS service for remote access`,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -100,8 +93,6 @@ const SERVICES = [
   },
   {
     id: "letsEncrypt",
-    title: $localize`Let's Encrypt`,
-    description: $localize`Automated SSL/TLS certificate management`,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -123,6 +114,65 @@ const SERVICES = [
 
 export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
   const ctx = useContext(StarContext);
+  const locale = useMessageLocale();
+
+  const getServiceTitle = (serviceId: string) => {
+    switch (serviceId) {
+      case "certificate":
+        return semanticMessages.useful_services_easy_certificate_title(
+          {},
+          { locale },
+        );
+      case "ntp":
+        return semanticMessages.useful_services_easy_ntp_title({}, { locale });
+      case "graphing":
+        return semanticMessages.useful_services_easy_graphing_title(
+          {},
+          { locale },
+        );
+      case "DDNS":
+        return semanticMessages.useful_services_easy_ddns_title({}, { locale });
+      case "letsEncrypt":
+        return semanticMessages.useful_services_easy_lets_encrypt_title(
+          {},
+          { locale },
+        );
+      default:
+        return serviceId;
+    }
+  };
+
+  const getServiceDescription = (serviceId: string) => {
+    switch (serviceId) {
+      case "certificate":
+        return semanticMessages.useful_services_easy_certificate_description(
+          {},
+          { locale },
+        );
+      case "ntp":
+        return semanticMessages.useful_services_easy_ntp_description(
+          {},
+          { locale },
+        );
+      case "graphing":
+        return semanticMessages.useful_services_easy_graphing_description(
+          {},
+          { locale },
+        );
+      case "DDNS":
+        return semanticMessages.useful_services_easy_ddns_description(
+          {},
+          { locale },
+        );
+      case "letsEncrypt":
+        return semanticMessages.useful_services_easy_lets_encrypt_description(
+          {},
+          { locale },
+        );
+      default:
+        return serviceId;
+    }
+  };
 
   // Initialize default values if they don't exist
   useTask$(() => {
@@ -221,9 +271,18 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                 </svg>
               </div>
               <div class="space-y-1">
-                <h2 class="text-3xl font-bold text-white">{$localize`Useful Services`}</h2>
-                <p class="text-lg text-white/90">{$localize`Easy Mode`}</p>
-                <p class="max-w-md text-primary-100">{$localize`Quick enable/disable services for your network`}</p>
+                <h2 class="text-3xl font-bold text-white">
+                  {semanticMessages.useful_services_easy_title({}, { locale })}
+                </h2>
+                <p class="text-lg text-white/90">
+                  {semanticMessages.useful_services_easy_mode({}, { locale })}
+                </p>
+                <p class="max-w-md text-primary-100">
+                  {semanticMessages.useful_services_easy_description(
+                    {},
+                    { locale },
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -250,10 +309,10 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                         </div>
                         <div class="space-y-1">
                           <h3 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-semibold text-transparent dark:from-white dark:to-gray-300">
-                            {service.title}
+                            {getServiceTitle(service.id)}
                           </h3>
                           <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {service.description}
+                            {getServiceDescription(service.id)}
                           </p>
                         </div>
                       </div>
@@ -265,8 +324,8 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                         )}
                         label={
                           serviceStates[service.id]
-                            ? $localize`Enabled`
-                            : $localize`Disabled`
+                            ? semanticMessages.shared_enabled({}, { locale })
+                            : semanticMessages.shared_disabled({}, { locale })
                         }
                         size="lg"
                         color={
@@ -288,7 +347,10 @@ export const UsefulServicesEasy = component$<StepProps>(({ onComplete$ }) => {
                 {/* Shimmer effect on hover */}
                 <div class="absolute inset-0 -top-2 h-full w-full -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-all duration-700 group-hover:translate-x-full group-hover:opacity-100"></div>
                 <span class="relative flex items-center gap-2">
-                  {$localize`Save Settings`}
+                  {semanticMessages.useful_services_easy_save_settings(
+                    {},
+                    { locale },
+                  )}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"

@@ -5,6 +5,7 @@ import { Card } from "~/components/Core/Card";
 import { Field as FormField } from "~/components/Core/Form/Field";
 import { Input } from "~/components/Core/Input";
 import { NetworkDropdown } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * SSTP Server Configuration Component
@@ -16,23 +17,28 @@ import { NetworkDropdown } from "../../components/NetworkSelection";
  * - Configure authentication methods
  */
 export const SSTPServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const { advancedFormState, applyChanges } = useSSTPServer();
 
   return (
     <Card hasHeader>
       <div q:slot="header" class="flex items-center gap-2">
         <HiServerOutline class="h-5 w-5" />
-        <span class="font-medium">{$localize`SSTP Server`}</span>
+        <span class="font-medium">
+          {semanticMessages.vpn_server_sstp_title({}, { locale })}
+        </span>
       </div>
       <div class="space-y-6">
         {/* Basic Configuration */}
         <div class="mb-6">
           <h3 class="text-text-default mb-4 text-lg font-medium dark:text-text-dark-default">
-            {$localize`Basic Configuration`}
+            {semanticMessages.vpn_server_basic_configuration({}, { locale })}
           </h3>
         </div>
 
-        <FormField label={$localize`Network`}>
+        <FormField
+          label={semanticMessages.vpn_server_network_label({}, { locale })}
+        >
           <NetworkDropdown
             selectedNetwork={"VPN" as const}
             onNetworkChange$={(network) => {
@@ -42,8 +48,11 @@ export const SSTPServerAdvanced = component$(() => {
         </FormField>
 
         <FormField
-          label={$localize`Port`}
-          helperText={$localize`SSTP server port (default: 4443)`}
+          label={semanticMessages.shared_port({}, { locale })}
+          helperText={semanticMessages.vpn_server_sstp_port_help(
+            {},
+            { locale },
+          )}
         >
           <Input
             type="number"
@@ -57,10 +66,16 @@ export const SSTPServerAdvanced = component$(() => {
         {/* Certificate Configuration Note */}
         <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
           <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-            {$localize`Certificate and Security Configuration`}
+            {semanticMessages.vpn_server_sstp_certificate_security_title(
+              {},
+              { locale },
+            )}
           </h4>
           <p class="text-sm text-blue-700 dark:text-blue-300">
-            {$localize`SSTP certificates and security settings are configured in the Certificate step. This ensures consistent certificate management and security configuration across all protocols.`}
+            {semanticMessages.vpn_server_sstp_certificate_security_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
       </div>

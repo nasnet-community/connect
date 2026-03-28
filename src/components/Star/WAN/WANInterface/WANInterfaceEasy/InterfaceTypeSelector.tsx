@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { RouterInterfaces } from "../../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface InterfaceTypeSelectorProps {
   selectedType: string;
@@ -9,6 +10,7 @@ export interface InterfaceTypeSelectorProps {
 
 export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
   ({ selectedType, onSelect$, availableInterfaces }) => {
+    const locale = useMessageLocale();
     // Check which interface types are available
     const isEthernetAvailable =
       availableInterfaces.Interfaces.ethernet &&
@@ -47,7 +49,7 @@ export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
               />
             </svg>
           </span>
-          {$localize`Interface Type`}
+          {semanticMessages.wan_easy_interface_type({}, { locale })}
         </label>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {interfaceTypes.map(({ type, isAvailable }) => (
@@ -151,7 +153,7 @@ export const InterfaceTypeSelector = component$<InterfaceTypeSelectorProps>(
                 {!isAvailable && (
                   <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50/80 dark:bg-gray-800/80">
                     <span class="rounded bg-white px-2 py-1 text-[10px] font-semibold text-gray-500 shadow-sm dark:bg-gray-700 dark:text-gray-400">
-                      {$localize`Not Available`}
+                      {semanticMessages.wan_easy_not_available({}, { locale })}
                     </span>
                   </div>
                 )}

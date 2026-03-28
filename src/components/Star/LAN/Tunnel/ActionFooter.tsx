@@ -2,6 +2,7 @@ import { component$, $ } from "@builder.io/qwik";
 import type { PropFunction } from "@builder.io/qwik";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { TunnelContextId } from "./Tunnel";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ActionFooterProps {
   /**
@@ -52,10 +53,14 @@ export const ActionFooter = component$<ActionFooterProps>(
     showBack = false,
     showNext = true,
     saveDisabled = false,
-    saveText = $localize`Save`,
+    saveText,
     inStepper = false,
     stepId,
   }) => {
+    const locale = useMessageLocale();
+    const resolvedSaveText =
+      saveText ?? semanticMessages.shared_save({}, { locale });
+
     const handleSave$ = $(async () => {
       if (inStepper && stepId !== undefined) {
         await onSave$();
@@ -73,7 +78,7 @@ export const ActionFooter = component$<ActionFooterProps>(
                 text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 
                 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
-            <span>{$localize`Back`}</span>
+            <span>{semanticMessages.shared_back({}, { locale })}</span>
           </button>
         )}
 
@@ -91,7 +96,7 @@ export const ActionFooter = component$<ActionFooterProps>(
                         : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                     }`}
             >
-              <span>{saveText}</span>
+              <span>{resolvedSaveText}</span>
             </button>
           )}
         </div>
@@ -108,7 +113,7 @@ export const StepperActionFooter = component$<ActionFooterProps>(
     showBack = false,
     showNext = true,
     saveDisabled = false,
-    saveText = $localize`Save`,
+    saveText,
     stepId,
   }) => {
     // Access the stepper context

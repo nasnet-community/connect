@@ -5,8 +5,10 @@ import {
   useOnWindow,
   $,
 } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const MobileWarning = component$(() => {
+  const locale = useMessageLocale();
   const showWarning = useSignal(false);
   const isChecked = useSignal(false);
 
@@ -66,7 +68,7 @@ export const MobileWarning = component$(() => {
         <button
           onClick$={handleClose}
           class="absolute right-4 top-4 text-slate-400 transition-colors hover:text-white"
-          aria-label={$localize`Close`}
+          aria-label={semanticMessages.mobile_warning_close({}, { locale })}
         >
           <svg
             class="h-6 w-6"
@@ -103,17 +105,17 @@ export const MobileWarning = component$(() => {
 
           {/* Title */}
           <h2 class="mb-4 text-2xl font-bold text-white">
-            {$localize`Desktop Experience Recommended`}
+            {semanticMessages.mobile_warning_title({}, { locale })}
           </h2>
 
           {/* Description */}
           <p class="mb-6 leading-relaxed text-slate-300">
-            {$localize`This application is optimized for desktop devices. For the best experience, please access NASNET Connect from a computer or laptop.`}
+            {semanticMessages.mobile_warning_description({}, { locale })}
           </p>
 
           {/* Additional info */}
           <p class="mb-8 text-sm text-slate-400">
-            {$localize`You can continue on mobile, but some features may not work as expected.`}
+            {semanticMessages.mobile_warning_note({}, { locale })}
           </p>
 
           {/* Continue button */}
@@ -121,7 +123,7 @@ export const MobileWarning = component$(() => {
             onClick$={handleContinue}
             class="w-full rounded-xl bg-yellow-500 px-6 py-3 font-semibold text-black transition-colors hover:bg-yellow-600"
           >
-            {$localize`Continue Anyway`}
+            {semanticMessages.mobile_warning_continue({}, { locale })}
           </button>
         </div>
       </div>

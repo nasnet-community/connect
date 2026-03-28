@@ -1,6 +1,7 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
 import type { VLANConfig, MACAddressConfig } from "../../types";
 import { Input, Toggle, FormField } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VLANMACFieldsProps {
   vlanConfig?: VLANConfig;
@@ -15,6 +16,8 @@ export interface VLANMACFieldsProps {
 
 export const VLANMACFields = component$<VLANMACFieldsProps>(
   ({ vlanConfig, macAddress, onUpdateVLAN$, onUpdateMAC$ }) => {
+    const locale = useMessageLocale();
+
     return (
       <div class="relative overflow-hidden rounded-2xl border border-indigo-200/50 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 p-5 backdrop-blur-sm dark:border-indigo-700/50 dark:from-indigo-900/20 dark:to-purple-900/20">
         {/* Background decoration */}
@@ -45,7 +48,10 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
               </svg>
             </div>
             <h4 class="bg-gradient-to-r from-indigo-900 to-purple-900 bg-clip-text text-lg font-semibold text-transparent dark:from-indigo-100 dark:to-purple-100">
-              {$localize`Advanced Network Settings`}
+              {semanticMessages.wan_advanced_advanced_network_settings(
+                {},
+                { locale },
+              )}
             </h4>
           </div>
 
@@ -75,10 +81,16 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                     </div>
                     <div>
                       <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {$localize`VLAN Tagging`}
+                        {semanticMessages.wan_advanced_vlan_tagging(
+                          {},
+                          { locale },
+                        )}
                       </span>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {$localize`Virtual LAN isolation`}
+                        {semanticMessages.wan_advanced_virtual_lan_isolation(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -143,10 +155,16 @@ export const VLANMACFields = component$<VLANMACFieldsProps>(
                     </div>
                     <div>
                       <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {$localize`MAC Override`}
+                        {semanticMessages.wan_advanced_mac_override(
+                          {},
+                          { locale },
+                        )}
                       </span>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {$localize`Custom hardware address`}
+                        {semanticMessages.wan_advanced_custom_hardware_address(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </div>

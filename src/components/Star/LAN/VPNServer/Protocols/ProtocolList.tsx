@@ -3,6 +3,7 @@ import { track } from "@vercel/analytics";
 import { VPN_PROTOCOLS } from "./constants";
 import type { VPNType } from "../../../StarContext/CommonType";
 import { HiCheckCircleOutline } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ProtocolListProps {
   expandedSections: Record<string, boolean>;
@@ -13,6 +14,8 @@ interface ProtocolListProps {
 
 export const ProtocolList = component$<ProtocolListProps>(
   ({ enabledProtocols, toggleProtocol$ }) => {
+    const locale = useMessageLocale();
+
     const handleProtocolToggle = $((protocol: VPNType) => {
       const isCurrentlyEnabled = enabledProtocols[protocol];
       const action = isCurrentlyEnabled ? "disabled" : "enabled";
@@ -95,8 +98,11 @@ export const ProtocolList = component$<ProtocolListProps>(
             `}
             >
               {enabledProtocols[protocol.id]
-                ? $localize`Enabled`
-                : $localize`Enable ${protocol.name}`}
+                ? semanticMessages.shared_enabled({}, { locale })
+                : semanticMessages.vpn_server_enable_protocol(
+                    { name: protocol.name },
+                    { locale },
+                  )}
             </div>
           </div>
         ))}

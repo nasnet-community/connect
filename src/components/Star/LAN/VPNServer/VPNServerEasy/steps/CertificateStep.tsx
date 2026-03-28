@@ -10,6 +10,7 @@ import {
   HiCheckCircleOutline,
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CertificateStepProps {
   certificatePassphrase: { value: string };
@@ -27,6 +28,8 @@ export const CertificateStep = component$<CertificateStepProps>(
     updatePassphrase$,
     togglePassphraseVisibility$,
   }) => {
+    const locale = useMessageLocale();
+
     // Calculate passphrase strength and requirements
     const passphrase = certificatePassphrase.value;
     const hasMinLength = passphrase.length >= 10;
@@ -47,12 +50,28 @@ export const CertificateStep = component$<CertificateStepProps>(
 
     const getStrengthInfo = () => {
       if (strengthScore >= 4)
-        return { level: $localize`Strong`, color: "green", width: "100%" };
+        return {
+          level: semanticMessages.vpn_server_strength_strong({}, { locale }),
+          color: "green",
+          width: "100%",
+        };
       if (strengthScore >= 3)
-        return { level: $localize`Good`, color: "blue", width: "75%" };
+        return {
+          level: semanticMessages.vpn_server_strength_good({}, { locale }),
+          color: "blue",
+          width: "75%",
+        };
       if (strengthScore >= 2)
-        return { level: $localize`Fair`, color: "yellow", width: "50%" };
-      return { level: $localize`Weak`, color: "orange", width: "25%" };
+        return {
+          level: semanticMessages.vpn_server_strength_fair({}, { locale }),
+          color: "yellow",
+          width: "50%",
+        };
+      return {
+        level: semanticMessages.vpn_server_strength_weak({}, { locale }),
+        color: "orange",
+        width: "25%",
+      };
     };
 
     const strength = getStrengthInfo();
@@ -61,16 +80,27 @@ export const CertificateStep = component$<CertificateStepProps>(
       <Card hasHeader>
         <div q:slot="header" class="flex items-center gap-3">
           <HiLockClosedOutline class="h-5 w-5" />
-          <span class="font-semibold">{$localize`Certificate Security`}</span>
+          <span class="font-semibold">
+            {semanticMessages.vpn_server_certificate_security_title(
+              {},
+              { locale },
+            )}
+          </span>
         </div>
 
         <div class="space-y-6">
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Create a secure passphrase to protect your VPN server certificate's private key.`}
+            {semanticMessages.vpn_server_certificate_security_description(
+              {},
+              { locale },
+            )}
           </p>
 
           <Field
-            label={$localize`Certificate Passphrase`}
+            label={semanticMessages.vpn_server_certificate_passphrase(
+              {},
+              { locale },
+            )}
             error={passphraseError.value}
             required
           >
@@ -78,7 +108,10 @@ export const CertificateStep = component$<CertificateStepProps>(
               type={showPassphrase.value ? "text" : "password"}
               value={passphrase}
               onInput$={(_, value) => updatePassphrase$(value)}
-              placeholder={$localize`Enter a secure passphrase`}
+              placeholder={semanticMessages.vpn_server_certificate_enter_passphrase(
+                {},
+                { locale },
+              )}
               hasSuffixSlot={true}
             >
               <button
@@ -88,8 +121,14 @@ export const CertificateStep = component$<CertificateStepProps>(
                 class="text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 aria-label={
                   showPassphrase.value
-                    ? $localize`Hide passphrase`
-                    : $localize`Show passphrase`
+                    ? semanticMessages.vpn_server_hide_passphrase(
+                        {},
+                        { locale },
+                      )
+                    : semanticMessages.vpn_server_show_passphrase(
+                        {},
+                        { locale },
+                      )
                 }
               >
                 {showPassphrase.value ? (
@@ -105,7 +144,7 @@ export const CertificateStep = component$<CertificateStepProps>(
               <div class="mt-3 space-y-2">
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-600 dark:text-gray-400">
-                    {$localize`Strength:`}
+                    {semanticMessages.vpn_server_strength_label({}, { locale })}
                   </span>
                   <span
                     class={`font-medium text-${strength.color}-600 dark:text-${strength.color}-400`}
@@ -127,26 +166,41 @@ export const CertificateStep = component$<CertificateStepProps>(
           {passphrase.length > 0 && (
             <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
               <h4 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                {$localize`Security Requirements`}
+                {semanticMessages.vpn_server_security_requirements(
+                  {},
+                  { locale },
+                )}
               </h4>
               <div class="space-y-2">
                 <RequirementItem
                   met={hasMinLength}
-                  text={$localize`At least 10 characters`}
+                  text={semanticMessages.vpn_server_requirement_min_length(
+                    {},
+                    { locale },
+                  )}
                 />
                 <RequirementItem
                   met={hasGoodLength}
-                  text={$localize`12+ characters for better security`}
+                  text={semanticMessages.vpn_server_requirement_good_length(
+                    {},
+                    { locale },
+                  )}
                   optional
                 />
                 <RequirementItem
                   met={hasNumbers}
-                  text={$localize`Contains numbers`}
+                  text={semanticMessages.vpn_server_requirement_numbers(
+                    {},
+                    { locale },
+                  )}
                   optional
                 />
                 <RequirementItem
                   met={hasSpecialChars}
-                  text={$localize`Contains special characters (!@#$%^&*)`}
+                  text={semanticMessages.vpn_server_requirement_special_chars(
+                    {},
+                    { locale },
+                  )}
                   optional
                 />
               </div>
@@ -163,28 +217,34 @@ const RequirementItem = component$<{
   met: boolean;
   text: string;
   optional?: boolean;
-}>(({ met, text, optional }) => (
-  <div class="flex items-center gap-2 text-sm">
-    {met ? (
-      <HiCheckCircleOutline class="h-4 w-4 flex-shrink-0 text-green-500" />
-    ) : (
-      <HiXCircleOutline
-        class={`h-4 w-4 flex-shrink-0 ${optional ? "text-gray-400" : "text-orange-500"}`}
-      />
-    )}
-    <span
-      class={
-        met
-          ? "text-green-700 dark:text-green-400"
-          : optional
-            ? "text-gray-600 dark:text-gray-400"
-            : "text-gray-700 dark:text-gray-300"
-      }
-    >
-      {text}
-      {optional && (
-        <span class="ml-1 text-gray-500">({$localize`optional`})</span>
+}>(({ met, text, optional }) => {
+  const locale = useMessageLocale();
+
+  return (
+    <div class="flex items-center gap-2 text-sm">
+      {met ? (
+        <HiCheckCircleOutline class="h-4 w-4 flex-shrink-0 text-green-500" />
+      ) : (
+        <HiXCircleOutline
+          class={`h-4 w-4 flex-shrink-0 ${optional ? "text-gray-400" : "text-orange-500"}`}
+        />
       )}
-    </span>
-  </div>
-));
+      <span
+        class={
+          met
+            ? "text-green-700 dark:text-green-400"
+            : optional
+              ? "text-gray-600 dark:text-gray-400"
+              : "text-gray-700 dark:text-gray-300"
+        }
+      >
+        {text}
+        {optional && (
+          <span class="ml-1 text-gray-500">
+            ({semanticMessages.vpn_server_optional({}, { locale })})
+          </span>
+        )}
+      </span>
+    </div>
+  );
+});

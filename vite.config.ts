@@ -3,6 +3,7 @@
  * When building, the adapter config is used which loads this file and extends it.
  */
 import { defineConfig, type UserConfig } from "vite";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -24,15 +25,23 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     // plugins: [qwikCity(), qwikVite(), tsconfigPaths(), qwikReact(),qwikDevtools()],
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths(), qwikReact()],
+    plugins: [
+      paraglideVitePlugin({
+        project: "./project.inlang",
+        outdir: "./src/paraglide",
+        outputStructure: "message-modules",
+      }),
+      qwikCity(),
+      qwikVite(),
+      tsconfigPaths(),
+      qwikReact(),
+    ],
 
     // This tells Vite which dependencies to pre-build in dev mode.
     optimizeDeps: {
       // Put problematic deps that break bundling here, mostly those with binaries.
       // For example ['better-sqlite3'] if you use that in server functions.
       include: [
-        "@angular/localize",
-        "@angular/localize/init",
         "@supabase/supabase-js",
         "@vercel/analytics",
         "highlight.js/lib/core",

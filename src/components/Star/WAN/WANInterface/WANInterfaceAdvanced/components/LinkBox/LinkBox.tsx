@@ -1,6 +1,7 @@
 import { component$, Slot, useSignal, $, type QRL } from "@builder.io/qwik";
 import { LinkBoxHeader } from "./LinkBoxHeader";
 import type { WANLinkConfig } from "../../types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface LinkBoxProps {
   link: WANLinkConfig;
@@ -20,6 +21,7 @@ export const LinkBox = component$<LinkBoxProps>(
     isCompact = false,
     errors = [],
   }) => {
+    const locale = useMessageLocale();
     const expanded = useSignal(isExpanded);
 
     const toggleExpanded$ = $(() => {
@@ -97,8 +99,14 @@ export const LinkBox = component$<LinkBoxProps>(
                     <div class="flex-1 space-y-2">
                       <h4 class="text-sm font-medium text-error-900 dark:text-error-300">
                         {errors.length === 1
-                          ? $localize`Validation Error`
-                          : $localize`Validation Errors`}
+                          ? semanticMessages.wan_advanced_validation_error(
+                              {},
+                              { locale },
+                            )
+                          : semanticMessages.wan_advanced_validation_errors(
+                              {},
+                              { locale },
+                            )}
                       </h4>
                       {errors.map((error, index) => (
                         <div

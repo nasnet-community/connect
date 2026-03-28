@@ -9,6 +9,7 @@ import {
   HiEyeSlashOutline,
 } from "@qwikest/icons/heroicons";
 import type { VPNType } from "../../../../StarContext/CommonType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CertificateStepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -24,6 +25,7 @@ interface CertificateStepProps {
 export const CertificateStep = component$<CertificateStepProps>(
   ({ enabledProtocols, certificateHook }) => {
     const _context = useStepperContext(VPNServerContextId);
+    const locale = useMessageLocale();
 
     // Use certificate hook state instead of local state
     const {
@@ -48,12 +50,22 @@ export const CertificateStep = component$<CertificateStepProps>(
           <div class="flex items-center gap-3">
             <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              {$localize`Certificate Configuration`}
+              {semanticMessages.vpn_server_certificate_configuration_title(
+                {},
+                { locale },
+              )}
             </h2>
           </div>
 
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Configure certificates and security settings for VPN protocols that require them: ${protocolsRequiringCertificates.map((p) => p.name).join(", ")}.`}
+            {semanticMessages.vpn_server_certificate_description(
+              {
+                protocols: protocolsRequiringCertificates
+                  .map((p) => p.name)
+                  .join(", "),
+              },
+              { locale },
+            )}
           </p>
         </div>
 
@@ -61,8 +73,14 @@ export const CertificateStep = component$<CertificateStepProps>(
         <div class="space-y-6">
           {/* Certificate Key Passphrase */}
           <Field
-            label={$localize`Certificate Key Passphrase`}
-            helperText={$localize`Secure passphrase to protect the certificate private key (minimum 10 characters)`}
+            label={semanticMessages.vpn_server_certificate_key_passphrase(
+              {},
+              { locale },
+            )}
+            helperText={semanticMessages.vpn_server_certificate_key_helper(
+              {},
+              { locale },
+            )}
             error={passphraseError.value}
             required
           >
@@ -73,7 +91,10 @@ export const CertificateStep = component$<CertificateStepProps>(
                 onInput$={(_event: Event, value: string) =>
                   updatePassphrase$(value)
                 }
-                placeholder={$localize`Enter certificate passphrase`}
+                placeholder={semanticMessages.vpn_server_certificate_enter_key_passphrase(
+                  {},
+                  { locale },
+                )}
                 hasSuffixSlot={true}
               >
                 <button
@@ -83,8 +104,14 @@ export const CertificateStep = component$<CertificateStepProps>(
                   class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   aria-label={
                     showPassphrase.value
-                      ? $localize`Hide passphrase`
-                      : $localize`Show passphrase`
+                      ? semanticMessages.vpn_server_hide_passphrase(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.vpn_server_show_passphrase(
+                          {},
+                          { locale },
+                        )
                   }
                 >
                   {showPassphrase.value ? (
@@ -102,7 +129,10 @@ export const CertificateStep = component$<CertificateStepProps>(
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">
-                  {$localize`Passphrase strength`}
+                  {semanticMessages.vpn_server_passphrase_strength(
+                    {},
+                    { locale },
+                  )}
                 </span>
                 <span
                   class={
@@ -114,10 +144,19 @@ export const CertificateStep = component$<CertificateStepProps>(
                   }
                 >
                   {certificatePassphrase.value.length >= 16
-                    ? $localize`Strong`
+                    ? semanticMessages.vpn_server_strength_strong(
+                        {},
+                        { locale },
+                      )
                     : certificatePassphrase.value.length >= 12
-                      ? $localize`Medium`
-                      : $localize`Weak`}
+                      ? semanticMessages.vpn_server_strength_medium(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.vpn_server_strength_weak(
+                          {},
+                          { locale },
+                        )}
                 </span>
               </div>
               <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
@@ -139,7 +178,10 @@ export const CertificateStep = component$<CertificateStepProps>(
         {protocolsRequiringCertificates.length > 0 && (
           <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
             <h3 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-              {$localize`Certificate Usage`}
+              {semanticMessages.vpn_server_certificate_usage_title(
+                {},
+                { locale },
+              )}
             </h3>
             <ul class="space-y-1 text-sm text-blue-700 dark:text-blue-300">
               {protocolsRequiringCertificates.map((protocol) => (
@@ -147,10 +189,19 @@ export const CertificateStep = component$<CertificateStepProps>(
                   <span class="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-blue-500" />
                   <span>
                     {protocol.type === "OpenVPN"
-                      ? $localize`OpenVPN will use this certificate for TLS encryption and client authentication`
+                      ? semanticMessages.vpn_server_certificate_usage_openvpn(
+                          {},
+                          { locale },
+                        )
                       : protocol.type === "SSTP"
-                        ? $localize`SSTP will use this certificate for HTTPS/SSL connections`
-                        : $localize`IKEv2 will use this certificate for digital signature authentication`}
+                        ? semanticMessages.vpn_server_certificate_usage_sstp(
+                            {},
+                            { locale },
+                          )
+                        : semanticMessages.vpn_server_certificate_usage_ikev2(
+                            {},
+                            { locale },
+                          )}
                   </span>
                 </li>
               ))}

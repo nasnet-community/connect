@@ -1,24 +1,35 @@
-export const removeLocaleFromPath = (path: string): string => {
-  return SUPPORTED_LOCALES.some((l) => path.startsWith(`/${l}/`))
-    ? path.substring(3)
-    : path;
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  normalizeLocale,
+  isSupportedLocale,
+} from "~/i18n/config";
+
+const stripLeadingLocaleSegment = (path: string): string => {
+  const pathSegments = path.split("/").filter(Boolean);
+  const firstSegment = pathSegments[0];
+
+  if (!firstSegment || !isSupportedLocale(firstSegment)) {
+    return path;
+  }
+
+  const remainingPath = pathSegments.slice(1).join("/");
+  return remainingPath ? `/${remainingPath}` : "/";
 };
 
-export const DEFAULT_LOCALE = "en";
-export const SUPPORTED_LOCALES = ["en", "fa"];
+export { DEFAULT_LOCALE, SUPPORTED_LOCALES };
+
+export const removeLocaleFromPath = (path: string): string => {
+  return stripLeadingLocaleSegment(path);
+};
 
 export const getLocaleFromPath = (path: string): string => {
   const pathSegments = path.split("/").filter(Boolean);
-  const firstSegment = pathSegments[0];
-  return SUPPORTED_LOCALES.includes(firstSegment)
-    ? firstSegment
-    : DEFAULT_LOCALE;
+  return normalizeLocale(pathSegments[0]);
 };
 
 export const getPathWithoutLocale = (path: string): string => {
-  return SUPPORTED_LOCALES.some((l) => path.startsWith(`/${l}/`))
-    ? path.substring(3)
-    : path;
+  return stripLeadingLocaleSegment(path);
 };
 
 export const buildLocalePath = (

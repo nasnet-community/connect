@@ -1,6 +1,7 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { WirelessCredentials } from "../../../../../StarContext/CommonType";
 import { Input, FormField, PasswordField } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface WirelessFieldsProps {
   credentials?: WirelessCredentials;
@@ -13,14 +14,19 @@ export interface WirelessFieldsProps {
 
 export const WirelessFields = component$<WirelessFieldsProps>(
   ({ credentials, onUpdate$, errors }) => {
+    const locale = useMessageLocale();
+
     return (
       <div class="space-y-4 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {$localize`Wireless Settings`}
+          {semanticMessages.wan_advanced_wireless_settings({}, { locale })}
         </h4>
 
         <FormField
-          label={$localize`SSID (Network Name)`}
+          label={semanticMessages.wan_advanced_ssid_network_name(
+            {},
+            { locale },
+          )}
           error={errors?.ssid?.[0]}
         >
           <Input
@@ -36,7 +42,10 @@ export const WirelessFields = component$<WirelessFieldsProps>(
           />
         </FormField>
 
-        <FormField label={$localize`Password`} error={errors?.password?.[0]}>
+        <FormField
+          label={semanticMessages.wan_advanced_password({}, { locale })}
+          error={errors?.password?.[0]}
+        >
           <PasswordField
             value={credentials?.Password || ""}
             onInput$={(event: Event, element: HTMLInputElement) => {

@@ -5,6 +5,7 @@ import { StarContext } from "../../StarContext/StarContext";
 import type { TrunkInterfaceType } from "../../StarContext/ChooseType";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const toTestIdSegment = (value: string) =>
   value
@@ -29,6 +30,7 @@ interface InterfaceSection {
 }
 
 export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
   const routerModels = starContext.state.Choose.RouterModels;
@@ -346,8 +348,8 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
     {
       id: "master",
       title: isTrunkMode
-        ? $localize`Master Router Interface`
-        : $localize`Router Interface`,
+        ? semanticMessages.trunk_interface_master_router_label({}, { locale })
+        : semanticMessages.trunk_interface_router_label({}, { locale }),
       interfaces: availableInterfaces.master,
       selectedInterface: starContext.state.Choose.RouterModels.find(
         (rm) => rm.isMaster,
@@ -358,7 +360,10 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
   if (isTrunkMode && availableInterfaces.slave) {
     interfaceSections.push({
       id: "slave",
-      title: $localize`Slave Router Interface`,
+      title: semanticMessages.trunk_interface_slave_router_label(
+        {},
+        { locale },
+      ),
       interfaces: availableInterfaces.slave,
       selectedInterface: starContext.state.Choose.RouterModels.find(
         (rm) => !rm.isMaster,
@@ -373,13 +378,13 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
       <div class="text-center">
         <h2 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-xl font-bold text-transparent md:text-2xl">
           {props.interfaceType === "wireless"
-            ? $localize`Select Wireless Interface`
-            : $localize`Select Wired Interface`}
+            ? semanticMessages.trunk_interface_select_wireless({}, { locale })
+            : semanticMessages.trunk_interface_select_wired({}, { locale })}
         </h2>
         <p class="text-text-secondary/80 dark:text-text-dark-secondary/85 mx-auto mt-2 max-w-xl text-sm">
           {isTrunkMode
-            ? $localize`Choose interfaces on both routers for trunk connection`
-            : $localize`Choose the interface for the connection`}
+            ? semanticMessages.trunk_interface_choose_both({}, { locale })
+            : semanticMessages.trunk_interface_choose_single({}, { locale })}
         </p>
       </div>
 
@@ -418,12 +423,15 @@ export const InterfaceSelector = component$((props: InterfaceSelectorProps) => {
 
                 return masterInterface && slaveInterface ? (
                   <span class="font-medium text-success dark:text-success-light">
-                    {$localize`Router + Access Point ready`}: {masterInterface}{" "}
-                    ↔ {slaveInterface}
+                    {semanticMessages.trunk_interface_ready({}, { locale })}:{" "}
+                    {masterInterface} ↔ {slaveInterface}
                   </span>
                 ) : (
                   <span>
-                    {$localize`Select interfaces on both routers to complete configuration`}
+                    {semanticMessages.trunk_interface_complete_prompt(
+                      {},
+                      { locale },
+                    )}
                   </span>
                 );
               })()}

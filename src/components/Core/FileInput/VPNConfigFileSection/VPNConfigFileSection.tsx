@@ -1,6 +1,7 @@
 import { $, component$, type QRL, useSignal } from "@builder.io/qwik";
 import { Container as FormContainer } from "../../Form/Container/Container";
 import { Spinner } from "../../DataDisplay/Progress/Spinner";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNConfigFileSectionProps {
   protocolName: string;
@@ -24,6 +25,7 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
     isUploading = false,
     uploadProgress = 0,
   }) => {
+    const locale = useMessageLocale();
     const handlePaste$ = $(async () => {
       try {
         const text = await navigator.clipboard.readText();
@@ -40,8 +42,14 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
 
     return (
       <FormContainer
-        title={$localize`${protocolName} Configuration File`}
-        description={$localize`Upload your ${protocolName} configuration file (${acceptedExtensions}) or paste the configuration below.`}
+        title={semanticMessages.vpn_config_file_section_title(
+          { protocolName },
+          { locale },
+        )}
+        description={semanticMessages.vpn_config_file_section_description(
+          { protocolName, acceptedExtensions },
+          { locale },
+        )}
       >
         {/* Configuration area with responsive flex layout */}
         <div class="flex flex-col gap-4 tablet:flex-row tablet:gap-6">
@@ -51,7 +59,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
               for="config"
             >
-              {$localize`Configuration`}
+              {semanticMessages.vpn_config_file_section_configuration(
+                {},
+                { locale },
+              )}
             </label>
 
             {/* Textarea for configuration with enhanced drop zone */}
@@ -98,7 +109,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 onInput$={(_, el) => onConfigChange$(el.value)}
                 placeholder={placeholder}
                 disabled={isUploading}
-                aria-label={$localize`${protocolName} configuration`}
+                aria-label={semanticMessages.vpn_config_file_section_aria_configuration(
+                  { protocolName },
+                  { locale },
+                )}
                 aria-describedby="config-helper-text"
                 class={`
                   w-full rounded-lg border px-4 py-3 font-mono text-sm
@@ -163,7 +177,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                   </svg>
                 </div>
                 <p class="mt-3 text-base font-medium text-primary-700 dark:text-primary-300">
-                  {$localize`Drop ${protocolName} file here to upload`}
+                  {semanticMessages.vpn_config_file_section_drop_upload(
+                    { protocolName },
+                    { locale },
+                  )}
                 </p>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   {acceptedExtensions}
@@ -176,7 +193,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                   <Spinner
                     size="lg"
                     color="primary"
-                    label={$localize`Uploading...`}
+                    label={semanticMessages.vpn_config_file_section_uploading(
+                      {},
+                      { locale },
+                    )}
                   />
                   {uploadProgress > 0 && (
                     <div class="mt-4 w-48">
@@ -204,7 +224,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               id="config-helper-text"
               class="mt-2 text-xs text-gray-500 dark:text-gray-400"
             >
-              {$localize`You can also drag & drop ${protocolName} files (${acceptedExtensions}) directly into the text area`}
+              {semanticMessages.vpn_config_file_section_helper(
+                { protocolName, acceptedExtensions },
+                { locale },
+              )}
             </p>
           </div>
 
@@ -228,7 +251,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               `}
               tabIndex={isUploading ? -1 : 0}
               role="button"
-              aria-label={$localize`Upload ${protocolName} configuration file`}
+              aria-label={semanticMessages.vpn_config_file_section_choose_file(
+                { protocolName },
+                { locale },
+              )}
               aria-disabled={isUploading}
             >
               <span class="relative z-10 inline-flex items-center justify-center font-medium">
@@ -245,7 +271,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                   />
                 </svg>
-                {$localize`Upload Config`}
+                {semanticMessages.vpn_config_file_section_upload(
+                  {},
+                  { locale },
+                )}
               </span>
               <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-300 group-hover:translate-x-full" />
               <input
@@ -256,7 +285,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 class="sr-only"
                 disabled={isUploading}
                 onChange$={onFileUpload$}
-                aria-label={$localize`Choose ${protocolName} configuration file`}
+                aria-label={semanticMessages.vpn_config_file_section_choose_file(
+                  { protocolName },
+                  { locale },
+                )}
               />
             </label>
 
@@ -279,7 +311,10 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                 ${isUploading ? "cursor-not-allowed opacity-60" : ""}
               `}
               type="button"
-              aria-label={$localize`Paste ${protocolName} configuration from clipboard`}
+              aria-label={semanticMessages.vpn_config_file_section_paste_clipboard(
+                { protocolName },
+                { locale },
+              )}
             >
               <span class="relative z-10 inline-flex items-center">
                 <svg
@@ -295,7 +330,7 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Paste Config`}
+                {semanticMessages.vpn_config_file_section_paste({}, { locale })}
               </span>
               <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-300 group-hover:translate-x-full" />
             </button>

@@ -1,6 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import type { NewsletterProps } from "./Newsletter.types";
 import { Newsletter } from "./Newsletter";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Hero-optimized Newsletter component for landing page hero sections.
@@ -22,11 +23,13 @@ import { Newsletter } from "./Newsletter";
  * ```
  */
 export const NewsletterHero = component$<Partial<NewsletterProps>>((props) => {
+  const locale = useMessageLocale();
+
   // Hero variant defaults that can be overridden
   const heroDefaults: Partial<NewsletterProps> = {
     variant: "hero",
     size: "md",
-    title: $localize`Get Product Updates`,
+    title: semanticMessages.newsletter_hero_title({}, { locale }),
     glassmorphism: true,
     theme: "glass",
     showLogo: false,
@@ -35,8 +38,8 @@ export const NewsletterHero = component$<Partial<NewsletterProps>>((props) => {
     animated: true,
     surfaceElevation: "elevated",
     fullWidth: false,
-    placeholder: $localize`Enter your email`,
-    buttonText: $localize`Subscribe`,
+    placeholder: semanticMessages.newsletter_hero_placeholder({}, { locale }),
+    buttonText: semanticMessages.newsletter_button_subscribe({}, { locale }),
   };
 
   // Merge props with hero defaults

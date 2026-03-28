@@ -5,6 +5,7 @@ import type { L2tpClientConfig } from "../../../../StarContext/Utils/VPNClientTy
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
 import { useSubnets } from "~/utils/useSubnets";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface UseL2TPConfigResult {
   serverAddress: { value: string };
@@ -28,6 +29,7 @@ export interface UseL2TPConfigResult {
 export const useL2TPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseL2TPConfigResult => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const networks = useNetworks();
   const subnets = useSubnets();
@@ -164,7 +166,10 @@ export const useL2TPConfig = (
       if (onIsValidChange$) {
         await onIsValidChange$(false);
       }
-      errorMessage.value = $localize`Missing required fields: ${emptyFields.join(", ")}`;
+      errorMessage.value = semanticMessages.vpn_client_missing_required_fields(
+        { fields: emptyFields.join(", ") },
+        { locale },
+      );
       return;
     }
 

@@ -8,9 +8,11 @@ import { WirelessSettings } from "./WirelessSettings";
 import { LTESettings } from "./LTESettings";
 import { Button } from "~/components/Core";
 import type { WANInterfaceProps } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const WANInterfaceEasy = component$<WANInterfaceProps>(
   ({ mode, isComplete, onComplete$ }) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext);
     const {
       selectedInterfaceType,
@@ -91,8 +93,8 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
                 class={`text-sm ${isComplete ? "text-success" : "text-warning"}`}
               >
                 {isComplete
-                  ? $localize`Configuration Complete`
-                  : $localize`Configuration Incomplete`}
+                  ? semanticMessages.wan_easy_config_complete({}, { locale })
+                  : semanticMessages.wan_easy_config_incomplete({}, { locale })}
               </span>
               <Button
                 onClick$={handleComplete}
@@ -100,7 +102,9 @@ export const WANInterfaceEasy = component$<WANInterfaceProps>(
                 size="sm"
                 disabled={!isValid.value || isComplete}
               >
-                {isComplete ? $localize`Configured` : $localize`Save`}
+                {isComplete
+                  ? semanticMessages.shared_configured({}, { locale })
+                  : semanticMessages.shared_save({}, { locale })}
               </Button>
             </div>
           </div>

@@ -12,6 +12,7 @@ import { GraphingStep } from "./steps/GraphingStep";
 import { CloudDDNSStep } from "./steps/CloudDDNSStep";
 import { UPNPStep } from "./steps/UPNPStep";
 import { NATPMPStep } from "./steps/NATPMPStep";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Create context with services data type
 export const UsefulServicesStepperContextId = createStepperContext<{
@@ -20,6 +21,7 @@ export const UsefulServicesStepperContextId = createStepperContext<{
 
 export const UsefulServicesAdvanced = component$<StepProps>(
   ({ onComplete$ }) => {
+    const locale = useMessageLocale();
     // Initialize services data with defaults
     const servicesData = useStore<AdvancedServicesData>({
       certificate: {
@@ -49,43 +51,71 @@ export const UsefulServicesAdvanced = component$<StepProps>(
     const steps: CStepMeta[] = [
       {
         id: 1,
-        title: $localize`Certificate`,
-        description: $localize`Configure SSL/TLS certificates`,
+        title: semanticMessages.useful_services_step_certificate(
+          {},
+          { locale },
+        ),
+        description:
+          semanticMessages.useful_services_step_certificate_description(
+            {},
+            { locale },
+          ),
         component: <CertificateStep />,
         isComplete: false,
       },
       {
         id: 2,
-        title: $localize`NTP Time Sync`,
-        description: $localize`Setup time synchronization`,
+        title: semanticMessages.useful_services_step_ntp({}, { locale }),
+        description: semanticMessages.useful_services_step_ntp_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <NTPStep />,
         isComplete: false,
       },
       {
         id: 3,
-        title: $localize`Graphing`,
-        description: $localize`Configure network monitoring graphs`,
+        title: semanticMessages.useful_services_step_graphing({}, { locale }),
+        description: semanticMessages.useful_services_step_graphing_description(
+          {},
+          { locale },
+        ),
         component: <GraphingStep />,
         isComplete: false,
       },
       {
         id: 4,
-        title: $localize`Dynamic DNS`,
-        description: $localize`Configure dynamic DNS providers`,
+        title: semanticMessages.useful_services_step_ddns({}, { locale }),
+        description: semanticMessages.useful_services_step_ddns_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <CloudDDNSStep />,
         isComplete: false,
       },
       {
         id: 5,
-        title: $localize`UPnP`,
-        description: $localize`Universal Plug and Play configuration`,
+        title: semanticMessages.useful_services_step_upnp({}, { locale }),
+        description: semanticMessages.useful_services_step_upnp_description(
+          {},
+          {
+            locale,
+          },
+        ),
         component: <UPNPStep />,
         isComplete: false,
       },
       {
         id: 6,
-        title: $localize`NAT-PMP`,
-        description: $localize`NAT Port Mapping Protocol setup`,
+        title: semanticMessages.useful_services_step_natpmp({}, { locale }),
+        description: semanticMessages.useful_services_step_natpmp_description(
+          {},
+          { locale },
+        ),
         component: <NATPMPStep />,
         isComplete: false,
       },
@@ -153,9 +183,20 @@ export const UsefulServicesAdvanced = component$<StepProps>(
                   </svg>
                 </div>
                 <div class="flex-1 space-y-3">
-                  <h2 class="animate-gradient bg-gradient-to-r from-white via-primary-100 to-white bg-clip-text text-4xl font-bold tracking-tight text-white md:text-5xl">{$localize`Useful Services`}</h2>
-                  <p class="text-xl font-medium text-white/95">{$localize`Advanced Configuration Mode`}</p>
-                  <p class="max-w-2xl leading-relaxed text-primary-100/90">{$localize`Configure advanced network services with detailed settings and modern interface for optimal performance`}</p>
+                  <h2 class="animate-gradient bg-gradient-to-r from-white via-primary-100 to-white bg-clip-text text-4xl font-bold tracking-tight text-white md:text-5xl">
+                    {semanticMessages.useful_services_title({}, { locale })}
+                  </h2>
+                  <p class="text-xl font-medium text-white/95">
+                    {semanticMessages.useful_services_mode({}, { locale })}
+                  </p>
+                  <p class="max-w-2xl leading-relaxed text-primary-100/90">
+                    {semanticMessages.useful_services_description(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </p>
                 </div>
               </div>
             </div>

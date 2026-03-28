@@ -5,6 +5,7 @@ import {
   HiArrowPathOutline,
 } from "@qwikest/icons/heroicons";
 import type { PropFunction } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ActionFooterProps {
   onSave$?: PropFunction<() => void>;
@@ -15,12 +16,13 @@ interface ActionFooterProps {
 
 export const ActionFooter = component$<ActionFooterProps>(
   ({ onSave$, onReset$, isSaveDisabled = false }) => {
+    const locale = useMessageLocale();
     return (
       <div class="flex flex-col items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:flex-row md:justify-between">
         <div class="flex items-center text-gray-500 dark:text-gray-400">
           <HiInformationCircleOutline class="mr-2 h-5 w-5" />
           <span class="text-sm">
-            {$localize`Configure interface settings before saving`}
+            {semanticMessages.lan_einterface_footer_hint({}, { locale })}
           </span>
         </div>
 
@@ -35,7 +37,9 @@ export const ActionFooter = component$<ActionFooterProps>(
                 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
               <HiArrowPathOutline class="h-5 w-5" />
-              <span>{$localize`Reset`}</span>
+              <span>
+                {semanticMessages.lan_einterface_reset({}, { locale })}
+              </span>
             </button>
           )}
 
@@ -51,7 +55,9 @@ export const ActionFooter = component$<ActionFooterProps>(
             dark:disabled:bg-gray-700 md:w-auto"
           >
             <HiCheckCircleOutline class="h-5 w-5" />
-            <span>{$localize`Save Settings`}</span>
+            <span>
+              {semanticMessages.lan_einterface_save_settings({}, { locale })}
+            </span>
           </button>
         </div>
       </div>

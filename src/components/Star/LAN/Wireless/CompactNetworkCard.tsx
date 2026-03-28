@@ -1,9 +1,10 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
 import { HiSparklesOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
-import { NETWORK_DESCRIPTIONS } from "./constants";
+import { getNetworkDescription, getNetworkDisplayName } from "./constants";
 import { Toggle, Input, Button } from "~/components/Core";
 import type { Mode } from "../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CompactNetworkCardProps {
   networkKey: NetworkKey;
@@ -45,8 +46,8 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
     isBaseNetworkDisabled = false,
     hasBothBands = true,
   }) => {
-    const displayName =
-      networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
+    const locale = useMessageLocale();
+    const displayName = getNetworkDisplayName(networkKey, locale);
 
     return (
       <div
@@ -62,7 +63,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
         <div class="flex items-center justify-between border-b border-gray-100 p-3 dark:border-gray-700">
           <div class="flex items-center gap-2">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-              {displayName} Network
+              {semanticMessages.wireless_card_network_title(
+                { networkName: displayName },
+                { locale },
+              )}
             </h3>
             {!isDisabled && ssid && (
               <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -84,7 +88,11 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                   onDisabledToggle(!checked);
                 }
               })}
-              label={!isDisabled ? $localize`On` : $localize`Off`}
+              label={
+                !isDisabled
+                  ? semanticMessages.shared_on({}, { locale })
+                  : semanticMessages.shared_off({}, { locale })
+              }
               labelPosition="left"
               size="sm"
               color="primary"
@@ -97,8 +105,16 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
         {isBaseNetworkDisabled && (
           <div class="mx-3 mt-3 rounded-md border border-yellow-200 bg-yellow-50 p-2 dark:border-yellow-800 dark:bg-yellow-900/20">
             <p class="text-xs text-yellow-800 dark:text-yellow-200">
-              <span class="font-semibold">{$localize`Network disabled:`}</span>{" "}
-              {$localize`This base network is disabled. Enable it in the network configuration first.`}
+              <span class="font-semibold">
+                {semanticMessages.wireless_card_base_network_disabled_title(
+                  {},
+                  { locale },
+                )}
+              </span>{" "}
+              {semanticMessages.wireless_card_base_network_disabled_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
         )}
@@ -110,14 +126,23 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
             {/* Only show visibility toggle in advance mode */}
             {mode === "advance" && (
               <div class="flex items-center justify-between">
-                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`SSID Visibility:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">
+                  {semanticMessages.wireless_card_ssid_visibility(
+                    {},
+                    { locale },
+                  )}
+                </span>
                 <Toggle
                   checked={!isHide}
                   onChange$={$((checked: boolean) => {
                     // checked represents visible state, so invert for hide
                     onHideToggle(!checked);
                   })}
-                  label={!isHide ? $localize`Show` : $localize`Hide`}
+                  label={
+                    !isHide
+                      ? semanticMessages.shared_show({}, { locale })
+                      : semanticMessages.shared_hide({}, { locale })
+                  }
                   labelPosition="left"
                   disabled={isDisabled || isBaseNetworkDisabled}
                   size="sm"
@@ -129,7 +154,9 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
             {/* Only show split band toggle if router has both bands */}
             {hasBothBands && (
               <div class="flex items-center justify-between">
-                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`Band Mode:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">
+                  {semanticMessages.wireless_card_band_mode({}, { locale })}
+                </span>
                 <Toggle
                   checked={mode === "easy" ? true : splitBand}
                   onChange$={$((checked: boolean) => {
@@ -139,7 +166,11 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                       onSplitBandToggle(checked);
                     }
                   })}
-                  label={splitBand ? $localize`Split` : $localize`Single`}
+                  label={
+                    splitBand
+                      ? semanticMessages.wireless_card_split({}, { locale })
+                      : semanticMessages.wireless_card_single({}, { locale })
+                  }
                   labelPosition="left"
                   disabled={
                     isDisabled || mode === "easy" || isBaseNetworkDisabled
@@ -154,7 +185,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
           {/* SSID Input */}
           <div class="space-y-1">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {$localize`SSID`}
+              {semanticMessages.wireless_card_ssid_label({}, { locale })}
               {!isDisabled && !isBaseNetworkDisabled && (
                 <span class="ml-1 text-red-500">*</span>
               )}
@@ -165,7 +196,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                 onChange$={(e, value) => onSSIDChange(value)}
                 type="text"
                 disabled={isDisabled || isBaseNetworkDisabled}
-                placeholder={$localize`Network name`}
+                placeholder={semanticMessages.wireless_card_network_name_placeholder(
+                  {},
+                  { locale },
+                )}
                 required={!isDisabled && !isBaseNetworkDisabled}
                 size="sm"
                 class="flex-1"
@@ -181,7 +215,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                 variant="outline"
                 size="sm"
                 iconOnly
-                aria-label={$localize`Generate SSID`}
+                aria-label={semanticMessages.wireless_card_generate_ssid(
+                  {},
+                  { locale },
+                )}
               >
                 <HiSparklesOutline class="h-4 w-4" />
               </Button>
@@ -191,7 +228,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
           {/* Password Input */}
           <div class="space-y-1">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Password`}
+              {semanticMessages.wireless_card_password_label({}, { locale })}
               {!isDisabled && !isBaseNetworkDisabled && (
                 <span class="ml-1 text-red-500">*</span>
               )}
@@ -202,7 +239,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                 onChange$={(e, value) => onPasswordChange(value)}
                 type="text"
                 disabled={isDisabled || isBaseNetworkDisabled}
-                placeholder={$localize`Password`}
+                placeholder={semanticMessages.wireless_card_password_placeholder(
+                  {},
+                  { locale },
+                )}
                 required={!isDisabled && !isBaseNetworkDisabled}
                 size="sm"
                 class="flex-1"
@@ -218,7 +258,10 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
                 variant="outline"
                 size="sm"
                 iconOnly
-                aria-label={$localize`Generate Password`}
+                aria-label={semanticMessages.wireless_card_generate_password(
+                  {},
+                  { locale },
+                )}
               >
                 <HiSparklesOutline class="h-4 w-4" />
               </Button>
@@ -227,7 +270,7 @@ export const CompactNetworkCard = component$<CompactNetworkCardProps>(
 
           {/* Description tooltip on hover */}
           <p class="text-xs italic text-gray-500 dark:text-gray-400">
-            {NETWORK_DESCRIPTIONS[networkKey]}
+            {getNetworkDescription(networkKey, locale)}
           </p>
         </div>
       </div>

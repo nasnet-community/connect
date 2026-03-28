@@ -9,6 +9,7 @@ import { VPNProtocolSelector } from "../components/fields/VPNProtocolSelector";
 import { WANInterfaceSelector } from "../components/fields/WANInterfaceSelector";
 import { L2TPPromoBanner } from "../../Protocols/L2TP/L2TPPromoBanner";
 import type { L2TPCredentials } from "~/utils/supabaseClient";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step1VPNProtocolsProps {
   wizardState: VPNClientAdvancedState;
@@ -26,6 +27,7 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
     onRefreshCompletion$,
     onPromoL2TP$,
   }) => {
+    const locale = useMessageLocale();
     const isAdding = useSignal(false);
     // Initialize with empty set, will be populated on mount
     const expandedVPNs = useSignal<Set<string>>(new Set());
@@ -50,7 +52,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
     const handleAddVPN = $(async () => {
       isAdding.value = true;
       try {
-        const name = `VPN ${wizardState.vpnConfigs.length + 1}`;
+        const name = semanticMessages.vpn_client_advanced_default_name(
+          { index: wizardState.vpnConfigs.length + 1 },
+          { locale },
+        );
         const priority = wizardState.vpnConfigs.length + 1;
         console.log(
           `[Step1_VPNProtocols] Adding VPN: ${name} with priority: ${priority}`,
@@ -165,7 +170,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                {$localize`Adding VPN...`}
+                {semanticMessages.vpn_client_advanced_adding_vpn(
+                  {},
+                  { locale },
+                )}
               </>
             ) : (
               <>
@@ -182,7 +190,12 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                {$localize`Add VPN Client`}
+                {semanticMessages.vpn_client_advanced_add_vpn_client(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </>
             )}
           </button>
@@ -192,7 +205,12 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
         {wizardState.vpnConfigs.length > 0 && (
           <div class="space-y-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-              {$localize`Configured VPN Clients`}
+              {semanticMessages.vpn_client_advanced_configured_clients(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h3>
 
             <div class="space-y-4">
@@ -282,7 +300,11 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                                     : "text-gray-900 dark:text-white"
                               }`}
                             >
-                              {vpn.name || `VPN ${_index + 1}`}
+                              {vpn.name ||
+                                semanticMessages.vpn_client_advanced_default_name(
+                                  { index: _index + 1 },
+                                  { locale },
+                                )}
                             </h3>
                             <p
                               class={`text-sm ${
@@ -291,11 +313,23 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                                   : "text-gray-500 dark:text-gray-400"
                               }`}
                             >
-                              {vpn.type || "Not configured"}
+                              {vpn.type ||
+                                semanticMessages.vpn_client_advanced_not_configured(
+                                  {},
+                                  { locale },
+                                )}
                               {status === "complete" &&
-                                ` • ${$localize`Configured`}`}
+                                ` • ${semanticMessages.shared_configured(
+                                  {},
+                                  {
+                                    locale,
+                                  },
+                                )}`}
                               {status === "partial" &&
-                                ` • ${$localize`Partially configured`}`}
+                                ` • ${semanticMessages.vpn_client_advanced_partially_configured(
+                                  {},
+                                  { locale },
+                                )}`}
                             </p>
                           </div>
                         </div>
@@ -322,7 +356,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                                 handleRemoveVPN(vpn.id);
                               }}
                               class="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
-                              title={$localize`Remove VPN`}
+                              title={semanticMessages.vpn_client_advanced_remove_vpn(
+                                {},
+                                { locale },
+                              )}
                             >
                               <svg
                                 class="h-4 w-4"
@@ -365,7 +402,12 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                           {/* VPN Name Input */}
                           <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {$localize`VPN Name`}
+                              {semanticMessages.vpn_client_advanced_vpn_name(
+                                {},
+                                {
+                                  locale,
+                                },
+                              )}
                             </label>
                             <Input
                               type="text"
@@ -373,7 +415,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                               onInput$={(event: Event, value: string) => {
                                 handleUpdateVPN(vpn.id, { name: value });
                               }}
-                              placeholder={$localize`Enter VPN name`}
+                              placeholder={semanticMessages.vpn_client_advanced_enter_vpn_name(
+                                {},
+                                { locale },
+                              )}
                               class="w-full"
                             />
                           </div>
@@ -393,7 +438,10 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
                           {/* Protocol Selection */}
                           <div>
                             <h4 class="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {$localize`Select VPN Protocol`}
+                              {semanticMessages.vpn_client_advanced_select_protocol(
+                                {},
+                                { locale },
+                              )}
                             </h4>
                             <VPNProtocolSelector
                               selectedProtocol={vpn.type}
@@ -429,10 +477,16 @@ export const Step1_VPNProtocols = component$<Step1VPNProtocolsProps>(
               </svg>
               <div class="ml-3">
                 <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  {$localize`More VPN clients needed`}
+                  {semanticMessages.vpn_client_advanced_more_clients_needed_title(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                  {$localize`You need ${foreignWANCount - wizardState.vpnConfigs.length} more VPN client(s) to match your Foreign WAN links.`}
+                  {semanticMessages.vpn_client_advanced_more_clients_needed_description(
+                    { count: foreignWANCount - wizardState.vpnConfigs.length },
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>

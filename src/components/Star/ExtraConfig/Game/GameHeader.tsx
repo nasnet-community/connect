@@ -1,6 +1,8 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GameHeader = component$(() => {
+  const locale = useMessageLocale();
   return (
     <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
       <div class="flex items-center space-x-5">
@@ -20,8 +22,12 @@ export const GameHeader = component$(() => {
           </svg>
         </div>
         <div class="space-y-1">
-          <h2 class="text-2xl font-bold text-white">{$localize`Game Configuration`}</h2>
-          <p class="text-sm font-medium text-primary-50">{$localize`Manage game routing and port configuration`}</p>
+          <h2 class="text-2xl font-bold text-white">
+            {semanticMessages.game_config_title({}, { locale })}
+          </h2>
+          <p class="text-sm font-medium text-primary-50">
+            {semanticMessages.game_config_description({}, { locale })}
+          </p>
           <div class="mt-2 flex items-center space-x-2">
             <svg
               class="h-5 w-5 text-yellow-300"
@@ -37,7 +43,7 @@ export const GameHeader = component$(() => {
               />
             </svg>
             <span class="text-xs text-primary-50">
-              {$localize`Port configurations sourced from portforward.com are provided without verification.`}
+              {semanticMessages.game_config_warning({}, { locale })}
             </span>
           </div>
         </div>

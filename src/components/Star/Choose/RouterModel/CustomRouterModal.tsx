@@ -21,6 +21,7 @@ import {
   convertFormToRouterData,
 } from "./CustomRouterUtils";
 import type { RouterData } from "./Constants";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CustomRouterModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface CustomRouterModalProps {
 }
 
 export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
+  const locale = useMessageLocale();
   const { isOpen, onClose$, onSave$, _existingRouters } = props;
 
   const formData = useStore<CustomRouterForm>({
@@ -70,7 +72,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
   });
 
   const handleSave = $(() => {
-    const validation = validateCustomRouterForm(formData);
+    const validation = validateCustomRouterForm(formData, locale);
 
     if (!validation.valid) {
       errors.value = validation.errors;
@@ -78,7 +80,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
       return;
     }
 
-    const routerData = convertFormToRouterData(formData);
+    const routerData = convertFormToRouterData(formData, locale);
     onSave$(routerData, formData.isCHR, formData.cpuArch);
     onClose$();
   });
@@ -114,17 +116,22 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
           <div class="flex items-center justify-between">
             <div>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {$localize`Custom Router Configuration`}
+                {semanticMessages.router_custom_modal_title({}, { locale })}
               </h2>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {$localize`Define your router's interfaces and specifications`}
+                {semanticMessages.router_custom_modal_description(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
             <button
               type="button"
               onClick$={handleCancel}
               class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              aria-label={$localize`Close`}
+              aria-label={semanticMessages.router_details_close({}, { locale })}
             >
               <LuX class="h-6 w-6" />
             </button>
@@ -136,7 +143,14 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
           {/* Error Display */}
           {showErrors.value && errors.value.length > 0 && (
             <div class="rounded-xl border border-error/30 bg-error/10 p-4">
-              <h3 class="mb-2 font-semibold text-error">{$localize`Validation Errors:`}</h3>
+              <h3 class="mb-2 font-semibold text-error">
+                {semanticMessages.router_custom_validation_errors(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
+              </h3>
               <ul class="list-inside list-disc space-y-1">
                 {errors.value.map((error, idx) => (
                   <li key={idx} class="text-sm text-error">
@@ -151,27 +165,34 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
           <div class="space-y-4">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
               <LuCpu class="h-5 w-5 text-primary-500" />
-              {$localize`Basic Information`}
+              {semanticMessages.router_custom_basic_information({}, { locale })}
             </h3>
 
             <div class="grid gap-4 md:grid-cols-2">
               <div>
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`Router Name`} <span class="text-error">*</span>
+                  {semanticMessages.router_custom_router_name({}, { locale })}{" "}
+                  <span class="text-error">*</span>
                 </label>
                 <Input
                   value={formData.name}
                   onInput$={(e) => {
                     formData.name = (e.target as HTMLInputElement).value;
                   }}
-                  placeholder={$localize`e.g., My Custom Router`}
+                  placeholder={semanticMessages.router_custom_name_placeholder(
+                    {},
+                    { locale },
+                  )}
                   class="w-full"
                 />
               </div>
 
               <div>
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {$localize`CPU Architecture`}
+                  {semanticMessages.router_custom_cpu_architecture(
+                    {},
+                    { locale },
+                  )}
                 </label>
                 <Select
                   value={formData.cpuArch}
@@ -179,12 +200,21 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                     formData.cpuArch = Array.isArray(value) ? value[0] : value;
                   }}
                   options={[
-                    { value: "", label: $localize`Select architecture...` },
+                    {
+                      value: "",
+                      label: semanticMessages.router_custom_select_architecture(
+                        {},
+                        { locale },
+                      ),
+                    },
                     { value: "ARM", label: "ARM" },
                     { value: "ARM64", label: "ARM64" },
                     { value: "x64/x86", label: "x64/x86" },
                   ]}
-                  placeholder={$localize`Select architecture...`}
+                  placeholder={semanticMessages.router_custom_select_architecture(
+                    {},
+                    { locale },
+                  )}
                   class="w-full"
                 />
               </div>
@@ -204,7 +234,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                 for="isCHR"
                 class="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                {$localize`Cloud Hosted Router (CHR)`}
+                {semanticMessages.router_custom_feature_chr({}, { locale })}
               </label>
             </div>
           </div>
@@ -214,7 +244,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
             <div class="flex items-center justify-between">
               <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                 <LuNetwork class="h-5 w-5 text-primary-500" />
-                {$localize`Ethernet Interfaces`}
+                {semanticMessages.router_custom_ethernet_interfaces(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <Button
                 onClick$={handleAddEthernet}
@@ -223,13 +258,13 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                 class="gap-2"
               >
                 <LuPlus class="h-4 w-4" />
-                {$localize`Add Ethernet`}
+                {semanticMessages.router_custom_add_ethernet({}, { locale })}
               </Button>
             </div>
 
             {formData.ethernet.length === 0 ? (
               <p class="text-sm italic text-gray-500 dark:text-gray-400">
-                {$localize`No ethernet interfaces configured. Click "Add Ethernet" to add one.`}
+                {semanticMessages.router_custom_no_ethernet({}, { locale })}
               </p>
             ) : (
               <div class="space-y-3">
@@ -241,7 +276,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                     <div class="grid flex-1 gap-3 md:grid-cols-2">
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Count`}
+                          {semanticMessages.router_custom_count({}, { locale })}
                         </label>
                         <Input
                           type="number"
@@ -260,7 +295,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       </div>
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Speed`}
+                          {semanticMessages.router_custom_speed({}, { locale })}
                         </label>
                         <Select
                           value={config.speed}
@@ -280,7 +315,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       type="button"
                       onClick$={() => handleRemoveEthernet(index)}
                       class="rounded-lg p-2 text-error transition-colors hover:bg-error/10"
-                      aria-label={$localize`Remove`}
+                      aria-label={semanticMessages.router_custom_remove(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     >
                       <LuTrash2 class="h-4 w-4" />
                     </button>
@@ -295,7 +335,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
             <div class="flex items-center justify-between">
               <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                 <LuWifi class="h-5 w-5 text-primary-500" />
-                {$localize`Wireless Interfaces`}
+                {semanticMessages.router_custom_wireless_interfaces(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <Button
                 onClick$={handleAddWireless}
@@ -304,13 +349,13 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                 class="gap-2"
               >
                 <LuPlus class="h-4 w-4" />
-                {$localize`Add Wireless`}
+                {semanticMessages.router_custom_add_wireless({}, { locale })}
               </Button>
             </div>
 
             {formData.wireless.length === 0 ? (
               <p class="text-sm italic text-gray-500 dark:text-gray-400">
-                {$localize`No wireless interfaces configured. Click "Add Wireless" to add one.`}
+                {semanticMessages.router_custom_no_wireless({}, { locale })}
               </p>
             ) : (
               <div class="space-y-3">
@@ -322,7 +367,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                     <div class="grid flex-1 gap-3 md:grid-cols-2">
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Count`}
+                          {semanticMessages.router_custom_count({}, { locale })}
                         </label>
                         <Input
                           type="number"
@@ -341,7 +386,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       </div>
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Band`}
+                          {semanticMessages.router_custom_band({}, { locale })}
                         </label>
                         <Select
                           value={config.band}
@@ -361,7 +406,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       type="button"
                       onClick$={() => handleRemoveWireless(index)}
                       class="rounded-lg p-2 text-error transition-colors hover:bg-error/10"
-                      aria-label={$localize`Remove`}
+                      aria-label={semanticMessages.router_custom_remove(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     >
                       <LuTrash2 class="h-4 w-4" />
                     </button>
@@ -376,7 +426,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
             <div class="flex items-center justify-between">
               <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                 <LuZap class="h-5 w-5 text-primary-500" />
-                {$localize`SFP Interfaces`}
+                {semanticMessages.router_custom_sfp_interfaces({}, { locale })}
               </h3>
               <Button
                 onClick$={handleAddSfp}
@@ -385,13 +435,13 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                 class="gap-2"
               >
                 <LuPlus class="h-4 w-4" />
-                {$localize`Add SFP`}
+                {semanticMessages.router_custom_add_sfp({}, { locale })}
               </Button>
             </div>
 
             {formData.sfp.length === 0 ? (
               <p class="text-sm italic text-gray-500 dark:text-gray-400">
-                {$localize`No SFP interfaces configured. Click "Add SFP" to add one.`}
+                {semanticMessages.router_custom_no_sfp({}, { locale })}
               </p>
             ) : (
               <div class="space-y-3">
@@ -403,7 +453,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                     <div class="grid flex-1 gap-3 md:grid-cols-2">
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Count`}
+                          {semanticMessages.router_custom_count({}, { locale })}
                         </label>
                         <Input
                           type="number"
@@ -422,7 +472,7 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       </div>
                       <div>
                         <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {$localize`Type`}
+                          {semanticMessages.router_custom_type({}, { locale })}
                         </label>
                         <Select
                           value={config.type}
@@ -443,7 +493,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
                       type="button"
                       onClick$={() => handleRemoveSfp(index)}
                       class="rounded-lg p-2 text-error transition-colors hover:bg-error/10"
-                      aria-label={$localize`Remove`}
+                      aria-label={semanticMessages.router_custom_remove(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     >
                       <LuTrash2 class="h-4 w-4" />
                     </button>
@@ -457,12 +512,12 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
           <div class="space-y-4">
             <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
               <LuSmartphone class="h-5 w-5 text-primary-500" />
-              {$localize`LTE Interfaces`}
+              {semanticMessages.router_custom_lte_interfaces({}, { locale })}
             </h3>
 
             <div class="max-w-xs">
               <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`LTE Modem Count`}
+                {semanticMessages.router_custom_lte_modem_count({}, { locale })}
               </label>
               <Input
                 type="number"
@@ -483,10 +538,10 @@ export const CustomRouterModal = component$<CustomRouterModalProps>((props) => {
         <div class="sticky bottom-0 border-t border-gray-200 bg-white px-8 py-6 dark:border-gray-700 dark:bg-gray-900">
           <div class="flex justify-end gap-3">
             <Button onClick$={handleCancel} variant="outline">
-              {$localize`Cancel`}
+              {semanticMessages.shared_cancel({}, { locale })}
             </Button>
             <Button onClick$={handleSave} variant="primary">
-              {$localize`Save Router`}
+              {semanticMessages.router_custom_save_router({}, { locale })}
             </Button>
           </div>
         </div>

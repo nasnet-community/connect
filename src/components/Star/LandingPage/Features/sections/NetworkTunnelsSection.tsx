@@ -3,8 +3,10 @@ import { LuNetwork, LuServer } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const NetworkTunnelsSection = component$(() => {
+  const locale = useMessageLocale();
   const selectedNode = useSignal<string | null>(null);
   const activeTunnels = useSignal<Record<string, boolean>>({
     ipip: true,
@@ -17,29 +19,29 @@ export const NetworkTunnelsSection = component$(() => {
   const nodes: GraphNode[] = [
     // Main offices/sites
     createNode("DomesticService", "hq", 150, 150, {
-      label: $localize`Headquarters`,
+      label: semanticMessages.landing_tunnels_headquarters({}, { locale }),
     }),
     createNode("DomesticService", "branch1", 350, 100, {
-      label: $localize`Branch Office 1`,
+      label: semanticMessages.landing_tunnels_branch_office_1({}, { locale }),
     }),
     createNode("DomesticService", "branch2", 350, 200, {
-      label: $localize`Branch Office 2`,
+      label: semanticMessages.landing_tunnels_branch_office_2({}, { locale }),
     }),
     createNode("DomesticService", "datacenter", 200, 300, {
-      label: $localize`Data Center`,
+      label: semanticMessages.landing_tunnels_data_center({}, { locale }),
     }),
     // Tunnel endpoints
     createNode("WirelessRouter", "router-hq", 100, 150, {
-      label: $localize`HQ Router`,
+      label: semanticMessages.landing_tunnels_hq_router({}, { locale }),
     }),
     createNode("WirelessRouter", "router-br1", 400, 100, {
-      label: $localize`Branch Router 1`,
+      label: semanticMessages.landing_tunnels_branch_router_1({}, { locale }),
     }),
     createNode("WirelessRouter", "router-br2", 400, 200, {
-      label: $localize`Branch Router 2`,
+      label: semanticMessages.landing_tunnels_branch_router_2({}, { locale }),
     }),
     createNode("EthernetRouter", "router-dc", 250, 300, {
-      label: $localize`DC Router`,
+      label: semanticMessages.landing_tunnels_dc_router({}, { locale }),
     }),
   ];
 
@@ -83,7 +85,7 @@ export const NetworkTunnelsSection = component$(() => {
       from: "router-hq",
       to: "router-br1",
       trafficType: "VPN",
-      label: $localize`IPIP Tunnel`,
+      label: semanticMessages.landing_tunnels_ipip({}, { locale }),
       animated: activeTunnels.value.ipip,
       dashed: true,
       width: 3,
@@ -94,7 +96,7 @@ export const NetworkTunnelsSection = component$(() => {
       from: "router-hq",
       to: "router-br2",
       trafficType: "VPN",
-      label: $localize`EoIP Tunnel`,
+      label: semanticMessages.landing_tunnels_eoip({}, { locale }),
       animated: activeTunnels.value.eoip,
       dashed: true,
       width: 3,
@@ -105,7 +107,7 @@ export const NetworkTunnelsSection = component$(() => {
       from: "router-hq",
       to: "router-dc",
       trafficType: "VPN",
-      label: $localize`GRE Tunnel`,
+      label: semanticMessages.landing_tunnels_gre({}, { locale }),
       animated: activeTunnels.value.gre,
       dashed: true,
       width: 3,
@@ -116,7 +118,7 @@ export const NetworkTunnelsSection = component$(() => {
       from: "router-br1",
       to: "router-dc",
       trafficType: "VPN",
-      label: $localize`VXLAN Overlay`,
+      label: semanticMessages.landing_tunnels_vxlan({}, { locale }),
       animated: activeTunnels.value.vxlan,
       dashed: true,
       width: 2,
@@ -126,7 +128,7 @@ export const NetworkTunnelsSection = component$(() => {
       from: "router-br2",
       to: "router-dc",
       trafficType: "VPN",
-      label: $localize`VXLAN Overlay`,
+      label: semanticMessages.landing_tunnels_vxlan({}, { locale }),
       animated: activeTunnels.value.vxlan,
       dashed: true,
       width: 2,
@@ -140,28 +142,28 @@ export const NetworkTunnelsSection = component$(() => {
       name: "IPIP",
       key: "ipip",
       color: "#3b82f6",
-      description: $localize`IP over IP encapsulation for simple tunneling`,
+      description: semanticMessages.landing_tunnels_ipip_desc({}, { locale }),
       active: activeTunnels.value.ipip,
     },
     {
       name: "EoIP",
       key: "eoip",
       color: "#10b981",
-      description: $localize`Ethernet over IP for Layer 2 connectivity`,
+      description: semanticMessages.landing_tunnels_eoip_desc({}, { locale }),
       active: activeTunnels.value.eoip,
     },
     {
       name: "GRE",
       key: "gre",
       color: "#f59e0b",
-      description: $localize`Generic Routing Encapsulation protocol`,
+      description: semanticMessages.landing_tunnels_gre_desc({}, { locale }),
       active: activeTunnels.value.gre,
     },
     {
       name: "VXLAN",
       key: "vxlan",
       color: "#8b5cf6",
-      description: $localize`Virtual eXtensible LAN overlay network`,
+      description: semanticMessages.landing_tunnels_vxlan_desc({}, { locale }),
       active: activeTunnels.value.vxlan,
     },
   ];
@@ -291,21 +293,21 @@ export const NetworkTunnelsSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-left space-y-6">
             <Badge variant="outline" size="lg">
-              {$localize`Enterprise Networking`}
+              {semanticMessages.landing_tunnels_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-slate-600 to-gray-600 bg-clip-text text-transparent">
-                {$localize`Network Tunnels`}
+                {semanticMessages.landing_tunnels_title_line1({}, { locale })}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Enterprise`}
+                {semanticMessages.landing_tunnels_title_line2({}, { locale })}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Professional tunneling with IPIP, EoIP, GRE, and VXLAN protocols. Create site-to-site connections with enterprise-grade security.`}
+              {semanticMessages.landing_tunnels_description({}, { locale })}
             </p>
 
             <div class="grid grid-cols-2 gap-3">
@@ -329,7 +331,7 @@ export const NetworkTunnelsSection = component$(() => {
               {/* Protocol Controls */}
               <div class="mb-4">
                 <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {$localize`Tunnel Protocols`}
+                  {semanticMessages.landing_tunnels_protocols({}, { locale })}
                 </h3>
                 <div class="grid grid-cols-2 gap-2">
                   {tunnelProtocols.map((protocol) => (
@@ -363,7 +365,8 @@ export const NetworkTunnelsSection = component$(() => {
               {selectedNode.value && (
                 <div class="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/30">
                   <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {$localize`Selected:`} {selectedNode.value}
+                    {semanticMessages.landing_shared_selected({}, { locale })}{" "}
+                    {selectedNode.value}
                   </p>
                 </div>
               )}
@@ -384,17 +387,46 @@ export const NetworkTunnelsSection = component$(() => {
                   }
                   return true;
                 })}
-                title={$localize`Network Tunnel Infrastructure`}
+                title={semanticMessages.landing_tunnels_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={{
                   width: "100%",
                   height: "420px",
                   viewBox: "0 0 500 420",
                   showLegend: true,
                   legendItems: [
-                    { color: "#3b82f6", label: $localize`IPIP Tunnel` },
-                    { color: "#10b981", label: $localize`EoIP Tunnel` },
-                    { color: "#f59e0b", label: $localize`GRE Tunnel` },
-                    { color: "#8b5cf6", label: $localize`VXLAN Overlay` },
+                    {
+                      color: "#3b82f6",
+                      label: semanticMessages.landing_tunnels_ipip(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#10b981",
+                      label: semanticMessages.landing_tunnels_eoip(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#f59e0b",
+                      label: semanticMessages.landing_tunnels_gre(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#8b5cf6",
+                      label: semanticMessages.landing_tunnels_vxlan(
+                        {},
+                        { locale },
+                      ),
+                    },
                   ],
                 }}
                 onNodeClick$={handleNodeClick}
@@ -405,7 +437,7 @@ export const NetworkTunnelsSection = component$(() => {
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="font-semibold text-gray-900 dark:text-white">
-                      {$localize`Active Tunnels:`}{" "}
+                      {semanticMessages.landing_tunnels_active({}, { locale })}{" "}
                       {
                         Object.values(activeTunnels.value).filter(Boolean)
                           .length
@@ -413,13 +445,23 @@ export const NetworkTunnelsSection = component$(() => {
                       /4
                     </div>
                     <div class="text-xs text-gray-600 dark:text-gray-400">
-                      {$localize`Enterprise-grade site-to-site connectivity`}
+                      {semanticMessages.landing_tunnels_active_desc(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
                     <LuServer class="h-5 w-5 text-slate-500" />
                     <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
-                      {$localize`Multi-Protocol`}
+                      {semanticMessages.landing_tunnels_multi_protocol(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </span>
                   </div>
                 </div>
@@ -432,21 +474,40 @@ export const NetworkTunnelsSection = component$(() => {
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     4
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Protocols`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_tunnels_stat_protocols(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <LuServer class="mx-auto mb-1 h-6 w-6 text-gray-500" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     8
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Sites`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_tunnels_stat_sites(
+                      {},
+                      { locale },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <LuNetwork class="mx-auto mb-1 h-6 w-6 text-zinc-500" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     5
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Tunnels`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_tunnels_stat_tunnels(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

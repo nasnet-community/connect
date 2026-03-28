@@ -16,6 +16,7 @@ import {
   HiCheckCircleOutline,
   HiCheckOutline,
 } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface UserCredentialProps {
   user: VSCredentials;
@@ -45,6 +46,7 @@ export const UserCredential = component$<UserCredentialProps>(
     easyMode = false,
     enabledProtocols,
   }) => {
+    const locale = useMessageLocale();
     // Get mode from StarContext
     const starContext = useContext(StarContext);
     const isEasyMode = easyMode || starContext.state.Choose.Mode === "easy";
@@ -103,10 +105,15 @@ export const UserCredential = component$<UserCredentialProps>(
         <div class="-mt-1 mb-4 flex w-full items-center justify-between">
           <div class="flex items-center gap-2">
             <HiUserOutline class="h-4 w-4 text-primary-500" />
-            <span class="font-medium">{$localize`User ${index + 1}`}</span>
+            <span class="font-medium">
+              {semanticMessages.vpn_server_user_title(
+                { index: index + 1 },
+                { locale },
+              )}
+            </span>
             {!isUserValid && (
               <span class="ml-1 rounded-full bg-warning-surface px-1.5 py-0.5 text-xs text-warning-dark">
-                {$localize`Incomplete`}
+                {semanticMessages.vpn_server_user_incomplete({}, { locale })}
               </span>
             )}
           </div>
@@ -119,7 +126,10 @@ export const UserCredential = component$<UserCredentialProps>(
                   await handleDelete();
                 }}
                 class="text-error transition-colors hover:text-error-dark dark:text-error-light dark:hover:text-error"
-                aria-label={$localize`Remove User`}
+                aria-label={semanticMessages.vpn_server_remove_user(
+                  {},
+                  { locale },
+                )}
               >
                 <HiTrashOutline class="h-4 w-4" />
               </button>
@@ -130,13 +140,15 @@ export const UserCredential = component$<UserCredentialProps>(
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Username Field */}
             <Field
-              label={$localize`Username`}
+              label={semanticMessages.vpn_server_username({}, { locale })}
               id={`username-${index}`}
               required={true}
               size="sm"
               error={
                 usernameError ||
-                (user.Username.trim() === "" ? $localize`Required` : undefined)
+                (user.Username.trim() === ""
+                  ? semanticMessages.vpn_server_required({}, { locale })
+                  : undefined)
               }
             >
               <div class="relative">
@@ -147,7 +159,10 @@ export const UserCredential = component$<UserCredentialProps>(
                   onInput$={async (event: Event, value: string) => {
                     await handleUsernameChange(value);
                   }}
-                  placeholder={$localize`Enter username`}
+                  placeholder={semanticMessages.vpn_server_enter_username(
+                    {},
+                    { locale },
+                  )}
                   size="sm"
                   class="pl-8"
                 />
@@ -159,13 +174,15 @@ export const UserCredential = component$<UserCredentialProps>(
 
             {/* Password Field */}
             <Field
-              label={$localize`Password`}
+              label={semanticMessages.vpn_server_password({}, { locale })}
               id={`password-${index}`}
               required={true}
               size="sm"
               error={
                 passwordError ||
-                (user.Password.trim() === "" ? $localize`Required` : undefined)
+                (user.Password.trim() === ""
+                  ? semanticMessages.vpn_server_required({}, { locale })
+                  : undefined)
               }
             >
               <div class="relative">
@@ -176,7 +193,10 @@ export const UserCredential = component$<UserCredentialProps>(
                   onInput$={async (event: Event, value: string) => {
                     await handlePasswordChange(value);
                   }}
-                  placeholder={$localize`Enter password`}
+                  placeholder={semanticMessages.vpn_server_enter_password(
+                    {},
+                    { locale },
+                  )}
                   size="sm"
                   class="pl-8"
                 />
@@ -190,11 +210,14 @@ export const UserCredential = component$<UserCredentialProps>(
           {/* Allowed VPN Protocols - Only show in Advanced mode */}
           {!isEasyMode && (
             <Field
-              label={$localize`Allowed Protocols`}
+              label={semanticMessages.vpn_server_allowed_protocols(
+                {},
+                { locale },
+              )}
               size="sm"
               error={
                 Array.isArray(user.VPNType) && user.VPNType.length === 0
-                  ? $localize`Select at least one protocol`
+                  ? semanticMessages.vpn_server_select_protocol({}, { locale })
                   : undefined
               }
             >
@@ -245,8 +268,14 @@ export const UserCredential = component$<UserCredentialProps>(
                       }`}
                     >
                       {allProtocolsSelected
-                        ? $localize`Deselect All`
-                        : $localize`Select All`}
+                        ? semanticMessages.vpn_server_deselect_all(
+                            {},
+                            { locale },
+                          )
+                        : semanticMessages.vpn_server_select_all(
+                            {},
+                            { locale },
+                          )}
                     </span>
                   </div>
                 </div>
@@ -337,7 +366,12 @@ export const UserCredential = component$<UserCredentialProps>(
               <div class="dark:animate-pulse">
                 <HiExclamationTriangleOutline class="h-4 w-4 flex-shrink-0 text-warning-500 dark:text-warning-300" />
               </div>
-              <span class="font-medium">{$localize`Complete all required fields`}</span>
+              <span class="font-medium">
+                {semanticMessages.vpn_server_complete_required_fields(
+                  {},
+                  { locale },
+                )}
+              </span>
             </div>
           )}
         </div>

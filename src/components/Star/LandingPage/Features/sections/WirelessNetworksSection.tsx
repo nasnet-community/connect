@@ -1,26 +1,28 @@
 import { component$, $ } from "@builder.io/qwik";
 import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const WirelessNetworksSection = component$(() => {
+  const locale = useMessageLocale();
   const networks = [
     {
-      name: $localize`Foreign Network`,
+      name: semanticMessages.landing_wireless_foreign_network({}, { locale }),
       color: "from-purple-500 to-violet-500",
       icon: "🌍",
     },
     {
-      name: $localize`Domestic Network`,
+      name: semanticMessages.landing_wireless_domestic_network({}, { locale }),
       color: "from-green-500 to-emerald-500",
       icon: "🏠",
     },
     {
-      name: $localize`Split Network`,
+      name: semanticMessages.landing_wireless_split_network({}, { locale }),
       color: "from-blue-500 to-cyan-500",
       icon: "🔀",
     },
     {
-      name: $localize`VPN Network`,
+      name: semanticMessages.landing_wireless_vpn_network({}, { locale }),
       color: "from-orange-500 to-red-500",
       icon: "🔒",
     },
@@ -29,18 +31,20 @@ export const WirelessNetworksSection = component$(() => {
   // Create nodes for the network graph
   const nodes: GraphNode[] = [
     createNode("WirelessRouter", "router", 250, 200, {
-      label: $localize`Central Router`,
+      label: semanticMessages.landing_wireless_central_router({}, { locale }),
     }),
     createNode("ForeignWAN", "foreign", 100, 50, {
-      label: $localize`Foreign Network`,
+      label: semanticMessages.landing_wireless_foreign_network({}, { locale }),
     }),
     createNode("DomesticWAN", "domestic", 400, 50, {
-      label: $localize`Domestic Network`,
+      label: semanticMessages.landing_wireless_domestic_network({}, { locale }),
     }),
     createNode("WirelessUser", "split", 100, 350, {
-      label: $localize`Split Network`,
+      label: semanticMessages.landing_wireless_split_network({}, { locale }),
     }),
-    createNode("VPNServer", "vpn", 400, 350, { label: $localize`VPN Network` }),
+    createNode("VPNServer", "vpn", 400, 350, {
+      label: semanticMessages.landing_wireless_vpn_network({}, { locale }),
+    }),
   ];
 
   // Create connections with different traffic types
@@ -50,21 +54,21 @@ export const WirelessNetworksSection = component$(() => {
       to: "foreign",
       trafficType: "Foreign",
       animated: true,
-      label: $localize`Foreign Traffic`,
+      label: semanticMessages.landing_wireless_foreign_traffic({}, { locale }),
     },
     {
       from: "router",
       to: "domestic",
       trafficType: "Domestic",
       animated: true,
-      label: $localize`Domestic Traffic`,
+      label: semanticMessages.landing_wireless_domestic_traffic({}, { locale }),
     },
     {
       from: "router",
       to: "split",
       color: "#06b6d4",
       animated: true,
-      label: $localize`Split Traffic`,
+      label: semanticMessages.landing_wireless_split_traffic({}, { locale }),
       dashed: true,
     },
     {
@@ -72,7 +76,7 @@ export const WirelessNetworksSection = component$(() => {
       to: "vpn",
       trafficType: "VPN",
       animated: true,
-      label: $localize`VPN Traffic`,
+      label: semanticMessages.landing_wireless_vpn_traffic({}, { locale }),
     },
   ];
 
@@ -84,10 +88,19 @@ export const WirelessNetworksSection = component$(() => {
     showLegend: true,
     expandOnHover: true,
     legendItems: [
-      { color: "#9333ea", label: $localize`Foreign` },
-      { color: "#84cc16", label: $localize`Domestic` },
-      { color: "#06b6d4", label: $localize`Split` },
-      { color: "#f97316", label: $localize`VPN` },
+      {
+        color: "#9333ea",
+        label: semanticMessages.landing_wireless_foreign({}, { locale }),
+      },
+      {
+        color: "#84cc16",
+        label: semanticMessages.landing_wireless_domestic({}, { locale }),
+      },
+      {
+        color: "#06b6d4",
+        label: semanticMessages.landing_wireless_split({}, { locale }),
+      },
+      { color: "#f97316", label: "VPN" },
     ],
   };
 
@@ -160,7 +173,12 @@ export const WirelessNetworksSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`Network Segmentation Topology`}
+                title={semanticMessages.landing_wireless_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={graphConfig}
                 onNodeClick$={handleNodeClick$}
               />
@@ -180,21 +198,36 @@ export const WirelessNetworksSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-right order-1 space-y-6 lg:order-2">
             <Badge color="warning" variant="outline" size="lg">
-              {$localize`Network Segmentation`}
+              {semanticMessages.landing_wireless_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                {$localize`Multiple Wireless`}
+                {semanticMessages.landing_wireless_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Networks`}
+                {semanticMessages.landing_wireless_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Purpose-built networks with intelligent segmentation. Create isolated networks for different purposes with bandwidth control and routing rules.`}
+              {semanticMessages.landing_wireless_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
           </div>
         </div>

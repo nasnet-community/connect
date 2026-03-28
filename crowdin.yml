@@ -1,0 +1,8 @@
+files:
+  - source: /messages/en.json
+    translation: /messages/%two_letters_code%.json
+    multilingual: false
+    languages_mapping:
+      two_letters_code:
+        en: en
+        fa: fa

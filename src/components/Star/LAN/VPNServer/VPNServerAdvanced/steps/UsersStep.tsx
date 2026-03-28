@@ -12,6 +12,7 @@ import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
 import { StarContext } from "../../../../StarContext/StarContext";
 import { Alert } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface UsersStepProps extends StepProps {
   users: VSCredentials[];
@@ -35,6 +36,7 @@ export const UsersStep = component$<UsersStepProps>(
     handleProtocolToggle,
     isValid,
   }) => {
+    const locale = useMessageLocale();
     // Get the context to pass enabled protocols to UserCredential
     const stepperContext = useStepperContext(VPNServerContextId);
 
@@ -61,7 +63,7 @@ export const UsersStep = component$<UsersStepProps>(
         <div class="mb-6 flex items-center gap-3">
           <HiUserGroupOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            {$localize`Manage VPN Users`}
+            {semanticMessages.vpn_server_manage_users_title({}, { locale })}
           </h2>
         </div>
 
@@ -69,14 +71,30 @@ export const UsersStep = component$<UsersStepProps>(
         {stepperContext.data.enabledProtocols.OpenVPN && (
           <Alert status="info" size="sm">
             <p class="text-sm">
-              {$localize`OpenVPN usernames will be created in the format:`}{" "}
+              {semanticMessages.vpn_server_users_openvpn_format_intro(
+                {},
+                { locale },
+              )}{" "}
               {openVpnServerNames.length > 0 ? (
                 <strong>
-                  {$localize`YourUsername-`}
-                  {openVpnServerNames.join($localize` and YourUsername-`)}
+                  {semanticMessages.vpn_server_users_example_prefix(
+                    {},
+                    { locale },
+                  )}
+                  {openVpnServerNames.join(
+                    semanticMessages.vpn_server_users_example_joiner(
+                      {},
+                      { locale },
+                    ),
+                  )}
                 </strong>
               ) : (
-                <strong>{$localize`YourUsername-ServerName`}</strong>
+                <strong>
+                  {semanticMessages.vpn_server_users_example_server_name(
+                    {},
+                    { locale },
+                  )}
+                </strong>
               )}
             </p>
           </Alert>
@@ -106,7 +124,7 @@ export const UsersStep = component$<UsersStepProps>(
             transition-colors hover:bg-gray-50 dark:border-gray-600 
             dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
         >
-          <span>{$localize`Add User`}</span>
+          <span>{semanticMessages.vpn_server_add_user({}, { locale })}</span>
         </button>
       </div>
     );

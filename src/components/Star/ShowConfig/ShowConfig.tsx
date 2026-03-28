@@ -18,11 +18,13 @@ import { subscribeToNewsletter } from "~/utils/newsletterAPI";
 import { generateUserUUID } from "~/utils/fingerprinting";
 import { DocumentSection } from "./DocumentSection/DocumentSection";
 import { EasyModeDownloadCard } from "./EasyModeDownloadCard";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const ShowConfig = component$<StepProps>(() => {
   const ctx = useContext(StarContext);
   const configPreview = useSignal<string>("");
   const slaveRouterConfigs = useSignal<{ [key: number]: string }>({});
+  const locale = useMessageLocale();
 
   // Get slave routers from context
   const slaveRouters = ctx.state.Choose.RouterModels.filter(
@@ -146,10 +148,19 @@ export const ShowConfig = component$<StepProps>(() => {
         <Newsletter
           variant="horizontal"
           size="lg"
-          title={$localize`Stay Updated with Router Configurations`}
-          description={$localize`Get the latest MikroTik tips, security updates, and configuration best practices delivered to your inbox.`}
-          placeholder={$localize`Enter your email address`}
-          buttonText={$localize`Subscribe Now`}
+          title={semanticMessages.show_config_newsletter_title({}, { locale })}
+          description={semanticMessages.show_config_newsletter_description(
+            {},
+            { locale },
+          )}
+          placeholder={semanticMessages.show_config_newsletter_placeholder(
+            {},
+            { locale },
+          )}
+          buttonText={semanticMessages.show_config_newsletter_button(
+            {},
+            { locale },
+          )}
           onSubscribe$={handleNewsletterSubscribe}
           showLogo={true}
           glassmorphism={true}
@@ -161,10 +172,11 @@ export const ShowConfig = component$<StepProps>(() => {
       </div>
 
       <Header
+        variant={slaveRouters.length > 0 ? "master" : "preview"}
         title={
           slaveRouters.length > 0
-            ? $localize`Master Router Configuration`
-            : $localize`Configuration Preview`
+            ? semanticMessages.show_config_master_title({}, { locale })
+            : semanticMessages.show_config_preview_title({}, { locale })
         }
       />
 
@@ -187,7 +199,11 @@ export const ShowConfig = component$<StepProps>(() => {
             <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
               <div class="mb-8">
                 <Header
-                  title={$localize`${slaveRouter.Model} - Slave Router ${index + 1} Configuration`}
+                  variant="slave"
+                  title={semanticMessages.show_config_slave_title(
+                    { model: slaveRouter.Model, index: index + 1 },
+                    { locale },
+                  )}
                 />
               </div>
               <div class="mb-12">
@@ -201,7 +217,7 @@ export const ShowConfig = component$<StepProps>(() => {
                   <Code
                     configPreview={
                       slaveRouterConfigs.value[index] ||
-                      $localize`Generating configuration...`
+                      semanticMessages.show_config_generating({}, { locale })
                     }
                     onROSDownload$={$(() =>
                       handleSlaveRouterDownload(slaveRouter, index),

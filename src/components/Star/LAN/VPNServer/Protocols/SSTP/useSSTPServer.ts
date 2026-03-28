@@ -6,11 +6,13 @@ import type {
   TLSVersion,
 } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const useSSTPServer = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -70,23 +72,29 @@ export const useSSTPServer = () => {
 
   // Authentication method options
   const authMethodOptions = [
-    { value: "pap", label: $localize`PAP` },
-    { value: "chap", label: $localize`CHAP` },
-    { value: "mschap1", label: $localize`MS-CHAPv1` },
-    { value: "mschap2", label: $localize`MS-CHAPv2` },
+    { value: "pap", label: "PAP" },
+    { value: "chap", label: "CHAP" },
+    { value: "mschap1", label: "MS-CHAPv1" },
+    { value: "mschap2", label: "MS-CHAPv2" },
   ];
 
   // TLS version options
   const tlsVersionOptions = [
-    { value: "any", label: $localize`Any` },
-    { value: "only-1.2", label: $localize`Only 1.2` },
-    { value: "only-1.3", label: $localize`Only 1.3` },
+    { value: "any", label: semanticMessages.shared_any({}, { locale }) },
+    {
+      value: "only-1.2",
+      label: semanticMessages.vpn_server_tls_only_1_2({}, { locale }),
+    },
+    {
+      value: "only-1.3",
+      label: semanticMessages.vpn_server_tls_only_1_3({}, { locale }),
+    },
   ];
 
   // Cipher options
   const cipherOptions = [
-    { value: "aes256-gcm-sha384", label: $localize`AES256-GCM-SHA384` },
-    { value: "aes256-sha", label: $localize`AES256-SHA` },
+    { value: "aes256-gcm-sha384", label: "AES256-GCM-SHA384" },
+    { value: "aes256-sha", label: "AES256-SHA" },
   ];
 
   // Core update function
@@ -101,7 +109,10 @@ export const useSSTPServer = () => {
     // Validate certificate
     if (config.Certificate !== undefined) {
       if (!newConfig.Certificate || !newConfig.Certificate.trim()) {
-        certificateError.value = $localize`Certificate is required`;
+        certificateError.value = semanticMessages.shared_certificate_required(
+          {},
+          { locale },
+        );
         isValid = false;
       } else {
         certificateError.value = "";
@@ -111,7 +122,8 @@ export const useSSTPServer = () => {
     // Validate default profile
     if (config.DefaultProfile !== undefined) {
       if (!newConfig.DefaultProfile || !newConfig.DefaultProfile.trim()) {
-        defaultProfileError.value = $localize`Default profile is required`;
+        defaultProfileError.value =
+          semanticMessages.shared_default_profile_required({}, { locale });
         isValid = false;
       } else {
         defaultProfileError.value = "";

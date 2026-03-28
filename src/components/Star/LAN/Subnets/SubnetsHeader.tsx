@@ -8,6 +8,7 @@ import {
 } from "@builder.io/qwik";
 import { SegmentedControl } from "~/components/Core";
 import { LuNetwork, LuZap, LuPowerOff, LuPower } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface SubnetsHeaderProps {
   subnetsEnabled: Signal<boolean>;
@@ -16,6 +17,8 @@ interface SubnetsHeaderProps {
 
 export const SubnetsHeader = component$<SubnetsHeaderProps>(
   ({ subnetsEnabled, onToggle$ }) => {
+    const locale = useMessageLocale();
+
     // Create a string signal for SegmentedControl
     const subnetState = useSignal(subnetsEnabled.value ? "enable" : "disable");
 
@@ -49,10 +52,10 @@ export const SubnetsHeader = component$<SubnetsHeaderProps>(
             {/* Text Content */}
             <div class="space-y-2">
               <h1 class="bg-gradient-to-r from-primary-700 via-blue-600 to-primary-800 bg-clip-text text-3xl font-bold text-transparent dark:from-primary-300 dark:via-blue-400 dark:to-primary-400">
-                {$localize`Network Subnets`}
+                {semanticMessages.subnets_title({}, { locale })}
               </h1>
               <p class="max-w-md text-lg text-gray-600 dark:text-gray-300">
-                {$localize`Configure IP subnets for your network segments with smart validation and conflict detection`}
+                {semanticMessages.subnets_description({}, { locale })}
               </p>
             </div>
           </div>
@@ -70,8 +73,14 @@ export const SubnetsHeader = component$<SubnetsHeaderProps>(
               />
               <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
                 {subnetsEnabled.value
-                  ? $localize`Configuration Active`
-                  : $localize`Configuration Disabled`}
+                  ? semanticMessages.gradient_header_status_active(
+                      {},
+                      { locale },
+                    )
+                  : semanticMessages.gradient_header_status_disabled(
+                      {},
+                      { locale },
+                    )}
               </span>
             </div>
 
@@ -82,12 +91,12 @@ export const SubnetsHeader = component$<SubnetsHeaderProps>(
                 options={[
                   {
                     value: "disable",
-                    label: $localize`Disable`,
+                    label: semanticMessages.shared_disable({}, { locale }),
                     icon: (<LuPowerOff class="h-5 w-5" />) as any,
                   },
                   {
                     value: "enable",
-                    label: $localize`Enable`,
+                    label: semanticMessages.shared_enable({}, { locale }),
                     icon: (<LuPower class="h-5 w-5" />) as any,
                   },
                 ]}
@@ -111,15 +120,15 @@ export const SubnetsHeader = component$<SubnetsHeaderProps>(
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <div class="h-2 w-2 rounded-full bg-primary-500" />
-                {$localize`Smart IP validation`}
+                {semanticMessages.subnets_feature_validation({}, { locale })}
               </div>
               <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <div class="h-2 w-2 rounded-full bg-green-500" />
-                {$localize`Conflict detection`}
+                {semanticMessages.subnets_feature_conflicts({}, { locale })}
               </div>
               <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <div class="h-2 w-2 rounded-full bg-blue-500" />
-                {$localize`Auto-suggestions`}
+                {semanticMessages.subnets_feature_suggestions({}, { locale })}
               </div>
             </div>
           </div>

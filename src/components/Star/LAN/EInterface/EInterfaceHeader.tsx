@@ -1,6 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiCpuChipOutline } from "@qwikest/icons/heroicons";
 import type { Signal, PropFunction } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface EInterfaceHeaderProps {
   interfaceEnabled: Signal<boolean>;
@@ -9,6 +10,7 @@ interface EInterfaceHeaderProps {
 
 export const EInterfaceHeader = component$<EInterfaceHeaderProps>(
   ({ interfaceEnabled, toggleEnabled }) => {
+    const locale = useMessageLocale();
     const handleToggle = $(() => {
       if (toggleEnabled) {
         toggleEnabled();
@@ -23,10 +25,10 @@ export const EInterfaceHeader = component$<EInterfaceHeaderProps>(
           </div>
           <div>
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              {$localize`LAN Interfaces`}
+              {semanticMessages.lan_einterface_title({}, { locale })}
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              {$localize`Configure Ethernet interfaces and assign them to network bridges`}
+              {semanticMessages.lan_einterface_description({}, { locale })}
             </p>
           </div>
         </div>
@@ -42,8 +44,8 @@ export const EInterfaceHeader = component$<EInterfaceHeaderProps>(
             <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-primary-800"></div>
             <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
               {interfaceEnabled.value
-                ? $localize`Enabled`
-                : $localize`Disabled`}
+                ? semanticMessages.shared_enabled({}, { locale })
+                : semanticMessages.shared_disabled({}, { locale })}
             </span>
           </label>
         </div>

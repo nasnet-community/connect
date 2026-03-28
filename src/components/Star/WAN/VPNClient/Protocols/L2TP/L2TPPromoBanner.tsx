@@ -2,6 +2,7 @@ import { component$, type QRL } from "@builder.io/qwik";
 import type { L2TPCredentials } from "~/utils/supabaseClient";
 import { useL2TPPromoBanner } from "./useL2TPPromoBanner";
 import { ErrorMessage } from "../../components";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface L2TPPromoBannerProps {
   onCredentialsReceived$: QRL<(credentials: L2TPCredentials) => void>;
@@ -19,6 +20,7 @@ declare global {
 
 export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
   ({ onCredentialsReceived$ }) => {
+    const locale = useMessageLocale();
     const {
       isLoading,
       hasError,
@@ -204,7 +206,10 @@ export const L2TPPromoBanner = component$<L2TPPromoBannerProps>(
           {hasError.value && (
             <ErrorMessage
               message={errorMessage.value}
-              title={$localize`Credential Request Error`}
+              title={semanticMessages.vpn_l2tp_credential_request_error(
+                {},
+                { locale },
+              )}
               class="mt-4"
             />
           )}

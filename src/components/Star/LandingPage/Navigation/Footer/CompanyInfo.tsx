@@ -1,6 +1,9 @@
 import { component$ } from "@builder.io/qwik";
+import { useLocation } from "@builder.io/qwik-city";
 import { LuRouter, LuMail, LuPhone, LuMapPin } from "@qwikest/icons/lucide";
 import { getIcon, type IconName } from "../../utils/iconMapper";
+import { semanticMessages } from "~/i18n/semantic";
+import { normalizeLocale } from "~/i18n/config";
 
 interface SocialLink {
   icon: IconName;
@@ -13,6 +16,9 @@ interface CompanyInfoProps {
 }
 
 export const CompanyInfo = component$<CompanyInfoProps>(({ socialLinks }) => {
+  const location = useLocation();
+  const locale = normalizeLocale(location.params.locale);
+
   return (
     <div class="lg:col-span-2">
       {/* Logo */}
@@ -27,7 +33,7 @@ export const CompanyInfo = component$<CompanyInfoProps>(({ socialLinks }) => {
 
       {/* Description */}
       <p class="mb-6 max-w-md text-gray-300">
-        {$localize`Professional MikroTik router configuration made simple. Transform your network infrastructure with our intelligent configuration wizard.`}
+        {semanticMessages.landing_footer_company_description({}, { locale })}
       </p>
 
       {/* Contact Info */}

@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import type { GraphConnection, LegendItem } from "../types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Component that renders a legend for the graph based on connections or custom legend items
@@ -10,6 +11,7 @@ export const GraphLegend = component$<{
   showLegend: boolean;
   showDomesticLegend?: boolean;
 }>((props) => {
+  const locale = useMessageLocale();
   const { customLegendItems, showLegend, showDomesticLegend = true } = props;
 
   if (!showLegend) {
@@ -18,11 +20,25 @@ export const GraphLegend = component$<{
 
   // Default legend items for NetworkTopologyGraph style
   const defaultLegendItems = [
-    { color: "rgb(251 191 36)", label: $localize`Traffic Path` }, // amber-500
+    {
+      color: "rgb(251 191 36)",
+      label: semanticMessages.star_network_topology_traffic_path(
+        {},
+        { locale },
+      ),
+    }, // amber-500
     ...(showDomesticLegend
-      ? [{ color: "rgb(16, 185, 129)", label: $localize`Domestic` }]
+      ? [
+          {
+            color: "rgb(16, 185, 129)",
+            label: semanticMessages.game_network_domestic({}, { locale }),
+          },
+        ]
       : []), // emerald-500
-    { color: "rgb(168, 85, 247)", label: $localize`Foreign` }, // purple-500
+    {
+      color: "rgb(168, 85, 247)",
+      label: semanticMessages.game_network_foreign({}, { locale }),
+    }, // purple-500
   ];
 
   // Use custom legend items if provided, otherwise use defaults

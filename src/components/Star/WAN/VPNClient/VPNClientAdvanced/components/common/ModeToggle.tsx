@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ModeToggleProps {
   currentMode?: "easy" | "advanced";
@@ -6,6 +7,7 @@ interface ModeToggleProps {
 }
 
 export const ModeToggle = component$<ModeToggleProps>((props) => {
+  const locale = useMessageLocale();
   const { currentMode = "advanced" } = props;
 
   return (
@@ -30,8 +32,18 @@ export const ModeToggle = component$<ModeToggleProps>((props) => {
         />
       </svg>
       {currentMode === "advanced"
-        ? $localize`Switch to Easy Mode`
-        : $localize`Switch to Advanced Mode`}
+        ? semanticMessages.vpn_client_advanced_switch_to_easy_mode(
+            {},
+            {
+              locale,
+            },
+          )
+        : semanticMessages.vpn_client_advanced_switch_to_advanced_mode(
+            {},
+            {
+              locale,
+            },
+          )}
     </button>
   );
 });

@@ -16,11 +16,14 @@ import { CStepperNavigation } from "./components/CStepperNavigation";
 import { CStepperManagement } from "./components/CStepperManagement";
 import { StepperHelpModal } from "../shared/components/StepperHelpModal";
 import { useStepperHelp } from "../shared/hooks/useStepperHelp";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Content-focused stepper component with top navigation
  */
 export const CStepper = component$((props: CStepperProps) => {
+  const locale = useMessageLocale();
+
   // Initialize edit mode signal
   const isEditMode = useSignal(props.isEditMode || false);
 
@@ -243,17 +246,26 @@ export const CStepper = component$((props: CStepperProps) => {
           // Help system props
           hasHelp={hasHelp}
           onShowHelp$={helpSystem.openHelp$}
-          helpButtonLabel={`Get help for ${stepTitle}`}
+          helpButtonLabel={semanticMessages.stepper_help_button({}, { locale })}
           isHelpOpen={helpSystem.isHelpOpen.value}
         />
 
         {/* Accessible progress indicator */}
         <div class="sr-only" aria-live="polite">
-          {$localize`Step ${stepNumber} of ${totalSteps}\: ${stepTitle}`}
+          {semanticMessages.stepper_step_of_total_title(
+            {
+              current: String(stepNumber),
+              total: String(totalSteps),
+              title: stepTitle,
+            },
+            { locale },
+          )}
           {currentStepIsComplete.value
-            ? $localize`Step is complete`
-            : $localize`Step is incomplete`}
-          {currentStepHasErrors ? $localize`Step has validation errors` : ""}
+            ? semanticMessages.stepper_status_complete({}, { locale })
+            : semanticMessages.stepper_status_incomplete({}, { locale })}
+          {currentStepHasErrors
+            ? semanticMessages.stepper_status_errors({}, { locale })
+            : ""}
         </div>
       </div>
 

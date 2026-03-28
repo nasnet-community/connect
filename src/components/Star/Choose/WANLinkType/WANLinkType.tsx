@@ -14,6 +14,7 @@ import {
   bothLinksNetworkConnections,
 } from "./networkData";
 import type { WANLinkType as WANLinkTypeEnum } from "../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WANLinkTypeProps {
   isComplete?: boolean;
@@ -21,6 +22,7 @@ interface WANLinkTypeProps {
 }
 
 export const WANLinkType = component$((props: WANLinkTypeProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
 
@@ -42,20 +44,32 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     {
       value: "domestic" as WANLinkTypeEnum,
       icon: <LuGlobe class="h-8 w-8" />,
-      title: $localize`I only have Domestic Link`,
-      description: $localize`Connect using only domestic internet connection`,
+      title: semanticMessages.star_wan_link_domestic_title({}, { locale }),
+      description: semanticMessages.star_wan_link_domestic_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Uses only domestic internet connection`,
-        $localize`Optimized for local content and services`,
-        $localize`Lower latency for domestic websites`,
-        $localize`May have limited access to some foreign content`,
+        semanticMessages.star_wan_link_domestic_feature_uses_only(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_wan_link_domestic_feature_optimized(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_wan_link_domestic_feature_latency({}, { locale }),
+        semanticMessages.star_wan_link_domestic_feature_limited({}, { locale }),
       ],
       trafficGraph: (
         <div class="domestic-only-option">
           <NetworkTopologyGraph
             nodes={domesticOnlyNetworkNodes}
             connections={domesticOnlyNetworkConnections}
-            title={$localize`Domestic Only Network`}
+            title={semanticMessages.star_wan_link_domestic_topology_title(
+              {},
+              { locale },
+            )}
           />
         </div>
       ),
@@ -63,20 +77,35 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     {
       value: "foreign" as WANLinkTypeEnum,
       icon: <LuGlobe2 class="h-8 w-8" />,
-      title: $localize`I only have Foreign Link`,
-      description: $localize`Connect using only foreign internet connection`,
+      title: semanticMessages.star_wan_link_foreign_title({}, { locale }),
+      description: semanticMessages.star_wan_link_foreign_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Uses only foreign internet connection`,
-        $localize`Access to both domestic and international content`,
-        $localize`May have slower access to local services`,
-        $localize`Suitable for international connectivity`,
+        semanticMessages.star_wan_link_foreign_feature_uses_only(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_wan_link_foreign_feature_access({}, { locale }),
+        semanticMessages.star_wan_link_foreign_feature_local_services(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_wan_link_foreign_feature_connectivity(
+          {},
+          { locale },
+        ),
       ],
       trafficGraph: (
         <div class="foreign-only-option">
           <NetworkTopologyGraph
             nodes={foreignNetworkNodes}
             connections={foreignNetworkConnections}
-            title={$localize`Foreign Only Network`}
+            title={semanticMessages.star_wan_link_foreign_topology_title(
+              {},
+              { locale },
+            )}
             showDomesticLegend={false}
           />
         </div>
@@ -85,20 +114,26 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
     {
       value: "both" as WANLinkTypeEnum,
       icon: <LuSettings class="h-8 w-8" />,
-      title: $localize`I have both`,
-      description: $localize`Optimal routing with both domestic and foreign connections`,
+      title: semanticMessages.star_wan_link_both_title({}, { locale }),
+      description: semanticMessages.star_wan_link_both_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Intelligent traffic routing based on destination`,
-        $localize`Best performance for both local and international content`,
-        $localize`Automatic failover between connections`,
-        $localize`Maximum reliability and flexibility`,
+        semanticMessages.star_wan_link_both_feature_routing({}, { locale }),
+        semanticMessages.star_wan_link_both_feature_performance({}, { locale }),
+        semanticMessages.star_wan_link_both_feature_failover({}, { locale }),
+        semanticMessages.star_wan_link_both_feature_reliability({}, { locale }),
       ],
       trafficGraph: (
         <div class="both-links-option mt-6">
           <NetworkTopologyGraph
             nodes={bothLinksNetworkNodes}
             connections={bothLinksNetworkConnections}
-            title={$localize`Dual-WAN Network Topology`}
+            title={semanticMessages.star_wan_link_both_topology_title(
+              {},
+              { locale },
+            )}
           />
         </div>
       ),
@@ -108,8 +143,11 @@ export const WANLinkType = component$((props: WANLinkTypeProps) => {
 
   return (
     <SelectionStepSection
-      title={$localize`WAN Link Configuration`}
-      description={$localize`Choose your internet connection setup for optimal routing`}
+      title={semanticMessages.star_wan_link_section_title({}, { locale })}
+      description={semanticMessages.star_wan_link_section_description(
+        {},
+        { locale },
+      )}
     >
       <div class="mx-auto max-w-5xl space-y-6">
         {/* First row - Two vertical cards side by side */}

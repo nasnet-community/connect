@@ -2,6 +2,7 @@ import { component$, $, useSignal, type QRL } from "@builder.io/qwik";
 import { Card } from "~/components/Core";
 import type { VPNClientAdvancedState } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step3StrategyReviewProps {
   wizardState: VPNClientAdvancedState;
@@ -11,6 +12,7 @@ export interface Step3StrategyReviewProps {
 
 export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(
   ({ wizardState, wizardActions, onRefreshCompletion$ }) => {
+    const locale = useMessageLocale();
     const draggedIndex = useSignal<number | null>(null);
     const dragOverIndex = useSignal<number | null>(null);
     const isDragging = useSignal(false);
@@ -194,10 +196,18 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(
           <div class="mb-4 flex items-center justify-between">
             <div>
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                {$localize`VPN Clients Detail`}
+                {semanticMessages.vpn_client_advanced_connections_overview(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {$localize`Manage your VPN client configurations and their priority order`}
+                {semanticMessages.vpn_client_advanced_manage_priority_description(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
           </div>
@@ -417,10 +427,18 @@ export const Step3_StrategyReview = component$<Step3StrategyReviewProps>(
           />
         </svg>
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-          {$localize`No VPN clients to review`}
+          {semanticMessages.vpn_client_advanced_no_clients_review(
+            {},
+            {
+              locale,
+            },
+          )}
         </h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {$localize`Please complete Steps 1 and 2 before reviewing your configuration.`}
+          {semanticMessages.vpn_client_advanced_complete_steps_before_review(
+            {},
+            { locale },
+          )}
         </p>
       </div>
     );

@@ -30,6 +30,7 @@ import {
   isStarlinkMiniCompatible,
   isDomesticLinkAlternative,
 } from "./Constants";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface RouterDetailsModalProps {
   router: RouterData | null;
@@ -39,6 +40,7 @@ interface RouterDetailsModalProps {
 
 export const RouterDetailsModal = component$<RouterDetailsModalProps>(
   (props) => {
+    const locale = useMessageLocale();
     const { router, isOpen, onClose$ } = props;
     const currentImageIndex = useSignal(0);
     const activeTab = useSignal("overview");
@@ -103,12 +105,12 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
     const tabs = [
       {
         id: "overview",
-        label: $localize`Overview`,
+        label: semanticMessages.router_details_overview({}, { locale }),
         icon: <LuInfo class="h-4 w-4" />,
       },
       {
         id: "specs",
-        label: $localize`Specifications`,
+        label: semanticMessages.router_details_specifications({}, { locale }),
         icon: <LuCpu class="h-4 w-4" />,
       },
     ];
@@ -132,7 +134,8 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                 </div>
                 <div>
                   <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {router?.title || "Router Details"}
+                    {router?.title ||
+                      semanticMessages.router_details_title({}, { locale })}
                   </h2>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     {router?.description}
@@ -142,7 +145,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
               <button
                 onClick$={onClose$}
                 class="inline-flex items-center justify-center rounded-xl p-2 text-gray-400 transition-all duration-200 hover:bg-gray-100/50 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500/50 dark:hover:bg-gray-800/50 dark:hover:text-gray-300"
-                aria-label="Close modal"
+                aria-label={semanticMessages.router_details_close(
+                  {},
+                  { locale },
+                )}
                 type="button"
               >
                 <svg
@@ -214,7 +220,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                       class="absolute left-2 top-1/2 -translate-y-1/2 transform rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
                                       onClick$={handlePrevImage}
                                       type="button"
-                                      aria-label="Previous image"
+                                      aria-label={semanticMessages.router_details_previous_image(
+                                        {},
+                                        { locale },
+                                      )}
                                     >
                                       <LuChevronLeft class="h-3 w-3" />
                                     </button>
@@ -222,7 +231,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                       class="absolute right-2 top-1/2 -translate-y-1/2 transform rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
                                       onClick$={handleNextImage}
                                       type="button"
-                                      aria-label="Next image"
+                                      aria-label={semanticMessages.router_details_next_image(
+                                        {},
+                                        { locale },
+                                      )}
                                     >
                                       <LuChevronRight class="h-3 w-3" />
                                     </button>
@@ -234,7 +246,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                   class="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
                                   onClick$={handleFullscreenToggle}
                                   type="button"
-                                  aria-label="View full size"
+                                  aria-label={semanticMessages.router_details_view_full_size(
+                                    {},
+                                    { locale },
+                                  )}
                                 >
                                   <LuExpand class="h-3 w-3" />
                                 </button>
@@ -270,7 +285,12 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                             ) : (
                               <div class="flex h-full flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400">
                                 <LuImage class="mx-auto mb-1 h-8 w-8" />
-                                <p class="text-xs">No images available</p>
+                                <p class="text-xs">
+                                  {semanticMessages.router_details_no_images(
+                                    {},
+                                    { locale },
+                                  )}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -278,7 +298,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                           {/* Key Features */}
                           <div class="rounded-xl bg-gradient-to-br from-primary-50 to-secondary-50 p-6 dark:from-primary-950/50 dark:to-secondary-950/50">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                              Key Features
+                              {semanticMessages.router_details_key_features(
+                                {},
+                                { locale },
+                              )}
                             </h3>
                             <div class="grid gap-3">
                               {router.features.slice(0, 4).map((feature) => (
@@ -312,12 +335,18 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                           {/* Quick Specs */}
                           <div class="rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 p-6 dark:from-blue-950/50 dark:to-purple-950/50">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                              Quick Specs
+                              {semanticMessages.router_details_quick_specs(
+                                {},
+                                { locale },
+                              )}
                             </h3>
                             <div class="grid grid-cols-2 gap-4">
                               <div>
                                 <div class="text-xs text-gray-600 dark:text-gray-400">
-                                  CPU
+                                  {semanticMessages.router_details_cpu(
+                                    {},
+                                    { locale },
+                                  )}
                                 </div>
                                 <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                   {router.specs.CPU}
@@ -333,7 +362,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               </div>
                               <div>
                                 <div class="text-xs text-gray-600 dark:text-gray-400">
-                                  Ports
+                                  {semanticMessages.router_details_ports(
+                                    {},
+                                    { locale },
+                                  )}
                                 </div>
                                 <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                   {router.specs.Ports}
@@ -341,7 +373,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               </div>
                               <div>
                                 <div class="text-xs text-gray-600 dark:text-gray-400">
-                                  Wi-Fi
+                                  {semanticMessages.router_details_wifi(
+                                    {},
+                                    { locale },
+                                  )}
                                 </div>
                                 <div class="text-sm font-semibold text-gray-900 dark:text-white">
                                   {router.specs["Wi-Fi"]}
@@ -354,7 +389,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                         {/* Right Column - Special Capabilities */}
                         <div class="h-full rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 p-6 dark:from-emerald-950/50 dark:to-teal-950/50">
                           <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Special Capabilities
+                            {semanticMessages.router_details_special_capabilities(
+                              {},
+                              { locale },
+                            )}
                           </h3>
                           <div class="grid gap-4">
                             {/* Starlink Mini Compatibility */}
@@ -371,7 +409,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    Starlink Mini Dish
+                                    {semanticMessages.router_details_starlink_mini_title(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                   {isStarlinkMiniCompatible(router) ? (
                                     <LuCheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -381,8 +422,14 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                   {isStarlinkMiniCompatible(router)
-                                    ? "Perfect for Starlink Mini dish with LTE connectivity"
-                                    : "Requires LTE capability for Starlink Mini compatibility"}
+                                    ? semanticMessages.router_details_starlink_mini_yes(
+                                        {},
+                                        { locale },
+                                      )
+                                    : semanticMessages.router_details_starlink_mini_no(
+                                        {},
+                                        { locale },
+                                      )}
                                 </p>
                               </div>
                             </div>
@@ -401,7 +448,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    No Domestic Link
+                                    {semanticMessages.router_details_no_domestic_link_title(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                   {isDomesticLinkAlternative(router) ? (
                                     <LuCheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -411,8 +461,14 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                   {isDomesticLinkAlternative(router)
-                                    ? "Great for areas without domestic DSL/cable with mobile connectivity"
-                                    : "Requires mobile connectivity for areas without domestic links"}
+                                    ? semanticMessages.router_details_no_domestic_link_yes(
+                                        {},
+                                        { locale },
+                                      )
+                                    : semanticMessages.router_details_no_domestic_link_no(
+                                        {},
+                                        { locale },
+                                      )}
                                 </p>
                               </div>
                             </div>
@@ -431,7 +487,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    Docker Ready
+                                    {semanticMessages.router_details_docker_ready_title(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                   {isDockerCapable(router) ? (
                                     <LuCheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -441,8 +500,14 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                   {isDockerCapable(router)
-                                    ? "Sufficient CPU and RAM for running Docker containers and applications"
-                                    : "Requires 1GB+ RAM and quad-core CPU for reliable Docker operation"}
+                                    ? semanticMessages.router_details_docker_ready_yes(
+                                        {},
+                                        { locale },
+                                      )
+                                    : semanticMessages.router_details_docker_ready_no(
+                                        {},
+                                        { locale },
+                                      )}
                                 </p>
                               </div>
                             </div>
@@ -461,7 +526,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    USB Port
+                                    {semanticMessages.router_details_usb_port_title(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                   {hasUSBPort(router) ? (
                                     <LuCheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -471,8 +539,14 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                   {hasUSBPort(router)
-                                    ? "USB port available for external storage, 3G/4G modems, or other devices"
-                                    : "No USB port available for external devices"}
+                                    ? semanticMessages.router_details_usb_port_yes(
+                                        {},
+                                        { locale },
+                                      )
+                                    : semanticMessages.router_details_usb_port_no(
+                                        {},
+                                        { locale },
+                                      )}
                                 </p>
                               </div>
                             </div>
@@ -491,7 +565,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                               <div class="flex-1">
                                 <div class="flex items-center gap-2">
                                   <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    2.5G Ethernet
+                                    {semanticMessages.router_details_two_five_g_title(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                   {has25GigPort(router) ? (
                                     <LuCheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -501,8 +578,14 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                                 </div>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                   {has25GigPort(router)
-                                    ? "2.5 Gigabit Ethernet port for high-speed wired connections and future-proofing"
-                                    : "Standard Gigabit Ethernet ports only"}
+                                    ? semanticMessages.router_details_two_five_g_yes(
+                                        {},
+                                        { locale },
+                                      )
+                                    : semanticMessages.router_details_two_five_g_no(
+                                        {},
+                                        { locale },
+                                      )}
                                 </p>
                               </div>
                             </div>
@@ -518,7 +601,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                       <div class="h-full rounded-xl border border-gray-200/50 bg-white dark:border-gray-700/50 dark:bg-gray-800">
                         <div class="p-6">
                           <h3 class="mb-6 text-lg font-semibold text-gray-900 dark:text-white">
-                            Technical Specifications
+                            {semanticMessages.router_details_technical_specifications(
+                              {},
+                              { locale },
+                            )}
                           </h3>
                           <div class="grid gap-4">
                             {Object.entries(router.specs).map(
@@ -545,7 +631,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
               ) : (
                 <div class="flex h-full items-center justify-center">
                   <p class="text-gray-500 dark:text-gray-400">
-                    No router selected
+                    {semanticMessages.router_details_no_router_selected(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               )}
@@ -564,7 +653,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                 class="absolute right-4 top-4 z-[10001] rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
                 onClick$={handleFullscreenClose}
                 type="button"
-                aria-label="Close fullscreen"
+                aria-label={semanticMessages.router_details_close_fullscreen(
+                  {},
+                  { locale },
+                )}
               >
                 <LuX class="h-5 w-5" />
               </button>
@@ -576,7 +668,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                     class="absolute left-4 top-1/2 z-[10001] -translate-y-1/2 transform rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
                     onClick$={handlePrevImage}
                     type="button"
-                    aria-label="Previous image"
+                    aria-label={semanticMessages.router_details_previous_image(
+                      {},
+                      { locale },
+                    )}
                   >
                     <LuChevronLeft class="h-6 w-6" />
                   </button>
@@ -584,7 +679,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                     class="absolute right-4 top-1/2 z-[10001] -translate-y-1/2 transform rounded-full bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
                     onClick$={handleNextImage}
                     type="button"
-                    aria-label="Next image"
+                    aria-label={semanticMessages.router_details_next_image(
+                      {},
+                      { locale },
+                    )}
                   >
                     <LuChevronRight class="h-6 w-6" />
                   </button>
@@ -624,7 +722,10 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
                             : "bg-white/40 hover:bg-white/60"
                         }`}
                         type="button"
-                        aria-label={`Go to image ${index + 1}`}
+                        aria-label={semanticMessages.router_details_go_to_image(
+                          { imageNumber: String(index + 1) },
+                          { locale },
+                        )}
                       />
                     ))}
                   </div>
@@ -634,8 +735,20 @@ export const RouterDetailsModal = component$<RouterDetailsModalProps>(
               {/* Instructions */}
               <div class="absolute bottom-4 right-4 text-sm text-white/70">
                 <div class="space-y-1 text-right">
-                  <div>ESC to close</div>
-                  {router.images.length > 1 && <div>← → to navigate</div>}
+                  <div>
+                    {semanticMessages.router_details_escape_to_close(
+                      {},
+                      { locale },
+                    )}
+                  </div>
+                  {router.images.length > 1 && (
+                    <div>
+                      {semanticMessages.router_details_arrow_to_navigate(
+                        {},
+                        { locale },
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

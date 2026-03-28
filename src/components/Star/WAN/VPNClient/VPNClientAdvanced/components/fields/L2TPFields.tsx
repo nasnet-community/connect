@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { L2tpClientConfig } from "~/components/Star/StarContext/Utils/VPNClientType";
 import { Input, ErrorMessage } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface L2TPFieldsProps {
   config: Partial<L2tpClientConfig>;
@@ -11,6 +12,7 @@ interface L2TPFieldsProps {
 
 export const L2TPFields = component$<L2TPFieldsProps>((props) => {
   const { config, errors = {}, onUpdate$ } = props;
+  const locale = useMessageLocale();
 
   return (
     <div class="space-y-4">
@@ -18,7 +20,7 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Server Address`} *
+            {semanticMessages.vpn_l2tp_server_address({}, { locale })} *
           </label>
           <Input
             type="text"
@@ -41,7 +43,7 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
 
         <div>
           <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`IPSec Secret`}
+            {semanticMessages.vpn_l2tp_ipsec_pre_shared_secret({}, { locale })}
           </label>
           <Input
             type="text"
@@ -56,7 +58,10 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
                 UseIPsec: value.trim().length > 0,
               });
             }}
-            placeholder="Pre-shared key"
+            placeholder={semanticMessages.vpn_ikev2_pre_shared_key(
+              {},
+              { locale },
+            )}
           />
         </div>
       </div>
@@ -65,7 +70,7 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Username`} *
+            {semanticMessages.shared_username({}, { locale })} *
           </label>
           <Input
             type="text"
@@ -78,7 +83,12 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
                 } as any,
               });
             }}
-            placeholder="Your username"
+            placeholder={semanticMessages.vpn_client_advanced_your_username(
+              {},
+              {
+                locale,
+              },
+            )}
             validation={errors.Username ? "invalid" : "default"}
           />
           {errors.Username && <ErrorMessage message={errors.Username} />}
@@ -86,7 +96,7 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
 
         <div>
           <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-            {$localize`Password`} *
+            {semanticMessages.vpn_openvpn_password({}, { locale })} *
           </label>
           <Input
             type="text"
@@ -102,7 +112,12 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
                 } as any,
               });
             }}
-            placeholder="Your password"
+            placeholder={semanticMessages.vpn_client_advanced_your_password(
+              {},
+              {
+                locale,
+              },
+            )}
             validation={errors.Password ? "invalid" : "default"}
           />
           {errors.Password && <ErrorMessage message={errors.Password} />}

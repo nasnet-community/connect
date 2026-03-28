@@ -1,25 +1,30 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const logo = `${import.meta.env.BASE_URL}images/logo.jpg`;
 
-export const FooterBrand = component$(() => (
-  <div class="flex flex-col items-center space-y-6 text-center">
-    <div class="flex items-center gap-3">
-      <div class="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white dark:border-gray-800">
-        <img
-          src={logo}
-          alt={$localize`Stellar Logo`}
-          width={40}
-          height={40}
-          class="h-full w-full object-cover"
-        />
+export const FooterBrand = component$(() => {
+  const locale = useMessageLocale();
+
+  return (
+    <div class="flex flex-col items-center space-y-6 text-center">
+      <div class="flex items-center gap-3">
+        <div class="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white dark:border-gray-800">
+          <img
+            src={logo}
+            alt={semanticMessages.logo_alt({}, { locale })}
+            width={40}
+            height={40}
+            class="h-full w-full object-cover"
+          />
+        </div>
+        <span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-xl font-medium tracking-wider text-transparent">
+          {semanticMessages.brand_name({}, { locale })}
+        </span>
       </div>
-      <span class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-xl font-medium tracking-wider text-transparent">
-        {$localize`NASNET Connect`}
-      </span>
+      <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-md text-sm">
+        {semanticMessages.footer_brand_tagline({}, { locale })}
+      </p>
     </div>
-    <p class="text-text-secondary dark:text-text-dark-secondary mx-auto max-w-md text-sm">
-      {$localize`Empowering the future through innovative solutions and cutting-edge technology.`}
-    </p>
-  </div>
-));
+  );
+});

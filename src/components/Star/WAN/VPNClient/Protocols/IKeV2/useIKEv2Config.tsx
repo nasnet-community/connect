@@ -11,6 +11,7 @@ import type {
 } from "../../../../StarContext/Utils/VPNClientType";
 import { useNetworks } from "~/utils/useNetworks";
 import { useSubnets } from "~/utils/useSubnets";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface UseIKEv2ConfigResult {
   serverAddress: { value: string };
@@ -42,6 +43,7 @@ export interface UseIKEv2ConfigResult {
 export const useIKEv2Config = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseIKEv2ConfigResult => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const networks = useNetworks();
   const subnets = useSubnets();
@@ -295,7 +297,10 @@ export const useIKEv2Config = (
       if (onIsValidChange$) {
         await onIsValidChange$(false);
       }
-      errorMessage.value = $localize`Missing required fields: ${emptyFields.join(", ")}`;
+      errorMessage.value = semanticMessages.vpn_client_missing_required_fields(
+        { fields: emptyFields.join(", ") },
+        { locale },
+      );
       return;
     }
 

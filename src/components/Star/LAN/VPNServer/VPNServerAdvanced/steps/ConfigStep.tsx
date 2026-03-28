@@ -19,6 +19,7 @@ import { CertificateStep } from "./CertificateStep";
 import type { useOpenVPNServer } from "../../Protocols/OpenVPN/useOpenVPNServer";
 import type { useWireguardServer } from "../../Protocols/Wireguard/useWireguardServer";
 import type { useCertificate } from "../useCertificate";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ConfigStepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -31,6 +32,7 @@ interface ConfigStepProps {
 
 export const ConfigStep = component$<ConfigStepProps>(
   ({ enabledProtocols, vpnHooks, certificateHook }) => {
+    const locale = useMessageLocale();
     const context = useStepperContext(VPNServerContextId);
     const state = useStore({
       initialProcessingDone: false,
@@ -69,7 +71,9 @@ export const ConfigStep = component$<ConfigStepProps>(
     // Find existing Certificate step in stepper
     const findExistingCertificateStep = $(() => {
       const stepIndex = context.steps.value.findIndex(
-        (step) => step.title === $localize`Certificate Configuration`,
+        (step) =>
+          step.title ===
+          semanticMessages.vpn_server_certificate_title({}, { locale }),
       );
       return stepIndex >= 0 ? context.steps.value[stepIndex].id : -1;
     });
@@ -111,8 +115,18 @@ export const ConfigStep = component$<ConfigStepProps>(
       const stepId = await context.addStep$(
         {
           id: Date.now() + 1000, // Unique ID
-          title: $localize`Certificate Configuration`,
-          description: $localize`Configure certificates for VPN protocols that require them`,
+          title: semanticMessages.vpn_server_certificate_title(
+            {},
+            {
+              locale,
+            },
+          ),
+          description: semanticMessages.vpn_server_certificate_step_description(
+            {},
+            {
+              locale,
+            },
+          ),
           component: CertificateStepWrapper$,
           isComplete: true, // Mark as complete by default
         },
@@ -381,10 +395,20 @@ export const ConfigStep = component$<ConfigStepProps>(
           <div class="flex flex-col items-center justify-center space-y-4 py-8">
             <HiCogOutline class="h-12 w-12 text-primary-500 dark:text-primary-400" />
             <h2 class="text-center text-xl font-semibold text-gray-900 dark:text-white">
-              {$localize`VPN Protocol Configuration`}
+              {semanticMessages.vpn_server_protocol_config_title(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h2>
             <p class="max-w-md text-center text-gray-600 dark:text-gray-400">
-              {$localize`No VPN protocols are currently enabled. Return to the previous step to select at least one protocol to configure.`}
+              {semanticMessages.vpn_server_protocol_config_empty(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
           </div>
         )}

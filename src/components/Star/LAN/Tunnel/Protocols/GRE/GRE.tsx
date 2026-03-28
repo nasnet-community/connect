@@ -7,8 +7,10 @@ import {
 import { useGRE } from "./useGRE";
 import type { GreTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
 import { Input } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GREProtocol = component$(() => {
+  const locale = useMessageLocale();
   const { greTunnels, expandedSections, toggleSection, updateTunnelField } =
     useGRE();
 
@@ -31,7 +33,9 @@ export const GREProtocol = component$(() => {
       >
         <div class="flex items-center gap-3">
           <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{$localize`GRE Tunnels`}</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {semanticMessages.tunnel_step_gre({}, { locale })}
+          </h3>
         </div>
         {expandedSections.gre ? (
           <HiChevronUpOutline class="h-5 w-5 text-gray-500" />
@@ -49,14 +53,17 @@ export const GREProtocol = component$(() => {
                 class="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700"
               >
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
-                  {$localize`GRE Tunnel ${index + 1}`}
+                  {semanticMessages.tunnel_gre_item_title(
+                    { index: String(index + 1) },
+                    { locale },
+                  )}
                 </h4>
 
                 <div class="grid gap-4 md:grid-cols-2">
                   {/* Name */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Name`} *
+                      {semanticMessages.tunnel_field_name({}, { locale })} *
                     </label>
                     <Input
                       type="text"
@@ -64,14 +71,23 @@ export const GREProtocol = component$(() => {
                       onInput$={(event: Event, value: string) =>
                         updateTunnelField$(index, "name", value)
                       }
-                      placeholder={$localize`Enter tunnel name`}
+                      placeholder={semanticMessages.tunnel_field_name_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* Remote Address */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Remote Address`} *
+                      {semanticMessages.tunnel_field_remote_address(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}{" "}
+                      *
                     </label>
                     <Input
                       type="text"
@@ -79,14 +95,22 @@ export const GREProtocol = component$(() => {
                       onInput$={(event: Event, value: string) =>
                         updateTunnelField$(index, "remoteAddress", value)
                       }
-                      placeholder={$localize`Enter remote address`}
+                      placeholder={semanticMessages.tunnel_field_remote_address_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* IPsec Secret */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`IPsec Secret`}
+                      {semanticMessages.tunnel_field_ipsec_secret(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </label>
                     <Input
                       type="password"
@@ -94,7 +118,10 @@ export const GREProtocol = component$(() => {
                       onInput$={(event: Event, value: string) =>
                         updateTunnelField$(index, "ipsecSecret", value)
                       }
-                      placeholder={$localize`Enter IPsec secret (optional)`}
+                      placeholder={semanticMessages.tunnel_field_ipsec_secret_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
                 </div>

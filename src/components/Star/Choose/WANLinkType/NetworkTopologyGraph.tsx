@@ -7,6 +7,7 @@ import {
   LuServer,
   LuX,
 } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface NetworkTopologyNode {
   type: "laptop" | "wifi" | "globe" | "globe2" | "server";
@@ -31,10 +32,11 @@ export interface NetworkTopologyGraphProps {
 
 export const NetworkTopologyGraph = component$(
   (props: NetworkTopologyGraphProps) => {
+    const locale = useMessageLocale();
     const {
       nodes,
       connections,
-      title = $localize`Network Topology`,
+      title = semanticMessages.star_network_topology_title({}, { locale }),
       showDomesticLegend = true,
     } = props;
 
@@ -180,21 +182,34 @@ export const NetworkTopologyGraph = component$(
                 <div class="flex items-center">
                   <div class="mr-1.5 h-2.5 w-2.5 rounded-full bg-amber-500 dark:bg-secondary-500"></div>
                   <span class="text-xs text-amber-800 dark:text-secondary-300">
-                    {$localize`Traffic Path`}
+                    {semanticMessages.star_network_topology_traffic_path(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                 </div>
                 {showDomesticLegend && (
                   <div class="flex items-center">
                     <div class="mr-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500"></div>
                     <span class="text-xs text-amber-800 dark:text-emerald-300">
-                      {$localize`Domestic`}
+                      {semanticMessages.star_network_topology_domestic(
+                        {},
+                        { locale },
+                      )}
                     </span>
                   </div>
                 )}
                 <div class="flex items-center">
                   <div class="mr-1.5 h-2.5 w-2.5 rounded-full bg-purple-500"></div>
                   <span class="text-xs text-amber-800 dark:text-purple-300">
-                    {$localize`Foreign`}
+                    {semanticMessages.star_network_topology_foreign(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                 </div>
               </div>
@@ -206,7 +221,12 @@ export const NetworkTopologyGraph = component$(
                 event.stopPropagation();
                 handleCollapse();
               })}
-              aria-label={$localize`Close expanded network graph`}
+              aria-label={semanticMessages.star_network_topology_close(
+                {},
+                {
+                  locale,
+                },
+              )}
               tabIndex={0}
               type="button"
             >

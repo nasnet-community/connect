@@ -16,6 +16,7 @@ import { RouterDetailsModal } from "./RouterDetailsModal";
 import { CustomRouterModal } from "./CustomRouterModal";
 import { categorizeRouters } from "./RouterCategories";
 import { RouterSelectionSection } from "./RouterSelectionSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface RouterModelProps {
   isComplete?: boolean;
@@ -23,6 +24,7 @@ interface RouterModelProps {
 }
 
 export const RouterModel = component$((props: RouterModelProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const masterRouters = getMasterRouters();
   const selectedModels = starContext.state.Choose.RouterModels.filter(
@@ -37,8 +39,8 @@ export const RouterModel = component$((props: RouterModelProps) => {
       model: rm.Model,
       title: rm.Model,
       description: rm.isCHR
-        ? $localize`Custom Cloud Hosted Router`
-        : $localize`Custom Router`,
+        ? semanticMessages.router_custom_chr_title({}, { locale })
+        : semanticMessages.router_custom_title({}, { locale }),
       icon: "router",
       specs: {
         CPU: rm.cpuArch || "Custom",
@@ -153,16 +155,22 @@ export const RouterModel = component$((props: RouterModelProps) => {
   return (
     <>
       <RouterSelectionSection
-        title={$localize`Choose Your Router`}
+        title={semanticMessages.router_model_choose_title({}, { locale })}
         categories={routerCategories}
         activeCategory={activeTab.value}
         selectionStateKey={selectedModels.join("|")}
         onSelectCategory$={$((categoryId: string) => {
           activeTab.value = categoryId;
         })}
-        customCardTitle={$localize`Custom Router`}
-        customCardDescription={$localize`Configure your own router with custom interfaces and specifications`}
-        customCardTags={[$localize`Flexible`, $localize`CHR Support`]}
+        customCardTitle={semanticMessages.router_custom_title({}, { locale })}
+        customCardDescription={semanticMessages.router_model_custom_description(
+          {},
+          { locale },
+        )}
+        customCardTags={[
+          semanticMessages.router_model_tag_flexible({}, { locale }),
+          semanticMessages.router_model_tag_chr_support({}, { locale }),
+        ]}
         onCustomCardClick$={$(() => {
           isCustomRouterModalOpen.value = true;
         })}

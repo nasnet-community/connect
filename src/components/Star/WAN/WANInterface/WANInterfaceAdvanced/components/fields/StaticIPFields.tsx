@@ -1,6 +1,7 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
 import type { StaticIPConfig } from "../../types";
 import { Input, FormField } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface StaticIPFieldsProps {
   config?: StaticIPConfig;
@@ -16,6 +17,8 @@ export interface StaticIPFieldsProps {
 
 export const StaticIPFields = component$<StaticIPFieldsProps>(
   ({ config, onUpdate$, errors }) => {
+    const locale = useMessageLocale();
+
     const updateField = $((field: keyof StaticIPConfig, value: string) => {
       onUpdate$({
         ipAddress: config?.ipAddress || "",
@@ -29,12 +32,12 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
     return (
       <div class="space-y-4 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {$localize`Static IP Settings`}
+          {semanticMessages.wan_advanced_static_ip_settings({}, { locale })}
         </h4>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label={$localize`IP Address`}
+            label={semanticMessages.wan_advanced_ip_address({}, { locale })}
             required
             error={errors?.ipAddress?.[0]}
           >
@@ -49,7 +52,7 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
           </FormField>
 
           <FormField
-            label={$localize`Subnet Mask`}
+            label={semanticMessages.wan_advanced_subnet_mask({}, { locale })}
             required
             error={errors?.subnet?.[0]}
           >
@@ -64,7 +67,7 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
           </FormField>
 
           <FormField
-            label={$localize`Gateway`}
+            label={semanticMessages.wan_advanced_gateway({}, { locale })}
             required
             error={errors?.gateway?.[0]}
           >
@@ -79,7 +82,7 @@ export const StaticIPFields = component$<StaticIPFieldsProps>(
           </FormField>
 
           <FormField
-            label={$localize`Primary DNS`}
+            label={semanticMessages.wan_advanced_primary_dns({}, { locale })}
             required
             error={errors?.DNS?.[0]}
           >

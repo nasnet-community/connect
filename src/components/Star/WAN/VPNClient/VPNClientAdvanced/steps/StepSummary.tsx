@@ -6,6 +6,7 @@ import type {
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { VPNBox } from "../components/VPNBox/VPNBox";
 import { VPNBoxContent } from "../components/VPNBox/VPNBoxContent";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface StepSummaryProps {
   wizardState: VPNClientAdvancedState;
@@ -15,6 +16,7 @@ export interface StepSummaryProps {
 
 export const StepSummary = component$<StepSummaryProps>(
   ({ wizardState, wizardActions }) => {
+    const locale = useMessageLocale();
     const editingVPN = useSignal<string | null>(null);
     const editedName = useSignal<string>("");
 
@@ -109,10 +111,15 @@ export const StepSummary = component$<StepSummaryProps>(
         {/* Header */}
         <div>
           <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {$localize`VPN Configuration Summary`}
+            {semanticMessages.vpn_client_advanced_summary_title({}, { locale })}
           </h2>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {$localize`Review your VPN configurations. You can make minor edits before applying.`}
+            {semanticMessages.vpn_client_advanced_summary_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </div>
 
@@ -133,7 +140,10 @@ export const StepSummary = component$<StepSummaryProps>(
               </svg>
               <div class="ml-3">
                 <p class="text-sm text-red-700 dark:text-red-300">
-                  {$localize`Please fix validation errors before applying configuration`}
+                  {semanticMessages.vpn_client_advanced_fix_validation_before_apply(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>
@@ -154,7 +164,12 @@ export const StepSummary = component$<StepSummaryProps>(
               </svg>
               <div class="ml-3">
                 <p class="text-sm text-green-700 dark:text-green-300">
-                  {$localize`All configurations are valid and ready to apply`}
+                  {semanticMessages.vpn_client_advanced_ready_to_apply(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </p>
               </div>
             </div>
@@ -209,7 +224,7 @@ export const StepSummary = component$<StepSummaryProps>(
                           <button
                             onClick$={() => saveEdit(vpn.id)}
                             class="p-1 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
-                            title={$localize`Save`}
+                            title={semanticMessages.shared_save({}, { locale })}
                           >
                             <svg
                               class="h-4 w-4"
@@ -228,7 +243,10 @@ export const StepSummary = component$<StepSummaryProps>(
                           <button
                             onClick$={cancelEdit}
                             class="p-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                            title={$localize`Cancel`}
+                            title={semanticMessages.shared_cancel(
+                              {},
+                              { locale },
+                            )}
                           >
                             <svg
                               class="h-4 w-4"
@@ -253,7 +271,10 @@ export const StepSummary = component$<StepSummaryProps>(
                           <button
                             onClick$={() => startEdit(vpn.id, vpn.name)}
                             class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                            title={$localize`Edit name`}
+                            title={semanticMessages.vpn_client_advanced_edit_name(
+                              {},
+                              { locale },
+                            )}
                           >
                             <svg
                               class="h-4 w-4"
@@ -291,7 +312,10 @@ export const StepSummary = component$<StepSummaryProps>(
                   {vpn.assignedLink && (
                     <div class="border-t border-gray-200 pl-11 pt-2 dark:border-gray-700">
                       <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {$localize`Assigned to: ${vpn.assignedLink}`}
+                        {semanticMessages.vpn_client_advanced_assigned_to(
+                          { link: vpn.assignedLink },
+                          { locale },
+                        )}
                       </p>
                     </div>
                   )}
@@ -304,7 +328,10 @@ export const StepSummary = component$<StepSummaryProps>(
         {/* Info message */}
         <div class="mt-4 rounded-lg bg-info-50 p-4 dark:bg-info-900/20">
           <p class="text-sm text-info-700 dark:text-info-300">
-            {$localize`Review your configuration above. When ready, click "Save & Complete" to apply the VPN settings to your router configuration.`}
+            {semanticMessages.vpn_client_advanced_review_save_complete_hint(
+              {},
+              { locale },
+            )}
           </p>
         </div>
       </div>

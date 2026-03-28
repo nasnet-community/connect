@@ -6,8 +6,10 @@ import { SectionTitle } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 import { Input, Alert } from "~/components/Core";
 import type { BaseNetworksType } from "~/components/Star/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const ZeroTierServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const { advancedFormState } = useZeroTierServer();
 
   // Local state for form fields
@@ -29,28 +31,42 @@ export const ZeroTierServerAdvanced = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`ZeroTier Server`}
+      title={semanticMessages.zerotier_server_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
         <div>
-          <SectionTitle title={$localize`Network Configuration`} />
+          <SectionTitle
+            title={semanticMessages.zerotier_network_configuration(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
               updateNetwork$(network as BaseNetworksType);
             }}
-            label={$localize`Network`}
+            label={semanticMessages.vpn_server_network_label({}, { locale })}
           />
         </div>
 
         {/* ZeroTier Network ID */}
         <div>
-          <SectionTitle title={$localize`ZeroTier Configuration`} />
+          <SectionTitle
+            title={semanticMessages.zerotier_configuration_title(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`ZeroTier Network ID`}
+              {semanticMessages.zerotier_network_id_label({}, { locale })}
             </label>
             <Input
               type="text"
@@ -58,10 +74,13 @@ export const ZeroTierServerAdvanced = component$(() => {
               onInput$={(e: any) => {
                 updateNetworkId$(e.target.value);
               }}
-              placeholder="Enter 16-digit network ID"
+              placeholder={semanticMessages.zerotier_network_id_placeholder(
+                {},
+                { locale },
+              )}
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              {$localize`Enter your 16-digit ZeroTier network ID from your ZeroTier Central account.`}
+              {semanticMessages.zerotier_network_id_help({}, { locale })}
             </p>
           </div>
         </div>
@@ -69,17 +88,27 @@ export const ZeroTierServerAdvanced = component$(() => {
         {/* ZeroTier Package Warning */}
         <Alert
           status="warning"
-          title={$localize`Package Installation Required`}
+          title={semanticMessages.zerotier_package_required_title(
+            {},
+            {
+              locale,
+            },
+          )}
         >
           <p class="text-sm">
-            {$localize`You must install the ZeroTier package on your MikroTik router before importing this configuration. Visit the MikroTik package repository to download and install the zerotier package.`}
+            {semanticMessages.zerotier_package_required_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </Alert>
 
         {/* ZeroTier Information */}
         <div class="rounded-lg bg-purple-50 p-4 dark:bg-purple-900/20">
           <p class="text-sm text-purple-800 dark:text-purple-200">
-            {$localize`ZeroTier creates a secure, peer-to-peer virtual network that works anywhere.`}
+            {semanticMessages.zerotier_information({}, { locale })}
           </p>
         </div>
       </div>

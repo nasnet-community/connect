@@ -1,10 +1,15 @@
 import { component$ } from "@builder.io/qwik";
 import type { StateHeaderProps } from "./type";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const StateHeader = component$((props: StateHeaderProps) => {
+  const locale = useMessageLocale();
+
   return (
     <div class="relative flex items-center border-b border-border/20 p-6 dark:border-border-dark/20">
-      <h3 class="absolute left-1/2 -translate-x-1/2 text-lg font-medium">{$localize`State History`}</h3>
+      <h3 class="absolute left-1/2 -translate-x-1/2 text-lg font-medium">
+        {semanticMessages.state_viewer_state_history({}, { locale })}
+      </h3>
 
       <button
         onClick$={props.onClose$}

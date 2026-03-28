@@ -5,6 +5,7 @@ import type { PptpClientConfig } from "../../../../StarContext/Utils/VPNClientTy
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
 import { useSubnets } from "~/utils/useSubnets";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface UsePPTPConfigResult {
   serverAddress: { value: string };
@@ -28,6 +29,7 @@ export interface UsePPTPConfigResult {
 export const usePPTPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UsePPTPConfigResult => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const networks = useNetworks();
   const subnets = useSubnets();
@@ -141,7 +143,10 @@ export const usePPTPConfig = (
       if (onIsValidChange$) {
         await onIsValidChange$(false);
       }
-      errorMessage.value = $localize`Missing required fields: ${emptyFields.join(", ")}`;
+      errorMessage.value = semanticMessages.vpn_client_missing_required_fields(
+        { fields: emptyFields.join(", ") },
+        { locale },
+      );
       return;
     }
 

@@ -14,6 +14,7 @@ import {
   HiPlusCircleOutline,
   HiTrashOutline,
 } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface OpenVPNServerAdvancedProps {
   hook: ReturnType<typeof useOpenVPNServer>;
@@ -21,6 +22,7 @@ interface OpenVPNServerAdvancedProps {
 
 export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
   ({ hook }) => {
+    const locale = useMessageLocale();
     const {
       draftConfigs,
       activeTabIndex,
@@ -58,14 +60,16 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
       <Card hasHeader>
         <div q:slot="header" class="flex items-center gap-2">
           <HiServerOutline class="h-5 w-5" />
-          <span class="font-medium">{$localize`OpenVPN Server`}</span>
+          <span class="font-medium">
+            {semanticMessages.vpn_server_openvpn_title({}, { locale })}
+          </span>
         </div>
 
         <div class="space-y-6">
           {/* Interface Management */}
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-              {$localize`OpenVPN Interfaces`}
+              {semanticMessages.vpn_server_openvpn_interfaces({}, { locale })}
             </h3>
             <div class="flex items-center gap-2">
               <ServerButton
@@ -74,7 +78,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
                 class="flex items-center gap-1"
               >
                 <HiPlusCircleOutline class="h-4 w-4" />
-                {$localize`Add Interface`}
+                {semanticMessages.vpn_server_add_interface({}, { locale })}
               </ServerButton>
               {draftConfigs.value.length > 1 && (
                 <ServerButton
@@ -84,7 +88,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
                   class="flex items-center gap-1"
                 >
                   <HiTrashOutline class="h-4 w-4" />
-                  {$localize`Remove`}
+                  {semanticMessages.vpn_server_remove({}, { locale })}
                 </ServerButton>
               )}
             </div>
@@ -111,7 +115,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
               onChange$={(event: Event, value: string) => {
                 updateName$(`openvpn-${value || "1"}`);
               }}
-              label={$localize`Interface Name`}
+              label={semanticMessages.vpn_server_interface_name({}, { locale })}
               placeholder="1"
             />
 
@@ -121,11 +125,13 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
               onNetworkChange$={(network) => {
                 updateVSNetwork$(network as any);
               }}
-              label={$localize`Network`}
+              label={semanticMessages.vpn_server_network_label({}, { locale })}
             />
 
             {/* Protocol */}
-            <FormField label={$localize`Protocol`}>
+            <FormField
+              label={semanticMessages.vpn_server_protocol_label({}, { locale })}
+            >
               <Select
                 options={protocolOptions}
                 value={currentDraft.value.protocol}
@@ -143,7 +149,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
               <>
                 {/* TCP Port */}
                 <FormField
-                  label={$localize`TCP Port`}
+                  label={semanticMessages.vpn_server_tcp_port({}, { locale })}
                   helperText={
                     portError.value && portError.value.includes("TCP")
                       ? portError.value
@@ -170,7 +176,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
 
                 {/* UDP Port */}
                 <FormField
-                  label={$localize`UDP Port`}
+                  label={semanticMessages.vpn_server_udp_port({}, { locale })}
                   helperText={
                     portError.value && portError.value.includes("UDP")
                       ? portError.value
@@ -198,7 +204,7 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
             ) : (
               /* Single Port for TCP or UDP */
               <FormField
-                label={$localize`Port`}
+                label={semanticMessages.vpn_server_port({}, { locale })}
                 helperText={portError.value ? portError.value : undefined}
               >
                 <Input
@@ -220,10 +226,16 @@ export const OpenVPNServerAdvanced = component$<OpenVPNServerAdvancedProps>(
           {/* Certificate Configuration Note */}
           <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
             <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-              {$localize`Certificate Configuration`}
+              {semanticMessages.vpn_server_certificate_configuration_title(
+                {},
+                { locale },
+              )}
             </h4>
             <p class="text-sm text-blue-700 dark:text-blue-300">
-              {$localize`Server certificates and security settings are configured in the Certificate step. This ensures consistent certificate management across all protocols that require them.`}
+              {semanticMessages.vpn_server_certificate_configuration_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
         </div>

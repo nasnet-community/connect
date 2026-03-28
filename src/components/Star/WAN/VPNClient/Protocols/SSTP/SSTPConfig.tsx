@@ -7,6 +7,7 @@ import {
   Switch,
   ErrorMessage,
 } from "../../components";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface SSTPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -15,6 +16,7 @@ interface SSTPConfigProps {
 
 export const SSTPConfig = component$<SSTPConfigProps>(
   ({ onIsValidChange$, isSaving }) => {
+    const locale = useMessageLocale();
     const {
       serverAddress,
       username,
@@ -37,13 +39,19 @@ export const SSTPConfig = component$<SSTPConfigProps>(
       <div class="space-y-6">
         {/* Connection Settings */}
         <FormContainer
-          title={$localize`Connection Settings`}
-          description={$localize`Configure your SSTP VPN connection details`}
+          title={semanticMessages.vpn_sstp_connection_title({}, { locale })}
+          description={semanticMessages.vpn_sstp_connection_description(
+            {},
+            { locale },
+          )}
           bordered
         >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FormField
-              label={$localize`Server Address`}
+              label={semanticMessages.vpn_openvpn_server_address(
+                {},
+                { locale },
+              )}
               required
               value={serverAddress.value}
               onInput$={(_, el) => {
@@ -54,7 +62,7 @@ export const SSTPConfig = component$<SSTPConfigProps>(
             />
 
             <FormField
-              label={$localize`Port`}
+              label={semanticMessages.vpn_server_port({}, { locale })}
               value={port.value}
               onInput$={(_, el) => {
                 port.value = el.value;
@@ -66,10 +74,13 @@ export const SSTPConfig = component$<SSTPConfigProps>(
         </FormContainer>
 
         {/* Authentication Settings */}
-        <FormContainer title={$localize`Authentication Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_sstp_auth_title({}, { locale })}
+          bordered
+        >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FormField
-              label={$localize`Username`}
+              label={semanticMessages.shared_username({}, { locale })}
               required
               value={username.value}
               onInput$={(_, el) => {
@@ -80,7 +91,7 @@ export const SSTPConfig = component$<SSTPConfigProps>(
 
             <FormField
               type="text"
-              label={$localize`Password`}
+              label={semanticMessages.vpn_openvpn_password({}, { locale })}
               required
               value={password.value}
               onInput$={(_, el) => {
@@ -92,11 +103,17 @@ export const SSTPConfig = component$<SSTPConfigProps>(
         </FormContainer>
 
         {/* Security Settings */}
-        <FormContainer title={$localize`Security Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_sstp_security_title({}, { locale })}
+          bordered
+        >
           <div class="flex flex-col gap-5">
             <Switch
               id="verifyServerCertificate"
-              label={$localize`Verify Server Certificate`}
+              label={semanticMessages.vpn_sstp_verify_server_certificate(
+                {},
+                { locale },
+              )}
               checked={verifyServerCertificate.value}
               onChange$={(checked) => {
                 verifyServerCertificate.value = checked;
@@ -106,7 +123,7 @@ export const SSTPConfig = component$<SSTPConfigProps>(
 
             <div class="mt-2">
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`TLS Version`}
+                {semanticMessages.vpn_sstp_tls_version({}, { locale })}
               </label>
               <select
                 value={tlsVersion.value}
@@ -121,9 +138,15 @@ export const SSTPConfig = component$<SSTPConfigProps>(
                      focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                      dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
               >
-                <option value="any">{$localize`Any`}</option>
-                <option value="only-1.2">{$localize`TLS 1.2 Only`}</option>
-                <option value="only-1.3">{$localize`TLS 1.3 Only`}</option>
+                <option value="any">
+                  {semanticMessages.vpn_sstp_tls_any({}, { locale })}
+                </option>
+                <option value="only-1.2">
+                  {semanticMessages.vpn_sstp_tls_1_2({}, { locale })}
+                </option>
+                <option value="only-1.3">
+                  {semanticMessages.vpn_sstp_tls_1_3({}, { locale })}
+                </option>
               </select>
             </div>
           </div>
@@ -131,7 +154,7 @@ export const SSTPConfig = component$<SSTPConfigProps>(
 
         {/* Required Fields Note */}
         <p class="text-text-muted dark:text-text-dark-muted text-xs">
-          {$localize`Fields marked with * are required`}
+          {semanticMessages.vpn_client_easy_required_fields({}, { locale })}
         </p>
 
         {/* Error Message Display */}

@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface ErrorMessageProps {
   message: string;
@@ -7,11 +8,11 @@ export interface ErrorMessageProps {
 }
 
 export const ErrorMessage = component$<ErrorMessageProps>(
-  ({
-    message,
-    title = $localize`Configuration Error`,
-    class: className = "",
-  }) => {
+  ({ message, title, class: className = "" }) => {
+    const locale = useMessageLocale();
+    const resolvedTitle =
+      title ?? semanticMessages.vpn_configuration_error_title({}, { locale });
+
     if (!message) return null;
 
     return (
@@ -36,7 +37,7 @@ export const ErrorMessage = component$<ErrorMessageProps>(
         </svg>
         <div class="flex-1">
           <h3 class="text-sm font-medium text-error-900 dark:text-error-200">
-            {title}
+            {resolvedTitle}
           </h3>
           <p class="mt-1 text-sm text-error-700 dark:text-error-300">
             {message}

@@ -6,8 +6,10 @@ import {
 } from "@qwikest/icons/heroicons";
 import { useIPIP } from "./useIPIP";
 import type { IpipTunnelConfig } from "../../../../StarContext/Utils/TunnelType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const IPIPProtocol = component$(() => {
+  const locale = useMessageLocale();
   const { ipipTunnels, expandedSections, toggleSection, updateTunnelField } =
     useIPIP();
 
@@ -30,7 +32,9 @@ export const IPIPProtocol = component$(() => {
       >
         <div class="flex items-center gap-3">
           <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{$localize`IPIP Tunnels`}</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {semanticMessages.tunnel_step_ipip({}, { locale })}
+          </h3>
         </div>
         {expandedSections.ipip ? (
           <HiChevronUpOutline class="h-5 w-5 text-gray-500" />
@@ -48,14 +52,17 @@ export const IPIPProtocol = component$(() => {
                 class="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700"
               >
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
-                  {$localize`IPIP Tunnel ${index + 1}`}
+                  {semanticMessages.tunnel_ipip_item_title(
+                    { index: String(index + 1) },
+                    { locale },
+                  )}
                 </h4>
 
                 <div class="grid gap-4 md:grid-cols-2">
                   {/* Name */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Name`} *
+                      {semanticMessages.tunnel_field_name({}, { locale })} *
                     </label>
                     <input
                       type="text"
@@ -68,14 +75,17 @@ export const IPIPProtocol = component$(() => {
                         )
                       }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter tunnel name`}
+                      placeholder={semanticMessages.tunnel_field_name_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* MTU */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`MTU`}
+                      {semanticMessages.tunnel_field_mtu({}, { locale })}
                     </label>
                     <input
                       type="number"
@@ -89,14 +99,23 @@ export const IPIPProtocol = component$(() => {
                         );
                       }}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter MTU (optional)`}
+                      placeholder={semanticMessages.tunnel_field_mtu_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* Local Address */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Local Address`} *
+                      {semanticMessages.tunnel_field_local_address(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}{" "}
+                      *
                     </label>
                     <input
                       type="text"
@@ -109,14 +128,23 @@ export const IPIPProtocol = component$(() => {
                         )
                       }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter local address`}
+                      placeholder={semanticMessages.tunnel_field_local_address_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* Remote Address */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Remote Address`} *
+                      {semanticMessages.tunnel_field_remote_address(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}{" "}
+                      *
                     </label>
                     <input
                       type="text"
@@ -129,14 +157,22 @@ export const IPIPProtocol = component$(() => {
                         )
                       }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter remote address`}
+                      placeholder={semanticMessages.tunnel_field_remote_address_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* IPsec Secret */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`IPsec Secret`}
+                      {semanticMessages.tunnel_field_ipsec_secret(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </label>
                     <input
                       type="text"
@@ -149,14 +185,22 @@ export const IPIPProtocol = component$(() => {
                         )
                       }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter IPsec secret (optional)`}
+                      placeholder={semanticMessages.tunnel_field_ipsec_secret_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
 
                   {/* Keepalive */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`Keepalive`}
+                      {semanticMessages.tunnel_field_keepalive(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </label>
                     <input
                       type="text"
@@ -169,7 +213,10 @@ export const IPIPProtocol = component$(() => {
                         )
                       }
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={$localize`Enter keepalive (optional)`}
+                      placeholder={semanticMessages.tunnel_field_keepalive_placeholder(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
                 </div>
@@ -178,7 +225,7 @@ export const IPIPProtocol = component$(() => {
                 <div class="grid gap-4 md:grid-cols-2">
                   <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {$localize`DSCP`}
+                      {semanticMessages.tunnel_field_dscp({}, { locale })}
                     </label>
                     <select
                       value={
@@ -198,8 +245,22 @@ export const IPIPProtocol = component$(() => {
                       }}
                       class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >
-                      <option value="">{$localize`Default`}</option>
-                      <option value="inherit">{$localize`Inherit`}</option>
+                      <option value="">
+                        {semanticMessages.tunnel_option_default(
+                          {},
+                          {
+                            locale,
+                          },
+                        )}
+                      </option>
+                      <option value="inherit">
+                        {semanticMessages.tunnel_option_inherit(
+                          {},
+                          {
+                            locale,
+                          },
+                        )}
+                      </option>
                       {Array.from({ length: 64 }, (_, i) => (
                         <option key={i} value={i.toString()}>
                           {i.toString()}
@@ -226,7 +287,12 @@ export const IPIPProtocol = component$(() => {
                       for={`clampTcpMss-${index}`}
                       class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
                     >
-                      {$localize`Clamp TCP MSS`}
+                      {semanticMessages.tunnel_field_clamp_tcp_mss(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </label>
                   </div>
                 </div>

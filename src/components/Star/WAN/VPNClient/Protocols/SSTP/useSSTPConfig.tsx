@@ -8,6 +8,7 @@ import type {
 } from "../../../../StarContext/CommonType";
 import { useNetworks } from "~/utils/useNetworks";
 import { useSubnets } from "~/utils/useSubnets";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface UseSSTPConfigResult {
   serverAddress: { value: string };
@@ -33,6 +34,7 @@ export interface UseSSTPConfigResult {
 export const useSSTPConfig = (
   onIsValidChange$?: QRL<(isValid: boolean) => void>,
 ): UseSSTPConfigResult => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const networks = useNetworks();
   const subnets = useSubnets();
@@ -158,7 +160,10 @@ export const useSSTPConfig = (
       if (onIsValidChange$) {
         await onIsValidChange$(false);
       }
-      errorMessage.value = $localize`Missing required fields: ${emptyFields.join(", ")}`;
+      errorMessage.value = semanticMessages.vpn_client_missing_required_fields(
+        { fields: emptyFields.join(", ") },
+        { locale },
+      );
       return;
     }
 

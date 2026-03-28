@@ -2,6 +2,7 @@ import { component$, type QRL, $ } from "@builder.io/qwik";
 import type { VPNClientConfig } from "../../types/VPNClientAdvancedTypes";
 import { VPNBoxHeader } from "./VPNBoxHeader";
 import { VPNBoxContent } from "./VPNBoxContent";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNBoxProps {
   vpn: VPNClientConfig;
@@ -29,6 +30,7 @@ export const VPNBox = component$<VPNBoxProps>(
     onMoveUp$,
     onMoveDown$,
   }) => {
+    const locale = useMessageLocale();
     // Get validation errors for this VPN
     const vpnErrors = Object.keys(validationErrors)
       .filter((key) => key.startsWith(`vpn-${vpn.id}`))
@@ -123,7 +125,10 @@ export const VPNBox = component$<VPNBoxProps>(
               </svg>
               <div class="flex-1">
                 <p class="text-sm font-medium text-red-800 dark:text-red-200">
-                  {$localize`Configuration Issues`}
+                  {semanticMessages.vpn_client_advanced_configuration_issues_title(
+                    {},
+                    { locale },
+                  )}
                 </p>
                 <div class="mt-1 space-y-1">
                   {Object.values(vpnErrors)

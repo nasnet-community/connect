@@ -12,8 +12,10 @@ import {
 import type { StepProps } from "~/types/step";
 import { StarContext } from "../../StarContext/StarContext";
 import { Input } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Identity = component$<StepProps>(({ onComplete$ }) => {
+  const locale = useMessageLocale();
   const ctx = useContext(StarContext);
   const isEasyMode = ctx.state.Choose.Mode === "easy";
 
@@ -73,8 +75,17 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
               </svg>
             </div>
             <div class="space-y-1">
-              <h2 class="text-2xl font-bold text-white">{$localize`Identity Settings`}</h2>
-              <p class="text-sm font-medium text-primary-50">{$localize`Configure router identity and remote access`}</p>
+              <h2 class="text-2xl font-bold text-white">
+                {semanticMessages.identity_settings_title({}, { locale })}
+              </h2>
+              <p class="text-sm font-medium text-primary-50">
+                {semanticMessages.identity_settings_description(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
+              </p>
             </div>
           </div>
         </div>
@@ -84,7 +95,7 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
           {/* Router Identity Input */}
           <div class="space-y-2">
             <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-              {$localize`Router Identity`}
+              {semanticMessages.identity_router_identity_label({}, { locale })}
             </label>
             <Input
               type="text"
@@ -92,7 +103,10 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
               onInput$={(event: Event, value: string) =>
                 handleIdentityChange(value)
               }
-              placeholder={$localize`Enter router identity`}
+              placeholder={semanticMessages.identity_router_identity_placeholder(
+                {},
+                { locale },
+              )}
             />
           </div>
 
@@ -102,10 +116,15 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
               <div class="flex items-center justify-between">
                 <div>
                   <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Romon`}
+                    {semanticMessages.identity_romon_label({}, { locale })}
                   </label>
                   <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Enable or disable Remote Network Monitoring (RoMON) for centralized management`}
+                    {semanticMessages.identity_romon_description(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
                 <div class="flex gap-4 rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
@@ -125,7 +144,9 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
                       class="hidden"
                     />
                     <HiXCircleOutline class="h-5 w-5" />
-                    <span>{$localize`Disable`}</span>
+                    <span>
+                      {semanticMessages.shared_disable({}, { locale })}
+                    </span>
                   </label>
                   <label
                     class={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2
@@ -143,7 +164,9 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
                       class="hidden"
                     />
                     <HiCheckCircleOutline class="h-5 w-5" />
-                    <span>{$localize`Enable`}</span>
+                    <span>
+                      {semanticMessages.shared_enable({}, { locale })}
+                    </span>
                   </label>
                 </div>
               </div>
@@ -163,7 +186,7 @@ export const Identity = component$<StepProps>(({ onComplete$ }) => {
                          : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                      }`}
             >
-              {$localize`Save`}
+              {semanticMessages.shared_save({}, { locale })}
             </button>
           </div>
         </div>

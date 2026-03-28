@@ -12,6 +12,8 @@ import type {
   LTE,
 } from "../../StarContext/CommonType";
 import type { RouterInterfaces } from "../../StarContext/ChooseType";
+import type { AppLocale } from "~/i18n/config";
+import { semanticMessages } from "~/i18n/semantic";
 
 /**
  * Generate interface names for ethernet interfaces
@@ -138,11 +140,14 @@ export function generateSpecs(form: CustomRouterForm): RouterData["specs"] {
 /**
  * Generate features list for display
  */
-export function generateFeatures(form: CustomRouterForm): string[] {
+export function generateFeatures(
+  form: CustomRouterForm,
+  locale: AppLocale,
+): string[] {
   const features: string[] = [];
 
   if (form.isCHR) {
-    features.push($localize`Cloud Hosted Router (CHR)`);
+    features.push(semanticMessages.router_custom_feature_chr({}, { locale }));
   }
 
   const ethernetCount = form.ethernet.reduce(
@@ -151,7 +156,15 @@ export function generateFeatures(form: CustomRouterForm): string[] {
   );
   if (ethernetCount > 0) {
     features.push(
-      $localize`${ethernetCount}:ethernet_count: Ethernet Port${ethernetCount > 1 ? "s" : ""}`,
+      ethernetCount === 1
+        ? semanticMessages.router_custom_feature_ethernet_port_singular(
+            { count: String(ethernetCount) },
+            { locale },
+          )
+        : semanticMessages.router_custom_feature_ethernet_port_plural(
+            { count: String(ethernetCount) },
+            { locale },
+          ),
     );
   }
 
@@ -161,25 +174,54 @@ export function generateFeatures(form: CustomRouterForm): string[] {
   );
   if (wirelessCount > 0) {
     features.push(
-      $localize`${wirelessCount}:wireless_count: Wireless Interface${wirelessCount > 1 ? "s" : ""}`,
+      wirelessCount === 1
+        ? semanticMessages.router_custom_feature_wireless_interface_singular(
+            { count: String(wirelessCount) },
+            { locale },
+          )
+        : semanticMessages.router_custom_feature_wireless_interface_plural(
+            { count: String(wirelessCount) },
+            { locale },
+          ),
     );
   }
 
   const sfpCount = form.sfp.reduce((sum, config) => sum + config.count, 0);
   if (sfpCount > 0) {
     features.push(
-      $localize`${sfpCount}:sfp_count: SFP Port${sfpCount > 1 ? "s" : ""}`,
+      sfpCount === 1
+        ? semanticMessages.router_custom_feature_sfp_port_singular(
+            { count: String(sfpCount) },
+            { locale },
+          )
+        : semanticMessages.router_custom_feature_sfp_port_plural(
+            { count: String(sfpCount) },
+            { locale },
+          ),
     );
   }
 
   if (form.lte > 0) {
     features.push(
-      $localize`${form.lte}:lte_count: LTE Modem${form.lte > 1 ? "s" : ""}`,
+      form.lte === 1
+        ? semanticMessages.router_custom_feature_lte_modem_singular(
+            { count: String(form.lte) },
+            { locale },
+          )
+        : semanticMessages.router_custom_feature_lte_modem_plural(
+            { count: String(form.lte) },
+            { locale },
+          ),
     );
   }
 
   if (form.cpuArch) {
-    features.push($localize`${form.cpuArch}:cpu_arch: CPU Architecture`);
+    features.push(
+      semanticMessages.router_custom_feature_cpu_arch(
+        { cpuArch: form.cpuArch },
+        { locale },
+      ),
+    );
   }
 
   return features;
@@ -188,18 +230,25 @@ export function generateFeatures(form: CustomRouterForm): string[] {
 /**
  * Validate custom router form data
  */
-export function validateCustomRouterForm(form: CustomRouterForm): {
+export function validateCustomRouterForm(
+  form: CustomRouterForm,
+  locale: AppLocale,
+): {
   valid: boolean;
   errors: string[];
 } {
   const errors: string[] = [];
 
   if (!form.name || form.name.trim().length === 0) {
-    errors.push($localize`Router name is required`);
+    errors.push(
+      semanticMessages.router_custom_error_name_required({}, { locale }),
+    );
   }
 
   if (form.name.length > 50) {
-    errors.push($localize`Router name must be 50 characters or less`);
+    errors.push(
+      semanticMessages.router_custom_error_name_length({}, { locale }),
+    );
   }
 
   const totalInterfaces =
@@ -209,33 +258,41 @@ export function validateCustomRouterForm(form: CustomRouterForm): {
     form.lte;
 
   if (totalInterfaces === 0) {
-    errors.push($localize`Router must have at least one interface`);
+    errors.push(
+      semanticMessages.router_custom_error_interface_required({}, { locale }),
+    );
   }
 
   // Validate ethernet configs
   for (const config of form.ethernet) {
     if (config.count < 0 || config.count > 32) {
-      errors.push($localize`Ethernet count must be between 0 and 32`);
+      errors.push(
+        semanticMessages.router_custom_error_ethernet_count({}, { locale }),
+      );
     }
   }
 
   // Validate wireless configs
   for (const config of form.wireless) {
     if (config.count < 0 || config.count > 5) {
-      errors.push($localize`Wireless count must be between 0 and 5`);
+      errors.push(
+        semanticMessages.router_custom_error_wireless_count({}, { locale }),
+      );
     }
   }
 
   // Validate SFP configs
   for (const config of form.sfp) {
     if (config.count < 0 || config.count > 32) {
-      errors.push($localize`SFP count must be between 0 and 32`);
+      errors.push(
+        semanticMessages.router_custom_error_sfp_count({}, { locale }),
+      );
     }
   }
 
   // Validate LTE
   if (form.lte < 0 || form.lte > 5) {
-    errors.push($localize`LTE count must be between 0 and 5`);
+    errors.push(semanticMessages.router_custom_error_lte_count({}, { locale }));
   }
 
   return {
@@ -247,7 +304,10 @@ export function validateCustomRouterForm(form: CustomRouterForm): {
 /**
  * Convert CustomRouterForm to RouterData format
  */
-export function convertFormToRouterData(form: CustomRouterForm): RouterData {
+export function convertFormToRouterData(
+  form: CustomRouterForm,
+  locale: AppLocale,
+): RouterData {
   const ethernetInterfaces = generateEthernetInterfaces(form.ethernet);
   const wirelessInterfaces = generateWirelessInterfaces(form.wireless);
   const sfpInterfaces = generateSfpInterfaces(form.sfp);
@@ -264,15 +324,15 @@ export function convertFormToRouterData(form: CustomRouterForm): RouterData {
   };
 
   const specs = generateSpecs(form);
-  const features = generateFeatures(form);
+  const features = generateFeatures(form, locale);
 
   const routerData: RouterData = {
     model: form.name,
     icon: "router",
     title: form.name,
     description: form.isCHR
-      ? $localize`Custom Cloud Hosted Router configuration`
-      : $localize`Custom router configuration`,
+      ? semanticMessages.router_custom_description_chr({}, { locale })
+      : semanticMessages.router_custom_description_standard({}, { locale }),
     specs,
     features,
     isWireless: wirelessInterfaces.length > 0,

@@ -3,11 +3,13 @@ import { useContext } from "@builder.io/qwik";
 import type { PptpServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const usePPTPServer = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -62,7 +64,8 @@ export const usePPTPServer = () => {
     // Validate default profile
     if (config.DefaultProfile !== undefined) {
       if (!newConfig.DefaultProfile || !newConfig.DefaultProfile.trim()) {
-        defaultProfileError.value = $localize`Default profile is required`;
+        defaultProfileError.value =
+          semanticMessages.shared_default_profile_required({}, { locale });
         isValid = false;
       } else {
         defaultProfileError.value = "";

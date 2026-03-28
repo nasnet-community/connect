@@ -4,6 +4,7 @@ import type { OpenVpnClientConfig } from "~/components/Star/StarContext/Utils/VP
 import { ConfigMethodToggle } from "~/components/Star/WAN/VPNClient/components/ConfigMethodToggle";
 import { VPNConfigFileSection } from "~/components/Star/WAN/VPNClient/components/VPNConfigFileSection";
 import { Input, ErrorMessage, Select, TextArea } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface OpenVPNFieldsProps {
   config: Partial<OpenVpnClientConfig>;
@@ -14,6 +15,7 @@ interface OpenVPNFieldsProps {
 
 export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
   const { config, errors = {}, mode = "advanced", onUpdate$ } = props;
+  const locale = useMessageLocale();
 
   // State for config method and file content
   const configMethod = useSignal<"file" | "manual">("file");
@@ -163,23 +165,17 @@ export const OpenVPNFields = component$<OpenVPNFieldsProps>((props) => {
             configValue={configContent.value}
             onConfigChange$={handleConfigChange$}
             onFileUpload$={handleFileUpload$}
-            placeholder={$localize`Paste your OpenVPN configuration here. It should include directives like 'remote', 'proto', 'dev', etc.
-
-Example:
-client
-dev tun
-proto udp
-remote vpn.example.com 1194
-auth-user-pass
-cipher AES-256-GCM
-auth SHA256`}
+            placeholder={semanticMessages.vpn_openvpn_config_placeholder_full(
+              {},
+              { locale },
+            )}
           />
 
           {/* Credentials for File Import */}
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Username`} *
+                {semanticMessages.shared_username({}, { locale })} *
               </label>
               <Input
                 type="text"
@@ -194,7 +190,10 @@ auth SHA256`}
                     },
                   });
                 }}
-                placeholder="Your username"
+                placeholder={semanticMessages.vpn_openvpn_placeholder_username(
+                  {},
+                  { locale },
+                )}
                 validation={errors.Username ? "invalid" : "default"}
               />
               {errors.Username && <ErrorMessage message={errors.Username} />}
@@ -202,7 +201,7 @@ auth SHA256`}
 
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Password`} *
+                {semanticMessages.vpn_openvpn_password({}, { locale })} *
               </label>
               <Input
                 type="password"
@@ -220,7 +219,10 @@ auth SHA256`}
                     },
                   });
                 }}
-                placeholder="Your password"
+                placeholder={semanticMessages.vpn_openvpn_placeholder_password(
+                  {},
+                  { locale },
+                )}
                 validation={errors.Password ? "invalid" : "default"}
               />
               {errors.Password && <ErrorMessage message={errors.Password} />}
@@ -230,7 +232,10 @@ auth SHA256`}
           {/* Certificate Key Passphrase for File Import */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Certificate Key Passphrase`}
+              {semanticMessages.vpn_openvpn_certificate_key_passphrase(
+                {},
+                { locale },
+              )}
             </label>
             <Input
               type="password"
@@ -242,14 +247,20 @@ auth SHA256`}
                 );
                 onUpdate$({ keyPassphrase: value });
               }}
-              placeholder={$localize`Optional passphrase for certificate private key`}
+              placeholder={semanticMessages.vpn_openvpn_key_passphrase_placeholder(
+                {},
+                { locale },
+              )}
               validation={errors.keyPassphrase ? "invalid" : "default"}
             />
             {errors.keyPassphrase && (
               <ErrorMessage message={errors.keyPassphrase} />
             )}
             <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
-              {$localize`Required if your .ovpn file contains an encrypted private key`}
+              {semanticMessages.vpn_openvpn_key_passphrase_file_help(
+                {},
+                { locale },
+              )}
             </p>
           </div>
         </>
@@ -262,7 +273,7 @@ auth SHA256`}
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Server Address`} *
+                {semanticMessages.vpn_openvpn_server_address({}, { locale })} *
               </label>
               <Input
                 type="text"
@@ -286,7 +297,7 @@ auth SHA256`}
 
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Server Port`} *
+                {semanticMessages.vpn_openvpn_server_port({}, { locale })} *
               </label>
               <Input
                 type="number"
@@ -313,7 +324,7 @@ auth SHA256`}
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Username`} *
+                {semanticMessages.shared_username({}, { locale })} *
               </label>
               <Input
                 type="text"
@@ -328,7 +339,10 @@ auth SHA256`}
                     },
                   });
                 }}
-                placeholder="Your username"
+                placeholder={semanticMessages.vpn_openvpn_placeholder_username(
+                  {},
+                  { locale },
+                )}
                 validation={errors.Username ? "invalid" : "default"}
               />
               {errors.Username && <ErrorMessage message={errors.Username} />}
@@ -336,7 +350,7 @@ auth SHA256`}
 
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Password`} *
+                {semanticMessages.vpn_openvpn_password({}, { locale })} *
               </label>
               <Input
                 type="text"
@@ -354,7 +368,10 @@ auth SHA256`}
                     },
                   });
                 }}
-                placeholder="Your password"
+                placeholder={semanticMessages.vpn_openvpn_placeholder_password(
+                  {},
+                  { locale },
+                )}
                 validation={errors.Password ? "invalid" : "default"}
               />
               {errors.Password && <ErrorMessage message={errors.Password} />}
@@ -364,7 +381,10 @@ auth SHA256`}
           {/* Certificate Key Passphrase */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Certificate Key Passphrase`}
+              {semanticMessages.vpn_openvpn_certificate_key_passphrase(
+                {},
+                { locale },
+              )}
             </label>
             <Input
               type="password"
@@ -376,14 +396,20 @@ auth SHA256`}
                 );
                 onUpdate$({ keyPassphrase: value });
               }}
-              placeholder={$localize`Optional passphrase for certificate private key`}
+              placeholder={semanticMessages.vpn_openvpn_key_passphrase_placeholder(
+                {},
+                { locale },
+              )}
               validation={errors.keyPassphrase ? "invalid" : "default"}
             />
             {errors.keyPassphrase && (
               <ErrorMessage message={errors.keyPassphrase} />
             )}
             <p class="text-text-muted dark:text-text-dark-muted mt-1 text-xs">
-              {$localize`Leave empty if your certificate doesn't require a passphrase`}
+              {semanticMessages.vpn_openvpn_key_passphrase_manual_help(
+                {},
+                { locale },
+              )}
             </p>
           </div>
 
@@ -391,7 +417,7 @@ auth SHA256`}
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Protocol`}
+                {semanticMessages.vpn_openvpn_protocol({}, { locale })}
               </label>
               <Select
                 value={config.Protocol || "udp"}
@@ -400,13 +426,16 @@ auth SHA256`}
                   { label: "UDP", value: "udp" },
                   { label: "TCP", value: "tcp" },
                 ]}
-                placeholder="Select protocol"
+                placeholder={semanticMessages.vpn_openvpn_select_protocol(
+                  {},
+                  { locale },
+                )}
               />
             </div>
 
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Cipher`}
+                {semanticMessages.vpn_openvpn_cipher({}, { locale })}
               </label>
               <Input
                 type="text"
@@ -424,7 +453,7 @@ auth SHA256`}
             <>
               <div>
                 <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                  {$localize`CA Certificate`}
+                  {semanticMessages.vpn_openvpn_ca_certificate({}, { locale })}
                 </label>
                 <TextArea
                   value={config.Certificates?.CaCertificateContent || ""}
@@ -443,7 +472,10 @@ auth SHA256`}
 
               <div>
                 <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                  {$localize`Extra Configuration`}
+                  {semanticMessages.vpn_openvpn_extra_configuration(
+                    {},
+                    { locale },
+                  )}
                 </label>
                 <TextArea
                   value={""}

@@ -15,8 +15,10 @@ import { VStepper } from "~/components/Core/Stepper/VStepper/VStepper";
 import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import { StarContext } from "../StarContext/StarContext";
 import type { ServiceType } from "../StarContext/ExtraType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const ExtraConfig = component$<StepProps>((props) => {
+  const locale = useMessageLocale();
   const ctx = useContext(StarContext);
   const isEasyMode = ctx.state.Choose.Mode === "easy";
 
@@ -87,7 +89,7 @@ export const ExtraConfig = component$<StepProps>((props) => {
     const allSteps: StepItem[] = [
       {
         id: 1,
-        title: $localize`Identity`,
+        title: semanticMessages.extra_config_step_identity({}, { locale }),
         component: IdentityStep$,
         isComplete: false,
       },
@@ -97,7 +99,7 @@ export const ExtraConfig = component$<StepProps>((props) => {
     if (!isEasyMode) {
       allSteps.push({
         id: 2,
-        title: $localize`Services`,
+        title: semanticMessages.extra_config_step_services({}, { locale }),
         component: ServicesStep$,
         isComplete: false,
       });
@@ -105,7 +107,7 @@ export const ExtraConfig = component$<StepProps>((props) => {
 
     allSteps.push({
       id: allSteps.length + 1,
-      title: $localize`Reboot & Update`,
+      title: semanticMessages.extra_config_step_reboot_update({}, { locale }),
       component: RebootUpdateStep$,
       isComplete: false,
     });
@@ -113,7 +115,12 @@ export const ExtraConfig = component$<StepProps>((props) => {
     if (!isEasyMode) {
       allSteps.push({
         id: allSteps.length + 1,
-        title: $localize`Useful Services`,
+        title: semanticMessages.extra_config_step_useful_services(
+          {},
+          {
+            locale,
+          },
+        ),
         component: UsefulServicesStep$,
         isComplete: false,
       });
@@ -121,7 +128,7 @@ export const ExtraConfig = component$<StepProps>((props) => {
 
     allSteps.push({
       id: allSteps.length + 1,
-      title: $localize`Game`,
+      title: semanticMessages.extra_config_step_game({}, { locale }),
       component: GameStep$,
       isComplete: false,
     });

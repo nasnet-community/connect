@@ -1,4 +1,5 @@
 import { component$, $, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNConfigFileSectionProps {
   protocolName: string;
@@ -18,6 +19,8 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
     onFileUpload$,
     placeholder = "",
   }) => {
+    const locale = useMessageLocale();
+
     const handlePaste$ = $(async () => {
       try {
         const text = await navigator.clipboard.readText();
@@ -50,7 +53,7 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               class="cursor-pointer rounded-lg bg-primary-500 px-4 py-2 text-center text-white
                   transition-colors hover:bg-primary-600"
             >
-              {$localize`Upload Config`}
+              {semanticMessages.vpn_config_file_section_upload({}, { locale })}
               <input
                 type="file"
                 accept={acceptedExtensions}
@@ -63,12 +66,15 @@ export const VPNConfigFileSection = component$<VPNConfigFileSectionProps>(
               class="rounded-lg bg-secondary-500 px-4 py-2 text-center text-white
                   transition-colors hover:bg-secondary-600"
             >
-              {$localize`Paste Config`}
+              {semanticMessages.vpn_config_file_section_paste({}, { locale })}
             </button>
           </div>
         </div>
         <div class="text-text-muted dark:text-text-dark-muted text-sm">
-          {$localize`Paste or upload your ${protocolName} configuration file.`}
+          {semanticMessages.vpn_config_file_section_simple_helper(
+            { protocolName },
+            { locale },
+          )}
         </div>
       </div>
     );

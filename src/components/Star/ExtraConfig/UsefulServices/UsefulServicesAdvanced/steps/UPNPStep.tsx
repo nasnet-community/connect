@@ -15,8 +15,10 @@ import {
 } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const UPNPStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
   const starCtx = useContext(StarContext);
@@ -32,8 +34,18 @@ export const UPNPStep = component$(() => {
   const linkTypeOptions = [
     {
       id: "domestic",
-      title: $localize`Domestic Link`,
-      description: $localize`Local network connection`,
+      title: semanticMessages.useful_services_upnp_domestic_link(
+        {},
+        {
+          locale,
+        },
+      ),
+      description: semanticMessages.useful_services_upnp_local_connection(
+        {},
+        {
+          locale,
+        },
+      ),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -55,8 +67,16 @@ export const UPNPStep = component$(() => {
     },
     {
       id: "foreign",
-      title: $localize`Foreign Link`,
-      description: $localize`External network connection`,
+      title: semanticMessages.useful_services_upnp_foreign_link(
+        {},
+        {
+          locale,
+        },
+      ),
+      description: semanticMessages.useful_services_upnp_external_connection(
+        {},
+        { locale },
+      ),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -77,8 +97,13 @@ export const UPNPStep = component$(() => {
     },
     {
       id: "vpn",
-      title: $localize`VPN Link`,
-      description: $localize`VPN tunnel connection`,
+      title: semanticMessages.useful_services_upnp_vpn_link({}, { locale }),
+      description: semanticMessages.useful_services_upnp_vpn_connection(
+        {},
+        {
+          locale,
+        },
+      ),
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -187,10 +212,15 @@ export const UPNPStep = component$(() => {
           </svg>
         </div>
         <h3 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-gray-300">
-          {$localize`UPnP Configuration`}
+          {semanticMessages.useful_services_upnp_title({}, { locale })}
         </h3>
         <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-          {$localize`Enable Universal Plug and Play for automatic port forwarding and device discovery`}
+          {semanticMessages.useful_services_upnp_description(
+            {},
+            {
+              locale,
+            },
+          )}
         </p>
       </div>
 
@@ -217,17 +247,26 @@ export const UPNPStep = component$(() => {
               </div>
               <div>
                 <h4 class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {$localize`Enable UPnP`}
+                  {semanticMessages.useful_services_upnp_enable({}, { locale })}
                 </h4>
                 <p class="mt-1 text-gray-600 dark:text-gray-400">
-                  {$localize`Allow devices to automatically configure network settings`}
+                  {semanticMessages.useful_services_upnp_enable_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
                 <div class="mt-3 flex items-center gap-3">
                   <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
-                    {$localize`Auto Port Forwarding`}
+                    {semanticMessages.useful_services_upnp_auto_port_forwarding(
+                      {},
+                      { locale },
+                    )}
                   </span>
                   <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/50 dark:text-green-400">
-                    {$localize`Device Discovery`}
+                    {semanticMessages.useful_services_upnp_device_discovery(
+                      {},
+                      { locale },
+                    )}
                   </span>
                 </div>
               </div>
@@ -250,10 +289,18 @@ export const UPNPStep = component$(() => {
         <div class="animate-fade-in-up space-y-6">
           <div class="text-center">
             <h4 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-              {$localize`Choose Link Type`}
+              {semanticMessages.useful_services_upnp_choose_link_type(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h4>
             <p class="text-gray-600 dark:text-gray-400">
-              {$localize`Select the type of network connection where UPnP will be enabled`}
+              {semanticMessages.useful_services_upnp_choose_link_type_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
 
@@ -285,36 +332,56 @@ export const UPNPStep = component$(() => {
           {linkType.value === "vpn" && (
             <Alert
               status="warning"
-              title={$localize`VPN UPnP Support Required`}
+              title={semanticMessages.useful_services_upnp_vpn_warning_title(
+                {},
+                { locale },
+              )}
               class="animate-fade-in-up border-0 bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg dark:from-amber-900/20 dark:to-orange-900/20"
             >
               <div class="text-sm text-amber-800 dark:text-amber-300">
                 <p class="mb-2">
-                  {$localize`When using UPnP over VPN connections, ensure that:`}
+                  {semanticMessages.useful_services_upnp_vpn_warning_intro(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </p>
                 <ul class="ml-4 space-y-1">
                   <li class="flex items-start gap-2">
                     <span class="mt-0.5 text-amber-600 dark:text-amber-400">
                       •
                     </span>
-                    {$localize`Your VPN server supports UPnP protocol forwarding`}
+                    {semanticMessages.useful_services_upnp_vpn_warning_forwarding(
+                      {},
+                      { locale },
+                    )}
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="mt-0.5 text-amber-600 dark:text-amber-400">
                       •
                     </span>
-                    {$localize`The VPN tunnel allows UPnP multicast traffic`}
+                    {semanticMessages.useful_services_upnp_vpn_warning_multicast(
+                      {},
+                      { locale },
+                    )}
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="mt-0.5 text-amber-600 dark:text-amber-400">
                       •
                     </span>
-                    {$localize`Remote devices can communicate through the VPN`}
+                    {semanticMessages.useful_services_upnp_vpn_warning_remote_devices(
+                      {},
+                      { locale },
+                    )}
                   </li>
                 </ul>
                 <p class="mt-3 font-medium text-amber-900 dark:text-amber-200">
                   ⚠️{" "}
-                  {$localize`UPnP may not work properly with all VPN configurations.`}
+                  {semanticMessages.useful_services_upnp_vpn_warning_footer(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </Alert>

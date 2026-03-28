@@ -12,6 +12,7 @@ import { WirelessBandSelector } from "./WirelessBandSelector";
 import { useInterfaceManagement } from "../../hooks/useInterfaceManagement";
 import type { InterfaceType } from "../../StarContext/CommonType";
 import { SelectionStepSection } from "../shared/SelectionStepSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface TrunkInterfaceProps {
   isComplete?: boolean;
@@ -19,6 +20,7 @@ interface TrunkInterfaceProps {
 }
 
 export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const interfaceManagement = useInterfaceManagement();
   const selectedBand = useSignal<"2.4G" | "5G" | null>(null);
@@ -97,8 +99,11 @@ export const TrunkInterface = component$((props: TrunkInterfaceProps) => {
 
   return (
     <SelectionStepSection
-      title={$localize`Configure Router + Access Point Interface`}
-      description={$localize`Select the specific interfaces for your trunk connection`}
+      title={semanticMessages.trunk_interface_section_title({}, { locale })}
+      description={semanticMessages.trunk_interface_section_description(
+        {},
+        { locale },
+      )}
     >
       {/* Conditionally show WirelessBandSelector for wireless or InterfaceSelector for wired */}
       {interfaceType === "wireless" ? (

@@ -1,16 +1,23 @@
 import { component$, useSignal } from "@builder.io/qwik";
+import { useLocation } from "@builder.io/qwik-city";
 import { Badge } from "~/components/Core";
 import {
   routerModels,
-  routerCategories,
-  routerStats,
+  getRouterCategories,
+  getRouterStats,
 } from "../../data/routerModelsData";
 import { CategoryFilter } from "./CategoryFilter";
 import { RouterCard } from "./RouterCard";
 import { BottomStats } from "./BottomStats";
+import { semanticMessages } from "~/i18n/semantic";
+import { normalizeLocale } from "~/i18n/config";
 
 export const RouterModelsSection = component$(() => {
+  const location = useLocation();
+  const locale = normalizeLocale(location.params.locale);
   const selectedCategory = useSignal("all");
+  const routerCategories = getRouterCategories(locale);
+  const routerStats = getRouterStats(locale);
 
   const filteredRouters =
     selectedCategory.value === "all"
@@ -25,19 +32,31 @@ export const RouterModelsSection = component$(() => {
         {/* Section Header */}
         <div class="mb-16 text-center">
           <Badge color="secondary" variant="outline" size="lg" class="mb-4">
-            {$localize`Hardware Support`}
+            {semanticMessages.landing_router_models_section_badge(
+              {},
+              { locale },
+            )}
           </Badge>
           <h2 class="mb-6 text-3xl font-bold md:text-5xl">
             <span class="text-gray-900 dark:text-white">
-              {$localize`Support for`}
+              {semanticMessages.landing_router_models_section_title(
+                {},
+                { locale },
+              )}
             </span>
             <br />
             <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {$localize`17+ Router Models`}
+              {semanticMessages.landing_router_models_section_highlight(
+                {},
+                { locale },
+              )}
             </span>
           </h2>
           <p class="mx-auto max-w-3xl text-lg text-gray-600 dark:text-gray-300">
-            {$localize`From entry-level home routers to enterprise-grade equipment, configure any MikroTik device with intelligent model detection.`}
+            {semanticMessages.landing_router_models_section_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
 

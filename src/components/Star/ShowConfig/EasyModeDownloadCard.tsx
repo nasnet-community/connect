@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { PropFunction } from "@builder.io/qwik";
 import { Card, CardBody, Button } from "~/components/Core";
 import { LuDownload, LuCheckCircle, LuRouter } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface EasyModeDownloadCardProps {
   onROSDownload$: PropFunction<() => void>;
@@ -9,6 +10,8 @@ interface EasyModeDownloadCardProps {
 
 export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
   ({ onROSDownload$ }) => {
+    const locale = useMessageLocale();
+
     return (
       <Card
         variant="filled"
@@ -24,20 +27,20 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
 
           {/* Title */}
           <h2 class="mb-3 text-3xl font-bold text-gray-900 dark:text-white">
-            {$localize`Configuration Ready!`}
+            {semanticMessages.show_config_easy_title({}, { locale })}
           </h2>
 
           {/* Success Message */}
           <div class="mb-4 flex items-center justify-center gap-2">
             <LuCheckCircle class="h-5 w-5 text-green-500" />
             <p class="text-lg text-gray-700 dark:text-gray-300">
-              {$localize`Your router configuration has been generated successfully`}
+              {semanticMessages.show_config_easy_success({}, { locale })}
             </p>
           </div>
 
           {/* Description */}
           <p class="mx-auto mb-8 max-w-2xl text-gray-600 dark:text-gray-400">
-            {$localize`Download the configuration file and apply it to your MikroTik router using the instructions below. Make sure to backup your current settings before proceeding.`}
+            {semanticMessages.show_config_easy_description({}, { locale })}
           </p>
 
           {/* Download Button */}
@@ -49,7 +52,7 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
             class="min-w-[250px] bg-gradient-to-r from-primary-500 to-primary-600 py-4 text-lg font-semibold shadow-lg transition-all duration-200 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl"
           >
             <LuDownload class="mr-3 h-6 w-6" />
-            {$localize`Download Configuration`}
+            {semanticMessages.show_config_easy_download_button({}, { locale })}
           </Button>
 
           {/* File Info */}
@@ -68,14 +71,14 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
               />
             </svg>
             <span class="text-sm text-gray-600 dark:text-gray-400">
-              {$localize`RouterOS Script (.rsc)`}
+              {semanticMessages.show_config_easy_file_type({}, { locale })}
             </span>
           </div>
 
           {/* Quick Tips */}
           <div class="mt-10 border-t border-gray-200 pt-8 dark:border-gray-700">
             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-              {$localize`Quick Setup Steps`}
+              {semanticMessages.show_config_easy_steps_title({}, { locale })}
             </h3>
             <div class="mx-auto grid max-w-3xl gap-4 text-left md:grid-cols-3">
               <div class="flex gap-3">
@@ -86,10 +89,16 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {$localize`Backup Current`}
+                    {semanticMessages.show_config_easy_step_backup_title(
+                      {},
+                      { locale },
+                    )}
                   </p>
                   <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {$localize`Save your existing configuration`}
+                    {semanticMessages.show_config_easy_step_backup_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -101,10 +110,16 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {$localize`Upload File`}
+                    {semanticMessages.show_config_easy_step_upload_title(
+                      {},
+                      { locale },
+                    )}
                   </p>
                   <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {$localize`Transfer .rsc file to router`}
+                    {semanticMessages.show_config_easy_step_upload_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -116,10 +131,16 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {$localize`Apply Config`}
+                    {semanticMessages.show_config_easy_step_apply_title(
+                      {},
+                      { locale },
+                    )}
                   </p>
                   <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {$localize`Run the script on your router`}
+                    {semanticMessages.show_config_easy_step_apply_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>

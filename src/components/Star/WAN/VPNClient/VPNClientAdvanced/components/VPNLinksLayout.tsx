@@ -1,8 +1,10 @@
 import { component$, Slot, useContext, useComputed$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 
 export const VPNLinksLayout = component$(() => {
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
 
   const foreignWANLinks = useComputed$(() => {
     // Get Foreign WAN configs from the WANLink structure
@@ -27,7 +29,10 @@ export const VPNLinksLayout = component$(() => {
         <div class="sticky top-4 space-y-4">
           <div class="rounded-lg bg-surface p-4 shadow-sm dark:bg-surface-dark">
             <h3 class="text-text-default mb-3 text-lg font-medium dark:text-text-dark-default">
-              {$localize`Foreign WAN Links`}
+              {semanticMessages.vpn_client_advanced_foreign_wan_links(
+                {},
+                { locale },
+              )}
             </h3>
 
             {foreignWANLinks.value.length > 0 ? (
@@ -52,13 +57,19 @@ export const VPNLinksLayout = component$(() => {
               </div>
             ) : (
               <p class="text-text-muted dark:text-text-dark-muted text-sm">
-                {$localize`No foreign WAN links configured`}
+                {semanticMessages.vpn_client_advanced_no_foreign_wan_links(
+                  {},
+                  { locale },
+                )}
               </p>
             )}
 
             <div class="mt-4 border-t border-border pt-4 dark:border-border-dark">
               <p class="text-text-muted dark:text-text-dark-muted text-sm">
-                {$localize`Minimum VPNs required: ${foreignWANLinks.value.length || 1}`}
+                {semanticMessages.vpn_client_advanced_minimum_vpns_required(
+                  { count: foreignWANLinks.value.length || 1 },
+                  { locale },
+                )}
               </p>
             </div>
           </div>
@@ -80,7 +91,12 @@ export const VPNLinksLayout = component$(() => {
               </div>
               <div class="ml-3">
                 <p class="text-sm text-info-700 dark:text-info-300">
-                  {$localize`Each foreign WAN link should have at least one VPN client configured for optimal redundancy.`}
+                  {semanticMessages.vpn_client_advanced_redundancy_hint(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </p>
               </div>
             </div>

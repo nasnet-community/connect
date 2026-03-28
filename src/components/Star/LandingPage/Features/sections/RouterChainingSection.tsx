@@ -3,8 +3,10 @@ import { LuRouter, LuWifi, LuNetwork } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const RouterChainingSection = component$(() => {
+  const locale = useMessageLocale();
   const activeRouter = useSignal<number>(0);
   const selectedNode = useSignal<string | null>(null);
   const showCoverage = useSignal(true);
@@ -12,25 +14,25 @@ export const RouterChainingSection = component$(() => {
   const routers = [
     {
       id: "master",
-      name: $localize`Master Router`,
+      name: semanticMessages.landing_router_chain_master({}, { locale }),
       type: "primary",
       signal: 100,
     },
     {
       id: "slave1",
-      name: $localize`Slave Router 1`,
+      name: semanticMessages.landing_router_chain_slave_1({}, { locale }),
       type: "secondary",
       signal: 90,
     },
     {
       id: "slave2",
-      name: $localize`Slave Router 2`,
+      name: semanticMessages.landing_router_chain_slave_2({}, { locale }),
       type: "secondary",
       signal: 85,
     },
     {
       id: "slave3",
-      name: $localize`Slave Router 3`,
+      name: semanticMessages.landing_router_chain_slave_3({}, { locale }),
       type: "secondary",
       signal: 80,
     },
@@ -39,26 +41,36 @@ export const RouterChainingSection = component$(() => {
   // Graph nodes for router chain topology
   const nodes: GraphNode[] = [
     createNode("WirelessRouter", "master", 250, 200, {
-      label: $localize`Master Router`,
+      label: semanticMessages.landing_router_chain_master({}, { locale }),
     }),
     createNode("AP", "slave1", 100, 100, {
-      label: $localize`Slave Router 1`,
+      label: semanticMessages.landing_router_chain_slave_1({}, { locale }),
     }),
     createNode("AP", "slave2", 400, 100, {
-      label: $localize`Slave Router 2`,
+      label: semanticMessages.landing_router_chain_slave_2({}, { locale }),
     }),
     createNode("AP", "slave3", 250, 350, {
-      label: $localize`Slave Router 3`,
+      label: semanticMessages.landing_router_chain_slave_3({}, { locale }),
     }),
     // Client devices
     createNode("WirelessUser", "client1", 50, 200, {
-      label: $localize`Mobile Device`,
+      label: semanticMessages.landing_router_chain_mobile_device(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("EthernetUser", "client2", 450, 200, {
-      label: $localize`Desktop`,
+      label: semanticMessages.landing_vpn_server_desktop_client(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("GamingConsole", "client3", 150, 300, {
-      label: $localize`Gaming Console`,
+      label: semanticMessages.landing_gaming_console({}, { locale }),
     }),
   ];
 
@@ -69,7 +81,7 @@ export const RouterChainingSection = component$(() => {
       from: "master",
       to: "slave1",
       connectionType: "Wireless",
-      label: $localize`Mesh Link`,
+      label: semanticMessages.landing_router_chain_mesh_link({}, { locale }),
       animated: true,
       width: 3,
       color: "#10b981",
@@ -78,7 +90,7 @@ export const RouterChainingSection = component$(() => {
       from: "master",
       to: "slave2",
       connectionType: "Wireless",
-      label: $localize`Mesh Link`,
+      label: semanticMessages.landing_router_chain_mesh_link({}, { locale }),
       animated: true,
       width: 3,
       color: "#10b981",
@@ -87,7 +99,7 @@ export const RouterChainingSection = component$(() => {
       from: "master",
       to: "slave3",
       connectionType: "Wireless",
-      label: $localize`Mesh Link`,
+      label: semanticMessages.landing_router_chain_mesh_link({}, { locale }),
       animated: true,
       width: 3,
       color: "#10b981",
@@ -322,13 +334,23 @@ export const RouterChainingSection = component$(() => {
                     }`}
                   >
                     <LuWifi class="h-4 w-4" />
-                    {$localize`Show Coverage`}
+                    {semanticMessages.landing_router_chain_show_coverage(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </button>
                 </div>
                 <div class="flex items-center gap-2">
                   <LuWifi class="h-4 w-4 animate-pulse text-green-500" />
                   <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Active Mesh Network`}
+                    {semanticMessages.landing_router_chain_active_mesh(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                 </div>
               </div>
@@ -337,17 +359,50 @@ export const RouterChainingSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`Router Chain Topology`}
+                title={semanticMessages.landing_router_chain_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={{
                   width: "100%",
                   height: "450px",
                   viewBox: "0 0 500 450",
                   showLegend: true,
                   legendItems: [
-                    { color: "#10b981", label: $localize`Master-Slave Link` },
-                    { color: "#34d399", label: $localize`Mesh Interconnect` },
-                    { color: "#60a5fa", label: $localize`Client Connection` },
-                    { color: "#ef4444", label: $localize`Gaming Traffic` },
+                    {
+                      color: "#10b981",
+                      label:
+                        semanticMessages.landing_router_chain_master_slave_link(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#34d399",
+                      label:
+                        semanticMessages.landing_router_chain_mesh_interconnect(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#60a5fa",
+                      label:
+                        semanticMessages.landing_router_chain_client_connection(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#ef4444",
+                      label:
+                        semanticMessages.landing_router_chain_gaming_traffic(
+                          {},
+                          { locale },
+                        ),
+                    },
                   ],
                 }}
                 onNodeClick$={handleNodeClick}
@@ -359,7 +414,12 @@ export const RouterChainingSection = component$(() => {
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {$localize`Active Router`}
+                      {semanticMessages.landing_router_chain_active_router(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </div>
                     <div class="text-lg font-bold text-gray-900 dark:text-white">
                       {selectedNode.value || routers[activeRouter.value].name}
@@ -367,7 +427,12 @@ export const RouterChainingSection = component$(() => {
                   </div>
                   <div>
                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {$localize`Signal Strength`}
+                      {semanticMessages.landing_router_chain_signal_strength(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </div>
                     <div class="text-lg font-bold text-green-500">
                       {routers[activeRouter.value].signal}%
@@ -375,7 +440,12 @@ export const RouterChainingSection = component$(() => {
                   </div>
                   <div>
                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {$localize`Connected Devices`}
+                      {semanticMessages.landing_router_chain_connected_devices(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </div>
                     <div class="text-lg font-bold text-blue-500">3</div>
                   </div>
@@ -387,21 +457,36 @@ export const RouterChainingSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-right order-1 space-y-6 lg:order-2">
             <Badge color="success" variant="outline" size="lg">
-              {$localize`Network Expansion`}
+              {semanticMessages.landing_router_chain_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                {$localize`Router Chaining`}
+                {semanticMessages.landing_router_chain_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`& Coverage`}
+                {semanticMessages.landing_router_chain_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Master-Slave architecture for seamless network expansion. Connect multiple routers to extend coverage, increase capacity, and create unified wireless networks.`}
+              {semanticMessages.landing_router_chain_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
 
             <div class="space-y-4">
@@ -411,10 +496,20 @@ export const RouterChainingSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Extended Range`}
+                    {semanticMessages.landing_router_chain_extended_range(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Expand coverage area with multiple access points`}
+                    {semanticMessages.landing_router_chain_extended_range_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -425,10 +520,20 @@ export const RouterChainingSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Seamless Roaming`}
+                    {semanticMessages.landing_router_chain_roaming(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Automatic handoff between routers without disconnection`}
+                    {semanticMessages.landing_router_chain_roaming_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -439,10 +544,20 @@ export const RouterChainingSection = component$(() => {
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900 dark:text-white">
-                    {$localize`Unified Control`}
+                    {semanticMessages.landing_router_chain_unified_control(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Manage all routers from a single master interface`}
+                    {semanticMessages.landing_router_chain_unified_control_desc(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -452,15 +567,36 @@ export const RouterChainingSection = component$(() => {
             <div class="grid grid-cols-3 gap-4 pt-4">
               <div class="rounded-xl bg-white/50 p-3 text-center dark:bg-black/50">
                 <div class="text-2xl font-bold text-green-600">17+</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Router Models`}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_router_chain_stat_models(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </div>
               </div>
               <div class="rounded-xl bg-white/50 p-3 text-center dark:bg-black/50">
                 <div class="text-2xl font-bold text-emerald-600">∞</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Expansion`}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_router_chain_stat_expansion(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </div>
               </div>
               <div class="rounded-xl bg-white/50 p-3 text-center dark:bg-black/50">
                 <div class="text-2xl font-bold text-teal-600">100%</div>
-                <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Coverage`}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_router_chain_stat_coverage(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </div>
               </div>
             </div>
           </div>

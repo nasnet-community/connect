@@ -16,6 +16,7 @@ import type {
 import { addOccupiedInterface } from "../../utils/InterfaceManagementUtils";
 import type { InterfaceType } from "../../StarContext/CommonType";
 import { SelectionStepSection } from "../shared/SelectionStepSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define SlaveInterfaceMapping locally since it doesn't exist in StarContext
 interface SlaveInterfaceMapping {
@@ -32,6 +33,7 @@ interface MultiSlaveInterfaceSelectorProps {
 
 export const MultiSlaveInterfaceSelector = component$(
   (props: MultiSlaveInterfaceSelectorProps) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext);
     const routerModels = starContext.state.Choose.RouterModels;
     // Since StarContext doesn't have complex trunk interface structure,
@@ -245,8 +247,8 @@ export const MultiSlaveInterfaceSelector = component$(
 
     return (
       <SelectionStepSection
-        title={$localize`Configure Router + Access Point Connections`}
-        description={$localize`Map each slave router to a master interface`}
+        title={semanticMessages.trunk_multi_title({}, { locale })}
+        description={semanticMessages.trunk_multi_description({}, { locale })}
         descriptionClass="mx-auto mt-3 max-w-2xl text-text-secondary/90 dark:text-text-dark-secondary"
       >
         {/* Master Router Info */}
@@ -258,7 +260,7 @@ export const MultiSlaveInterfaceSelector = component$(
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-text dark:text-text-dark-default">
-                  {$localize`Master Router`}
+                  {semanticMessages.trunk_multi_master_router({}, { locale })}
                 </h3>
                 <p class="text-text-secondary dark:text-text-dark-secondary text-sm">
                   {masterRouter.Model}
@@ -269,7 +271,12 @@ export const MultiSlaveInterfaceSelector = component$(
             {/* Available master interfaces summary */}
             <div class="bg-surface-secondary/30 dark:bg-surface-dark-secondary/30 rounded-lg p-4">
               <p class="mb-2 text-sm font-medium text-text dark:text-text-dark-default">
-                {$localize`Available Interfaces:`}
+                {semanticMessages.trunk_multi_available_interfaces(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
               <div class="flex flex-wrap gap-2">
                 {[
@@ -323,7 +330,10 @@ export const MultiSlaveInterfaceSelector = component$(
                       </div>
                       <div>
                         <h4 class="font-semibold text-text dark:text-text-dark-default">
-                          {$localize`Slave Router ${index + 1}`}
+                          {semanticMessages.trunk_multi_slave_router(
+                            { number: String(index + 1) },
+                            { locale },
+                          )}
                         </h4>
                         <p class="text-text-secondary dark:text-text-dark-secondary text-sm">
                           {slaveRouter.Model}
@@ -336,11 +346,11 @@ export const MultiSlaveInterfaceSelector = component$(
                     currentMapping.slaveInterface ? (
                       <span class="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success dark:bg-success/20 dark:text-success-light">
                         <LuLink class="h-3 w-3" />
-                        {$localize`Configured`}
+                        {semanticMessages.shared_configured({}, { locale })}
                       </span>
                     ) : (
                       <span class="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-3 py-1 text-xs font-medium text-warning dark:bg-warning/20 dark:text-warning-light">
-                        {$localize`Pending`}
+                        {semanticMessages.trunk_multi_pending({}, { locale })}
                       </span>
                     )}
                   </div>
@@ -351,7 +361,12 @@ export const MultiSlaveInterfaceSelector = component$(
                   {/* Connection Type Selection */}
                   <div>
                     <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                      {$localize`Connection Type`}
+                      {semanticMessages.trunk_multi_connection_type(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </label>
                     <div class="grid grid-cols-2 gap-3">
                       <button
@@ -370,7 +385,9 @@ export const MultiSlaveInterfaceSelector = component$(
                         }`}
                       >
                         <LuCable class="h-5 w-5" />
-                        <span class="text-sm font-medium">{$localize`Wired`}</span>
+                        <span class="text-sm font-medium">
+                          {semanticMessages.trunk_multi_wired({}, { locale })}
+                        </span>
                       </button>
                       <button
                         onClick$={() =>
@@ -388,7 +405,14 @@ export const MultiSlaveInterfaceSelector = component$(
                         }`}
                       >
                         <LuWifi class="h-5 w-5" />
-                        <span class="text-sm font-medium">{$localize`Wireless`}</span>
+                        <span class="text-sm font-medium">
+                          {semanticMessages.trunk_multi_wireless(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -398,7 +422,10 @@ export const MultiSlaveInterfaceSelector = component$(
                     {/* Master Interface Selection */}
                     <div>
                       <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                        {$localize`Master Interface`}
+                        {semanticMessages.trunk_multi_master_interface(
+                          {},
+                          { locale },
+                        )}
                       </label>
                       <select
                         value={currentMapping?.masterInterface || ""}
@@ -412,7 +439,12 @@ export const MultiSlaveInterfaceSelector = component$(
                         }
                         class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       >
-                        <option value="">{$localize`Select interface...`}</option>
+                        <option value="">
+                          {semanticMessages.trunk_multi_select_interface(
+                            {},
+                            { locale },
+                          )}
+                        </option>
                         {masterRouter &&
                           getAvailableInterfaces(
                             masterRouter,
@@ -434,7 +466,10 @@ export const MultiSlaveInterfaceSelector = component$(
                     {/* Slave Interface Selection */}
                     <div>
                       <label class="mb-2 block text-sm font-medium text-text dark:text-text-dark-default">
-                        {$localize`Slave Interface`}
+                        {semanticMessages.trunk_multi_slave_interface(
+                          {},
+                          { locale },
+                        )}
                       </label>
                       <select
                         value={currentMapping?.slaveInterface || ""}
@@ -448,7 +483,12 @@ export const MultiSlaveInterfaceSelector = component$(
                         }
                         class="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-text transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                       >
-                        <option value="">{$localize`Select interface...`}</option>
+                        <option value="">
+                          {semanticMessages.trunk_multi_select_interface(
+                            {},
+                            { locale },
+                          )}
+                        </option>
                         {getAvailableInterfaces(
                           slaveRouter,
                           connectionType,
@@ -470,7 +510,12 @@ export const MultiSlaveInterfaceSelector = component$(
                         <div class="flex items-center gap-2">
                           <LuLink class="h-4 w-4 text-info dark:text-info-light" />
                           <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
-                            {$localize`Connection:`}
+                            {semanticMessages.trunk_multi_connection(
+                              {},
+                              {
+                                locale,
+                              },
+                            )}
                             <span class="ml-1 font-medium text-text dark:text-text-dark-default">
                               {masterRouter?.Model} (
                               {currentMapping.masterInterface})
@@ -491,12 +536,12 @@ export const MultiSlaveInterfaceSelector = component$(
         {/* Overall Status */}
         <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 mx-auto max-w-4xl rounded-xl p-4">
           <h3 class="mb-3 text-lg font-semibold text-text dark:text-text-dark-default">
-            {$localize`Configuration Summary`}
+            {semanticMessages.trunk_multi_summary_title({}, { locale })}
           </h3>
           <div class="space-y-2">
             {currentMappings.value.length === 0 ? (
               <p class="text-text-secondary dark:text-text-dark-secondary text-sm">
-                {$localize`No connections configured yet`}
+                {semanticMessages.trunk_multi_no_connections({}, { locale })}
               </p>
             ) : (
               currentMappings.value.map((mapping, idx) => (
@@ -518,7 +563,10 @@ export const MultiSlaveInterfaceSelector = component$(
           {slaveRouters.length > 0 && (
             <div class="mt-4 flex items-center justify-between">
               <span class="text-text-secondary dark:text-text-dark-secondary text-sm">
-                {$localize`Configured:`}{" "}
+                {semanticMessages.trunk_multi_configured_count_label(
+                  {},
+                  { locale },
+                )}{" "}
                 {
                   currentMappings.value.filter(
                     (m) => m.masterInterface && m.slaveInterface,
@@ -531,7 +579,10 @@ export const MultiSlaveInterfaceSelector = component$(
               ).length === slaveRouters.length && (
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success dark:bg-success/20 dark:text-success-light">
                   <LuLink class="h-3 w-3" />
-                  {$localize`All connections configured`}
+                  {semanticMessages.trunk_multi_all_connections_configured(
+                    {},
+                    { locale },
+                  )}
                 </span>
               )}
             </div>

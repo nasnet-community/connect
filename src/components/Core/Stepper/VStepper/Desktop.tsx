@@ -1,8 +1,10 @@
 import { component$ } from "@builder.io/qwik";
 import type { DesktopProps } from "./types";
 import { StepperProgressDisplay } from "../shared/components/StepperProgressDisplay";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Desktop = component$((props: DesktopProps) => {
+  const locale = useMessageLocale();
   const {
     activeStep,
     position,
@@ -30,7 +32,13 @@ export const Desktop = component$((props: DesktopProps) => {
           {showHelp && (
             <div class="mb-4 flex items-center justify-between">
               <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
-                {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
+                {semanticMessages.stepper_step_of_total(
+                  {
+                    current: String(activeStep.value + 1),
+                    total: String(props.steps.length),
+                  },
+                  { locale },
+                )}
               </span>
               <button
                 onClick$={() => onHelpClick$()}
@@ -42,7 +50,10 @@ export const Desktop = component$((props: DesktopProps) => {
                         ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30 dark:text-secondary-400"
                         : "text-text-secondary dark:text-text-dark-secondary hover:bg-primary-500/10 hover:text-primary-500 dark:hover:text-primary-400"
                   }`}
-                title={$localize`Get help for this step (Press ? key)`}
+                title={semanticMessages.stepper_help_button_shortcut_title(
+                  {},
+                  { locale },
+                )}
               >
                 <svg
                   class="h-3 w-3"
@@ -68,7 +79,13 @@ export const Desktop = component$((props: DesktopProps) => {
           {!showHelp && (
             <div class="mb-4 px-1">
               <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
-                {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
+                {semanticMessages.stepper_step_of_total(
+                  {
+                    current: String(activeStep.value + 1),
+                    total: String(props.steps.length),
+                  },
+                  { locale },
+                )}
               </span>
             </div>
           )}
