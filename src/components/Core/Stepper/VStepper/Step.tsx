@@ -18,7 +18,7 @@ export const Step = component$((props: StepProps) => {
     >
       {shouldRender && (
         <div
-          class={`rounded-xl bg-surface p-6 dark:bg-surface-dark
+          class={`rounded-xl bg-surface px-5 py-5 dark:bg-surface-dark md:px-6 md:py-6
             ${index === activeStep ? "ring-2 ring-primary-500/20" : ""}
             ${isVisible ? "opacity-100" : "translate-y-4 opacity-0"}
             transition-all duration-500 ease-in-out`}

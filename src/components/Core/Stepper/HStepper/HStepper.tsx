@@ -97,7 +97,7 @@ export const HStepper = component$((props: HStepperProps) => {
         </div>
       </div>
 
-      <div class="container mx-auto pb-20 pt-20 md:pt-20 lg:pt-24">
+      <div class="container mx-auto px-3 pb-20 pt-20 sm:px-4 lg:px-5 lg:pt-24 2xl:px-6">
         {/* Step Management UI (only visible in edit mode) */}
         {props.isEditMode &&
           hasEnhancedFeatures &&
@@ -114,8 +114,8 @@ export const HStepper = component$((props: HStepperProps) => {
             />
           )}
 
-        <div class="mx-auto max-w-4xl px-4">
-          <div class="min-h-[300px] rounded-[1.75rem] border border-border/60 bg-surface/95 p-5 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] dark:border-border-dark/60 dark:bg-surface-dark/95 md:p-6">
+        <div class="mx-auto max-w-4xl">
+          <div class="min-h-[300px] rounded-[1.75rem] border border-border/60 bg-surface/95 px-5 py-5 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.45)] dark:border-border-dark/60 dark:bg-surface-dark/95 md:px-6 md:py-6">
             <CurrentStepComponent />
           </div>
 

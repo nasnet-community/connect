@@ -19,12 +19,14 @@ import { generateUserUUID } from "~/utils/fingerprinting";
 import { DocumentSection } from "./DocumentSection/DocumentSection";
 import { EasyModeDownloadCard } from "./EasyModeDownloadCard";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { showConfigNewsletterClass, showConfigStageClass } from "./theme";
 
 export const ShowConfig = component$<StepProps>(() => {
   const ctx = useContext(StarContext);
   const configPreview = useSignal<string>("");
   const slaveRouterConfigs = useSignal<{ [key: number]: string }>({});
   const locale = useMessageLocale();
+  const isEasyMode = ctx.state.Choose.Mode === "easy";
 
   // Get slave routers from context
   const slaveRouters = ctx.state.Choose.RouterModels.filter(
@@ -45,7 +47,6 @@ export const ShowConfig = component$<StepProps>(() => {
 
   useTask$(async () => {
     // Apply easy-mode defaults before generating config
-    const isEasyMode = ctx.state.Choose.Mode === "easy";
     if (isEasyMode) {
       await applyEasyModeDefaults(ctx);
     }
@@ -141,49 +142,54 @@ export const ShowConfig = component$<StepProps>(() => {
     },
   );
 
+  const summaryNewsletterProps = {
+    variant: "horizontal" as const,
+    size: "sm" as const,
+    title: semanticMessages.show_config_newsletter_title({}, { locale }),
+    description: semanticMessages.show_config_newsletter_description(
+      {},
+      { locale },
+    ),
+    placeholder: semanticMessages.show_config_newsletter_placeholder(
+      {},
+      { locale },
+    ),
+    buttonText: semanticMessages.show_config_newsletter_button({}, { locale }),
+    showLogo: true,
+    themeColors: true,
+    theme: "branded" as const,
+    glassmorphism: false,
+    animated: true,
+    touchOptimized: false,
+    surfaceElevation: "base" as const,
+    compact: true,
+    showPrivacyNotice: false,
+    onSubscribe$: handleNewsletterSubscribe,
+    class: showConfigNewsletterClass,
+  };
+
   return (
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
-      {/* Newsletter Section - Moved to Top */}
-      <div class="container mx-auto px-4 pb-4 pt-8">
-        <Newsletter
-          variant="horizontal"
-          size="lg"
-          title={semanticMessages.show_config_newsletter_title({}, { locale })}
-          description={semanticMessages.show_config_newsletter_description(
-            {},
-            { locale },
-          )}
-          placeholder={semanticMessages.show_config_newsletter_placeholder(
-            {},
-            { locale },
-          )}
-          buttonText={semanticMessages.show_config_newsletter_button(
-            {},
-            { locale },
-          )}
-          onSubscribe$={handleNewsletterSubscribe}
-          showLogo={true}
-          glassmorphism={true}
-          themeColors={true}
-          theme="branded"
-          animated={true}
-          fullWidth={true}
+    <div class={showConfigStageClass}>
+      {!isEasyMode && (
+        <div class="container mx-auto px-0 pb-3 pt-4 sm:px-0 md:px-0 lg:px-0 xl:px-0 2xl:px-0">
+          <Newsletter {...summaryNewsletterProps} />
+        </div>
+      )}
+
+      {!isEasyMode && (
+        <Header
+          variant={slaveRouters.length > 0 ? "master" : "preview"}
+          title={
+            slaveRouters.length > 0
+              ? semanticMessages.show_config_master_title({}, { locale })
+              : semanticMessages.show_config_preview_title({}, { locale })
+          }
         />
-      </div>
+      )}
 
-      <Header
-        variant={slaveRouters.length > 0 ? "master" : "preview"}
-        title={
-          slaveRouters.length > 0
-            ? semanticMessages.show_config_master_title({}, { locale })
-            : semanticMessages.show_config_preview_title({}, { locale })
-        }
-      />
-
-      <div class="container mx-auto px-4 pb-16">
-        {/* Configuration Display - Conditional based on mode */}
-        <div class="mb-12">
-          {ctx.state.Choose.Mode === "easy" ? (
+      <div class="container mx-auto px-0 pb-10 sm:px-0 md:px-0 md:pb-12 lg:px-0 xl:px-0 2xl:px-0">
+        <div class="mb-8 md:mb-10">
+          {isEasyMode ? (
             <EasyModeDownloadCard onROSDownload$={handleROSDownload} />
           ) : (
             <Code
@@ -193,11 +199,16 @@ export const ShowConfig = component$<StepProps>(() => {
           )}
         </div>
 
-        {/* Display Slave Router Configurations */}
+        {isEasyMode && (
+          <div class="mb-8 md:mb-10">
+            <Newsletter {...summaryNewsletterProps} />
+          </div>
+        )}
+
         {slaveRouters.length > 0 &&
           slaveRouters.map((slaveRouter, index) => (
-            <div key={`${slaveRouter.Model}-${index}`} class="mb-12">
-              <div class="mb-8">
+            <div key={`${slaveRouter.Model}-${index}`} class="mb-8 md:mb-10">
+              <div class="mb-5 md:mb-6">
                 <Header
                   variant="slave"
                   title={semanticMessages.show_config_slave_title(
@@ -206,7 +217,7 @@ export const ShowConfig = component$<StepProps>(() => {
                   )}
                 />
               </div>
-              <div class="mb-12">
+              <div>
                 {ctx.state.Choose.Mode === "easy" ? (
                   <EasyModeDownloadCard
                     onROSDownload$={$(() =>
@@ -228,10 +239,10 @@ export const ShowConfig = component$<StepProps>(() => {
             </div>
           ))}
 
-        <ScriptGuide />
-
-        {/* Documentation & FAQ Section */}
-        <DocumentSection />
+        <div class="space-y-6 md:space-y-8">
+          <ScriptGuide />
+          <DocumentSection />
+        </div>
       </div>
     </div>
   );

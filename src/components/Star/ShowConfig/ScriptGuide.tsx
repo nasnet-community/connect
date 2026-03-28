@@ -1,5 +1,6 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { showConfigSubtlePanelClass } from "./theme";
 
 const gifScriptGuide = `${import.meta.env.BASE_URL}gifs/ScriptGuide.gif`;
 
@@ -8,12 +9,11 @@ export const ScriptGuide = component$(() => {
   const locale = useMessageLocale();
 
   return (
-    <div class="bg-surface-secondary dark:bg-surface-dark-secondary mt-6 overflow-hidden rounded-xl">
-      {/* Header Section */}
-      <div class="border-b border-gray-200 bg-surface/50 p-6 dark:border-gray-700 dark:bg-surface-dark/50">
-        <h4 class="flex items-center gap-3 text-xl font-semibold text-text dark:text-text-dark-default">
+    <div class={showConfigSubtlePanelClass}>
+      <div class="border-b border-gray-200 bg-surface/50 px-4 py-4 dark:border-gray-700 dark:bg-surface-dark/50 md:px-5 md:py-5">
+        <h4 class="flex items-center gap-3 text-lg font-semibold text-text dark:text-text-dark-default md:text-xl">
           <svg
-            class="text-primary h-6 w-6"
+            class="text-primary h-5 w-5 md:h-6 md:w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -29,26 +29,22 @@ export const ScriptGuide = component$(() => {
         </h4>
       </div>
 
-      {/* Main Content */}
-      <div class="space-y-8 p-6">
-        {/* Demo Section with fullscreen button */}
-        <div class="rounded-lg bg-surface p-4 dark:bg-surface-dark">
-          <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
+      <div class="space-y-4 p-4 md:p-5">
+        <div class="rounded-lg bg-surface p-3 dark:bg-surface-dark md:p-4">
+          <h5 class="mb-3 text-base font-medium text-text dark:text-text-dark-default md:text-lg">
             {semanticMessages.show_config_guide_visual_title({}, { locale })}
           </h5>
           <div class="relative overflow-hidden rounded-lg">
             <button
               onClick$={() => (isFullScreen.value = true)}
-              class="absolute right-4 top-4 rounded-lg bg-surface/80 p-2
-                   shadow-lg backdrop-blur transition-colors hover:bg-surface
-                   dark:bg-surface-dark/80 dark:hover:bg-surface-dark"
+              class="absolute right-3 top-3 rounded-lg bg-surface/80 p-2 shadow-lg backdrop-blur transition-colors hover:bg-surface dark:bg-surface-dark/80 dark:hover:bg-surface-dark"
               aria-label={semanticMessages.show_config_guide_open_fullscreen(
                 {},
                 { locale },
               )}
             >
               <svg
-                class="h-6 w-6 text-text dark:text-text-dark-default"
+                class="h-5 w-5 text-text dark:text-text-dark-default"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -66,8 +62,7 @@ export const ScriptGuide = component$(() => {
               alt={semanticMessages.show_config_guide_image_alt({}, { locale })}
               width={1024}
               height={576}
-              class="w-full rounded-lg shadow-lg transition-all duration-300
-                   hover:shadow-xl dark:border dark:border-gray-700"
+              class="w-full rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl dark:border dark:border-gray-700"
               loading="lazy"
               decoding="async"
             />
