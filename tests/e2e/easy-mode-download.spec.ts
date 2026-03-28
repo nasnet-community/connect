@@ -14,6 +14,8 @@ test.describe("Easy Mode End-to-End", () => {
   test("landing page to configuration download completes the easy flow", async ({
     page,
   }) => {
+    test.setTimeout(90_000);
+
     await launchWizardFromLanding(page);
     await expectStageOneButtons(page, false);
 

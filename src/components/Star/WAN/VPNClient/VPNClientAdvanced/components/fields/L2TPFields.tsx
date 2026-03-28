@@ -27,7 +27,6 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
               console.log("[L2TPFields] Server Address updated:", value);
               onUpdate$({
                 Server: {
-                  ...config.Server,
                   Address: value,
                 },
               });
@@ -75,10 +74,8 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
               console.log("[L2TPFields] Username updated:", value);
               onUpdate$({
                 Credentials: {
-                  ...config.Credentials,
                   Username: value,
-                  Password: config.Credentials?.Password || "",
-                },
+                } as any,
               });
             }}
             placeholder="Your username"
@@ -101,10 +98,8 @@ export const L2TPFields = component$<L2TPFieldsProps>((props) => {
               );
               onUpdate$({
                 Credentials: {
-                  ...config.Credentials,
-                  Username: config.Credentials?.Username || "",
                   Password: value,
-                },
+                } as any,
               });
             }}
             placeholder="Your password"

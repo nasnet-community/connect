@@ -38,6 +38,30 @@ export interface UseVPNClientAdvancedReturn {
   applyConfiguration$: QRL<() => void>;
 }
 
+const isMergeableRecord = (
+  value: unknown,
+): value is Record<string, unknown> => {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+};
+
+const mergeConfigPatch = (
+  currentConfig: Record<string, unknown>,
+  configPatch: Record<string, unknown>,
+): Record<string, unknown> => {
+  const mergedConfig = { ...currentConfig };
+
+  for (const [key, value] of Object.entries(configPatch)) {
+    const currentValue = mergedConfig[key];
+
+    mergedConfig[key] =
+      isMergeableRecord(currentValue) && isMergeableRecord(value)
+        ? { ...currentValue, ...value }
+        : value;
+  }
+
+  return mergedConfig;
+};
+
 export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
   const starContext = useContext(StarContext);
   const networks = useNetworks();
@@ -363,6 +387,21 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
         if ("config" in newConfig) {
           (updatedVPN as any).config = newConfig.config;
         }
+      } else if (
+        "config" in updates &&
+        updates.config &&
+        "config" in currentVPN
+      ) {
+        const currentConfig = currentVPN.config as unknown as Record<
+          string,
+          unknown
+        >;
+        const nextConfig = updates.config as unknown as Record<string, unknown>;
+
+        (updatedVPN as any).config = mergeConfigPatch(
+          currentConfig,
+          nextConfig,
+        );
       }
 
       // Use Object.assign for proper Qwik reactivity

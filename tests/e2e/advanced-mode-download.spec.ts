@@ -133,13 +133,34 @@ test.describe("Advanced Mode End-to-End", () => {
     await expect(
       page.getByRole("heading", { name: /L2TP Configuration/i }),
     ).toBeVisible();
+    const l2tpConfigurationSection = page
+      .getByRole("heading", { name: /L2TP Configuration/i })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-lg border border-gray-200 p-4")][1]');
+    const l2tpServerInput = l2tpConfigurationSection.getByPlaceholder(
+      "vpn.example.com",
+    );
+    const l2tpUsernameInput = l2tpConfigurationSection.getByPlaceholder(
+      "Your username",
+    );
+    const l2tpPasswordInput = l2tpConfigurationSection.getByPlaceholder(
+      "Your password",
+    );
 
-    await page.getByPlaceholder("vpn.example.com").last().fill("vpn.example.com");
-    await page.getByPlaceholder("Your username").last().fill("advancedvpn1");
-    await page
-      .getByPlaceholder("Your password")
-      .last()
-      .fill("AdvancedVpnPass123!");
+    await l2tpServerInput.fill("vpn.example.com");
+    await expect(l2tpServerInput).toHaveValue("vpn.example.com", {
+      timeout: 10_000,
+    });
+    await l2tpUsernameInput.fill("advancedvpn1");
+    await expect(l2tpUsernameInput).toHaveValue("advancedvpn1", {
+      timeout: 10_000,
+    });
+    await l2tpPasswordInput.fill("AdvancedVpnPass123!");
+    await expect(l2tpPasswordInput).toHaveValue("AdvancedVpnPass123!", {
+      timeout: 10_000,
+    });
+    await expect(advancedVpnStepper.getByTestId("stepper-next-button")).toBeEnabled({
+      timeout: 10_000,
+    });
     await advancedVpnStepper.getByTestId("stepper-next-button").click();
     await advancedVpnStepper
       .getByRole("button", { name: /Complete all steps/i })

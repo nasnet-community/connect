@@ -52,13 +52,13 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
       }
     });
 
-    const handleUpdateVPNConfig = $(async (vpnId: string, config: any) => {
+    const handleUpdateVPNConfig = $(async (vpnId: string, updates: any) => {
       try {
         console.log(
           `[Step2_VPNConfiguration] Updating VPN config for ${vpnId}:`,
-          config,
+          updates,
         );
-        await wizardActions.updateVPN$(vpnId, { config: config });
+        await wizardActions.updateVPN$(vpnId, { config: updates as any });
 
         // Immediately trigger refresh - WANAdvanced pattern
         if (onRefreshCompletion$) {
@@ -616,10 +616,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <WireguardFields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                             mode="advanced"
@@ -630,10 +627,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <OpenVPNFields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                             mode="advanced"
@@ -644,10 +638,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <L2TPFields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                           />
@@ -657,10 +648,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <IKEv2Fields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                           />
@@ -670,10 +658,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <PPTPFields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                           />
@@ -683,10 +668,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           <SSTFields
                             config={vpn.config}
                             onUpdate$={$((updates) =>
-                              handleUpdateVPNConfig(vpn.id, {
-                                ...vpn.config,
-                                ...updates,
-                              }),
+                              handleUpdateVPNConfig(vpn.id, updates),
                             )}
                             errors={{}}
                           />
