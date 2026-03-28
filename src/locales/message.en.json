@@ -210,7 +210,7 @@
     "7833208209886904137": "Configuration Preview",
     "8683520598410429187": "Slave router configuration ready for deployment on your secondary MikroTik device",
     "1838606155529813479": "Master router configuration with complete network setup and routing rules",
-    "1841065752496001698": "Below you'll find your generated configuration. You can use either Python or MikroTik script to apply these settings.",
+    "1841065752496001698": "Below you'll find your generated configuration. Use the MikroTik script below to apply these settings.",
     "8877738938652669673": "Network tunneling is currently disabled. Enable it using the toggle above to configure tunnel settings.",
     "3768927257183755959": "Save",
     "3752531211271287648": "Select Protocol",

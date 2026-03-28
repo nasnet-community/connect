@@ -34,7 +34,6 @@ export const ShowConfig = component$<StepProps>(() => {
 
   const {
     downloadFile,
-    generatePythonScript,
     generateROSScript,
     generateConfigPreview,
     generateSlaveRouterScript,
@@ -64,18 +63,6 @@ export const ShowConfig = component$<StepProps>(() => {
     }
   });
 
-  const handlePythonDownload = $(async () => {
-    // Track Python script download
-    track("config_downloaded", {
-      file_type: "python",
-      format: "py",
-      step: "show_config",
-    });
-
-    const content = await generatePythonScript();
-    await downloadFile(content, "py");
-  });
-
   const handleROSDownload = $(async () => {
     // Track ROS script download
     track("config_downloaded", {
@@ -101,29 +88,6 @@ export const ShowConfig = component$<StepProps>(() => {
 
       const content = await generateSlaveRouterScript(slaveRouter, index);
       await downloadSlaveRouterFile(content, slaveRouter, index, "rsc");
-    },
-  );
-
-  const handleSlaveRouterPythonDownload = $(
-    async (slaveRouter: (typeof slaveRouters)[0], index: number) => {
-      // Track slave router Python script download
-      track("config_downloaded", {
-        file_type: "python_slave",
-        format: "py",
-        step: "show_config",
-        router_model: slaveRouter.Model,
-        router_index: index,
-      });
-
-      // For now, use a placeholder Python script
-      const content = `# Python configuration for ${slaveRouter.Model} (Slave Router ${index + 1})
-import routeros_api
-
-def configure_slave_router(host, username, password):
-    # TODO: Implement slave router Python configuration
-    pass`;
-
-      await downloadSlaveRouterFile(content, slaveRouter, index, "py");
     },
   );
 
@@ -212,7 +176,6 @@ def configure_slave_router(host, username, password):
           ) : (
             <Code
               configPreview={configPreview.value}
-              onPythonDownload$={handlePythonDownload}
               onROSDownload$={handleROSDownload}
             />
           )}
@@ -240,9 +203,6 @@ def configure_slave_router(host, username, password):
                       slaveRouterConfigs.value[index] ||
                       $localize`Generating configuration...`
                     }
-                    onPythonDownload$={$(() =>
-                      handleSlaveRouterPythonDownload(slaveRouter, index),
-                    )}
                     onROSDownload$={$(() =>
                       handleSlaveRouterDownload(slaveRouter, index),
                     )}
