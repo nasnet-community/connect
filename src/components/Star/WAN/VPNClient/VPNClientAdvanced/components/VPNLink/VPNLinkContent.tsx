@@ -4,6 +4,7 @@ import type {
   VPNClientConfig,
   VPNType,
 } from "../../types/VPNClientAdvancedTypes";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNLinkContentProps {
   vpn: VPNClientConfig;
@@ -13,6 +14,7 @@ export interface VPNLinkContentProps {
 
 export const VPNLinkContent = component$<VPNLinkContentProps>(
   ({ vpn, validationErrors = {}, onUpdate$ }) => {
+    const locale = useMessageLocale();
     const vpnTypeOptions = [
       { value: "Wireguard", label: "WireGuard" },
       { value: "OpenVPN", label: "OpenVPN" },
@@ -50,13 +52,21 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                     />
                   </svg>
                 </span>
-                {$localize`Basic Configuration`}
+                {semanticMessages.vpn_server_basic_configuration(
+                  {},
+                  { locale },
+                )}
               </h4>
             </div>
 
             {/* VPN Name */}
             <FormField
-              label={$localize`VPN Client Name`}
+              label={semanticMessages.vpn_client_advanced_vpn_client_name(
+                {},
+                {
+                  locale,
+                },
+              )}
               error={validationErrors[`vpn-${vpn.id}-name`][0]}
             >
               <Input
@@ -67,13 +77,19 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                     onUpdate$({ name: (e.target as HTMLInputElement).value });
                   }
                 }}
-                placeholder={$localize`Enter VPN client name`}
+                placeholder={semanticMessages.vpn_client_advanced_enter_vpn_client_name(
+                  {},
+                  { locale },
+                )}
               />
             </FormField>
 
             {/* Description */}
             <FormField
-              label={$localize`Description (Optional)`}
+              label={semanticMessages.vpn_client_advanced_description_optional(
+                {},
+                { locale },
+              )}
               error={validationErrors[`vpn-${vpn.id}-description`][0]}
             >
               <Input
@@ -86,13 +102,19 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                     });
                   }
                 }}
-                placeholder={$localize`Describe this VPN connection`}
+                placeholder={semanticMessages.vpn_client_advanced_describe_connection(
+                  {},
+                  { locale },
+                )}
               />
             </FormField>
 
             {/* VPN Type */}
             <FormField
-              label={$localize`VPN Protocol`}
+              label={semanticMessages.vpn_client_advanced_protocol(
+                {},
+                { locale },
+              )}
               error={validationErrors[`vpn-${vpn.id}-type`][0]}
             >
               <Select
@@ -103,13 +125,16 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                   }
                 }}
                 options={vpnTypeOptions}
-                placeholder={$localize`Select VPN protocol`}
+                placeholder={semanticMessages.vpn_client_advanced_select_protocol(
+                  {},
+                  { locale },
+                )}
               />
             </FormField>
 
             {/* Priority */}
             <FormField
-              label={$localize`Priority`}
+              label={semanticMessages.wan_advanced_priority({}, { locale })}
               error={validationErrors[`vpn-${vpn.id}-priority`][0]}
             >
               <Input
@@ -127,7 +152,12 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                 max="10"
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {$localize`Lower numbers have higher priority (1 = highest priority)`}
+                {semanticMessages.vpn_client_advanced_priority_order_note(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </FormField>
 
@@ -135,10 +165,18 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
             <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
               <div>
                 <h5 class="text-sm font-medium text-gray-900 dark:text-white">
-                  {$localize`Enable VPN Client`}
+                  {semanticMessages.vpn_client_advanced_enable_vpn_client(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {$localize`Enable or disable this VPN connection`}
+                  {semanticMessages.vpn_client_advanced_enable_or_disable_connection(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
               <label class="relative inline-flex cursor-pointer items-center">
@@ -178,17 +216,37 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                     />
                   </svg>
                 </span>
-                {$localize`Protocol Configuration`}
+                {semanticMessages.vpn_client_advanced_protocol_configuration_title(
+                  {},
+                  { locale },
+                )}
               </h4>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {$localize`${vpn.type} specific settings`}
+                {semanticMessages.vpn_client_advanced_protocol_specific_settings(
+                  {
+                    type:
+                      vpn.type ||
+                      semanticMessages.vpn_client_advanced_protocol(
+                        {},
+                        {
+                          locale,
+                        },
+                      ),
+                  },
+                  { locale },
+                )}
               </p>
             </div>
 
             {vpn.type === "Wireguard" && vpn.connectionConfig?.wireguard && (
               <div class="space-y-4">
                 <FormField
-                  label={$localize`Server Address`}
+                  label={semanticMessages.vpn_openvpn_server_address(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                   error={validationErrors[`vpn-${vpn.id}-server-address`][0]}
                 >
                   <Input
@@ -211,12 +269,20 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                         });
                       }
                     }}
-                    placeholder={$localize`vpn.example.com or 192.168.1.1`}
+                    placeholder={semanticMessages.vpn_client_advanced_server_example(
+                      {},
+                      { locale },
+                    )}
                   />
                 </FormField>
 
                 <FormField
-                  label={$localize`Server Port`}
+                  label={semanticMessages.vpn_openvpn_server_port(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                   error={validationErrors[`vpn-${vpn.id}-server-port`][0]}
                 >
                   <Input
@@ -250,7 +316,12 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
             {vpn.type === "OpenVPN" && vpn.connectionConfig?.openvpn && (
               <div class="space-y-4">
                 <FormField
-                  label={$localize`Server Address`}
+                  label={semanticMessages.vpn_openvpn_server_address(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                   error={validationErrors[`vpn-${vpn.id}-server-address`][0]}
                 >
                   <Input
@@ -272,12 +343,20 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                         });
                       }
                     }}
-                    placeholder={$localize`vpn.example.com or 192.168.1.1`}
+                    placeholder={semanticMessages.vpn_client_advanced_server_example(
+                      {},
+                      { locale },
+                    )}
                   />
                 </FormField>
 
                 <FormField
-                  label={$localize`Server Port`}
+                  label={semanticMessages.vpn_openvpn_server_port(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                   error={validationErrors[`vpn-${vpn.id}-server-port`][0]}
                 >
                   <Input
@@ -328,10 +407,16 @@ export const VPNLinkContent = component$<VPNLinkContentProps>(
                   />
                 </svg>
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {$localize`Select a VPN protocol to configure connection settings`}
+                  {semanticMessages.vpn_client_advanced_select_protocol_for_connection_settings(
+                    {},
+                    { locale },
+                  )}
                 </p>
                 <p class="text-xs text-gray-400 dark:text-gray-500">
-                  {$localize`Configuration fields will appear here based on your protocol choice`}
+                  {semanticMessages.vpn_client_advanced_configuration_fields_appear(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             )}

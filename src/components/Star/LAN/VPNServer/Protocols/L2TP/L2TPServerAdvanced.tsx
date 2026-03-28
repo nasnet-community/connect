@@ -9,6 +9,7 @@ import {
 import { PasswordField } from "~/components/Core/Form/PasswordField";
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { NetworkDropdown } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * L2TP Server Configuration Component
@@ -20,20 +21,30 @@ import { NetworkDropdown } from "../../components/NetworkSelection";
  * - Configure MTU/MRU and other connection parameters
  */
 export const L2TPServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const { advancedFormState, updateUseIpsec$, updateIpsecSecret$ } =
     useL2TPServer();
 
   return (
     <ServerCard
-      title={$localize`L2TP Server`}
+      title={semanticMessages.vpn_server_l2tp_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       {/* Basic Configuration */}
       <div class="mb-6 space-y-4">
-        <SectionTitle title={$localize`Basic Configuration`} />
+        <SectionTitle
+          title={semanticMessages.vpn_server_basic_configuration(
+            {},
+            {
+              locale,
+            },
+          )}
+        />
 
         {/* Network Selection */}
-        <ServerFormField label={$localize`Network`}>
+        <ServerFormField
+          label={semanticMessages.vpn_server_network_label({}, { locale })}
+        >
           <NetworkDropdown
             selectedNetwork={"VPN" as const}
             onNetworkChange$={(network) => {
@@ -43,7 +54,9 @@ export const L2TPServerAdvanced = component$(() => {
         </ServerFormField>
 
         {/* IPsec Usage Dropdown */}
-        <ServerFormField label={$localize`Use IPsec`}>
+        <ServerFormField
+          label={semanticMessages.vpn_server_l2tp_use_ipsec({}, { locale })}
+        >
           <UnifiedSelect
             value={advancedFormState.useIpsec.toString()}
             onChange$={(value) => {
@@ -52,20 +65,39 @@ export const L2TPServerAdvanced = component$(() => {
               }
             }}
             options={[
-              { value: "yes", label: $localize`Yes` },
-              { value: "no", label: $localize`No` },
-              { value: "required", label: $localize`Required` },
+              {
+                value: "yes",
+                label: semanticMessages.shared_yes({}, { locale }),
+              },
+              {
+                value: "no",
+                label: semanticMessages.shared_no({}, { locale }),
+              },
+              {
+                value: "required",
+                label: semanticMessages.shared_required({}, { locale }),
+              },
             ]}
           />
         </ServerFormField>
 
         {/* IPsec Secret Key - Only shown when IPsec is enabled */}
         {advancedFormState.useIpsec !== "no" && (
-          <ServerFormField label={$localize`IPsec Secret Key`}>
+          <ServerFormField
+            label={semanticMessages.vpn_server_l2tp_ipsec_secret(
+              {},
+              {
+                locale,
+              },
+            )}
+          >
             <PasswordField
               value={advancedFormState.ipsecSecret}
               onValueChange$={(value) => updateIpsecSecret$(value)}
-              placeholder={$localize`Enter IPsec secret key`}
+              placeholder={semanticMessages.vpn_server_l2tp_ipsec_placeholder(
+                {},
+                { locale },
+              )}
             />
           </ServerFormField>
         )}
@@ -76,7 +108,7 @@ export const L2TPServerAdvanced = component$(() => {
         onClick$={applyChanges}
         class="mt-4"
       >
-        {$localize`Apply Settings`}
+        Apply Settings
       </ServerButton> */}
     </ServerCard>
   );

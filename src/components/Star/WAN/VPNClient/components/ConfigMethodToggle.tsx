@@ -1,4 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface ConfigMethodToggleProps {
   method: "file" | "manual";
@@ -8,6 +9,8 @@ export interface ConfigMethodToggleProps {
 
 export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
   ({ method, onMethodChange$, class: className = "" }) => {
+    const locale = useMessageLocale();
+
     return (
       <div
         class={`inline-flex overflow-hidden rounded-lg border border-border dark:border-border-dark ${className}`}
@@ -20,7 +23,7 @@ export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
               : "text-text-default bg-white hover:bg-gray-50 dark:bg-surface-dark dark:text-text-dark-default dark:hover:bg-gray-800"
           }`}
         >
-          {$localize`Configuration File`}
+          {semanticMessages.config_method_toggle_file({}, { locale })}
         </button>
         <button
           onClick$={() => onMethodChange$("manual")}
@@ -30,7 +33,7 @@ export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
               : "text-text-default bg-white hover:bg-gray-50 dark:bg-surface-dark dark:text-text-dark-default dark:hover:bg-gray-800"
           }`}
         >
-          {$localize`Manual Setup`}
+          {semanticMessages.config_method_toggle_manual({}, { locale })}
         </button>
       </div>
     );

@@ -7,6 +7,7 @@ import {
 } from "@builder.io/qwik";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { SubnetConfig, UseSubnetsReturn, SubnetCategory } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Custom hook for managing subnet configuration state and logic
@@ -14,6 +15,7 @@ import type { SubnetConfig, UseSubnetsReturn, SubnetCategory } from "./types";
  */
 export const useSubnets = (): UseSubnetsReturn => {
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
 
   // Local state for subnet values and errors
   const values = useSignal<Record<string, number | null>>({});
@@ -240,10 +242,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.BaseNetworks?.Split) {
       configs.push({
         key: "Split",
-        label: $localize`Split Network`,
+        label: semanticMessages.subnets_label_split({}, { locale }),
         placeholder: 10,
         value: values.value["Split"] ?? null,
-        description: $localize`Mixed domestic and foreign traffic`,
+        description: semanticMessages.subnets_desc_split({}, { locale }),
         category: "base",
         isRequired: true,
         mask: 24,
@@ -254,10 +256,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.BaseNetworks?.Domestic) {
       configs.push({
         key: "Domestic",
-        label: $localize`Domestic Network`,
+        label: semanticMessages.subnets_label_domestic({}, { locale }),
         placeholder: 20,
         value: values.value["Domestic"] ?? null,
-        description: $localize`Domestic-only traffic`,
+        description: semanticMessages.subnets_desc_domestic({}, { locale }),
         category: "base",
         isRequired: true,
         mask: 24,
@@ -268,10 +270,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.BaseNetworks?.Foreign) {
       configs.push({
         key: "Foreign",
-        label: $localize`Foreign Network`,
+        label: semanticMessages.subnets_label_foreign({}, { locale }),
         placeholder: 30,
         value: values.value["Foreign"] ?? null,
-        description: $localize`Foreign/international traffic`,
+        description: semanticMessages.subnets_desc_foreign({}, { locale }),
         category: "base",
         isRequired: true,
         mask: 24,
@@ -282,10 +284,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.BaseNetworks?.VPN) {
       configs.push({
         key: "VPN",
-        label: $localize`VPN Network`,
+        label: semanticMessages.subnets_label_vpn({}, { locale }),
         placeholder: 40,
         value: values.value["VPN"] ?? null,
-        description: $localize`VPN client traffic`,
+        description: semanticMessages.subnets_desc_vpn({}, { locale }),
         category: "base",
         isRequired: true,
         mask: 24,
@@ -309,10 +311,13 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.VPNServerNetworks.Wireguard.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: vpnSubnetMap.wireguard + index,
           value: values.value[networkName] ?? null,
-          description: $localize`WireGuard VPN server clients`,
+          description: semanticMessages.subnets_desc_wireguard_server(
+            {},
+            { locale },
+          ),
           category: "vpn",
           isRequired: false,
           mask: 24,
@@ -325,10 +330,13 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.VPNServerNetworks.OpenVPN.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: vpnSubnetMap.openvpn + index,
           value: values.value[networkName] ?? null,
-          description: $localize`OpenVPN server clients`,
+          description: semanticMessages.subnets_desc_openvpn_server(
+            {},
+            { locale },
+          ),
           category: "vpn",
           isRequired: false,
           mask: 24,
@@ -340,10 +348,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.L2TP) {
       configs.push({
         key: "L2TP",
-        label: $localize`L2TP Network`,
+        label: semanticMessages.subnets_label_l2tp_network({}, { locale }),
         placeholder: vpnSubnetMap.l2tp,
         value: values.value["L2TP"] ?? null,
-        description: $localize`L2TP/IPSec clients`,
+        description: semanticMessages.subnets_desc_l2tp_server({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -354,10 +362,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.PPTP) {
       configs.push({
         key: "PPTP",
-        label: $localize`PPTP Network`,
+        label: semanticMessages.subnets_label_pptp_network({}, { locale }),
         placeholder: vpnSubnetMap.pptp,
         value: values.value["PPTP"] ?? null,
-        description: $localize`PPTP clients`,
+        description: semanticMessages.subnets_desc_pptp_server({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -368,10 +376,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.SSTP) {
       configs.push({
         key: "SSTP",
-        label: $localize`SSTP Network`,
+        label: semanticMessages.subnets_label_sstp_network({}, { locale }),
         placeholder: vpnSubnetMap.sstp,
         value: values.value["SSTP"] ?? null,
-        description: $localize`SSTP clients`,
+        description: semanticMessages.subnets_desc_sstp_server({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -382,10 +390,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.IKev2) {
       configs.push({
         key: "IKev2",
-        label: $localize`IKEv2 Network`,
+        label: semanticMessages.subnets_label_ikev2_network({}, { locale }),
         placeholder: vpnSubnetMap.ikev2,
         value: values.value["IKev2"] ?? null,
-        description: $localize`IKEv2 clients`,
+        description: semanticMessages.subnets_desc_ikev2_server({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -396,10 +404,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.SSH) {
       configs.push({
         key: "SSH",
-        label: $localize`SSH Server`,
+        label: semanticMessages.subnets_label_ssh_server({}, { locale }),
         placeholder: 165,
         value: values.value["SSH"] ?? null,
-        description: $localize`SSH tunnel server`,
+        description: semanticMessages.subnets_desc_ssh_server({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -410,10 +418,13 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.Socks5) {
       configs.push({
         key: "Socks5",
-        label: $localize`Socks5 Proxy`,
+        label: semanticMessages.subnets_label_socks5_proxy({}, { locale }),
         placeholder: 155,
         value: values.value["Socks5"] ?? null,
-        description: $localize`Socks5 proxy server`,
+        description: semanticMessages.subnets_desc_socks5_server(
+          {},
+          { locale },
+        ),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -424,10 +435,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.HTTPProxy) {
       configs.push({
         key: "HTTPProxy",
-        label: $localize`HTTP Proxy`,
+        label: semanticMessages.subnets_label_http_proxy({}, { locale }),
         placeholder: 156,
         value: values.value["HTTPProxy"] ?? null,
-        description: $localize`HTTP proxy server`,
+        description: semanticMessages.subnets_desc_http_proxy({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -438,10 +449,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.BackToHome) {
       configs.push({
         key: "BackToHome",
-        label: $localize`Back To Home`,
+        label: semanticMessages.subnets_label_back_to_home({}, { locale }),
         placeholder: 157,
         value: values.value["BackToHome"] ?? null,
-        description: $localize`Back to home tunnel`,
+        description: semanticMessages.subnets_desc_back_to_home({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -452,10 +463,10 @@ export const useSubnets = (): UseSubnetsReturn => {
     if (networks.VPNServerNetworks?.ZeroTier) {
       configs.push({
         key: "ZeroTier",
-        label: $localize`ZeroTier`,
+        label: semanticMessages.subnets_label_zerotier({}, { locale }),
         placeholder: 158,
         value: values.value["ZeroTier"] ?? null,
-        description: $localize`ZeroTier network`,
+        description: semanticMessages.subnets_desc_zerotier({}, { locale }),
         category: "vpn",
         isRequired: false,
         mask: 24,
@@ -476,10 +487,10 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.TunnelNetworks.IPIP.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: tunnelSubnetBases.ipip + index,
           value: values.value[networkName] ?? null,
-          description: $localize`IPIP tunnel connection`,
+          description: semanticMessages.subnets_desc_ipip({}, { locale }),
           category: "tunnel",
           isRequired: false,
           mask: 30,
@@ -492,10 +503,10 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.TunnelNetworks.Eoip.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: tunnelSubnetBases.eoip + index,
           value: values.value[networkName] ?? null,
-          description: $localize`EoIP tunnel connection`,
+          description: semanticMessages.subnets_desc_eoip({}, { locale }),
           category: "tunnel",
           isRequired: false,
           mask: 30,
@@ -508,10 +519,10 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.TunnelNetworks.Gre.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: tunnelSubnetBases.gre + index,
           value: values.value[networkName] ?? null,
-          description: $localize`GRE tunnel connection`,
+          description: semanticMessages.subnets_desc_gre({}, { locale }),
           category: "tunnel",
           isRequired: false,
           mask: 30,
@@ -524,10 +535,10 @@ export const useSubnets = (): UseSubnetsReturn => {
       networks.TunnelNetworks.Vxlan.forEach((networkName, index) => {
         configs.push({
           key: networkName,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: tunnelSubnetBases.vxlan + index,
           value: values.value[networkName] ?? null,
-          description: $localize`VXLAN tunnel connection`,
+          description: semanticMessages.subnets_desc_vxlan({}, { locale }),
           category: "tunnel",
           isRequired: false,
           mask: 30,
@@ -541,10 +552,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `Domestic${index + 1}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 21 + index,
           value: values.value[key] ?? null,
-          description: $localize`Domestic WAN link network`,
+          description: semanticMessages.subnets_desc_domestic_wan(
+            {},
+            { locale },
+          ),
           category: "wan-domestic",
           isRequired: false,
           mask: 24,
@@ -559,10 +573,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `Foreign${index + 1}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 31 + index,
           value: values.value[key] ?? null,
-          description: $localize`Foreign WAN link network`,
+          description: semanticMessages.subnets_desc_foreign_wan(
+            {},
+            { locale },
+          ),
           category: "wan-foreign",
           isRequired: false,
           mask: 24,
@@ -580,10 +597,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`WireGuard VPN client network`,
+          description: semanticMessages.subnets_desc_wireguard_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -598,10 +618,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`OpenVPN VPN client network`,
+          description: semanticMessages.subnets_desc_openvpn_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -616,10 +639,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`L2TP VPN client network`,
+          description: semanticMessages.subnets_desc_l2tp_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -634,10 +660,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`PPTP VPN client network`,
+          description: semanticMessages.subnets_desc_pptp_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -652,10 +681,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`SSTP VPN client network`,
+          description: semanticMessages.subnets_desc_sstp_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -670,10 +702,13 @@ export const useSubnets = (): UseSubnetsReturn => {
         const key = `VPNClient${++vpnClientIndex}`;
         configs.push({
           key,
-          label: $localize`${networkName}`,
+          label: networkName,
           placeholder: 41 + vpnClientIndex - 1,
           value: values.value[key] ?? null,
-          description: $localize`IKEv2 VPN client network`,
+          description: semanticMessages.subnets_desc_ikev2_client(
+            {},
+            { locale },
+          ),
           category: "vpn-client",
           isRequired: false,
           mask: 24,
@@ -703,13 +738,19 @@ export const useSubnets = (): UseSubnetsReturn => {
       if (value !== null) {
         // Range validation
         if (value < 1 || value > 254) {
-          newErrors[config.key] = $localize`Value must be between 1-254`;
+          newErrors[config.key] = semanticMessages.subnets_error_range(
+            {},
+            { locale },
+          );
           continue;
         }
 
         // Reserved addresses validation
         if (value === 1 || value === 255) {
-          newErrors[config.key] = $localize`Values 1 and 255 are reserved`;
+          newErrors[config.key] = semanticMessages.subnets_error_reserved(
+            {},
+            { locale },
+          );
           continue;
         }
 
@@ -720,8 +761,10 @@ export const useSubnets = (): UseSubnetsReturn => {
           // Check if it's a WAN conflict
           if (conflictingKey.startsWith("WAN:")) {
             const wanName = conflictingKey.substring(4);
-            newErrors[config.key] =
-              $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+            newErrors[config.key] = semanticMessages.subnets_error_conflict(
+              { name: wanName, value },
+              { locale },
+            );
           } else {
             // It's a LAN-LAN conflict
             const conflictingConfig = subnetConfigs.value.find(
@@ -730,10 +773,14 @@ export const useSubnets = (): UseSubnetsReturn => {
             const conflictingLabel = conflictingConfig?.label || conflictingKey;
 
             // Mark both conflicting subnets
-            newErrors[config.key] =
-              $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
-            newErrors[conflictingKey] =
-              $localize`Conflicts with ${config.label} (192.168.${value}.0)`;
+            newErrors[config.key] = semanticMessages.subnets_error_conflict(
+              { name: conflictingLabel, value },
+              { locale },
+            );
+            newErrors[conflictingKey] = semanticMessages.subnets_error_conflict(
+              { name: config.label, value },
+              { locale },
+            );
           }
         } else {
           usedValues.set(value, config.key);
@@ -831,20 +878,29 @@ export const useSubnets = (): UseSubnetsReturn => {
 
       // Required field validation
       if (config.isRequired && value === null) {
-        newErrors[config.key] = $localize`This subnet is required`;
+        newErrors[config.key] = semanticMessages.subnets_error_required(
+          {},
+          { locale },
+        );
         continue;
       }
 
       if (value !== null) {
         // Range validation
         if (value < 1 || value > 254) {
-          newErrors[config.key] = $localize`Value must be between 1-254`;
+          newErrors[config.key] = semanticMessages.subnets_error_range(
+            {},
+            { locale },
+          );
           continue;
         }
 
         // Reserved addresses validation
         if (value === 1 || value === 255) {
-          newErrors[config.key] = $localize`Values 1 and 255 are reserved`;
+          newErrors[config.key] = semanticMessages.subnets_error_reserved(
+            {},
+            { locale },
+          );
           continue;
         }
 
@@ -855,16 +911,20 @@ export const useSubnets = (): UseSubnetsReturn => {
           // Check if it's a WAN conflict
           if (conflictingKey.startsWith("WAN:")) {
             const wanName = conflictingKey.substring(4);
-            newErrors[config.key] =
-              $localize`Conflicts with ${wanName} (192.168.${value}.0)`;
+            newErrors[config.key] = semanticMessages.subnets_error_conflict(
+              { name: wanName, value },
+              { locale },
+            );
           } else {
             // It's a LAN-LAN conflict
             const conflictingConfig = subnetConfigs.value.find(
               (c) => c.key === conflictingKey,
             );
             const conflictingLabel = conflictingConfig?.label || conflictingKey;
-            newErrors[config.key] =
-              $localize`Conflicts with ${conflictingLabel} (192.168.${value}.0)`;
+            newErrors[config.key] = semanticMessages.subnets_error_conflict(
+              { name: conflictingLabel, value },
+              { locale },
+            );
           }
         } else {
           usedValues.set(value, config.key);

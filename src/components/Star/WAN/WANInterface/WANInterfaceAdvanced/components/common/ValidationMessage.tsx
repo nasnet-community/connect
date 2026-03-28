@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface ValidationMessageProps {
   errors: string[];
@@ -7,6 +8,7 @@ export interface ValidationMessageProps {
 
 export const ValidationMessage = component$<ValidationMessageProps>(
   ({ errors, type = "error" }) => {
+    const locale = useMessageLocale();
     if (errors.length === 0) return null;
 
     const getStyles = () => {
@@ -79,9 +81,12 @@ export const ValidationMessage = component$<ValidationMessageProps>(
           <div class="flex-shrink-0">{getIcon()}</div>
           <div class="ml-3">
             <h3 class="text-sm font-medium">
-              {type === "error" && $localize`Validation Error`}
-              {type === "warning" && $localize`Warning`}
-              {type === "info" && $localize`Information`}
+              {type === "error" &&
+                semanticMessages.wan_advanced_validation_error({}, { locale })}
+              {type === "warning" &&
+                semanticMessages.wan_advanced_warning({}, { locale })}
+              {type === "info" &&
+                semanticMessages.wan_advanced_information({}, { locale })}
             </h3>
             <div class="mt-2 text-sm">
               <ul class="list-inside list-disc space-y-1">

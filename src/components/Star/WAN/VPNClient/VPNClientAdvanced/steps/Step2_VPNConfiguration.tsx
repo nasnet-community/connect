@@ -11,6 +11,7 @@ import { L2TPFields } from "../components/fields/L2TPFields";
 import { IKEv2Fields } from "../components/fields/IKEv2Fields";
 import { PPTPFields } from "../components/fields/PPTPFields";
 import { SSTFields } from "../components/fields/SSTFields";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step2VPNConfigurationProps {
   wizardState: VPNClientAdvancedState;
@@ -20,6 +21,7 @@ export interface Step2VPNConfigurationProps {
 
 export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
   ({ wizardState, wizardActions, onRefreshCompletion$ }) => {
+    const locale = useMessageLocale();
     // Initialize validation
     const validation = useVPNClientValidation();
 
@@ -251,10 +253,18 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
           <div class="mb-4 flex items-center justify-between">
             <div>
               <h2 class="text-2xl font-light text-gray-900 dark:text-white">
-                {$localize`VPN Configuration`}
+                {semanticMessages.vpn_client_advanced_configuration_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h2>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {$localize`Configure connection details for each VPN client`}
+                {semanticMessages.vpn_client_advanced_configuration_description(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
             <div class="text-right">
@@ -262,7 +272,12 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                 {configuredVPNs} / {totalVPNs}
               </div>
               <div class="text-sm text-gray-500 dark:text-gray-400">
-                {$localize`VPNs Configured`}
+                {semanticMessages.vpn_client_advanced_vpns_configured(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </div>
             </div>
           </div>
@@ -283,14 +298,21 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                   <span class="flex items-center gap-2">
                     <div class="h-2 w-2 rounded-full bg-green-500"></div>
                     <span class="text-gray-600 dark:text-gray-400">
-                      {$localize`Configured`}: {configuredVPNs}
+                      {semanticMessages.shared_configured({}, { locale })}:{" "}
+                      {configuredVPNs}
                     </span>
                   </span>
                   {configuredVPNs < totalVPNs && (
                     <span class="flex items-center gap-2">
                       <div class="h-2 w-2 animate-pulse rounded-full bg-amber-500"></div>
                       <span class="text-gray-600 dark:text-gray-400">
-                        {$localize`Remaining`}: {totalVPNs - configuredVPNs}
+                        {semanticMessages.vpn_client_advanced_remaining(
+                          {},
+                          {
+                            locale,
+                          },
+                        )}
+                        : {totalVPNs - configuredVPNs}
                       </span>
                     </span>
                   )}
@@ -308,7 +330,12 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                         clip-rule="evenodd"
                       />
                     </svg>
-                    {$localize`All VPNs configured!`}
+                    {semanticMessages.vpn_client_advanced_all_configured(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                 )}
               </div>
@@ -334,10 +361,20 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                 />
               </svg>
               <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                {$localize`No VPN clients configured`}
+                {semanticMessages.vpn_client_advanced_no_clients_configured(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {$localize`Please add VPN clients in Step 1 before configuring connections.`}
+                {semanticMessages.vpn_client_advanced_add_clients_first(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
           </Card>
@@ -348,7 +385,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
           <div class="relative">
             <Input
               type="text"
-              placeholder="Search VPN clients..."
+              placeholder={semanticMessages.vpn_client_advanced_search_clients(
+                {},
+                { locale },
+              )}
               value={searchQuery.value}
               onInput$={(event: Event, value: string) =>
                 (searchQuery.value = value)
@@ -489,7 +529,11 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                   : "text-red-800 dark:text-red-200"
                             }`}
                           >
-                            {vpn.name || $localize`VPN ${index + 1}`}
+                            {vpn.name ||
+                              semanticMessages.vpn_client_advanced_default_name(
+                                { index: index + 1 },
+                                { locale },
+                              )}
                           </h3>
                           <div class="mt-1 flex items-center gap-2">
                             <span
@@ -499,7 +543,11 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                   : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                               }`}
                             >
-                              {vpn.type || "No Protocol Selected"}
+                              {vpn.type ||
+                                semanticMessages.vpn_client_advanced_no_protocol_selected(
+                                  {},
+                                  { locale },
+                                )}
                             </span>
                             {status === "complete" && (
                               <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/50 dark:text-green-200">
@@ -514,7 +562,7 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                     clip-rule="evenodd"
                                   />
                                 </svg>
-                                {$localize`Ready`}
+                                {semanticMessages.shared_ready({}, { locale })}
                               </span>
                             )}
                             {status === "incomplete" && vpn.type && (
@@ -530,7 +578,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                     clip-rule="evenodd"
                                   />
                                 </svg>
-                                {$localize`Configuration Required`}
+                                {semanticMessages.vpn_client_advanced_configuration_required(
+                                  {},
+                                  { locale },
+                                )}
                               </span>
                             )}
                           </div>
@@ -593,7 +644,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                       {/* Connection Name */}
                       <div class="mb-6">
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {$localize`Connection Name`}
+                          {semanticMessages.vpn_client_advanced_connection_name(
+                            {},
+                            { locale },
+                          )}
                         </label>
                         <Input
                           type="text"
@@ -601,7 +655,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                           onInput$={(event: Event, value: string) => {
                             handleUpdateVPN(vpn.id, { name: value });
                           }}
-                          placeholder={$localize`Enter a custom name for this VPN connection`}
+                          placeholder={semanticMessages.vpn_client_advanced_connection_name_placeholder(
+                            {},
+                            { locale },
+                          )}
                           class="w-full"
                         />
                       </div>
@@ -609,7 +666,10 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                       {/* Protocol-Specific Configuration */}
                       <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                         <h3 class="mb-4 text-sm font-medium text-gray-900 dark:text-white">
-                          {$localize`${vpn.type} Configuration`}
+                          {semanticMessages.vpn_client_advanced_protocol_configuration(
+                            { type: vpn.type || "VPN" },
+                            { locale },
+                          )}
                         </h3>
 
                         {vpn.type === "Wireguard" && (
@@ -690,7 +750,12 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                 clip-rule="evenodd"
                               />
                             </svg>
-                            <span class="font-medium">{$localize`All mandatory fields configured successfully`}</span>
+                            <span class="font-medium">
+                              {semanticMessages.vpn_client_advanced_all_mandatory_fields_configured(
+                                {},
+                                { locale },
+                              )}
+                            </span>
                           </div>
                         ) : vpn.type ? (
                           <div class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
@@ -705,7 +770,12 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                                 clip-rule="evenodd"
                               />
                             </svg>
-                            <span class="font-medium">{$localize`Please fill in all required fields to complete configuration`}</span>
+                            <span class="font-medium">
+                              {semanticMessages.vpn_client_advanced_fill_required_fields(
+                                {},
+                                { locale },
+                              )}
+                            </span>
                           </div>
                         ) : null}
                       </div>
@@ -735,10 +805,20 @@ export const Step2_VPNConfiguration = component$<Step2VPNConfigurationProps>(
                 />
               </svg>
               <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                {$localize`No VPN clients found`}
+                {semanticMessages.vpn_client_advanced_no_clients_found(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {$localize`Try adjusting your search terms`}
+                {semanticMessages.vpn_client_advanced_adjust_search_terms(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
           </Card>

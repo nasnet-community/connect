@@ -2,6 +2,7 @@ import { component$, useTask$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { useIKEv2Config } from "./useIKEv2Config";
 import { FormField, FormContainer, ErrorMessage } from "../../components";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface IKEv2ConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -10,6 +11,7 @@ interface IKEv2ConfigProps {
 
 export const IKEv2Config = component$<IKEv2ConfigProps>(
   ({ onIsValidChange$, isSaving }) => {
+    const locale = useMessageLocale();
     const {
       serverAddress,
       username,
@@ -38,8 +40,11 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
       <div class="space-y-6">
         {/* Authentication Method */}
         <FormContainer
-          title={$localize`Authentication Method`}
-          description={$localize`Select how you want to authenticate with the VPN server`}
+          title={semanticMessages.vpn_ikev2_auth_method_title({}, { locale })}
+          description={semanticMessages.vpn_ikev2_auth_method_description(
+            {},
+            { locale },
+          )}
           bordered
         >
           <div class="w-full">
@@ -56,20 +61,30 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
                    focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                    dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
             >
-              <option value="pre-shared-key">Pre-Shared Key (PSK)</option>
-              <option value="eap">Username/Password (EAP)</option>
+              <option value="pre-shared-key">
+                {semanticMessages.vpn_ikev2_auth_psk({}, { locale })}
+              </option>
+              <option value="eap">
+                {semanticMessages.vpn_ikev2_auth_eap({}, { locale })}
+              </option>
               <option value="digital-signature" disabled>
-                Certificates (Coming Soon)
+                {semanticMessages.vpn_ikev2_auth_cert_soon({}, { locale })}
               </option>
             </select>
           </div>
         </FormContainer>
 
         {/* Connection Settings */}
-        <FormContainer title={$localize`Connection Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_ikev2_connection_title({}, { locale })}
+          bordered
+        >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FormField
-              label={$localize`Server Address`}
+              label={semanticMessages.vpn_openvpn_server_address(
+                {},
+                { locale },
+              )}
               required
               value={serverAddress.value}
               onInput$={(_, el) => {
@@ -83,7 +98,10 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
             {authMethod.value === "pre-shared-key" && (
               <FormField
                 type="text"
-                label={$localize`Pre-Shared Key`}
+                label={semanticMessages.vpn_ikev2_pre_shared_key(
+                  {},
+                  { locale },
+                )}
                 required
                 value={presharedKey.value}
                 onInput$={(_, el) => {
@@ -98,7 +116,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
           {authMethod.value === "eap" && (
             <div class="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormField
-                label={$localize`Username`}
+                label={semanticMessages.shared_username({}, { locale })}
                 required
                 value={username.value}
                 onInput$={(_, el) => {
@@ -109,7 +127,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
               <FormField
                 type="text"
-                label={$localize`Password`}
+                label={semanticMessages.vpn_openvpn_password({}, { locale })}
                 required
                 value={password.value}
                 onInput$={(_, el) => {
@@ -122,9 +140,15 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
         </FormContainer>
 
         {/* Policy Settings */}
-        <FormContainer title={$localize`Policy Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_ikev2_policy_title({}, { locale })}
+          bordered
+        >
           <FormField
-            label={$localize`Destination Network`}
+            label={semanticMessages.vpn_ikev2_destination_network(
+              {},
+              { locale },
+            )}
             required
             value={policyDstAddress.value}
             onInput$={(_, el) => {
@@ -137,14 +161,17 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
         {/* Phase 1 Settings */}
         <FormContainer
-          title={$localize`Phase 1 Settings`}
-          description={$localize`Configure security parameters for the initial connection`}
+          title={semanticMessages.vpn_ikev2_phase1_title({}, { locale })}
+          description={semanticMessages.vpn_ikev2_phase1_description(
+            {},
+            { locale },
+          )}
           bordered
         >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`Hash Algorithm`}
+                {semanticMessages.vpn_ikev2_hash_algorithm({}, { locale })}
               </label>
               <select
                 value={phase1HashAlgorithm.value}
@@ -164,7 +191,10 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`Encryption Algorithm`}
+                {semanticMessages.vpn_ikev2_encryption_algorithm(
+                  {},
+                  { locale },
+                )}
               </label>
               <select
                 value={phase1EncryptionAlgorithm.value}
@@ -184,7 +214,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`DH Group`}
+                {semanticMessages.vpn_ikev2_dh_group({}, { locale })}
               </label>
               <select
                 value={phase1DHGroup.value}
@@ -207,14 +237,17 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
         {/* Phase 2 Settings */}
         <FormContainer
-          title={$localize`Phase 2 Settings`}
-          description={$localize`Configure security parameters for the secure communication tunnel`}
+          title={semanticMessages.vpn_ikev2_phase2_title({}, { locale })}
+          description={semanticMessages.vpn_ikev2_phase2_description(
+            {},
+            { locale },
+          )}
           bordered
         >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`Hash Algorithm`}
+                {semanticMessages.vpn_ikev2_hash_algorithm({}, { locale })}
               </label>
               <select
                 value={phase2HashAlgorithm.value}
@@ -234,7 +267,10 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`Encryption Algorithm`}
+                {semanticMessages.vpn_ikev2_encryption_algorithm(
+                  {},
+                  { locale },
+                )}
               </label>
               <select
                 value={phase2EncryptionAlgorithm.value}
@@ -254,7 +290,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
             <div>
               <label class="text-text-secondary dark:text-text-dark-secondary block text-sm font-medium">
-                {$localize`PFS Group`}
+                {semanticMessages.vpn_ikev2_pfs_group({}, { locale })}
               </label>
               <select
                 value={phase2PFSGroup.value}
@@ -278,7 +314,7 @@ export const IKEv2Config = component$<IKEv2ConfigProps>(
 
         {/* Required Fields Note */}
         <p class="text-text-muted dark:text-text-dark-muted text-xs">
-          {$localize`Fields marked with * are required`}
+          {semanticMessages.vpn_client_easy_required_fields({}, { locale })}
         </p>
 
         {/* Error Message Display */}

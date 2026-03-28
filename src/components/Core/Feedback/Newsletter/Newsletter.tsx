@@ -5,6 +5,7 @@ import { NewsletterLogo } from "./NewsletterLogo";
 import { BackgroundLogo } from "./BackgroundLogo";
 import { Input } from "../../Input/Input";
 import { Button } from "../../button/Button";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Premium Newsletter component with advanced visual design.
@@ -33,10 +34,10 @@ export const Newsletter = component$<NewsletterProps>(
   ({
     variant = "responsive",
     size = "md",
-    title = $localize`Stay Connected by subscribing to our newsletter`,
-    description = $localize`Subscribe to get the latest router configuration tips, security updates, and exclusive content.`,
-    placeholder = $localize`Enter your email address`,
-    buttonText = $localize`Subscribe`,
+    title,
+    description,
+    placeholder,
+    buttonText,
     onSubscribe$,
     showLogo = true,
     glassmorphism = false,
@@ -44,7 +45,7 @@ export const Newsletter = component$<NewsletterProps>(
     theme = "branded",
     disabled = false,
     showPrivacyNotice = true,
-    privacyNoticeText = $localize`We respect your privacy. Unsubscribe at any time.`,
+    privacyNoticeText,
     loading: externalLoading = false,
     success: externalSuccess = false,
     error: externalError,
@@ -55,6 +56,22 @@ export const Newsletter = component$<NewsletterProps>(
     animated = true,
     class: className,
   }) => {
+    const locale = useMessageLocale();
+    const resolvedTitle =
+      title || semanticMessages.newsletter_title_default({}, { locale });
+    const resolvedDescription =
+      description ||
+      semanticMessages.newsletter_title_description({}, { locale });
+    const resolvedPlaceholder =
+      placeholder ||
+      semanticMessages.newsletter_input_placeholder({}, { locale });
+    const resolvedButtonText =
+      buttonText ||
+      semanticMessages.newsletter_button_subscribe({}, { locale });
+    const resolvedPrivacyNoticeText =
+      privacyNoticeText ||
+      semanticMessages.newsletter_privacy_notice({}, { locale });
+
     // Log component initialization
     console.log("[Newsletter] Component initialized", {
       variant,
@@ -74,7 +91,23 @@ export const Newsletter = component$<NewsletterProps>(
       handleEmailInput$,
       handleSubmit$,
       reset$,
-    } = useNewsletter({ onSubscribe$ });
+    } = useNewsletter({
+      onSubscribe$,
+      messages: {
+        invalidEmail: semanticMessages.newsletter_error_invalid_email(
+          {},
+          { locale },
+        ),
+        requiredEmail: semanticMessages.newsletter_error_required_email(
+          {},
+          { locale },
+        ),
+        subscribeFailed: semanticMessages.newsletter_error_subscribe_failed(
+          {},
+          { locale },
+        ),
+      },
+    });
 
     // Use external state if provided, otherwise use internal state
     const isLoading = externalLoading || internalLoading.value;
@@ -397,7 +430,7 @@ export const Newsletter = component$<NewsletterProps>(
                           : "text-3xl md:text-4xl"
                     }`}
                   >
-                    {title}
+                    {resolvedTitle}
                   </h2>
 
                   <p
@@ -409,16 +442,16 @@ export const Newsletter = component$<NewsletterProps>(
                           : "text-base md:text-lg"
                     }`}
                   >
-                    {description}
+                    {resolvedDescription}
                   </p>
                 </div>
               )}
 
               {/* Hero variant title - compact and minimal */}
-              {variant === "hero" && title && (
+              {variant === "hero" && resolvedTitle && (
                 <div class="mb-4 text-center">
                   <h3 class="bg-gradient-to-r from-gray-900 to-primary-600 bg-clip-text text-xl font-bold text-transparent dark:from-white dark:to-primary-400 sm:text-2xl">
-                    {title}
+                    {resolvedTitle}
                   </h3>
                 </div>
               )}
@@ -433,7 +466,7 @@ export const Newsletter = component$<NewsletterProps>(
                   <Input
                     type="email"
                     value={email.value}
-                    placeholder={placeholder}
+                    placeholder={resolvedPlaceholder}
                     id="newsletter-email"
                     disabled={disabled || isLoading}
                     required
@@ -456,7 +489,10 @@ export const Newsletter = component$<NewsletterProps>(
                     hasSuffixSlot={true}
                     fluid={true}
                     animate={true}
-                    aria-label={$localize`Email address for newsletter subscription`}
+                    aria-label={semanticMessages.newsletter_aria_email(
+                      {},
+                      { locale },
+                    )}
                     aria-describedby={
                       errorMessage
                         ? "newsletter-error"
@@ -553,8 +589,14 @@ export const Newsletter = component$<NewsletterProps>(
                   pulse={false}
                   aria-label={
                     isSuccess
-                      ? $localize`Successfully subscribed`
-                      : $localize`Subscribe to newsletter`
+                      ? semanticMessages.newsletter_status_subscribed(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.newsletter_status_subscribe(
+                          {},
+                          { locale },
+                        )
                   }
                   class={
                     variant === "hero"
@@ -575,7 +617,12 @@ export const Newsletter = component$<NewsletterProps>(
                           clip-rule="evenodd"
                         />
                       </svg>
-                      <span class="tracking-widest">{$localize`CONNECTED!`}</span>
+                      <span class="tracking-widest">
+                        {semanticMessages.newsletter_button_subscribed(
+                          {},
+                          { locale },
+                        )}
+                      </span>
                       <svg
                         class="h-5 w-5 animate-pulse"
                         fill="none"
@@ -616,9 +663,15 @@ export const Newsletter = component$<NewsletterProps>(
                       >
                         {isLoading
                           ? variant === "hero"
-                            ? $localize`...`
-                            : $localize`CONNECTING...`
-                          : buttonText}
+                            ? semanticMessages.newsletter_status_loading_short(
+                                {},
+                                { locale },
+                              )
+                            : semanticMessages.newsletter_button_submitting(
+                                {},
+                                { locale },
+                              )
+                          : resolvedButtonText}
                       </span>
                       {!isLoading && (
                         <svg
@@ -656,7 +709,7 @@ export const Newsletter = component$<NewsletterProps>(
                         clip-rule="evenodd"
                       />
                     </svg>
-                    <span>{privacyNoticeText}</span>
+                    <span>{resolvedPrivacyNoticeText}</span>
                   </div>
                 )}
 
@@ -682,14 +735,20 @@ export const Newsletter = component$<NewsletterProps>(
                     </div>
                     <div class="space-y-2">
                       <p class="text-lg font-bold text-success-700 dark:text-success-300">
-                        {$localize`Welcome to the NasNet!`}
+                        {semanticMessages.newsletter_success_title(
+                          {},
+                          { locale },
+                        )}
                       </p>
                       <p
                         class={`text-gray-600 dark:text-gray-400 ${
                           size === "sm" ? "text-xs" : "text-sm"
                         }`}
                       >
-                        {$localize`Check your email to confirm and activate your subscription.`}
+                        {semanticMessages.newsletter_success_description(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
 
@@ -698,7 +757,10 @@ export const Newsletter = component$<NewsletterProps>(
                       onClick$={reset$}
                       class="text-sm font-semibold text-primary-600 underline underline-offset-2 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                     >
-                      {$localize`Subscribe another email`}
+                      {semanticMessages.newsletter_success_reset(
+                        {},
+                        { locale },
+                      )}
                     </button>
                   </div>
                 )}

@@ -1,47 +1,185 @@
 import type { IconName } from "../utils/iconMapper";
+import { semanticMessages } from "~/i18n/semantic";
+import { normalizeLocale, type AppLocale } from "~/i18n/config";
 
-export const getFooterSections = (locale: string = "en") => [
-  {
-    title: $localize`Product`,
-    links: [
-      { name: $localize`Launch App`, href: `/${locale}/star/` },
-      { name: $localize`Features`, href: "#features" },
-      { name: $localize`Router Support`, href: "#routers" },
-      { name: $localize`VPN Solutions`, href: "#vpn" },
-      { name: $localize`Gaming Optimization`, href: "#gaming" },
-      { name: $localize`Enterprise`, href: "#enterprise" },
-    ],
-  },
-  {
-    title: $localize`Resources`,
-    links: [
-      { name: $localize`API Reference`, href: `/${locale}/api` },
-      { name: $localize`Tutorials`, href: `/${locale}/tutorials` },
-      { name: $localize`Community`, href: `/${locale}/community` },
-      { name: $localize`Blog`, href: `/${locale}/blog` },
-    ],
-  },
-  {
-    title: $localize`Support`,
-    links: [
-      { name: $localize`Help Center`, href: `/${locale}/help` },
-      { name: $localize`Contact Us`, href: `/${locale}/contact` },
-      { name: $localize`Status Page`, href: `/${locale}/status` },
-      { name: $localize`Bug Reports`, href: `/${locale}/bugs` },
-      { name: $localize`Feature Requests`, href: `/${locale}/features` },
-    ],
-  },
-  {
-    title: $localize`Company`,
-    links: [
-      { name: $localize`About Us`, href: `/${locale}/about` },
-      { name: $localize`Careers`, href: `/${locale}/careers` },
-      { name: $localize`Privacy`, href: `/${locale}/privacy` },
-      { name: $localize`Terms`, href: `/${locale}/terms` },
-      { name: $localize`Security`, href: `/${locale}/security` },
-    ],
-  },
-];
+export const getFooterSections = (locale: string = "en") => {
+  const resolvedLocale = normalizeLocale(locale) as AppLocale;
+
+  return [
+    {
+      title: semanticMessages.landing_footer_product(
+        {},
+        { locale: resolvedLocale },
+      ),
+      links: [
+        {
+          name: semanticMessages.top_nav_launch_app(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/star/`,
+        },
+        {
+          name: semanticMessages.landing_footer_features(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: "#features",
+        },
+        {
+          name: semanticMessages.landing_footer_router_support(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: "#routers",
+        },
+        {
+          name: semanticMessages.landing_footer_vpn_solutions(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: "#vpn",
+        },
+        {
+          name: semanticMessages.landing_footer_gaming_optimization(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: "#gaming",
+        },
+        {
+          name: semanticMessages.landing_footer_enterprise(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: "#enterprise",
+        },
+      ],
+    },
+    {
+      title: semanticMessages.landing_footer_resources(
+        {},
+        { locale: resolvedLocale },
+      ),
+      links: [
+        {
+          name: semanticMessages.landing_footer_api_reference(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/api`,
+        },
+        {
+          name: semanticMessages.landing_footer_tutorials(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/tutorials`,
+        },
+        {
+          name: semanticMessages.landing_footer_community(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/community`,
+        },
+        {
+          name: semanticMessages.landing_footer_blog(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/blog`,
+        },
+      ],
+    },
+    {
+      title: semanticMessages.landing_footer_support(
+        {},
+        { locale: resolvedLocale },
+      ),
+      links: [
+        {
+          name: semanticMessages.landing_footer_help_center(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/help`,
+        },
+        {
+          name: semanticMessages.landing_footer_contact_us(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/contact`,
+        },
+        {
+          name: semanticMessages.landing_footer_status_page(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/status`,
+        },
+        {
+          name: semanticMessages.landing_footer_bug_reports(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/bugs`,
+        },
+        {
+          name: semanticMessages.landing_footer_feature_requests(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/features`,
+        },
+      ],
+    },
+    {
+      title: semanticMessages.landing_footer_company(
+        {},
+        { locale: resolvedLocale },
+      ),
+      links: [
+        {
+          name: semanticMessages.landing_footer_about_us(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/about`,
+        },
+        {
+          name: semanticMessages.landing_footer_careers(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/careers`,
+        },
+        {
+          name: semanticMessages.landing_footer_privacy(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/privacy`,
+        },
+        {
+          name: semanticMessages.landing_footer_terms(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/terms`,
+        },
+        {
+          name: semanticMessages.landing_footer_security(
+            {},
+            { locale: resolvedLocale },
+          ),
+          href: `/${locale}/security`,
+        },
+      ],
+    },
+  ];
+};
 
 export const socialLinks = [
   { icon: "LuGithub" as IconName, href: "https://github.com", label: "GitHub" },

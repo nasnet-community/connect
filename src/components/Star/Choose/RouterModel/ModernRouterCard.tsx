@@ -9,6 +9,7 @@ import {
   LuRouter,
 } from "@qwikest/icons/lucide";
 import { Button, Badge } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import { type RouterData } from "./Constants";
 
 interface ModernRouterCardProps {
@@ -22,6 +23,7 @@ interface ModernRouterCardProps {
 }
 
 export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
+  const locale = useMessageLocale();
   const {
     router,
     isSelected,
@@ -143,7 +145,9 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
           <div class="absolute right-4 top-4 z-30">
             <div class="animate-bounce-subtle flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 px-3 py-1.5 shadow-lg">
               <LuCheck class="h-3 w-3 animate-scale-in text-white" />
-              <span class="text-xs font-semibold text-white">{$localize`Selected`}</span>
+              <span class="text-xs font-semibold text-white">
+                {semanticMessages.star_selection_card_selected({}, { locale })}
+              </span>
             </div>
           </div>
         )}
@@ -239,7 +243,7 @@ export const ModernRouterCard = component$<ModernRouterCardProps>((props) => {
                 `}
               >
                 <LuInfo class="mr-1 h-3 w-3" />
-                {$localize`View Details`}
+                {semanticMessages.router_view_details({}, { locale })}
               </Button>
             </div>
           </div>

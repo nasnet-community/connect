@@ -4,6 +4,7 @@ import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { EthernetInterfaceConfig, Subnets } from "../StarContext";
 import type { PropFunction, Component } from "@builder.io/qwik";
 import type { StepProps } from "~/types/step";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface UseLANParams {
   onComplete$: PropFunction<() => void>;
@@ -22,6 +23,7 @@ export const useLAN = ({
   TunnelStep,
   SubnetsStep,
 }: UseLANParams) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
 
   const hasWirelessEInterface = starContext.state.Choose.RouterModels.some(
@@ -41,7 +43,7 @@ export const useLAN = ({
   if (hasWirelessEInterface) {
     baseSteps.push({
       id: nextId,
-      title: $localize`Wireless`,
+      title: semanticMessages.lan_step_wireless({}, { locale }),
       component: WirelessStep,
       isComplete: false,
     });
@@ -51,7 +53,7 @@ export const useLAN = ({
   if (isAdvancedMode) {
     baseSteps.push({
       id: nextId,
-      title: $localize`LAN EInterfaces`,
+      title: semanticMessages.lan_step_einterfaces({}, { locale }),
       component: EInterfaceStep,
       isComplete: false,
     });
@@ -62,7 +64,7 @@ export const useLAN = ({
   if (isDomesticLinkEnabled) {
     baseSteps.push({
       id: nextId,
-      title: $localize`VPN Server`,
+      title: semanticMessages.lan_step_vpn_server({}, { locale }),
       component: VPNServerStep,
       isComplete: false,
     });
@@ -72,7 +74,7 @@ export const useLAN = ({
     if (isAdvancedMode) {
       baseSteps.push({
         id: nextId,
-        title: $localize`Network Tunnels`,
+        title: semanticMessages.lan_step_network_tunnels({}, { locale }),
         component: TunnelStep,
         isComplete: false,
       });
@@ -87,7 +89,7 @@ export const useLAN = ({
   if (isAdvancedMode) {
     advancedSteps.push({
       id: nextId,
-      title: $localize`Network Subnets`,
+      title: semanticMessages.lan_step_network_subnets({}, { locale }),
       component: SubnetsStep,
       isComplete: false,
     });

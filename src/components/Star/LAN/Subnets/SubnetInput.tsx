@@ -1,6 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { SubnetInput as CoreSubnetInput } from "~/components/Core/Form/NetworkInput";
 import type { SubnetInputProps } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Modern subnet input component using the Core NetworkInput component
@@ -8,6 +9,8 @@ import type { SubnetInputProps } from "./types";
  */
 export const SubnetInput = component$<SubnetInputProps>(
   ({ config, value, onChange$, error, disabled = false }) => {
+    const locale = useMessageLocale();
+
     // Handle change to convert number back to proper format
     const handleChange$ = $((newValue: string | number | number[] | null) => {
       if (typeof newValue === "number") {
@@ -49,16 +52,20 @@ export const SubnetInput = component$<SubnetInputProps>(
         {/* Additional subnet info for /30 tunnels */}
         {config.mask === 30 && value !== null && (
           <div class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-            {$localize`Point-to-point tunnel`}: 192.168.{value}.0 - 192.168.
-            {value}.3 ({$localize`2 usable hosts`})
+            {semanticMessages.subnets_input_point_to_point({}, { locale })}:
+            192.168.
+            {value}.0 - 192.168.{value}.3 (
+            {semanticMessages.subnets_input_usable_hosts_2({}, { locale })})
           </div>
         )}
 
         {/* Additional subnet info for /24 networks */}
         {config.mask === 24 && value !== null && (
           <div class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-            {$localize`Network range`}: 192.168.{value}.1 - 192.168.{value}.254
-            ({$localize`254 usable hosts`})
+            {semanticMessages.subnets_input_network_range({}, { locale })}:
+            192.168.
+            {value}.1 - 192.168.{value}.254 (
+            {semanticMessages.subnets_input_usable_hosts_254({}, { locale })})
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@ import { Card, CardHeader, CardBody, Alert } from "~/components/Core";
 import { SubnetInput } from "./SubnetInput";
 import type { SubnetCardProps } from "./types";
 import { LuAlertTriangle } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * Modern card component for grouping subnet configurations
@@ -22,6 +23,8 @@ export const SubnetCard = component$<SubnetCardProps>(
     gradient = true,
     class: className = "",
   }) => {
+    const locale = useMessageLocale();
+
     // Color schemes for different categories
     const categoryStyles = {
       base: {
@@ -69,9 +72,8 @@ export const SubnetCard = component$<SubnetCardProps>(
     const cardErrors = Object.entries(errors).filter(([key]) =>
       configKeys.includes(key),
     );
-    const conflictErrors = cardErrors.filter(
-      ([_, error]) =>
-        error.includes("Conflicts with") || error.includes("conflicts with"),
+    const conflictErrors = cardErrors.filter(([_, error]) =>
+      error.includes("(192.168."),
     );
     const hasErrors = cardErrors.length > 0;
     const hasConflicts = conflictErrors.length > 0;
@@ -148,7 +150,7 @@ export const SubnetCard = component$<SubnetCardProps>(
             <div class="relative z-10 px-6 pb-4">
               <Alert
                 status="error"
-                title={$localize`Subnet Conflicts Detected`}
+                title={semanticMessages.subnets_conflicts_title({}, { locale })}
                 class="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
               >
                 <div class="flex gap-3">
@@ -156,8 +158,14 @@ export const SubnetCard = component$<SubnetCardProps>(
                   <div class="space-y-1">
                     <p class="text-sm text-red-700 dark:text-red-300">
                       {conflictErrors.length === 1
-                        ? $localize`One subnet in this section conflicts with another:`
-                        : $localize`${conflictErrors.length} subnets in this section have conflicts:`}
+                        ? semanticMessages.subnets_conflicts_single(
+                            {},
+                            { locale },
+                          )
+                        : semanticMessages.subnets_conflicts_multiple(
+                            { count: conflictErrors.length },
+                            { locale },
+                          )}
                     </p>
                     <ul class="space-y-1 text-xs text-red-600 dark:text-red-400">
                       {conflictErrors.map(([key, error]) => {
@@ -200,12 +208,30 @@ export const SubnetCard = component$<SubnetCardProps>(
                   {values[config.key] !== null && (
                     <div class="mt-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                       <div class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                        {$localize`Network`}: 192.168.{values[config.key]}.0
+                        {semanticMessages.subnets_preview_network(
+                          {},
+                          { locale },
+                        )}
+                        : 192.168.{values[config.key]}.0
                         {config.mask === 24 && (
-                          <span class="ml-2">({$localize`254 hosts`})</span>
+                          <span class="ml-2">
+                            (
+                            {semanticMessages.subnets_preview_hosts_254(
+                              {},
+                              { locale },
+                            )}
+                            )
+                          </span>
                         )}
                         {config.mask === 30 && (
-                          <span class="ml-2">({$localize`2 hosts`})</span>
+                          <span class="ml-2">
+                            (
+                            {semanticMessages.subnets_preview_hosts_2(
+                              {},
+                              { locale },
+                            )}
+                            )
+                          </span>
                         )}
                       </div>
                     </div>
@@ -233,7 +259,10 @@ export const SubnetCard = component$<SubnetCardProps>(
                   </svg>
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  {$localize`No ${category} networks to configure`}
+                  {semanticMessages.subnets_empty_configure(
+                    { category: title },
+                    { locale },
+                  )}
                 </p>
               </div>
             )}
@@ -243,7 +272,10 @@ export const SubnetCard = component$<SubnetCardProps>(
               <div class="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-500 dark:text-gray-400">
-                    {$localize`Configured networks`}
+                    {semanticMessages.subnets_configured_networks(
+                      {},
+                      { locale },
+                    )}
                   </span>
                   <span class={`font-medium ${styles.header}`}>
                     {configs.filter((c) => values[c.key] !== null).length} /{" "}

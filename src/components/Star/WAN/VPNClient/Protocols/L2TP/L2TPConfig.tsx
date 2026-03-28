@@ -9,6 +9,7 @@ import {
   Switch,
   ErrorMessage,
 } from "../../components";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface L2TPConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -17,6 +18,7 @@ interface L2TPConfigProps {
 
 export const L2TPConfig = component$<L2TPConfigProps>(
   ({ onIsValidChange$, isSaving }) => {
+    const locale = useMessageLocale();
     const {
       serverAddress,
       username,
@@ -49,13 +51,16 @@ export const L2TPConfig = component$<L2TPConfigProps>(
 
         {/* Connection Settings */}
         <FormContainer
-          title={$localize`Connection Settings`}
-          description={$localize`Configure your L2TP VPN connection details`}
+          title={semanticMessages.vpn_l2tp_connection_settings({}, { locale })}
+          description={semanticMessages.vpn_l2tp_connection_settings_description(
+            {},
+            { locale },
+          )}
           bordered
         >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FormField
-              label={$localize`Server Address`}
+              label={semanticMessages.vpn_l2tp_server_address({}, { locale })}
               required
               value={serverAddress.value}
               placeholder="vpn.example.com or IP address"
@@ -68,10 +73,16 @@ export const L2TPConfig = component$<L2TPConfigProps>(
         </FormContainer>
 
         {/* Authentication Settings */}
-        <FormContainer title={$localize`Authentication Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_l2tp_authentication_settings(
+            {},
+            { locale },
+          )}
+          bordered
+        >
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <FormField
-              label={$localize`Username`}
+              label={semanticMessages.shared_username({}, { locale })}
               required
               value={username.value}
               onInput$={(_, el) => {
@@ -82,7 +93,7 @@ export const L2TPConfig = component$<L2TPConfigProps>(
 
             <FormField
               type="text"
-              label={$localize`Password`}
+              label={semanticMessages.wan_easy_password_label({}, { locale })}
               required
               value={password.value}
               onInput$={(_, el) => {
@@ -94,11 +105,20 @@ export const L2TPConfig = component$<L2TPConfigProps>(
         </FormContainer>
 
         {/* IPsec Settings */}
-        <FormContainer title={$localize`IPsec Security Settings`} bordered>
+        <FormContainer
+          title={semanticMessages.vpn_l2tp_ipsec_security_settings(
+            {},
+            { locale },
+          )}
+          bordered
+        >
           <div class="space-y-4">
             <Switch
               id="useIPsec"
-              label={$localize`Use IPsec Encryption`}
+              label={semanticMessages.vpn_l2tp_use_ipsec_encryption(
+                {},
+                { locale },
+              )}
               checked={useIPsec.value}
               onChange$={(checked) => {
                 useIPsec.value = checked;
@@ -111,7 +131,10 @@ export const L2TPConfig = component$<L2TPConfigProps>(
               <div class="ml-7 mt-3">
                 <FormField
                   type="text"
-                  label={$localize`IPsec Pre-shared Secret`}
+                  label={semanticMessages.vpn_l2tp_ipsec_pre_shared_secret(
+                    {},
+                    { locale },
+                  )}
                   required
                   value={ipsecSecret.value}
                   onInput$={(_, el) => {
@@ -126,7 +149,7 @@ export const L2TPConfig = component$<L2TPConfigProps>(
 
         {/* Required Fields Note */}
         <p class="text-text-muted dark:text-text-dark-muted text-xs">
-          {$localize`Fields marked with * are required`}
+          {semanticMessages.vpn_l2tp_fields_required({}, { locale })}
         </p>
 
         {/* Error Message Display */}

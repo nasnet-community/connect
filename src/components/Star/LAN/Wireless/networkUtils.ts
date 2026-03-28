@@ -1,5 +1,7 @@
 import type { Networks } from "../../StarContext/Utils/Networks";
 import type { WifiTarget } from "../../StarContext/LANType";
+import type { AppLocale } from "~/i18n/config";
+import { getNetworkDisplayName } from "./constants";
 
 export interface NetworkOption {
   name: string;
@@ -15,6 +17,7 @@ export interface NetworkOption {
  */
 export function getAvailableNetworks(
   networks: Networks | undefined,
+  locale?: AppLocale,
 ): NetworkOption[] {
   if (!networks) return [];
 
@@ -27,7 +30,9 @@ export function getAvailableNetworks(
         name: "Foreign",
         category: "Base",
         wifiTarget: "Foreign",
-        displayName: $localize`Foreign Network`,
+        displayName: locale
+          ? `${getNetworkDisplayName("foreign", locale)} Network`
+          : "Foreign Network",
       });
     }
     if (networks.BaseNetworks.Domestic) {
@@ -35,7 +40,9 @@ export function getAvailableNetworks(
         name: "Domestic",
         category: "Base",
         wifiTarget: "Domestic",
-        displayName: $localize`Domestic Network`,
+        displayName: locale
+          ? `${getNetworkDisplayName("domestic", locale)} Network`
+          : "Domestic Network",
       });
     }
     if (networks.BaseNetworks.Split) {
@@ -43,7 +50,9 @@ export function getAvailableNetworks(
         name: "Split",
         category: "Base",
         wifiTarget: "Split",
-        displayName: $localize`Split Network`,
+        displayName: locale
+          ? `${getNetworkDisplayName("split", locale)} Network`
+          : "Split Network",
       });
     }
     if (networks.BaseNetworks.VPN) {
@@ -51,7 +60,9 @@ export function getAvailableNetworks(
         name: "VPN",
         category: "Base",
         wifiTarget: "VPN",
-        displayName: $localize`VPN Network`,
+        displayName: locale
+          ? `${getNetworkDisplayName("vpn", locale)} Network`
+          : "VPN Network",
       });
     }
   }
@@ -161,8 +172,9 @@ export function getAvailableNetworks(
  */
 export function getExtraNetworks(
   networks: Networks | undefined,
+  locale?: AppLocale,
 ): NetworkOption[] {
-  const allNetworks = getAvailableNetworks(networks);
+  const allNetworks = getAvailableNetworks(networks, locale);
   const baseNetworkNames = ["Foreign", "Domestic", "Split", "VPN"];
 
   return allNetworks.filter(

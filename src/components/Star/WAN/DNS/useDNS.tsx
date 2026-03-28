@@ -14,9 +14,11 @@ import type {
   DNSPreset,
 } from "./types";
 import type { DNSConfig, DOHConfig } from "../../StarContext/WANType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const useDNS = () => {
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
   const isDomestic =
     starContext.state.Choose.WANLinkType === "domestic" ||
     starContext.state.Choose.WANLinkType === "both";
@@ -263,15 +265,18 @@ export const useDNS = () => {
     const dohInfo: DOHNetworkInfo = isDomestic
       ? {
           target: "Domestic",
-          label: $localize`Domestic Network DOH`,
-          description: $localize`Secure DNS resolution for domestic network traffic`,
+          label: semanticMessages.dns_doh_domestic_label({}, { locale }),
+          description: semanticMessages.dns_doh_domestic_description(
+            {},
+            { locale },
+          ),
           networkColor: "orange",
           networkIcon: "home",
         }
       : {
           target: "VPN",
-          label: $localize`VPN Network DOH`,
-          description: $localize`Secure DNS resolution for VPN network traffic`,
+          label: semanticMessages.dns_doh_vpn_label({}, { locale }),
+          description: semanticMessages.dns_doh_vpn_description({}, { locale }),
           networkColor: "green",
           networkIcon: "shield",
         };
@@ -288,8 +293,8 @@ export const useDNS = () => {
       {
         type: "Foreign",
         dns: dnsConfig.ForeignDNS || "",
-        label: $localize`Foreign Network DNS`,
-        description: $localize`DNS server for foreign network traffic`,
+        label: semanticMessages.dns_foreign_label({}, { locale }),
+        description: semanticMessages.dns_foreign_description({}, { locale }),
         required: true,
         placeholder: "8.8.8.8",
         icon: "globe",
@@ -299,8 +304,8 @@ export const useDNS = () => {
       {
         type: "VPN",
         dns: dnsConfig.VPNDNS || "",
-        label: $localize`VPN Network DNS`,
-        description: $localize`DNS server for VPN network traffic`,
+        label: semanticMessages.dns_vpn_label({}, { locale }),
+        description: semanticMessages.dns_vpn_description({}, { locale }),
         required: true,
         placeholder: "1.1.1.1",
         icon: "shield",
@@ -313,8 +318,8 @@ export const useDNS = () => {
       configs.push({
         type: "Split",
         dns: dnsConfig.SplitDNS || "",
-        label: $localize`Split Network DNS`,
-        description: $localize`DNS server for split network traffic`,
+        label: semanticMessages.dns_split_label({}, { locale }),
+        description: semanticMessages.dns_split_description({}, { locale }),
         required: true,
         placeholder: "9.9.9.9",
         icon: "split",
@@ -325,8 +330,8 @@ export const useDNS = () => {
       configs.push({
         type: "Domestic",
         dns: dnsConfig.DomesticDNS || "",
-        label: $localize`Domestic Network DNS`,
-        description: $localize`DNS server for domestic network traffic`,
+        label: semanticMessages.dns_domestic_label({}, { locale }),
+        description: semanticMessages.dns_domestic_description({}, { locale }),
         required: true,
         placeholder: "208.67.222.222",
         icon: "home",
@@ -401,45 +406,37 @@ export const useDNS = () => {
 
     // Validate Foreign DNS
     if (!dnsConfig.ForeignDNS || !dnsConfig.ForeignDNS.trim()) {
-      errors.Foreign = $localize`Foreign Network DNS is required`;
+      errors.Foreign = semanticMessages.dns_foreign_required({}, { locale });
     } else if (!(await validateIPv4(dnsConfig.ForeignDNS))) {
-      errors.Foreign = $localize`Please enter a valid IPv4 address`;
+      errors.Foreign = semanticMessages.dns_invalid_ipv4({}, { locale });
     }
 
     // Validate VPN DNS
     if (!dnsConfig.VPNDNS || !dnsConfig.VPNDNS.trim()) {
-      errors.VPN = $localize`VPN Network DNS is required`;
+      errors.VPN = semanticMessages.dns_vpn_required({}, { locale });
     } else if (!(await validateIPv4(dnsConfig.VPNDNS))) {
-      errors.VPN = $localize`Please enter a valid IPv4 address`;
+      errors.VPN = semanticMessages.dns_invalid_ipv4({}, { locale });
     }
 
     // Validate Split and Domestic DNS if domestic link is enabled
     if (isDomestic) {
       if (!dnsConfig.SplitDNS?.trim()) {
-        errors.Split = $localize`Split Network DNS is required`;
+        errors.Split = semanticMessages.dns_split_required({}, { locale });
       } else if (!(await validateIPv4(dnsConfig.SplitDNS))) {
-        errors.Split = $localize`Please enter a valid IPv4 address`;
+        errors.Split = semanticMessages.dns_invalid_ipv4({}, { locale });
       }
 
       if (!dnsConfig.DomesticDNS?.trim()) {
-        errors.Domestic = $localize`Domestic Network DNS is required`;
+        errors.Domestic = semanticMessages.dns_domestic_required(
+          {},
+          { locale },
+        );
       } else if (!(await validateIPv4(dnsConfig.DomesticDNS))) {
-        errors.Domestic = $localize`Please enter a valid IPv4 address`;
+        errors.Domestic = semanticMessages.dns_invalid_ipv4({}, { locale });
       }
     }
 
-    // DOH is currently disabled - skip validation
-    // TODO: Remove this comment if DOH is re-enabled in the future
-    // Validate DOH configuration if domain is set (DOH is enabled)
-    // if (isDomestic && dnsConfig.DOH?.domain) {
-    //   if (!(await validateDomain(dnsConfig.DOH.domain))) {
-    //     errors.dohDomain = $localize`Please enter a valid domain name`;
-    //   }
-
-    //   if (dnsConfig.DOH.bindingIP?.trim() && !(await validateIPv4(dnsConfig.DOH.bindingIP))) {
-    //     errors.dohBinding = $localize`Please enter a valid IPv4 address for binding IP`;
-    //   }
-    // }
+    // DOH is currently disabled, so domain and binding validation is skipped.
 
     // Update validation errors
     Object.keys(validationErrors).forEach((key) => {

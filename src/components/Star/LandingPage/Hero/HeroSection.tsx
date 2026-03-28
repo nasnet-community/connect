@@ -11,10 +11,12 @@ import { Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter";
 import { subscribeToNewsletter } from "~/utils/newsletterAPI";
 import { generateUserUUID } from "~/utils/fingerprinting";
+import { resolveMessageLocale, semanticMessages } from "~/i18n/semantic";
 
 export const HeroSection = component$(() => {
   const location = useLocation();
   const locale = location.params.locale || "en";
+  const messageLocale = resolveMessageLocale(locale);
   const primaryActionClasses =
     "group inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:from-purple-700 hover:to-blue-700 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-300/50 active:scale-[0.97]";
   const secondaryActionClasses =
@@ -44,7 +46,10 @@ export const HeroSection = component$(() => {
           throw new Error(
             result.error_detail ||
               result.error ||
-              $localize`Subscription failed`,
+              semanticMessages.landing_hero_subscription_failed(
+                {},
+                { locale: messageLocale },
+              ),
           );
         }
 
@@ -73,36 +78,66 @@ export const HeroSection = component$(() => {
         <div class="mb-8 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 px-4 py-2 backdrop-blur-md">
           <div class="h-2 w-2 animate-pulse rounded-full bg-green-400" />
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {$localize`Professional MikroTik Configuration`}
+            {semanticMessages.landing_hero_badge({}, { locale: messageLocale })}
           </span>
         </div>
 
         {/* Main Headline */}
         <h1 class="mb-6 animate-fade-in-up text-4xl font-bold animation-delay-200 md:text-6xl lg:text-7xl">
           <span class="animate-gradient bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
-            {$localize`Share, Secure & Optimize`}
+            {semanticMessages.landing_hero_headline_line1(
+              {},
+              { locale: messageLocale },
+            )}
           </span>
           <br />
           <span class="text-gray-900 dark:text-white">
-            {$localize`Your Starlink`}
+            {semanticMessages.landing_hero_headline_line2(
+              {},
+              { locale: messageLocale },
+            )}
           </span>
           <br />
           <span class="animate-gradient bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            {$localize`Like a Pro`}
+            {semanticMessages.landing_hero_headline_line3(
+              {},
+              { locale: messageLocale },
+            )}
           </span>
         </h1>
 
         {/* Subtitle */}
         <p class="mx-auto mb-10 max-w-3xl animate-fade-in-up text-lg leading-relaxed text-gray-600 animation-delay-500 dark:text-gray-300 md:text-xl">
-          {$localize`Unlock the full potential of your Starlink connection with advanced networking powered by MikroTik routers. Seamlessly share your internet, secure it with VPN, and optimize for gaming and enterprise performance, all through NasNet Connect intelligent interface.`}
+          {semanticMessages.landing_hero_subtitle(
+            {},
+            { locale: messageLocale },
+          )}
         </p>
 
         {/* Key Features Pills */}
         <div class="animation-delay-700 mb-10 flex animate-fade-in-up flex-wrap justify-center gap-3">
           {[
-            { icon: LuRouter, text: $localize`17+ Router Models` },
-            { icon: LuShield, text: $localize`6 VPN Protocols` },
-            { icon: LuZap, text: $localize`Gaming Optimized` },
+            {
+              icon: LuRouter,
+              text: semanticMessages.landing_hero_feature_routers(
+                {},
+                { locale: messageLocale },
+              ),
+            },
+            {
+              icon: LuShield,
+              text: semanticMessages.landing_hero_feature_vpn(
+                {},
+                { locale: messageLocale },
+              ),
+            },
+            {
+              icon: LuZap,
+              text: semanticMessages.landing_hero_feature_gaming(
+                {},
+                { locale: messageLocale },
+              ),
+            },
           ].map((feature, index) => (
             <div
               key={index}
@@ -119,7 +154,10 @@ export const HeroSection = component$(() => {
         {/* Action Buttons */}
         <div class="flex animate-fade-in-up flex-col items-center justify-center gap-4 animation-delay-1000 sm:flex-row">
           <Link href={`/${locale}/star/`} class={primaryActionClasses}>
-            {$localize`Get Started Free`}
+            {semanticMessages.landing_hero_cta_primary(
+              {},
+              { locale: messageLocale },
+            )}
             <LuArrowRight class="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
 
@@ -130,7 +168,10 @@ export const HeroSection = component$(() => {
             class={secondaryActionClasses}
           >
             <LuPlay class="mr-2 h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-            {$localize`Watch Video`}
+            {semanticMessages.landing_hero_cta_secondary(
+              {},
+              { locale: messageLocale },
+            )}
           </a>
         </div>
 
@@ -138,8 +179,14 @@ export const HeroSection = component$(() => {
         <div class="animation-delay-1100 mt-16 animate-fade-in-up">
           <Newsletter
             variant="hero"
-            placeholder={$localize`Enter your email for updates`}
-            buttonText={$localize`Subscribe`}
+            placeholder={semanticMessages.newsletter_hero_placeholder(
+              {},
+              { locale: messageLocale },
+            )}
+            buttonText={semanticMessages.newsletter_button_subscribe(
+              {},
+              { locale: messageLocale },
+            )}
             onSubscribe$={handleNewsletterSubscribe$}
           />
         </div>
@@ -147,7 +194,10 @@ export const HeroSection = component$(() => {
         {/* Trust Indicators */}
         <div class="animation-delay-1200 mt-16 animate-fade-in-up">
           <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            {$localize`Trusted by network professionals worldwide`}
+            {semanticMessages.landing_hero_trust_line(
+              {},
+              { locale: messageLocale },
+            )}
           </p>
           <div class="flex flex-wrap items-center justify-center gap-8 opacity-60">
             {[

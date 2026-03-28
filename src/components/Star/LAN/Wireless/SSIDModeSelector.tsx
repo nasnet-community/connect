@@ -1,6 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { Signal } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface SSIDModeSelectorProps {
   isMultiSSID: Signal<boolean>;
@@ -8,6 +9,7 @@ interface SSIDModeSelectorProps {
 
 export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
   ({ isMultiSSID }) => {
+    const locale = useMessageLocale();
     const switchToSingleMode = $(() => {
       isMultiSSID.value = false;
     });
@@ -34,7 +36,9 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
             class="hidden"
           />
           <HiWifiOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-          <span class="ml-2 text-text dark:text-text-dark-default">{$localize`Single SSID`}</span>
+          <span class="ml-2 text-text dark:text-text-dark-default">
+            {semanticMessages.wireless_mode_single_ssid({}, { locale })}
+          </span>
         </label>
 
         <label
@@ -53,7 +57,9 @@ export const SSIDModeSelector = component$<SSIDModeSelectorProps>(
             class="hidden"
           />
           <HiWifiOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
-          <span class="ml-2 text-text dark:text-text-dark-default">{$localize`Multi SSID`}</span>
+          <span class="ml-2 text-text dark:text-text-dark-default">
+            {semanticMessages.wireless_mode_multi_ssid({}, { locale })}
+          </span>
         </label>
       </div>
     );

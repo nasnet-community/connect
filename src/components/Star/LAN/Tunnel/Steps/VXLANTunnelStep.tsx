@@ -11,8 +11,10 @@ import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
 import { ServerFormField } from "~/components/Core/Form/ServerField";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const VXLANTunnelStep = component$(() => {
+  const locale = useMessageLocale();
   const stepper = useStepperContext(TunnelContextId);
 
   // Skip this step if a different protocol was selected
@@ -109,17 +111,22 @@ export const VXLANTunnelStep = component$(() => {
             <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`VXLAN Tunnels`}
+                {semanticMessages.tunnel_step_vxlan({}, { locale })}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {$localize`Configure Virtual Extensible LAN tunnels for large-scale network virtualization`}
+                {semanticMessages.tunnel_vxlan_detail_description(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
           </div>
 
           <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
-            {$localize`Add Tunnel`}
+            {semanticMessages.tunnel_add({}, { locale })}
           </Button>
         </div>
       </Card>
@@ -127,7 +134,7 @@ export const VXLANTunnelStep = component$(() => {
       {stepper.data.vxlan.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
-            {$localize`No VXLAN tunnels configured. Click "Add Tunnel" to create one.`}
+            {semanticMessages.tunnel_no_vxlan_configured({}, { locale })}
           </p>
         </Card>
       ) : (
@@ -136,7 +143,10 @@ export const VXLANTunnelStep = component$(() => {
             <Card key={index}>
               <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
-                  {$localize`VXLAN Tunnel ${index + 1}`}
+                  {semanticMessages.tunnel_vxlan_item_title(
+                    { index: String(index + 1) },
+                    { locale },
+                  )}
                 </h4>
                 <Button
                   onClick$={() => removeTunnel$(index)}
@@ -145,26 +155,32 @@ export const VXLANTunnelStep = component$(() => {
                   class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 >
                   <HiTrashOutline q:slot="leftIcon" class="h-5 w-5" />
-                  {$localize`Remove`}
+                  {semanticMessages.shared_remove({}, { locale })}
                 </Button>
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
-                <ServerFormField label={$localize`Name`} required>
+                <ServerFormField
+                  label={semanticMessages.tunnel_field_name({}, { locale })}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.name}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "name", value)
                     }
-                    placeholder={$localize`Enter tunnel name`}
+                    placeholder={semanticMessages.tunnel_field_name_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </ServerFormField>
 
                 {/* VNI */}
                 <ServerFormField
-                  label={$localize`VNI (VXLAN Network Identifier)`}
+                  label={semanticMessages.tunnel_field_vni({}, { locale })}
                   required
                 >
                   <Input
@@ -173,12 +189,17 @@ export const VXLANTunnelStep = component$(() => {
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "vni", parseInt(value) || 1)
                     }
-                    placeholder={$localize`Enter VNI`}
+                    placeholder={semanticMessages.tunnel_field_vni_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </ServerFormField>
 
                 {/* Port */}
-                <ServerFormField label={$localize`Port`}>
+                <ServerFormField
+                  label={semanticMessages.shared_port({}, { locale })}
+                >
                   <Input
                     type="number"
                     value={tunnel.port?.toString() || ""}
@@ -189,19 +210,31 @@ export const VXLANTunnelStep = component$(() => {
                         value ? parseInt(value) : undefined,
                       );
                     }}
-                    placeholder={$localize`Enter port (default: 4789)`}
+                    placeholder={semanticMessages.tunnel_field_port_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </ServerFormField>
 
                 {/* Remote Address */}
-                <ServerFormField label={$localize`Remote Address`} required>
+                <ServerFormField
+                  label={semanticMessages.tunnel_field_remote_address(
+                    {},
+                    { locale },
+                  )}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "remoteAddress", value)
                     }
-                    placeholder={$localize`Enter remote address`}
+                    placeholder={semanticMessages.tunnel_field_remote_address_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </ServerFormField>
               </div>

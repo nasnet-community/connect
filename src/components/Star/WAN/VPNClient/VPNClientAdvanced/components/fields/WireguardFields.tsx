@@ -4,6 +4,7 @@ import type { WireguardClientConfig } from "~/components/Star/StarContext/Utils/
 import { ConfigMethodToggle } from "~/components/Star/WAN/VPNClient/components/ConfigMethodToggle";
 import { VPNConfigFileSection } from "~/components/Star/WAN/VPNClient/components/VPNConfigFileSection";
 import { Input, ErrorMessage } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WireguardFieldsProps {
   config: Partial<WireguardClientConfig>;
@@ -14,6 +15,7 @@ interface WireguardFieldsProps {
 
 export const WireguardFields = component$<WireguardFieldsProps>((props) => {
   const { config, errors = {}, mode = "advanced", onUpdate$ } = props;
+  const locale = useMessageLocale();
 
   // State for config method and file content
   const configMethod = useSignal<"file" | "manual">("file");
@@ -166,7 +168,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           configValue={configContent.value}
           onConfigChange$={handleConfigChange$}
           onFileUpload$={handleFileUpload$}
-          placeholder={$localize`Paste your WireGuard configuration here. It should include sections like [Interface] and [Peer].`}
+          placeholder={semanticMessages.vpn_client_advanced_wireguard_config_placeholder(
+            {},
+            { locale },
+          )}
         />
       )}
 
@@ -176,7 +181,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           {/* Interface Private Key */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Interface Private Key`} *
+              {semanticMessages.vpn_client_advanced_interface_private_key(
+                {},
+                {
+                  locale,
+                },
+              )}{" "}
+              *
             </label>
             <Input
               type="text"
@@ -190,7 +201,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
                   InterfacePrivateKey: value,
                 });
               }}
-              placeholder="Your private key"
+              placeholder={semanticMessages.vpn_client_advanced_interface_private_key(
+                {},
+                { locale },
+              )}
               validation={errors.InterfacePrivateKey ? "invalid" : "default"}
             />
             {errors.InterfacePrivateKey && (
@@ -201,7 +215,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           {/* Interface Address */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Interface Address`} *
+              {semanticMessages.vpn_client_advanced_interface_address(
+                {},
+                {
+                  locale,
+                },
+              )}{" "}
+              *
             </label>
             <Input
               type="text"
@@ -226,7 +246,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           {/* Peer Public Key */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Peer Public Key`} *
+              {semanticMessages.vpn_client_advanced_peer_public_key(
+                {},
+                {
+                  locale,
+                },
+              )}{" "}
+              *
             </label>
             <Input
               type="text"
@@ -235,7 +261,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
                 console.log("[WireguardFields] PeerPublicKey updated:", value);
                 onUpdate$({ PeerPublicKey: value });
               }}
-              placeholder="Server public key"
+              placeholder={semanticMessages.vpn_client_advanced_peer_public_key(
+                {},
+                { locale },
+              )}
               validation={errors.PeerPublicKey ? "invalid" : "default"}
             />
             {errors.PeerPublicKey && (
@@ -247,7 +276,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Peer Endpoint Address`} *
+                {semanticMessages.vpn_client_advanced_peer_endpoint_address(
+                  {},
+                  {
+                    locale,
+                  },
+                )}{" "}
+                *
               </label>
               <Input
                 type="text"
@@ -271,7 +306,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
 
             <div>
               <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                {$localize`Peer Endpoint Port`} *
+                {semanticMessages.vpn_client_advanced_peer_endpoint_port(
+                  {},
+                  {
+                    locale,
+                  },
+                )}{" "}
+                *
               </label>
               <Input
                 type="number"
@@ -297,7 +338,13 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
           {/* Peer Allowed IPs */}
           <div>
             <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-              {$localize`Peer Allowed IPs`} *
+              {semanticMessages.vpn_client_advanced_peer_allowed_ips(
+                {},
+                {
+                  locale,
+                },
+              )}{" "}
+              *
             </label>
             <Input
               type="text"
@@ -319,7 +366,12 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
             <>
               <div>
                 <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                  {$localize`Interface DNS`}
+                  {semanticMessages.vpn_client_advanced_interface_dns(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </label>
                 <Input
                   type="text"
@@ -336,7 +388,12 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
               <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                    {$localize`Interface MTU`}
+                    {semanticMessages.vpn_client_advanced_interface_mtu(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -352,7 +409,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
 
                 <div>
                   <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                    {$localize`Persistent Keepalive`}
+                    {semanticMessages.vpn_client_advanced_persistent_keepalive(
+                      {},
+                      { locale },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -369,7 +429,7 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
 
               <div>
                 <label class="text-text-default mb-1 block text-sm font-medium dark:text-text-dark-default">
-                  {$localize`Preshared Key`}
+                  {semanticMessages.vpn_ikev2_pre_shared_key({}, { locale })}
                 </label>
                 <Input
                   type="text"
@@ -379,7 +439,10 @@ export const WireguardFields = component$<WireguardFieldsProps>((props) => {
                       PeerPresharedKey: value,
                     })
                   }
-                  placeholder="Optional preshared key"
+                  placeholder={semanticMessages.vpn_client_advanced_optional_preshared_key(
+                    {},
+                    { locale },
+                  )}
                 />
               </div>
             </>

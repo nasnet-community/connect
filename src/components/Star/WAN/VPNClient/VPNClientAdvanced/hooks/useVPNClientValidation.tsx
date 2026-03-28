@@ -1,4 +1,5 @@
 import { $, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import type {
   VPNClientAdvancedState,
   VPNConfig,
@@ -24,6 +25,8 @@ export interface UseVPNClientValidationReturn {
 }
 
 export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
+  const locale = useMessageLocale();
+
   // Helper function to check if VPN has all mandatory fields configured
   const hasAllMandatoryFields$ = $((vpn: VPNConfig): boolean => {
     const vpnConfig = vpn as any;
@@ -182,14 +185,24 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
 
       // Validate basic fields
       if (!vpnConfig.name?.trim()) {
-        errors[`vpn-${vpnConfig.id}-name`] = ["VPN client name is required"];
+        errors[`vpn-${vpnConfig.id}-name`] = [
+          semanticMessages.vpn_client_advanced_validation_client_name_required(
+            {},
+            { locale },
+          ),
+        ];
         console.log(
           `[validateVPNClient] Name validation failed for ${vpnConfig.id}`,
         );
       }
 
       if (!vpnConfig.type) {
-        errors[`vpn-${vpnConfig.id}-type`] = ["VPN client type is required"];
+        errors[`vpn-${vpnConfig.id}-type`] = [
+          semanticMessages.vpn_client_advanced_validation_client_type_required(
+            {},
+            { locale },
+          ),
+        ];
         console.log(
           `[validateVPNClient] Type validation failed for ${vpnConfig.id}`,
         );
@@ -207,27 +220,42 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
           case "Wireguard":
             if (!config.InterfacePrivateKey?.trim()) {
               errors[`vpn-${vpnConfig.id}-InterfacePrivateKey`] = [
-                "Interface Private Key is required",
+                semanticMessages.vpn_client_advanced_validation_interface_private_key_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.InterfaceAddress?.trim()) {
               errors[`vpn-${vpnConfig.id}-InterfaceAddress`] = [
-                "Interface Address is required",
+                semanticMessages.vpn_client_advanced_validation_interface_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.PeerPublicKey?.trim()) {
               errors[`vpn-${vpnConfig.id}-PeerPublicKey`] = [
-                "Peer Public Key is required",
+                semanticMessages.vpn_client_advanced_validation_peer_public_key_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.PeerEndpointAddress?.trim()) {
               errors[`vpn-${vpnConfig.id}-PeerEndpointAddress`] = [
-                "Peer Endpoint Address is required",
+                semanticMessages.vpn_client_advanced_validation_peer_endpoint_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.PeerEndpointPort) {
               errors[`vpn-${vpnConfig.id}-PeerEndpointPort`] = [
-                "Peer Endpoint Port is required",
+                semanticMessages.vpn_client_advanced_validation_peer_endpoint_port_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             break;
@@ -235,79 +263,152 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
           case "OpenVPN":
             if (!config.Server?.Address?.trim()) {
               errors[`vpn-${vpnConfig.id}-server`] = [
-                "Server address is required",
+                semanticMessages.vpn_client_advanced_validation_server_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.Server?.Port) {
-              errors[`vpn-${vpnConfig.id}-port`] = ["Port is required"];
+              errors[`vpn-${vpnConfig.id}-port`] = [
+                semanticMessages.vpn_client_advanced_validation_port_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Username?.trim()) {
-              errors[`vpn-${vpnConfig.id}-username`] = ["Username is required"];
+              errors[`vpn-${vpnConfig.id}-username`] = [
+                semanticMessages.vpn_client_advanced_validation_username_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Password?.trim()) {
-              errors[`vpn-${vpnConfig.id}-password`] = ["Password is required"];
+              errors[`vpn-${vpnConfig.id}-password`] = [
+                semanticMessages.vpn_client_advanced_validation_password_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             break;
 
           case "L2TP":
             if (!config.Server?.Address?.trim()) {
               errors[`vpn-${vpnConfig.id}-server`] = [
-                "Server address is required",
+                semanticMessages.vpn_client_advanced_validation_server_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.Credentials?.Username?.trim()) {
-              errors[`vpn-${vpnConfig.id}-username`] = ["Username is required"];
+              errors[`vpn-${vpnConfig.id}-username`] = [
+                semanticMessages.vpn_client_advanced_validation_username_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Password?.trim()) {
-              errors[`vpn-${vpnConfig.id}-password`] = ["Password is required"];
+              errors[`vpn-${vpnConfig.id}-password`] = [
+                semanticMessages.vpn_client_advanced_validation_password_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             break;
 
           case "IKeV2":
             if (!config.ServerAddress?.trim()) {
               errors[`vpn-${vpnConfig.id}-server`] = [
-                "Server address is required",
+                semanticMessages.vpn_client_advanced_validation_server_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.Credentials?.Username?.trim()) {
-              errors[`vpn-${vpnConfig.id}-username`] = ["Username is required"];
+              errors[`vpn-${vpnConfig.id}-username`] = [
+                semanticMessages.vpn_client_advanced_validation_username_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Password?.trim()) {
-              errors[`vpn-${vpnConfig.id}-password`] = ["Password is required"];
+              errors[`vpn-${vpnConfig.id}-password`] = [
+                semanticMessages.vpn_client_advanced_validation_password_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             break;
 
           case "PPTP":
             if (!config.ConnectTo?.trim()) {
               errors[`vpn-${vpnConfig.id}-server`] = [
-                "Server address is required",
+                semanticMessages.vpn_client_advanced_validation_server_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.Credentials?.Username?.trim()) {
-              errors[`vpn-${vpnConfig.id}-username`] = ["Username is required"];
+              errors[`vpn-${vpnConfig.id}-username`] = [
+                semanticMessages.vpn_client_advanced_validation_username_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Password?.trim()) {
-              errors[`vpn-${vpnConfig.id}-password`] = ["Password is required"];
+              errors[`vpn-${vpnConfig.id}-password`] = [
+                semanticMessages.vpn_client_advanced_validation_password_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             break;
 
           case "SSTP":
             if (!config.Server?.Address?.trim()) {
               errors[`vpn-${vpnConfig.id}-server`] = [
-                "Server address is required",
+                semanticMessages.vpn_client_advanced_validation_server_address_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!config.Credentials?.Username?.trim()) {
-              errors[`vpn-${vpnConfig.id}-username`] = ["Username is required"];
+              errors[`vpn-${vpnConfig.id}-username`] = [
+                semanticMessages.vpn_client_advanced_validation_username_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             if (!config.Credentials?.Password?.trim()) {
-              errors[`vpn-${vpnConfig.id}-password`] = ["Password is required"];
+              errors[`vpn-${vpnConfig.id}-password`] = [
+                semanticMessages.vpn_client_advanced_validation_password_required(
+                  {},
+                  { locale },
+                ),
+              ];
             }
             break;
         }
       } else if (vpnConfig.type && !vpnConfig.config) {
         errors[`vpn-${vpnConfig.id}-config`] = [
-          "VPN configuration is required",
+          semanticMessages.vpn_client_advanced_validation_configuration_required(
+            {},
+            { locale },
+          ),
         ];
         console.log(
           `[validateVPNClient] Config missing for ${vpnConfig.name} (${vpnConfig.type})`,
@@ -340,7 +441,10 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
           // Check minimum VPN count
           if (state.vpnConfigs.length < (state.minVPNCount || 1)) {
             errors["step1-mincount"] = [
-              `At least ${state.minVPNCount || 1} VPN client(s) required (based on Foreign WAN links)`,
+              semanticMessages.vpn_client_advanced_validation_min_clients(
+                { count: state.minVPNCount || 1 },
+                { locale },
+              ),
             ];
           }
 
@@ -349,12 +453,18 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
             const vpnConfig = vpn as any;
             if (!vpnConfig.name?.trim()) {
               errors[`vpn-${vpnConfig.id}-name`] = [
-                "VPN client name is required",
+                semanticMessages.vpn_client_advanced_validation_client_name_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
             if (!vpnConfig.type) {
               errors[`vpn-${vpnConfig.id}-type`] = [
-                "VPN client type is required",
+                semanticMessages.vpn_client_advanced_validation_client_type_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
           }
@@ -367,7 +477,14 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
             (name, index) => names.indexOf(name) !== index,
           );
           if (duplicateNames.length > 0) {
-            errors["step1-duplicates"] = ["VPN client names must be unique"];
+            errors["step1-duplicates"] = [
+              semanticMessages.vpn_client_advanced_validation_names_unique(
+                {},
+                {
+                  locale,
+                },
+              ),
+            ];
           }
           break;
 
@@ -384,7 +501,10 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
             // Check multi-VPN strategy
             if (!state.multiVPNStrategy?.strategy) {
               errors["step3-strategy"] = [
-                "Multi-VPN strategy is required when using multiple VPN clients",
+                semanticMessages.vpn_client_advanced_validation_strategy_required(
+                  {},
+                  { locale },
+                ),
               ];
             }
 
@@ -394,7 +514,10 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
                 state.multiVPNStrategy.failoverCheckInterval < 5
               ) {
                 errors["step3-failover-interval"] = [
-                  "Failover check interval must be at least 5 seconds",
+                  semanticMessages.vpn_client_advanced_validation_failover_interval(
+                    {},
+                    { locale },
+                  ),
                 ];
               }
               if (
@@ -402,7 +525,10 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
                 state.multiVPNStrategy.failoverTimeout < 10
               ) {
                 errors["step3-failover-timeout"] = [
-                  "Failover timeout must be at least 10 seconds",
+                  semanticMessages.vpn_client_advanced_validation_failover_timeout(
+                    {},
+                    { locale },
+                  ),
                 ];
               }
             }
@@ -419,7 +545,10 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
               JSON.stringify(priorities) !== JSON.stringify(expectedPriorities)
             ) {
               errors["step3-priorities"] = [
-                "VPN client priorities must be unique and sequential",
+                semanticMessages.vpn_client_advanced_validation_priorities_unique(
+                  {},
+                  { locale },
+                ),
               ];
             }
           }
@@ -464,7 +593,11 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
 
       // Check minimum VPN count
       if (state.vpnConfigs.length < (state.minVPNCount || 1)) {
-        const error = `At least ${state.minVPNCount || 1} VPN client(s) required (based on Foreign WAN links)`;
+        const error =
+          semanticMessages.vpn_client_advanced_validation_min_clients(
+            { count: state.minVPNCount || 1 },
+            { locale },
+          );
         errors["global-mincount"] = [error];
         console.log("[validateAdvanced] Min count error:", error);
       }
@@ -491,7 +624,11 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
         (name, index) => names.indexOf(name) !== index,
       );
       if (duplicateNames.length > 0) {
-        const error = "VPN client names must be unique";
+        const error =
+          semanticMessages.vpn_client_advanced_validation_names_unique(
+            {},
+            { locale },
+          );
         errors["global-duplicates"] = [error];
         console.log(
           "[validateAdvanced] Duplicate names error:",
@@ -567,7 +704,11 @@ export const useVPNClientValidation = (): UseVPNClientValidationReturn => {
         if (
           JSON.stringify(finalPriorities) !== JSON.stringify(expectedPriorities)
         ) {
-          const error = "VPN client priorities must be unique and sequential";
+          const error =
+            semanticMessages.vpn_client_advanced_validation_priorities_unique(
+              {},
+              { locale },
+            );
           errors["global-priorities"] = [error];
           console.log(
             "[validateAdvanced] Priority validation error after auto-fix:",

@@ -2,6 +2,7 @@ import { component$, useContext, type QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../../StarContext/StarContext";
 import type { WANLinkConfig } from "../../types";
 import { Select, FormField } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import {
   addOccupiedInterface,
   removeOccupiedInterface,
@@ -19,6 +20,8 @@ export interface InterfaceSelectorProps {
 
 export const InterfaceSelector = component$<InterfaceSelectorProps>(
   ({ link, onUpdate$ }) => {
+    const locale = useMessageLocale();
+
     const starContext = useContext(StarContext);
 
     // Get available interfaces from master router
@@ -131,7 +134,7 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 />
               </svg>
             </span>
-            {$localize`Interface Type`}
+            {semanticMessages.wan_advanced_interface_type({}, { locale })}
           </label>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {interfaceTypes.map(({ type, isAvailable }) => (
@@ -240,7 +243,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                   {!isAvailable && (
                     <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50/80 dark:bg-gray-800/80">
                       <span class="rounded bg-white px-2 py-1 text-[10px] font-semibold text-gray-500 shadow-sm dark:bg-gray-700 dark:text-gray-400">
-                        {$localize`Not Available`}
+                        {semanticMessages.wan_advanced_not_available(
+                          {},
+                          { locale },
+                        )}
                       </span>
                     </div>
                   )}
@@ -256,7 +262,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
         </div>
 
         {/* Interface Selection */}
-        <FormField label={$localize`Interface`}>
+        <FormField
+          label={semanticMessages.wan_advanced_interface({}, { locale })}
+        >
           <Select
             value={link.interfaceName || ""}
             onChange$={(value: string | string[]) => {
@@ -302,7 +310,10 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
                 RouterModels: updatedModels,
               });
             }}
-            placeholder={$localize`Select Interface`}
+            placeholder={semanticMessages.wan_advanced_select_interface(
+              {},
+              { locale },
+            )}
             options={getSelectOptions()}
             key={`${link.id}-${link.interfaceType}`}
           />

@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { PropFunction } from "@builder.io/qwik";
 import { CodeBlock, Button } from "~/components/Core";
 import { LuTerminal, LuDownload } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface CodeProps {
   configPreview: string;
@@ -10,6 +11,8 @@ interface CodeProps {
 
 export const Code = component$<CodeProps>(
   ({ configPreview, onROSDownload$ }) => {
+    const locale = useMessageLocale();
+
     return (
       <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/90 dark:shadow-2xl">
         {/* Header Section */}
@@ -21,10 +24,13 @@ export const Code = component$<CodeProps>(
               </div>
               <div>
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100">
-                  {$localize`RouterOS Configuration`}
+                  {semanticMessages.show_config_advanced_title({}, { locale })}
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-slate-400">
-                  {$localize`Generated MikroTik RouterOS script ready for deployment`}
+                  {semanticMessages.show_config_advanced_subtitle(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>
@@ -37,7 +43,10 @@ export const Code = component$<CodeProps>(
                 class="min-w-[140px]"
               >
                 <LuDownload class="mr-2 h-4 w-4" />
-                {$localize`Download .rsc`}
+                {semanticMessages.show_config_advanced_download_button(
+                  {},
+                  { locale },
+                )}
               </Button>
             </div>
           </div>

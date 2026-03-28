@@ -6,6 +6,7 @@ import type { VPNType } from "../../../StarContext/CommonType";
 import { StarContext } from "../../../StarContext/StarContext";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerAdvanced/VPNServerContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface UseUserCredentialProps {
   user: VSCredentials;
@@ -27,6 +28,7 @@ export const useUserCredential = ({
 }: UseUserCredentialProps) => {
   const stepper = useStepperContext(VPNServerContextId);
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
   const isEasyMode = starContext.state.Choose.Mode === "easy";
 
   // Determine if this user is valid
@@ -99,7 +101,10 @@ export const useUserCredential = ({
   });
 
   // Use a basic title for the Card component to satisfy TypeScript requirements
-  const cardTitle = $localize`User ${index + 1}`;
+  const cardTitle = semanticMessages.vpn_server_user_title(
+    { index: index + 1 },
+    { locale },
+  );
 
   return {
     // Computed values
@@ -117,6 +122,7 @@ export const useUserCredential = ({
 // New hook for managing all users (moved from useVPNServer)
 export const useUserManagement = () => {
   const starContext = useContext(StarContext);
+  const locale = useMessageLocale();
   const vpnServerState = (starContext.state.LAN.VPNServer || {}) as any;
   const isEasyMode = starContext.state.Choose.Mode === "easy";
 
@@ -152,8 +158,10 @@ export const useUserManagement = () => {
         );
 
         if (isDuplicate) {
-          errors[index] =
-            $localize`Username already exists. Please choose a different username.`;
+          errors[index] = semanticMessages.vpn_server_username_exists_different(
+            {},
+            { locale },
+          );
         }
       }
     });
@@ -254,7 +262,7 @@ export const useUserManagement = () => {
       );
       if (isDuplicate) {
         usernameErrors[index] =
-          $localize`Username already exists. Please choose a different username.`;
+          semanticMessages.vpn_server_username_exists_different({}, { locale });
       }
     }
   });

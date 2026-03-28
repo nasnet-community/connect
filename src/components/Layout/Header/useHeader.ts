@@ -1,6 +1,7 @@
 import { useSignal, useOnWindow, useTask$, $ } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
 import { buildLocalePath, getPathWithoutLocale } from "../../../utils/locale";
+import { SUPPORTED_LOCALES, normalizeLocale } from "~/i18n/config";
 
 const THEME_STORAGE_KEY = "theme";
 const resolveTheme = () => {
@@ -17,7 +18,7 @@ export const useHeader = () => {
   const location = useLocation();
   const isMenuOpen = useSignal(false);
   const isDarkMode = useSignal(false);
-  const detectedLocale = location.params.locale || "en";
+  const detectedLocale = normalizeLocale(location.params.locale);
   console.log("[Locale Detection]", {
     urlPath: location.url.pathname,
     params: location.params,
@@ -25,7 +26,7 @@ export const useHeader = () => {
   });
   // Use detected locale directly, not a signal
   const currentLocale = detectedLocale;
-  const locales = ["en", "fa"];
+  const locales = [...SUPPORTED_LOCALES];
 
   useTask$(() => {
     if (typeof document === "undefined") {

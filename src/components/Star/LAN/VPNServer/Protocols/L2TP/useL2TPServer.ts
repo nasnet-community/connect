@@ -3,11 +3,13 @@ import { useContext } from "@builder.io/qwik";
 import type { L2tpServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import type { AuthMethod } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const useL2TPServer = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -87,7 +89,11 @@ export const useL2TPServer = () => {
         (useIpsec === "yes" || useIpsec === "required") &&
         (!config.IPsec.IpsecSecret || !config.IPsec.IpsecSecret.trim())
       ) {
-        secretError.value = $localize`IPsec secret is required when IPsec is enabled`;
+        secretError.value =
+          semanticMessages.vpn_server_l2tp_ipsec_secret_required(
+            {},
+            { locale },
+          );
         return;
       } else {
         secretError.value = "";

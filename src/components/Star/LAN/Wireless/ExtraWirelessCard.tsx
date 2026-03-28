@@ -4,6 +4,7 @@ import type { ExtraWirelessInterface } from "./type";
 import type { NetworkOption } from "./networkUtils";
 import { Toggle, Input, Button, Select } from "~/components/Core";
 import type { Mode } from "../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ExtraWirelessCardProps {
   extraInterface: ExtraWirelessInterface;
@@ -35,6 +36,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
     mode = "advance",
     hasBothBands = true,
   }) => {
+    const locale = useMessageLocale();
     const isDisabled = extraInterface.isDisabled;
 
     // Convert available networks to Select options format
@@ -45,7 +47,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
       return {
         value: network.name,
         label: isAssigned
-          ? `${network.displayName} (${$localize`Already assigned`})`
+          ? `${network.displayName} (${semanticMessages.wireless_extra_already_assigned({}, { locale })})`
           : network.displayName,
         disabled: isAssigned,
       };
@@ -62,7 +64,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
           <div class="flex min-w-0 flex-1 items-center gap-2">
             <div class="min-w-0 flex-1">
               <label class="mb-1 block text-xs text-gray-600 dark:text-gray-400">
-                {$localize`Network`}
+                {semanticMessages.wireless_extra_network_label({}, { locale })}
                 <span class="ml-1 text-red-500">*</span>
               </label>
               <Select
@@ -72,7 +74,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                   const selectedValue = Array.isArray(value) ? value[0] : value;
                   onNetworkSelect$(extraInterface.id, selectedValue);
                 })}
-                placeholder={$localize`Select network...`}
+                placeholder={semanticMessages.wireless_extra_select_network_placeholder(
+                  {},
+                  { locale },
+                )}
                 size="sm"
                 class="w-full"
               />
@@ -89,7 +94,11 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
               onChange$={$((checked: boolean) => {
                 onFieldChange$(extraInterface.id, "isDisabled", !checked);
               })}
-              label={!isDisabled ? $localize`On` : $localize`Off`}
+              label={
+                !isDisabled
+                  ? semanticMessages.shared_on({}, { locale })
+                  : semanticMessages.shared_off({}, { locale })
+              }
               labelPosition="left"
               size="sm"
               color="primary"
@@ -100,7 +109,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 await onDelete$(extraInterface.id);
               }}
               class="text-error transition-colors hover:text-error-dark dark:text-error-light dark:hover:text-error"
-              aria-label={$localize`Remove Wireless Interface`}
+              aria-label={semanticMessages.wireless_extra_remove_interface(
+                {},
+                { locale },
+              )}
             >
               <HiTrashOutline class="h-4 w-4" />
             </button>
@@ -114,14 +126,21 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
             {/* Only show visibility toggle in advance mode */}
             {mode === "advance" && (
               <div class="flex items-center justify-between">
-                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`SSID Visibility:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">
+                  {semanticMessages.wireless_card_ssid_visibility(
+                    {},
+                    { locale },
+                  )}
+                </span>
                 <Toggle
                   checked={!extraInterface.isHide}
                   onChange$={$((checked: boolean) => {
                     onFieldChange$(extraInterface.id, "isHide", !checked);
                   })}
                   label={
-                    !extraInterface.isHide ? $localize`Show` : $localize`Hide`
+                    !extraInterface.isHide
+                      ? semanticMessages.shared_show({}, { locale })
+                      : semanticMessages.shared_hide({}, { locale })
                   }
                   labelPosition="left"
                   disabled={isDisabled}
@@ -134,7 +153,9 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
             {/* Only show split band toggle if router has both bands */}
             {hasBothBands && (
               <div class="flex items-center justify-between">
-                <span class="font-medium text-gray-600 dark:text-gray-400">{$localize`Band Mode:`}</span>
+                <span class="font-medium text-gray-600 dark:text-gray-400">
+                  {semanticMessages.wireless_card_band_mode({}, { locale })}
+                </span>
                 <Toggle
                   checked={mode === "easy" ? true : extraInterface.splitBand}
                   onChange$={$((checked: boolean) => {
@@ -144,8 +165,8 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                   })}
                   label={
                     extraInterface.splitBand
-                      ? $localize`Split`
-                      : $localize`Single`
+                      ? semanticMessages.wireless_card_split({}, { locale })
+                      : semanticMessages.wireless_card_single({}, { locale })
                   }
                   labelPosition="left"
                   disabled={isDisabled || mode === "easy"}
@@ -159,7 +180,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
           {/* SSID Input */}
           <div class="space-y-1">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {$localize`SSID`}
+              {semanticMessages.wireless_card_ssid_label({}, { locale })}
               {!isDisabled && <span class="ml-1 text-red-500">*</span>}
             </label>
             <div class="flex gap-2">
@@ -170,7 +191,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 )}
                 type="text"
                 disabled={isDisabled}
-                placeholder={$localize`Network name`}
+                placeholder={semanticMessages.wireless_card_network_name_placeholder(
+                  {},
+                  { locale },
+                )}
                 required={!isDisabled}
                 size="sm"
                 class="flex-1"
@@ -182,7 +206,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 variant="outline"
                 size="sm"
                 iconOnly
-                aria-label={$localize`Generate SSID`}
+                aria-label={semanticMessages.wireless_card_generate_ssid(
+                  {},
+                  { locale },
+                )}
               >
                 <HiSparklesOutline class="h-4 w-4" />
               </Button>
@@ -192,7 +219,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
           {/* Password Input */}
           <div class="space-y-1">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Password`}
+              {semanticMessages.wireless_card_password_label({}, { locale })}
               {!isDisabled && <span class="ml-1 text-red-500">*</span>}
             </label>
             <div class="flex gap-2">
@@ -203,7 +230,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 )}
                 type="text"
                 disabled={isDisabled}
-                placeholder={$localize`Password`}
+                placeholder={semanticMessages.wireless_card_password_placeholder(
+                  {},
+                  { locale },
+                )}
                 required={!isDisabled}
                 size="sm"
                 class="flex-1"
@@ -219,7 +249,10 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
                 variant="outline"
                 size="sm"
                 iconOnly
-                aria-label={$localize`Generate Password`}
+                aria-label={semanticMessages.wireless_card_generate_password(
+                  {},
+                  { locale },
+                )}
               >
                 <HiSparklesOutline class="h-4 w-4" />
               </Button>
@@ -229,7 +262,7 @@ export const ExtraWirelessCard = component$<ExtraWirelessCardProps>(
           {/* Show network info */}
           {extraInterface.targetNetworkName && (
             <p class="text-xs italic text-gray-500 dark:text-gray-400">
-              {$localize`This wireless interface will be bridged to`}{" "}
+              {semanticMessages.wireless_extra_bridged_to({}, { locale })}{" "}
               {extraInterface.targetNetworkName}
             </p>
           )}

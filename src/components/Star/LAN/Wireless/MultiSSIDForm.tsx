@@ -9,6 +9,7 @@ import { StarContext } from "../../StarContext/StarContext";
 import { Grid, Button } from "~/components/Core";
 import type { Mode } from "../../StarContext/ChooseType";
 import { getExtraNetworks, getAvailableNetworks } from "./networkUtils";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface MultiSSIDFormProps {
   networks: Networks;
@@ -53,6 +54,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
     generateExtraSSID,
     generateExtraPassword,
   }) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext);
     const isDomesticLinkEnabled =
       starContext.state.Choose.WANLinkType === "domestic" ||
@@ -157,22 +159,34 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
           <div class="mt-6 space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                {$localize`Extra Wireless Interfaces`}
+                {semanticMessages.wireless_multi_extra_interfaces_title(
+                  {},
+                  { locale },
+                )}
               </h3>
               <span class="text-xs text-gray-500 dark:text-gray-400">
                 {extraInterfaces.length}{" "}
                 {extraInterfaces.length === 1
-                  ? $localize`interface`
-                  : $localize`interfaces`}
+                  ? semanticMessages.wireless_multi_interface_singular(
+                      {},
+                      { locale },
+                    )
+                  : semanticMessages.wireless_multi_interface_plural(
+                      {},
+                      { locale },
+                    )}
               </span>
             </div>
 
             {/* Show message if no extra networks available */}
-            {getExtraNetworks(starContext.state.Choose.Networks).length ===
-              0 && (
+            {getExtraNetworks(starContext.state.Choose.Networks, locale)
+              .length === 0 && (
               <div class="rounded-lg border border-dashed border-gray-300 py-4 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
                 <p>
-                  {$localize`No additional networks available. Configure extra WAN links, VPN clients, or tunnels to add more wireless interfaces.`}
+                  {semanticMessages.wireless_multi_no_additional_networks(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             )}
@@ -186,6 +200,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                     extraInterface={extraInterface}
                     availableNetworks={getAvailableNetworks(
                       starContext.state.Choose.Networks,
+                      locale,
                     )}
                     assignedNetworks={extraInterfaces.map(
                       (i) => i.targetNetworkName,
@@ -208,8 +223,8 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
             )}
 
             {/* Add button - only show if networks available */}
-            {getExtraNetworks(starContext.state.Choose.Networks).length >
-              extraInterfaces.length && (
+            {getExtraNetworks(starContext.state.Choose.Networks, locale)
+              .length > extraInterfaces.length && (
               <Button
                 onClick$={addExtraInterface || $(() => {})}
                 variant="outline"
@@ -217,7 +232,10 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
                 class="w-full sm:w-auto"
               >
                 <HiPlusOutline q:slot="leftIcon" class="h-4 w-4" />
-                {$localize`Add Extra Wireless Interface`}
+                {semanticMessages.wireless_multi_add_extra_interface(
+                  {},
+                  { locale },
+                )}
               </Button>
             )}
           </div>
@@ -225,9 +243,7 @@ export const MultiSSIDForm = component$<MultiSSIDFormProps>(
 
         {/* Info Note */}
         <div class="text-center text-xs text-gray-500 dark:text-gray-400">
-          <p>
-            {$localize`Note: At least one network must remain enabled. Fill all required fields for enabled networks.`}
-          </p>
+          <p>{semanticMessages.wireless_multi_note({}, { locale })}</p>
         </div>
       </div>
     );

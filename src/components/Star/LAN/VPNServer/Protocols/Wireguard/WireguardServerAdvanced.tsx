@@ -20,6 +20,7 @@ import {
   type ExtendedNetworks,
 } from "../../components/NetworkSelection";
 import type { useWireguardServer } from "./useWireguardServer";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WireguardServerAdvancedProps {
   hook: ReturnType<typeof useWireguardServer>;
@@ -27,6 +28,7 @@ interface WireguardServerAdvancedProps {
 
 export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
   ({ hook }) => {
+    const locale = useMessageLocale();
     const {
       draftConfigs,
       activeTabIndex,
@@ -63,14 +65,14 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
 
     return (
       <ServerCard
-        title={$localize`WireGuard Server`}
+        title={semanticMessages.vpn_server_wireguard_title({}, { locale })}
         icon={<HiServerOutline class="h-5 w-5" />}
       >
         <div class="space-y-6 md:space-y-8">
           {/* Interface Management */}
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-              {$localize`WireGuard Interfaces`}
+              {semanticMessages.vpn_server_wireguard_interfaces({}, { locale })}
             </h3>
             <div class="flex items-center gap-2">
               <ServerButton
@@ -79,7 +81,7 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
                 class="flex items-center gap-1"
               >
                 <HiPlusCircleOutline class="h-4 w-4" />
-                {$localize`Add Interface`}
+                {semanticMessages.vpn_server_add_interface({}, { locale })}
               </ServerButton>
               {draftConfigs.value.length > 1 && (
                 <ServerButton
@@ -89,7 +91,7 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
                   class="flex items-center gap-1"
                 >
                   <HiTrashOutline class="h-4 w-4" />
-                  {$localize`Remove`}
+                  {semanticMessages.vpn_server_remove({}, { locale })}
                 </ServerButton>
               )}
             </div>
@@ -109,7 +111,12 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
 
           {/* Interface Configuration */}
           <div>
-            <SectionTitle title={$localize`Interface Configuration`} />
+            <SectionTitle
+              title={semanticMessages.vpn_server_interface_configuration(
+                {},
+                { locale },
+              )}
+            />
             <div class="space-y-4">
               {/* Interface Name */}
               <InterfaceNameInput
@@ -118,12 +125,20 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
                 onChange$={(event: Event, value: string) => {
                   updateName$(`wg-server-${value || "1"}`);
                 }}
-                label={$localize`Interface Name`}
+                label={semanticMessages.vpn_server_interface_name(
+                  {},
+                  { locale },
+                )}
                 placeholder="1"
               />
 
               {/* Network Selection */}
-              <ServerFormField label={$localize`Network`}>
+              <ServerFormField
+                label={semanticMessages.vpn_server_network_label(
+                  {},
+                  { locale },
+                )}
+              >
                 <NetworkDropdown
                   selectedNetwork={
                     currentDraft.value.vsNetwork as ExtendedNetworks
@@ -136,7 +151,7 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
 
               {/* Listen Port */}
               <ServerFormField
-                label={$localize`Listen Port`}
+                label={semanticMessages.vpn_server_udp_port({}, { locale })}
                 errorMessage={portError.value}
               >
                 <Input
@@ -152,7 +167,10 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
                   validation={portError.value ? "invalid" : "default"}
                 />
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {$localize`UDP port for WireGuard connections`}
+                  {semanticMessages.vpn_server_wireguard_port_help(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </ServerFormField>
             </div>
@@ -161,10 +179,16 @@ export const WireguardServerAdvanced = component$<WireguardServerAdvancedProps>(
           {/* Peer Configuration Note */}
           <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
             <h4 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
-              {$localize`Peer Configuration`}
+              {semanticMessages.vpn_server_peer_configuration_title(
+                {},
+                { locale },
+              )}
             </h4>
             <p class="text-sm text-blue-700 dark:text-blue-300">
-              {$localize`WireGuard peers are automatically configured based on the users you create in the Users step. Each user will get their own peer configuration with appropriate keys and allowed addresses.`}
+              {semanticMessages.vpn_server_peer_configuration_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
         </div>

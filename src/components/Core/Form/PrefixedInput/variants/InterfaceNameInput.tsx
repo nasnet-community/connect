@@ -1,6 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import { PrefixedInput } from "../PrefixedInput";
 import type { InterfaceNameInputProps } from "../PrefixedInput.types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * InterfaceNameInput - Modern VPN interface name input
@@ -28,17 +29,24 @@ export const InterfaceNameInput = component$<InterfaceNameInputProps>(
     prefixIcon,
     ...props
   }) => {
+    const locale = useMessageLocale();
     // VPN Protocol configurations with modern styling
     const interfaceConfig = {
       wireguard: {
         prefix: "wg-server-",
-        helperText: $localize`WireGuard server interface identifier (e.g., "main", "backup", "mobile")`,
+        helperText: semanticMessages.prefixed_wireguard_interface_identifier(
+          {},
+          { locale },
+        ),
         prefixClass:
           "text-primary-700 dark:text-primary-300 font-semibold bg-primary-50 dark:bg-primary-900/30",
       },
       openvpn: {
         prefix: "ovpn-server-",
-        helperText: $localize`OpenVPN server interface identifier (e.g., "main", "backup", "mobile")`,
+        helperText: semanticMessages.prefixed_openvpn_interface_identifier(
+          {},
+          { locale },
+        ),
         prefixClass:
           "text-primary-700 dark:text-primary-300 font-semibold bg-primary-50 dark:bg-primary-900/30",
       },

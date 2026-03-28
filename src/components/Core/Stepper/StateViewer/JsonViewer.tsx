@@ -1,5 +1,6 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { JsonTreeNode } from "./JsonTreeNode";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface JsonViewerProps {
   data: any;
@@ -10,6 +11,7 @@ interface JsonViewerProps {
 type ViewMode = "tree" | "compact" | "raw" | "tabs";
 
 export const JsonViewer = component$<JsonViewerProps>((props) => {
+  const locale = useMessageLocale();
   const { data, class: className = "", maxHeight = "500px" } = props;
   const viewMode = useSignal<ViewMode>("tree");
   const searchTerm = useSignal("");
@@ -28,7 +30,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
     if (!data || typeof data !== "object") {
       return (
         <div class="p-4 text-sm text-gray-500 dark:text-gray-400">
-          No data available
+          {semanticMessages.state_viewer_no_data({}, { locale })}
         </div>
       );
     }
@@ -94,7 +96,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
     if (!data || typeof data !== "object") {
       return (
         <div class="p-4 text-sm text-gray-500 dark:text-gray-400">
-          No data available
+          {semanticMessages.state_viewer_no_data({}, { locale })}
         </div>
       );
     }
@@ -209,7 +211,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
             <div class="relative flex-1 sm:flex-initial">
               <input
                 type="text"
-                placeholder={$localize`Search...`}
+                placeholder={semanticMessages.shared_search({}, { locale })}
                 value={searchTerm.value}
                 onInput$={(e) => {
                   searchTerm.value = (e.target as HTMLInputElement).value;
@@ -242,7 +244,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                   : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
-              {$localize`Tree`}
+              {semanticMessages.shared_tree({}, { locale })}
             </button>
             <button
               onClick$={() => (viewMode.value = "compact")}
@@ -252,7 +254,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                   : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
-              {$localize`Compact`}
+              {semanticMessages.shared_compact({}, { locale })}
             </button>
             <button
               onClick$={() => (viewMode.value = "raw")}
@@ -262,7 +264,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                   : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
-              {$localize`Raw`}
+              {semanticMessages.shared_raw({}, { locale })}
             </button>
             <button
               onClick$={() => (viewMode.value = "tabs")}
@@ -272,7 +274,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                   : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
-              {$localize`Tabs`}
+              {semanticMessages.shared_tabs({}, { locale })}
             </button>
           </div>
         </div>
@@ -286,8 +288,8 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                 class="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                 title={
                   expandAll.value
-                    ? $localize`Collapse All`
-                    : $localize`Expand All`
+                    ? semanticMessages.shared_collapse_all({}, { locale })
+                    : semanticMessages.shared_expand_all({}, { locale })
                 }
               >
                 <svg
@@ -313,7 +315,9 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                   )}
                 </svg>
                 <span>
-                  {expandAll.value ? $localize`Collapse` : $localize`Expand`}
+                  {expandAll.value
+                    ? semanticMessages.shared_collapse({}, { locale })
+                    : semanticMessages.shared_expand({}, { locale })}
                 </span>
               </button>
             </>
@@ -323,7 +327,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
               navigator.clipboard.writeText(JSON.stringify(data, null, 2));
             }}
             class="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-            title={$localize`Copy JSON`}
+            title={semanticMessages.shared_copy_json({}, { locale })}
           >
             <svg
               class="h-3.5 w-3.5"
@@ -338,7 +342,7 @@ export const JsonViewer = component$<JsonViewerProps>((props) => {
                 d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <span>{$localize`Copy`}</span>
+            <span>{semanticMessages.shared_copy({}, { locale })}</span>
           </button>
         </div>
       </div>

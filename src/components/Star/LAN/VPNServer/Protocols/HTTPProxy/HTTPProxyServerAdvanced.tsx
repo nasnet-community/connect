@@ -10,8 +10,10 @@ import { SectionTitle, ServerButton } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 import { Input } from "~/components/Core";
 import type { BaseNetworksType } from "~/components/Star/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const HTTPProxyServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const {
     advancedFormState,
     updateNetwork$: updateHttpProxyNetwork$,
@@ -54,28 +56,42 @@ export const HTTPProxyServerAdvanced = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`HTTP Proxy Server`}
+      title={semanticMessages.vpn_server_http_proxy_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
         <div>
-          <SectionTitle title={$localize`Network Configuration`} />
+          <SectionTitle
+            title={semanticMessages.zerotier_network_configuration(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
               updateNetwork$(network as BaseNetworksType);
             }}
-            label={$localize`Network`}
+            label={semanticMessages.vpn_server_network_label({}, { locale })}
           />
         </div>
 
         {/* Port Configuration */}
         <div>
-          <SectionTitle title={$localize`Port Configuration`} />
+          <SectionTitle
+            title={semanticMessages.vpn_server_port_configuration(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {$localize`Port`}
+              {semanticMessages.shared_port({}, { locale })}
             </label>
             <Input
               type="number"
@@ -91,7 +107,12 @@ export const HTTPProxyServerAdvanced = component$(() => {
               placeholder="8080"
             />
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              {$localize`Default HTTP Proxy port is 8080. Valid range is 1-65535.`}
+              {semanticMessages.vpn_server_http_proxy_port_help(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
           </div>
         </div>
@@ -99,20 +120,27 @@ export const HTTPProxyServerAdvanced = component$(() => {
         {/* Allowed IP Addresses */}
         <div>
           <div class="mb-4 flex items-center justify-between">
-            <SectionTitle title={$localize`Allowed IP Addresses`} />
+            <SectionTitle
+              title={semanticMessages.vpn_server_http_proxy_allowed_ips(
+                {},
+                {
+                  locale,
+                },
+              )}
+            />
             <ServerButton
               onClick$={addIPAddress$}
               primary={false}
               class="flex items-center gap-1"
             >
               <HiPlusCircleOutline class="h-4 w-4" />
-              {$localize`Add IP`}
+              {semanticMessages.vpn_server_http_proxy_add_ip({}, { locale })}
             </ServerButton>
           </div>
           <div class="space-y-3">
             {allowedIPs.value.length === 0 ? (
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {$localize`No IP addresses configured. Click "Add IP" to allow specific networks or hosts.`}
+                {semanticMessages.vpn_server_http_proxy_no_ips({}, { locale })}
               </p>
             ) : (
               allowedIPs.value.map((ip, index) => (
@@ -134,13 +162,18 @@ export const HTTPProxyServerAdvanced = component$(() => {
                     class="flex items-center gap-1"
                   >
                     <HiTrashOutline class="h-4 w-4" />
-                    {$localize`Remove`}
+                    {semanticMessages.shared_remove({}, { locale })}
                   </ServerButton>
                 </div>
               ))
             )}
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              {$localize`Enter IP addresses or CIDR ranges (e.g., 192.168.1.0/24, 10.0.0.1). Only these IPs will be allowed to use the proxy.`}
+              {semanticMessages.vpn_server_http_proxy_allowed_ips_help(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
           </div>
         </div>

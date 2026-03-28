@@ -1,9 +1,8 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
-import { extractLang } from "./i18n-utils";
+import { resolveRequestedLocale } from "~/i18n/config";
 
 export const onGet: RequestHandler = async ({ request, redirect, url }) => {
-  // const guessedLocale = extractLang(request);
-  const guessedLocale = extractLang(
+  const guessedLocale = resolveRequestedLocale(
     request.headers.get("accept-language") || "",
   );
 

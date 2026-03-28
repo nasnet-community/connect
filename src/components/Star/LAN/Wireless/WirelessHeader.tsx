@@ -14,6 +14,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { SegmentedControl } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WirelessHeaderProps {
   wirelessEnabled: Signal<boolean>;
@@ -22,6 +23,7 @@ interface WirelessHeaderProps {
 
 export const WirelessHeader = component$<WirelessHeaderProps>(
   ({ wirelessEnabled, onToggle$ }) => {
+    const locale = useMessageLocale();
     // Create a mutable string signal for SegmentedControl
     const enabledState = useSignal(
       wirelessEnabled.value ? "enabled" : "disabled",
@@ -36,12 +38,12 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
     const enabledOptions = [
       {
         value: "disabled",
-        label: $localize`Disabled`,
+        label: semanticMessages.shared_disabled({}, { locale }),
         icon: (<HiXCircleOutline />) as JSXNode,
       },
       {
         value: "enabled",
-        label: $localize`Enabled`,
+        label: semanticMessages.shared_enabled({}, { locale }),
         icon: (<HiCheckCircleOutline />) as JSXNode,
       },
     ];
@@ -53,10 +55,10 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
             <HiWifiOutline class="h-8 w-8 text-primary-500 dark:text-primary-400" />
             <div class="ml-4">
               <h2 class="text-2xl font-bold text-text dark:text-text-dark-default">
-                {$localize`Wireless Settings`}
+                {semanticMessages.wan_easy_wireless_settings({}, { locale })}
               </h2>
               <p class="text-text-secondary dark:text-text-dark-secondary">
-                {$localize`Configure your wireless network settings`}
+                {semanticMessages.wireless_header_description({}, { locale })}
               </p>
             </div>
           </div>
@@ -80,7 +82,7 @@ export const WirelessHeader = component$<WirelessHeaderProps>(
         <div class="flex items-center space-x-2 rounded-lg bg-yellow-50 px-4 py-3 dark:bg-yellow-900/30">
           <HiExclamationTriangleOutline class="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
           <p class="text-sm text-yellow-700 dark:text-yellow-300">
-            {$localize`Please avoid using the following words in your SSID as they may indicate the type of network: "star", "starlink", "VPN", "Iran", etc.`}
+            {semanticMessages.wireless_header_ssid_warning({}, { locale })}
           </p>
         </div>
       </div>

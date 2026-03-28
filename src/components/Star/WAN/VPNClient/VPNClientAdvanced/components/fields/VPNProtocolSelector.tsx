@@ -1,4 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import type { VPNType } from "../../types/VPNClientAdvancedTypes";
 
 export interface VPNProtocolSelectorProps {
@@ -8,6 +9,7 @@ export interface VPNProtocolSelectorProps {
 
 export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
   ({ selectedProtocol, onSelect$ }) => {
+    const locale = useMessageLocale();
     const protocols: Array<{
       type: VPNType;
       name: string;
@@ -19,39 +21,69 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
       {
         type: "Wireguard",
         name: "WireGuard",
-        description: "Fast, modern, and secure VPN protocol",
+        description: semanticMessages.vpn_selector_wireguard_description(
+          {},
+          {
+            locale,
+          },
+        ),
         recommended: true,
         icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
       },
       {
         type: "OpenVPN",
         name: "OpenVPN",
-        description: "Industry standard, highly configurable",
+        description: semanticMessages.vpn_selector_openvpn_description(
+          {},
+          {
+            locale,
+          },
+        ),
         icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
       },
       {
         type: "L2TP",
         name: "L2TP",
-        description: "Compatible with most devices and platforms",
+        description: semanticMessages.vpn_selector_l2tp_description(
+          {},
+          {
+            locale,
+          },
+        ),
         recommended: true,
         icon: "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9",
       },
       {
         type: "PPTP",
         name: "PPTP",
-        description: "Legacy protocol, fast but less secure",
+        description: semanticMessages.vpn_selector_pptp_description(
+          {},
+          {
+            locale,
+          },
+        ),
         icon: "M13 10V3L4 14h7v7l9-11h-7z",
       },
       {
         type: "SSTP",
         name: "SSTP",
-        description: "Microsoft's secure socket tunneling protocol",
+        description: semanticMessages.vpn_selector_sstp_description(
+          {},
+          {
+            locale,
+          },
+        ),
         icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
       },
       {
         type: "IKeV2",
         name: "IKEv2/IPSec",
-        description: "Mobile-optimized with auto-reconnect",
+        description: semanticMessages.vpn_selector_ikev2_description(
+          {},
+          {
+            locale,
+          },
+        ),
         icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z",
       },
     ];
@@ -75,15 +107,21 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
                 />
               </svg>
             </span>
-            {$localize`VPN Protocol`}
+            {semanticMessages.vpn_client_advanced_protocol({}, { locale })}
           </label>
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {$localize`Choose a VPN protocol for your connection`}
+            {semanticMessages.vpn_client_advanced_choose_protocol_description(
+              {},
+              { locale },
+            )}
           </p>
           {!selectedProtocol && (
             <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
               <p class="text-sm text-blue-800 dark:text-blue-300">
-                {$localize`Please select a VPN protocol to continue`}
+                {semanticMessages.vpn_client_advanced_select_protocol_to_continue(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
           )}
@@ -111,7 +149,7 @@ export const VPNProtocolSelector = component$<VPNProtocolSelectorProps>(
               {protocol.recommended && (
                 <div class="absolute right-2 top-2 z-20">
                   <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    {$localize`Recommended`}
+                    {semanticMessages.shared_recommended({}, { locale })}
                   </span>
                 </div>
               )}

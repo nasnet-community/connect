@@ -13,6 +13,7 @@ import {
   validateNetworkInput,
   getSubnetMask,
 } from "./NetworkInput.utils";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * NetworkInput - Flexible network address input component
@@ -92,6 +93,7 @@ export const NetworkInput = component$<NetworkInputProps>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     allowCustomFormat = false,
   }) => {
+    const locale = useMessageLocale();
     const autoId = useId();
     const inputId = propId || `network-input-${autoId}`;
     const isFocused = useSignal(false);
@@ -356,7 +358,9 @@ export const NetworkInput = component$<NetworkInputProps>(
             {value && !validationError.value && (
               <div class="flex items-center gap-1 text-green-600 dark:text-green-400">
                 <div class="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                <span class={config.description}>{$localize`Valid`}</span>
+                <span class={config.description}>
+                  {semanticMessages.shared_valid({}, { locale })}
+                </span>
               </div>
             )}
           </div>
@@ -365,7 +369,8 @@ export const NetworkInput = component$<NetworkInputProps>(
         {/* Subnet Mask Display */}
         {visualConfig.value.showSubnetMask && currentMask && (
           <div class={`text-gray-500 dark:text-gray-400 ${config.description}`}>
-            {$localize`Subnet mask`}: {getSubnetMask(currentMask)}
+            {semanticMessages.shared_subnet_mask({}, { locale })}:{" "}
+            {getSubnetMask(currentMask)}
           </div>
         )}
 
@@ -394,7 +399,7 @@ export const NetworkInput = component$<NetworkInputProps>(
             <div
               class={`mb-1 text-gray-600 dark:text-gray-400 ${config.description}`}
             >
-              {$localize`Suggestions`}:
+              {semanticMessages.shared_suggestions({}, { locale })}:
             </div>
             <div class="flex flex-wrap gap-1">
               {suggestions.map((suggestion, index) => (

@@ -1,4 +1,5 @@
 import { component$, type QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export type ConfigMethod = "file" | "manual";
 
@@ -11,20 +12,19 @@ export interface ConfigMethodToggleProps {
 }
 
 export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
-  ({
-    method,
-    onMethodChange$,
-    fileText = $localize`Upload/Paste Config`,
-    manualText = $localize`Manual Configuration`,
-    class: className,
-  }) => {
+  ({ method, onMethodChange$, fileText, manualText, class: className }) => {
+    const locale = useMessageLocale();
+
     return (
       <div class={`w-full ${className || ""}`}>
         <div class="flex justify-center">
           {/* Tab Navigation Bar */}
           <nav
             class="inline-flex rounded-lg border border-border bg-white p-1 shadow-sm dark:border-border-dark dark:bg-surface-dark"
-            aria-label="Configuration Method"
+            aria-label={semanticMessages.config_method_toggle_aria(
+              {},
+              { locale },
+            )}
           >
             <button
               onClick$={() => onMethodChange$("file")}
@@ -53,7 +53,8 @@ export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                 />
               </svg>
-              {fileText}
+              {fileText ||
+                semanticMessages.config_method_toggle_file({}, { locale })}
             </button>
 
             <button
@@ -89,7 +90,8 @@ export const ConfigMethodToggle = component$<ConfigMethodToggleProps>(
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              {manualText}
+              {manualText ||
+                semanticMessages.config_method_toggle_manual({}, { locale })}
             </button>
           </nav>
         </div>

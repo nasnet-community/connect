@@ -13,6 +13,7 @@ import type {
 } from "../../../../StarContext/CommonType";
 import { StarContext } from "../../../../StarContext/StarContext";
 import { validatePort, getAllVPNServerPorts } from "../../utils/portValidation";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
@@ -45,6 +46,7 @@ interface OpenVPNDraftConfig {
 }
 
 export const useOpenVPNServer = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
 
   const vpnServerState = starContext.state.LAN.VPNServer || {
@@ -336,7 +338,10 @@ export const useOpenVPNServer = () => {
 
     // Validate certificate
     if (!currentDraft.certificate || !currentDraft.certificate.trim()) {
-      certificateError.value = $localize`Certificate is required`;
+      certificateError.value = semanticMessages.shared_certificate_required(
+        {},
+        { locale },
+      );
       isValid = false;
     }
 
@@ -345,7 +350,10 @@ export const useOpenVPNServer = () => {
       currentDraft.certificateKeyPassphrase &&
       currentDraft.certificateKeyPassphrase.length < 10
     ) {
-      passphraseError.value = $localize`Passphrase must be at least 10 characters long`;
+      passphraseError.value = semanticMessages.shared_passphrase_min_10(
+        {},
+        { locale },
+      );
       isValid = false;
     }
 
@@ -489,7 +497,9 @@ export const useOpenVPNServer = () => {
 
       // Validate certificate
       if (!draft.certificate || !draft.certificate.trim()) {
-        errors.push(`${draft.name}: Certificate is required`);
+        errors.push(
+          `${draft.name}: ${semanticMessages.shared_certificate_required({}, { locale })}`,
+        );
         hasError = true;
       }
 
@@ -499,7 +509,7 @@ export const useOpenVPNServer = () => {
         draft.certificateKeyPassphrase.length < 10
       ) {
         errors.push(
-          `${draft.name}: Passphrase must be at least 10 characters long`,
+          `${draft.name}: ${semanticMessages.shared_passphrase_min_10({}, { locale })}`,
         );
         hasError = true;
       }
@@ -730,7 +740,10 @@ export const useOpenVPNServer = () => {
     const currentDraft = draftConfigs.value[currentIndex];
     // Guard equality with UDP on same draft
     if (currentDraft.protocol === "both" && value === currentDraft.udpPort) {
-      portError.value = $localize`TCP/UDP ports must be different`;
+      portError.value = semanticMessages.vpn_server_tcp_udp_ports_different(
+        {},
+        { locale },
+      );
       return;
     }
     const validation = validatePort(
@@ -785,7 +798,10 @@ export const useOpenVPNServer = () => {
     const currentDraft = draftConfigs.value[currentIndex];
     // Guard equality with TCP on same draft
     if (currentDraft.protocol === "both" && value === currentDraft.tcpPort) {
-      portError.value = $localize`TCP/UDP ports must be different`;
+      portError.value = semanticMessages.vpn_server_tcp_udp_ports_different(
+        {},
+        { locale },
+      );
       return;
     }
     const validation = validatePort(
@@ -917,9 +933,18 @@ export const useOpenVPNServer = () => {
 
   // Tab options for UI
   const tabOptions = [
-    { id: "basic", label: $localize`Basic Settings` },
-    { id: "network", label: $localize`Network Settings` },
-    { id: "security", label: $localize`Security Settings` },
+    {
+      id: "basic",
+      label: semanticMessages.vpn_server_basic_settings({}, { locale }),
+    },
+    {
+      id: "network",
+      label: semanticMessages.vpn_server_network_settings({}, { locale }),
+    },
+    {
+      id: "security",
+      label: semanticMessages.vpn_server_security_settings({}, { locale }),
+    },
   ];
 
   // Protocol options
@@ -931,8 +956,11 @@ export const useOpenVPNServer = () => {
 
   // Mode options
   const modeOptions = [
-    { value: "ip", label: $localize`IP (Layer 3)` },
-    { value: "ethernet", label: $localize`Ethernet (Layer 2)` },
+    { value: "ip", label: semanticMessages.vpn_server_mode_ip({}, { locale }) },
+    {
+      value: "ethernet",
+      label: semanticMessages.vpn_server_mode_ethernet({}, { locale }),
+    },
   ];
 
   // Auth method options
@@ -958,8 +986,11 @@ export const useOpenVPNServer = () => {
 
   // TLS version options
   const tlsVersionOptions = [
-    { value: "any", label: $localize`Any` },
-    { value: "only-1.2", label: $localize`Only 1.2` },
+    { value: "any", label: semanticMessages.shared_any({}, { locale }) },
+    {
+      value: "only-1.2",
+      label: semanticMessages.vpn_server_tls_only_1_2({}, { locale }),
+    },
   ];
 
   return {

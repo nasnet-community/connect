@@ -16,6 +16,7 @@ import { Step3_MultiLink } from "./steps/Step3_MultiLink";
 import { Step4_Summary } from "./steps/Step4_Summary";
 import { useWANAdvanced } from "./hooks/useWANAdvanced";
 import { useWANValidation } from "./hooks/useWANValidation";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 // import type { WANLink } from "./types";
 
 export interface WANAdvancedProps {
@@ -26,6 +27,7 @@ export interface WANAdvancedProps {
 
 export const WANAdvanced = component$<WANAdvancedProps>(
   ({ mode = "Foreign", onComplete$, onCancel$ }) => {
+    const locale = useMessageLocale();
     const starContext = useContext(StarContext) as StarContextType;
     const activeStep = useSignal(0);
 
@@ -165,9 +167,21 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           id: 1,
           title:
             mode === "Foreign"
-              ? $localize`Foreign Link & Interface`
-              : $localize`Domestic Link & Interface`,
-          description: $localize`Configure ${mode} WAN interfaces and settings`,
+              ? semanticMessages.wan_advanced_step_link_foreign({}, { locale })
+              : semanticMessages.wan_advanced_step_link_domestic(
+                  {},
+                  { locale },
+                ),
+          description:
+            mode === "Foreign"
+              ? semanticMessages.wan_advanced_step_link_foreign_desc(
+                  {},
+                  { locale },
+                )
+              : semanticMessages.wan_advanced_step_link_domestic_desc(
+                  {},
+                  { locale },
+                ),
           component: (
             <Step1_LinkInterface
               wizardState={advancedHooks.state}
@@ -179,8 +193,26 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         },
         {
           id: 2,
-          title: $localize`${mode} Connection`,
-          description: $localize`Configure ${mode} connection types and settings`,
+          title:
+            mode === "Foreign"
+              ? semanticMessages.wan_advanced_step_connection_foreign(
+                  {},
+                  { locale },
+                )
+              : semanticMessages.wan_advanced_step_connection_domestic(
+                  {},
+                  { locale },
+                ),
+          description:
+            mode === "Foreign"
+              ? semanticMessages.wan_advanced_step_connection_foreign_desc(
+                  {},
+                  { locale },
+                )
+              : semanticMessages.wan_advanced_step_connection_domestic_desc(
+                  {},
+                  { locale },
+                ),
           component: (
             <Step2_Connection
               wizardState={advancedHooks.state}
@@ -195,8 +227,11 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       if (hasMultipleLinks) {
         steps.push({
           id: 3,
-          title: $localize`LoadBalance & Failover`,
-          description: $localize`Configure multi-link strategy and priorities`,
+          title: semanticMessages.wan_advanced_step_multilink({}, { locale }),
+          description: semanticMessages.wan_advanced_step_multilink_desc(
+            {},
+            { locale },
+          ),
           component: (
             <Step3_MultiLink
               wizardState={advancedHooks.state}
@@ -213,8 +248,11 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       // Summary step
       steps.push({
         id: steps.length + 1,
-        title: $localize`Review`,
-        description: $localize`Review and apply configuration`,
+        title: semanticMessages.wan_advanced_step_review({}, { locale }),
+        description: semanticMessages.wan_advanced_step_review_desc(
+          {},
+          { locale },
+        ),
         component: (
           <Step4_Summary
             wizardState={advancedHooks.state}
@@ -427,11 +465,20 @@ export const WANAdvanced = component$<WANAdvancedProps>(
                 <div>
                   <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     {mode === "Foreign"
-                      ? $localize`Foreign WAN Configuration`
-                      : $localize`Domestic WAN Configuration`}
+                      ? semanticMessages.wan_advanced_header_foreign(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.wan_advanced_header_domestic(
+                          {},
+                          { locale },
+                        )}
                   </h1>
                   <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Configure multiple WAN connections with advanced networking features`}
+                    {semanticMessages.wan_advanced_header_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -441,7 +488,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
                   onClick$={onCancel$}
                   class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
-                  {$localize`Cancel`}
+                  {semanticMessages.wan_advanced_cancel({}, { locale })}
                 </button>
               )}
             </div>

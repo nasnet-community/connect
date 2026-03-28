@@ -9,6 +9,7 @@ import { useEInterface } from "./useEInterface";
 import type { Ethernet } from "~/components/Star/StarContext";
 import type { StepProps } from "~/types/step";
 import { StarContext } from "~/components/Star/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import {
   isInterfaceOccupied,
   getOccupiedInterfacesForRouter,
@@ -16,6 +17,7 @@ import {
 } from "../../utils/InterfaceManagementUtils";
 
 export default component$<StepProps>(({ isComplete, onComplete$ }) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const {
     availableNetworks,
@@ -207,15 +209,20 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
             </div>
             <div class="space-y-1">
               <h2 class="text-2xl font-bold text-white">
-                {$localize`LAN Interface Configuration`}
+                {semanticMessages.lan_einterface_config_title({}, { locale })}
               </h2>
               <div class="flex items-center space-x-2">
                 <p class="text-sm font-medium text-primary-50">
-                  {$localize`All available interfaces will be assigned to network bridges`}
+                  {semanticMessages.lan_einterface_config_description(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </p>
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white">
                   {allInterfaces.value.filter((i) => !i.inUse).length}{" "}
-                  {$localize`Available`}
+                  {semanticMessages.lan_einterface_available({}, { locale })}
                 </span>
               </div>
             </div>
@@ -233,19 +240,28 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Interface`}
+                    {semanticMessages.lan_einterface_column_interface(
+                      {},
+                      { locale },
+                    )}
                   </th>
                   <th
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Status`}
+                    {semanticMessages.lan_einterface_column_status(
+                      {},
+                      { locale },
+                    )}
                   </th>
                   <th
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Network`}
+                    {semanticMessages.lan_einterface_column_network(
+                      {},
+                      { locale },
+                    )}
                   </th>
                 </tr>
               </thead>
@@ -271,22 +287,40 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
                               : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
                           }`}
                         >
-                          {$localize`Used by ${intf.usedBy}`}
+                          {semanticMessages.lan_einterface_used_by(
+                            { usedBy: intf.usedBy },
+                            { locale },
+                          )}
                         </span>
                       ) : intf.selected ? (
                         <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
-                          {$localize`Configured`}
+                          {semanticMessages.lan_einterface_configured(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
                         </span>
                       ) : (
                         <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                          {$localize`Will be assigned`}
+                          {semanticMessages.lan_einterface_will_be_assigned(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
                         </span>
                       )}
                     </td>
                     <td class="px-6 py-4">
                       {intf.inUse ? (
                         <span class="text-text-secondary/50 dark:text-text-dark-secondary/50">
-                          {$localize`Not Available`}
+                          {semanticMessages.lan_einterface_not_available(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
                         </span>
                       ) : (
                         <div class="relative">
@@ -337,7 +371,7 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
 
             {allInterfaces.value.length === 0 && (
               <div class="text-text-secondary dark:text-text-dark-secondary py-8 text-center">
-                {$localize`No interfaces available.`}
+                {semanticMessages.lan_einterface_none({}, { locale })}
               </div>
             )}
           </div>
@@ -353,7 +387,12 @@ export default component$<StepProps>(({ isComplete, onComplete$ }) => {
               disabled={isComplete || allInterfaces.value.length === 0}
             >
               <span class="flex items-center space-x-2">
-                <span>{$localize`Save Settings`}</span>
+                <span>
+                  {semanticMessages.lan_einterface_save_settings(
+                    {},
+                    { locale },
+                  )}
+                </span>
                 <svg
                   class="h-4 w-4 transition-transform group-hover:translate-x-1"
                   fill="none"

@@ -6,11 +6,13 @@ import type {
   IpsecIdentityAuthMethod,
   IpsecIdentityEapMethod,
 } from "../../../../StarContext/Utils/VPNServerType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type
 type ViewMode = "easy" | "advanced";
 
 export const useIKEv2Server = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
 
   const vpnServerState = starContext.state.LAN.VPNServer || {
@@ -112,10 +114,15 @@ export const useIKEv2Server = () => {
     // Validate auth method and related fields
     if (newConfig.identities.authMethod === "pre-shared-key") {
       if (!newConfig.identities.secret || !newConfig.identities.secret.trim()) {
-        presharedKeyError.value = $localize`Pre-shared key is required for this authentication method`;
+        presharedKeyError.value =
+          semanticMessages.vpn_server_ikev2_preshared_key_required(
+            {},
+            { locale },
+          );
         isValid = false;
       } else if (newConfig.identities.secret.length < 8) {
-        presharedKeyError.value = $localize`Pre-shared key should be at least 8 characters long`;
+        presharedKeyError.value =
+          semanticMessages.vpn_server_ikev2_preshared_key_min({}, { locale });
         isValid = false;
       } else {
         presharedKeyError.value = "";
@@ -128,7 +135,11 @@ export const useIKEv2Server = () => {
         (!newConfig.identities.certificate ||
           !newConfig.identities.certificate.trim())
       ) {
-        certificateError.value = $localize`Certificate is required for this authentication method`;
+        certificateError.value =
+          semanticMessages.vpn_server_ikev2_certificate_required(
+            {},
+            { locale },
+          );
         isValid = false;
       } else {
         certificateError.value = "";
@@ -144,10 +155,15 @@ export const useIKEv2Server = () => {
         !newConfig.ipPools?.Ranges ||
         !newConfig.ipPools.Ranges.trim()
       ) {
-        addressPoolError.value = $localize`Address pool is required`;
+        addressPoolError.value =
+          semanticMessages.vpn_server_ikev2_address_pool_required(
+            {},
+            { locale },
+          );
         isValid = false;
       } else if (!newConfig.ipPools.Ranges.includes("-")) {
-        addressPoolError.value = $localize`Address pool must include range (e.g., 192.168.77.2-192.168.77.254)`;
+        addressPoolError.value =
+          semanticMessages.vpn_server_ikev2_address_pool_range({}, { locale });
         isValid = false;
       } else {
         addressPoolError.value = "";

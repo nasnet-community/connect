@@ -6,14 +6,20 @@ import {
   buildNetworkOptions,
   groupNetworkOptions,
 } from "./NetworkOptionsHelper";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GameTable = component$<GameTableProps>(
   ({ searchQuery, currentPage, itemsPerPage, context }) => {
+    const locale = useMessageLocale();
     const { handleGameSelection } = useGameLogic();
 
     // Build network options from StarContext Networks
     const networkOptions = useComputed$(() =>
-      buildNetworkOptions(context.state.Choose.Networks, context.state.WAN),
+      buildNetworkOptions(
+        context.state.Choose.Networks,
+        context.state.WAN,
+        locale,
+      ),
     );
 
     const groupedOptions = useComputed$(() =>
@@ -25,10 +31,18 @@ export const GameTable = component$<GameTableProps>(
         <table class="w-full text-left text-sm">
           <thead class="bg-surface-secondary dark:bg-surface-dark-secondary">
             <tr>
-              <th class="px-6 py-4 font-medium">{$localize`Game Name`}</th>
-              <th class="px-6 py-4 font-medium">{$localize`TCP Ports`}</th>
-              <th class="px-6 py-4 font-medium">{$localize`UDP Ports`}</th>
-              <th class="px-6 py-4 font-medium">{$localize`Action`}</th>
+              <th class="px-6 py-4 font-medium">
+                {semanticMessages.game_table_name({}, { locale })}
+              </th>
+              <th class="px-6 py-4 font-medium">
+                {semanticMessages.game_table_tcp_ports({}, { locale })}
+              </th>
+              <th class="px-6 py-4 font-medium">
+                {semanticMessages.game_table_udp_ports({}, { locale })}
+              </th>
+              <th class="px-6 py-4 font-medium">
+                {semanticMessages.game_table_action({}, { locale })}
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border dark:divide-border-dark">
@@ -72,7 +86,14 @@ export const GameTable = component$<GameTableProps>(
                         })}
                         class="w-full rounded-lg border border-border bg-surface px-3 py-2 dark:border-border-dark dark:bg-surface-dark"
                       >
-                        <option value="none">{$localize`Select Network`}</option>
+                        <option value="none">
+                          {semanticMessages.game_table_select_network(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
+                        </option>
                         {Object.entries(groupedOptions.value).map(
                           ([category, options]) => (
                             <optgroup key={category} label={category}>

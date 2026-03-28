@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import { Button } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ActionButtonsProps {
   onSubmit: QRL<() => void>;
@@ -8,6 +9,7 @@ interface ActionButtonsProps {
 
 export const ActionButtons = component$<ActionButtonsProps>(
   ({ onSubmit, isValid }) => {
+    const locale = useMessageLocale();
     return (
       <div class="mt-8 flex justify-end">
         <Button
@@ -16,7 +18,7 @@ export const ActionButtons = component$<ActionButtonsProps>(
           variant="primary"
           size="md"
         >
-          {$localize`Save`}
+          {semanticMessages.shared_save({}, { locale })}
         </Button>
       </div>
     );

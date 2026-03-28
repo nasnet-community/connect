@@ -4,6 +4,7 @@ import { ConnectionTypeSelector } from "../components/fields/ConnectionTypeSelec
 import { PPPoEFields } from "../components/fields/PPPoEFields";
 import { StaticIPFields } from "../components/fields/StaticIPFields";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step2Props {
   wizardState: WANWizardState;
@@ -12,6 +13,7 @@ export interface Step2Props {
 
 export const Step2_Connection = component$<Step2Props>(
   ({ wizardState, wizardActions }) => {
+    const locale = useMessageLocale();
     const expandedLinkId = useSignal<string | null>(null);
     const searchQuery = useSignal("");
     const hasAutoExpanded = useSignal(false);
@@ -320,7 +322,10 @@ export const Step2_Connection = component$<Step2Props>(
             {/* Single Link Header */}
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-medium text-gray-900 dark:text-white">
-                {$localize`Configure Connection Type`}
+                {semanticMessages.wan_advanced_configure_connection_type(
+                  {},
+                  { locale },
+                )}
               </h2>
             </div>
 

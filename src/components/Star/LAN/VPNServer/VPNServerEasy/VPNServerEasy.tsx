@@ -10,9 +10,11 @@ import {
   VPNServerContextId,
   type VPNServerContextData,
 } from "../VPNServerAdvanced/VPNServerContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const VPNServerEasy = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
+    const locale = useMessageLocale();
     const {
       // Certificate state
       certificatePassphrase,
@@ -73,15 +75,25 @@ export const VPNServerEasy = component$<StepProps>(
       return [
         {
           id: 0,
-          title: $localize`Certificate`,
-          description: $localize`Configure certificate passphrase for secure VPN access.`,
+          title: semanticMessages.vpn_server_easy_step_certificate(
+            {},
+            { locale },
+          ),
+          description:
+            semanticMessages.vpn_server_easy_step_certificate_description(
+              {},
+              { locale },
+            ),
           component: CertificateStepWrapper$,
           isComplete: passphraseLength >= 10,
         },
         {
           id: 1,
-          title: $localize`User Accounts`,
-          description: $localize`Create user accounts for VPN access.`,
+          title: semanticMessages.vpn_server_easy_step_users({}, { locale }),
+          description: semanticMessages.vpn_server_easy_step_users_description(
+            {},
+            { locale },
+          ),
           component: UsersStepWrapper$,
           isComplete: validUsers,
         },
@@ -152,7 +164,10 @@ export const VPNServerEasy = component$<StepProps>(
             <div class="space-y-4">
               <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
                 <p class="mb-2 text-gray-700 dark:text-gray-300">
-                  {$localize`VPN Server is currently disabled. Enable it using the toggle above to configure VPN server settings.`}
+                  {semanticMessages.vpn_server_disabled_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
               <ActionFooter

@@ -9,6 +9,7 @@ import {
   LuGlobe,
   LuLock,
 } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 import type { QRL } from "@builder.io/qwik";
 
@@ -32,36 +33,56 @@ interface TabContentProps {
  */
 export const TabContent = component$<TabContentProps>(
   ({ category, configs, values, onChange$, errors }) => {
+    const locale = useMessageLocale();
+
     // Tab metadata mapping
     const tabMetadata = {
       base: {
-        title: $localize`Base Networks`,
-        description: $localize`Core network segments for your router configuration`,
+        title: semanticMessages.subnets_section_base({}, { locale }),
+        description: semanticMessages.subnets_tab_base_description(
+          {},
+          { locale },
+        ),
         icon: <LuNetwork class="h-6 w-6" />,
       },
       "wan-domestic": {
-        title: $localize`Domestic WAN Networks`,
-        description: $localize`Multiple domestic WAN link subnets for routing segregation`,
+        title: semanticMessages.subnets_section_wan_domestic({}, { locale }),
+        description: semanticMessages.subnets_tab_wan_domestic_description(
+          {},
+          { locale },
+        ),
         icon: <LuHome class="h-6 w-6" />,
       },
       "wan-foreign": {
-        title: $localize`Foreign WAN Networks`,
-        description: $localize`Multiple foreign WAN link subnets for international routing`,
+        title: semanticMessages.subnets_section_wan_foreign({}, { locale }),
+        description: semanticMessages.subnets_tab_wan_foreign_description(
+          {},
+          { locale },
+        ),
         icon: <LuGlobe class="h-6 w-6" />,
       },
       "vpn-client": {
-        title: $localize`VPN Client Networks`,
-        description: $localize`Dedicated subnets for multiple VPN client connections`,
+        title: semanticMessages.subnets_section_vpn_client({}, { locale }),
+        description: semanticMessages.subnets_tab_vpn_client_description(
+          {},
+          { locale },
+        ),
         icon: <LuLock class="h-6 w-6" />,
       },
       vpn: {
-        title: $localize`VPN Server Networks`,
-        description: $localize`Dedicated subnets for VPN client connections`,
+        title: semanticMessages.subnets_section_vpn_server({}, { locale }),
+        description: semanticMessages.subnets_tab_vpn_server_description(
+          {},
+          { locale },
+        ),
         icon: <LuShield class="h-6 w-6" />,
       },
       tunnel: {
-        title: $localize`Tunnel Networks`,
-        description: $localize`Point-to-point tunnel connections with /30 subnets`,
+        title: semanticMessages.subnets_section_tunnel({}, { locale }),
+        description: semanticMessages.subnets_tab_tunnel_description(
+          {},
+          { locale },
+        ),
         icon: <LuRoute class="h-6 w-6" />,
       },
     };
@@ -76,10 +97,16 @@ export const TabContent = component$<TabContentProps>(
             {metadata.icon}
           </div>
           <h3 class="mb-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-            {$localize`No ${metadata.title} Configured`}
+            {semanticMessages.subnets_empty_category_title(
+              { category: metadata.title },
+              { locale },
+            )}
           </h3>
           <p class="max-w-md text-center text-sm text-gray-500 dark:text-gray-400">
-            {$localize`No configurations available for this category. Configure the related features in previous steps to see subnet options here.`}
+            {semanticMessages.subnets_empty_category_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
       );

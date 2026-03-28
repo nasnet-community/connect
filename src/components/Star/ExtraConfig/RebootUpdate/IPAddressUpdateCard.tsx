@@ -4,6 +4,7 @@ import { TimePicker } from "~/components/Core/TimePicker/Timepicker";
 import { FrequencySelector, type FrequencyValue } from "~/components/Core";
 import type { Signal } from "@builder.io/qwik";
 import type { TimeConfig } from "./type";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface IPAddressUpdateCardProps {
   ipAddressUpdateEnabled: Signal<boolean>;
@@ -17,6 +18,7 @@ export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
     ipAddressUpdateTime,
     ipAddressUpdateInterval,
   }) => {
+    const locale = useMessageLocale();
     const handleIntervalChange = $((value: FrequencyValue) => {
       ipAddressUpdateInterval.value = value;
     });
@@ -24,9 +26,14 @@ export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
       <div class="bg-surface-secondary dark:bg-surface-dark-secondary rounded-xl p-5">
         <div class="mb-4">
           <div>
-            <h3 class="font-medium">{$localize`IP Address List Updates`}</h3>
+            <h3 class="font-medium">
+              {semanticMessages.reboot_ip_address_update_title({}, { locale })}
+            </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {$localize`Automatic IP address list synchronization`}
+              {semanticMessages.reboot_ip_address_update_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
         </div>
@@ -42,7 +49,10 @@ export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
           <FrequencySelector
             value={ipAddressUpdateInterval.value || "Daily"}
             onChange$={handleIntervalChange}
-            label={$localize`IP Address Update frequency`}
+            label={semanticMessages.reboot_ip_address_update_frequency(
+              {},
+              { locale },
+            )}
             recommendedOption="Daily"
           />
         </div>

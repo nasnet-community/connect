@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import { HelpSettingsToggle } from "../../HStepper/HStepperProgress";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface StepperNavigationProps {
   activeStep: number;
@@ -28,6 +29,7 @@ export interface StepperNavigationProps {
  * Provides consistent navigation interface across different steppers
  */
 export const StepperNavigation = component$<StepperNavigationProps>((props) => {
+  const locale = useMessageLocale();
   const {
     activeStep,
     totalSteps,
@@ -45,9 +47,12 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
     // Help system props
     hasHelp = false,
     onShowHelp$,
-    helpButtonLabel = "Get help for this step",
+    helpButtonLabel,
     isHelpOpen = false,
   } = props;
+
+  const resolvedHelpButtonLabel =
+    helpButtonLabel || semanticMessages.stepper_help_button({}, { locale });
 
   const getNavigationClass = () => {
     const baseClass =
@@ -81,7 +86,7 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             }
           `}
-          aria-label="Go to previous step"
+          aria-label={semanticMessages.stepper_aria_previous({}, { locale })}
         >
           <svg
             class="mr-1.5 h-4 w-4"
@@ -96,12 +101,15 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          {$localize`Previous`}
+          {semanticMessages.shared_previous({}, { locale })}
         </button>
 
         {/* Step indicator */}
         <span class="text-sm text-gray-600 dark:text-gray-400">
-          {$localize`Step ${activeStep + 1} of ${totalSteps}`}
+          {semanticMessages.stepper_step_of_total(
+            { current: String(activeStep + 1), total: String(totalSteps) },
+            { locale },
+          )}
         </span>
       </div>
 
@@ -122,8 +130,8 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
                 }
                 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
               `}
-              aria-label={helpButtonLabel}
-              title={helpButtonLabel}
+              aria-label={resolvedHelpButtonLabel}
+              title={resolvedHelpButtonLabel}
             >
               <svg
                 class={`h-5 w-5 transition-transform duration-200 ${isHelpOpen ? "scale-110" : "group-hover:scale-110"}`}
@@ -172,8 +180,10 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
         {/* Optional/Skip indicator */}
         {canSkip && !isLastStep && (
           <span class="text-sm text-gray-500 dark:text-gray-400">
-            {isOptional && $localize`(Optional)`}
-            {isStepSkippable && !isOptional && $localize`(Skippable)`}
+            {isOptional && semanticMessages.stepper_optional({}, { locale })}
+            {isStepSkippable &&
+              !isOptional &&
+              semanticMessages.stepper_skippable({}, { locale })}
           </span>
         )}
 
@@ -198,7 +208,11 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
                   : "bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
             }
           `}
-          aria-label={isLastStep ? "Complete stepper" : "Go to next step"}
+          aria-label={
+            isLastStep
+              ? semanticMessages.stepper_aria_complete_stepper({}, { locale })
+              : semanticMessages.stepper_aria_next({}, { locale })
+          }
         >
           {isLoading ? (
             <>
@@ -222,13 +236,13 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {$localize`Loading...`}
+              {semanticMessages.stepper_loading({}, { locale })}
             </>
           ) : (
             <>
               {isLastStep ? (
                 <>
-                  {$localize`Complete`}
+                  {semanticMessages.shared_complete({}, { locale })}
                   <svg
                     class="ml-1.5 h-4 w-4"
                     fill="none"
@@ -246,10 +260,10 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
               ) : (
                 <>
                   {currentStepIsComplete
-                    ? $localize`Next`
+                    ? semanticMessages.shared_next({}, { locale })
                     : canSkip
-                      ? $localize`Skip`
-                      : $localize`Continue`}
+                      ? semanticMessages.shared_skip({}, { locale })
+                      : semanticMessages.shared_continue({}, { locale })}
                   <svg
                     class="ml-1.5 h-4 w-4"
                     fill="none"
@@ -273,7 +287,7 @@ export const StepperNavigation = component$<StepperNavigationProps>((props) => {
       {/* Error message */}
       {currentStepHasErrors && (
         <div class="absolute -bottom-8 right-0 text-sm text-red-600 dark:text-red-400">
-          {$localize`Please fix errors before proceeding`}
+          {semanticMessages.stepper_fix_errors({}, { locale })}
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { component$, $, type QRL } from "@builder.io/qwik";
 import { Card, Alert } from "~/components/Core";
 import type { VPNClientAdvancedState } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step3SummaryProps {
   wizardState: VPNClientAdvancedState;
@@ -12,6 +13,7 @@ export interface Step3SummaryProps {
 
 export const Step3_Summary = component$<Step3SummaryProps>(
   ({ wizardState, onEdit$, onValidate$: _onValidate$ }) => {
+    const locale = useMessageLocale();
     // Check validation status
     const hasValidationErrors =
       Object.keys(wizardState.validationErrors).length > 0;
@@ -71,10 +73,20 @@ export const Step3_Summary = component$<Step3SummaryProps>(
         <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-white">
           <div class="relative z-10">
             <h2 class="text-3xl font-bold">
-              {$localize`Configuration Summary`}
+              {semanticMessages.vpn_client_advanced_summary_title(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h2>
             <p class="mt-2 text-primary-100">
-              {$localize`Review your VPN configuration before deploying to your router`}
+              {semanticMessages.vpn_client_advanced_summary_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
           </div>
           {/* Background Pattern */}
@@ -101,10 +113,16 @@ export const Step3_Summary = component$<Step3SummaryProps>(
               </svg>
               <div class="ml-3">
                 <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                  {$localize`Configuration Issues Detected`}
+                  {semanticMessages.vpn_client_advanced_configuration_issues_title(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <p class="mt-1 text-sm text-red-700 dark:text-red-300">
-                  {$localize`Please review and fix the issues before proceeding.`}
+                  {semanticMessages.vpn_client_advanced_configuration_issues_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>
@@ -116,7 +134,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
           <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 dark:from-gray-800 dark:to-gray-700">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`VPN Connections Overview`}
+                {semanticMessages.vpn_client_advanced_connections_overview(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <button
                 onClick$={() => handleEditStep(1)}
@@ -135,7 +158,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                   />
                 </svg>
-                {$localize`Edit Configuration`}
+                {semanticMessages.vpn_client_advanced_edit_configuration(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </button>
             </div>
           </div>
@@ -161,7 +189,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                       <div class="flex items-center gap-4">
                         {/* Priority Badge */}
                         <div class="flex flex-col items-center">
-                          <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{$localize`Priority`}</span>
+                          <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                            {semanticMessages.wan_advanced_priority(
+                              {},
+                              { locale },
+                            )}
+                          </span>
                           <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 font-bold text-white shadow-lg">
                             {index + 1}
                           </div>
@@ -206,7 +239,11 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                 />
                               </svg>
-                              {vpn.type || $localize`No protocol selected`}
+                              {vpn.type ||
+                                semanticMessages.vpn_client_advanced_no_protocol_selected(
+                                  {},
+                                  { locale },
+                                )}
                             </span>
                             {vpn.assignedLink && (
                               <>
@@ -238,24 +275,31 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                         {!vpn.enabled ? (
                           <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                             <span class="mr-1.5 h-2 w-2 rounded-full bg-gray-400"></span>
-                            {$localize`Disabled`}
+                            {semanticMessages.shared_disabled({}, { locale })}
                           </span>
                         ) : isConfigured ? (
                           <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                             <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-                            {$localize`Ready`}
+                            {semanticMessages.shared_ready({}, { locale })}
                           </span>
                         ) : (
                           <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                             <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
-                            {$localize`Not Configured`}
+                            {semanticMessages.vpn_client_advanced_not_configured_status(
+                              {},
+                              { locale },
+                            )}
                           </span>
                         )}
 
                         {/* Weight Badge for Load Balancing */}
                         {vpn.weight && (
                           <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                            {vpn.weight}% {$localize`weight`}
+                            {vpn.weight}%{" "}
+                            {semanticMessages.vpn_client_advanced_weight(
+                              {},
+                              { locale },
+                            )}
                           </span>
                         )}
                       </div>
@@ -274,7 +318,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
           <Card class="overflow-hidden border-0 shadow-lg">
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 dark:from-gray-800 dark:to-gray-700">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`Multi-VPN Strategy`}
+                {semanticMessages.vpn_client_advanced_strategy_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
             </div>
             <div class="p-6">
@@ -296,7 +345,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                     </svg>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Strategy`}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {semanticMessages.vpn_client_advanced_strategy(
+                        {},
+                        { locale },
+                      )}
+                    </p>
                     <p class="font-semibold text-gray-900 dark:text-white">
                       {wizardState.multiVPNStrategy.strategy}
                     </p>
@@ -321,7 +375,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                       </svg>
                     </div>
                     <div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Check Interval`}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {semanticMessages.vpn_client_advanced_check_interval(
+                          {},
+                          { locale },
+                        )}
+                      </p>
                       <p class="font-semibold text-gray-900 dark:text-white">
                         {wizardState.multiVPNStrategy.failoverCheckInterval}s
                       </p>
@@ -347,7 +406,12 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                       </svg>
                     </div>
                     <div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{$localize`Timeout`}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {semanticMessages.vpn_client_advanced_timeout(
+                          {},
+                          { locale },
+                        )}
+                      </p>
                       <p class="font-semibold text-gray-900 dark:text-white">
                         {wizardState.multiVPNStrategy.failoverTimeout}s
                       </p>

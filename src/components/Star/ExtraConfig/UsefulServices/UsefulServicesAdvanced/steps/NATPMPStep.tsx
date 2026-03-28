@@ -19,6 +19,7 @@ import { Card, CardHeader, Toggle, Alert } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { NATPMPConfig } from "~/components/Star/StarContext/ExtraType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define InterfaceOption locally since it doesn't exist in StarContext
 export type InterfaceOption = {
@@ -31,6 +32,7 @@ export type InterfaceOption = {
 };
 
 export const NATPMPStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper context
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
 
@@ -314,10 +316,15 @@ export const NATPMPStep = component$(() => {
           </svg>
         </div>
         <h3 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-gray-300">
-          {$localize`NAT-PMP Configuration`}
+          {semanticMessages.useful_services_natpmp_title({}, { locale })}
         </h3>
         <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-          {$localize`Configure NAT Port Mapping Protocol for automatic port forwarding and NAT traversal`}
+          {semanticMessages.useful_services_natpmp_description(
+            {},
+            {
+              locale,
+            },
+          )}
         </p>
       </div>
 
@@ -344,20 +351,41 @@ export const NATPMPStep = component$(() => {
               </div>
               <div>
                 <h4 class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {$localize`Enable NAT-PMP`}
+                  {semanticMessages.useful_services_natpmp_enable(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h4>
                 <p class="mt-1 text-gray-600 dark:text-gray-400">
-                  {$localize`Enable Network Address Translation Port Mapping Protocol`}
+                  {semanticMessages.useful_services_natpmp_enable_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
                 <div class="mt-3 flex items-center gap-3">
                   <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-800 dark:bg-primary-900/50 dark:text-primary-400">
-                    {$localize`Port Mapping`}
+                    {semanticMessages.useful_services_natpmp_port_mapping(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                   <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-800 dark:bg-primary-900/50 dark:text-primary-400">
-                    {$localize`NAT Traversal`}
+                    {semanticMessages.useful_services_natpmp_nat_traversal(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </span>
                   <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-800 dark:bg-primary-900/50 dark:text-primary-400">
-                    {$localize`Apple Compatible`}
+                    {semanticMessages.useful_services_natpmp_apple_compatible(
+                      {},
+                      { locale },
+                    )}
                   </span>
                 </div>
               </div>
@@ -380,10 +408,18 @@ export const NATPMPStep = component$(() => {
         <div class="animate-fade-in-up space-y-6">
           <div class="text-center">
             <h4 class="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-              {$localize`Select Interface for NAT-PMP`}
+              {semanticMessages.useful_services_natpmp_select_interface(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h4>
             <p class="text-gray-600 dark:text-gray-400">
-              {$localize`Choose one network interface where NAT-PMP will be enabled`}
+              {semanticMessages.useful_services_natpmp_select_interface_description(
+                {},
+                { locale },
+              )}
             </p>
           </div>
 
@@ -392,12 +428,18 @@ export const NATPMPStep = component$(() => {
               return (
                 <Alert
                   status="warning"
-                  title={$localize`No Interfaces Available`}
+                  title={semanticMessages.useful_services_natpmp_no_interfaces(
+                    {},
+                    { locale },
+                  )}
                   class="border-0 bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg dark:from-amber-900/20 dark:to-orange-900/20"
                 >
                   <div class="text-sm text-amber-800 dark:text-amber-300">
                     <p>
-                      {$localize`No WAN links or VPN clients have been configured yet. Please configure at least one WAN link or VPN client in the previous steps before enabling NAT-PMP.`}
+                      {semanticMessages.useful_services_natpmp_no_interfaces_description(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
                 </Alert>
@@ -423,7 +465,10 @@ export const NATPMPStep = component$(() => {
                         <LuHome class="h-5 w-5" />
                       </div>
                       <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        {$localize`Domestic Network Links`}
+                        {semanticMessages.useful_services_natpmp_domestic_links(
+                          {},
+                          { locale },
+                        )}
                       </h5>
                       <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                         {domesticInterfaces.length}{" "}
@@ -476,7 +521,10 @@ export const NATPMPStep = component$(() => {
                                     class={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${getTypeColorClasses("domestic")}`}
                                   >
                                     <LuHome class="h-3 w-3" />
-                                    {$localize`Domestic`}
+                                    {semanticMessages.useful_services_natpmp_domestic(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                 </div>
                               </div>
@@ -496,7 +544,10 @@ export const NATPMPStep = component$(() => {
                         <LuGlobe class="h-5 w-5" />
                       </div>
                       <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        {$localize`Foreign Network Links`}
+                        {semanticMessages.useful_services_natpmp_foreign_links(
+                          {},
+                          { locale },
+                        )}
                       </h5>
                       <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300">
                         {foreignInterfaces.length}{" "}
@@ -549,7 +600,10 @@ export const NATPMPStep = component$(() => {
                                     class={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${getTypeColorClasses("foreign")}`}
                                   >
                                     <LuGlobe class="h-3 w-3" />
-                                    {$localize`Foreign`}
+                                    {semanticMessages.useful_services_natpmp_foreign(
+                                      {},
+                                      { locale },
+                                    )}
                                   </span>
                                 </div>
                               </div>
@@ -569,7 +623,12 @@ export const NATPMPStep = component$(() => {
                         <LuShield class="h-5 w-5" />
                       </div>
                       <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        {$localize`VPN Client Connections`}
+                        {semanticMessages.useful_services_natpmp_vpn_clients(
+                          {},
+                          {
+                            locale,
+                          },
+                        )}
                       </h5>
                       <span class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
                         {vpnInterfaces.length}{" "}
@@ -643,7 +702,12 @@ export const NATPMPStep = component$(() => {
                       </div>
                       <div class="text-center">
                         <p class="text-sm font-medium text-primary-900 dark:text-primary-100">
-                          {$localize`NAT-PMP will be enabled on:`}
+                          {semanticMessages.useful_services_natpmp_enabled_on(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
                         </p>
                         <div class="mt-1 flex items-center justify-center gap-2">
                           {getInterfaceIcon(selectedInterface.value.type)}
@@ -664,12 +728,20 @@ export const NATPMPStep = component$(() => {
           {!selectedInterface.value && (
             <Alert
               status="error"
-              title={$localize`No Interface Selected`}
+              title={semanticMessages.useful_services_natpmp_no_selection(
+                {},
+                {
+                  locale,
+                },
+              )}
               class="animate-fade-in-up border-0 bg-gradient-to-r from-red-50 to-pink-50 shadow-lg dark:from-red-900/20 dark:to-pink-900/20"
             >
               <div class="text-sm text-red-800 dark:text-red-300">
                 <p>
-                  {$localize`Please select an interface to enable NAT-PMP on, or disable NAT-PMP if not needed.`}
+                  {semanticMessages.useful_services_natpmp_no_selection_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </Alert>

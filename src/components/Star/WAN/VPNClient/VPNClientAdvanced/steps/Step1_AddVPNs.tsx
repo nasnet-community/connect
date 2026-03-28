@@ -5,6 +5,7 @@ import { VPNBox } from "../components/VPNBox/VPNBox";
 import { VPNBoxHeader } from "../components/VPNBox/VPNBoxHeader";
 import { VPNBoxContent } from "../components/VPNBox/VPNBoxContent";
 import { VPNTypeSelector } from "../components/fields/VPNTypeSelector";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step1Props {
   wizardState: VPNClientAdvancedState;
@@ -14,6 +15,7 @@ export interface Step1Props {
 
 export const Step1_AddVPNs = component$<Step1Props>(
   ({ wizardState, wizardActions, foreignWANCount }) => {
+    const locale = useMessageLocale();
     const getVPNErrors = (vpnId: string) => {
       return Object.entries(wizardState.validationErrors)
         .filter(([key]) => key.startsWith(`vpn-${vpnId}`))
@@ -38,10 +40,13 @@ export const Step1_AddVPNs = component$<Step1Props>(
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {$localize`VPN Client Configuration`}
+              {semanticMessages.vpn_client_easy_title({}, { locale })}
             </h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {$localize`Add and configure VPN clients. Minimum ${foreignWANCount} VPN${foreignWANCount > 1 ? "s" : ""} required for foreign WAN links.`}
+              {semanticMessages.vpn_client_advanced_legacy_add_description(
+                { count: foreignWANCount },
+                { locale },
+              )}
             </p>
           </div>
 
@@ -65,7 +70,12 @@ export const Step1_AddVPNs = component$<Step1Props>(
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
             </svg>
-            {$localize`Add VPN`}
+            {semanticMessages.vpn_client_advanced_add_vpn_client(
+              {},
+              {
+                locale,
+              },
+            )}
           </button>
         </div>
 
@@ -127,7 +137,13 @@ export const Step1_AddVPNs = component$<Step1Props>(
         {wizardState.vpnConfigs.length < foreignWANCount && (
           <div class="mt-4 rounded-lg bg-warning-50 p-4 dark:bg-warning-900/20">
             <p class="text-sm text-warning-700 dark:text-warning-300">
-              {$localize`You need at least ${foreignWANCount} VPN${foreignWANCount > 1 ? "s" : ""} for your foreign WAN links. Currently configured: ${wizardState.vpnConfigs.length}`}
+              {semanticMessages.vpn_client_advanced_legacy_minimum_warning(
+                {
+                  requiredCount: foreignWANCount,
+                  currentCount: wizardState.vpnConfigs.length,
+                },
+                { locale },
+              )}
             </p>
           </div>
         )}

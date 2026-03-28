@@ -1,11 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageSelect } from "./LanguageSelect";
 import { useHeader } from "./useHeader";
 
 export const Header = component$(() => {
+  const locale = useMessageLocale();
   const {
     isMenuOpen,
     isDarkMode,
@@ -31,7 +33,7 @@ export const Header = component$(() => {
               href={`/${currentLocale}/star/`}
               class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
             >
-              {$localize`Launch App`}
+              {semanticMessages.top_nav_launch_app({}, { locale })}
             </Link>
             <ThemeToggle
               isDarkMode={isDarkMode.value}
@@ -48,7 +50,7 @@ export const Header = component$(() => {
           <button
             onClick$={toggleMenu$}
             class="rounded-lg p-2 hover:bg-primary-100 dark:hover:bg-primary-900/20 lg:hidden"
-            aria-label={$localize`Toggle menu`}
+            aria-label={semanticMessages.mobile_menu_toggle({}, { locale })}
           >
             {isMenuOpen.value ? (
               <svg
@@ -91,7 +93,7 @@ export const Header = component$(() => {
               href={`/${currentLocale}/star/`}
               class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
             >
-              {$localize`Launch App`}
+              {semanticMessages.top_nav_launch_app({}, { locale })}
             </Link>
             <div class="flex items-center justify-between gap-4 border-t border-primary-100 pt-4 dark:border-primary-900/20">
               <ThemeToggle

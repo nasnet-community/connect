@@ -96,6 +96,13 @@ export interface UseNewsletterParams {
   /** Enable email validation */
   validateEmail?: boolean;
 
+  /** Localized validation and error copy used by the hook */
+  messages?: {
+    invalidEmail: string;
+    requiredEmail: string;
+    subscribeFailed: string;
+  };
+
   /** Custom validation function */
   customValidation$?: QRL<(email: string) => Promise<string | null>> | null;
 }

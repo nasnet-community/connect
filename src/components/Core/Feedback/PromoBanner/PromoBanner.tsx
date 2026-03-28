@@ -8,6 +8,7 @@ import {
   getResponsiveSizeClasses,
   getSurfaceElevation,
 } from "../utils/theme";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * PromoBanner component for displaying promotional content with optional action.
@@ -42,6 +43,7 @@ export const PromoBanner = component$<PromoBannerProps>(
     colorVariant = "info",
     themeColors = false,
   }) => {
+    const locale = useMessageLocale();
     // Use the hook to manage state and credentials
     const { loading, success, getCredentials$ } = usePromoBanner({
       onCredentialsReceived$,
@@ -131,7 +133,7 @@ export const PromoBanner = component$<PromoBannerProps>(
                   touchClasses,
                   "transition-opacity",
                 )}
-                aria-label="Dismiss banner"
+                aria-label={semanticMessages.shared_dismiss({}, { locale })}
               >
                 <svg
                   class="h-4 w-4"
@@ -187,8 +189,13 @@ export const PromoBanner = component$<PromoBannerProps>(
                 disabled={loading.value}
               >
                 {loading.value
-                  ? $localize`Loading...`
-                  : $localize`Get Free Access`}
+                  ? semanticMessages.shared_loading({}, { locale })
+                  : semanticMessages.promo_banner_get_free_access(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
               </button>
             )}
 
@@ -201,7 +208,12 @@ export const PromoBanner = component$<PromoBannerProps>(
                   size === "lg" && "px-5 py-3 text-base",
                 )}
               >
-                {$localize`Credentials sent! Check your account.`}
+                {semanticMessages.promo_banner_credentials_sent(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </div>
             )}
           </div>

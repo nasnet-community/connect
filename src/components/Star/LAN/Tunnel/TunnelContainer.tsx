@@ -2,8 +2,11 @@ import { component$ } from "@builder.io/qwik";
 import { Tunnel } from "./Tunnel";
 import { HiCubeTransparentOutline } from "@qwikest/icons/heroicons";
 import type { StepProps } from "~/types/step";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const TunnelContainer = component$<StepProps>((props) => {
+  const locale = useMessageLocale();
+
   return (
     <div class="w-full max-w-6xl">
       {/* Page Header */}
@@ -13,10 +16,10 @@ export const TunnelContainer = component$<StepProps>((props) => {
         </div>
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {$localize`Network Tunnels`}
+            {semanticMessages.tunnel_header_title({}, { locale })}
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Configure network tunnels for connecting remote networks`}
+            {semanticMessages.tunnel_header_description({}, { locale })}
           </p>
         </div>
       </div>

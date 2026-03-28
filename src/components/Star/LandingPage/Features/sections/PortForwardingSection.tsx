@@ -2,27 +2,54 @@ import { component$, $ } from "@builder.io/qwik";
 import { LuNetwork, LuServer } from "@qwikest/icons/lucide";
 import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const PortForwardingSection = component$(() => {
+  const locale = useMessageLocale();
   // Create nodes for port forwarding graph
   const nodes: GraphNode[] = [
     createNode("ForeignWAN", "internet", 250, 50, {
-      label: $localize`Internet`,
+      label: semanticMessages.landing_vpn_client_internet({}, { locale }),
     }),
     createNode("WirelessRouter", "router", 250, 200, {
-      label: $localize`Router NAT`,
+      label: semanticMessages.landing_port_forwarding_router_nat(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("DomesticService", "server1", 100, 350, {
-      label: $localize`Web Server :80`,
+      label: semanticMessages.landing_port_forwarding_web_server(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("GameServer", "server2", 200, 350, {
-      label: $localize`Game Server :25565`,
+      label: semanticMessages.landing_port_forwarding_game_server(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("DomesticService", "server3", 300, 350, {
-      label: $localize`FTP Server :21`,
+      label: semanticMessages.landing_port_forwarding_ftp_server(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
     createNode("VPNServer", "server4", 400, 350, {
-      label: $localize`VPN Server :1194`,
+      label: semanticMessages.landing_port_forwarding_vpn_server(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
   ];
 
@@ -33,7 +60,10 @@ export const PortForwardingSection = component$(() => {
       to: "router",
       color: "#3b82f6",
       animated: true,
-      label: $localize`External Connections`,
+      label: semanticMessages.landing_port_forwarding_external_connections(
+        {},
+        { locale },
+      ),
       width: 4,
       arrowHead: true,
     },
@@ -42,7 +72,7 @@ export const PortForwardingSection = component$(() => {
       to: "server1",
       color: "#10b981",
       animated: true,
-      label: $localize`Port 80 → 80`,
+      label: "Port 80 -> 80",
       dashed: false,
       packetColors: ["#3b82f6"],
     },
@@ -51,7 +81,7 @@ export const PortForwardingSection = component$(() => {
       to: "server2",
       color: "#f59e0b",
       animated: true,
-      label: $localize`Port 25565 → 25565`,
+      label: "Port 25565 -> 25565",
       dashed: false,
       packetColors: ["#f59e0b"],
     },
@@ -60,7 +90,7 @@ export const PortForwardingSection = component$(() => {
       to: "server3",
       color: "#8b5cf6",
       animated: true,
-      label: $localize`Port 21 → 21`,
+      label: "Port 21 -> 21",
       dashed: false,
       packetColors: ["#8b5cf6"],
     },
@@ -69,7 +99,7 @@ export const PortForwardingSection = component$(() => {
       to: "server4",
       color: "#ef4444",
       animated: true,
-      label: $localize`Port 1194 → 1194`,
+      label: "Port 1194 -> 1194",
       dashed: false,
       packetColors: ["#ef4444"],
     },
@@ -83,11 +113,20 @@ export const PortForwardingSection = component$(() => {
     showLegend: true,
     expandOnHover: true,
     legendItems: [
-      { color: "#3b82f6", label: $localize`External Traffic` },
-      { color: "#10b981", label: $localize`HTTP/HTTPS` },
-      { color: "#f59e0b", label: $localize`Gaming` },
-      { color: "#8b5cf6", label: $localize`FTP` },
-      { color: "#ef4444", label: $localize`VPN` },
+      {
+        color: "#3b82f6",
+        label: semanticMessages.landing_port_forwarding_external_traffic(
+          {},
+          { locale },
+        ),
+      },
+      { color: "#10b981", label: "HTTP/HTTPS" },
+      {
+        color: "#f59e0b",
+        label: semanticMessages.landing_gaming_title_line1({}, { locale }),
+      },
+      { color: "#8b5cf6", label: "FTP" },
+      { color: "#ef4444", label: "VPN" },
     ],
   };
 
@@ -222,21 +261,36 @@ export const PortForwardingSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-left space-y-6">
             <Badge color="info" variant="outline" size="lg">
-              {$localize`Connectivity`}
+              {semanticMessages.landing_port_forwarding_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                {$localize`Port Forwarding`}
+                {semanticMessages.landing_port_forwarding_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Features`}
+                {semanticMessages.landing_port_forwarding_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Seamless device access with UPNP, NAT-PMP, and manual configuration. Auto discovery, manual rules, and comprehensive port management.`}
+              {semanticMessages.landing_port_forwarding_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
 
             <div class="space-y-3">
@@ -244,17 +298,30 @@ export const PortForwardingSection = component$(() => {
                 {
                   icon: LuNetwork,
                   name: "UPNP",
-                  desc: $localize`Automatic port mapping`,
+                  desc: semanticMessages.landing_port_forwarding_upnp_desc(
+                    {},
+                    {
+                      locale,
+                    },
+                  ),
                 },
                 {
                   icon: LuServer,
                   name: "NAT-PMP",
-                  desc: $localize`Apple protocol support`,
+                  desc: semanticMessages.landing_port_forwarding_natpmp_desc(
+                    {},
+                    { locale },
+                  ),
                 },
                 {
                   icon: LuNetwork,
                   name: "Manual",
-                  desc: $localize`Custom port rules`,
+                  desc: semanticMessages.landing_port_forwarding_manual_desc(
+                    {},
+                    {
+                      locale,
+                    },
+                  ),
                 },
               ].map((feature) => (
                 <div key={feature.name} class="flex items-center gap-3">
@@ -280,20 +347,46 @@ export const PortForwardingSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`Port Forwarding Configuration`}
+                title={semanticMessages.landing_port_forwarding_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={graphConfig}
                 onNodeClick$={handleNodeClick$}
               />
             </div>
             <div class="mt-4 flex justify-center gap-4">
               <div class="rounded-lg bg-blue-100 px-3 py-1 dark:bg-blue-900/30">
-                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{$localize`UPNP Enabled`}</span>
+                <span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  {semanticMessages.landing_port_forwarding_upnp_enabled(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
               <div class="rounded-lg bg-indigo-100 px-3 py-1 dark:bg-indigo-900/30">
-                <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300">{$localize`NAT-PMP Active`}</span>
+                <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  {semanticMessages.landing_port_forwarding_natpmp_active(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
               <div class="rounded-lg bg-purple-100 px-3 py-1 dark:bg-purple-900/30">
-                <span class="text-sm font-medium text-purple-700 dark:text-purple-300">{$localize`Manual Rules`}</span>
+                <span class="text-sm font-medium text-purple-700 dark:text-purple-300">
+                  {semanticMessages.landing_port_forwarding_manual_rules(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
             </div>
           </div>

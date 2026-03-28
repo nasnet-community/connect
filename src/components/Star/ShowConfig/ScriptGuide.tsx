@@ -1,9 +1,11 @@
 import { component$, useSignal } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const gifScriptGuide = `${import.meta.env.BASE_URL}gifs/ScriptGuide.gif`;
 
 export const ScriptGuide = component$(() => {
   const isFullScreen = useSignal(false);
+  const locale = useMessageLocale();
 
   return (
     <div class="bg-surface-secondary dark:bg-surface-dark-secondary mt-6 overflow-hidden rounded-xl">
@@ -23,7 +25,7 @@ export const ScriptGuide = component$(() => {
               d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          {$localize`RouterOS Configuration Guide`}
+          {semanticMessages.show_config_guide_title({}, { locale })}
         </h4>
       </div>
 
@@ -32,7 +34,7 @@ export const ScriptGuide = component$(() => {
         {/* Demo Section with fullscreen button */}
         <div class="rounded-lg bg-surface p-4 dark:bg-surface-dark">
           <h5 class="mb-4 text-lg font-medium text-text dark:text-text-dark-default">
-            {$localize`Visual Guide`}
+            {semanticMessages.show_config_guide_visual_title({}, { locale })}
           </h5>
           <div class="relative overflow-hidden rounded-lg">
             <button
@@ -40,7 +42,10 @@ export const ScriptGuide = component$(() => {
               class="absolute right-4 top-4 rounded-lg bg-surface/80 p-2
                    shadow-lg backdrop-blur transition-colors hover:bg-surface
                    dark:bg-surface-dark/80 dark:hover:bg-surface-dark"
-              aria-label="View fullscreen"
+              aria-label={semanticMessages.show_config_guide_open_fullscreen(
+                {},
+                { locale },
+              )}
             >
               <svg
                 class="h-6 w-6 text-text dark:text-text-dark-default"
@@ -58,7 +63,7 @@ export const ScriptGuide = component$(() => {
             </button>
             <img
               src={gifScriptGuide}
-              alt="RouterOS Terminal Guide"
+              alt={semanticMessages.show_config_guide_image_alt({}, { locale })}
               width={1024}
               height={576}
               class="w-full rounded-lg shadow-lg transition-all duration-300
@@ -85,7 +90,10 @@ export const ScriptGuide = component$(() => {
                 class="hover:bg-surface-hover dark:hover:bg-surface-dark-hover absolute -right-2 -top-2 z-10 rounded-full 
                           bg-surface p-2 shadow-lg 
                           transition-colors dark:bg-surface-dark"
-                aria-label="Close fullscreen"
+                aria-label={semanticMessages.show_config_guide_close_fullscreen(
+                  {},
+                  { locale },
+                )}
               >
                 <svg
                   class="h-6 w-6 text-text dark:text-text-dark-default"
@@ -103,7 +111,10 @@ export const ScriptGuide = component$(() => {
               </button>
               <img
                 src={gifScriptGuide}
-                alt="RouterOS Terminal Guide"
+                alt={semanticMessages.show_config_guide_image_alt(
+                  {},
+                  { locale },
+                )}
                 width={1024}
                 height={576}
                 class="h-full w-full rounded-lg object-contain"

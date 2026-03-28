@@ -4,6 +4,7 @@ import { StarContext } from "../../../../StarContext/StarContext";
 import type { WireguardServerConfig } from "../../../../StarContext/Utils/VPNServerType";
 import type { VSNetwork } from "../../../../StarContext/Utils/VPNServerType";
 import { validatePort, getAllVPNServerPorts } from "../../utils/portValidation";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define ViewMode type if it doesn't exist
 type ViewMode = "easy" | "advanced";
@@ -19,6 +20,7 @@ interface WireguardDraftConfig {
 }
 
 export const useWireguardServer = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -146,7 +148,7 @@ export const useWireguardServer = () => {
 
     // Private key validation removed - not required for this implementation
     // if (!currentDraft.privateKey || !currentDraft.privateKey.trim()) {
-    //   privateKeyError.value = $localize`Private key is required`;
+    //   privateKeyError.value = "Private key is required";
     //   isValid = false;
     // }
 
@@ -155,7 +157,11 @@ export const useWireguardServer = () => {
       !currentDraft.interfaceAddress ||
       !currentDraft.interfaceAddress.includes("/")
     ) {
-      addressError.value = $localize`Valid interface address with subnet is required (e.g., 192.168.110.1/24)`;
+      addressError.value =
+        semanticMessages.vpn_server_wireguard_interface_address_required(
+          {},
+          { locale },
+        );
       isValid = false;
     }
 
@@ -233,7 +239,7 @@ export const useWireguardServer = () => {
       // Validate interface address
       if (!draft.interfaceAddress || !draft.interfaceAddress.includes("/")) {
         errors.push(
-          `${draft.name}: Valid interface address with subnet is required`,
+          `${draft.name}: ${semanticMessages.vpn_server_wireguard_interface_address_invalid({}, { locale })}`,
         );
         hasError = true;
       }
@@ -369,7 +375,12 @@ export const useWireguardServer = () => {
       return privateKey;
     } catch (error) {
       console.error("Failed to generate private key:", error);
-      throw new Error($localize`Failed to generate private key`);
+      throw new Error(
+        semanticMessages.vpn_server_wireguard_generate_private_key_failed(
+          {},
+          { locale },
+        ),
+      );
     }
   });
 

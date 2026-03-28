@@ -2,6 +2,7 @@ import { $, component$, type PropFunction } from "@builder.io/qwik";
 import { LuWifi, LuAlertCircle } from "@qwikest/icons/lucide";
 import { track } from "@vercel/analytics";
 import type { RouterModels } from "../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WirelessBandSelectorProps {
   selectedBand: "2.4G" | "5G" | null;
@@ -12,6 +13,7 @@ interface WirelessBandSelectorProps {
 
 export const WirelessBandSelector = component$(
   (props: WirelessBandSelectorProps) => {
+    const locale = useMessageLocale();
     // Check which bands are available across ALL routers
     const getAvailableBands = () => {
       const allRouters = props.routerModels;
@@ -63,10 +65,10 @@ export const WirelessBandSelector = component$(
       <div class="space-y-6">
         <div class="text-center">
           <h3 class="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-xl font-bold text-transparent md:text-2xl">
-            {$localize`Select Wireless Band`}
+            {semanticMessages.trunk_wireless_band_title({}, { locale })}
           </h3>
           <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 mx-auto mt-2 max-w-xl text-sm">
-            {$localize`Choose the frequency band for your wireless trunk connection. All routers will use the same band.`}
+            {semanticMessages.trunk_wireless_band_description({}, { locale })}
           </p>
         </div>
 
@@ -115,13 +117,19 @@ export const WirelessBandSelector = component$(
 
                 <div class="space-y-3">
                   <h4 class="text-lg font-semibold text-text dark:text-text-dark-default">
-                    {$localize`2.4G Band`}
+                    {semanticMessages.trunk_wireless_band_24_title(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-sm">
-                    {$localize`Longer range, better penetration through walls`}
+                    {semanticMessages.trunk_wireless_band_24_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
-
-                  {/* Features */}
                   <div class="space-y-2 pt-2">
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -137,7 +145,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Range: Up to 150 feet indoor`}
+                      {semanticMessages.trunk_wireless_band_24_feature_range(
+                        {},
+                        { locale },
+                      )}
                     </div>
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -153,7 +164,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Speed: Up to 300 Mbps`}
+                      {semanticMessages.trunk_wireless_band_24_feature_speed(
+                        {},
+                        { locale },
+                      )}
                     </div>
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -169,7 +183,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Better for obstacles`}
+                      {semanticMessages.trunk_wireless_band_24_feature_obstacles(
+                        {},
+                        { locale },
+                      )}
                     </div>
                   </div>
                 </div>
@@ -221,13 +238,19 @@ export const WirelessBandSelector = component$(
 
                 <div class="space-y-3">
                   <h4 class="text-lg font-semibold text-text dark:text-text-dark-default">
-                    {$localize`5G Band`}
+                    {semanticMessages.trunk_wireless_band_5_title(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h4>
                   <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-sm">
-                    {$localize`Higher speed, less interference`}
+                    {semanticMessages.trunk_wireless_band_5_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
-
-                  {/* Features */}
                   <div class="space-y-2 pt-2">
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -243,7 +266,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Range: Up to 50 feet indoor`}
+                      {semanticMessages.trunk_wireless_band_5_feature_range(
+                        {},
+                        { locale },
+                      )}
                     </div>
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -259,7 +285,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Speed: Up to 1300 Mbps`}
+                      {semanticMessages.trunk_wireless_band_5_feature_speed(
+                        {},
+                        { locale },
+                      )}
                     </div>
                     <div class="text-text-secondary/80 dark:text-text-dark-secondary/85 flex items-center text-sm">
                       <svg
@@ -275,7 +304,10 @@ export const WirelessBandSelector = component$(
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      {$localize`Less crowded spectrum`}
+                      {semanticMessages.trunk_wireless_band_5_feature_spectrum(
+                        {},
+                        { locale },
+                      )}
                     </div>
                   </div>
                 </div>
@@ -291,10 +323,18 @@ export const WirelessBandSelector = component$(
               <LuAlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
               <div>
                 <h4 class="mb-1 text-sm font-semibold text-orange-800 dark:text-orange-200">
-                  {$localize`No Common Wireless Bands Available`}
+                  {semanticMessages.trunk_wireless_band_none_title(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h4>
                 <p class="text-sm text-orange-700 dark:text-orange-300">
-                  {$localize`The selected routers don't share any common wireless bands. Wireless trunk requires all routers to support the same band.`}
+                  {semanticMessages.trunk_wireless_band_none_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             </div>

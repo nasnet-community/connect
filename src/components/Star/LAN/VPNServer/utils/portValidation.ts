@@ -1,5 +1,7 @@
 import type { VPNType } from "../../../StarContext/CommonType";
 import type { StarState } from "../../../StarContext/StarContext";
+import { semanticMessages } from "~/i18n/semantic";
+import { locales } from "~/paraglide/runtime";
 
 // Reserved system/service ports that cannot be used for VPN servers
 export const RESERVED_PORTS = [
@@ -21,12 +23,13 @@ export function validatePort(
   port: number,
   currentServerName: string,
   allVPNServers: VPNServerPort[],
+  locale?: (typeof locales)[number],
 ): { valid: boolean; error?: string } {
   // Check if port is in valid range
   if (port < 1 || port > 65535) {
     return {
       valid: false,
-      error: $localize`Port must be between 1 and 65535`,
+      error: semanticMessages.vpn_server_port_range({}, { locale }),
     };
   }
 
@@ -34,7 +37,7 @@ export function validatePort(
   if (RESERVED_PORTS.includes(port)) {
     return {
       valid: false,
-      error: $localize`Port ${port} is reserved for system services`,
+      error: semanticMessages.vpn_server_port_reserved({ port }, { locale }),
     };
   }
 
@@ -46,7 +49,14 @@ export function validatePort(
   if (duplicate) {
     return {
       valid: false,
-      error: $localize`Port ${port} already used by ${duplicate.protocol}\: ${duplicate.serverName}`,
+      error: semanticMessages.vpn_server_port_duplicate(
+        {
+          port,
+          protocol: duplicate.protocol,
+          serverName: duplicate.serverName,
+        },
+        { locale },
+      ),
     };
   }
 

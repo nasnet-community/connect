@@ -5,6 +5,7 @@ import type {
 } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { Input } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface StepPrioritiesProps {
   wizardState: VPNClientAdvancedState;
@@ -13,6 +14,7 @@ export interface StepPrioritiesProps {
 
 export const StepPriorities = component$<StepPrioritiesProps>(
   ({ wizardState, wizardActions }) => {
+    const locale = useMessageLocale();
     const draggedItem = useSignal<string | null>(null);
     const draggedOverItem = useSignal<string | null>(null);
 
@@ -308,33 +310,74 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         {/* Strategy Selection */}
         <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`Multi-VPN Strategy`}
+            {semanticMessages.vpn_client_advanced_strategy_title(
+              {},
+              {
+                locale,
+              },
+            )}
           </h3>
 
           <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 value: "Failover" as MultiVPNStrategy,
-                label: $localize`Failover`,
-                description: $localize`Backup Connection`,
+                label: semanticMessages.vpn_client_advanced_failover(
+                  {},
+                  {
+                    locale,
+                  },
+                ),
+                description:
+                  semanticMessages.vpn_client_advanced_failover_description(
+                    {},
+                    { locale },
+                  ),
                 icon: "M13 10V3L4 14h7v7l9-11h-7z",
               },
               {
                 value: "RoundRobin" as MultiVPNStrategy,
-                label: $localize`Round Robin`,
-                description: $localize`Rotating Usage`,
+                label: semanticMessages.vpn_client_advanced_round_robin(
+                  {},
+                  {
+                    locale,
+                  },
+                ),
+                description:
+                  semanticMessages.vpn_client_advanced_round_robin_description(
+                    {},
+                    { locale },
+                  ),
                 icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
               },
               {
                 value: "LoadBalance" as MultiVPNStrategy,
-                label: $localize`Load Balance`,
-                description: $localize`Distributed Traffic`,
+                label: semanticMessages.vpn_client_advanced_load_balance(
+                  {},
+                  {
+                    locale,
+                  },
+                ),
+                description:
+                  semanticMessages.vpn_client_advanced_load_balance_description(
+                    {},
+                    { locale },
+                  ),
                 icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z",
               },
               {
                 value: "Both" as MultiVPNStrategy,
-                label: $localize`Both`,
-                description: $localize`Balance + Failover`,
+                label: semanticMessages.vpn_client_advanced_both(
+                  {},
+                  {
+                    locale,
+                  },
+                ),
+                description:
+                  semanticMessages.vpn_client_advanced_both_description(
+                    {},
+                    { locale },
+                  ),
                 icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
               },
             ].map((option) => (
@@ -403,12 +446,20 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           {strategy.value === "Failover" && (
             <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900/20">
               <h4 class="mb-3 text-sm font-medium text-blue-800 dark:text-blue-200">
-                {$localize`Failover Settings`}
+                {semanticMessages.vpn_client_advanced_failover_settings(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h4>
               <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-sm font-medium text-blue-700 dark:text-blue-300">
-                    {$localize`Check Interval (seconds)`}
+                    {semanticMessages.vpn_client_advanced_check_interval_seconds(
+                      {},
+                      { locale },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -434,7 +485,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-medium text-blue-700 dark:text-blue-300">
-                    {$localize`Timeout (seconds)`}
+                    {semanticMessages.vpn_client_advanced_timeout_seconds(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -475,8 +531,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                     />
                   </svg>
                   <p class="text-sm text-blue-700 dark:text-blue-300">
-                    If the primary VPN fails, traffic automatically switches to
-                    the next available VPN
+                    {semanticMessages.vpn_client_advanced_failover_hint(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -486,11 +546,19 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           {strategy.value === "RoundRobin" && (
             <div class="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-700 dark:bg-green-900/20">
               <h4 class="mb-3 text-sm font-medium text-green-800 dark:text-green-200">
-                {$localize`Round Robin Settings`}
+                {semanticMessages.vpn_client_advanced_round_robin_settings(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h4>
               <div>
                 <label class="mb-1 block text-sm font-medium text-green-700 dark:text-green-300">
-                  {$localize`Rotation Interval (seconds)`}
+                  {semanticMessages.vpn_client_advanced_rotation_interval_seconds(
+                    {},
+                    { locale },
+                  )}
                 </label>
                 <Input
                   type="number"
@@ -514,7 +582,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   class="w-full"
                 />
                 <p class="mt-1 text-xs text-green-600 dark:text-green-400">
-                  {$localize`How often to switch between VPN connections`}
+                  {semanticMessages.vpn_client_advanced_rotation_hint(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </p>
               </div>
             </div>
@@ -523,13 +596,21 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           {strategy.value === "LoadBalance" && (
             <div class="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-700 dark:bg-orange-900/20">
               <h4 class="mb-3 text-sm font-medium text-orange-800 dark:text-orange-200">
-                {$localize`Load Balance Configuration`}
+                {semanticMessages.vpn_client_advanced_load_balance_configuration(
+                  {},
+                  { locale },
+                )}
               </h4>
 
               {/* Load Balance Method Selection */}
               <div class="mb-6">
                 <label class="mb-2 block text-sm font-medium text-orange-700 dark:text-orange-300">
-                  {$localize`Load Balance Method`}
+                  {semanticMessages.vpn_client_advanced_load_balance_method(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </label>
                 <select
                   value={
@@ -549,13 +630,27 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   }}
                   class="w-full rounded-lg border border-orange-300 bg-white px-3 py-2 text-gray-900 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-orange-600 dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
-                  <option value="NTH">{$localize`NTH (Round Robin)`}</option>
-                  <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
-                  <option value="Bonding" disabled>{$localize`Bonding`}</option>
+                  <option value="PCC">
+                    {semanticMessages.vpn_client_advanced_pcc({}, { locale })}
+                  </option>
+                  <option value="NTH">
+                    {semanticMessages.vpn_client_advanced_nth({}, { locale })}
+                  </option>
+                  <option value="ECMP">
+                    {semanticMessages.vpn_client_advanced_ecmp({}, { locale })}
+                  </option>
+                  <option value="Bonding" disabled>
+                    {semanticMessages.vpn_client_advanced_bonding(
+                      {},
+                      { locale },
+                    )}
+                  </option>
                 </select>
                 <p class="mt-1 text-xs text-orange-600 dark:text-orange-400">
-                  {$localize`Choose how traffic will be distributed across multiple VPN connections`}
+                  {semanticMessages.vpn_client_advanced_load_balance_method_help(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
 
@@ -563,10 +658,16 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               <div class="mb-4 flex items-center justify-between">
                 <div>
                   <h5 class="text-sm font-medium text-orange-800 dark:text-orange-200">
-                    {$localize`Load Balance Weights`}
+                    {semanticMessages.vpn_client_advanced_load_balance_weights(
+                      {},
+                      { locale },
+                    )}
                   </h5>
                   <p class="mt-1 text-xs text-orange-600 dark:text-orange-400">
-                    {$localize`Adjust traffic distribution percentage for each VPN`}
+                    {semanticMessages.vpn_client_advanced_load_balance_weights_help(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
                 <button
@@ -588,7 +689,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   }}
                   class="rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-colors hover:bg-orange-600"
                 >
-                  {$localize`Auto Balance`}
+                  {semanticMessages.vpn_client_advanced_auto_balance(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
               </div>
 
@@ -779,7 +885,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                 <div class="rounded-lg bg-orange-100 p-3 dark:bg-orange-900/30">
                   <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-orange-700 dark:text-orange-300">
-                      {$localize`Total Weight:`}
+                      {semanticMessages.vpn_client_advanced_total_weight(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </span>
                     <div class="flex items-center gap-2">
                       {wizardState.vpnConfigs.reduce(
@@ -836,13 +947,23 @@ export const StepPriorities = component$<StepPrioritiesProps>(
           {strategy.value === "Both" && (
             <div class="rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-700 dark:bg-purple-900/20">
               <h4 class="mb-3 text-sm font-medium text-purple-800 dark:text-purple-200">
-                {$localize`Load Balance & Failover Settings`}
+                {semanticMessages.vpn_client_advanced_combined_settings(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h4>
 
               {/* Load Balance Method Selection */}
               <div class="mb-4">
                 <label class="mb-2 block text-sm font-medium text-purple-700 dark:text-purple-300">
-                  {$localize`Load Balance Method`}
+                  {semanticMessages.vpn_client_advanced_load_balance_method(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </label>
                 <select
                   value={
@@ -862,10 +983,21 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   }}
                   class="w-full rounded-lg border border-purple-300 bg-white px-3 py-2 text-gray-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-purple-600 dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="PCC">{$localize`PCC (Per Connection Classifier)`}</option>
-                  <option value="NTH">{$localize`NTH (Round Robin)`}</option>
-                  <option value="ECMP">{$localize`ECMP (Equal Cost Multi-Path)`}</option>
-                  <option value="Bonding" disabled>{$localize`Bonding`}</option>
+                  <option value="PCC">
+                    {semanticMessages.vpn_client_advanced_pcc({}, { locale })}
+                  </option>
+                  <option value="NTH">
+                    {semanticMessages.vpn_client_advanced_nth({}, { locale })}
+                  </option>
+                  <option value="ECMP">
+                    {semanticMessages.vpn_client_advanced_ecmp({}, { locale })}
+                  </option>
+                  <option value="Bonding" disabled>
+                    {semanticMessages.vpn_client_advanced_bonding(
+                      {},
+                      { locale },
+                    )}
+                  </option>
                 </select>
               </div>
 
@@ -873,7 +1005,10 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-sm font-medium text-purple-700 dark:text-purple-300">
-                    {$localize`Check Interval (seconds)`}
+                    {semanticMessages.vpn_client_advanced_check_interval_seconds(
+                      {},
+                      { locale },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -899,7 +1034,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-medium text-purple-700 dark:text-purple-300">
-                    {$localize`Timeout (seconds)`}
+                    {semanticMessages.vpn_client_advanced_timeout_seconds(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </label>
                   <Input
                     type="number"
@@ -929,10 +1069,16 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               <div class="mb-4 flex items-center justify-between">
                 <div>
                   <h5 class="text-sm font-medium text-purple-800 dark:text-purple-200">
-                    {$localize`Load Balance Weights`}
+                    {semanticMessages.vpn_client_advanced_load_balance_weights(
+                      {},
+                      { locale },
+                    )}
                   </h5>
                   <p class="mt-1 text-xs text-purple-600 dark:text-purple-400">
-                    {$localize`Adjust traffic distribution for active VPNs`}
+                    {semanticMessages.vpn_client_advanced_load_balance_active_weights_help(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
                 <button
@@ -954,7 +1100,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                   }}
                   class="rounded-lg bg-purple-500 px-3 py-1.5 text-xs text-white transition-colors hover:bg-purple-600"
                 >
-                  {$localize`Auto Balance`}
+                  {semanticMessages.vpn_client_advanced_auto_balance(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
               </div>
 
@@ -1137,7 +1288,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                 <div class="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/30">
                   <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-purple-700 dark:text-purple-300">
-                      {$localize`Total Weight:`}
+                      {semanticMessages.vpn_client_advanced_total_weight(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     </span>
                     <div class="flex items-center gap-2">
                       {wizardState.vpnConfigs.reduce(
@@ -1190,7 +1346,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
               </div>
 
               <div class="mt-4 text-sm text-purple-700 dark:text-purple-300">
-                <p>{$localize`Combines load balancing with automatic failover. Traffic is distributed across active connections, with backup VPNs ready when primary connections fail.`}</p>
+                <p>
+                  {semanticMessages.vpn_client_advanced_combined_strategy_help(
+                    {},
+                    { locale },
+                  )}
+                </p>
               </div>
             </div>
           )}
@@ -1199,10 +1360,15 @@ export const StepPriorities = component$<StepPrioritiesProps>(
         {/* Priority Management */}
         <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`VPN Priority Order`}
+            {semanticMessages.wan_advanced_priority_order({}, { locale })}
           </h3>
           <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
-            {$localize`Drag and drop VPNs to set their priority order. Higher priority VPNs will be preferred.`}
+            {semanticMessages.vpn_client_advanced_priority_order_help(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
 
           {/* Priority List */}
@@ -1310,13 +1476,25 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                       </span>
                       {index === 0 && (
                         <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                          Primary
+                          {semanticMessages.vpn_client_advanced_primary(
+                            {},
+                            {
+                              locale,
+                            },
+                          )}
                         </span>
                       )}
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {vpn.type} Protocol
-                      {vpn.assignedLink && ` • Assigned to WAN Link`}
+                      {semanticMessages.vpn_client_advanced_protocol_suffix(
+                        { type: vpn.type || "VPN" },
+                        { locale },
+                      )}
+                      {vpn.assignedLink &&
+                        ` • ${semanticMessages.vpn_client_advanced_assigned_wan_link(
+                          {},
+                          { locale },
+                        )}`}
                     </div>
                   </div>
 
@@ -1336,7 +1514,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                           : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600"
                       }
                     `}
-                      title={$localize`Move up`}
+                      title={semanticMessages.vpn_client_advanced_move_up(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     >
                       <svg
                         class="h-4 w-4"
@@ -1367,7 +1550,12 @@ export const StepPriorities = component$<StepPrioritiesProps>(
                           : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600"
                       }
                     `}
-                      title={$localize`Move down`}
+                      title={semanticMessages.vpn_client_advanced_move_down(
+                        {},
+                        {
+                          locale,
+                        },
+                      )}
                     >
                       <svg
                         class="h-4 w-4"

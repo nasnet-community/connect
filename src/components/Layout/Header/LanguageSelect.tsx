@@ -1,11 +1,8 @@
-import { component$, type QRL, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, type QRL } from "@builder.io/qwik";
+import { getLocaleMetadata, type LocaleMetadata } from "~/i18n/config";
+import { resolveMessageLocale, semanticMessages } from "~/i18n/semantic";
 
-interface Language {
-  code: string;
-  name: string;
-  dir: "ltr" | "rtl";
-  flag?: string;
-}
+type Language = LocaleMetadata;
 
 interface LanguageSelectProps {
   currentLocale: string;
@@ -14,44 +11,35 @@ interface LanguageSelectProps {
   location?: "header" | "mobile";
 }
 
-const LANGUAGES: Record<string, Language> = {
-  en: { code: "en", name: "English", dir: "ltr", flag: "🇬🇧" },
-  fa: { code: "fa", name: "فارسی", dir: "rtl", flag: "🇮🇷" },
-};
-
 const getLanguage = (locale: string): Language => {
-  return (
-    LANGUAGES[locale] ?? {
-      code: locale,
-      name: locale.toUpperCase(),
-      dir: "ltr",
-    }
-  );
+  const metadata = getLocaleMetadata(locale);
+  return {
+    ...metadata,
+    code: metadata.code || locale,
+    nativeName: metadata.nativeName || locale.toUpperCase(),
+  };
 };
 
 export const LanguageSelect = component$((props: LanguageSelectProps) => {
   const selectId = `language-select-${props.location || "default"}`;
   const currentLang = getLanguage(props.currentLocale);
   const isCurrentRtl = currentLang.dir === "rtl";
-  const selectedLocale = useSignal(props.currentLocale);
-
-  // Update the signal when props change
-  useTask$(({ track }) => {
-    track(() => props.currentLocale);
-    selectedLocale.value = props.currentLocale;
-  });
+  const messageLocale = resolveMessageLocale(props.currentLocale);
+  const selectLanguageLabel = semanticMessages.language_select_label(
+    {},
+    { locale: messageLocale },
+  );
 
   return (
     <div class="group relative">
       <label for={selectId} class="sr-only">
-        {$localize`Select language`}
+        {selectLanguageLabel}
       </label>
 
       {/* Custom select wrapper for better styling */}
       <div class="relative">
         <select
           id={selectId}
-          value={selectedLocale.value}
           onChange$={(e) =>
             props.onLocaleChange$((e.target as HTMLSelectElement).value)
           }
@@ -75,7 +63,7 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
                  dark:hover:from-gray-700 dark:hover:to-gray-800
                  dark:hover:shadow-xl dark:hover:shadow-black/30`}
           dir={currentLang.dir}
-          aria-label={$localize`Select language`}
+          aria-label={selectLanguageLabel}
         >
           {props.locales.map((locale) => {
             const language = getLanguage(locale);
@@ -84,10 +72,11 @@ export const LanguageSelect = component$((props: LanguageSelectProps) => {
               <option
                 key={locale}
                 value={locale}
+                selected={locale === props.currentLocale}
                 class="bg-white py-2 text-gray-700 dark:bg-gray-800 dark:text-gray-200"
                 dir={language.dir}
               >
-                {language.name}
+                {language.nativeName}
               </option>
             );
           })}

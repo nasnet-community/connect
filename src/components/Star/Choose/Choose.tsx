@@ -21,6 +21,7 @@ import { Newsletter } from "~/components/Core";
 import type { NewsletterSubscription } from "~/components/Core/Feedback/Newsletter/Newsletter.types";
 import { subscribeToNewsletter } from "~/utils/newsletterAPI";
 import { generateUserUUID } from "~/utils/fingerprinting";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 const RouterModeStep = component$((props: StepProps) => (
   <RouterMode isComplete={props.isComplete} onComplete$={props.onComplete$} />
@@ -60,15 +61,25 @@ const SetupModeStep = component$((props: StepProps) => (
 ));
 
 export const Choose = component$((props: StepProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const stepTitles = {
-    setupMode: $localize`Setup Mode`,
-    wanLinkType: $localize`WAN Link Type`,
-    routerModel: $localize`Router Model`,
-    routerMode: $localize`Router Mode`,
-    slaveRouter: $localize`Slave Router`,
-    interfaceType: $localize`Interface Type`,
-    trunkInterface: $localize`Router + Access Point Interface`,
+    setupMode: semanticMessages.star_choose_step_setup_mode({}, { locale }),
+    wanLinkType: semanticMessages.star_choose_step_wan_link_type(
+      {},
+      { locale },
+    ),
+    routerModel: semanticMessages.star_choose_step_router_model({}, { locale }),
+    routerMode: semanticMessages.star_choose_step_router_mode({}, { locale }),
+    slaveRouter: semanticMessages.star_choose_step_slave_router({}, { locale }),
+    interfaceType: semanticMessages.star_choose_step_interface_type(
+      {},
+      { locale },
+    ),
+    trunkInterface: semanticMessages.star_choose_step_trunk_interface(
+      {},
+      { locale },
+    ),
   };
 
   // Handle newsletter subscription for router configuration tips
@@ -113,7 +124,9 @@ export const Choose = component$((props: StepProps) => {
         }
       } catch (error) {
         console.error("Failed to subscribe to newsletter:", error);
-        throw new Error($localize`Failed to subscribe. Please try again.`);
+        throw new Error(
+          semanticMessages.newsletter_error_subscribe_failed({}, { locale }),
+        );
       }
     },
   );
@@ -398,10 +411,16 @@ export const Choose = component$((props: StepProps) => {
         <Newsletter
           variant="horizontal"
           size="sm"
-          title={$localize`Stay Updated with NASNET Connect`}
-          description={$localize`Get the latest product updates, new features, and important announcements delivered directly to your inbox.`}
-          placeholder={$localize`your.email@example.com`}
-          buttonText={$localize`Subscribe Now`}
+          title={semanticMessages.newsletter_choose_title({}, { locale })}
+          description={semanticMessages.newsletter_choose_description(
+            {},
+            { locale },
+          )}
+          placeholder={semanticMessages.newsletter_choose_placeholder(
+            {},
+            { locale },
+          )}
+          buttonText={semanticMessages.newsletter_choose_button({}, { locale })}
           showLogo={true}
           themeColors={true}
           theme="branded"
@@ -439,10 +458,10 @@ export const Choose = component$((props: StepProps) => {
           <Newsletter
             variant="horizontal"
             size="md"
-            title={$localize`Don't Miss Future Updates`}
-            description={$localize`Thank you for using NASNET Connect! Subscribe to receive product updates, new features, and exclusive offers.`}
-            placeholder={$localize`your.email@example.com`}
-            buttonText={$localize`Stay Connected`}
+            title={semanticMessages.newsletter_choose_completion_title({}, { locale })}
+            description={semanticMessages.newsletter_choose_completion_description({}, { locale })}
+            placeholder={semanticMessages.newsletter_choose_placeholder({}, { locale })}
+            buttonText={semanticMessages.newsletter_choose_completion_button({}, { locale })}
             showLogo={false}
             themeColors={true}
             theme="glass"
@@ -453,7 +472,7 @@ export const Choose = component$((props: StepProps) => {
             surfaceElevation="base"
             onSubscribe$={handleNewsletterSubscription$}
             class="max-w-5xl mx-auto bg-gradient-to-r from-success-50/60 to-primary-50/60 dark:from-success-dark-950/60 dark:to-primary-dark-950/60 border border-success-200/30 dark:border-success-dark-700/30"
-            privacyNoticeText={$localize`Join thousands of users. Unsubscribe anytime.`}
+            privacyNoticeText={semanticMessages.newsletter_choose_completion_privacy({}, { locale })}
           />
         </div>
       )} */}

@@ -1,7 +1,9 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
 import type { ContextPasterProps } from "./type";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const ContextPaster = component$((props: ContextPasterProps) => {
+  const locale = useMessageLocale();
   const selectedFileName = useSignal<string>("");
 
   const handleFileChange$ = $((event: Event) => {
@@ -21,7 +23,9 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
   return (
     <div class="space-y-4">
       <div class="flex items-center justify-between">
-        <h4 class="font-medium">{$localize`Context Input`}</h4>
+        <h4 class="font-medium">
+          {semanticMessages.state_viewer_context_input_title({}, { locale })}
+        </h4>
         <button
           onClick$={props.onGenerate}
           class="flex items-center gap-2 rounded-lg bg-primary-500 px-3 py-1.5 text-sm text-white hover:bg-primary-600"
@@ -39,7 +43,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
               d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
             />
           </svg>
-          {$localize`Generate`}
+          {semanticMessages.shared_generate({}, { locale })}
         </button>
       </div>
 
@@ -67,7 +71,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            {$localize`Paste`}
+            {semanticMessages.shared_paste({}, { locale })}
           </div>
         </button>
         <button
@@ -92,7 +96,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            {$localize`Upload`}
+            {semanticMessages.shared_upload({}, { locale })}
           </div>
         </button>
       </div>
@@ -100,7 +104,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
       {/* Router Selection Dropdown */}
       <div class="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
         <label class="text-text-secondary dark:text-text-dark-secondary block text-xs font-medium">
-          {$localize`Select Router`}
+          {semanticMessages.state_viewer_select_router({}, { locale })}
         </label>
         {props.routerOptions.length > 0 ? (
           <>
@@ -118,13 +122,16 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
               ))}
             </select>
             <p class="text-xs text-gray-600 dark:text-gray-400">
-              {$localize`Configuration will be generated for the selected router`}
+              {semanticMessages.state_viewer_context_generated_for_router(
+                {},
+                { locale },
+              )}
             </p>
           </>
         ) : (
           <div class="rounded-md border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950">
             <p class="text-xs text-yellow-700 dark:text-yellow-300">
-              {$localize`No routers configured. Please configure routers in Trunk Mode with Master and Slave routers to use this feature.`}
+              {semanticMessages.state_viewer_context_no_routers({}, { locale })}
             </p>
           </div>
         )}
@@ -156,14 +163,17 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Paste from Clipboard`}
+                {semanticMessages.state_viewer_paste_clipboard({}, { locale })}
               </button>
             </div>
             <textarea
               value={props.value}
               onChange$={(_, el) => props.onPaste(el.value)}
               class="focus:border-primary focus:ring-primary/20 dark:focus:border-primary dark:focus:ring-primary/30 h-96 w-full resize-none rounded-lg border border-gray-300 bg-white p-4 font-mono text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400"
-              placeholder={$localize`Paste your context here...`}
+              placeholder={semanticMessages.state_viewer_paste_context_placeholder(
+                {},
+                { locale },
+              )}
             />
           </div>
         )}
@@ -202,7 +212,10 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                     </svg>
                     <div class="space-y-2">
                       <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {$localize`File selected`}
+                        {semanticMessages.state_viewer_file_selected(
+                          {},
+                          { locale },
+                        )}
                       </p>
                       <p class="text-xs text-gray-600 dark:text-gray-400">
                         {selectedFileName.value}
@@ -230,7 +243,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                           d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                      {$localize`Clear File`}
+                      {semanticMessages.shared_clear_file({}, { locale })}
                     </button>
                   </>
                 ) : (
@@ -250,10 +263,16 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                     </svg>
                     <div class="space-y-2">
                       <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {$localize`Click to upload or drag and drop`}
+                        {semanticMessages.state_viewer_router_upload_cta(
+                          {},
+                          { locale },
+                        )}
                       </p>
                       <p class="text-xs text-gray-600 dark:text-gray-400">
-                        {$localize`MikroTik configuration files (.rsc, .txt)`}
+                        {semanticMessages.state_viewer_router_upload_supported(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </>
@@ -264,12 +283,18 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
               <div class="rounded-lg border border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
                 <div class="flex items-center justify-between border-b border-gray-200 p-3 dark:border-gray-700">
                   <p class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Extracted State Preview`}
+                    {semanticMessages.state_viewer_extracted_preview(
+                      {},
+                      { locale },
+                    )}
                   </p>
                   <button
                     onClick$={() => navigator.clipboard.writeText(props.value)}
                     class="flex items-center gap-1.5 rounded-md bg-primary-500 px-2.5 py-1 text-xs text-white hover:bg-primary-600"
-                    title={$localize`Copy extracted state`}
+                    title={semanticMessages.state_viewer_copy_extracted_state(
+                      {},
+                      { locale },
+                    )}
                   >
                     <svg
                       class="h-3.5 w-3.5"
@@ -284,7 +309,7 @@ export const ContextPaster = component$((props: ContextPasterProps) => {
                         d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
                       />
                     </svg>
-                    {$localize`Copy`}
+                    {semanticMessages.shared_copy({}, { locale })}
                   </button>
                 </div>
                 <pre class="max-h-32 overflow-auto p-3 font-mono text-xs text-gray-600 dark:text-gray-400">

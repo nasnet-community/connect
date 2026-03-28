@@ -1,6 +1,7 @@
 import { $, component$, type QRL } from "@builder.io/qwik";
 import { LuInfo, LuCheck } from "@qwikest/icons/lucide";
 import { Button, Badge } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import { type RouterData } from "./Constants";
 
 interface SimpleRouterCardProps {
@@ -14,6 +15,7 @@ interface SimpleRouterCardProps {
 }
 
 export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
+  const locale = useMessageLocale();
   const {
     router,
     isSelected,
@@ -57,7 +59,9 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
         <div class="absolute right-3 top-3 z-20">
           <div class="flex items-center gap-1 rounded-full bg-primary-500 px-2 py-1 shadow-md">
             <LuCheck class="h-3 w-3 text-white" />
-            <span class="text-xs font-semibold text-white">{$localize`Selected`}</span>
+            <span class="text-xs font-semibold text-white">
+              {semanticMessages.star_selection_card_selected({}, { locale })}
+            </span>
           </div>
         </div>
       )}
@@ -115,7 +119,7 @@ export const SimpleRouterCard = component$<SimpleRouterCardProps>((props) => {
             class="w-full text-xs"
           >
             <LuInfo class="mr-1 h-3 w-3" />
-            {$localize`View Details`}
+            {semanticMessages.router_view_details({}, { locale })}
           </Button>
         </div>
       </div>

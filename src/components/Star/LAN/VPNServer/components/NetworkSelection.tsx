@@ -2,6 +2,7 @@ import { component$, type QRL, useContext } from "@builder.io/qwik";
 import type { BaseNetworksType } from "~/components/Star/StarContext";
 import { UnifiedSelect as Select } from "~/components/Core/Select/UnifiedSelect";
 import { StarContext } from "~/components/Star/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export type ExtendedNetworks =
   | BaseNetworksType
@@ -29,6 +30,7 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
     _vpnType,
   }) => {
     const starContext = useContext(StarContext);
+    const locale = useMessageLocale();
     const subnets = starContext.state.LAN.Subnets || {};
     const baseNetworks = (subnets as any)?.BaseNetworks || {};
     const vpnNetworks = (subnets as any)?.VPNNetworks || {};
@@ -37,27 +39,43 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
     const networkOptions = [
       {
         value: "VPN",
-        label: baseNetworks.VPN?.subnet
-          ? $localize`VPN Network (${baseNetworks.VPN.subnet})`
-          : $localize`VPN Network (192.168.40.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_vpn({}, { locale }),
+            subnet: baseNetworks.VPN?.subnet || "192.168.40.0/24",
+          },
+          { locale },
+        ),
       },
       {
         value: "Split",
-        label: baseNetworks.Split?.subnet
-          ? $localize`Split Network (${baseNetworks.Split.subnet})`
-          : $localize`Split Network (192.168.10.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_split({}, { locale }),
+            subnet: baseNetworks.Split?.subnet || "192.168.10.0/24",
+          },
+          { locale },
+        ),
       },
       {
         value: "Domestic",
-        label: baseNetworks.Domestic?.subnet
-          ? $localize`Domestic Network (${baseNetworks.Domestic.subnet})`
-          : $localize`Domestic Network (192.168.20.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_domestic({}, { locale }),
+            subnet: baseNetworks.Domestic?.subnet || "192.168.20.0/24",
+          },
+          { locale },
+        ),
       },
       {
         value: "Foreign",
-        label: baseNetworks.Foreign?.subnet
-          ? $localize`Foreign Network (${baseNetworks.Foreign.subnet})`
-          : $localize`Foreign Network (192.168.30.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_foreign({}, { locale }),
+            subnet: baseNetworks.Foreign?.subnet || "192.168.30.0/24",
+          },
+          { locale },
+        ),
       },
     ];
 
@@ -65,44 +83,74 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
     const vpnSubnetOptions = [
       {
         value: "Wireguard",
-        label: vpnNetworks.Wireguard?.[0]?.subnet
-          ? $localize`WireGuard Network (${vpnNetworks.Wireguard[0].subnet})`
-          : $localize`WireGuard Network (192.168.40.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.vpn_server_label_wireguard_network(
+              {},
+              { locale },
+            ),
+            subnet: vpnNetworks.Wireguard?.[0]?.subnet || "192.168.40.0/24",
+          },
+          { locale },
+        ),
         show: !!(vpnNetworks.Wireguard && vpnNetworks.Wireguard.length > 0),
       },
       {
         value: "OpenVPN",
-        label: vpnNetworks.OpenVPN?.[0]?.subnet
-          ? $localize`OpenVPN Network (${vpnNetworks.OpenVPN[0].subnet})`
-          : $localize`OpenVPN Network (192.168.41.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.vpn_server_label_openvpn_network(
+              {},
+              { locale },
+            ),
+            subnet: vpnNetworks.OpenVPN?.[0]?.subnet || "192.168.41.0/24",
+          },
+          { locale },
+        ),
         show: !!(vpnNetworks.OpenVPN && vpnNetworks.OpenVPN.length > 0),
       },
       {
         value: "L2TP",
-        label: vpnNetworks.L2TP?.subnet
-          ? $localize`L2TP Network (${vpnNetworks.L2TP.subnet})`
-          : $localize`L2TP Network (192.168.42.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_l2tp_network({}, { locale }),
+            subnet: vpnNetworks.L2TP?.subnet || "192.168.42.0/24",
+          },
+          { locale },
+        ),
         show: !!vpnNetworks.L2TP,
       },
       {
         value: "PPTP",
-        label: vpnNetworks.PPTP?.subnet
-          ? $localize`PPTP Network (${vpnNetworks.PPTP.subnet})`
-          : $localize`PPTP Network (192.168.43.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_pptp_network({}, { locale }),
+            subnet: vpnNetworks.PPTP?.subnet || "192.168.43.0/24",
+          },
+          { locale },
+        ),
         show: !!vpnNetworks.PPTP,
       },
       {
         value: "SSTP",
-        label: vpnNetworks.SSTP?.subnet
-          ? $localize`SSTP Network (${vpnNetworks.SSTP.subnet})`
-          : $localize`SSTP Network (192.168.44.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_sstp_network({}, { locale }),
+            subnet: vpnNetworks.SSTP?.subnet || "192.168.44.0/24",
+          },
+          { locale },
+        ),
         show: !!vpnNetworks.SSTP,
       },
       {
         value: "IKev2",
-        label: vpnNetworks.IKev2?.subnet
-          ? $localize`IKEv2 Network (${vpnNetworks.IKev2.subnet})`
-          : $localize`IKEv2 Network (192.168.45.0/24)`,
+        label: semanticMessages.vpn_server_network_option(
+          {
+            label: semanticMessages.subnets_label_ikev2_network({}, { locale }),
+            subnet: vpnNetworks.IKev2?.subnet || "192.168.45.0/24",
+          },
+          { locale },
+        ),
         show: !!vpnNetworks.IKev2,
       },
     ];
@@ -134,10 +182,13 @@ export const NetworkDropdown = component$<NetworkDropdownProps>(
             onNetworkChange$(network);
           }}
           disabled={disabled}
-          placeholder={$localize`Select network`}
+          placeholder={semanticMessages.vpn_server_select_network(
+            {},
+            { locale },
+          )}
         />
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          {$localize`Choose which network segment this VPN protocol should be accessible from.`}
+          {semanticMessages.vpn_server_network_helper({}, { locale })}
         </p>
       </div>
     );

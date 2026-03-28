@@ -5,8 +5,10 @@ import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { SectionTitle } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
 import type { BaseNetworksType } from "~/components/Star/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const BackToHomeServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const { advancedFormState } = useBackToHomeServer();
 
   // Local state for form fields
@@ -21,26 +23,38 @@ export const BackToHomeServerAdvanced = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`BackToHome Server`}
+      title={semanticMessages.vpn_server_backtohome_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
         <div>
-          <SectionTitle title={$localize`Network Configuration`} />
+          <SectionTitle
+            title={semanticMessages.zerotier_network_configuration(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={(network) => {
               updateNetwork$(network as BaseNetworksType);
             }}
-            label={$localize`Network`}
+            label={semanticMessages.vpn_server_network_label({}, { locale })}
           />
         </div>
 
         {/* BackToHome Information */}
         <div class="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
           <p class="text-sm text-green-800 dark:text-green-200">
-            {$localize`BackToHome provides secure remote access to your home network from anywhere in the world.`}
+            {semanticMessages.vpn_server_backtohome_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </div>
       </div>

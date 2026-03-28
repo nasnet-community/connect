@@ -9,8 +9,10 @@ import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import { Card, CardHeader, CardBody, Toggle, Input } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const CertificateStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
   const starCtx = useContext(StarContext);
@@ -39,7 +41,10 @@ export const CertificateStep = component$(() => {
   // Validate passphrase
   const validatePassphrase$ = $((value: string) => {
     if (enableSelfSigned.value && value.length > 0 && value.length < 10) {
-      passphraseError.value = $localize`Passphrase must be at least 10 characters`;
+      passphraseError.value = semanticMessages.shared_passphrase_min_10(
+        {},
+        { locale },
+      );
       return false;
     }
     passphraseError.value = "";
@@ -173,10 +178,15 @@ export const CertificateStep = component$(() => {
         </div>
         <div class="space-y-3">
           <h3 class="animate-gradient bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-300% bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:via-gray-200 dark:to-white md:text-5xl">
-            {$localize`SSL/TLS Certificates`}
+            {semanticMessages.useful_services_certificate_title({}, { locale })}
           </h3>
           <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-            {$localize`Configure SSL/TLS certificates for secure network communications`}
+            {semanticMessages.useful_services_certificate_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </div>
       </div>
@@ -203,7 +213,10 @@ export const CertificateStep = component$(() => {
                 </svg>
               </div>
               <p class="font-medium text-warning-800 dark:text-warning-200">
-                {$localize`Certificate required: You have VPN servers (SSTP, OpenVPN, or IKEv2) enabled that require SSL certificates.`}
+                {semanticMessages.useful_services_certificate_required_warning(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
           </CardBody>
@@ -228,10 +241,16 @@ export const CertificateStep = component$(() => {
                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
               />
             </svg>
-            {$localize`Certificate Types`}
+            {semanticMessages.useful_services_certificate_types_title(
+              {},
+              { locale },
+            )}
           </h4>
           <p class="text-gray-600 dark:text-gray-400">
-            {$localize`Enable the types of certificates you want to use`}
+            {semanticMessages.useful_services_certificate_types_description(
+              {},
+              { locale },
+            )}
           </p>
         </CardHeader>
         <CardBody class="space-y-6">
@@ -259,8 +278,18 @@ export const CertificateStep = component$(() => {
                     </svg>
                   </div>
                   <div>
-                    <h5 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent dark:from-white dark:to-gray-300">{$localize`Self-Signed Certificate`}</h5>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{$localize`Quick setup for internal use`}</p>
+                    <h5 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent dark:from-white dark:to-gray-300">
+                      {semanticMessages.useful_services_certificate_self_signed_title(
+                        {},
+                        { locale },
+                      )}
+                    </h5>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {semanticMessages.useful_services_certificate_self_signed_description(
+                        {},
+                        { locale },
+                      )}
+                    </p>
                   </div>
                 </div>
                 <Toggle
@@ -304,8 +333,18 @@ export const CertificateStep = component$(() => {
                     </svg>
                   </div>
                   <div>
-                    <h5 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent dark:from-white dark:to-gray-300">{$localize`Let's Encrypt Certificate`}</h5>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{$localize`Trusted by all browsers`}</p>
+                    <h5 class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-lg font-bold text-transparent dark:from-white dark:to-gray-300">
+                      {semanticMessages.useful_services_certificate_lets_encrypt_title(
+                        {},
+                        { locale },
+                      )}
+                    </h5>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {semanticMessages.useful_services_certificate_lets_encrypt_description(
+                        {},
+                        { locale },
+                      )}
+                    </p>
                   </div>
                 </div>
                 <Toggle
@@ -342,10 +381,16 @@ export const CertificateStep = component$(() => {
                   d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                 />
               </svg>
-              {$localize`Certificate Passphrase Required`}
+              {semanticMessages.useful_services_certificate_passphrase_title(
+                {},
+                { locale },
+              )}
             </h4>
             <p class="text-gray-600 dark:text-gray-400">
-              {$localize`Enter a passphrase to protect your self-signed certificate`}
+              {semanticMessages.useful_services_certificate_passphrase_description(
+                {},
+                { locale },
+              )}
             </p>
           </CardHeader>
           <CardBody class="space-y-4">
@@ -354,8 +399,14 @@ export const CertificateStep = component$(() => {
                 type={showPassphrase.value ? "text" : "password"}
                 value={certificatePassphrase.value}
                 onInput$={$((e: any) => updatePassphrase$(e.target.value))}
-                placeholder={$localize`Enter certificate passphrase (min 10 characters)`}
-                label={$localize`Certificate Passphrase`}
+                placeholder={semanticMessages.useful_services_certificate_passphrase_placeholder(
+                  {},
+                  { locale },
+                )}
+                label={semanticMessages.useful_services_certificate_passphrase_label(
+                  {},
+                  { locale },
+                )}
                 errorMessage={passphraseError.value}
                 validation={passphraseError.value ? "invalid" : undefined}
                 class="pr-12"
@@ -366,8 +417,18 @@ export const CertificateStep = component$(() => {
                 class="absolute right-3 top-[38px] text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 aria-label={
                   showPassphrase.value
-                    ? $localize`Hide passphrase`
-                    : $localize`Show passphrase`
+                    ? semanticMessages.useful_services_hide_passphrase(
+                        {},
+                        {
+                          locale,
+                        },
+                      )
+                    : semanticMessages.useful_services_show_passphrase(
+                        {},
+                        {
+                          locale,
+                        },
+                      )
                 }
               >
                 {showPassphrase.value ? (
@@ -410,7 +471,10 @@ export const CertificateStep = component$(() => {
               </button>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {$localize`This passphrase will be used to encrypt your certificate for secure export to VPN clients.`}
+              {semanticMessages.useful_services_certificate_passphrase_help(
+                {},
+                { locale },
+              )}
             </p>
           </CardBody>
         </Card>

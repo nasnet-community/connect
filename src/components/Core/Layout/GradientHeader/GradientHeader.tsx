@@ -5,6 +5,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import type { GradientHeaderProps } from "./GradientHeader.types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * GradientHeader - Modern gradient header component with icon, title, and optional controls
@@ -54,6 +55,7 @@ export const GradientHeader = component$<GradientHeaderProps>(
     children,
     rightContent,
   }) => {
+    const locale = useMessageLocale();
     // Create a string signal for SegmentedControl when toggleConfig is provided
     const toggleState = useSignal(
       toggleConfig?.enabled.value ? "enable" : "disable",
@@ -203,8 +205,15 @@ export const GradientHeader = component$<GradientHeaderProps>(
                   />
                   <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
                     {toggleConfig.enabled.value
-                      ? toggleConfig.label || "Configuration Active"
-                      : "Configuration Disabled"}
+                      ? toggleConfig.label ||
+                        semanticMessages.gradient_header_status_active(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.gradient_header_status_disabled(
+                          {},
+                          { locale },
+                        )}
                   </span>
                 </div>
 
@@ -215,12 +224,12 @@ export const GradientHeader = component$<GradientHeaderProps>(
                     options={[
                       {
                         value: "disable",
-                        label: $localize`Disable`,
+                        label: semanticMessages.shared_disable({}, { locale }),
                         icon: (<HiXCircleOutline class="h-5 w-5" />) as any,
                       },
                       {
                         value: "enable",
-                        label: $localize`Enable`,
+                        label: semanticMessages.shared_enable({}, { locale }),
                         icon: (<HiCheckCircleOutline class="h-5 w-5" />) as any,
                       },
                     ]}

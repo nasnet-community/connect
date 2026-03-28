@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import { useWireguardConfig } from "./useWireguardConfig";
 import { ErrorMessage, VPNConfigFileSection } from "../../components";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface WireguardConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -9,6 +10,7 @@ interface WireguardConfigProps {
 
 export const WireguardConfig = component$<WireguardConfigProps>(
   ({ onIsValidChange$ }) => {
+    const locale = useMessageLocale();
     const { config, errorMessage, handleConfigChange$, handleFileUpload$ } =
       useWireguardConfig(onIsValidChange$);
 
@@ -21,7 +23,10 @@ export const WireguardConfig = component$<WireguardConfigProps>(
           configValue={config.value}
           onConfigChange$={handleConfigChange$}
           onFileUpload$={handleFileUpload$}
-          placeholder={$localize`Paste your WireGuard configuration here. It should include sections like [Interface] and [Peer].`}
+          placeholder={semanticMessages.vpn_config_input_placeholder_wireguard(
+            {},
+            { locale },
+          )}
         />
 
         {/* Error Message Display */}

@@ -9,6 +9,7 @@ import {
 } from "@qwikest/icons/lucide";
 import type { DOHConfig } from "../../StarContext/WANType";
 import type { DOHNetworkInfo, DNSPreset } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface DOHConfigurationProps {
   dohConfig: DOHConfig;
@@ -56,6 +57,7 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
     disabled = false,
     onApplyDOHPreset$,
   }) => {
+    const locale = useMessageLocale();
     const isDropdownOpen = useSignal(false);
     const colors = getNetworkColors(networkInfo.target);
 
@@ -103,7 +105,7 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
                            duration-300 group-hover:text-gray-800
                            dark:text-white dark:group-hover:text-gray-100"
                 >
-                  {$localize`DNS over HTTPS (DOH)`}
+                  {semanticMessages.dns_doh_title({}, { locale })}
                 </h4>
 
                 {/* Network Target Indicator */}
@@ -160,12 +162,15 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
                         : "text-gray-900 dark:text-white"
                     }`}
                   >
-                    {$localize`Disabled`}
+                    {semanticMessages.dns_disabled({}, { locale })}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
                     {disabled
-                      ? $localize`Currently unavailable`
-                      : $localize`Standard DNS`}
+                      ? semanticMessages.dns_currently_unavailable(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.dns_standard_dns({}, { locale })}
                   </div>
                 </div>
               </div>
@@ -179,16 +184,19 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
             {/* Disabled Notice */}
             <div class="mb-4 rounded-lg border border-gray-200 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-800">
               <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-                {$localize`DNS over HTTPS (DOH) is currently disabled. This feature is temporarily unavailable.`}
+                {semanticMessages.dns_doh_disabled_notice({}, { locale })}
               </p>
             </div>
             {/* Domain Configuration */}
             <div class="space-y-4">
               <FormField
-                label={$localize`DOH Domain`}
+                label={semanticMessages.dns_doh_domain_label({}, { locale })}
                 error={domainError}
                 required={true}
-                helperText={$localize`Enter the domain for DNS over HTTPS service (e.g., cloudflare-dns.com)`}
+                helperText={semanticMessages.dns_doh_domain_help(
+                  {},
+                  { locale },
+                )}
                 class="space-y-2"
               >
                 <div class="group/input relative">
@@ -223,9 +231,12 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
 
               {/* Binding IP Configuration */}
               <FormField
-                label={$localize`Binding IP Address`}
+                label={semanticMessages.dns_binding_ip_label({}, { locale })}
                 error={bindingError}
-                helperText={$localize`Optional: Bind DOH to specific IP address for this network`}
+                helperText={semanticMessages.dns_binding_ip_help(
+                  {},
+                  { locale },
+                )}
                 class="space-y-2"
               >
                 <div class="group/input relative">
@@ -263,10 +274,13 @@ export const DOHConfiguration = component$<DOHConfigurationProps>(
             {dohPresets.length > 0 && onApplyDOHPreset$ && (
               <div class="space-y-2">
                 <label class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {$localize`Quick DNS Presets`}
+                  {semanticMessages.dns_quick_presets({}, { locale })}
                 </label>
                 <Select
-                  placeholder={$localize`Select a DOH provider`}
+                  placeholder={semanticMessages.dns_select_doh_provider(
+                    {},
+                    { locale },
+                  )}
                   options={[]}
                   disabled={true}
                   class="w-full cursor-not-allowed opacity-50"

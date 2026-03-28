@@ -4,6 +4,7 @@ import type {
   VPNClientConfig,
   VPNType,
 } from "../../types/VPNClientAdvancedTypes";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNBoxContentProps {
   vpn: VPNClientConfig;
@@ -13,6 +14,7 @@ export interface VPNBoxContentProps {
 
 export const VPNBoxContent = component$<VPNBoxContentProps>(
   ({ vpn, validationErrors = {}, onUpdate$ }) => {
+    const locale = useMessageLocale();
     const nameErrorKey = `vpn-${vpn.id}-name`;
     const typeErrorKey = `vpn-${vpn.id}-type`;
     const vpnTypeOptions = [
@@ -30,13 +32,18 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
           {/* Basic Configuration */}
           <div class="space-y-4">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
-              {$localize`Basic Configuration`}
+              {semanticMessages.vpn_server_basic_configuration({}, { locale })}
             </h4>
 
             {/* VPN Name */}
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`VPN Client Name`}
+                {semanticMessages.vpn_client_advanced_vpn_client_name(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </label>
               <Input
                 type="text"
@@ -46,7 +53,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                     onUpdate$({ name: (e.target as HTMLInputElement).value });
                   }
                 }}
-                placeholder={$localize`Enter VPN client name`}
+                placeholder={semanticMessages.vpn_client_advanced_enter_vpn_client_name(
+                  {},
+                  { locale },
+                )}
                 class="mt-1"
               />
               {nameErrorKey in validationErrors && (
@@ -59,7 +69,7 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
             {/* VPN Type */}
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`VPN Protocol`}
+                {semanticMessages.vpn_client_advanced_protocol({}, { locale })}
               </label>
               <Select
                 value={vpn.type}
@@ -69,7 +79,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                   }
                 }}
                 options={vpnTypeOptions}
-                placeholder={$localize`Select VPN protocol`}
+                placeholder={semanticMessages.vpn_client_advanced_select_protocol(
+                  {},
+                  { locale },
+                )}
                 class="mt-1"
               />
               {typeErrorKey in validationErrors && (
@@ -95,7 +108,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                   class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  {$localize`Enable this VPN client`}
+                  {semanticMessages.vpn_client_advanced_enable_this_client(
+                    {},
+                    { locale },
+                  )}
                 </span>
               </label>
             </div>
@@ -104,14 +120,22 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
           {/* Protocol-Specific Configuration */}
           <div class="space-y-4">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
-              {$localize`Protocol Configuration`}
+              {semanticMessages.vpn_client_advanced_protocol_configuration_title(
+                {},
+                { locale },
+              )}
             </h4>
 
             {vpn.type === "Wireguard" && vpn.connectionConfig?.wireguard && (
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Server Address`}
+                    {semanticMessages.vpn_openvpn_server_address(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </label>
                   <Input
                     type="text"
@@ -133,14 +157,17 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                         });
                       }
                     }}
-                    placeholder={$localize`Enter server address`}
+                    placeholder={semanticMessages.vpn_client_advanced_enter_server_address(
+                      {},
+                      { locale },
+                    )}
                     class="mt-1"
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Server Port`}
+                    {semanticMessages.vpn_openvpn_server_port({}, { locale })}
                   </label>
                   <Input
                     type="number"
@@ -175,7 +202,12 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Server Address`}
+                    {semanticMessages.vpn_openvpn_server_address(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </label>
                   <Input
                     type="text"
@@ -196,14 +228,17 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
                         });
                       }
                     }}
-                    placeholder={$localize`Enter server address`}
+                    placeholder={semanticMessages.vpn_client_advanced_enter_server_address(
+                      {},
+                      { locale },
+                    )}
                     class="mt-1"
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {$localize`Server Port`}
+                    {semanticMessages.vpn_openvpn_server_port({}, { locale })}
                   </label>
                   <Input
                     type="text"
@@ -237,7 +272,10 @@ export const VPNBoxContent = component$<VPNBoxContentProps>(
             {!vpn.connectionConfig && (
               <div class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  {$localize`Select a VPN protocol to configure connection settings`}
+                  {semanticMessages.vpn_client_advanced_select_protocol_for_connection_settings(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
             )}

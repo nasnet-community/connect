@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import { HelpSettingsToggle } from "./HStepperProgress";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface NavigationProps {
   activeStep: number;
@@ -16,6 +17,7 @@ interface NavigationProps {
 }
 
 export const HStepperNavigation = component$((props: NavigationProps) => {
+  const locale = useMessageLocale();
   const isFirst = props.activeStep === 0;
   const isLast = props.activeStep === props.totalSteps - 1;
 
@@ -23,9 +25,12 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
   const {
     hasHelp = false,
     onShowHelp$,
-    helpButtonLabel = "Get help for this step",
+    helpButtonLabel,
     isHelpOpen = false,
   } = props;
+
+  const resolvedHelpButtonLabel =
+    helpButtonLabel || semanticMessages.stepper_help_button({}, { locale });
 
   return (
     <div class="mt-8 grid grid-cols-3 items-center gap-4">
@@ -41,7 +46,7 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
                 : "text-text-secondary hover:bg-surface-secondary bg-surface shadow-md"
             }`}
         >
-          {$localize`Previous`}
+          {semanticMessages.shared_previous({}, { locale })}
         </button>
       </div>
 
@@ -62,8 +67,8 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
                 }
                 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
               `}
-              aria-label={helpButtonLabel}
-              title={helpButtonLabel}
+              aria-label={resolvedHelpButtonLabel}
+              title={resolvedHelpButtonLabel}
             >
               <svg
                 class={`h-6 w-6 transition-transform duration-200 ${isHelpOpen ? "scale-110" : "group-hover:scale-110"}`}
@@ -110,7 +115,7 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
                   : "cursor-not-allowed bg-primary-500/50 text-white/50"
               }`}
           >
-            {$localize`Next`}
+            {semanticMessages.shared_next({}, { locale })}
           </button>
         ) : (
           <button
@@ -122,7 +127,7 @@ export const HStepperNavigation = component$((props: NavigationProps) => {
                   : "cursor-not-allowed bg-success/50 text-white/50"
               }`}
           >
-            {$localize`Complete`}
+            {semanticMessages.shared_complete({}, { locale })}
           </button>
         )}
       </div>

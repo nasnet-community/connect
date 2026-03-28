@@ -13,9 +13,11 @@ import {
   VPNServerContextId,
   type VPNServerContextData,
 } from "./VPNServerContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const VPNServerAdvanced = component$<StepProps>(
   ({ onComplete$, onDisabled$ }) => {
+    const locale = useMessageLocale();
     const {
       users,
       vpnServerEnabled,
@@ -86,22 +88,34 @@ export const VPNServerAdvanced = component$<StepProps>(
     const steps = useSignal<CStepMeta[]>([
       {
         id: 0,
-        title: $localize`Protocols`,
-        description: $localize`Choose which VPN protocols you want to enable on your router.`,
+        title: semanticMessages.vpn_server_step_protocols_title({}, { locale }),
+        description: semanticMessages.vpn_server_step_protocols_description(
+          {},
+          { locale },
+        ),
         component: ProtocolsStepWrapper$,
         isComplete: stepState.protocols,
       },
       {
         id: 1,
-        title: $localize`Configuration`,
-        description: $localize`Configure the settings for each enabled VPN protocol.`,
+        title: semanticMessages.vpn_server_step_configuration_title(
+          {},
+          { locale },
+        ),
+        description: semanticMessages.vpn_server_step_configuration_description(
+          {},
+          { locale },
+        ),
         component: ConfigStepWrapper$,
         isComplete: stepState.config,
       },
       {
         id: 2,
-        title: $localize`Users`,
-        description: $localize`Create user accounts that can connect to your VPN server.`,
+        title: semanticMessages.vpn_server_step_users_title({}, { locale }),
+        description: semanticMessages.vpn_server_step_users_description(
+          {},
+          { locale },
+        ),
         component: UsersStepWrapper$,
         isComplete: stepState.users,
       },
@@ -171,7 +185,10 @@ export const VPNServerAdvanced = component$<StepProps>(
             <div class="space-y-4">
               <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
                 <p class="mb-2 text-gray-700 dark:text-gray-300">
-                  {$localize`VPN Server is currently disabled. Enable it using the toggle above to configure VPN server settings.`}
+                  {semanticMessages.vpn_server_disabled_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
               </div>
               <ActionFooter

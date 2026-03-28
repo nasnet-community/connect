@@ -7,6 +7,7 @@ import {
   getIconSizeClasses,
   getTouchTargetClasses,
 } from "../utils/theme";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface ErrorMessageProps {
   /** The error message to display */
@@ -63,7 +64,7 @@ export interface ErrorMessageProps {
 export const ErrorMessage = component$<ErrorMessageProps>(
   ({
     message,
-    title = $localize`Configuration Error`,
+    title,
     class: className,
     dismissible = false,
     onDismiss$,
@@ -76,6 +77,10 @@ export const ErrorMessage = component$<ErrorMessageProps>(
     customIcon,
     variant = "solid",
   }) => {
+    const locale = useMessageLocale();
+    const resolvedTitle =
+      title ?? semanticMessages.shared_configuration_error({}, { locale });
+
     // Don't render if no message is provided
     if (!message) return null;
 
@@ -161,7 +166,7 @@ export const ErrorMessage = component$<ErrorMessageProps>(
           </div>
         )}
         <div class="min-w-0 flex-1">
-          {title && (
+          {resolvedTitle && (
             <h3
               class={cn(
                 "font-medium text-current",
@@ -172,13 +177,13 @@ export const ErrorMessage = component$<ErrorMessageProps>(
                     : "text-sm",
               )}
             >
-              {title}
+              {resolvedTitle}
             </h3>
           )}
           <p
             class={cn(
               "text-current",
-              title ? "mt-1" : "",
+              resolvedTitle ? "mt-1" : "",
               size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-sm",
             )}
           >
@@ -195,7 +200,7 @@ export const ErrorMessage = component$<ErrorMessageProps>(
               touchClasses,
               "transition-opacity",
             )}
-            aria-label="Dismiss error"
+            aria-label={semanticMessages.shared_dismiss_error({}, { locale })}
           >
             <svg
               class={cn(iconClasses)}

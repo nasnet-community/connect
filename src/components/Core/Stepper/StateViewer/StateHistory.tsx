@@ -1,20 +1,27 @@
 import { component$ } from "@builder.io/qwik";
 import { StateEntry } from "./StateEntry";
 import type { StateHistoryProps } from "./type";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const StateHistory = component$((props: StateHistoryProps) => {
+  const locale = useMessageLocale();
   const hasSlaveRouters = props.slaveRouters.length > 0;
 
   return (
     <div class="space-y-4">
       <div class="flex items-center justify-between">
-        <h4 class="font-medium">{$localize`State History`}</h4>
+        <h4 class="font-medium">
+          {semanticMessages.state_viewer_state_history({}, { locale })}
+        </h4>
         <div class="flex items-center gap-2">
           <button
             onClick$={props.onDownloadLatest$}
             disabled={props.entries.length === 0}
             class="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 dark:disabled:bg-gray-600 dark:disabled:text-gray-400"
-            title={$localize`Download latest state as .txt file`}
+            title={semanticMessages.state_viewer_download_latest_title(
+              {},
+              { locale },
+            )}
           >
             <svg
               class="h-4 w-4"
@@ -30,7 +37,7 @@ export const StateHistory = component$((props: StateHistoryProps) => {
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            {$localize`Download State`}
+            {semanticMessages.shared_download_state({}, { locale })}
           </button>
         </div>
       </div>
@@ -38,12 +45,18 @@ export const StateHistory = component$((props: StateHistoryProps) => {
       {hasSlaveRouters && (
         <div class="space-y-3 rounded-lg border border-primary-200 bg-primary-50 p-3 dark:border-primary-800 dark:bg-primary-950">
           <h5 class="dark:text-text-dark text-sm font-medium text-text">
-            {$localize`Slave Router Configuration`}
+            {semanticMessages.state_viewer_slave_router_configuration(
+              {},
+              { locale },
+            )}
           </h5>
 
           <div class="space-y-2">
             <label class="text-text-secondary dark:text-text-dark-secondary block text-xs font-medium">
-              {$localize`Select Slave Router`}
+              {semanticMessages.state_viewer_select_slave_router(
+                {},
+                { locale },
+              )}
             </label>
             <select
               value={props.selectedSlaveRouter}
@@ -81,14 +94,17 @@ export const StateHistory = component$((props: StateHistoryProps) => {
                 d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            {$localize`Generate Slave Config`}
+            {semanticMessages.state_viewer_generate_slave_config(
+              {},
+              { locale },
+            )}
           </button>
         </div>
       )}
 
       {props.entries.length === 0 ? (
         <div class="text-text-secondary dark:text-text-dark-secondary text-sm">
-          {$localize`No state history available`}
+          {semanticMessages.state_viewer_no_history({}, { locale })}
         </div>
       ) : (
         <div class="space-y-4">

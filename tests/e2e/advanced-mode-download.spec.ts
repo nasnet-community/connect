@@ -118,9 +118,9 @@ test.describe("Advanced Mode End-to-End", () => {
     const advancedVpnStepper = advancedVpnHeading.locator(
       'xpath=following::div[@role="application" and @aria-label="Multi-step form"][1]',
     );
-    await page
+    await advancedVpnStepper
       .getByRole("button", {
-        name: /Recommended L2TP Compatible with most devices and platforms/i,
+        name: /L2TP/i,
       })
       .click();
     await page.getByRole("button", { name: /Select WAN Interface/i }).click();

@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { Card, CardHeader, CardBody, Button } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import {
   LuBookOpen,
   LuHelpCircle,
@@ -17,55 +18,116 @@ interface DocumentationItem {
   badge?: string;
 }
 
-const documentationItems: DocumentationItem[] = [
-  {
-    title: $localize`Our Documentation`,
-    description: $localize`Comprehensive guides and tutorials for router configuration and troubleshooting`,
-    href: "https://www.starlink4iran.com/faqs/mcg/",
-    icon: LuBookOpen,
-    badge: $localize`Official`,
-  },
-  {
-    title: $localize`Quick Setup Guide`,
-    description: $localize`Step-by-step guide to get your router configured and running quickly`,
-    href: "https://wiki.mikrotik.com/wiki/Manual:Quickstart",
-    icon: LuFileText,
-  },
-  {
-    title: $localize`Video Tutorials`,
-    description: $localize`Visual learning resources and video guides for router configuration`,
-    href: "https://www.youtube.com/c/MikroTikVideos",
-    icon: LuYoutube,
-    badge: $localize`Video`,
-  },
-  {
-    title: $localize`Telegram Group`,
-    description: $localize`Join our Telegram community for support and discussions`,
-    href: "https://t.me/joinNASNETGroup",
-    icon: LuGlobe,
-  },
-];
-
-const faqItems = [
-  {
-    question: $localize`How do I backup my current configuration before applying the new one?`,
-    answer: $localize`Use the command '/system backup save dont-encrypt=yes name="backup-filename"' in the terminal or through Winbox before applying any new configuration.`,
-  },
-  {
-    question: $localize`What should I do if the configuration doesn't work?`,
-    answer: $localize`If you experience issues, you can restore your backup using '/system backup load name="backup-filename"' or perform a factory reset if needed.`,
-  },
-  {
-    question: $localize`Can I apply this configuration to multiple routers?`,
-    answer: $localize`Yes, but ensure the router models are compatible and adjust interface names if they differ between devices.`,
-  },
-  {
-    question: $localize`How often should I update my router firmware?`,
-    answer: $localize`Check for updates monthly and apply stable releases. Always backup before updating and test in a non-production environment first.`,
-  },
-];
-
 export const DocumentSection = component$(() => {
+  const locale = useMessageLocale();
+  const documentationItems: DocumentationItem[] = [
+    {
+      title: semanticMessages.show_config_documentation_item_docs_title(
+        {},
+        { locale },
+      ),
+      description:
+        semanticMessages.show_config_documentation_item_docs_description(
+          {},
+          { locale },
+        ),
+      href: "https://www.starlink4iran.com/faqs/mcg/",
+      icon: LuBookOpen,
+      badge: semanticMessages.show_config_documentation_item_docs_badge(
+        {},
+        { locale },
+      ),
+    },
+    {
+      title: semanticMessages.show_config_documentation_item_quick_setup_title(
+        {},
+        { locale },
+      ),
+      description:
+        semanticMessages.show_config_documentation_item_quick_setup_description(
+          {},
+          { locale },
+        ),
+      href: "https://wiki.mikrotik.com/wiki/Manual:Quickstart",
+      icon: LuFileText,
+    },
+    {
+      title: semanticMessages.show_config_documentation_item_video_title(
+        {},
+        { locale },
+      ),
+      description:
+        semanticMessages.show_config_documentation_item_video_description(
+          {},
+          { locale },
+        ),
+      href: "https://www.youtube.com/c/MikroTikVideos",
+      icon: LuYoutube,
+      badge: semanticMessages.show_config_documentation_item_video_badge(
+        {},
+        { locale },
+      ),
+    },
+    {
+      title: semanticMessages.show_config_documentation_item_telegram_title(
+        {},
+        { locale },
+      ),
+      description:
+        semanticMessages.show_config_documentation_item_telegram_description(
+          {},
+          { locale },
+        ),
+      href: "https://t.me/joinNASNETGroup",
+      icon: LuGlobe,
+    },
+  ];
+  const faqItems = [
+    {
+      question: semanticMessages.show_config_documentation_faq_question_backup(
+        {},
+        { locale },
+      ),
+      answer: semanticMessages.show_config_documentation_faq_answer_backup(
+        {},
+        { locale },
+      ),
+    },
+    {
+      question:
+        semanticMessages.show_config_documentation_faq_question_not_working(
+          {},
+          { locale },
+        ),
+      answer: semanticMessages.show_config_documentation_faq_answer_not_working(
+        {},
+        { locale },
+      ),
+    },
+    {
+      question:
+        semanticMessages.show_config_documentation_faq_question_multiple(
+          {},
+          { locale },
+        ),
+      answer: semanticMessages.show_config_documentation_faq_answer_multiple(
+        {},
+        { locale },
+      ),
+    },
+    {
+      question:
+        semanticMessages.show_config_documentation_faq_question_firmware(
+          {},
+          { locale },
+        ),
+      answer: semanticMessages.show_config_documentation_faq_answer_firmware(
+        {},
+        { locale },
+      ),
+    },
+  ];
+
   return (
     <div class="mt-12 space-y-8">
       {/* Documentation Resources Section */}
@@ -73,10 +135,13 @@ export const DocumentSection = component$(() => {
         <div class="mb-6">
           <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
             <LuBookOpen class="h-7 w-7 text-primary-500" />
-            {$localize`Documentation & Resources`}
+            {semanticMessages.show_config_documentation_title({}, { locale })}
           </h2>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
-            {$localize`Everything you need to master your router configuration`}
+            {semanticMessages.show_config_documentation_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
 
@@ -128,10 +193,16 @@ export const DocumentSection = component$(() => {
         <div class="mb-6">
           <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
             <LuHelpCircle class="h-7 w-7 text-secondary-500" />
-            {$localize`Frequently Asked Questions`}
+            {semanticMessages.show_config_documentation_faq_title(
+              {},
+              { locale },
+            )}
           </h2>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
-            {$localize`Common questions and answers about router configuration`}
+            {semanticMessages.show_config_documentation_faq_description(
+              {},
+              { locale },
+            )}
           </p>
         </div>
 
@@ -190,10 +261,16 @@ export const DocumentSection = component$(() => {
       >
         <CardBody class="py-8 text-center">
           <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-            {$localize`Need More Help?`}
+            {semanticMessages.show_config_documentation_help_title(
+              {},
+              { locale },
+            )}
           </h3>
           <p class="mx-auto mb-6 max-w-2xl text-gray-600 dark:text-gray-400">
-            {$localize`If you can't find what you're looking for in our documentation or FAQ, our support team is here to help you with your router configuration.`}
+            {semanticMessages.show_config_documentation_help_description(
+              {},
+              { locale },
+            )}
           </p>
           <div class="flex flex-col justify-center gap-3 sm:flex-row">
             <Button
@@ -204,7 +281,10 @@ export const DocumentSection = component$(() => {
               }
             >
               <LuGlobe class="mr-2 h-4 w-4" />
-              {$localize`Visit Telegram Group`}
+              {semanticMessages.show_config_documentation_visit_telegram(
+                {},
+                { locale },
+              )}
             </Button>
             <Button
               variant="secondary"
@@ -214,7 +294,10 @@ export const DocumentSection = component$(() => {
               }
             >
               <LuBookOpen class="mr-2 h-4 w-4" />
-              {$localize`Browse Docs`}
+              {semanticMessages.show_config_documentation_help_browse_docs(
+                {},
+                { locale },
+              )}
             </Button>
           </div>
         </CardBody>

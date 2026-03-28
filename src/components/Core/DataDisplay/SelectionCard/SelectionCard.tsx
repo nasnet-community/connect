@@ -2,6 +2,7 @@ import { component$, Slot } from "@builder.io/qwik";
 import type { SelectionCardProps } from "./SelectionCard.types";
 import { Card } from "../Card/Card";
 import { CardBody } from "../Card/CardBody";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * SelectionCard component for interactive selection options.
@@ -22,6 +23,7 @@ import { CardBody } from "../Card/CardBody";
  * </SelectionCard>
  */
 export const SelectionCard = component$<SelectionCardProps>((props) => {
+  const locale = useMessageLocale();
   const {
     isSelected = false,
     isDisabled = false,
@@ -75,14 +77,18 @@ export const SelectionCard = component$<SelectionCardProps>((props) => {
         {/* Disabled badge */}
         {isDisabled && !badge && (
           <div class={`rounded-full px-3 py-1 ${badgeVariantClasses.warning}`}>
-            <span class="text-xs font-medium">{$localize`Coming Soon`}</span>
+            <span class="text-xs font-medium">
+              {semanticMessages.shared_coming_soon({}, { locale })}
+            </span>
           </div>
         )}
 
         {/* Selected indicator */}
         {isSelected && !isDisabled && (
           <div class={`rounded-full px-3 py-1 ${badgeVariantClasses.success}`}>
-            <span class="text-xs font-medium">{$localize`Selected`}</span>
+            <span class="text-xs font-medium">
+              {semanticMessages.star_selection_card_selected({}, { locale })}
+            </span>
           </div>
         )}
       </div>

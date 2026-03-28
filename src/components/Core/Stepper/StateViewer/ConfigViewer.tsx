@@ -1,13 +1,21 @@
 import { component$ } from "@builder.io/qwik";
 import type { ConfigViewerProps } from "./type";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const ConfigViewer = component$((props: ConfigViewerProps) => {
+  const locale = useMessageLocale();
+
   return (
     <div class="max-h-[calc(100vh-200px)] space-y-4 overflow-auto">
       {props.currentConfig && (
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <h4 class="text-sm font-medium">{$localize`Current Context Config`}</h4>
+            <h4 class="text-sm font-medium">
+              {semanticMessages.state_viewer_current_context_config(
+                {},
+                { locale },
+              )}
+            </h4>
             <div class="flex items-center gap-2">
               <button
                 onClick$={props.onDownloadCurrentConfig$}
@@ -26,7 +34,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {$localize`Download Configuration`}
+                {semanticMessages.shared_download_configuration({}, { locale })}
               </button>
               <button
                 onClick$={() =>
@@ -47,7 +55,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Copy Config`}
+                {semanticMessages.shared_copy_config({}, { locale })}
               </button>
             </div>
           </div>
@@ -63,7 +71,10 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-medium">
-              {$localize`Slave Config`} - {props.selectedSlaveRouterName}
+              {semanticMessages.state_viewer_slave_config_with_name(
+                { name: props.selectedSlaveRouterName },
+                { locale },
+              )}
             </h4>
             <div class="flex items-center gap-2">
               <button
@@ -83,7 +94,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {$localize`Download Configuration`}
+                {semanticMessages.shared_download_configuration({}, { locale })}
               </button>
               <button
                 onClick$={() =>
@@ -104,7 +115,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Copy Config`}
+                {semanticMessages.shared_copy_config({}, { locale })}
               </button>
             </div>
           </div>
@@ -119,7 +130,12 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
       {props.pastedConfig && (
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <h4 class="text-sm font-medium">{$localize`Pasted Context Config`}</h4>
+            <h4 class="text-sm font-medium">
+              {semanticMessages.state_viewer_pasted_context_config(
+                {},
+                { locale },
+              )}
+            </h4>
             <div class="flex items-center gap-2">
               <button
                 onClick$={props.onDownloadPastedConfig$}
@@ -138,7 +154,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {$localize`Download Configuration`}
+                {semanticMessages.shared_download_configuration({}, { locale })}
               </button>
               <button
                 onClick$={() =>
@@ -159,7 +175,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Copy Config`}
+                {semanticMessages.shared_copy_config({}, { locale })}
               </button>
             </div>
           </div>
@@ -175,7 +191,10 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-medium">
-              {$localize`Pasted Slave Config`} - {props.selectedSlaveRouterName}
+              {semanticMessages.state_viewer_pasted_slave_config_with_name(
+                { name: props.selectedSlaveRouterName },
+                { locale },
+              )}
             </h4>
             <div class="flex items-center gap-2">
               <button
@@ -195,7 +214,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                {$localize`Download Configuration`}
+                {semanticMessages.shared_download_configuration({}, { locale })}
               </button>
               <button
                 onClick$={() =>
@@ -216,7 +235,7 @@ export const ConfigViewer = component$((props: ConfigViewerProps) => {
                     d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                {$localize`Copy Config`}
+                {semanticMessages.shared_copy_config({}, { locale })}
               </button>
             </div>
           </div>

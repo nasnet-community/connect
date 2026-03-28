@@ -7,6 +7,7 @@ import {
 import { UnifiedSelect } from "~/components/Core/Select/UnifiedSelect";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
 import type { WANInterfaceType } from "~/components/Star/StarContext/Utils/VPNClientType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface WANInterfaceSelectorProps {
   selectedInterface?: WANInterfaceType;
@@ -17,6 +18,7 @@ export interface WANInterfaceSelectorProps {
 export const WANInterfaceSelector = component$<WANInterfaceSelectorProps>(
   ({ selectedInterface, onSelect$, disabled = false }) => {
     const starContext = useContext(StarContext);
+    const locale = useMessageLocale();
 
     // Get available WAN interfaces with priority: Foreign > Domestic
     // Also create a map to track WANType for each interface
@@ -73,18 +75,26 @@ export const WANInterfaceSelector = component$<WANInterfaceSelectorProps>(
                 />
               </svg>
             </span>
-            {$localize`WAN Interface`}
+            {semanticMessages.vpn_client_advanced_wan_interface({}, { locale })}
           </div>
         </label>
         <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
-          {$localize`Select which WAN interface this VPN will use for connection`}
+          {semanticMessages.vpn_client_advanced_wan_interface_description(
+            {},
+            {
+              locale,
+            },
+          )}
         </p>
 
         {wanInterfaceData.value.options.length > 0 ? (
           <UnifiedSelect
             options={wanInterfaceData.value.options}
             value={selectedInterface?.WANName || ""}
-            placeholder={$localize`Select WAN Interface`}
+            placeholder={semanticMessages.vpn_client_advanced_select_wan_interface(
+              {},
+              { locale },
+            )}
             onChange$={(value) => {
               if (value) {
                 const interfaceName = value as string;
@@ -116,7 +126,14 @@ export const WANInterfaceSelector = component$<WANInterfaceSelectorProps>(
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <span>{$localize`No WAN interfaces available. Please configure WAN links first.`}</span>
+              <span>
+                {semanticMessages.vpn_client_advanced_no_wan_interfaces(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
+              </span>
             </div>
           </div>
         )}

@@ -8,10 +8,12 @@ import {
 import { Link, useLocation } from "@builder.io/qwik-city";
 import { LuMenu, LuX, LuRouter } from "@qwikest/icons/lucide";
 import { Button } from "~/components/Core";
+import { semanticMessages } from "~/i18n/semantic";
+import { normalizeLocale } from "~/i18n/config";
 
 export const NavigationBar = component$(() => {
   const location = useLocation();
-  const locale = location.params.locale || "en";
+  const locale = normalizeLocale(location.params.locale);
   const isScrolled = useSignal(false);
   const isMobileMenuOpen = useSignal(false);
 
@@ -30,11 +32,23 @@ export const NavigationBar = component$(() => {
   useOnWindow("scroll", updateScrollState);
 
   const navItems = [
-    { name: $localize`Features`, href: "#features" },
-    { name: $localize`Routers`, href: "#routers" },
-    { name: $localize`VPN`, href: "#vpn" },
-    { name: $localize`Pricing`, href: "#pricing" },
-    { name: $localize`Support`, href: "#support" },
+    {
+      name: semanticMessages.landing_nav_features({}, { locale }),
+      href: "#features",
+    },
+    {
+      name: semanticMessages.landing_nav_routers({}, { locale }),
+      href: "#routers",
+    },
+    { name: semanticMessages.landing_nav_vpn({}, { locale }), href: "#vpn" },
+    {
+      name: semanticMessages.landing_nav_pricing({}, { locale }),
+      href: "#pricing",
+    },
+    {
+      name: semanticMessages.landing_nav_support({}, { locale }),
+      href: "#support",
+    },
   ];
 
   return (
@@ -81,7 +95,7 @@ export const NavigationBar = component$(() => {
               size="sm"
               class="text-gray-700 hover:text-purple-600 dark:text-gray-300"
             >
-              {$localize`Sign In`}
+              {semanticMessages.landing_nav_sign_in({}, { locale })}
             </Button>
             <Link href={`/${locale}/star/`}>
               <Button
@@ -89,7 +103,7 @@ export const NavigationBar = component$(() => {
                 size="sm"
                 class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
               >
-                {$localize`Get Started`}
+                {semanticMessages.landing_nav_get_started({}, { locale })}
               </Button>
             </Link>
           </div>
@@ -126,14 +140,14 @@ export const NavigationBar = component$(() => {
                   variant="ghost"
                   class="w-full justify-center text-gray-700 dark:text-gray-300"
                 >
-                  {$localize`Sign In`}
+                  {semanticMessages.landing_nav_sign_in({}, { locale })}
                 </Button>
                 <Link href={`/${locale}/star/`} class="block">
                   <Button
                     variant="primary"
                     class="w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500"
                   >
-                    {$localize`Get Started`}
+                    {semanticMessages.landing_nav_get_started({}, { locale })}
                   </Button>
                 </Link>
               </div>

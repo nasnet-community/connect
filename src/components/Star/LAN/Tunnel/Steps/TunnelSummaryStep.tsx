@@ -7,8 +7,10 @@ import {
   HiCubeOutline,
   HiGlobeAltOutline,
 } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const TunnelSummaryStep = component$(() => {
+  const locale = useMessageLocale();
   const stepper = useStepperContext(TunnelContextId);
 
   // Mark the step as complete when mounted
@@ -25,7 +27,7 @@ export const TunnelSummaryStep = component$(() => {
             <HiServerOutline class="h-5 w-5" />
           </div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`IPIP Tunnels`}
+            {semanticMessages.tunnel_step_ipip({}, { locale })}
             <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
               {stepper.data.ipip.length}
             </span>
@@ -41,11 +43,11 @@ export const TunnelSummaryStep = component$(() => {
                 </div>
                 <div class="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300">
                   <div>
-                    {$localize`Local: `}
+                    {semanticMessages.tunnel_summary_local({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.localAddress}</span>
                   </div>
                   <div>
-                    {$localize`Remote: `}
+                    {semanticMessages.tunnel_summary_remote({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.remoteAddress}</span>
                   </div>
                 </div>
@@ -54,7 +56,7 @@ export const TunnelSummaryStep = component$(() => {
           </div>
         ) : (
           <p class="p-4 text-sm italic text-gray-500 dark:text-gray-400">
-            {$localize`No IPIP tunnels configured`}
+            {semanticMessages.tunnel_summary_no_ipip({}, { locale })}
           </p>
         )}
       </div>
@@ -66,7 +68,7 @@ export const TunnelSummaryStep = component$(() => {
             <HiLockClosedOutline class="h-5 w-5" />
           </div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`EOIP Tunnels`}
+            {semanticMessages.tunnel_step_eoip({}, { locale })}
             <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
               {stepper.data.eoip.length}
             </span>
@@ -82,15 +84,20 @@ export const TunnelSummaryStep = component$(() => {
                 </div>
                 <div class="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300">
                   <div>
-                    {$localize`Local: `}
+                    {semanticMessages.tunnel_summary_local({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.localAddress}</span>
                   </div>
                   <div>
-                    {$localize`Remote: `}
+                    {semanticMessages.tunnel_summary_remote({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.remoteAddress}</span>
                   </div>
                   <div>
-                    {$localize`Tunnel ID: `}
+                    {semanticMessages.tunnel_summary_tunnel_id(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}{" "}
                     <span class="font-mono">{tunnel.tunnelId}</span>
                   </div>
                 </div>
@@ -99,7 +106,7 @@ export const TunnelSummaryStep = component$(() => {
           </div>
         ) : (
           <p class="p-4 text-sm italic text-gray-500 dark:text-gray-400">
-            {$localize`No EOIP tunnels configured`}
+            {semanticMessages.tunnel_summary_no_eoip({}, { locale })}
           </p>
         )}
       </div>
@@ -111,7 +118,7 @@ export const TunnelSummaryStep = component$(() => {
             <HiCubeOutline class="h-5 w-5" />
           </div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`GRE Tunnels`}
+            {semanticMessages.tunnel_step_gre({}, { locale })}
             <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
               {stepper.data.gre.length}
             </span>
@@ -127,11 +134,11 @@ export const TunnelSummaryStep = component$(() => {
                 </div>
                 <div class="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300">
                   <div>
-                    {$localize`Local: `}
+                    {semanticMessages.tunnel_summary_local({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.localAddress}</span>
                   </div>
                   <div>
-                    {$localize`Remote: `}
+                    {semanticMessages.tunnel_summary_remote({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.remoteAddress}</span>
                   </div>
                 </div>
@@ -140,7 +147,7 @@ export const TunnelSummaryStep = component$(() => {
           </div>
         ) : (
           <p class="p-4 text-sm italic text-gray-500 dark:text-gray-400">
-            {$localize`No GRE tunnels configured`}
+            {semanticMessages.tunnel_summary_no_gre({}, { locale })}
           </p>
         )}
       </div>
@@ -152,7 +159,7 @@ export const TunnelSummaryStep = component$(() => {
             <HiGlobeAltOutline class="h-5 w-5" />
           </div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {$localize`VXLAN Tunnels`}
+            {semanticMessages.tunnel_step_vxlan({}, { locale })}
             <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
               {stepper.data.vxlan.length}
             </span>
@@ -168,15 +175,15 @@ export const TunnelSummaryStep = component$(() => {
                 </div>
                 <div class="mt-2 grid gap-1 text-sm text-gray-600 dark:text-gray-300">
                   <div>
-                    {$localize`Local: `}
+                    {semanticMessages.tunnel_summary_local({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.localAddress}</span>
                   </div>
                   <div>
-                    {$localize`Remote: `}
+                    {semanticMessages.tunnel_summary_remote({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.remoteAddress}</span>
                   </div>
                   <div>
-                    {$localize`VNI: `}
+                    {semanticMessages.tunnel_summary_vni({}, { locale })}{" "}
                     <span class="font-mono">{tunnel.vni}</span>
                   </div>
                 </div>
@@ -185,7 +192,7 @@ export const TunnelSummaryStep = component$(() => {
           </div>
         ) : (
           <p class="p-4 text-sm italic text-gray-500 dark:text-gray-400">
-            {$localize`No VXLAN tunnels configured`}
+            {semanticMessages.tunnel_summary_no_vxlan({}, { locale })}
           </p>
         )}
       </div>

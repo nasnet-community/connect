@@ -12,6 +12,7 @@ import {
   HiXCircleOutline,
 } from "@qwikest/icons/heroicons";
 import { SegmentedControl } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface TunnelHeaderProps {
   tunnelsEnabled: Signal<boolean>;
@@ -20,6 +21,7 @@ interface TunnelHeaderProps {
 
 export const TunnelHeader = component$<TunnelHeaderProps>(
   ({ tunnelsEnabled, onToggle$ }) => {
+    const locale = useMessageLocale();
     // Create a string signal for SegmentedControl
     const tunnelState = useSignal(tunnelsEnabled.value ? "enable" : "disable");
 
@@ -37,10 +39,10 @@ export const TunnelHeader = component$<TunnelHeaderProps>(
           </div>
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {$localize`Network Tunnels Setup`}
+              {semanticMessages.tunnel_setup_title({}, { locale })}
             </h1>
             <p class="text-gray-600 dark:text-gray-400">
-              {$localize`Configure network tunnels for connecting remote networks`}
+              {semanticMessages.tunnel_header_description({}, { locale })}
             </p>
           </div>
         </div>
@@ -51,12 +53,12 @@ export const TunnelHeader = component$<TunnelHeaderProps>(
           options={[
             {
               value: "disable",
-              label: $localize`Disable`,
+              label: semanticMessages.shared_disable({}, { locale }),
               icon: (<HiXCircleOutline class="h-5 w-5" />) as any,
             },
             {
               value: "enable",
-              label: $localize`Enable`,
+              label: semanticMessages.shared_enable({}, { locale }),
               icon: (<HiCheckCircleOutline class="h-5 w-5" />) as any,
             },
           ]}

@@ -4,6 +4,7 @@ import {
   type JSXOutput,
   type PropFunction,
 } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface SelectionCardProps {
   value: any;
@@ -29,6 +30,7 @@ export interface SelectionCardProps {
 }
 
 export const SelectionCard = component$((props: SelectionCardProps) => {
+  const locale = useMessageLocale();
   const {
     value,
     isSelected,
@@ -115,13 +117,13 @@ export const SelectionCard = component$((props: SelectionCardProps) => {
         ) : disabled ? (
           <div class="pointer-events-none absolute right-4 top-4 z-10">
             <span class="rounded-full bg-warning/10 px-2 py-1 text-sm text-warning dark:text-warning-light">
-              {$localize`Coming Soon`}
+              {semanticMessages.star_selection_card_coming_soon({}, { locale })}
             </span>
           </div>
         ) : (
           isSelected && (
             <div class="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-success/10 px-2 py-1 text-sm text-success dark:bg-success/20 dark:text-success-light">
-              {$localize`Selected`}
+              {semanticMessages.star_selection_card_selected({}, { locale })}
             </div>
           )
         )}

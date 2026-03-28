@@ -4,6 +4,7 @@ import { LuNetwork, LuLink } from "@qwikest/icons/lucide";
 import { StarContext } from "../../StarContext/StarContext";
 import { SelectionCard } from "../shared/SelectionCard";
 import { SelectionStepSection } from "../shared/SelectionStepSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export type RouterModeType = "AP Mode" | "Trunk Mode";
 
@@ -22,6 +23,7 @@ interface ModeOption {
 }
 
 export const RouterMode = component$((props: RouterModeProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const selectedMode = starContext.state.Choose.RouterMode;
   const selectedRouters = starContext.state.Choose.RouterModels;
@@ -42,26 +44,35 @@ export const RouterMode = component$((props: RouterModeProps) => {
     {
       mode: "AP Mode",
       icon: <LuNetwork class="h-8 w-8" />,
-      title: $localize`Single Router Mode`,
-      description: $localize`Extend your network coverage seamlessly`,
+      title: semanticMessages.star_router_mode_ap_title({}, { locale }),
+      description: semanticMessages.star_router_mode_ap_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Wireless network extension`,
-        $localize`Seamless roaming`,
-        $localize`Easy setup`,
-        $localize`Perfect for home use`,
+        semanticMessages.star_router_mode_ap_feature_wireless({}, { locale }),
+        semanticMessages.star_router_mode_ap_feature_roaming({}, { locale }),
+        semanticMessages.star_router_mode_ap_feature_easy({}, { locale }),
+        semanticMessages.star_router_mode_ap_feature_home({}, { locale }),
       ],
       disabled: false,
     },
     {
       mode: "Trunk Mode",
       icon: <LuLink class="h-8 w-8" />,
-      title: $localize`Router + Access Point Mode`,
-      description: $localize`Advanced network configuration`,
+      title: semanticMessages.star_router_mode_trunk_title({}, { locale }),
+      description: semanticMessages.star_router_mode_trunk_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`VLAN support`,
-        $localize`Link aggregation`,
-        $localize`Advanced QoS`,
-        $localize`Enterprise-grade features`,
+        semanticMessages.star_router_mode_trunk_feature_vlan({}, { locale }),
+        semanticMessages.star_router_mode_trunk_feature_link({}, { locale }),
+        semanticMessages.star_router_mode_trunk_feature_qos({}, { locale }),
+        semanticMessages.star_router_mode_trunk_feature_enterprise(
+          {},
+          { locale },
+        ),
       ],
       disabled: false,
     },
@@ -69,8 +80,11 @@ export const RouterMode = component$((props: RouterModeProps) => {
 
   return (
     <SelectionStepSection
-      title={$localize`Select Router Mode`}
-      description={$localize`Choose how you want your router to operate in your network`}
+      title={semanticMessages.star_router_mode_section_title({}, { locale })}
+      description={semanticMessages.star_router_mode_section_description(
+        {},
+        { locale },
+      )}
     >
       <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
         {modeOptions.map((option) => (
@@ -92,7 +106,10 @@ export const RouterMode = component$((props: RouterModeProps) => {
               option.mode === "Trunk Mode" ? (
                 <div class="border-t border-border/20 pt-3 dark:border-border-dark/20">
                   <p class="text-text-secondary/90 dark:text-text-dark-secondary/95 text-xs">
-                    {$localize`Requires 2 routers (you'll select the second router next)`}
+                    {semanticMessages.star_router_mode_trunk_footer(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               ) : undefined
@@ -105,14 +122,17 @@ export const RouterMode = component$((props: RouterModeProps) => {
       {selectedRouters.length > 0 && (
         <div class="bg-surface-secondary/50 dark:bg-surface-dark-secondary/50 mx-auto max-w-2xl rounded-xl p-4">
           <p class="text-text-secondary/90 dark:text-text-dark-secondary text-sm">
-            {$localize`Current Router Selection:`}
+            {semanticMessages.star_router_mode_current_selection(
+              {},
+              { locale },
+            )}
             <span class="ml-2 font-medium text-text dark:text-text-dark-default">
               {selectedRouters[0].Model}
             </span>
           </p>
           {selectedMode === "Trunk Mode" && (
             <p class="text-text-secondary/90 dark:text-text-dark-secondary mt-1 text-xs">
-              {$localize`A second router will be selected in the next step`}
+              {semanticMessages.star_router_mode_trunk_next({}, { locale })}
             </p>
           )}
         </div>

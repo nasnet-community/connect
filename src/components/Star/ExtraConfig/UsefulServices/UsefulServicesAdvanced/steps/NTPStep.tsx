@@ -9,8 +9,10 @@ import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { Card, CardHeader, CardBody, Input, Button } from "~/components/Core";
 import { UsefulServicesStepperContextId } from "../UsefulServicesAdvanced";
 import { StarContext } from "~/components/Star/StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const NTPStep = component$(() => {
+  const locale = useMessageLocale();
   // Get stepper and star contexts
   const context = useStepperContext<any>(UsefulServicesStepperContextId);
   const starCtx = useContext(StarContext);
@@ -123,10 +125,15 @@ export const NTPStep = component$(() => {
         </div>
         <div class="space-y-3">
           <h3 class="animate-gradient bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-300% bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:via-gray-200 dark:to-white md:text-5xl">
-            {$localize`NTP Time Synchronization`}
+            {semanticMessages.useful_services_ntp_title({}, { locale })}
           </h3>
           <p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
-            {$localize`Configure multiple NTP servers for accurate time synchronization across your network`}
+            {semanticMessages.useful_services_ntp_description(
+              {},
+              {
+                locale,
+              },
+            )}
           </p>
         </div>
       </div>
@@ -153,10 +160,18 @@ export const NTPStep = component$(() => {
                     />
                   </svg>
                 </div>
-                {$localize`NTP Servers Configuration`}
+                {semanticMessages.useful_services_ntp_servers_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h4>
               <p class="text-gray-600 dark:text-gray-400">
-                {$localize`Add multiple NTP servers for redundancy and accuracy`}
+                {semanticMessages.useful_services_ntp_servers_description(
+                  {},
+                  { locale },
+                )}
               </p>
             </div>
           </div>
@@ -165,7 +180,13 @@ export const NTPStep = component$(() => {
           {/* Current NTP Servers List */}
           <div class="space-y-4">
             <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {$localize`Configured Servers`} ({ntpServers.value.length})
+              {semanticMessages.useful_services_ntp_configured_servers(
+                {},
+                {
+                  locale,
+                },
+              )}{" "}
+              ({ntpServers.value.length})
             </h5>
             <div class="space-y-3">
               {ntpServers.value.map((server, index) => (
@@ -198,10 +219,16 @@ export const NTPStep = component$(() => {
                         {index === 0 ? (
                           <span class="inline-flex items-center gap-1.5">
                             <span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-                            {$localize`Primary server`}
+                            {semanticMessages.useful_services_ntp_primary_server(
+                              {},
+                              { locale },
+                            )}
                           </span>
                         ) : (
-                          $localize`Backup server ${index}`
+                          semanticMessages.useful_services_ntp_backup_server(
+                            { index: String(index) },
+                            { locale },
+                          )
                         )}
                       </p>
                     </div>
@@ -237,13 +264,21 @@ export const NTPStep = component$(() => {
           {/* Add Custom Server */}
           <div class="space-y-4">
             <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {$localize`Add Custom Server`}
+              {semanticMessages.useful_services_ntp_add_custom_server(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h5>
             <div class="flex gap-4">
               <div class="flex-1">
                 <Input
                   type="text"
-                  placeholder={$localize`Enter NTP server address`}
+                  placeholder={semanticMessages.useful_services_ntp_server_placeholder(
+                    {},
+                    { locale },
+                  )}
                   value={newServerInput.value}
                   onInput$={(e: any) => {
                     newServerInput.value = e.target.value;
@@ -261,7 +296,12 @@ export const NTPStep = component$(() => {
                 onClick$={() => addServer$(newServerInput.value)}
                 disabled={!newServerInput.value.trim()}
               >
-                {$localize`Add Server`}
+                {semanticMessages.useful_services_ntp_add_server(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </Button>
             </div>
           </div>
@@ -269,7 +309,12 @@ export const NTPStep = component$(() => {
           {/* Popular Servers Quick Add */}
           <div class="space-y-4">
             <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {$localize`Popular NTP Servers`}
+              {semanticMessages.useful_services_ntp_popular_servers(
+                {},
+                {
+                  locale,
+                },
+              )}
             </h5>
             <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
               {popularServers
@@ -301,7 +346,10 @@ export const NTPStep = component$(() => {
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                           />
                         </svg>
-                        {$localize`Click to add`}
+                        {semanticMessages.useful_services_ntp_click_to_add(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </Button>

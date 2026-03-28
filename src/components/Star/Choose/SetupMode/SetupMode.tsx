@@ -5,6 +5,7 @@ import type { StepProps } from "~/types/step";
 import type { QwikJSX } from "@builder.io/qwik";
 import { SelectionCard } from "../shared/SelectionCard";
 import { SelectionStepSection } from "../shared/SelectionStepSection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ModeOption {
   id: number;
@@ -17,6 +18,7 @@ interface ModeOption {
 }
 
 export const SetupMode = component$((props: StepProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const selectedMode = starContext.state.Choose.Mode;
 
@@ -28,7 +30,7 @@ export const SetupMode = component$((props: StepProps) => {
   const modeOptions: ModeOption[] = [
     {
       id: 1,
-      title: $localize`Easy Mode`,
+      title: semanticMessages.star_setup_mode_easy_title({}, { locale }),
       mode: "easy",
       icon: (
         <svg
@@ -45,19 +47,22 @@ export const SetupMode = component$((props: StepProps) => {
           />
         </svg>
       ),
-      description: $localize`Simplified setup with basic options. Perfect for beginners and standard home network configurations.`,
+      description: semanticMessages.star_setup_mode_easy_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Quick setup process`,
-        $localize`Basic network configuration`,
-        $localize`Automated security settings`,
-        $localize`Simple interface management`,
-        $localize`Guided step-by-step setup`,
+        semanticMessages.star_setup_mode_easy_feature_quick({}, { locale }),
+        semanticMessages.star_setup_mode_easy_feature_basic({}, { locale }),
+        semanticMessages.star_setup_mode_easy_feature_security({}, { locale }),
+        semanticMessages.star_setup_mode_easy_feature_simple({}, { locale }),
+        semanticMessages.star_setup_mode_easy_feature_guided({}, { locale }),
       ],
       disabled: false,
     },
     {
       id: 2,
-      title: $localize`Advanced Mode`,
+      title: semanticMessages.star_setup_mode_advanced_title({}, { locale }),
       mode: "advance",
       icon: (
         <svg
@@ -80,13 +85,25 @@ export const SetupMode = component$((props: StepProps) => {
           />
         </svg>
       ),
-      description: $localize`Full-featured multi-WAN configuration wizard. Perfect for complex network setups with multiple internet connections.`,
+      description: semanticMessages.star_setup_mode_advanced_description(
+        {},
+        { locale },
+      ),
       features: [
-        $localize`Multi-WAN link configuration`,
-        $localize`Load balancing & failover`,
-        $localize`VLAN and MAC address control`,
-        $localize`PPPoE, Static IP, DHCP support`,
-        $localize`Advanced routing strategies`,
+        semanticMessages.star_setup_mode_advanced_feature_multiwan(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_setup_mode_advanced_feature_failover(
+          {},
+          { locale },
+        ),
+        semanticMessages.star_setup_mode_advanced_feature_vlan({}, { locale }),
+        semanticMessages.star_setup_mode_advanced_feature_dhcp({}, { locale }),
+        semanticMessages.star_setup_mode_advanced_feature_routing(
+          {},
+          { locale },
+        ),
       ],
       disabled: false,
     },
@@ -94,8 +111,11 @@ export const SetupMode = component$((props: StepProps) => {
 
   return (
     <SelectionStepSection
-      title={$localize`Choose Your Setup Mode`}
-      description={$localize`Select the setup mode that best fits your needs and experience level`}
+      title={semanticMessages.star_setup_mode_section_title({}, { locale })}
+      description={semanticMessages.star_setup_mode_section_description(
+        {},
+        { locale },
+      )}
       descriptionClass="mx-auto max-w-2xl text-text-secondary dark:text-text-dark-secondary"
     >
       <div class="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">

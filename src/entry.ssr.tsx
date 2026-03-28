@@ -10,30 +10,27 @@
  * - npm run build
  *
  */
-import { AsyncLocalStorage } from "node:async_hooks";
 import {
   renderToStream,
   type RenderToStreamOptions,
 } from "@builder.io/qwik/server";
 import { manifest } from "@qwik-client-manifest";
 import Root from "./root";
-import { extractBase, setServerRenderLocaleGetter } from "./routes/i18n-utils";
-
-const serverLocaleStorage = new AsyncLocalStorage<string>();
-
-setServerRenderLocaleGetter(() => serverLocaleStorage.getStore());
+import { DEFAULT_LOCALE, resolveRequestedLocale } from "./i18n/config";
 
 export default async function (opts: RenderToStreamOptions) {
-  return serverLocaleStorage.run(opts.serverData?.locale ?? "en", async () => {
-    return renderToStream(<Root />, {
-      manifest,
-      ...opts,
-      base: extractBase, // determine the base URL for the client code
-      // Use container attributes to set attributes on the html tag.
-      containerAttributes: {
-        lang: opts.serverData?.locale ?? "en-us",
-        ...opts.containerAttributes,
-      },
-    });
+  const locale = resolveRequestedLocale(
+    opts.serverData?.locale ?? DEFAULT_LOCALE,
+  );
+
+  return renderToStream(<Root />, {
+    manifest,
+    ...opts,
+    base: `${import.meta.env.BASE_URL}build`,
+    // Use container attributes to set attributes on the html tag.
+    containerAttributes: {
+      lang: locale,
+      ...opts.containerAttributes,
+    },
   });
 }

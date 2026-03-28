@@ -21,6 +21,7 @@ import { WAN } from "../WAN/WAN";
 import { LAN } from "../LAN/LAN";
 import { ExtraConfig } from "../ExtraConfig/ExtraConfig";
 import { ShowConfig } from "../ShowConfig/ShowConfig";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 import type { Signal, QRL } from "@builder.io/qwik";
 
@@ -45,6 +46,7 @@ export const useStarContainer = (): StarContainerReturn => {
   const activeStep = useSignal(0);
   const { state, updateChoose$ } = useContext(StarContext);
   const sessionStarted = useSignal(false);
+  const locale = useMessageLocale();
 
   const stepsStore = useStore({
     steps: [] as any[],
@@ -325,7 +327,7 @@ export const useStarContainer = (): StarContainerReturn => {
     const baseSteps = [
       {
         id: 1,
-        title: $localize`Choose`,
+        title: semanticMessages.star_container_step_choose({}, { locale }),
         icon: $(LuSettings2),
         component: component$(() => (
           <Choose
@@ -338,26 +340,52 @@ export const useStarContainer = (): StarContainerReturn => {
         )),
         iscomplete: false,
         helpData: {
-          title: "Router Selection & Configuration Mode",
-          description:
-            "Choose your MikroTik router model and select the configuration approach that best fits your needs.",
+          title: semanticMessages.star_container_help_choose_title(
+            {},
+            { locale },
+          ),
+          description: semanticMessages.star_container_help_choose_description(
+            {},
+            { locale },
+          ),
           sections: [
             {
-              title: "Getting Started",
+              title:
+                semanticMessages.star_container_help_choose_getting_started_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Select your MikroTik router model from our supported device list. This ensures the generated configuration is optimized for your specific hardware capabilities and features.",
+                semanticMessages.star_container_help_choose_getting_started_content(
+                  {},
+                  { locale },
+                ),
               type: "info" as const,
             },
             {
-              title: "Configuration Modes",
+              title:
+                semanticMessages.star_container_help_choose_configuration_modes_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Easy Mode provides simplified setup with essential features for home users. Advanced Mode offers full control over all router capabilities for professional deployments.",
+                semanticMessages.star_container_help_choose_configuration_modes_content(
+                  {},
+                  { locale },
+                ),
               type: "tip" as const,
             },
             {
-              title: "Router Model Selection",
+              title:
+                semanticMessages.star_container_help_choose_router_model_selection_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Choose the exact model of your MikroTik device. Different models have varying capabilities like port counts, wireless features, and processing power that affect the generated configuration.",
+                semanticMessages.star_container_help_choose_router_model_selection_content(
+                  {},
+                  { locale },
+                ),
               type: "example" as const,
             },
           ],
@@ -365,7 +393,7 @@ export const useStarContainer = (): StarContainerReturn => {
       },
       {
         id: 2,
-        title: $localize`WAN`,
+        title: semanticMessages.star_container_step_wan({}, { locale }),
         icon: $(LuGlobe),
         component: component$(() => (
           <WAN
@@ -378,32 +406,60 @@ export const useStarContainer = (): StarContainerReturn => {
         )),
         iscomplete: false,
         helpData: {
-          title: "WAN Configuration Guide",
-          description:
-            "Configure your internet connection, multi-WAN setup, and VPN client settings for optimal connectivity and redundancy.",
+          title: semanticMessages.star_container_help_wan_title({}, { locale }),
+          description: semanticMessages.star_container_help_wan_description(
+            {},
+            { locale },
+          ),
           sections: [
             {
-              title: "Internet Connection Setup",
+              title:
+                semanticMessages.star_container_help_wan_internet_connection_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Configure your primary internet connection settings including DHCP, static IP, or PPPoE. Ensure your ISP settings are correctly configured for reliable internet access.",
+                semanticMessages.star_container_help_wan_internet_connection_content(
+                  {},
+                  { locale },
+                ),
               type: "info" as const,
             },
             {
-              title: "Multi-WAN Configuration",
+              title: semanticMessages.star_container_help_wan_multi_wan_title(
+                {},
+                { locale },
+              ),
               content:
-                "Set up multiple internet connections for load balancing and failover. Configure domestic and foreign links with appropriate routing policies and traffic distribution.",
+                semanticMessages.star_container_help_wan_multi_wan_content(
+                  {},
+                  { locale },
+                ),
               type: "tip" as const,
             },
             {
-              title: "VPN Client Setup",
+              title: semanticMessages.star_container_help_wan_vpn_client_title(
+                {},
+                { locale },
+              ),
               content:
-                "Configure VPN client connections for routing traffic through VPN providers. Supports WireGuard, OpenVPN, L2TP, PPTP, SSTP, and IKEv2 protocols with automatic failover.",
+                semanticMessages.star_container_help_wan_vpn_client_content(
+                  {},
+                  { locale },
+                ),
               type: "example" as const,
             },
             {
-              title: "Connection Prioritization",
+              title:
+                semanticMessages.star_container_help_wan_connection_prioritization_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Set connection priorities and weights to control how traffic is distributed across multiple WAN connections. Higher priority connections are preferred for critical traffic.",
+                semanticMessages.star_container_help_wan_connection_prioritization_content(
+                  {},
+                  { locale },
+                ),
               type: "warning" as const,
             },
           ],
@@ -411,7 +467,7 @@ export const useStarContainer = (): StarContainerReturn => {
       },
       {
         id: 3,
-        title: $localize`LAN`,
+        title: semanticMessages.star_container_step_lan({}, { locale }),
         icon: $(LuNetwork),
         component: component$(() => (
           <LAN
@@ -425,32 +481,61 @@ export const useStarContainer = (): StarContainerReturn => {
         )),
         iscomplete: false,
         helpData: {
-          title: "LAN & Network Configuration",
-          description:
-            "Configure your local network segments, wireless settings, VPN servers, and security policies for optimal performance and security.",
+          title: semanticMessages.star_container_help_lan_title({}, { locale }),
+          description: semanticMessages.star_container_help_lan_description(
+            {},
+            { locale },
+          ),
           sections: [
             {
-              title: "Network Segmentation",
+              title:
+                semanticMessages.star_container_help_lan_network_segmentation_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Set up multiple network segments including Split (192.168.10.0/24), Domestic (192.168.20.0/24), Foreign (192.168.30.0/24), and VPN (192.168.40.0/24) networks with appropriate routing rules.",
+                semanticMessages.star_container_help_lan_network_segmentation_content(
+                  {},
+                  { locale },
+                ),
               type: "info" as const,
             },
             {
-              title: "Wireless Configuration",
+              title:
+                semanticMessages.star_container_help_lan_wireless_configuration_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Configure WiFi networks with proper security settings, guest networks, and bandwidth limitations. Set up multiple SSIDs for different user groups with appropriate access policies.",
+                semanticMessages.star_container_help_lan_wireless_configuration_content(
+                  {},
+                  { locale },
+                ),
               type: "tip" as const,
             },
             {
-              title: "VPN Server Setup",
+              title: semanticMessages.star_container_help_lan_vpn_server_title(
+                {},
+                { locale },
+              ),
               content:
-                "Configure VPN servers for remote access including WireGuard, OpenVPN, L2TP/IPSec, PPTP, SSTP, and IKEv2. Set up user authentication and access policies for secure remote connectivity.",
+                semanticMessages.star_container_help_lan_vpn_server_content(
+                  {},
+                  { locale },
+                ),
               type: "example" as const,
             },
             {
-              title: "Network Tunneling",
+              title:
+                semanticMessages.star_container_help_lan_network_tunneling_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Set up network tunnels (GRE, VXLAN, EoIP, IPIP) for connecting remote sites or creating overlay networks. Configure tunnel parameters and routing for seamless connectivity.",
+                semanticMessages.star_container_help_lan_network_tunneling_content(
+                  {},
+                  { locale },
+                ),
               type: "warning" as const,
             },
           ],
@@ -464,7 +549,10 @@ export const useStarContainer = (): StarContainerReturn => {
     if (!isEasyMode) {
       steps.push({
         id: 4,
-        title: $localize`Extra Config`,
+        title: semanticMessages.star_container_step_extra_config(
+          {},
+          { locale },
+        ),
         icon: $(LuWrench),
         component: component$(() => (
           <ExtraConfig
@@ -477,32 +565,66 @@ export const useStarContainer = (): StarContainerReturn => {
         )),
         iscomplete: false,
         helpData: {
-          title: "Advanced Features & Gaming",
+          title: semanticMessages.star_container_help_extra_config_title(
+            {},
+            { locale },
+          ),
           description:
-            "Configure advanced features including gaming optimization, DDNS, system maintenance, and other professional-grade networking features.",
+            semanticMessages.star_container_help_extra_config_description(
+              {},
+              { locale },
+            ),
           sections: [
             {
-              title: "Gaming Optimization",
+              title:
+                semanticMessages.star_container_help_extra_config_gaming_optimization_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Set up game-specific routing rules and port forwarding for popular games. Configure QoS policies to prioritize gaming traffic and reduce latency for optimal gaming performance.",
+                semanticMessages.star_container_help_extra_config_gaming_optimization_content(
+                  {},
+                  { locale },
+                ),
               type: "info" as const,
             },
             {
-              title: "Dynamic DNS (DDNS)",
+              title:
+                semanticMessages.star_container_help_extra_config_dynamic_dns_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Configure DDNS services to maintain access to your router even with changing IP addresses. Supports multiple DDNS providers for reliable remote access and services.",
+                semanticMessages.star_container_help_extra_config_dynamic_dns_content(
+                  {},
+                  { locale },
+                ),
               type: "tip" as const,
             },
             {
-              title: "System Maintenance",
+              title:
+                semanticMessages.star_container_help_extra_config_system_maintenance_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Set up automatic system updates, scheduled reboots, and maintenance tasks. Configure backup schedules and system monitoring for reliable operation.",
+                semanticMessages.star_container_help_extra_config_system_maintenance_content(
+                  {},
+                  { locale },
+                ),
               type: "example" as const,
             },
             {
-              title: "Advanced Services",
+              title:
+                semanticMessages.star_container_help_extra_config_advanced_services_title(
+                  {},
+                  { locale },
+                ),
               content:
-                "Configure additional services like NTP servers, certificate management, and cloud integrations. These features are available in Advanced mode for professional deployments.",
+                semanticMessages.star_container_help_extra_config_advanced_services_content(
+                  {},
+                  { locale },
+                ),
               type: "warning" as const,
             },
           ],
@@ -516,7 +638,7 @@ export const useStarContainer = (): StarContainerReturn => {
 
     steps.push({
       id: showConfigId,
-      title: $localize`Show Config`,
+      title: semanticMessages.star_container_step_show_config({}, { locale }),
       icon: $(LuClipboardList),
       component: component$(() => (
         <ShowConfig
@@ -528,32 +650,66 @@ export const useStarContainer = (): StarContainerReturn => {
       )),
       iscomplete: false,
       helpData: {
-        title: "Configuration Review & Deployment",
+        title: semanticMessages.star_container_help_show_config_title(
+          {},
+          { locale },
+        ),
         description:
-          "Review, download, and deploy your generated MikroTik router configuration. Verify all settings before applying to your router.",
+          semanticMessages.star_container_help_show_config_description(
+            {},
+            { locale },
+          ),
         sections: [
           {
-            title: "Configuration Review",
+            title:
+              semanticMessages.star_container_help_show_config_configuration_review_title(
+                {},
+                { locale },
+              ),
             content:
-              "Review the generated configuration script to ensure all settings match your requirements. Check network segments, routing rules, firewall policies, and service configurations.",
+              semanticMessages.star_container_help_show_config_configuration_review_content(
+                {},
+                { locale },
+              ),
             type: "info" as const,
           },
           {
-            title: "Deployment Options",
+            title:
+              semanticMessages.star_container_help_show_config_deployment_options_title(
+                {},
+                { locale },
+              ),
             content:
-              "Download the configuration as a .rsc file for manual application, or copy the commands for direct RouterOS terminal use. Always backup your current configuration before applying changes.",
+              semanticMessages.star_container_help_show_config_deployment_options_content(
+                {},
+                { locale },
+              ),
             type: "tip" as const,
           },
           {
-            title: "Applying Configuration",
+            title:
+              semanticMessages.star_container_help_show_config_applying_configuration_title(
+                {},
+                { locale },
+              ),
             content:
-              "Connect to your MikroTik router via WinBox, WebFig, or SSH. Import the configuration file or paste commands into the terminal. Verify connectivity after applying changes.",
+              semanticMessages.star_container_help_show_config_applying_configuration_content(
+                {},
+                { locale },
+              ),
             type: "example" as const,
           },
           {
-            title: "Safety Precautions",
+            title:
+              semanticMessages.star_container_help_show_config_safety_precautions_title(
+                {},
+                { locale },
+              ),
             content:
-              "Always backup your current configuration before applying changes. Test the configuration on a non-production device first. Keep physical access to reset the router if needed.",
+              semanticMessages.star_container_help_show_config_safety_precautions_content(
+                {},
+                { locale },
+              ),
             type: "warning" as const,
           },
         ],

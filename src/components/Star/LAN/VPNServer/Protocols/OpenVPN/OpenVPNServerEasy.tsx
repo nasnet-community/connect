@@ -8,8 +8,10 @@ import {
   NetworkDropdown,
   type ExtendedNetworks,
 } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const OpenVPNServerEasy = component$(() => {
+  const locale = useMessageLocale();
   const { easyFormState, passphraseError, updateEasyPassphrase$ } =
     useOpenVPNServer();
 
@@ -23,12 +25,14 @@ export const OpenVPNServerEasy = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`OpenVPN Server (TCP & UDP)`}
+      title={semanticMessages.vpn_server_easy_openvpn_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
-        <ServerFormField label={$localize`Network`}>
+        <ServerFormField
+          label={semanticMessages.vpn_server_network_label({}, { locale })}
+        >
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value}
             onNetworkChange$={updateNetwork$}
@@ -37,11 +41,17 @@ export const OpenVPNServerEasy = component$(() => {
 
         {/* Certificate Key Passphrase */}
         <ServerFormField
-          label={$localize`Certificate Key Passphrase`}
+          label={semanticMessages.vpn_server_certificate_key_passphrase(
+            {},
+            { locale },
+          )}
           errorMessage={
             passphraseError.value ||
             (!passphraseError.value
-              ? $localize`Creates both TCP and UDP OpenVPN servers with this passphrase`
+              ? semanticMessages.vpn_server_easy_openvpn_passphrase_help(
+                  {},
+                  { locale },
+                )
               : undefined)
           }
         >
@@ -52,7 +62,10 @@ export const OpenVPNServerEasy = component$(() => {
               onInput$={(event: Event, value: string) => {
                 updateEasyPassphrase$(value);
               }}
-              placeholder={$localize`Enter passphrase for both servers`}
+              placeholder={semanticMessages.vpn_server_easy_openvpn_passphrase_placeholder(
+                {},
+                { locale },
+              )}
               class="pr-10"
             />
             <button

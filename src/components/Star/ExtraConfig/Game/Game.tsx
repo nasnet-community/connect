@@ -6,8 +6,10 @@ import { GameTable } from "./GameTable";
 import { GameSelected } from "./GameSelected";
 import { GamePagination } from "./GamePagination";
 import { useGameLogic } from "./useGame";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Game = component$<StepProps>(({ onComplete$ }) => {
+  const locale = useMessageLocale();
   const { searchQuery, currentPage, itemsPerPage, context } = useGameLogic();
 
   // Initialize the Games array if it doesn't exist
@@ -40,7 +42,7 @@ export const Game = component$<StepProps>(({ onComplete$ }) => {
               onClick$={onComplete$}
               class="rounded-lg bg-primary-500 px-6 py-2 text-white transition-colors duration-200 hover:bg-primary-600"
             >
-              {$localize`Save`}
+              {semanticMessages.shared_save({}, { locale })}
             </button>
           </div>
         </div>

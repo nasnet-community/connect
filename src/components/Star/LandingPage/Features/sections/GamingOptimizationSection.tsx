@@ -2,27 +2,33 @@ import { component$, $ } from "@builder.io/qwik";
 import { LuCpu, LuZap, LuAward } from "@qwikest/icons/lucide";
 import { Badge, Graph, createNode } from "~/components/Core";
 import type { GraphConnection, GraphNode } from "~/components/Core/Graph/types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GamingOptimizationSection = component$(() => {
+  const locale = useMessageLocale();
   // Create nodes for gaming optimization graph
   const nodes: GraphNode[] = [
     createNode("GamingConsole", "console", 50, 200, {
-      label: $localize`Gaming Console`,
+      label: semanticMessages.landing_gaming_console({}, { locale }),
     }),
     createNode("WirelessRouter", "router", 250, 200, {
-      label: $localize`Router (QoS)`,
+      label: semanticMessages.landing_gaming_router_qos({}, { locale }),
     }),
     createNode("GameServer", "gameserver1", 400, 100, {
-      label: $localize`Game Server 1`,
+      label: semanticMessages.landing_gaming_server_1({}, { locale }),
     }),
     createNode("GameServer", "gameserver2", 400, 200, {
-      label: $localize`Game Server 2`,
+      label: semanticMessages.landing_gaming_server_2({}, { locale }),
     }),
     createNode("GameServer", "gameserver3", 400, 300, {
-      label: $localize`Game Server 3`,
+      label: semanticMessages.landing_gaming_server_3({}, { locale }),
     }),
-    createNode("User", "pc", 50, 100, { label: $localize`PC` }),
-    createNode("WirelessUser", "mobile", 50, 300, { label: $localize`Mobile` }),
+    createNode("User", "pc", 50, 100, {
+      label: semanticMessages.landing_gaming_pc({}, { locale }),
+    }),
+    createNode("WirelessUser", "mobile", 50, 300, {
+      label: semanticMessages.landing_gaming_mobile({}, { locale }),
+    }),
   ];
 
   // Create connections with priority traffic
@@ -32,7 +38,7 @@ export const GamingOptimizationSection = component$(() => {
       to: "router",
       trafficType: "Game",
       animated: true,
-      label: $localize`Priority Traffic`,
+      label: semanticMessages.landing_gaming_priority_traffic({}, { locale }),
       width: 4,
       packetColors: ["#ef4444", "#f97316", "#eab308"],
       packetSize: [12, 12, 12],
@@ -42,7 +48,7 @@ export const GamingOptimizationSection = component$(() => {
       to: "gameserver1",
       trafficType: "Game",
       animated: true,
-      label: $localize`< 10ms`,
+      label: "< 10ms",
       arrowHead: true,
     },
     {
@@ -50,7 +56,7 @@ export const GamingOptimizationSection = component$(() => {
       to: "gameserver2",
       trafficType: "Game",
       animated: true,
-      label: $localize`< 15ms`,
+      label: "< 15ms",
       arrowHead: true,
     },
     {
@@ -58,7 +64,7 @@ export const GamingOptimizationSection = component$(() => {
       to: "gameserver3",
       trafficType: "Game",
       animated: true,
-      label: $localize`< 20ms`,
+      label: "< 20ms",
       arrowHead: true,
     },
     {
@@ -67,7 +73,7 @@ export const GamingOptimizationSection = component$(() => {
       color: "#94a3b8",
       animated: true,
       dashed: true,
-      label: $localize`Normal Priority`,
+      label: semanticMessages.landing_gaming_normal_priority({}, { locale }),
     },
     {
       from: "mobile",
@@ -75,7 +81,7 @@ export const GamingOptimizationSection = component$(() => {
       color: "#94a3b8",
       animated: true,
       dashed: true,
-      label: $localize`Normal Priority`,
+      label: semanticMessages.landing_gaming_normal_priority({}, { locale }),
     },
   ];
 
@@ -87,26 +93,37 @@ export const GamingOptimizationSection = component$(() => {
     showLegend: true,
     expandOnHover: true,
     legendItems: [
-      { color: "#ef4444", label: $localize`Gaming Priority` },
-      { color: "#94a3b8", label: $localize`Normal Traffic` },
-      { color: "#22c55e", label: $localize`Optimized Path` },
+      {
+        color: "#ef4444",
+        label: semanticMessages.landing_gaming_priority({}, { locale }),
+      },
+      {
+        color: "#94a3b8",
+        label: semanticMessages.landing_gaming_normal_traffic({}, { locale }),
+      },
+      {
+        color: "#22c55e",
+        label: semanticMessages.landing_gaming_optimized_path(
+          {},
+          {
+            locale,
+          },
+        ),
+      },
     ],
   };
-
   const handleNodeClick$ = $((node: GraphNode) => {
     console.log("Clicked on gaming node:", node.label);
   });
 
   return (
     <section class="relative min-h-[80vh] overflow-hidden bg-gradient-to-br from-pink-50 via-purple-50 to-violet-50 px-4 py-24 dark:from-slate-900 dark:via-pink-900 dark:to-purple-900">
-      {/* Animated gradient orbs */}
       <div class="absolute inset-0 overflow-hidden">
         <div class="animate-blob absolute -right-40 -top-40 h-80 w-80 rounded-full bg-pink-400 opacity-20 mix-blend-multiply blur-xl filter" />
         <div class="animate-blob absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-400 opacity-20 mix-blend-multiply blur-xl filter animation-delay-2000" />
         <div class="animate-blob absolute left-1/2 top-40 h-80 w-80 rounded-full bg-violet-400 opacity-20 mix-blend-multiply blur-xl filter animation-delay-4000" />
       </div>
 
-      {/* Gaming grid pattern */}
       <div class="absolute inset-0 opacity-10">
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#8b5cf650_1px,transparent_1px),linear-gradient(to_bottom,#8b5cf650_1px,transparent_1px)] bg-[size:30px_30px]" />
         <div class="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#f97316,transparent)]" />
@@ -128,7 +145,12 @@ export const GamingOptimizationSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`Gaming Traffic Prioritization`}
+                title={semanticMessages.landing_gaming_graph_title(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={graphConfig}
                 onNodeClick$={handleNodeClick$}
               />
@@ -136,15 +158,26 @@ export const GamingOptimizationSection = component$(() => {
             <div class="mt-4 flex justify-center gap-6">
               <div class="flex items-center gap-2">
                 <LuCpu class="h-5 w-5 text-pink-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`QoS Enabled`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_gaming_qos_enabled({}, { locale })}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <LuZap class="h-5 w-5 text-purple-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Low Latency`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_gaming_low_latency({}, { locale })}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <LuAward class="h-5 w-5 text-violet-500" />
-                <span class="text-sm text-gray-700 dark:text-gray-300">{$localize`Priority Routing`}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_gaming_priority_routing(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -152,35 +185,41 @@ export const GamingOptimizationSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-right order-1 space-y-6 lg:order-2">
             <Badge color="secondary" variant="outline" size="lg">
-              {$localize`Gaming Performance`}
+              {semanticMessages.landing_gaming_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                {$localize`Gaming`}
+                {semanticMessages.landing_gaming_title_line1({}, { locale })}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`Optimization`}
+                {semanticMessages.landing_gaming_title_line2({}, { locale })}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Zero-lag gaming with comprehensive game database. Automatic port forwarding, traffic prioritization, and ping optimization for competitive gaming.`}
+              {semanticMessages.landing_gaming_description({}, { locale })}
             </p>
 
             <div class="grid grid-cols-3 gap-4">
               <div class="text-center">
                 <div class="text-3xl font-bold text-pink-600">3MB+</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">{$localize`Game DB`}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_gaming_stat_db({}, { locale })}
+                </div>
               </div>
               <div class="text-center">
                 <div class="text-3xl font-bold text-purple-600">1000+</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">{$localize`Games`}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_gaming_stat_games({}, { locale })}
+                </div>
               </div>
               <div class="text-center">
                 <div class="text-3xl font-bold text-violet-600">&lt;10ms</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">{$localize`Latency`}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  {semanticMessages.landing_gaming_stat_latency({}, { locale })}
+                </div>
               </div>
             </div>
           </div>

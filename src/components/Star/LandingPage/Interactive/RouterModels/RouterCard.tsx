@@ -8,6 +8,7 @@ import {
   LuNetwork,
   LuRouter,
 } from "@qwikest/icons/lucide";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface RouterCardProps {
   router: {
@@ -27,6 +28,7 @@ interface RouterCardProps {
 }
 
 export const RouterCard = component$<RouterCardProps>(({ router, index }) => {
+  const locale = useMessageLocale();
   return (
     <Card
       class={`
@@ -112,7 +114,9 @@ export const RouterCard = component$<RouterCardProps>(({ router, index }) => {
       <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
         <div class="text-center text-white">
           <LuRouter class="mx-auto mb-2 h-8 w-8" />
-          <span class="text-sm font-medium">{$localize`Configure Now`}</span>
+          <span class="text-sm font-medium">
+            {semanticMessages.game_configure_now({}, { locale })}
+          </span>
         </div>
       </div>
     </Card>

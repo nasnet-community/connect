@@ -8,6 +8,7 @@ import {
 } from "@builder.io/qwik";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
 import { SegmentedControl } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface VPNServerHeaderProps {
   vpnServerEnabled: Signal<boolean>;
@@ -16,6 +17,7 @@ interface VPNServerHeaderProps {
 
 export const VPNServerHeader = component$<VPNServerHeaderProps>(
   ({ vpnServerEnabled, onToggle$ }) => {
+    const locale = useMessageLocale();
     // Create a mutable string signal for SegmentedControl
     const enabledState = useSignal(
       vpnServerEnabled.value ? "enabled" : "disabled",
@@ -35,10 +37,10 @@ export const VPNServerHeader = component$<VPNServerHeaderProps>(
           </div>
           <div>
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {$localize`VPN Server Configuration`}
+              {semanticMessages.vpn_server_header_title({}, { locale })}
             </h2>
             <p class="text-gray-600 dark:text-gray-400">
-              {$localize`Set up your VPN server settings and user access`}
+              {semanticMessages.vpn_server_header_description({}, { locale })}
             </p>
           </div>
         </div>
@@ -49,11 +51,14 @@ export const VPNServerHeader = component$<VPNServerHeaderProps>(
           options={[
             {
               value: "disabled",
-              label: $localize`Disabled`,
+              label: semanticMessages.vpn_server_toggle_disabled(
+                {},
+                { locale },
+              ),
             },
             {
               value: "enabled",
-              label: $localize`Enabled`,
+              label: semanticMessages.vpn_server_toggle_enabled({}, { locale }),
             },
           ]}
           onChange$={$(async (value: string) => {

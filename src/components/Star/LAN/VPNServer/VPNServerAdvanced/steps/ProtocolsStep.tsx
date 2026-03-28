@@ -6,6 +6,7 @@ import type { VPNType } from "../../../../StarContext/CommonType";
 import { useStepperContext } from "~/components/Core/Stepper/CStepper";
 import { VPNServerContextId } from "../VPNServerContext";
 import { HiServerOutline } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface ProtocolsStepProps extends StepProps {
   enabledProtocols: Record<VPNType, boolean>;
@@ -16,6 +17,7 @@ interface ProtocolsStepProps extends StepProps {
 
 export const ProtocolsStep = component$<ProtocolsStepProps>(
   ({ enabledProtocols, expandedSections, toggleSection$, toggleProtocol$ }) => {
+    const locale = useMessageLocale();
     const context = useStepperContext(VPNServerContextId);
     const showProtocolWarning = useSignal(false);
     const anyProtocolEnabled = useSignal(false);
@@ -64,7 +66,7 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(
         <div class="mb-4 flex items-center gap-3">
           <HiServerOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            {$localize`Available VPN Protocols`}
+            {semanticMessages.vpn_server_available_protocols({}, { locale })}
           </h2>
         </div>
 
@@ -77,7 +79,7 @@ export const ProtocolsStep = component$<ProtocolsStepProps>(
 
         {!anyProtocolEnabled.value && showProtocolWarning.value && (
           <p class="mt-4 text-sm text-red-600 dark:text-red-500">
-            {$localize`Please enable at least one VPN protocol to continue.`}
+            {semanticMessages.vpn_server_protocol_warning({}, { locale })}
           </p>
         )}
       </div>

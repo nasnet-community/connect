@@ -8,6 +8,7 @@ import {
   LuMemoryStick,
 } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 import { type RouterData } from "./Constants";
 import { RouterCardCapabilities } from "./RouterCardCapabilities";
 
@@ -22,6 +23,7 @@ interface RouterCardProps {
 }
 
 export const RouterCard = component$<RouterCardProps>((props) => {
+  const locale = useMessageLocale();
   const {
     router,
     isSelected,
@@ -93,7 +95,9 @@ export const RouterCard = component$<RouterCardProps>((props) => {
           {isSelected && !isDisabled && (
             <div class="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 shadow-md">
               <LuCheck class="h-3 w-3 text-white" />
-              <span class="text-xs font-semibold text-white">{$localize`Selected`}</span>
+              <span class="text-xs font-semibold text-white">
+                {semanticMessages.star_selection_card_selected({}, { locale })}
+              </span>
             </div>
           )}
         </div>
@@ -166,7 +170,7 @@ export const RouterCard = component$<RouterCardProps>((props) => {
             `}
           >
             <LuInfo class="h-3 w-3" />
-            <span>{$localize`View Details`}</span>
+            <span>{semanticMessages.router_view_details({}, { locale })}</span>
           </button>
         </div>
       </div>

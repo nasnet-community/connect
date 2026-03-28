@@ -17,6 +17,7 @@ import {
   LuServer,
 } from "@qwikest/icons/lucide";
 import type { NetworkDNSConfig, NetworkType, DNSPreset } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface NetworkDNSCardProps {
   config: NetworkDNSConfig;
@@ -92,6 +93,7 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
     onCopyDNS$,
     onApplyPreset$,
   }) => {
+    const locale = useMessageLocale();
     const copied = useSignal(false);
     const isDropdownOpen = useSignal(false);
     const colors = getNetworkColor(config.type);
@@ -184,7 +186,7 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
                            dark:text-green-300"
                 >
                   <LuCheck class="h-3 w-3" />
-                  {$localize`Configured`}
+                  {semanticMessages.dns_configured({}, { locale })}
                 </div>
               )}
             </div>
@@ -213,7 +215,9 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
                             text-xs text-white opacity-0 transition-opacity 
                             duration-200 group-hover/tooltip:opacity-100 dark:bg-gray-200 dark:text-gray-800"
                 >
-                  {copied.value ? $localize`Copied!` : $localize`Copy DNS`}
+                  {copied.value
+                    ? semanticMessages.dns_copied({}, { locale })
+                    : semanticMessages.dns_copy_action({}, { locale })}
                 </div>
               </div>
             )}
@@ -222,7 +226,7 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
           {/* DNS Input Section */}
           <div class="space-y-3">
             <FormField
-              label={$localize`DNS Server IPv4 Address`}
+              label={semanticMessages.dns_server_ipv4_label({}, { locale })}
               error={error}
               required={config.required}
               class="space-y-2"
@@ -267,7 +271,7 @@ export const NetworkDNSCard = component$<NetworkDNSCardProps>(
             {/* DNS Presets */}
             {availablePresets.length > 0 && onApplyPreset$ && (
               <Select
-                placeholder={$localize`Quick DNS Presets`}
+                placeholder={semanticMessages.dns_quick_presets({}, { locale })}
                 options={presetOptions}
                 onChange$={handlePresetSelect}
                 onOpenChange$={$((isOpen: boolean) => {

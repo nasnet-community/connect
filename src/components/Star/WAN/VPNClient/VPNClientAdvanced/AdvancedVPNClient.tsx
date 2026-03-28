@@ -9,6 +9,7 @@ import { StepPriorities } from "./steps/StepPriorities";
 import { Step2_VPNConfiguration } from "./steps/Step2_VPNConfiguration";
 import { Step3_Summary } from "./steps/Step3_Summary";
 import type { L2TPCredentials } from "~/utils/supabaseClient";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 // Removed unused VPNClientAdvancedState import
 
 export interface VPNClientAdvancedProps {
@@ -20,6 +21,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
   ({ onComplete$, onCancel$ }) => {
     const activeStep = useSignal(0);
     const isValidating = useSignal(false);
+    const locale = useMessageLocale();
 
     // Initialize hooks
     const advancedHooks = useVPNClientAdvanced();
@@ -365,8 +367,16 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       const steps: CStepMeta[] = [
         {
           id: 1,
-          title: $localize`VPN Protocol Selection`,
-          description: $localize`Add and select VPN protocols for Foreign WAN links`,
+          title:
+            semanticMessages.vpn_client_advanced_step_protocol_selection_title(
+              {},
+              { locale },
+            ),
+          description:
+            semanticMessages.vpn_client_advanced_step_protocol_selection_description(
+              {},
+              { locale },
+            ),
           component: (
             <Step1_VPNProtocols
               wizardState={advancedHooks.state}
@@ -380,8 +390,19 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         },
         {
           id: 2,
-          title: $localize`VPN Configuration`,
-          description: $localize`Configure connection details for each VPN`,
+          title: semanticMessages.vpn_client_advanced_configuration_title(
+            {},
+            {
+              locale,
+            },
+          ),
+          description:
+            semanticMessages.vpn_client_advanced_configuration_description(
+              {},
+              {
+                locale,
+              },
+            ),
           component: (
             <Step2_VPNConfiguration
               wizardState={advancedHooks.state}
@@ -397,8 +418,19 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       if (hasMultipleVPNs) {
         steps.push({
           id: 3,
-          title: $localize`Strategy & Priority`,
-          description: $localize`Configure VPN strategy and set connection priorities`,
+          title: semanticMessages.vpn_client_advanced_step_strategy_title(
+            {},
+            {
+              locale,
+            },
+          ),
+          description:
+            semanticMessages.vpn_client_advanced_step_strategy_description(
+              {},
+              {
+                locale,
+              },
+            ),
           component: (
             <StepPriorities
               wizardState={advancedHooks.state}
@@ -416,8 +448,17 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
       steps.push({
         id: reviewStepId,
-        title: $localize`Review & Summary`,
-        description: $localize`Review and confirm your VPN configuration`,
+        title: semanticMessages.vpn_client_advanced_step_review_title(
+          {},
+          {
+            locale,
+          },
+        ),
+        description:
+          semanticMessages.vpn_client_advanced_step_review_description(
+            {},
+            { locale },
+          ),
         component: (
           <Step3_Summary
             wizardState={advancedHooks.state}
@@ -547,11 +588,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       }
 
       // Update step 3 (Strategy & Priority) if it exists
-      if (
-        hasMultipleVPNs &&
-        steps.value[2] &&
-        steps.value[2].title === $localize`Strategy & Priority`
-      ) {
+      if (hasMultipleVPNs && steps.value.length === 4 && steps.value[2]) {
         steps.value[2].isComplete = allVPNsHavePriorities;
       }
 
@@ -698,11 +735,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
       }
 
       // Update step 3 (Strategy & Priority) if it exists
-      if (
-        hasMultipleVPNs &&
-        steps.value[2] &&
-        steps.value[2].title === $localize`Strategy & Priority`
-      ) {
+      if (hasMultipleVPNs && steps.value.length === 4 && steps.value[2]) {
         steps.value[2].isComplete = allVPNsHavePriorities;
       }
 
@@ -724,9 +757,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
       const updateStepStructure = async () => {
         // Check if we need to add/remove the Strategy & Priority step
-        const currentHasStrategyStep = steps.value.some(
-          (s) => s.title === $localize`Strategy & Priority`,
-        );
+        const currentHasStrategyStep = steps.value.length === 4;
 
         // Only recreate steps if structure changes (multi-VPN step added/removed)
         if (hasMultipleVPNs !== currentHasStrategyStep) {
@@ -788,10 +819,20 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
 
                 <div>
                   <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {$localize`Advanced VPN Client Configuration`}
+                    {semanticMessages.vpn_client_advanced_page_title(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </h1>
                   <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {$localize`Configure multiple VPN clients with advanced networking features`}
+                    {semanticMessages.vpn_client_advanced_page_description(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -803,8 +844,24 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                   <SegmentedControl
                     value={enabled}
                     options={[
-                      { value: "false", label: $localize`Disabled` },
-                      { value: "true", label: $localize`Enabled` },
+                      {
+                        value: "false",
+                        label: semanticMessages.vpn_client_toggle_disabled(
+                          {},
+                          {
+                            locale,
+                          },
+                        ),
+                      },
+                      {
+                        value: "true",
+                        label: semanticMessages.vpn_client_toggle_enabled(
+                          {},
+                          {
+                            locale,
+                          },
+                        ),
+                      },
                     ]}
                     onChange$={handleToggle$}
                     size="sm"
@@ -817,7 +874,7 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                     onClick$={onCancel$}
                     class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
-                    {$localize`Cancel`}
+                    {semanticMessages.shared_cancel({}, { locale })}
                   </button>
                 )}
               </div>
@@ -856,16 +913,27 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                   </div>
                 </div>
                 <h3 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {$localize`VPN Client is Disabled`}
+                  {semanticMessages.vpn_client_advanced_disabled_title(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h3>
                 <p class="mx-auto mb-6 max-w-md text-gray-600 dark:text-gray-400">
-                  {$localize`Enable VPN Client above to configure multiple VPN connections with advanced features.`}
+                  {semanticMessages.vpn_client_advanced_disabled_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
                 <button
                   onClick$={applyConfiguration$}
                   class="inline-flex items-center rounded-lg border border-transparent bg-primary-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-700 dark:hover:bg-primary-600"
                 >
-                  {$localize`Continue`}
+                  {semanticMessages.vpn_client_advanced_continue(
+                    {},
+                    { locale },
+                  )}
                 </button>
               </div>
             )}

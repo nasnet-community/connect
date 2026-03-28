@@ -6,6 +6,7 @@ import type { StepItem } from "~/components/Core/Stepper/VStepper/types";
 import type { StepProps } from "~/types/step";
 import { WANInterface } from "./WANInterface/WANInterface";
 import { StarContext } from "../StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 // Define step components outside the main component to avoid serialization issues
 // Foreign step for both easy and advanced modes
@@ -35,6 +36,7 @@ const VPNClientStep = component$((props: StepProps) => (
 // ));
 
 export const WAN = component$((props: StepProps) => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const wanLinkType = starContext.state.Choose.WANLinkType;
   // const isAdvancedMode = starContext.state.Choose.Mode === "advance";
@@ -45,7 +47,7 @@ export const WAN = component$((props: StepProps) => {
   if (wanLinkType === "foreign" || wanLinkType === "both") {
     steps.push({
       id: steps.length + 1,
-      title: $localize`Foreign WAN`,
+      title: semanticMessages.wan_easy_step_foreign({}, { locale }),
       component: ForeignStep,
       isComplete: false,
     });
@@ -54,7 +56,7 @@ export const WAN = component$((props: StepProps) => {
   if (wanLinkType === "domestic" || wanLinkType === "both") {
     steps.push({
       id: steps.length + 1,
-      title: $localize`Domestic WAN`,
+      title: semanticMessages.wan_easy_step_domestic({}, { locale }),
       component: DomesticStep,
       isComplete: false,
     });
@@ -63,7 +65,7 @@ export const WAN = component$((props: StepProps) => {
   // Always add VPN Client step
   steps.push({
     id: steps.length + 1,
-    title: $localize`VPN Client`,
+    title: semanticMessages.wan_easy_step_vpn_client({}, { locale }),
     component: VPNClientStep,
     isComplete: false,
   });
@@ -72,7 +74,7 @@ export const WAN = component$((props: StepProps) => {
   // if (isAdvancedMode) {
   //   steps.push({
   //     id: steps.length + 1,
-  //     title: $localize`DNS Configuration`,
+  //     title: semanticMessages.wan_easy_step_dns({}, { locale }),
   //     component: DNSStep,
   //     isComplete: false,
   //   });

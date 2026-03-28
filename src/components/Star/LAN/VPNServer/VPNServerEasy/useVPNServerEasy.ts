@@ -6,8 +6,10 @@ import type {
   VSNetwork,
 } from "~/components/Star/StarContext";
 import type { QRL } from "@builder.io/qwik";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const useVPNServerEasy = () => {
+  const locale = useMessageLocale();
   const starContext = useContext(StarContext);
   const vpnServerState = starContext.state.LAN.VPNServer || {
     Users: [],
@@ -55,7 +57,10 @@ export const useVPNServerEasy = () => {
   // Validate passphrase
   const validatePassphrase = $((value: string) => {
     if (value.length < 10) {
-      passphraseError.value = $localize`Passphrase must be at least 10 characters`;
+      passphraseError.value = semanticMessages.vpn_server_easy_passphrase_min(
+        {},
+        { locale },
+      );
       return false;
     }
     passphraseError.value = "";
@@ -103,7 +108,8 @@ export const useVPNServerEasy = () => {
 
   const validateUsername = $((username: string, index: number) => {
     if (!username.trim()) {
-      usernameErrors[index] = $localize`Username is required`;
+      usernameErrors[index] =
+        semanticMessages.vpn_server_easy_username_required({}, { locale });
       return false;
     }
 
@@ -113,7 +119,10 @@ export const useVPNServerEasy = () => {
     );
 
     if (isDuplicate) {
-      usernameErrors[index] = $localize`Username already exists`;
+      usernameErrors[index] = semanticMessages.vpn_server_easy_username_exists(
+        {},
+        { locale },
+      );
       return false;
     }
 
@@ -123,12 +132,16 @@ export const useVPNServerEasy = () => {
 
   const validatePassword = $((password: string, index: number) => {
     if (!password.trim()) {
-      passwordErrors[index] = $localize`Password is required`;
+      passwordErrors[index] =
+        semanticMessages.vpn_server_easy_password_required({}, { locale });
       return false;
     }
 
     if (password.length < 8) {
-      passwordErrors[index] = $localize`Password must be at least 8 characters`;
+      passwordErrors[index] = semanticMessages.vpn_server_easy_password_min(
+        {},
+        { locale },
+      );
       return false;
     }
 

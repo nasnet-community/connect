@@ -11,8 +11,10 @@ import { Card } from "~/components/Core/Card";
 import { Button } from "~/components/Core/button";
 import { Input } from "~/components/Core/Input";
 import { Field } from "~/components/Core/Form/Field";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const EOIPTunnelStep = component$(() => {
+  const locale = useMessageLocale();
   const stepper = useStepperContext(TunnelContextId);
 
   // Skip this step if a different protocol was selected - moved to useTask$
@@ -109,17 +111,22 @@ export const EOIPTunnelStep = component$(() => {
             <HiLockClosedOutline class="h-6 w-6 text-primary-500 dark:text-primary-400" />
             <div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {$localize`EOIP Tunnels`}
+                {semanticMessages.tunnel_step_eoip({}, { locale })}
               </h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {$localize`Configure Ethernet over IP tunnels for bridging remote Ethernet segments`}
+                {semanticMessages.tunnel_step_eoip_description(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </p>
             </div>
           </div>
 
           <Button onClick$={addTunnel$} variant="outline" leftIcon>
             <HiPlusCircleOutline q:slot="leftIcon" class="h-5 w-5" />
-            {$localize`Add Tunnel`}
+            {semanticMessages.tunnel_add({}, { locale })}
           </Button>
         </div>
       </Card>
@@ -127,7 +134,7 @@ export const EOIPTunnelStep = component$(() => {
       {stepper.data.eoip.length === 0 ? (
         <Card>
           <p class="text-center text-gray-500 dark:text-gray-400">
-            {$localize`No EOIP tunnels configured. Click "Add Tunnel" to create one.`}
+            {semanticMessages.tunnel_no_eoip_configured({}, { locale })}
           </p>
         </Card>
       ) : (
@@ -136,7 +143,10 @@ export const EOIPTunnelStep = component$(() => {
             <Card key={index}>
               <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-md font-medium text-gray-900 dark:text-white">
-                  {$localize`EOIP Tunnel ${index + 1}`}
+                  {semanticMessages.tunnel_eoip_item_title(
+                    { index: String(index + 1) },
+                    { locale },
+                  )}
                 </h4>
                 <Button
                   onClick$={() => removeTunnel$(index)}
@@ -145,25 +155,37 @@ export const EOIPTunnelStep = component$(() => {
                   class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 >
                   <HiTrashOutline q:slot="leftIcon" class="h-5 w-5" />
-                  {$localize`Remove`}
+                  {semanticMessages.shared_remove({}, { locale })}
                 </Button>
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
                 {/* Name */}
-                <Field label={$localize`Name`} required>
+                <Field
+                  label={semanticMessages.tunnel_field_name({}, { locale })}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.name}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "name", value)
                     }
-                    placeholder={$localize`Enter tunnel name`}
+                    placeholder={semanticMessages.tunnel_field_name_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
 
                 {/* Tunnel ID */}
-                <Field label={$localize`Tunnel ID`} required>
+                <Field
+                  label={semanticMessages.tunnel_field_tunnel_id(
+                    {},
+                    { locale },
+                  )}
+                  required
+                >
                   <Input
                     type="number"
                     value={tunnel.tunnelId.toString() || "1"}
@@ -174,31 +196,51 @@ export const EOIPTunnelStep = component$(() => {
                         parseInt(value) || 1,
                       )
                     }
-                    placeholder={$localize`Enter tunnel ID`}
+                    placeholder={semanticMessages.tunnel_field_tunnel_id_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
 
                 {/* Remote Address */}
-                <Field label={$localize`Remote Address`} required>
+                <Field
+                  label={semanticMessages.tunnel_field_remote_address(
+                    {},
+                    { locale },
+                  )}
+                  required
+                >
                   <Input
                     type="text"
                     value={tunnel.remoteAddress}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "remoteAddress", value)
                     }
-                    placeholder={$localize`Enter remote address`}
+                    placeholder={semanticMessages.tunnel_field_remote_address_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
 
                 {/* IPsec Secret */}
-                <Field label={$localize`IPsec Secret`}>
+                <Field
+                  label={semanticMessages.tunnel_field_ipsec_secret(
+                    {},
+                    { locale },
+                  )}
+                >
                   <Input
                     type="text"
                     value={tunnel.ipsecSecret || ""}
                     onChange$={(e, value) =>
                       updateTunnelField$(index, "ipsecSecret", value)
                     }
-                    placeholder={$localize`Enter IPsec secret (optional)`}
+                    placeholder={semanticMessages.tunnel_field_ipsec_secret_placeholder(
+                      {},
+                      { locale },
+                    )}
                   />
                 </Field>
               </div>

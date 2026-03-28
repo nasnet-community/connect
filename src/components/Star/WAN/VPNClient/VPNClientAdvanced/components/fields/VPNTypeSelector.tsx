@@ -1,6 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import type { QRL } from "@builder.io/qwik";
 import type { VPNClientType } from "../../types/AdvancedVPNState";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface VPNTypeSelectorProps {
   selectedType: VPNClientType;
@@ -47,14 +48,36 @@ const VPN_TYPES: {
 
 export const VPNTypeSelector = component$<VPNTypeSelectorProps>((props) => {
   const { selectedType, disabled = false, onTypeChange$ } = props;
+  const locale = useMessageLocale();
+
+  const vpnTypes = VPN_TYPES.map((vpnType) => ({
+    ...vpnType,
+    description:
+      vpnType.value === "Wireguard"
+        ? semanticMessages.vpn_selector_wireguard_description({}, { locale })
+        : vpnType.value === "OpenVPN"
+          ? semanticMessages.vpn_selector_openvpn_description({}, { locale })
+          : vpnType.value === "L2TP"
+            ? semanticMessages.vpn_selector_l2tp_description({}, { locale })
+            : vpnType.value === "IKeV2"
+              ? semanticMessages.vpn_selector_ikev2_description({}, { locale })
+              : vpnType.value === "SSTP"
+                ? semanticMessages.vpn_selector_sstp_description({}, { locale })
+                : semanticMessages.vpn_selector_pptp_description(
+                    {},
+                    {
+                      locale,
+                    },
+                  ),
+  }));
 
   return (
     <div class="space-y-3">
       <label class="text-text-default block text-sm font-medium dark:text-text-dark-default">
-        {$localize`VPN Protocol`}
+        {semanticMessages.vpn_client_advanced_protocol({}, { locale })}
       </label>
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {VPN_TYPES.map((vpnType) => (
+        {vpnTypes.map((vpnType) => (
           <button
             key={vpnType.value}
             onClick$={$(() => onTypeChange$(vpnType.value))}

@@ -15,6 +15,7 @@ import { L2TPConfig } from "../Protocols/L2TP/L2TPConfig";
 import { IKEv2Config } from "../Protocols/IKeV2/IKEv2Config";
 import { PPTPConfig } from "../Protocols/PPTP/PPTPConfig";
 import { SSTPConfig } from "../Protocols/SSTP/SSTPConfig";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface VPNClientEasyProps {
   isComplete?: boolean;
@@ -23,6 +24,7 @@ interface VPNClientEasyProps {
 
 export const VPNClientEasy = component$<VPNClientEasyProps>(
   ({ isComplete, onComplete$ }) => {
+    const locale = useMessageLocale();
     const { isValid, vpnType, errorMessage, saveVPNSelection$ } =
       useVPNConfig();
 
@@ -58,7 +60,10 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
 
       if (!vpnType.value) {
         isValid.value = false;
-        errorMessage.value = "Please select a VPN type";
+        errorMessage.value = semanticMessages.vpn_client_easy_error_select_type(
+          {},
+          { locale },
+        );
         return;
       }
 
@@ -94,11 +99,14 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
           });
 
           errorMessage.value =
-            "Failed to save VPN configuration. Please check your inputs and try again.";
+            semanticMessages.vpn_client_easy_error_save_failed({}, { locale });
         }
       } else {
         errorMessage.value =
-          "Please complete the VPN configuration correctly before proceeding.";
+          semanticMessages.vpn_client_easy_error_complete_correctly(
+            {},
+            { locale },
+          );
       }
     });
 
@@ -126,10 +134,13 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                 </div>
                 <div>
                   <h2 class="text-text-default text-xl font-semibold dark:text-text-dark-default">
-                    {$localize`VPN Client Configuration`}
+                    {semanticMessages.vpn_client_easy_title({}, { locale })}
                   </h2>
                   <p class="text-text-muted dark:text-text-dark-muted">
-                    {$localize`Your use of Starlink can be traced back to your identity. To enhance security and privacy, please configure a VPN to conceal your Starlink IP.`}
+                    {semanticMessages.vpn_client_easy_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
               </div>
@@ -139,8 +150,20 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                 <SegmentedControl
                   value={enabled}
                   options={[
-                    { value: "false", label: $localize`Disabled` },
-                    { value: "true", label: $localize`Enabled` },
+                    {
+                      value: "false",
+                      label: semanticMessages.vpn_client_toggle_disabled(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      value: "true",
+                      label: semanticMessages.vpn_client_toggle_enabled(
+                        {},
+                        { locale },
+                      ),
+                    },
                   ]}
                   onChange$={handleToggle$}
                   size="sm"
@@ -230,10 +253,16 @@ export const VPNClientEasy = component$<VPNClientEasyProps>(
                     </div>
                   </div>
                   <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-gray-100">
-                    {$localize`VPN Client is Disabled`}
+                    {semanticMessages.vpn_client_easy_disabled_title(
+                      {},
+                      { locale },
+                    )}
                   </h3>
                   <p class="text-gray-600 dark:text-gray-400">
-                    {$localize`Enable VPN Client above to configure your VPN connection settings.`}
+                    {semanticMessages.vpn_client_easy_disabled_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
                 </div>
 

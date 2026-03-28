@@ -19,8 +19,10 @@ import { useDNS } from "./useDNS";
 import { NetworkDNSCard } from "./NetworkDNSCard";
 import { DOHConfiguration } from "./DOHConfiguration";
 import type { DNSStepProps } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
+  const locale = useMessageLocale();
   const {
     dnsConfig,
     validationErrors,
@@ -102,8 +104,8 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
         <div class="space-y-8">
           {/* Modern Header */}
           <GradientHeader
-            title={$localize`DNS Configuration`}
-            description={$localize`Configure DNS servers and security settings for each network`}
+            title={semanticMessages.dns_title({}, { locale })}
+            description={semanticMessages.dns_description({}, { locale })}
             icon={<LuGlobe2 class="h-10 w-10" />}
             toggleConfig={{
               enabled: dnsEnabled,
@@ -112,7 +114,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                   await onDisabled$();
                 }
               }),
-              label: $localize`Enable DNS Configuration`,
+              label: semanticMessages.dns_enable_label({}, { locale }),
             }}
             gradient={{
               direction: "to-br",
@@ -121,9 +123,27 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
               to: "blue-100",
             }}
             features={[
-              { label: $localize`Fast DNS resolution`, color: "blue-500" },
-              { label: $localize`Security filtering`, color: "green-500" },
-              { label: $localize`Custom configurations`, color: "primary-500" },
+              {
+                label: semanticMessages.dns_feature_fast_resolution(
+                  {},
+                  { locale },
+                ),
+                color: "blue-500",
+              },
+              {
+                label: semanticMessages.dns_feature_security_filtering(
+                  {},
+                  { locale },
+                ),
+                color: "green-500",
+              },
+              {
+                label: semanticMessages.dns_feature_custom_configurations(
+                  {},
+                  { locale },
+                ),
+                color: "primary-500",
+              },
             ]}
             showFeaturesWhen={dnsEnabled.value}
           />
@@ -139,10 +159,13 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                       <LuGlobe2 class="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-gray-700 dark:text-gray-300">
-                      {$localize`Using Default DNS Configuration`}
+                      {semanticMessages.dns_default_state_title({}, { locale })}
                     </h3>
                     <p class="mx-auto max-w-md text-sm text-gray-600 dark:text-gray-400">
-                      {$localize`The following default DNS servers will be used. Enable DNS configuration above to customize these settings.`}
+                      {semanticMessages.dns_default_state_description(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
 
@@ -151,12 +174,19 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                     <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                       <h4 class="mb-3 flex items-center gap-2 font-medium text-blue-700 dark:text-blue-300">
                         <LuGlobe2 class="h-4 w-4" />
-                        {$localize`Default DNS Servers`}
+                        {semanticMessages.dns_default_servers_title(
+                          {},
+                          { locale },
+                        )}
                       </h4>
                       <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <div class="flex justify-between text-sm">
                           <span class="text-gray-600 dark:text-gray-400">
-                            {$localize`Foreign Network`}:
+                            {semanticMessages.dns_network_foreign(
+                              {},
+                              { locale },
+                            )}
+                            :
                           </span>
                           <span class="font-mono text-gray-900 dark:text-gray-100">
                             8.8.8.8
@@ -164,7 +194,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                         </div>
                         <div class="flex justify-between text-sm">
                           <span class="text-gray-600 dark:text-gray-400">
-                            {$localize`VPN Network`}:
+                            {semanticMessages.dns_network_vpn({}, { locale })}:
                           </span>
                           <span class="font-mono text-gray-900 dark:text-gray-100">
                             1.1.1.1
@@ -174,7 +204,11 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                           <>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Split Network`}:
+                                {semanticMessages.dns_network_split(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 9.9.9.9
@@ -182,7 +216,11 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                             </div>
                             <div class="flex justify-between text-sm">
                               <span class="text-gray-600 dark:text-gray-400">
-                                {$localize`Domestic Network`}:
+                                {semanticMessages.dns_network_domestic(
+                                  {},
+                                  { locale },
+                                )}
+                                :
                               </span>
                               <span class="font-mono text-gray-900 dark:text-gray-100">
                                 208.67.222.222
@@ -203,7 +241,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                 <CardFooter>
                   <div class="flex w-full items-center justify-end">
                     <Button onClick$={handleComplete} size="lg" class="px-8">
-                      {$localize`Save & Continue`}
+                      {semanticMessages.dns_save_continue({}, { locale })}
                     </Button>
                   </div>
                 </CardFooter>
@@ -215,14 +253,14 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
               {/* Warning Alert about DNS Configuration */}
               <Alert
                 status="info"
-                title={$localize`DNS Configuration Notice`}
+                title={semanticMessages.dns_notice_title({}, { locale })}
                 class="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20"
               >
                 <div class="flex gap-3">
                   <LuInfo class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                   <div class="space-y-2">
                     <p class="text-sm text-gray-700 dark:text-gray-300">
-                      {$localize`Configure custom DNS servers for each network segment. These settings will override default DNS configurations and can improve performance, security, and content filtering.`}
+                      {semanticMessages.dns_notice_description({}, { locale })}
                     </p>
                   </div>
                 </div>
@@ -231,7 +269,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
               <div class="space-y-4">
                 <h3 class="text-text-default flex items-center gap-2 text-lg font-medium dark:text-text-dark-default">
                   <LuWifi class="h-5 w-5 text-primary-500" />
-                  {$localize`Network DNS Servers`}
+                  {semanticMessages.dns_servers_title({}, { locale })}
                 </h3>
 
                 <div class="relative grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -254,7 +292,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                 <div class="flex items-center gap-3">
                   <h3 class="text-text-default flex items-center gap-2 text-lg font-medium dark:text-text-dark-default">
                     <LuShield class="h-5 w-5 text-primary-500" />
-                    {$localize`DNS Security (DOH)`}
+                    {semanticMessages.dns_security_title({}, { locale })}
                   </h3>
 
                   <div
@@ -272,7 +310,12 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                     ) : (
                       <LuShield class="h-3 w-3" />
                     )}
-                    {$localize`For ${isDomestic ? "Domestic" : "VPN"} Network`}
+                    {isDomestic
+                      ? semanticMessages.dns_for_domestic_network(
+                          {},
+                          { locale },
+                        )
+                      : semanticMessages.dns_for_vpn_network({}, { locale })}
                   </div>
                 </div>
 
@@ -289,10 +332,16 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
 
               {/* Validation Errors */}
               {hasErrors && !isValidating.value && (
-                <Alert status="error" title={$localize`Configuration Issues`}>
+                <Alert
+                  status="error"
+                  title={semanticMessages.dns_configuration_issues_title(
+                    {},
+                    { locale },
+                  )}
+                >
                   <div class="mt-2">
                     <p class="mb-3 text-sm text-red-700 dark:text-red-300">
-                      {$localize`Please resolve the following issues:`}
+                      {semanticMessages.dns_resolve_issues({}, { locale })}
                     </p>
                     <div class="space-y-2">
                       {Object.entries(validationErrors).map(
@@ -325,19 +374,28 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                         <>
                           <LuAlertTriangle class="h-5 w-5 text-red-500" />
                           <span class="text-sm text-red-600 dark:text-red-400">
-                            {$localize`Please fix ${Object.keys(validationErrors).length} error(s)`}
+                            {semanticMessages.dns_fix_error_count(
+                              { count: Object.keys(validationErrors).length },
+                              { locale },
+                            )}
                           </span>
                         </>
                       ) : isConfigurationValid ? (
                         <>
                           <LuCheckCircle class="h-5 w-5 text-green-500" />
                           <span class="text-sm text-green-600 dark:text-green-400">
-                            {$localize`Configuration valid`}
+                            {semanticMessages.dns_configuration_valid(
+                              {},
+                              { locale },
+                            )}
                           </span>
                         </>
                       ) : (
                         <span class="text-sm text-gray-500 dark:text-gray-400">
-                          {$localize`Configure your DNS settings`}
+                          {semanticMessages.dns_configure_settings(
+                            {},
+                            { locale },
+                          )}
                         </span>
                       )}
                     </div>
@@ -349,7 +407,7 @@ export const DNS = component$<DNSStepProps>(({ onComplete$, onDisabled$ }) => {
                       disabled={!isConfigurationValid}
                       class="px-8 font-medium shadow-lg transition-shadow hover:shadow-xl"
                     >
-                      {$localize`Save & Continue`}
+                      {semanticMessages.dns_save_continue({}, { locale })}
                     </Button>
                   </div>
                 </CardFooter>

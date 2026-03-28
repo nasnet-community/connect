@@ -68,14 +68,14 @@ pnpm preview
 
 ## 🌍 Internationalization
 
-The project supports multiple languages. To work with translations:
+The project supports multiple languages through semantic message catalogs in `messages/*.json`. To work with translations:
 
 ```bash
-# Extract messages for translation
-pnpm i18n-extract
+# Compile semantic catalogs
+npm run i18n:compile
 
-# Translate extracted messages
-pnm i18n-translate
+# Validate translation coverage
+npm run i18n:validate
 ```
 
 ## 🧩 Project Structure
@@ -84,10 +84,11 @@ pnm i18n-translate
 ├── public/              # Static assets
 ├── src/
 │   ├── components/      # UI components
-│   ├── locales/        # Translation files
+│   ├── i18n/           # Locale metadata and validation scripts
 │   ├── routes/         # Application routes
 │   ├── utils/          # Utility functions
 │   └── types/          # TypeScript type definitions
+├── messages/           # Semantic translation catalogs
 └── package.json
 ```
 

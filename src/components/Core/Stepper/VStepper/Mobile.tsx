@@ -1,7 +1,9 @@
 import { component$ } from "@builder.io/qwik";
 import type { MobileProps } from "./types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const Mobile = component$((props: MobileProps) => {
+  const locale = useMessageLocale();
   const {
     activeStep,
     isStepsVisible,
@@ -21,7 +23,13 @@ export const Mobile = component$((props: MobileProps) => {
         <div class="space-y-2 px-4 py-3">
           <div class="flex items-center justify-between">
             <span class="text-text-secondary text-sm font-medium">
-              {$localize`Step ${activeStep.value + 1} of ${props.steps.length}`}
+              {semanticMessages.stepper_step_of_total(
+                {
+                  current: String(activeStep.value + 1),
+                  total: String(props.steps.length),
+                },
+                { locale },
+              )}
             </span>
 
             <div class="flex items-center gap-3">
@@ -37,7 +45,10 @@ export const Mobile = component$((props: MobileProps) => {
                           ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30"
                           : "text-text-secondary hover:bg-primary-500/10 hover:text-primary-500"
                     }`}
-                  title={$localize`Get help (Press ? key)`}
+                  title={semanticMessages.stepper_help_button_shortcut(
+                    {},
+                    { locale },
+                  )}
                 >
                   <svg
                     class="h-4 w-4"
@@ -63,8 +74,10 @@ export const Mobile = component$((props: MobileProps) => {
                 onClick$={() => toggleStepsVisibility()}
                 class="text-sm text-primary-500"
               >
-                {isStepsVisible.value ? $localize`Hide` : $localize`Show`}{" "}
-                {$localize`Steps`}
+                {isStepsVisible.value
+                  ? semanticMessages.shared_hide({}, { locale })
+                  : semanticMessages.shared_show({}, { locale })}{" "}
+                {semanticMessages.shared_steps({}, { locale })}
               </button>
             </div>
           </div>

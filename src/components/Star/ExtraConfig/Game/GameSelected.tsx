@@ -1,8 +1,10 @@
 import { component$ } from "@builder.io/qwik";
 import type { StarContextType } from "~/components/Star/StarContext/StarContext";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const GameSelected = component$<{ context: StarContextType }>(
   ({ context }) => {
+    const locale = useMessageLocale();
     const formatPorts = (ports: {
       tcp?: (string | number)[];
       udp?: (string | number)[];
@@ -19,7 +21,7 @@ export const GameSelected = component$<{ context: StarContextType }>(
     return context.state.ExtraConfig.Games?.length ? (
       <div class="space-y-3">
         <h3 class="font-medium text-text dark:text-text-dark-default">
-          {$localize`Selected Games`}
+          {semanticMessages.game_selected_title({}, { locale })}
         </h3>
         <div class="space-y-2">
           {context.state.ExtraConfig.Games.map((game, index) => (

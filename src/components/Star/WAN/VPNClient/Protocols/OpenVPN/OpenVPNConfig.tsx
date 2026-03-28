@@ -20,6 +20,7 @@ import {
   HiShieldCheckOutline,
   HiQuestionMarkCircleOutline,
 } from "@qwikest/icons/heroicons";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface OpenVPNConfigProps {
   onIsValidChange$: QRL<(isValid: boolean) => void>;
@@ -28,6 +29,7 @@ interface OpenVPNConfigProps {
 
 export const OpenVPNConfig = component$<OpenVPNConfigProps>(
   ({ onIsValidChange$, isSaving }) => {
+    const locale = useMessageLocale();
     const {
       config,
       configMethod,
@@ -79,10 +81,16 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
               {/* Content */}
               <div class="min-w-0 flex-1">
                 <h3 class="mb-2 text-xl font-bold text-info-900 dark:text-info-100">
-                  {$localize`MikroTik RouterOS OpenVPN Support`}
+                  {semanticMessages.vpn_openvpn_easy_routeros_support_title(
+                    {},
+                    { locale },
+                  )}
                 </h3>
                 <p class="mb-4 text-sm leading-relaxed text-info-800 dark:text-info-200">
-                  {$localize`RouterOS has specialized OpenVPN implementation with specific capabilities. Our intelligent parser automatically detects and handles compatibility requirements.`}
+                  {semanticMessages.vpn_openvpn_easy_routeros_support_description(
+                    {},
+                    { locale },
+                  )}
                 </p>
 
                 {/* Feature Grid */}
@@ -92,25 +100,40 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
                     <div class="mb-3 flex items-center">
                       <div class="mr-2 h-2 w-2 rounded-full bg-success"></div>
                       <h4 class="text-sm font-semibold text-success-dark dark:text-success-light">
-                        {$localize`Supported Features`}
+                        {semanticMessages.vpn_openvpn_easy_supported_features(
+                          {},
+                          { locale },
+                        )}
                       </h4>
                     </div>
                     <ul class="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
                       <li class="flex items-center">
                         <HiCheckCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        TCP/UDP protocols
+                        {semanticMessages.vpn_openvpn_easy_feature_protocols(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiCheckCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        AES encryption (128/192/256)
+                        {semanticMessages.vpn_openvpn_easy_feature_aes(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiCheckCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        Username/password authentication
+                        {semanticMessages.vpn_openvpn_easy_feature_credentials(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiCheckCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        Certificate-based auth
+                        {semanticMessages.vpn_openvpn_easy_feature_certificates(
+                          {},
+                          { locale },
+                        )}
                       </li>
                     </ul>
                   </div>
@@ -120,25 +143,40 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
                     <div class="mb-3 flex items-center">
                       <div class="mr-2 h-2 w-2 rounded-full bg-warning"></div>
                       <h4 class="text-sm font-semibold text-warning-dark dark:text-warning-light">
-                        {$localize`Key Limitations`}
+                        {semanticMessages.vpn_openvpn_easy_key_limitations(
+                          {},
+                          { locale },
+                        )}
                       </h4>
                     </div>
                     <ul class="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
                       <li class="flex items-center">
                         <HiXCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        No LZO compression
+                        {semanticMessages.vpn_openvpn_easy_limitation_lzo(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiXCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        No cipher negotiation
+                        {semanticMessages.vpn_openvpn_easy_limitation_cipher_negotiation(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiXCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        Limited TLS features
+                        {semanticMessages.vpn_openvpn_easy_limitation_tls(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li class="flex items-center">
                         <HiXCircleOutline class="mr-2 h-3 w-3 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        Manual certificate import
+                        {semanticMessages.vpn_openvpn_easy_limitation_manual_cert_import(
+                          {},
+                          { locale },
+                        )}
                       </li>
                     </ul>
                   </div>
@@ -177,10 +215,16 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
 
                 <div class="min-w-0 flex-1">
                   <h3 class="mb-2 text-lg font-bold text-warning-900 dark:text-warning-100">
-                    {$localize`RouterOS Compatibility Issues Detected`}
+                    {semanticMessages.vpn_openvpn_easy_compatibility_issues_title(
+                      {},
+                      { locale },
+                    )}
                   </h3>
                   <p class="mb-4 text-sm text-warning-800 dark:text-warning-200">
-                    {$localize`Your configuration contains features that aren't supported by RouterOS and will be automatically ignored or adapted:`}
+                    {semanticMessages.vpn_openvpn_easy_compatibility_issues_description(
+                      {},
+                      { locale },
+                    )}
                   </p>
 
                   {/* Unsupported Directives Grid */}
@@ -205,25 +249,40 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
                     <div class="mb-2 flex items-center">
                       <HiInformationCircleSolid class="mr-2 h-4 w-4 text-primary-600 dark:text-primary-400" />
                       <h4 class="text-sm font-semibold text-primary-800 dark:text-primary-200">
-                        {$localize`Quick Fixes`}
+                        {semanticMessages.vpn_openvpn_easy_quick_fixes(
+                          {},
+                          { locale },
+                        )}
                       </h4>
                     </div>
                     <ul class="space-y-1 text-xs text-info-700 dark:text-info-300">
                       <li>
                         •{" "}
-                        {$localize`Remove 'comp-lzo' directives (compression not supported)`}
+                        {semanticMessages.vpn_openvpn_easy_fix_remove_comp_lzo(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li>
                         •{" "}
-                        {$localize`Replace 'ncp-ciphers' with explicit 'cipher' directive`}
+                        {semanticMessages.vpn_openvpn_easy_fix_replace_ncp_ciphers(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li>
                         •{" "}
-                        {$localize`Import certificates manually in RouterOS certificate store`}
+                        {semanticMessages.vpn_openvpn_easy_fix_import_certificates(
+                          {},
+                          { locale },
+                        )}
                       </li>
                       <li>
                         •{" "}
-                        {$localize`Use TLS 1.2+ for tls-auth/tls-crypt features (RouterOS 7.17+)`}
+                        {semanticMessages.vpn_openvpn_easy_fix_use_tls_1_2(
+                          {},
+                          { locale },
+                        )}
                       </li>
                     </ul>
                   </div>
@@ -245,10 +304,16 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
                   </div>
                   <div>
                     <h3 class="text-text-default text-lg font-semibold dark:text-text-dark-default">
-                      {$localize`OpenVPN Configuration File`}
+                      {semanticMessages.vpn_openvpn_easy_config_file_title(
+                        {},
+                        { locale },
+                      )}
                     </h3>
                     <p class="text-text-muted dark:text-text-dark-muted text-sm">
-                      {$localize`Upload or paste your .ovpn file. We'll automatically validate RouterOS compatibility.`}
+                      {semanticMessages.vpn_openvpn_easy_config_file_description(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
                 </div>
@@ -261,16 +326,10 @@ export const OpenVPNConfig = component$<OpenVPNConfigProps>(
                   configValue={config.value}
                   onConfigChange$={handleConfigChange$}
                   onFileUpload$={handleFileUpload$}
-                  placeholder={$localize`Paste your OpenVPN configuration here. It should include directives like 'remote', 'proto', 'dev', etc.
-
-Example:
-client
-dev tun
-proto udp
-remote vpn.example.com 1194
-auth-user-pass
-cipher AES-256-GCM
-auth SHA256`}
+                  placeholder={semanticMessages.vpn_openvpn_config_placeholder_full(
+                    {},
+                    { locale },
+                  )}
                 />
               </div>
             </div>
@@ -286,10 +345,16 @@ auth SHA256`}
                   </div>
                   <div>
                     <h3 class="text-lg font-semibold text-info-900 dark:text-info-100">
-                      {$localize`Choose Authentication Method`}
+                      {semanticMessages.vpn_openvpn_easy_auth_method_title(
+                        {},
+                        { locale },
+                      )}
                     </h3>
                     <p class="text-sm text-info-700 dark:text-info-300">
-                      {$localize`Your configuration doesn't specify an authentication method. Please choose how you want to authenticate with the VPN server.`}
+                      {semanticMessages.vpn_openvpn_easy_auth_method_description(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
                 </div>
@@ -312,13 +377,22 @@ auth SHA256`}
                       </div>
                       <div class="flex-1">
                         <h4 class="text-text-default mb-2 text-lg font-semibold dark:text-text-dark-default">
-                          {$localize`Username & Password`}
+                          {semanticMessages.vpn_openvpn_easy_auth_credentials_title(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <p class="text-text-muted dark:text-text-dark-muted text-sm leading-relaxed">
-                          {$localize`Use your VPN service username and password for authentication. Most common method.`}
+                          {semanticMessages.vpn_openvpn_easy_auth_credentials_description(
+                            {},
+                            { locale },
+                          )}
                         </p>
                         <div class="mt-3 text-xs font-medium text-primary-600 dark:text-primary-400">
-                          {$localize`Requires: Username, Password`}
+                          {semanticMessages.vpn_openvpn_easy_auth_credentials_requires(
+                            {},
+                            { locale },
+                          )}
                         </div>
                       </div>
                     </div>
@@ -339,13 +413,22 @@ auth SHA256`}
                       </div>
                       <div class="flex-1">
                         <h4 class="text-text-default mb-2 text-lg font-semibold dark:text-text-dark-default">
-                          {$localize`Certificate Only`}
+                          {semanticMessages.vpn_openvpn_easy_auth_certificate_title(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <p class="text-text-muted dark:text-text-dark-muted text-sm leading-relaxed">
-                          {$localize`Use client certificates for authentication. More secure but requires certificate management.`}
+                          {semanticMessages.vpn_openvpn_easy_auth_certificate_description(
+                            {},
+                            { locale },
+                          )}
                         </p>
                         <div class="mt-3 text-xs font-medium text-secondary-600 dark:text-secondary-400">
-                          {$localize`Requires: Client Certificate`}
+                          {semanticMessages.vpn_openvpn_easy_auth_certificate_requires(
+                            {},
+                            { locale },
+                          )}
                         </div>
                       </div>
                     </div>
@@ -370,13 +453,22 @@ auth SHA256`}
                       </div>
                       <div class="flex-1">
                         <h4 class="text-text-default mb-2 text-lg font-semibold dark:text-text-dark-default">
-                          {$localize`Username & Password + Certificate`}
+                          {semanticMessages.vpn_openvpn_easy_auth_both_title(
+                            {},
+                            { locale },
+                          )}
                         </h4>
                         <p class="text-text-muted dark:text-text-dark-muted text-sm leading-relaxed">
-                          {$localize`Maximum security using both username/password and client certificates. Dual authentication.`}
+                          {semanticMessages.vpn_openvpn_easy_auth_both_description(
+                            {},
+                            { locale },
+                          )}
                         </p>
                         <div class="mt-3 text-xs font-medium text-warning-600 dark:text-warning-400">
-                          {$localize`Requires: Username, Password, Client Certificate`}
+                          {semanticMessages.vpn_openvpn_easy_auth_both_requires(
+                            {},
+                            { locale },
+                          )}
                         </div>
                       </div>
                     </div>
@@ -398,10 +490,16 @@ auth SHA256`}
                     </div>
                     <div>
                       <h3 class="text-lg font-semibold text-warning-900 dark:text-warning-100">
-                        {$localize`Complete Your Configuration`}
+                        {semanticMessages.vpn_openvpn_easy_complete_configuration(
+                          {},
+                          { locale },
+                        )}
                       </h3>
                       <p class="text-sm text-warning-700 dark:text-warning-300">
-                        {$localize`Your configuration file is missing some required information. Please provide the missing details below.`}
+                        {semanticMessages.vpn_openvpn_easy_missing_config_description(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -410,29 +508,44 @@ auth SHA256`}
                 <div class="space-y-5 p-6">
                   {missingFields.value.includes("Username") && (
                     <FormField
-                      label={$localize`Username`}
+                      label={semanticMessages.shared_username({}, { locale })}
                       value={username.value}
                       onInput$={(_, el) => {
                         username.value = el.value;
                         handleManualFormSubmit$();
                       }}
                       required
-                      placeholder={$localize`Your VPN username`}
-                      helperText={$localize`Maximum 27 characters for RouterOS compatibility`}
+                      placeholder={semanticMessages.vpn_openvpn_easy_username_placeholder(
+                        {},
+                        { locale },
+                      )}
+                      helperText={semanticMessages.vpn_openvpn_easy_username_help(
+                        {},
+                        { locale },
+                      )}
                     />
                   )}
                   {missingFields.value.includes("Password") && (
                     <FormField
                       type="text"
-                      label={$localize`Password`}
+                      label={semanticMessages.vpn_openvpn_password(
+                        {},
+                        { locale },
+                      )}
                       value={password.value}
                       onInput$={(_, el) => {
                         password.value = el.value;
                         handleManualFormSubmit$();
                       }}
                       required
-                      placeholder={$localize`Your VPN password`}
-                      helperText={$localize`Maximum 1000 characters for RouterOS compatibility`}
+                      placeholder={semanticMessages.vpn_openvpn_easy_password_placeholder(
+                        {},
+                        { locale },
+                      )}
+                      helperText={semanticMessages.vpn_openvpn_easy_password_help(
+                        {},
+                        { locale },
+                      )}
                     />
                   )}
                 </div>
@@ -444,13 +557,22 @@ auth SHA256`}
             <div class="space-y-6">
               {/* Connection Settings */}
               <FormContainer
-                title={$localize`Connection Settings`}
-                description={$localize`Configure the basic connection parameters for your OpenVPN server`}
+                title={semanticMessages.vpn_pptp_connection_title(
+                  {},
+                  { locale },
+                )}
+                description={semanticMessages.vpn_openvpn_easy_connection_description(
+                  {},
+                  { locale },
+                )}
                 bordered
               >
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <FormField
-                    label={$localize`Server Address`}
+                    label={semanticMessages.vpn_openvpn_server_address(
+                      {},
+                      { locale },
+                    )}
                     required
                     value={serverAddress.value}
                     onInput$={(_, el) => {
@@ -458,11 +580,17 @@ auth SHA256`}
                       handleManualFormSubmit$();
                     }}
                     placeholder="vpn.example.com"
-                    helperText={$localize`Domain name or IP address of your VPN server`}
+                    helperText={semanticMessages.vpn_openvpn_easy_server_address_help(
+                      {},
+                      { locale },
+                    )}
                   />
 
                   <FormField
-                    label={$localize`Server Port`}
+                    label={semanticMessages.vpn_openvpn_server_port(
+                      {},
+                      { locale },
+                    )}
                     required
                     value={serverPort.value}
                     onInput$={(_, el) => {
@@ -470,14 +598,17 @@ auth SHA256`}
                       handleManualFormSubmit$();
                     }}
                     placeholder="1194"
-                    helperText={$localize`Default OpenVPN port is 1194`}
+                    helperText={semanticMessages.vpn_openvpn_easy_server_port_help(
+                      {},
+                      { locale },
+                    )}
                   />
                 </div>
 
                 <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
                     <label class="text-text-secondary dark:text-text-dark-secondary mb-3 block text-sm font-semibold">
-                      {$localize`Protocol`} *
+                      {semanticMessages.vpn_openvpn_protocol({}, { locale })} *
                     </label>
                     <RadioGroup
                       value={protocol.value}
@@ -486,20 +617,40 @@ auth SHA256`}
                         handleManualFormSubmit$();
                       }}
                       options={[
-                        { value: "udp", label: "UDP (Recommended)" },
-                        { value: "tcp", label: "TCP" },
+                        {
+                          value: "udp",
+                          label:
+                            semanticMessages.vpn_openvpn_easy_protocol_udp_recommended(
+                              {},
+                              { locale },
+                            ),
+                        },
+                        {
+                          value: "tcp",
+                          label: semanticMessages.vpn_openvpn_easy_protocol_tcp(
+                            {},
+                            { locale },
+                          ),
+                        },
                       ]}
                       name="protocol"
                       class="space-x-8"
                     />
                     <p class="text-text-muted dark:text-text-dark-muted mt-2 text-xs">
-                      {$localize`UDP is faster, TCP is more reliable through firewalls`}
+                      {semanticMessages.vpn_openvpn_easy_protocol_help(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
 
                   <div>
                     <label class="text-text-secondary dark:text-text-dark-secondary mb-3 block text-sm font-semibold">
-                      {$localize`Authentication Type`} *
+                      {semanticMessages.vpn_openvpn_easy_auth_type(
+                        {},
+                        { locale },
+                      )}{" "}
+                      *
                     </label>
                     <select
                       value={authType.value}
@@ -514,18 +665,30 @@ auth SHA256`}
                            focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20
                            dark:border-border-dark dark:bg-surface-dark dark:text-text-dark-default"
                     >
-                      <option value="Credentials">{$localize`Username/Password`}</option>
-                      <option
-                        value="Certificate"
-                        disabled
-                      >{$localize`Certificates (Coming Soon)`}</option>
-                      <option
-                        value="CredentialsCertificate"
-                        disabled
-                      >{$localize`Username/Password & Certificates (Coming Soon)`}</option>
+                      <option value="Credentials">
+                        {semanticMessages.vpn_openvpn_easy_auth_type_credentials(
+                          {},
+                          { locale },
+                        )}
+                      </option>
+                      <option value="Certificate" disabled>
+                        {semanticMessages.vpn_ikev2_auth_cert_soon(
+                          {},
+                          { locale },
+                        )}
+                      </option>
+                      <option value="CredentialsCertificate" disabled>
+                        {semanticMessages.vpn_openvpn_easy_auth_type_credentials_certificates_soon(
+                          {},
+                          { locale },
+                        )}
+                      </option>
                     </select>
                     <p class="text-text-muted dark:text-text-dark-muted mt-2 text-xs">
-                      {$localize`Most VPN providers use username/password authentication`}
+                      {semanticMessages.vpn_openvpn_easy_auth_type_help(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
                 </div>
@@ -535,34 +698,55 @@ auth SHA256`}
               {(authType.value === "Credentials" ||
                 authType.value === "CredentialsCertificate") && (
                 <FormContainer
-                  title={$localize`Authentication Credentials`}
-                  description={$localize`Enter your VPN service credentials`}
+                  title={semanticMessages.vpn_openvpn_easy_credentials_title(
+                    {},
+                    { locale },
+                  )}
+                  description={semanticMessages.vpn_openvpn_easy_credentials_description(
+                    {},
+                    { locale },
+                  )}
                   bordered
                 >
                   <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <FormField
-                      label={$localize`Username`}
+                      label={semanticMessages.shared_username({}, { locale })}
                       required
                       value={username.value}
                       onInput$={(_, el) => {
                         username.value = el.value;
                         handleManualFormSubmit$();
                       }}
-                      placeholder={$localize`Your VPN username`}
-                      helperText={$localize`Maximum 27 characters for RouterOS compatibility`}
+                      placeholder={semanticMessages.vpn_openvpn_easy_username_placeholder(
+                        {},
+                        { locale },
+                      )}
+                      helperText={semanticMessages.vpn_openvpn_easy_username_help(
+                        {},
+                        { locale },
+                      )}
                     />
 
                     <FormField
                       type="text"
-                      label={$localize`Password`}
+                      label={semanticMessages.vpn_openvpn_password(
+                        {},
+                        { locale },
+                      )}
                       required
                       value={password.value}
                       onInput$={(_, el) => {
                         password.value = el.value;
                         handleManualFormSubmit$();
                       }}
-                      placeholder={$localize`Your VPN password`}
-                      helperText={$localize`Maximum 1000 characters for RouterOS compatibility`}
+                      placeholder={semanticMessages.vpn_openvpn_easy_password_placeholder(
+                        {},
+                        { locale },
+                      )}
+                      helperText={semanticMessages.vpn_openvpn_easy_password_help(
+                        {},
+                        { locale },
+                      )}
                     />
                   </div>
                 </FormContainer>
@@ -580,10 +764,16 @@ auth SHA256`}
                     </div>
                     <div class="flex-1">
                       <h3 class="mb-2 text-lg font-semibold text-blue-900 dark:text-blue-100">
-                        {$localize`Certificate-Based Authentication`}
+                        {semanticMessages.vpn_openvpn_easy_certificate_auth_title(
+                          {},
+                          { locale },
+                        )}
                       </h3>
                       <p class="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
-                        {$localize`For certificate-based authentication, you'll need to manually import your certificates into RouterOS's certificate store using the Files → Certificates section in WinBox or the certificate import commands.`}
+                        {semanticMessages.vpn_openvpn_easy_certificate_auth_description(
+                          {},
+                          { locale },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -592,31 +782,46 @@ auth SHA256`}
 
               {/* Encryption Settings */}
               <FormContainer
-                title={$localize`Encryption Settings`}
-                description={$localize`Configure the encryption parameters (leave default for most providers)`}
+                title={semanticMessages.vpn_openvpn_easy_encryption_title(
+                  {},
+                  { locale },
+                )}
+                description={semanticMessages.vpn_openvpn_easy_encryption_description(
+                  {},
+                  { locale },
+                )}
                 bordered
               >
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <FormField
-                    label={$localize`Cipher`}
+                    label={semanticMessages.vpn_openvpn_cipher({}, { locale })}
                     value={cipher.value}
                     onInput$={(_, el) => {
                       cipher.value = el.value;
                       handleManualFormSubmit$();
                     }}
                     placeholder="aes256-gcm"
-                    helperText={$localize`Supported: aes128/192/256-cbc, aes128/192/256-gcm, blowfish128, null`}
+                    helperText={semanticMessages.vpn_openvpn_easy_cipher_help(
+                      {},
+                      { locale },
+                    )}
                   />
 
                   <FormField
-                    label={$localize`Auth Hash`}
+                    label={semanticMessages.vpn_openvpn_easy_auth_hash(
+                      {},
+                      { locale },
+                    )}
                     value={auth.value}
                     onInput$={(_, el) => {
                       auth.value = el.value;
                       handleManualFormSubmit$();
                     }}
                     placeholder="sha256"
-                    helperText={$localize`Supported: md5, sha1, sha256, sha512, null (use null for GCM ciphers)`}
+                    helperText={semanticMessages.vpn_openvpn_easy_auth_hash_help(
+                      {},
+                      { locale },
+                    )}
                   />
                 </div>
               </FormContainer>
@@ -628,14 +833,17 @@ auth SHA256`}
         {errorMessage.value && (
           <ErrorMessage
             message={errorMessage.value}
-            title={$localize`Configuration Error`}
+            title={semanticMessages.vpn_openvpn_easy_configuration_error(
+              {},
+              { locale },
+            )}
           />
         )}
 
         {/* Help Footer */}
         <div class="rounded-2xl border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 text-center backdrop-blur-sm dark:border-gray-700/60 dark:from-gray-800/50 dark:to-gray-900/50">
           <p class="text-text-muted dark:text-text-dark-muted text-sm">
-            {$localize`Fields marked with * are required • Need help? Check your VPN provider's RouterOS setup guide`}
+            {semanticMessages.vpn_openvpn_easy_help_footer({}, { locale })}
           </p>
         </div>
       </div>

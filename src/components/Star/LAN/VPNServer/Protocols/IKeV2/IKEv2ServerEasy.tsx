@@ -4,8 +4,10 @@ import { useIKEv2Server } from "./useIKEv2Server";
 import { ServerCard } from "~/components/Core/Card/ServerCard";
 import { ServerFormField } from "~/components/Core/Form/ServerField";
 import { NetworkDropdown } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const IKEv2ServerEasy = component$(() => {
+  const locale = useMessageLocale();
   const {
     easyFormState,
     // showPassword,
@@ -16,26 +18,31 @@ export const IKEv2ServerEasy = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`IKEv2 Server`}
+      title={semanticMessages.vpn_server_ikev2_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
-        <ServerFormField label={$localize`Network`}>
+        <ServerFormField
+          label={semanticMessages.vpn_server_network_label({}, { locale })}
+        >
           <NetworkDropdown
             selectedNetwork={"VPN" as const}
-            onNetworkChange$={(network) => {
-              console.log("IKEv2 Easy network changed to:", network);
+            onNetworkChange$={(_network) => {
+              console.log("IKEv2 Easy network changed");
             }}
           />
         </ServerFormField>
 
         <ServerFormField
-          label={$localize`Pre-shared Key`}
+          label={semanticMessages.vpn_ikev2_pre_shared_key({}, { locale })}
           errorMessage={
             presharedKeyError.value ||
             (!presharedKeyError.value
-              ? $localize`Key must be at least 8 characters long for security`
+              ? semanticMessages.vpn_server_easy_ikev2_preshared_key_help(
+                  {},
+                  { locale },
+                )
               : undefined)
           }
           required={true}
@@ -48,7 +55,10 @@ export const IKEv2ServerEasy = component$(() => {
                 const target = e.target as HTMLInputElement;
                 updateEasyForm$(target.value);
               }}
-              placeholder={$localize`Enter pre-shared key`}
+              placeholder={semanticMessages.vpn_server_easy_ikev2_preshared_key_placeholder(
+                {},
+                { locale },
+              )}
               class="w-full rounded-lg border border-border bg-white px-3 py-2
                      focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500
                      disabled:cursor-not-allowed disabled:opacity-75

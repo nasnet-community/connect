@@ -1,9 +1,10 @@
 import { component$, type QRL, $ } from "@builder.io/qwik";
 import { HiSparklesOutline, HiWifiOutline } from "@qwikest/icons/heroicons";
 import type { NetworkKey } from "./type";
-import { NETWORK_DESCRIPTIONS } from "./constants";
+import { getNetworkDescription, getNetworkDisplayName } from "./constants";
 import { Toggle, Button } from "~/components/Core";
 import type { Mode } from "../../StarContext/ChooseType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 interface NetworkCardProps {
   networkKey: NetworkKey;
@@ -43,8 +44,8 @@ export const NetworkCard = component$<NetworkCardProps>(
     mode = "advance",
     hasBothBands = true,
   }) => {
-    const displayName =
-      networkKey.charAt(0).toUpperCase() + networkKey.slice(1);
+    const locale = useMessageLocale();
+    const displayName = getNetworkDisplayName(networkKey, locale);
 
     return (
       <div
@@ -60,10 +61,13 @@ export const NetworkCard = component$<NetworkCardProps>(
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  {$localize`${displayName} Network`}
+                  {semanticMessages.wireless_card_network_title(
+                    { networkName: displayName },
+                    { locale },
+                  )}
                 </h3>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  {NETWORK_DESCRIPTIONS[networkKey]}
+                  {getNetworkDescription(networkKey, locale)}
                 </p>
               </div>
             </div>
@@ -75,7 +79,11 @@ export const NetworkCard = component$<NetworkCardProps>(
                   // checked represents enabled state, so invert for disabled
                   onDisabledToggle(!checked);
                 })}
-                label={!isDisabled ? $localize`Enabled` : $localize`Disabled`}
+                label={
+                  !isDisabled
+                    ? semanticMessages.shared_enabled({}, { locale })
+                    : semanticMessages.shared_disabled({}, { locale })
+                }
                 labelPosition="left"
                 size="sm"
                 color="primary"
@@ -90,7 +98,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                       // checked represents visible state, so invert for hide
                       onHideToggle(!checked);
                     })}
-                    label={$localize`Show SSID`}
+                    label={semanticMessages.wireless_single_show_ssid(
+                      {},
+                      { locale },
+                    )}
                     labelPosition="left"
                     size="sm"
                     color="primary"
@@ -109,7 +120,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                         onSplitBandToggle(checked);
                       }
                     })}
-                    label={$localize`Split 2.4/5GHz`}
+                    label={semanticMessages.wireless_single_split_band(
+                      {},
+                      { locale },
+                    )}
                     labelPosition="left"
                     size="sm"
                     color="primary"
@@ -123,7 +137,10 @@ export const NetworkCard = component$<NetworkCardProps>(
           <div class="mt-6 space-y-6">
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`Network Name (SSID)`}
+                {semanticMessages.wireless_single_network_name_label(
+                  {},
+                  { locale },
+                )}
                 {!isDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex flex-col gap-3 sm:flex-row">
@@ -137,7 +154,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                   class={`h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 
                        text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white
                        ${isDisabled ? "cursor-not-allowed" : ""}`}
-                  placeholder={$localize`Enter ${displayName} network name`}
+                  placeholder={semanticMessages.wireless_card_network_name_placeholder_specific(
+                    { networkName: displayName },
+                    { locale },
+                  )}
                   required={!isDisabled}
                 />
                 <Button
@@ -150,14 +170,14 @@ export const NetworkCard = component$<NetworkCardProps>(
                   class="min-w-[160px]"
                 >
                   <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
-                  {$localize`Generate SSID`}
+                  {semanticMessages.wireless_card_generate_ssid({}, { locale })}
                 </Button>
               </div>
             </div>
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {$localize`Network Password`}
+                {semanticMessages.wireless_card_password_label({}, { locale })}
                 {!isDisabled && <span class="ml-1 text-red-500">*</span>}
               </label>
               <div class="flex flex-col gap-3 sm:flex-row">
@@ -171,7 +191,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                   class={`h-11 flex-1 rounded-lg border border-gray-300 bg-white px-4 
                        text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white
                        ${isDisabled ? "cursor-not-allowed" : ""}`}
-                  placeholder={$localize`Enter ${displayName} password`}
+                  placeholder={semanticMessages.wireless_card_password_placeholder_specific(
+                    { networkName: displayName },
+                    { locale },
+                  )}
                   required={!isDisabled}
                 />
                 <Button
@@ -184,7 +207,10 @@ export const NetworkCard = component$<NetworkCardProps>(
                   class="min-w-[160px]"
                 >
                   <HiSparklesOutline q:slot="leftIcon" class="h-5 w-5" />
-                  {$localize`Generate Pass`}
+                  {semanticMessages.wireless_card_generate_password(
+                    {},
+                    { locale },
+                  )}
                 </Button>
               </div>
             </div>

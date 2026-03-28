@@ -1,5 +1,6 @@
 import { component$, useSignal, useTask$, $ } from "@builder.io/qwik";
 import type { FileInputErrorProps } from "../types";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
  * FileInputError Component
@@ -9,6 +10,7 @@ import type { FileInputErrorProps } from "../types";
  */
 export const FileInputError = component$<FileInputErrorProps>(
   ({ error, onRetry$, onDismiss$, autoDismissMs, variant = "inline" }) => {
+    const locale = useMessageLocale();
     const isVisible = useSignal(true);
 
     // Auto-dismiss functionality
@@ -133,7 +135,7 @@ export const FileInputError = component$<FileInputErrorProps>(
                          dark:text-error-400 dark:hover:text-error-300"
                     type="button"
                   >
-                    {$localize`Try again`}
+                    {semanticMessages.shared_try_again({}, { locale })}
                   </button>
                 )}
                 {onDismiss$ && (
@@ -144,7 +146,7 @@ export const FileInputError = component$<FileInputErrorProps>(
                          dark:text-error-500 dark:hover:text-error-400"
                     type="button"
                   >
-                    {$localize`Dismiss`}
+                    {semanticMessages.shared_dismiss({}, { locale })}
                   </button>
                 )}
               </div>
@@ -183,7 +185,7 @@ export const FileInputError = component$<FileInputErrorProps>(
                    focus:outline-none focus:ring-2 focus:ring-primary-500
                    dark:text-gray-500 dark:hover:text-gray-400"
               type="button"
-              aria-label={$localize`Close`}
+              aria-label={semanticMessages.shared_close({}, { locale })}
             >
               <svg
                 class="h-5 w-5"
@@ -213,7 +215,7 @@ export const FileInputError = component$<FileInputErrorProps>(
           </div>
           <div class="ms-3 flex-1">
             <h3 class="text-sm font-medium text-error-800 dark:text-error-200">
-              {$localize`Upload Error`}
+              {semanticMessages.shared_upload_error({}, { locale })}
             </h3>
             <div class="mt-2 text-sm text-error-700 dark:text-error-300">
               <p>{error.message}</p>
@@ -236,7 +238,7 @@ export const FileInputError = component$<FileInputErrorProps>(
                        dark:focus:ring-offset-gray-900"
                   type="button"
                 >
-                  {$localize`Retry Upload`}
+                  {semanticMessages.shared_retry_upload({}, { locale })}
                 </button>
               )}
               {onDismiss$ && (
@@ -250,7 +252,7 @@ export const FileInputError = component$<FileInputErrorProps>(
                        dark:focus:ring-offset-gray-900"
                   type="button"
                 >
-                  {$localize`Dismiss`}
+                  {semanticMessages.shared_dismiss({}, { locale })}
                 </button>
               )}
             </div>

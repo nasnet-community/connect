@@ -8,8 +8,10 @@ import { UpdateCard } from "./UpdateCard";
 import { IPAddressUpdateCard } from "./IPAddressUpdateCard";
 import { useRebootUpdate } from "./useRebootUpdate";
 import type { Interval, RUIConfig } from "../../StarContext/ExtraType";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
+  const locale = useMessageLocale();
   const {
     ctx,
     autoRebootEnabled,
@@ -40,17 +42,17 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
     // Validate time gaps - inline validation logic
     const times: { name: string; minutes: number; enabled: boolean }[] = [
       {
-        name: "Reboot",
+        name: semanticMessages.reboot_time_name_reboot({}, { locale }),
         minutes: timeToMinutes(rebootTime),
         enabled: autoRebootEnabled.value,
       },
       {
-        name: "Update",
+        name: semanticMessages.reboot_time_name_update({}, { locale }),
         minutes: timeToMinutes(updateTime),
         enabled: autoUpdateEnabled.value,
       },
       {
-        name: "IP Address Update",
+        name: semanticMessages.reboot_time_name_ip_update({}, { locale }),
         minutes: timeToMinutes(ipAddressUpdateTime),
         enabled: true,
       },
@@ -67,7 +69,13 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
         const minDiff = Math.min(diff, 1440 - diff); // Account for day wrap-around
 
         if (minDiff < 15) {
-          validationError.value = `${time1.name} and ${time2.name} must be at least 15 minutes apart.`;
+          validationError.value = semanticMessages.reboot_conflict(
+            {
+              first: time1.name,
+              second: time2.name,
+            },
+            { locale },
+          );
           return; // Don't proceed with saving
         }
       }
@@ -109,11 +117,17 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
       <div class="rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
         <RebootHeader />
         <div class="space-y-6 overflow-visible p-6 pb-20">
-          <Alert status="warning" title={$localize`Important Notice`}>
-            {$localize`Internet connectivity may be temporarily interrupted during scheduled reboot, update, and IP address list synchronization times. Please plan accordingly.`}
+          <Alert
+            status="warning"
+            title={semanticMessages.reboot_notice_title({}, { locale })}
+          >
+            {semanticMessages.reboot_notice_description({}, { locale })}
           </Alert>
           {validationError.value && (
-            <Alert status="error" title={$localize`Validation Error`}>
+            <Alert
+              status="error"
+              title={semanticMessages.reboot_validation_title({}, { locale })}
+            >
               {validationError.value}
             </Alert>
           )}
@@ -139,7 +153,7 @@ export const RebootUpdate = component$<StepProps>(({ onComplete$ }) => {
               class="rounded-lg bg-primary-500 px-6 py-2.5 font-medium text-white shadow-md 
                      transition-all duration-200 hover:bg-primary-600"
             >
-              {$localize`Save`}
+              {semanticMessages.reboot_save({}, { locale })}
             </button>
           </div>
         </div>

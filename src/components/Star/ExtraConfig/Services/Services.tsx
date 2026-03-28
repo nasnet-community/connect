@@ -19,27 +19,25 @@ import {
   DialogFooter,
   Button,
 } from "~/components/Core";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
-// Add scoped styles to fix dropdown positioning
 const dropdownStyles = `
   .dropdown-container {
     position: relative;
     z-index: 0;
   }
-  
+
   .dropdown-container:hover,
   .dropdown-container:focus-within {
     z-index: 50;
   }
-  
-  /* Force dropdown menu to appear above all other elements */
+
   :global(.dropdown-container [role="listbox"]) {
     z-index: 50 !important;
     position: absolute !important;
     max-height: 200px !important;
   }
-  
-  /* Adjust positioning for last rows */
+
   tr:nth-last-child(-n+2) .dropdown-container :global([role="listbox"]) {
     bottom: 100% !important;
     top: auto !important;
@@ -64,12 +62,11 @@ interface ServiceItem {
 }
 
 export const Services = component$<StepProps>(({ onComplete$ }) => {
+  const locale = useMessageLocale();
   const ctx = useContext(StarContext);
 
-  // Apply scoped styles to fix dropdown positioning
   useStylesScoped$(dropdownStyles);
 
-  // State for port change confirmation
   const showConfirmDialog = useSignal(false);
   const pendingPortChange = useSignal<{
     serviceName: ServiceName;
@@ -78,70 +75,65 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     newPort: number;
   } | null>(null);
 
-  // State for one-time port warning
   const showInitialWarning = useSignal(false);
   const hasShownPortWarning = useSignal(false);
-  // Track when the initial warning is closed via acknowledge to avoid cancel reset
   const warningCloseByAcknowledge = useSignal(false);
 
-  // State for temporary input values (to handle editing without immediate state update)
   const tempPortValues = useSignal<Record<ServiceName, string>>(
     {} as Record<ServiceName, string>,
   );
 
-  // Define services array before using it in hooks
   const services: ServiceItem[] = [
     {
       name: "api",
-      description: $localize`RouterOS API access`,
+      description: semanticMessages.service_description_api({}, { locale }),
       recommended: false,
       defaultPort: 8728,
     },
     {
       name: "apissl",
-      description: $localize`RouterOS API with SSL`,
+      description: semanticMessages.service_description_apissl({}, { locale }),
       recommended: false,
       defaultPort: 8729,
     },
     {
       name: "ftp",
-      description: $localize`File Transfer Protocol`,
+      description: semanticMessages.service_description_ftp({}, { locale }),
       recommended: false,
       defaultPort: 21,
     },
     {
       name: "ssh",
-      description: $localize`Secure Shell`,
+      description: semanticMessages.service_description_ssh({}, { locale }),
       recommended: false,
       defaultPort: 22,
     },
     {
       name: "telnet",
-      description: $localize`Telnet Protocol`,
+      description: semanticMessages.service_description_telnet({}, { locale }),
       recommended: false,
       defaultPort: 23,
     },
     {
       name: "winbox",
-      description: $localize`WinBox Management Tool`,
+      description: semanticMessages.service_description_winbox({}, { locale }),
       recommended: true,
       defaultPort: 8291,
     },
     {
       name: "web",
-      description: $localize`Web Interface Access`,
+      description: semanticMessages.service_description_web({}, { locale }),
       recommended: false,
       defaultPort: 80,
     },
     {
       name: "webssl",
-      description: $localize`Secure Web Interface`,
+      description: semanticMessages.service_description_webssl({}, { locale }),
       recommended: false,
       defaultPort: 443,
     },
   ];
 
-  // Initialize services if they don't exist
   useTask$(() => {
     if (!ctx.state.ExtraConfig.services) {
       const defaultServices: services = {
@@ -158,12 +150,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     }
   });
 
-  // Check if SSH VPN Server is enabled
   const isSSHVPNServerEnabled = useComputed$(() => {
     return ctx.state.LAN.VPNServer?.SSHServer?.enabled === true;
   });
 
-  // Auto-enable SSH service when SSH VPN Server is enabled
   useTask$(({ track }) => {
     const sshVPNEnabled = track(
       () => ctx.state.LAN.VPNServer?.SSHServer?.enabled,
@@ -174,7 +164,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
       const currentType =
         typeof currentSSH === "string" ? currentSSH : currentSSH.type;
 
-      // Force SSH to be enabled if it's not already
       if (currentType !== "Enable") {
         const currentPort =
           typeof currentSSH === "string" ? 22 : currentSSH.port || 22;
@@ -186,7 +175,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     }
   });
 
-  // Initialize temp port values when services are available
   useTask$(({ track }) => {
     const currentServices = track(() => ctx.state.ExtraConfig.services);
     if (currentServices) {
@@ -203,12 +191,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     }
   });
 
-  // Helper function to get current port value for display
   const getCurrentPortValue = (
     serviceName: ServiceName,
     defaultPort: number,
   ): string => {
-    // Return temp value if exists, otherwise return actual port value
     if (tempPortValues.value[serviceName]) {
       return tempPortValues.value[serviceName];
     }
@@ -221,7 +207,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     return currentPort.toString();
   };
 
-  // Helper function to update temp port value
   const updateTempPortValue = $((serviceName: ServiceName, value: string) => {
     tempPortValues.value = {
       ...tempPortValues.value,
@@ -231,25 +216,18 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
 
   const handleSubmit = $(() => {
     if (!ctx.state.ExtraConfig.services) return;
-
-    // Services are already updated via onChange handlers
     onComplete$();
   });
 
-  // Handle port change confirmation
   const handlePortChangeRequest = $(
     (service: ServiceItem, currentPort: number, newPort: number) => {
-      // Check if the port is actually changing
       if (currentPort === newPort) return;
 
-      // Safeguard: Don't show dialog if it's already open
       if (showConfirmDialog.value || showInitialWarning.value) {
-        // Reset temp value to current port if dialog is already showing
         updateTempPortValue(service.name, currentPort.toString());
         return;
       }
 
-      // Store pending change for later
       pendingPortChange.value = {
         serviceName: service.name,
         serviceDescription: service.description,
@@ -257,33 +235,26 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         newPort: newPort,
       };
 
-      // Check if we need to show the one-time warning first
       if (!hasShownPortWarning.value) {
         showInitialWarning.value = true;
       } else {
-        // If warning has already been shown, go directly to confirmation dialog
         showConfirmDialog.value = true;
       }
     },
   );
 
-  // Handle port input blur event
   const handlePortBlur$ = $(
     async (event: FocusEvent, service: ServiceItem, currentPort: number) => {
       const target = event.target as HTMLInputElement;
       const newPortStr = target.value;
       const newPort = parseInt(newPortStr);
 
-      // Validate the input
       if (isNaN(newPort) || newPort < 1 || newPort > 65535) {
-        // Reset invalid input to current port
         updateTempPortValue(service.name, currentPort.toString());
         return;
       }
 
-      // Check if the port actually changed
       if (newPort !== currentPort) {
-        // Initialize services if they don't exist
         if (!ctx.state.ExtraConfig.services) {
           ctx.state.ExtraConfig.services = {
             api: { type: "Local" as ServiceType, port: 8728 },
@@ -297,13 +268,11 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
           };
         }
 
-        // Request confirmation for port change
         await handlePortChangeRequest(service, currentPort, newPort);
       }
     },
   );
 
-  // Apply the confirmed port change
   const applyPortChange = $(() => {
     if (!pendingPortChange.value || !ctx.state.ExtraConfig.services) return;
 
@@ -312,26 +281,21 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     const type =
       typeof currentService === "string" ? currentService : currentService.type;
 
-    // Mutate the existing proxy directly (Qwik best practice)
     ctx.state.ExtraConfig.services[serviceName] = {
       type: type,
       port: newPort,
     };
 
-    // Update temp value to match confirmed change
     tempPortValues.value = {
       ...tempPortValues.value,
       [serviceName]: newPort.toString(),
     };
 
-    // Clear pending state and close dialog
     pendingPortChange.value = null;
     showConfirmDialog.value = false;
   });
 
-  // Cancel port change
   const cancelPortChange = $(() => {
-    // Reset temp value to actual value when cancelling
     if (pendingPortChange.value) {
       const { serviceName, oldPort } = pendingPortChange.value;
       tempPortValues.value = {
@@ -344,30 +308,22 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
     showConfirmDialog.value = false;
   });
 
-  // Handle acknowledging the initial warning
   const acknowledgeWarning = $(() => {
-    // Mark warning as shown for this session
     hasShownPortWarning.value = true;
-    // Suppress cancel reset because we're closing via acknowledge
     warningCloseByAcknowledge.value = true;
-
-    // Close warning dialog
     showInitialWarning.value = false;
 
-    // Now show the actual port change confirmation
     if (pendingPortChange.value) {
       showConfirmDialog.value = true;
     }
   });
 
-  // Cancel initial warning
   const cancelWarning = $(() => {
-    // If dialog is closing due to acknowledge, do not reset values
     if (warningCloseByAcknowledge.value) {
       warningCloseByAcknowledge.value = false;
       return;
     }
-    // Reset temp value to actual value when cancelling
+
     if (pendingPortChange.value) {
       const { serviceName, oldPort } = pendingPortChange.value;
       tempPortValues.value = {
@@ -383,7 +339,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
   return (
     <div class="mx-auto w-full max-w-5xl p-4">
       <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-lg dark:border-border-dark dark:bg-surface-dark">
-        {/* Header */}
         <div class="bg-primary-500 px-6 py-8 dark:bg-primary-600">
           <div class="flex items-center space-x-5">
             <div class="rounded-xl border border-white/20 bg-white/10 p-3.5 backdrop-blur-sm">
@@ -403,21 +358,21 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
             </div>
             <div class="space-y-1">
               <h2 class="text-2xl font-bold text-white">
-                {$localize`Services Configuration`}
+                {semanticMessages.services_header_title({}, { locale })}
               </h2>
               <div class="flex items-center space-x-2">
                 <p class="text-sm font-medium text-primary-50">
-                  {$localize`Configure RouterOS service accessibility`}
+                  {semanticMessages.services_header_description({}, { locale })}
                 </p>
                 <span class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white">
-                  {services.length} {$localize`Services`}
+                  {services.length}{" "}
+                  {semanticMessages.services_badge_label({}, { locale })}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Table Content */}
         <div class="p-6">
           <div class="overflow-visible rounded-xl border border-border dark:border-border-dark">
             <table class="w-full text-left text-sm">
@@ -427,25 +382,25 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Service`}
+                    {semanticMessages.shared_service({}, { locale })}
                   </th>
                   <th
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Description`}
+                    {semanticMessages.shared_description({}, { locale })}
                   </th>
                   <th
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Link`}
+                    {semanticMessages.shared_link({}, { locale })}
                   </th>
                   <th
                     scope="col"
                     class="text-text-secondary dark:text-text-dark-secondary px-6 py-4 font-semibold"
                   >
-                    {$localize`Port`}
+                    {semanticMessages.shared_port({}, { locale })}
                   </th>
                 </tr>
               </thead>
@@ -466,6 +421,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                     typeof currentConfig === "string"
                       ? service.defaultPort
                       : currentConfig.port || service.defaultPort;
+
                   return (
                     <tr
                       key={service.name}
@@ -486,7 +442,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                           {service.name === "ssh" &&
                             isSSHVPNServerEnabled.value && (
                               <span class="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                                {$localize`Required by VPN Server`}
+                                {semanticMessages.services_ssh_required(
+                                  {},
+                                  { locale },
+                                )}
                               </span>
                             )}
                         </div>
@@ -498,9 +457,27 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                         <div class="dropdown-container">
                           <Select
                             options={[
-                              { value: "Enable", label: $localize`Enable` },
-                              { value: "Disable", label: $localize`Disable` },
-                              { value: "Local", label: $localize`Local` },
+                              {
+                                value: "Enable",
+                                label: semanticMessages.shared_enable(
+                                  {},
+                                  { locale },
+                                ),
+                              },
+                              {
+                                value: "Disable",
+                                label: semanticMessages.shared_disable(
+                                  {},
+                                  { locale },
+                                ),
+                              },
+                              {
+                                value: "Local",
+                                label: semanticMessages.shared_local(
+                                  {},
+                                  { locale },
+                                ),
+                              },
                             ]}
                             value={currentValue}
                             onChange$={(value: string | string[]) => {
@@ -549,7 +526,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                                   : (currentService.port ??
                                     service.defaultPort);
 
-                              // Mutate the existing proxy directly (Qwik best practice)
                               ctx.state.ExtraConfig.services[service.name] = {
                                 type: value as ServiceType,
                                 port: port,
@@ -591,7 +567,6 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
             </table>
           </div>
 
-          {/* Action Button */}
           <div class="mt-6 flex justify-end">
             <button
               onClick$={handleSubmit}
@@ -601,7 +576,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                      active:scale-[0.98] dark:focus:ring-offset-surface-dark"
             >
               <span class="flex items-center space-x-2">
-                <span>{$localize`Save`}</span>
+                <span>{semanticMessages.shared_save({}, { locale })}</span>
                 <svg
                   class="h-4 w-4 transition-transform group-hover:translate-x-1"
                   fill="none"
@@ -621,11 +596,13 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         </div>
       </div>
 
-      {/* Initial Port Warning Dialog - Shows only once */}
       <Dialog
         isOpen={showInitialWarning}
         onClose$={cancelWarning}
-        ariaLabel="Port Change Warning"
+        ariaLabel={semanticMessages.services_port_warning_dialog_aria(
+          {},
+          { locale },
+        )}
         size="md"
         isCentered={true}
       >
@@ -647,7 +624,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
               </svg>
             </div>
             <span class="text-xl font-semibold text-text dark:text-text-dark-default">
-              {$localize`Important Notice`}
+              {semanticMessages.reboot_notice_title({}, { locale })}
             </span>
           </div>
         </DialogHeader>
@@ -668,23 +645,37 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 </svg>
                 <div class="space-y-2">
                   <p class="font-semibold text-warning-800 dark:text-warning-300">
-                    {$localize`Always remember or write down the new port numbers!`}
+                    {semanticMessages.services_warning_title({}, { locale })}
                   </p>
                   <p class="text-sm text-warning-700 dark:text-warning-400">
-                    {$localize`When you change service ports, you will need the new port numbers to connect to your router. Make sure to document them in a safe place.`}
+                    {semanticMessages.services_warning_body({}, { locale })}
                   </p>
                 </div>
               </div>
             </div>
             <div class="text-text-secondary dark:text-text-dark-secondary space-y-2">
               <p class="text-sm">
-                {$localize`This warning will only appear once. Please take note of:`}
+                {semanticMessages.services_warning_intro({}, { locale })}
               </p>
               <ul class="ml-5 list-disc space-y-1 text-sm">
-                <li>{$localize`Write down all custom port numbers`}</li>
-                <li>{$localize`Save them in a secure location`}</li>
-                <li>{$localize`You'll need them to access your router services`}</li>
-                <li>{$localize`Losing port numbers may lock you out of certain services`}</li>
+                <li>
+                  {semanticMessages.services_warning_item_write({}, { locale })}
+                </li>
+                <li>
+                  {semanticMessages.services_warning_item_save({}, { locale })}
+                </li>
+                <li>
+                  {semanticMessages.services_warning_item_access(
+                    {},
+                    { locale },
+                  )}
+                </li>
+                <li>
+                  {semanticMessages.services_warning_item_lockout(
+                    {},
+                    { locale },
+                  )}
+                </li>
               </ul>
             </div>
           </div>
@@ -692,7 +683,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
         <DialogFooter>
           <div class="flex justify-end gap-3">
             <Button variant="outline" onClick$={cancelWarning}>
-              {$localize`Cancel`}
+              {semanticMessages.shared_cancel({}, { locale })}
             </Button>
             <Button
               variant="primary"
@@ -713,19 +704,26 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>{$localize`I Understand`}</span>
+                <span>
+                  {semanticMessages.services_warning_acknowledge(
+                    {},
+                    { locale },
+                  )}
+                </span>
               </span>
             </Button>
           </div>
         </DialogFooter>
       </Dialog>
 
-      {/* Port Change Confirmation Dialog */}
       {pendingPortChange.value && (
         <Dialog
           isOpen={showConfirmDialog}
           onClose$={cancelPortChange}
-          ariaLabel="Confirm Port Change"
+          ariaLabel={semanticMessages.services_confirm_dialog_aria(
+            {},
+            { locale },
+          )}
           size="md"
           isCentered={true}
         >
@@ -745,14 +743,14 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 />
               </svg>
               <span class="text-lg font-semibold">
-                {$localize`Confirm Port Change`}
+                {semanticMessages.services_confirm_title({}, { locale })}
               </span>
             </div>
           </DialogHeader>
           <DialogBody>
             <div class="space-y-4">
               <p class="text-text dark:text-text-dark-default">
-                {$localize`You are about to change the port for`}{" "}
+                {semanticMessages.services_confirm_intro({}, { locale })}{" "}
                 <span class="font-semibold">
                   {pendingPortChange.value.serviceDescription}
                 </span>
@@ -762,7 +760,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 <div class="space-y-2">
                   <div class="flex justify-between">
                     <span class="text-text-secondary dark:text-text-dark-secondary">
-                      {$localize`Service`}:
+                      {semanticMessages.shared_service({}, { locale })}:
                     </span>
                     <span class="font-mono font-semibold text-text dark:text-text-dark-default">
                       {pendingPortChange.value.serviceName}
@@ -770,7 +768,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                   </div>
                   <div class="flex justify-between">
                     <span class="text-text-secondary dark:text-text-dark-secondary">
-                      {$localize`Current Port`}:
+                      {semanticMessages.shared_current_port({}, { locale })}:
                     </span>
                     <span class="font-mono text-text dark:text-text-dark-default">
                       {pendingPortChange.value.oldPort}
@@ -778,7 +776,7 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                   </div>
                   <div class="flex justify-between">
                     <span class="text-text-secondary dark:text-text-dark-secondary">
-                      {$localize`New Port`}:
+                      {semanticMessages.shared_new_port({}, { locale })}:
                     </span>
                     <span class="font-mono font-semibold text-primary-500">
                       {pendingPortChange.value.newPort}
@@ -790,8 +788,13 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 pendingPortChange.value.newPort !== 22 && (
                   <div class="rounded-md bg-warning-50 p-3 dark:bg-warning-900/20">
                     <p class="text-sm text-warning-700 dark:text-warning-400">
-                      <strong>{$localize`Warning`}:</strong>{" "}
-                      {$localize`Changing the SSH port from the default (22) may affect your ability to connect to the router. Make sure you remember the new port number.`}
+                      <strong>
+                        {semanticMessages.shared_warning({}, { locale })}:
+                      </strong>{" "}
+                      {semanticMessages.services_ssh_port_warning(
+                        {},
+                        { locale },
+                      )}
                     </p>
                   </div>
                 )}
@@ -801,8 +804,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
                 pendingPortChange.value.newPort !== 443 && (
                   <div class="rounded-md bg-info-50 p-3 dark:bg-info-900/20">
                     <p class="text-sm text-info-700 dark:text-info-400">
-                      <strong>{$localize`Note`}:</strong>{" "}
-                      {$localize`You will need to specify the port number in the URL when accessing the web interface.`}
+                      <strong>
+                        {semanticMessages.shared_note({}, { locale })}:
+                      </strong>{" "}
+                      {semanticMessages.services_web_port_note({}, { locale })}
                     </p>
                   </div>
                 )}
@@ -811,10 +816,10 @@ export const Services = component$<StepProps>(({ onComplete$ }) => {
           <DialogFooter>
             <div class="flex justify-end gap-3">
               <Button variant="outline" onClick$={cancelPortChange}>
-                {$localize`Cancel`}
+                {semanticMessages.shared_cancel({}, { locale })}
               </Button>
               <Button variant="primary" onClick$={applyPortChange}>
-                {$localize`Confirm Change`}
+                {semanticMessages.shared_confirm_change({}, { locale })}
               </Button>
             </div>
           </DialogFooter>

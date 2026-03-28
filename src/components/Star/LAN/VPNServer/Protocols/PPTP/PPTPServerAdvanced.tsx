@@ -7,8 +7,10 @@ import {
   NetworkDropdown,
   type ExtendedNetworks,
 } from "../../components/NetworkSelection";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const PPTPServerAdvanced = component$(() => {
+  const locale = useMessageLocale();
   const { advancedFormState: _advancedFormState } = usePPTPServer();
 
   // Local network state (not part of VPN server config)
@@ -21,20 +23,27 @@ export const PPTPServerAdvanced = component$(() => {
 
   return (
     <ServerCard
-      title={$localize`PPTP Server`}
+      title={semanticMessages.vpn_server_pptp_title({}, { locale })}
       icon={<HiServerOutline class="h-5 w-5" />}
     >
       <div class="space-y-6">
         {/* Network Selection */}
         <div>
-          <SectionTitle title={$localize`Network Configuration`} />
+          <SectionTitle
+            title={semanticMessages.zerotier_network_configuration(
+              {},
+              {
+                locale,
+              },
+            )}
+          />
           <NetworkDropdown
             selectedNetwork={selectedNetwork.value as ExtendedNetworks}
             onNetworkChange$={(network) => {
               updateNetwork$(network);
             }}
             _vpnType="PPTP"
-            label={$localize`Network`}
+            label={semanticMessages.vpn_server_network_label({}, { locale })}
           />
         </div>
       </div>

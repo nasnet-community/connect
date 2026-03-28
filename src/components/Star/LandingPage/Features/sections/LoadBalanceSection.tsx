@@ -3,8 +3,10 @@ import { LuTrendingUp, LuActivity, LuZap } from "@qwikest/icons/lucide";
 import { Badge } from "~/components/Core";
 import { Graph, createNode } from "~/components/Core/Graph";
 import type { GraphNode, GraphConnection } from "~/components/Core/Graph";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export const LoadBalanceSection = component$(() => {
+  const locale = useMessageLocale();
   const activeAlgorithm = useSignal("pcc");
   const trafficFlow = useSignal([30, 25, 20, 25]);
   const selectedNode = useSignal<string | null>(null);
@@ -14,29 +16,52 @@ export const LoadBalanceSection = component$(() => {
     {
       id: "pcc",
       name: "PCC",
-      full: $localize`Per Connection Classifier`,
-      description: $localize`Distributes connections evenly across links`,
+      full: semanticMessages.landing_load_balance_algo_pcc({}, { locale }),
+      description: semanticMessages.landing_load_balance_algo_pcc_desc(
+        {},
+        {
+          locale,
+        },
+      ),
       efficiency: 95,
     },
     {
       id: "nth",
       name: "NTH",
-      full: $localize`Nth Packet`,
-      description: $localize`Round-robin packet distribution`,
+      full: semanticMessages.landing_load_balance_algo_nth({}, { locale }),
+      description: semanticMessages.landing_load_balance_algo_nth_desc(
+        {},
+        {
+          locale,
+        },
+      ),
       efficiency: 85,
     },
     {
       id: "ecmp",
       name: "ECMP",
-      full: $localize`Equal Cost Multi-Path`,
-      description: $localize`Load balancing across equal cost paths`,
+      full: semanticMessages.landing_load_balance_algo_ecmp({}, { locale }),
+      description: semanticMessages.landing_load_balance_algo_ecmp_desc(
+        {},
+        {
+          locale,
+        },
+      ),
       efficiency: 90,
     },
     {
       id: "bonding",
       name: "Bonding",
-      full: $localize`Link Aggregation`,
-      description: $localize`Combines multiple links into single pipe`,
+      full: semanticMessages.landing_load_balance_algo_bonding(
+        {},
+        {
+          locale,
+        },
+      ),
+      description: semanticMessages.landing_load_balance_algo_bonding_desc(
+        {},
+        { locale },
+      ),
       efficiency: 98,
     },
   ];
@@ -44,24 +69,29 @@ export const LoadBalanceSection = component$(() => {
   // Graph nodes for load balancing topology
   const nodes: GraphNode[] = [
     createNode("WirelessRouter", "router", 250, 200, {
-      label: $localize`Load Balancer`,
+      label: semanticMessages.landing_load_balance_router({}, { locale }),
     }),
     // WAN links
     createNode("DomesticWAN", "wan1", 100, 100, {
-      label: $localize`WAN 1`,
+      label: "WAN 1",
     }),
     createNode("ForeignWAN", "wan2", 400, 100, {
-      label: $localize`WAN 2`,
+      label: "WAN 2",
     }),
     createNode("DomesticWAN", "wan3", 100, 300, {
-      label: $localize`WAN 3`,
+      label: "WAN 3",
     }),
     createNode("ForeignWAN", "wan4", 400, 300, {
-      label: $localize`WAN 4`,
+      label: "WAN 4",
     }),
     // Client traffic sources
     createNode("User", "clients", 50, 200, {
-      label: $localize`Client Traffic`,
+      label: semanticMessages.landing_load_balance_client_traffic(
+        {},
+        {
+          locale,
+        },
+      ),
     }),
   ];
 
@@ -72,7 +102,12 @@ export const LoadBalanceSection = component$(() => {
       from: "clients",
       to: "router",
       trafficType: "Domestic",
-      label: $localize`Incoming Traffic`,
+      label: semanticMessages.landing_load_balance_incoming_traffic(
+        {},
+        {
+          locale,
+        },
+      ),
       animated: true,
       width: 4,
       color: "#6366f1",
@@ -211,27 +246,47 @@ export const LoadBalanceSection = component$(() => {
           {/* Content Side */}
           <div class="animate-fade-in-left space-y-6">
             <Badge color="secondary" variant="outline" size="lg">
-              {$localize`High Availability`}
+              {semanticMessages.landing_load_balance_badge({}, { locale })}
             </Badge>
 
             <h2 class="text-4xl font-bold md:text-5xl lg:text-6xl">
               <span class="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-                {$localize`LoadBalance`}
+                {semanticMessages.landing_load_balance_title_line1(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
               <br />
               <span class="text-gray-900 dark:text-white">
-                {$localize`& Failover`}
+                {semanticMessages.landing_load_balance_title_line2(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </span>
             </h2>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              {$localize`Advanced algorithms for optimal performance. Ensure high availability with intelligent traffic distribution and automatic failover protection.`}
+              {semanticMessages.landing_load_balance_description(
+                {},
+                {
+                  locale,
+                },
+              )}
             </p>
 
             {/* Algorithm Selection */}
             <div class="space-y-3">
               <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">
-                {$localize`Load Balancing Algorithms`}
+                {semanticMessages.landing_load_balance_algorithms(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               </h3>
               <div class="grid grid-cols-2 gap-3">
                 {algorithms.map((algo) => (
@@ -277,7 +332,13 @@ export const LoadBalanceSection = component$(() => {
                     </p>
                     <div class="flex items-center gap-2">
                       <span class="text-xs text-gray-500">
-                        {$localize`Efficiency`}:
+                        {semanticMessages.landing_load_balance_efficiency(
+                          {},
+                          {
+                            locale,
+                          },
+                        )}
+                        :
                       </span>
                       <div class="h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                         <div
@@ -305,7 +366,12 @@ export const LoadBalanceSection = component$(() => {
               <div class="mb-4 flex items-center justify-between">
                 <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                   <LuActivity class="h-5 w-5 text-purple-500" />
-                  {$localize`Live Load Distribution`}
+                  {semanticMessages.landing_load_balance_live_distribution(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </h3>
                 <button
                   onClick$={() =>
@@ -318,7 +384,12 @@ export const LoadBalanceSection = component$(() => {
                   }`}
                 >
                   <LuZap class="h-4 w-4" />
-                  {$localize`Animation`}
+                  {semanticMessages.landing_load_balance_animation(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
                 </button>
               </div>
 
@@ -326,7 +397,8 @@ export const LoadBalanceSection = component$(() => {
               {selectedNode.value && (
                 <div class="mb-3 rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-700 dark:bg-purple-900/30">
                   <p class="text-sm font-medium text-purple-800 dark:text-purple-200">
-                    {$localize`Selected:`} {selectedNode.value}
+                    {semanticMessages.landing_shared_selected({}, { locale })}{" "}
+                    {selectedNode.value}
                   </p>
                 </div>
               )}
@@ -336,7 +408,10 @@ export const LoadBalanceSection = component$(() => {
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="font-semibold text-gray-900 dark:text-white">
-                      {$localize`Active Algorithm:`}{" "}
+                      {semanticMessages.landing_load_balance_active_algorithm(
+                        {},
+                        { locale },
+                      )}{" "}
                       {
                         algorithms.find((a) => a.id === activeAlgorithm.value)
                           ?.name
@@ -363,17 +438,48 @@ export const LoadBalanceSection = component$(() => {
               <Graph
                 nodes={nodes}
                 connections={connections}
-                title={$localize`Load Balancing Topology`}
+                title={semanticMessages.landing_load_balance_topology(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
                 config={{
                   width: "100%",
                   height: "380px",
                   viewBox: "0 0 500 380",
                   showLegend: true,
                   legendItems: [
-                    { color: "#84cc16", label: $localize`Domestic Link` },
-                    { color: "#9333ea", label: $localize`Foreign Link` },
-                    { color: "#f59e0b", label: $localize`Backup Link` },
-                    { color: "#6366f1", label: $localize`Client Traffic` },
+                    {
+                      color: "#84cc16",
+                      label:
+                        semanticMessages.landing_load_balance_domestic_link(
+                          {},
+                          { locale },
+                        ),
+                    },
+                    {
+                      color: "#9333ea",
+                      label: semanticMessages.landing_load_balance_foreign_link(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#f59e0b",
+                      label: semanticMessages.landing_load_balance_backup_link(
+                        {},
+                        { locale },
+                      ),
+                    },
+                    {
+                      color: "#6366f1",
+                      label:
+                        semanticMessages.landing_load_balance_client_traffic(
+                          {},
+                          { locale },
+                        ),
+                    },
                   ],
                 }}
                 onNodeClick$={handleNodeClick}
@@ -381,7 +487,14 @@ export const LoadBalanceSection = component$(() => {
 
               {/* Traffic Flow Bars */}
               <div class="mt-4 space-y-2">
-                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{$localize`Real-time Load:`}</h4>
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {semanticMessages.landing_load_balance_realtime(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </h4>
                 {["WAN 1", "WAN 2", "WAN 3", "WAN 4"].map((wan, index) => (
                   <div key={wan} class="flex items-center gap-3">
                     <span class="w-12 text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -407,21 +520,42 @@ export const LoadBalanceSection = component$(() => {
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     &lt;1ms
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Failover`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_load_balance_failover(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <LuTrendingUp class="mx-auto mb-1 h-6 w-6 text-violet-500" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     4x
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Throughput`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_load_balance_throughput(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
                 <div class="rounded-lg bg-white/60 p-3 text-center dark:bg-black/40">
                   <LuActivity class="mx-auto mb-1 h-6 w-6 text-pink-500" />
                   <div class="text-lg font-bold text-gray-900 dark:text-white">
                     99.99%
                   </div>
-                  <div class="text-xs text-gray-600 dark:text-gray-400">{$localize`Uptime`}</div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {semanticMessages.landing_load_balance_uptime(
+                      {},
+                      {
+                        locale,
+                      },
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

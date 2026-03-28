@@ -1,5 +1,6 @@
 import { component$, type QRL } from "@builder.io/qwik";
 import type { VPNClientConfig } from "../../types/VPNClientAdvancedTypes";
+import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface VPNBoxHeaderProps {
   vpn: VPNClientConfig;
@@ -25,6 +26,7 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
     onMoveUp$,
     onMoveDown$,
   }) => {
+    const locale = useMessageLocale();
     // Get VPN protocol icon
     const getVPNIcon = () => {
       switch (vpn.type) {
@@ -64,7 +66,11 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
                     : "text-gray-900 dark:text-white",
                 ]}
               >
-                {vpn.name || `VPN ${index + 1}`}
+                {vpn.name ||
+                  semanticMessages.vpn_client_advanced_default_name(
+                    { index: index + 1 },
+                    { locale },
+                  )}
               </h3>
               <span
                 class={[
@@ -78,10 +84,19 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               </span>
             </div>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {$localize`Priority`}: {vpn.priority} •{" "}
+              {semanticMessages.wan_advanced_priority({}, { locale })}:{" "}
+              {vpn.priority} •{" "}
               {vpn.assignedWANLink
-                ? $localize`Assigned to WAN Link`
-                : $localize`No WAN Link assigned`}
+                ? semanticMessages.vpn_client_advanced_assigned_wan_link(
+                    {},
+                    {
+                      locale,
+                    },
+                  )
+                : semanticMessages.vpn_client_advanced_no_wan_link_assigned(
+                    {},
+                    { locale },
+                  )}
             </p>
           </div>
         </div>
@@ -94,7 +109,12 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               <button
                 onClick$={onMoveUp$}
                 class="rounded border border-gray-300 bg-white p-1 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-                title={$localize`Move up`}
+                title={semanticMessages.vpn_client_advanced_move_up(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               >
                 <svg
                   class="h-3 w-3"
@@ -115,7 +135,12 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
               <button
                 onClick$={onMoveDown$}
                 class="rounded border border-gray-300 bg-white p-1 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-                title={$localize`Move down`}
+                title={semanticMessages.vpn_client_advanced_move_down(
+                  {},
+                  {
+                    locale,
+                  },
+                )}
               >
                 <svg
                   class="h-3 w-3"
@@ -139,7 +164,11 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
             <button
               onClick$={onToggleExpand$}
               class="rounded-lg border border-gray-300 bg-white p-2 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-              title={isExpanded ? $localize`Collapse` : $localize`Expand`}
+              title={
+                isExpanded
+                  ? semanticMessages.shared_collapse({}, { locale })
+                  : semanticMessages.shared_expand({}, { locale })
+              }
             >
               <svg
                 class={[
@@ -165,7 +194,12 @@ export const VPNBoxHeader = component$<VPNBoxHeaderProps>(
             <button
               onClick$={onRemove$}
               class="rounded-lg border border-red-300 bg-red-50 p-2 text-red-600 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-              title={$localize`Remove VPN Client`}
+              title={semanticMessages.vpn_client_advanced_remove_vpn(
+                {},
+                {
+                  locale,
+                },
+              )}
             >
               <svg
                 class="h-4 w-4"
