@@ -795,15 +795,103 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
     // Note: handleStepComplete$ is now defined above before createSteps
 
     return (
-      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div class="mb-8">
-            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
+      <div class="w-full p-4">
+        <div class="space-y-6">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div class="flex items-start gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                <svg
+                  class="h-6 w-6 text-primary-600 dark:text-primary-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                  {semanticMessages.vpn_client_advanced_page_title(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  {semanticMessages.vpn_client_advanced_page_description(
+                    {},
+                    {
+                      locale,
+                    },
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {!hasForeignLink.value && (
+                <SegmentedControl
+                  value={enabled}
+                  options={[
+                    {
+                      value: "false",
+                      label: semanticMessages.vpn_client_toggle_disabled(
+                        {},
+                        {
+                          locale,
+                        },
+                      ),
+                    },
+                    {
+                      value: "true",
+                      label: semanticMessages.vpn_client_toggle_enabled(
+                        {},
+                        {
+                          locale,
+                        },
+                      ),
+                    },
+                  ]}
+                  onChange$={handleToggle$}
+                  size="sm"
+                  color="primary"
+                />
+              )}
+
+              {onCancel$ && (
+                <button
+                  onClick$={onCancel$}
+                  class="self-start rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  {semanticMessages.shared_cancel({}, { locale })}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {enabled.value === "true" ? (
+            <CStepper
+              steps={steps.value}
+              activeStep={activeStep.value}
+              onStepChange$={handleStepChange$}
+              onStepComplete$={handleStepComplete$}
+              onComplete$={applyConfiguration$}
+              hideStepHeader={true}
+              disableAutoFocus={true}
+            />
+          ) : (
+            <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-900/40">
+              <div class="mb-6 flex justify-center">
+                <div class="rounded-full bg-gray-200 p-6 dark:bg-gray-700">
                   <svg
-                    class="h-6 w-6 text-primary-600 dark:text-primary-400"
+                    class="h-12 w-12 text-gray-400 dark:text-gray-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -816,128 +904,29 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
                     />
                   </svg>
                 </div>
-
-                <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {semanticMessages.vpn_client_advanced_page_title(
-                      {},
-                      {
-                        locale,
-                      },
-                    )}
-                  </h1>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {semanticMessages.vpn_client_advanced_page_description(
-                      {},
-                      {
-                        locale,
-                      },
-                    )}
-                  </p>
-                </div>
               </div>
-
-              {/* Right side: Toggle + Cancel button */}
-              <div class="flex items-center gap-4">
-                {/* VPN Client Enable/Disable Toggle (only shown when no Foreign Link) */}
-                {!hasForeignLink.value && (
-                  <SegmentedControl
-                    value={enabled}
-                    options={[
-                      {
-                        value: "false",
-                        label: semanticMessages.vpn_client_toggle_disabled(
-                          {},
-                          {
-                            locale,
-                          },
-                        ),
-                      },
-                      {
-                        value: "true",
-                        label: semanticMessages.vpn_client_toggle_enabled(
-                          {},
-                          {
-                            locale,
-                          },
-                        ),
-                      },
-                    ]}
-                    onChange$={handleToggle$}
-                    size="sm"
-                    color="primary"
-                  />
+              <h3 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {semanticMessages.vpn_client_advanced_disabled_title(
+                  {},
+                  {
+                    locale,
+                  },
                 )}
-
-                {onCancel$ && (
-                  <button
-                    onClick$={onCancel$}
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    {semanticMessages.shared_cancel({}, { locale })}
-                  </button>
+              </h3>
+              <p class="mx-auto mb-6 max-w-md text-gray-600 dark:text-gray-400">
+                {semanticMessages.vpn_client_advanced_disabled_description(
+                  {},
+                  { locale },
                 )}
-              </div>
+              </p>
+              <button
+                onClick$={applyConfiguration$}
+                class="inline-flex items-center rounded-lg border border-transparent bg-primary-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-700 dark:hover:bg-primary-600"
+              >
+                {semanticMessages.vpn_client_advanced_continue({}, { locale })}
+              </button>
             </div>
-          </div>
-
-          {/* Stepper Container or Disabled Message */}
-          <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            {enabled.value === "true" ? (
-              <CStepper
-                steps={steps.value}
-                activeStep={activeStep.value}
-                onStepChange$={handleStepChange$}
-                onStepComplete$={handleStepComplete$}
-                onComplete$={applyConfiguration$}
-                hideStepHeader={true}
-                disableAutoFocus={true}
-              />
-            ) : (
-              <div class="p-12 text-center">
-                <div class="mb-6 flex justify-center">
-                  <div class="rounded-full bg-gray-200 p-6 dark:bg-gray-700">
-                    <svg
-                      class="h-12 w-12 text-gray-400 dark:text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <h3 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {semanticMessages.vpn_client_advanced_disabled_title(
-                    {},
-                    {
-                      locale,
-                    },
-                  )}
-                </h3>
-                <p class="mx-auto mb-6 max-w-md text-gray-600 dark:text-gray-400">
-                  {semanticMessages.vpn_client_advanced_disabled_description(
-                    {},
-                    { locale },
-                  )}
-                </p>
-                <button
-                  onClick$={applyConfiguration$}
-                  class="inline-flex items-center rounded-lg border border-transparent bg-primary-600 px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-700 dark:hover:bg-primary-600"
-                >
-                  {semanticMessages.vpn_client_advanced_continue(
-                    {},
-                    { locale },
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     );

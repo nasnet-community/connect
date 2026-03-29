@@ -1,8 +1,5 @@
 export const showConfigStageClass = "min-h-screen";
 
-export const showConfigPanelClass =
-  "overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-surface-dark";
-
 export const showConfigHighlightPanelClass =
   "overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-primary-800 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-800";
 
