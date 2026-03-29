@@ -125,28 +125,33 @@ export const StepperProgressDisplay = component$(
               step.validationErrors && step.validationErrors.length > 0,
             );
             const canInteract = getCanInteract(stepIndex);
-            const sidePosition =
-              verticalSide === "left" ? "1.125rem" : "1.125rem";
+            const circleCenterOffset = "1.125rem";
+            const connectorThickness = "2px";
+            const connectorPosition = `calc(${circleCenterOffset} - 1px)`;
 
             return (
               <div
                 key={`step-${step.id}-vertical-${stepIndex}`}
-                class={`relative pb-4 ${stepIndex === steps.length - 1 ? "pb-0" : ""}`}
+                class={`relative ${stepIndex === steps.length - 1 ? "pb-0" : "pb-5"}`}
               >
                 {stepIndex < steps.length - 1 && (
                   <div
-                    class={`absolute bottom-0 top-10 w-1 rounded-full ${
+                    class={`absolute bottom-0 rounded-full transition-colors duration-300 ${
                       stepIndex < activeStep
                         ? "bg-yellow-500 dark:bg-yellow-400"
                         : "bg-gray-200 dark:bg-gray-700"
                     }`}
-                    style={{ [verticalSide]: sidePosition }}
+                    style={{
+                      [verticalSide]: connectorPosition,
+                      top: "2.125rem",
+                      width: connectorThickness,
+                    }}
                     aria-hidden="true"
                   />
                 )}
 
                 <div
-                  class={`relative flex items-start gap-3 ${verticalSide === "right" ? "flex-row-reverse text-right" : ""}`}
+                  class={`relative flex items-start gap-3.5 ${verticalSide === "right" ? "flex-row-reverse text-right" : ""}`}
                 >
                   <button
                     class={`relative z-10 flex items-center justify-center rounded-full outline-none transition-all duration-200 ${
@@ -192,14 +197,14 @@ export const StepperProgressDisplay = component$(
                   </button>
 
                   <div
-                    class={`min-w-0 flex-1 pt-1 ${step.isDisabled ? "opacity-50" : ""}`}
+                    class={`min-w-0 flex-1 pt-1.5 ${step.isDisabled ? "opacity-50" : ""}`}
                   >
                     <div
-                      class={`break-words text-sm leading-tight ${
+                      class={`break-words text-sm leading-snug transition-colors ${
                         isCurrent
                           ? "font-medium text-yellow-700 dark:text-yellow-300"
                           : isComplete
-                            ? "text-gray-800 dark:text-gray-200"
+                            ? "text-text dark:text-white"
                             : "text-gray-500 dark:text-gray-400"
                       }`}
                     >

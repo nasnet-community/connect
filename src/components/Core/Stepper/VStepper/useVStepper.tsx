@@ -189,17 +189,8 @@ const useVStepperLegacy = (props: VStepperProps) => {
  * Enhanced VStepper hook using shared base functionality
  */
 export const useVStepper = (props: VStepperProps) => {
-  // Convert StepItem[] to BaseStepMeta[] for base stepper compatibility
-  const convertedProps = {
-    ...props,
-    steps: props.steps.map((step) => ({
-      ...step,
-      helpContent: step.helpContent as any, // Type assertion for JSX.Element compatibility
-    })),
-  };
-
   // Always call all hooks at top level for Qwik compliance
-  const baseStepperResult = useBaseStepper(convertedProps, {
+  const baseStepperResult = useBaseStepper(props, {
     contextNamespace: "vstepper",
     preventInfiniteLoops: true,
     maxRenderCycles: 15, // Higher limit for vertical stepper due to scrolling
