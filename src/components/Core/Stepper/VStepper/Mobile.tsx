@@ -10,12 +10,7 @@ export const Mobile = component$((props: MobileProps) => {
     toggleStepsVisibility,
     allowStepNavigation = false,
     onStepClick$,
-    helpButton,
-    onHelpClick$,
   } = props;
-
-  const showHelp = !!onHelpClick$;
-  const helpButtonConfig = helpButton || {};
 
   return (
     <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden">
@@ -33,42 +28,6 @@ export const Mobile = component$((props: MobileProps) => {
             </span>
 
             <div class="flex items-center gap-3">
-              {/* Help Button */}
-              {showHelp && (
-                <button
-                  onClick$={() => onHelpClick$()}
-                  class={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
-                    ${
-                      helpButtonConfig.variant === "primary"
-                        ? "bg-primary-500/20 text-primary-600 hover:bg-primary-500/30"
-                        : helpButtonConfig.variant === "secondary"
-                          ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30"
-                          : "text-text-secondary hover:bg-primary-500/10 hover:text-primary-500"
-                    }`}
-                  title={semanticMessages.stepper_help_button_shortcut(
-                    {},
-                    { locale },
-                  )}
-                >
-                  <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {helpButtonConfig.showKeyboardHint !== false && (
-                    <span class="hidden xs:inline">(?)</span>
-                  )}
-                </button>
-              )}
-
               {/* Show/Hide Steps Toggle */}
               <button
                 onClick$={() => toggleStepsVisibility()}

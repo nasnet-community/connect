@@ -10,85 +10,30 @@ export const Desktop = component$((props: DesktopProps) => {
     position,
     allowStepNavigation = false,
     onStepClick$,
-    helpButton,
-    onHelpClick$,
   } = props;
-
-  const showHelp = !!onHelpClick$;
-  const helpButtonConfig = helpButton || {};
+  const stepNumber = activeStep.value + 1;
+  const totalSteps = props.steps.length;
 
   return (
     <div
       class={`fixed top-1/2 z-40 hidden -translate-y-1/2 md:block 
       ${position === "left" ? "left-4" : "right-4"}`}
     >
-      <div class="relative w-[200px]">
-        {/* Stronger gradient border */}
-        <div class="absolute -inset-[1px] rounded-xl bg-gradient-to-b from-primary-500/40 via-secondary-500/40 to-transparent"></div>
-
-        {/* Darker background in dark mode */}
-        <div class="relative rounded-xl bg-white/30 p-4 shadow-lg backdrop-blur-sm dark:bg-surface-dark/70">
-          {/* Help Button */}
-          {showHelp && (
-            <div class="mb-4 flex items-center justify-between">
-              <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
+      <div class="relative w-[224px]">
+        <div class="bg-surface/88 dark:bg-surface-dark/88 relative overflow-hidden rounded-2xl border border-border/60 p-4 shadow-[0_24px_48px_-36px_rgba(15,23,42,0.55)] backdrop-blur-md dark:border-border-dark/60">
+          <div class="mb-2 border-b border-border/50 pb-2 dark:border-border-dark/50">
+            <div class="flex min-h-8 items-center">
+              <p class="text-text-secondary dark:text-text-dark-secondary text-[0.8rem] font-semibold uppercase leading-none tracking-[0.16em]">
                 {semanticMessages.stepper_step_of_total(
                   {
-                    current: String(activeStep.value + 1),
-                    total: String(props.steps.length),
+                    current: String(stepNumber),
+                    total: String(totalSteps),
                   },
                   { locale },
                 )}
-              </span>
-              <button
-                onClick$={() => onHelpClick$()}
-                class={`group flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-all
-                  ${
-                    helpButtonConfig.variant === "primary"
-                      ? "bg-primary-500/20 text-primary-600 hover:bg-primary-500/30 dark:text-primary-400"
-                      : helpButtonConfig.variant === "secondary"
-                        ? "bg-secondary-500/20 text-secondary-600 hover:bg-secondary-500/30 dark:text-secondary-400"
-                        : "text-text-secondary dark:text-text-dark-secondary hover:bg-primary-500/10 hover:text-primary-500 dark:hover:text-primary-400"
-                  }`}
-                title={semanticMessages.stepper_help_button_shortcut_title(
-                  {},
-                  { locale },
-                )}
-              >
-                <svg
-                  class="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {helpButtonConfig.showKeyboardHint !== false && (
-                  <span class="opacity-60 group-hover:opacity-80">(?)</span>
-                )}
-              </button>
+              </p>
             </div>
-          )}
-
-          {/* Step counter (when no help button) */}
-          {!showHelp && (
-            <div class="mb-4 px-1">
-              <span class="text-text-secondary text-xs font-semibold dark:text-white/90">
-                {semanticMessages.stepper_step_of_total(
-                  {
-                    current: String(activeStep.value + 1),
-                    total: String(props.steps.length),
-                  },
-                  { locale },
-                )}
-              </span>
-            </div>
-          )}
+          </div>
 
           <StepperProgressDisplay
             steps={props.steps}
