@@ -24,7 +24,6 @@ export const useConfigGenerator = (state: StarState) => {
   });
 
   const generateROSScript = $(() => ConfigGenerator(state));
-  const generateConfigPreview = $(() => ConfigGenerator(state));
 
   /**
    * Generate slave router configuration using SlaveCG
@@ -56,12 +55,6 @@ export const useConfigGenerator = (state: StarState) => {
     },
   );
 
-  const generateSlaveRouterConfigPreview = $(
-    async (slaveRouter: RouterModels, index: number) => {
-      return generateSlaveRouterScript(slaveRouter, index);
-    },
-  );
-
   const downloadSlaveRouterFile = $(
     async (
       content: string,
@@ -85,9 +78,7 @@ export const useConfigGenerator = (state: StarState) => {
   return {
     downloadFile,
     generateROSScript,
-    generateConfigPreview,
     generateSlaveRouterScript,
-    generateSlaveRouterConfigPreview,
     downloadSlaveRouterFile,
   };
 };

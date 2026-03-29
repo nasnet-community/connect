@@ -440,71 +440,65 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     // Validation now only happens in applyConfiguration$ when user clicks Save & Complete
 
     return (
-      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div class="mb-8">
-            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                  <svg
-                    class="h-6 w-6 text-primary-600 dark:text-primary-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                    />
-                  </svg>
-                </div>
-
-                <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {mode === "Foreign"
-                      ? semanticMessages.wan_advanced_header_foreign(
-                          {},
-                          { locale },
-                        )
-                      : semanticMessages.wan_advanced_header_domestic(
-                          {},
-                          { locale },
-                        )}
-                  </h1>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {semanticMessages.wan_advanced_header_description(
-                      {},
-                      { locale },
-                    )}
-                  </p>
-                </div>
+      <div class="w-full p-4">
+        <div class="space-y-6">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="flex items-start gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                <svg
+                  class="h-6 w-6 text-primary-600 dark:text-primary-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                  />
+                </svg>
               </div>
 
-              {onCancel$ && (
-                <button
-                  onClick$={onCancel$}
-                  class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                  {semanticMessages.wan_advanced_cancel({}, { locale })}
-                </button>
-              )}
+              <div>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                  {mode === "Foreign"
+                    ? semanticMessages.wan_advanced_header_foreign(
+                        {},
+                        { locale },
+                      )
+                    : semanticMessages.wan_advanced_header_domestic(
+                        {},
+                        { locale },
+                      )}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  {semanticMessages.wan_advanced_header_description(
+                    {},
+                    { locale },
+                  )}
+                </p>
+              </div>
             </div>
+
+            {onCancel$ && (
+              <button
+                onClick$={onCancel$}
+                class="self-start rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                {semanticMessages.wan_advanced_cancel({}, { locale })}
+              </button>
+            )}
           </div>
 
-          {/* Stepper Container */}
-          <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <CStepper
-              steps={steps.value}
-              activeStep={activeStep.value}
-              onStepChange$={handleStepChange$}
-              onComplete$={applyConfiguration$}
-              hideStepHeader={true}
-              disableAutoFocus={true}
-            />
-          </div>
+          <CStepper
+            steps={steps.value}
+            activeStep={activeStep.value}
+            onStepChange$={handleStepChange$}
+            onComplete$={applyConfiguration$}
+            hideStepHeader={true}
+            disableAutoFocus={true}
+          />
         </div>
       </div>
     );

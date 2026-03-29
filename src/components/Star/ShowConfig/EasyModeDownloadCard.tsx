@@ -7,10 +7,11 @@ import { showConfigHighlightPanelClass } from "./theme";
 
 interface EasyModeDownloadCardProps {
   onROSDownload$: PropFunction<() => void>;
+  downloadTestId?: string;
 }
 
 export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
-  ({ onROSDownload$ }) => {
+  ({ onROSDownload$, downloadTestId = "easy-download-configuration" }) => {
     const locale = useMessageLocale();
     const steps = [
       {
@@ -73,7 +74,7 @@ export const EasyModeDownloadCard = component$<EasyModeDownloadCardProps>(
           </p>
 
           <Button
-            data-testid="easy-download-configuration"
+            data-testid={downloadTestId}
             variant="primary"
             size="lg"
             onClick$={onROSDownload$}

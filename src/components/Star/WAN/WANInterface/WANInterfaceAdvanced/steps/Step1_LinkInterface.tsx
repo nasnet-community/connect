@@ -5,7 +5,7 @@ import { WirelessFields } from "../components/fields/WirelessFields";
 import { LTEFields } from "../components/fields/LTEFields";
 import { VLANMACFields } from "../components/fields/VLANMACFields";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
-import { Input, Card } from "~/components/Core";
+import { Input } from "~/components/Core";
 import { SearchBar } from "../components/common/SearchBar";
 import { EmptyState } from "../components/common/EmptyState";
 import { LinkStatistics } from "../components/common/LinkStatistics";
@@ -59,108 +59,104 @@ export const Step1_LinkInterface = component$<Step1Props>(
         {wizardState.links.length === 0 ? (
           <div class="space-y-6">
             {/* Header */}
-            <Card>
-              <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                  <svg
-                    class="h-6 w-6 text-primary-600 dark:text-primary-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    {mode === "Foreign"
-                      ? semanticMessages.wan_advanced_foreign_wan_links(
-                          {},
-                          { locale },
-                        )
-                      : semanticMessages.wan_advanced_domestic_wan_links(
-                          {},
-                          { locale },
-                        )}
-                  </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {semanticMessages.wan_advanced_links_description(
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                <svg
+                  class="h-6 w-6 text-primary-600 dark:text-primary-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  {mode === "Foreign"
+                    ? semanticMessages.wan_advanced_foreign_wan_links(
+                        {},
+                        { locale },
+                      )
+                    : semanticMessages.wan_advanced_domestic_wan_links(
+                        {},
+                        { locale },
+                      )}
+                </h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {semanticMessages.wan_advanced_links_description(
+                    {},
+                    { locale },
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Empty State Message */}
+            <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-gray-900/40">
+              <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <svg
+                  class="h-12 w-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                  />
+                </svg>
+              </div>
+              <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+                {semanticMessages.wan_advanced_no_links({}, { locale })}
+              </h3>
+              <p class="mx-auto mb-6 max-w-sm text-gray-500 dark:text-gray-400">
+                {mode === "Foreign"
+                  ? semanticMessages.wan_advanced_create_first_foreign(
+                      {},
+                      { locale },
+                    )
+                  : semanticMessages.wan_advanced_create_first_domestic(
                       {},
                       { locale },
                     )}
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Empty State Message */}
-            <Card>
-              <div class="py-12 text-center">
-                <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                  <svg
-                    class="h-12 w-12 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                    />
-                  </svg>
-                </div>
-                <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-                  {semanticMessages.wan_advanced_no_links({}, { locale })}
-                </h3>
-                <p class="mx-auto mb-6 max-w-sm text-gray-500 dark:text-gray-400">
-                  {mode === "Foreign"
-                    ? semanticMessages.wan_advanced_create_first_foreign(
-                        {},
-                        { locale },
-                      )
-                    : semanticMessages.wan_advanced_create_first_domestic(
-                        {},
-                        { locale },
-                      )}
-                </p>
-                <button
-                  onClick$={$(async () => {
-                    await wizardActions.addLink$();
-                  })}
-                  class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              </p>
+              <button
+                onClick$={$(async () => {
+                  await wizardActions.addLink$();
+                })}
+                class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  {mode === "Foreign"
-                    ? semanticMessages.wan_advanced_add_foreign_link(
-                        {},
-                        { locale },
-                      )
-                    : semanticMessages.wan_advanced_add_domestic_link(
-                        {},
-                        { locale },
-                      )}
-                </button>
-              </div>
-            </Card>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                {mode === "Foreign"
+                  ? semanticMessages.wan_advanced_add_foreign_link(
+                      {},
+                      { locale },
+                    )
+                  : semanticMessages.wan_advanced_add_domestic_link(
+                      {},
+                      { locale },
+                    )}
+              </button>
+            </div>
           </div>
         ) : (
           // Show configured links
@@ -219,7 +215,7 @@ export const Step1_LinkInterface = component$<Step1Props>(
                 </div>
 
                 {/* Inline Configuration Fields */}
-                <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <div class="rounded-lg border border-gray-200 bg-gray-50/80 p-6 dark:border-gray-700 dark:bg-gray-900/40">
                   {/* Name Input Field */}
                   <div class="mb-6">
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
