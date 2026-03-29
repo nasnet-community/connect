@@ -62,14 +62,13 @@ export const PromoL2TPBanner = component$<PromoL2TPBannerProps>(
                 HOT DEAL
               </span>
               <span class="ml-2 text-sm font-medium text-white">
-                Limited Time Offer
+                Available Now
               </span>
             </div>
 
             {/* Main Heading */}
             <h2 class="mb-2 text-2xl font-bold tracking-tight text-white md:text-3xl lg:text-4xl">
-              FREE Hyper Speed VPN Until February 2026! Powered by Nasnet
-              Connect
+              FREE Hyper Speed VPN Powered by NasNet Connect
             </h2>
 
             {/* Description */}
