@@ -1,4 +1,4 @@
-import { component$, useServerData, useTask$ } from "@builder.io/qwik";
+import { component$, useServerData, useVisibleTask$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -31,11 +31,8 @@ export default component$(() => {
 
   const nonce = useServerData<string | undefined>("nonce");
 
-  useTask$(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
+  // eslint-disable-next-line qwik/no-use-visible-task -- analytics injection must run in the browser after render
+  useVisibleTask$(() => {
     inject({
       mode: isDev ? "development" : "production",
       debug: true,
