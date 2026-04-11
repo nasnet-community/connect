@@ -2,7 +2,7 @@
  * Type definitions for the unified Select component
  */
 
-import { type QRL } from "@builder.io/qwik";
+import { type JSXNode, type JSXOutput, type QRL } from "@builder.io/qwik";
 
 /**
  * Option item for the Select component
@@ -17,6 +17,11 @@ export interface SelectOption {
    * Display text for the option
    */
   label: string;
+
+  /**
+   * Optional icon rendered before the label in custom mode
+   */
+  icon?: JSXNode | JSXOutput;
 
   /**
    * Whether the option is disabled

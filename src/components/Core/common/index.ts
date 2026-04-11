@@ -9,6 +9,8 @@ export * from "./types";
 export * from "./utils";
 
 // Components
+export * from "./AdvancedSummaryBanner";
+export * from "./SummaryItemCard";
 export * from "./VisuallyHidden";
 
 // ====================
