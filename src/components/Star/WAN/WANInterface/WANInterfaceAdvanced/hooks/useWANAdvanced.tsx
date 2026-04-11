@@ -259,20 +259,22 @@ export function useWANAdvanced(
       updates.interfaceType &&
       updates.interfaceType !== currentLink.interfaceType
     ) {
-      // Release the old interface when type changes
-      if (updatedLink.interfaceName) {
+      if (updates.interfaceName === undefined && currentLink.interfaceName) {
         await interfaceManagement.releaseInterface$(
-          updatedLink.interfaceName as InterfaceType,
+          currentLink.interfaceName as InterfaceType,
         );
+        updatedLink.interfaceName = "";
       }
 
-      updatedLink.interfaceName = "";
       updatedLink.wirelessCredentials = undefined;
       updatedLink.lteSettings = undefined;
 
-      // Reset connection type for LTE
       if (updates.interfaceType === "LTE") {
         updatedLink.connectionType = "LTE";
+        updatedLink.connectionConfig = undefined;
+      } else if (currentLink.connectionType === "LTE") {
+        updatedLink.connectionType = "DHCP";
+        updatedLink.connectionConfig = { isDHCP: true };
       }
     }
 
@@ -320,13 +322,18 @@ export function useWANAdvanced(
           linkUpdates.interfaceType &&
           linkUpdates.interfaceType !== currentLink.interfaceType
         ) {
-          updatedLink.interfaceName = "";
+          if (linkUpdates.interfaceName === undefined) {
+            updatedLink.interfaceName = "";
+          }
           updatedLink.wirelessCredentials = undefined;
           updatedLink.lteSettings = undefined;
 
-          // Reset connection type for LTE
           if (linkUpdates.interfaceType === "LTE") {
             updatedLink.connectionType = "LTE";
+            updatedLink.connectionConfig = undefined;
+          } else if (currentLink.connectionType === "LTE") {
+            updatedLink.connectionType = "DHCP";
+            updatedLink.connectionConfig = { isDHCP: true };
           }
         }
 

@@ -221,6 +221,16 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
     return selectedOption ? selectedOption.label : "";
   });
 
+  const selectedSingleOption = useComputed$(() => {
+    const val = currentValue.value;
+
+    if (!val || Array.isArray(val)) {
+      return undefined;
+    }
+
+    return options.find((opt) => opt.value === val);
+  });
+
   // Check if mobile device and handle orientation changes
   useVisibleTask$(() => {
     const checkMobile = () => {
@@ -510,10 +520,17 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
 
   // Helper function to render option content
   const renderOption = (option: SelectOption, isOptionSelected: boolean) => {
-    // We'll simplify to use only the default rendering for now
-    // Custom renderers can be implemented with proper Qwik patterns later
     return (
-      <span class={isOptionSelected ? "font-medium" : ""}>{option.label}</span>
+      <span class="flex items-center gap-2">
+        {option.icon && (
+          <span class="flex h-4 w-4 flex-shrink-0 items-center justify-center text-current">
+            {option.icon}
+          </span>
+        )}
+        <span class={isOptionSelected ? "font-medium" : ""}>
+          {option.label}
+        </span>
+      </span>
     );
   };
 
@@ -744,8 +761,17 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
               : undefined
           }
         >
-          <span class={!displayValue.value ? styles.placeholder : ""}>
-            {loading ? loadingText : displayValue.value || placeholder}
+          <span
+            class={`flex min-w-0 items-center gap-2 ${!displayValue.value ? styles.placeholder : ""}`}
+          >
+            {!loading && selectedSingleOption.value?.icon && (
+              <span class="flex h-4 w-4 flex-shrink-0 items-center justify-center text-current">
+                {selectedSingleOption.value.icon}
+              </span>
+            )}
+            <span class="truncate">
+              {loading ? loadingText : displayValue.value || placeholder}
+            </span>
           </span>
 
           {/* Loading indicator for button */}
@@ -1137,7 +1163,10 @@ export const UnifiedSelect = component$<SelectProps>((props) => {
                                 </div>
                               )}
 
-                              <span>{option.label}</span>
+                              {renderOption(
+                                option,
+                                isSelected(option.value),
+                              )}
                             </div>
                           ),
                         );

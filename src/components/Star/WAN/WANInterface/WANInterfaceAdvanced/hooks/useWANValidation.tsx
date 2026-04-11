@@ -146,7 +146,7 @@ export function useWANValidation(): UseWANValidationReturn {
       let allErrors: Record<string, string[]> = {};
 
       switch (step) {
-        case 0: // Step 1: Link & Interface Configuration
+        case 0: // Step 1: Link, interface, and connection configuration
           for (const link of state.links) {
             const validation = await validateLink$(
               link,
@@ -169,26 +169,27 @@ export function useWANValidation(): UseWANValidationReturn {
             if (link.interfaceType === "LTE" && !link.lteSettings) {
               allErrors[`link-${link.id}-lte`] = ["LTE settings required"];
             }
-          }
-          break;
 
-        case 1: // Step 2: Connection Configuration
-          for (const link of state.links) {
-            // Validate connection configuration
+            if (!link.connectionType) {
+              allErrors[`link-${link.id}-connection-type`] = [
+                "Connection type is required",
+              ];
+            }
+
             if (
+              link.connectionType &&
               link.connectionType !== "DHCP" &&
-              link.connectionType !== "LTE"
+              link.connectionType !== "LTE" &&
+              !link.connectionConfig
             ) {
-              if (!link.connectionConfig) {
-                allErrors[`link-${link.id}-connection`] = [
-                  "Connection configuration required",
-                ];
-              }
+              allErrors[`link-${link.id}-connection`] = [
+                "Connection configuration required",
+              ];
             }
           }
           break;
 
-        case 2: // Step 3: Multi-Link Strategy
+        case 1: // Step 2: Multi-Link Strategy
           if (state.links.length > 1 && !state.multiLinkStrategy) {
             allErrors["multi-link"] = [
               "Multi-link strategy must be configured",
@@ -212,7 +213,7 @@ export function useWANValidation(): UseWANValidationReturn {
           }
           break;
 
-        case 3: // Step 4: Summary
+        case 2: // Step 3: Summary/Review
           // Full validation
           const fullValidation = await validateAdvanced$(state);
           if (!fullValidation.isValid) {
