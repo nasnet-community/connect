@@ -1443,6 +1443,7 @@
   "promo_banner_get_free_access": "Get Free Access",
   "promo_banner_credentials_sent": "Credentials sent! Check your account.",
   "frequency_daily": "Daily",
+  "frequency_biweekly": "Bi-Weekly",
   "frequency_weekly": "Weekly",
   "frequency_monthly": "Monthly",
   "prefixed_tunnel_identifier": "Tunnel identifier (e.g., \"1\", \"main\", \"backup\")",

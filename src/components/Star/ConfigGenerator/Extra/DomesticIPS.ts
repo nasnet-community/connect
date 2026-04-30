@@ -493,7 +493,7 @@ export const DomesticIPsScript: string[] = [
 
 export const generateDomesticIPScript = (
     time: string,
-    interval: FrequencyValue = "Daily",
+    interval: FrequencyValue = "Bi-Weekly",
 ): RouterConfig => {
     // Generate a unique UUID for this script instance
     const generatedUserId = generateUUID();
@@ -512,12 +512,14 @@ export const generateDomesticIPScript = (
         switch (frequency) {
             case "Daily":
                 return "1d";
+            case "Bi-Weekly":
+                return "14d";
             case "Weekly":
                 return "7d";
             case "Monthly":
                 return "30d";
             default:
-                return "1d";
+                return "14d";
         }
     };
 

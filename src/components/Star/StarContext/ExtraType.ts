@@ -1,5 +1,5 @@
 export type ServiceType = "Enable" | "Disable" | "Local";
-export type Interval = "Daily" | "Weekly" | "Monthly" | "";
+export type Interval = "Daily" | "Weekly" | "Bi-Weekly" | "Monthly" | "";
 
 export interface IntervalConfig {
   interval: Interval;

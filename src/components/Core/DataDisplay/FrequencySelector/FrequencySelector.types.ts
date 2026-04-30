@@ -1,6 +1,6 @@
 import type { PropFunction } from "@builder.io/qwik";
 
-export type FrequencyValue = "Daily" | "Weekly" | "Monthly";
+export type FrequencyValue = "Daily" | "Weekly" | "Bi-Weekly" | "Monthly";
 
 export interface FrequencySelectorProps {
   /**

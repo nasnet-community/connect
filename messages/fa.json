@@ -1443,6 +1443,7 @@
   "promo_banner_get_free_access": "دسترسی رایگان بگیرید",
   "promo_banner_credentials_sent": "اطلاعات ورود ارسال شد. حساب خود را بررسی کنید.",
   "frequency_daily": "روزانه",
+  "frequency_biweekly": "دو هفته یک‌بار",
   "frequency_weekly": "هفتگی",
   "frequency_monthly": "ماهانه",
   "prefixed_tunnel_identifier": "شناسه تونل (مثلاً \"1\"، \"main\"، \"backup\")",
