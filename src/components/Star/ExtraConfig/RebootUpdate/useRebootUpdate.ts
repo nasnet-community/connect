@@ -52,10 +52,11 @@ export const useRebootUpdate = () => {
 
   const ipAddressUpdateInterval = useSignal<FrequencyValue | undefined>(
     ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Daily" ||
+      ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Bi-Weekly" ||
       ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Weekly" ||
       ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval === "Monthly"
       ? (ctx.state.ExtraConfig.RUI.IPAddressUpdate.interval as FrequencyValue)
-      : "Daily",
+      : "Bi-Weekly",
   );
 
   return {

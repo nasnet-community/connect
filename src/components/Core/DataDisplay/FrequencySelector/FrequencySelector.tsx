@@ -6,7 +6,7 @@ import type {
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 /**
- * FrequencySelector component for selecting frequency intervals (Daily, Weekly, Monthly).
+ * FrequencySelector component for selecting frequency intervals (Daily, Weekly, Bi-Weekly, Monthly).
  * Displays options as compact selection cards.
  *
  * @example
@@ -35,6 +35,10 @@ export const FrequencySelector = component$<FrequencySelectorProps>((props) => {
       label: semanticMessages.frequency_weekly({}, { locale }),
     },
     {
+      value: "Bi-Weekly",
+      label: semanticMessages.frequency_biweekly({}, { locale }),
+    },
+    {
       value: "Monthly",
       label: semanticMessages.frequency_monthly({}, { locale }),
     },
@@ -52,7 +56,7 @@ export const FrequencySelector = component$<FrequencySelectorProps>((props) => {
       )}
 
       {/* Frequency Cards */}
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
         {frequencyOptions.map((option) => {
           const isSelected = value === option.value;
           const isRecommended = recommendedOption === option.value;

@@ -191,4 +191,4 @@ export type RouterModel =
 
 export type InterfaceType = Ethernet | Wireless | Sfp | LTE;
 
-export type FrequencyValue = "Daily" | "Weekly" | "Monthly";
+export type FrequencyValue = "Daily" | "Weekly" | "Bi-Weekly" | "Monthly";

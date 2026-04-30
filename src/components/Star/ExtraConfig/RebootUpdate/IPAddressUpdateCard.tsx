@@ -47,13 +47,13 @@ export const IPAddressUpdateCard = component$<IPAddressUpdateCardProps>(
             }}
           />
           <FrequencySelector
-            value={ipAddressUpdateInterval.value || "Daily"}
+            value={ipAddressUpdateInterval.value || "Bi-Weekly"}
             onChange$={handleIntervalChange}
             label={semanticMessages.reboot_ip_address_update_frequency(
               {},
               { locale },
             )}
-            recommendedOption="Daily"
+            recommendedOption="Bi-Weekly"
           />
         </div>
       </div>

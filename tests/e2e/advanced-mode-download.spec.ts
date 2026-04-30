@@ -344,7 +344,7 @@ test.describe("Advanced Mode End-to-End", () => {
       .toMatchObject({
         Timezone: "UTC",
         IPAddressUpdate: expect.objectContaining({
-          interval: "Daily",
+          interval: "Bi-Weekly",
         }),
       });
 
