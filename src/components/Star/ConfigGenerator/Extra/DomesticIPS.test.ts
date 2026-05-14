@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { generateDomesticIPScript } from "./DomesticIPS";
 import { SConfigGenerator } from "../utils/ConfigGeneratorUtil";
 
+// TODO(nice-to-have): these tests only assert substring presence. They would
+// not catch e.g. an unbalanced brace in the boot-recovery on-event string,
+// because that bug only surfaces when RouterOS parses the .rsc. Followups:
+//   - snapshot test of the full SConfigGenerator output
+//   - a tiny RouterOS smoke-parser (matched { }, [ ], no orphan `\` continuations)
+//   - threshold math tests that exercise minRequired branches
+
 describe("Domestic IP list scheduling", () => {
     it("defaults the IP list updater to bi-weekly", () => {
         const result = generateDomesticIPScript("03:00");

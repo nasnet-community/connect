@@ -6,6 +6,18 @@ import {
 } from "~/components/Star/ConfigGenerator";
 import type { FrequencyValue } from "~/components/Star/StarContext/";
 
+// TODO(nice-to-have): the DomesticIPsScript template below would be much
+// easier to maintain as a real `.rsc` file imported via a Vite raw-loader,
+// with `{{USER_ID}}` / `{{SOURCE_ADDRESS}}` / `{{BASE_URL}}` placeholders.
+// Right now we lose syntax highlighting, on-save linting, and per-section
+// unit tests because everything is a `string[]`.
+//
+// Wishlist (see also the inline `# TODO` markers further down):
+//   - parameterize sourceAddress / baseURL / thresholds via fn args
+//   - timestamp-based stale-lock so killed runs don't deadlock the next one
+//   - persistent "last good import" marker in /system note for ops visibility
+//   - snapshot test + RouterOS smoke-parser to catch escaping bugs in CI
+
 const generateUUID = (): string => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
         /[xy]/g,
@@ -25,6 +37,7 @@ export const DomesticIPsScript: string[] = [
     "# CONFIGURATION SECTION",
     "# ==============================================================================",
     "# API Configuration",
+    "# TODO(nice-to-have): baseURL is hardcoded per-deployment - lift to a fn arg",
     ':local baseURL "https://s4i.co/irip"',
     ':local listName "DOMAddList"',
     ':local stagingListName ($listName . "-new")',
@@ -37,6 +50,7 @@ export const DomesticIPsScript: string[] = [
     "# ========== SOURCE ROUTING CONFIGURATION ==========",
     "# Specify source address for all HTTP/HTTPS requests",
     "# This forces all fetch operations through the interface with this IP",
+    "# TODO(nice-to-have): also hardcoded - should be a generator fn arg",
     ':local sourceAddress "192.168.39.12"',
     "# ==================================================",
     "",
@@ -51,6 +65,8 @@ export const DomesticIPsScript: string[] = [
     ":local retryMaxDelay 30",
     "",
     "# Validation Configuration",
+    "# TODO(nice-to-have): expose these as fn args. If upstream legitimately",
+    "# shrinks by >30% we'll silently keep stale data forever with no override.",
     ":local minSafeCount 100",
     ":local minBootstrapCount 1000",
     ":local minRetentionPercent 70",
@@ -137,6 +153,9 @@ export const DomesticIPsScript: string[] = [
     "# ==============================================================================",
     "",
     "# Prevent concurrent runs (scheduler + manual execution overlap)",
+    "# TODO(nice-to-have): pair with a :global domesticIPUpdateStartedAt and",
+    "# treat the lock as stale after ~30 min. Today, a manually-killed run",
+    "# leaves the lock 'true' until the next reboot clears :global state.",
     ":global domesticIPUpdateRunning",
     ':if ([:typeof $domesticIPUpdateRunning] = "nothing") do={',
     "    :set domesticIPUpdateRunning false",
@@ -224,8 +243,10 @@ export const DomesticIPsScript: string[] = [
     "        :set attempt ($attempt + 1)",
     '        :log info "$logPrefix: Fetching page $pageNum (attempt $attempt/$maxRetries)..."',
     "        ",
-    "        :do {",
+        "        :do {",
     "            # Fetch command with source address",
+    "            # NOTE: check-certificate=no is pragmatic for the Iran TLS",
+    "            # fingerprinting context; flip to =yes if running elsewhere.",
     "            :local fetchResult",
     "            :if ($sourceValid = true) do={",
     "                # Use source address if valid",
@@ -386,6 +407,12 @@ export const DomesticIPsScript: string[] = [
     "    /ip firewall address-list set [find list=$stagingListName] list=$listName",
     "",
     "    :set finalCount [:len [/ip firewall address-list find list=$listName]]",
+    "    # NOTE: by this point the OLD list is already gone (swap above). If",
+    "    # this tripwire fires, the on-error message 'existing list preserved'",
+    "    # is technically a lie - the old list was removed, the new (possibly",
+    "    # short) list is live. In practice RouterOS shouldn't lose entries",
+    "    # between remove+set, so this is a paranoia check. The FINAL SUMMARY",
+    "    # below re-reads finalCount so logs still show the actual state.",
     ":if ($finalCount < $minRequired) do={",
     '    :error "$logPrefix: Post-swap validation failed - final=$finalCount required=$minRequired"',
     "}",
@@ -394,6 +421,11 @@ export const DomesticIPsScript: string[] = [
     "} on-error={",
     '    :log error "$logPrefix: Import failed, existing list preserved"',
     "}",
+    "",
+    "# TODO(nice-to-have): persist a 'last good import' marker so downstream",
+    "# consumers (and ops) can answer 'when did this last actually succeed?'",
+    "# without scraping logs. e.g.:",
+    "#   /system note set note=\"DOMAddList-last-good=$endTime:$finalCount\"",
     "",
     "# ==============================================================================",
     "# FINAL SUMMARY",
@@ -498,6 +530,11 @@ export const generateDomesticIPScript = (
         startTime: startTime,
     });
 
+    // TODO(nice-to-have): rebuild this as a named script via ScriptAndScheduler
+    // so it goes through the same escaping/policy helpers as everything else.
+    // Triple-escaping inside a single template literal is a footgun and bypasses
+    // the SchedulerGenerator abstraction. Also worth running it hourly (not just
+    // once at startup) so mid-day list wipes recover automatically.
     const bootRecoveryConfig: RouterConfig = {
         "/system scheduler": [
             `add interval=00:00:00 name=DomesticIPUpdate-BootCheck on-event=":delay 5m; :local currentCount [:len [/ip firewall address-list find list=DOMAddList]]; :if ($currentCount < 100) do={ :log warning \\"SecureListUpdate: Boot guard detected only $currentCount entries, running DomesticIPUpdate\\"; /system script run DomesticIPUpdate } else={ :log info \\"SecureListUpdate: Boot guard healthy ($currentCount entries)\\" }" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup`,
@@ -508,7 +545,10 @@ export const generateDomesticIPScript = (
 };
 
 export const generateDomesticIPScriptOneTime = (): RouterConfig => {
-    // Use hardcoded user ID for one-time script
+    // TODO(privacy): every router built by nasnet-connect reports as the SAME
+    // user_id to s4i.co/irip for the one-time script. Should use generateUUID()
+    // here like the recurring version does, otherwise we're both leaking a
+    // pseudo-identity and polluting upstream analytics with one mega-user.
     const generatedUserId = "0459f5a4-26f0-46d9-9de3-59302b29676a";
 
     const scriptCommands = [":delay 120s", ...DomesticIPsScript].map((line) =>
