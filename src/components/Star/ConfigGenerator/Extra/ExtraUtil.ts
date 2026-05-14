@@ -189,9 +189,9 @@ export const IPAddressUpdateFunc = (
         return {};
     }
 
-    // Respect configured cadence; fall back only when UI interval is empty.
-    const resolvedInterval = interval === "" ? "Bi-Weekly" : interval;
-    const domesticConfig = generateDomesticIPScript(time, resolvedInterval);
+    // Respect configured cadence. The `if (!interval) return {}` guard above
+    // already excludes the "" form of Interval, narrowing it to FrequencyValue.
+    const domesticConfig = generateDomesticIPScript(time, interval);
 
     // Add S4I routing rule
     const s4iConfig: RouterConfig = {
