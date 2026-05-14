@@ -189,8 +189,9 @@ export const IPAddressUpdateFunc = (
         return {};
     }
 
-    // Get the domestic IP script configuration
-    const domesticConfig = generateDomesticIPScript(time);
+    // Respect configured cadence; fall back only when UI interval is empty.
+    const resolvedInterval = interval === "" ? "Bi-Weekly" : interval;
+    const domesticConfig = generateDomesticIPScript(time, resolvedInterval);
 
     // Add S4I routing rule
     const s4iConfig: RouterConfig = {
