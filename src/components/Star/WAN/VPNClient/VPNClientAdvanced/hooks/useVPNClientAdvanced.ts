@@ -150,7 +150,6 @@ export const useVPNClientAdvanced = (): UseVPNClientAdvancedReturn => {
       type,
       enabled: true,
       priority: state.vpnConfigs.length + 1,
-      weight: 50,
       assignedLink: undefined as string | undefined,
     };
 

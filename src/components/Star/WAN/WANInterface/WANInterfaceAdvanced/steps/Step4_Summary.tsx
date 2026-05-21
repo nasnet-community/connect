@@ -1,7 +1,8 @@
 import { component$, type QRL, useComputed$, $ } from "@builder.io/qwik";
 import type { WANWizardState } from "../types";
-import { Alert, Card } from "~/components/Core";
+import { Alert, Card, AdvancedSummaryBanner, SummaryItemCard } from "~/components/Core";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { renderInterfaceTypeIcon } from "../utils/interfaceTypeIcons";
 
 export interface Step4Props {
   wizardState: WANWizardState;
@@ -37,38 +38,6 @@ export const Step4_Summary = component$<Step4Props>(
         Both: "Load Balance + Failover",
       };
       return strategies[strategy || ""] || "";
-    };
-
-    const getInterfaceIcon = (type: string) => {
-      switch (type) {
-        case "Ethernet":
-          return "M8 12h8m-8 0a8 8 0 1 0 16 0 8 8 0 1 0-16 0";
-        case "Wireless":
-          return "M8.111 16.404a5.5 5.5 0 0 1 7.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0";
-        case "LTE":
-          return "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M5 7h14M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2";
-        case "SFP":
-          return "M12 6v6m0 0v6m0-6h6m-6 0H6";
-        default:
-          return "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9";
-      }
-    };
-
-    const getConnectionIcon = (type?: string) => {
-      if (!type)
-        return "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
-      switch (type) {
-        case "DHCP":
-          return "M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01";
-        case "PPPoE":
-          return "M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z";
-        case "Static":
-          return "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z";
-        case "LTE":
-          return "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z";
-        default:
-          return "M13 10V3L4 14h7v7l9-11h-7z";
-      }
     };
 
     const getConnectionTypeColor = (type?: string) => {
@@ -116,28 +85,16 @@ export const Step4_Summary = component$<Step4Props>(
 
     return (
       <div class="space-y-6">
-        {/* Modern Header with Gradient */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-white">
-          <div class="relative z-10">
-            <h2 class="text-3xl font-bold">
-              {semanticMessages.wan_advanced_summary_title({}, { locale })}
-            </h2>
-            <p class="mt-2 text-primary-100">
-              {semanticMessages.wan_advanced_review_before_deploy(
-                {},
-                { locale },
-              )}
-            </p>
-          </div>
-          {/* Background Pattern */}
-          <div class="absolute inset-0 opacity-10">
-            <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white"></div>
-            <div class="absolute -bottom-10 -left-10 h-60 w-60 rounded-full bg-white"></div>
-          </div>
-        </div>
+        <AdvancedSummaryBanner
+          title={semanticMessages.wan_advanced_summary_title({}, { locale })}
+          description={semanticMessages.wan_advanced_review_before_deploy(
+            {},
+            { locale },
+          )}
+        />
 
         {/* Status Alert with Modern Style */}
-        {validationErrors.value.hasErrors ? (
+        {validationErrors.value.hasErrors && (
           <Alert status="error" class="border-l-4 border-red-500">
             <div class="flex">
               <svg
@@ -165,36 +122,6 @@ export const Step4_Summary = component$<Step4Props>(
                     ))}
                   </ul>
                 </div>
-              </div>
-            </div>
-          </Alert>
-        ) : (
-          <Alert status="success" class="border-l-4 border-green-500">
-            <div class="flex">
-              <svg
-                class="h-5 w-5 text-green-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
-                  {semanticMessages.wan_advanced_configuration_ready(
-                    {},
-                    { locale },
-                  )}
-                </h3>
-                <p class="mt-1 text-sm text-green-700 dark:text-green-300">
-                  {semanticMessages.wan_advanced_validated_successfully(
-                    {},
-                    { locale },
-                  )}
-                </p>
               </div>
             </div>
           </Alert>
@@ -235,7 +162,7 @@ export const Step4_Summary = component$<Step4Props>(
             </div>
           </div>
 
-          <div class="space-y-4 p-6">
+          <div class="space-y-3 p-4">
             {sortedLinksByPriority.value.map((link, index) => {
               const isConfigured =
                 link.connectionType && link.connectionConfirmed;
@@ -244,53 +171,89 @@ export const Step4_Summary = component$<Step4Props>(
                 : "border-green-300 dark:border-green-600";
 
               return (
-                <div
-                  key={link.id}
-                  class={`group relative overflow-hidden rounded-xl border-2 ${statusColor} bg-gradient-to-r from-white to-gray-50 p-5 transition-all hover:shadow-lg dark:from-gray-800 dark:to-gray-900`}
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                      {/* Priority Badge */}
-                      <div class="flex flex-col items-center">
-                        <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                          {semanticMessages.wan_advanced_priority(
-                            {},
-                            { locale },
-                          )}
+                <SummaryItemCard key={link.id} statusColorClass={statusColor}>
+                  <div q:slot="badge" class="flex flex-col items-center pt-0.5">
+                    <span class="text-[10px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+                      {semanticMessages.wan_advanced_priority({}, { locale })}
+                    </span>
+                    <div class="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-md">
+                      {index + 1}
+                    </div>
+                  </div>
+
+                  <div
+                    q:slot="icon"
+                    class={`self-center rounded-lg p-2.5 text-white shadow-md ${getInterfaceTypeColor(link.interfaceType)}`}
+                  >
+                    {renderInterfaceTypeIcon(
+                      link.interfaceType || "Ethernet",
+                      "h-5 w-5",
+                    )}
+                  </div>
+
+                  <h4 class="truncate text-base font-semibold text-gray-900 dark:text-white md:text-lg">
+                    {link.name}
+                  </h4>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-5">
+                    <span class="text-gray-600 dark:text-gray-400">
+                      {link.interfaceType ||
+                        semanticMessages.wan_advanced_no_interface_selected(
+                          {},
+                          { locale },
+                        )}{" "}
+                      •{" "}
+                      {link.interfaceName ||
+                        semanticMessages.wan_advanced_not_selected(
+                          {},
+                          { locale },
+                        )}
+                    </span>
+                    {link.connectionType && link.connectionType !== "LTE" && (
+                      <>
+                        <span class="text-gray-400">•</span>
+                        <span class="text-gray-600 dark:text-gray-400">
+                          {getConnectionTypeDisplay(link.connectionType)}
                         </span>
-                        <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 font-bold text-white shadow-lg">
-                          {index + 1}
-                        </div>
-                      </div>
+                      </>
+                    )}
+                  </div>
 
-                      {/* Interface Icon with Gradient Background */}
-                      <div
-                        class={`rounded-xl p-3 text-white shadow-lg ${getInterfaceTypeColor(link.interfaceType)}`}
-                      >
-                        <svg
-                          class="h-6 w-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d={getInterfaceIcon(
-                              link.interfaceType || "Ethernet",
-                            )}
-                          />
-                        </svg>
-                      </div>
+                  {(link.wirelessCredentials || link.vlanConfig?.enabled) && (
+                    <div class="mt-2 flex flex-wrap gap-1.5">
+                      {link.wirelessCredentials && (
+                        <span class="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                          <svg
+                            class="mr-1 h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M8.111 16.404a5.5 5.5 0 0 1 7.778 0M12 20h.01"
+                            />
+                          </svg>
+                          {link.wirelessCredentials.SSID}
+                        </span>
+                      )}
 
-                      {/* Link Details */}
-                      <div>
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
-                          {link.name}
-                        </h4>
-                        <div class="mt-1 flex items-center gap-3 text-sm">
-                          <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                      {link.vlanConfig?.enabled && (
+                        <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          VLAN {link.vlanConfig.id}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {link.connectionType === "PPPoE" &&
+                    link.connectionConfig?.pppoe && (
+                      <div class="mt-3 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 p-3 dark:from-orange-900/20 dark:to-orange-800/20">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class={`rounded-lg p-2 text-white ${getConnectionTypeColor("PPPoE")}`}
+                          >
                             <svg
                               class="h-4 w-4"
                               fill="none"
@@ -301,222 +264,130 @@ export const Step4_Summary = component$<Step4Props>(
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M8 12h8m-8 0a8 8 0 1 0 16 0 8 8 0 1 0-16 0"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                               />
                             </svg>
-                            {link.interfaceType ||
-                              semanticMessages.wan_advanced_no_interface_selected(
-                                {},
-                                { locale },
-                              )}{" "}
-                            •{" "}
-                            {link.interfaceName ||
-                              semanticMessages.wan_advanced_not_selected(
+                          </div>
+                          <div class="text-sm">
+                            <p class="text-gray-600 dark:text-gray-400">
+                              {semanticMessages.wan_advanced_username(
                                 {},
                                 { locale },
                               )}
-                          </span>
-                          {link.connectionType && (
-                            <>
-                              <span class="text-gray-400">•</span>
-                              <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                <svg
-                                  class="h-4 w-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d={getConnectionIcon(link.connectionType)}
-                                  />
-                                </svg>
-                                {getConnectionTypeDisplay(link.connectionType)}
+                              :{" "}
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {link.connectionConfig.pppoe.username}
                               </span>
-                            </>
-                          )}
+                            </p>
+                          </div>
                         </div>
-
-                        {/* Additional Configuration Details */}
-                        <div class="mt-2 flex flex-wrap gap-2">
-                          {link.wirelessCredentials && (
-                            <span class="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              <svg
-                                class="mr-1 h-3 w-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M8.111 16.404a5.5 5.5 0 0 1 7.778 0M12 20h.01"
-                                />
-                              </svg>
-                              {link.wirelessCredentials.SSID}
-                            </span>
-                          )}
-
-                          {link.vlanConfig?.enabled && (
-                            <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                              VLAN {link.vlanConfig.id}
-                            </span>
-                          )}
-
-                          {wizardState.links.length > 1 &&
-                            link.weight !== undefined &&
-                            wizardState.multiLinkStrategy?.strategy !==
-                              "Failover" && (
-                              <span class="inline-flex items-center rounded-md bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                                {link.weight}%{" "}
-                                {semanticMessages.wan_advanced_weight(
-                                  {},
-                                  { locale },
-                                )}
-                              </span>
-                            )}
-                        </div>
-
-                        {/* Connection Configuration Details */}
-                        {link.connectionType === "PPPoE" &&
-                          link.connectionConfig?.pppoe && (
-                            <div class="mt-3 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 p-3 dark:from-orange-900/20 dark:to-orange-800/20">
-                              <div class="flex items-center gap-2">
-                                <div
-                                  class={`rounded-lg p-2 text-white ${getConnectionTypeColor("PPPoE")}`}
-                                >
-                                  <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                  </svg>
-                                </div>
-                                <div class="text-sm">
-                                  <p class="text-gray-600 dark:text-gray-400">
-                                    {semanticMessages.wan_advanced_username(
-                                      {},
-                                      { locale },
-                                    )}
-                                    :{" "}
-                                    <span class="font-medium text-gray-900 dark:text-white">
-                                      {link.connectionConfig.pppoe.username}
-                                    </span>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                        {link.connectionType === "Static" &&
-                          link.connectionConfig?.static && (
-                            <div class="mt-3 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 p-3 dark:from-indigo-900/20 dark:to-indigo-800/20">
-                              <div class="grid grid-cols-1 gap-2 text-sm">
-                                <div class="flex items-center gap-2">
-                                  <svg
-                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                                    />
-                                  </svg>
-                                  <span class="text-gray-600 dark:text-gray-400">
-                                    IP:{" "}
-                                    <span class="font-medium text-gray-900 dark:text-white">
-                                      {link.connectionConfig.static.ipAddress}/
-                                      {link.connectionConfig.static.subnet}
-                                    </span>
-                                  </span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                  <svg
-                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                                    />
-                                  </svg>
-                                  <span class="text-gray-600 dark:text-gray-400">
-                                    Gateway:{" "}
-                                    <span class="font-medium text-gray-900 dark:text-white">
-                                      {link.connectionConfig.static.gateway}
-                                    </span>
-                                  </span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                  <svg
-                                    class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-                                    />
-                                  </svg>
-                                  <span class="text-gray-600 dark:text-gray-400">
-                                    DNS:{" "}
-                                    <span class="font-medium text-gray-900 dark:text-white">
-                                      {link.connectionConfig.static.DNS}
-                                    </span>
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                       </div>
-                    </div>
+                    )}
 
-                    {/* Status Indicators */}
-                    <div class="flex items-center gap-3">
-                      {!isConfigured ? (
-                        <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                          <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
-                          {semanticMessages.wan_advanced_not_configured(
-                            {},
-                            { locale },
-                          )}
-                        </span>
-                      ) : (
-                        <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-                          {semanticMessages.wan_advanced_link_ready(
+                  {link.connectionType === "Static" &&
+                    link.connectionConfig?.static && (
+                      <div class="mt-2.5 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 p-3 dark:from-indigo-900/20 dark:to-indigo-800/20">
+                        <div class="grid grid-cols-1 gap-2 text-sm">
+                          <div class="flex items-center gap-2">
+                            <svg
+                              class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                              />
+                            </svg>
+                            <span class="text-gray-600 dark:text-gray-400">
+                              IP:{" "}
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {link.connectionConfig.static.ipAddress}/
+                                {link.connectionConfig.static.subnet}
+                              </span>
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <svg
+                              class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                              />
+                            </svg>
+                            <span class="text-gray-600 dark:text-gray-400">
+                              Gateway:{" "}
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {link.connectionConfig.static.gateway}
+                              </span>
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <svg
+                              class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+                              />
+                            </svg>
+                            <span class="text-gray-600 dark:text-gray-400">
+                              DNS:{" "}
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {link.connectionConfig.static.DNS}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  <div q:slot="trailing" class="flex flex-col items-end gap-1.5">
+                    {!isConfigured ? (
+                      <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                        <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
+                        {semanticMessages.wan_advanced_not_configured(
+                          {},
+                          { locale },
+                        )}
+                      </span>
+                    ) : (
+                      <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+                        {semanticMessages.wan_advanced_link_ready(
+                          {},
+                          { locale },
+                        )}
+                      </span>
+                    )}
+
+                    {wizardState.links.length > 1 &&
+                      link.weight !== undefined &&
+                      wizardState.multiLinkStrategy?.strategy !== "Failover" && (
+                        <span class="inline-flex items-center rounded-md bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                          {link.weight}%{" "}
+                          {semanticMessages.wan_advanced_weight(
                             {},
                             { locale },
                           )}
                         </span>
                       )}
-                    </div>
                   </div>
-
-                  {/* Hover Effect Line */}
-                  <div class="absolute bottom-0 left-0 h-0.5 w-full scale-x-0 transform bg-gradient-to-r from-primary-500 to-primary-700 transition-transform group-hover:scale-x-100"></div>
-                </div>
+                </SummaryItemCard>
               );
             })}
           </div>
@@ -534,7 +405,7 @@ export const Step4_Summary = component$<Step4Props>(
                   )}
                 </h3>
                 <button
-                  onClick$={() => handleEditStep(2)}
+                  onClick$={() => handleEditStep(1)}
                   class="flex items-center gap-1 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                 >
                   <svg

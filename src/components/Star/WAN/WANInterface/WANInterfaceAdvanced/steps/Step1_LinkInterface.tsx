@@ -4,6 +4,9 @@ import { InterfaceSelector } from "../components/fields/InterfaceSelector";
 import { WirelessFields } from "../components/fields/WirelessFields";
 import { LTEFields } from "../components/fields/LTEFields";
 import { VLANMACFields } from "../components/fields/VLANMACFields";
+import { ConnectionTypeSelector } from "../components/fields/ConnectionTypeSelector";
+import { PPPoEFields } from "../components/fields/PPPoEFields";
+import { StaticIPFields } from "../components/fields/StaticIPFields";
 import type { UseWANAdvancedReturn } from "../hooks/useWANAdvanced";
 import { Input } from "~/components/Core";
 import { SearchBar } from "../components/common/SearchBar";
@@ -15,7 +18,11 @@ import {
   filterLinks,
   getLinkStatistics,
 } from "../utils/linkHelpers";
-import { getLinkErrors, getFieldErrors } from "../utils/validationUtils";
+import {
+  getLinkErrors,
+  getFieldErrors,
+  isLinkConfigurationComplete,
+} from "../utils/validationUtils";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 
 export interface Step1Props {
@@ -40,8 +47,137 @@ export const Step1_LinkInterface = component$<Step1Props>(
 
     // Helper to handle interface changes
     const handleInterfaceUpdate = $(async (linkId: string, updates: any) => {
-      await wizardActions.updateLink$(linkId, updates);
+      const link = wizardState.links.find((item) => item.id === linkId);
+      if (!link) return;
+
+      const updatedLink = { ...link, ...updates };
+
+      if (updates.interfaceType === "LTE") {
+        updatedLink.connectionType = "LTE";
+      } else if (updates.interfaceType && link.connectionType === "LTE") {
+        updatedLink.connectionType = "DHCP";
+        updatedLink.connectionConfig = { isDHCP: true };
+      }
+
+      await wizardActions.updateLink$(linkId, {
+        ...updates,
+        connectionConfirmed: isLinkConfigurationComplete(updatedLink),
+      });
     });
+
+    const handleConnectionUpdate = $(async (linkId: string, updates: any) => {
+      const link = wizardState.links.find((item) => item.id === linkId);
+      if (!link) return;
+
+      const updatedLink = { ...link, ...updates };
+
+      await wizardActions.updateLink$(linkId, {
+        ...updates,
+        connectionConfirmed: isLinkConfigurationComplete(updatedLink),
+      });
+    });
+
+    const renderConnectionFields = (link: WANWizardState["links"][0]) => {
+      if (!link.interfaceName) {
+        return null;
+      }
+
+      if (link.interfaceType === "LTE") {
+        return null;
+      }
+
+      return (
+        <div class="space-y-4 rounded-xl border border-gray-200 bg-white/70 p-4 dark:border-gray-700 dark:bg-gray-950/30">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+              {semanticMessages.wan_advanced_configure_connection_type(
+                {},
+                { locale },
+              )}
+            </h3>
+          </div>
+
+          <ConnectionTypeSelector
+            key={`${link.id}-${link.connectionType || "none"}`}
+            connectionType={link.connectionType}
+            interfaceType={link.interfaceType || "Ethernet"}
+            onUpdate$={$((type) =>
+              handleConnectionUpdate(link.id, {
+                connectionType: type,
+              }),
+            )}
+            mode={wizardState.mode}
+          />
+
+          {link.connectionType === "PPPoE" && (
+            <PPPoEFields
+              config={link.connectionConfig?.pppoe}
+              onUpdate$={$((config) =>
+                handleConnectionUpdate(link.id, {
+                  connectionConfig: {
+                    ...link.connectionConfig,
+                    pppoe: config,
+                  },
+                }),
+              )}
+              errors={{
+                username: getFieldErrors(
+                  link.id,
+                  "pppoe-username",
+                  wizardState.validationErrors,
+                ),
+                password: getFieldErrors(
+                  link.id,
+                  "pppoe-password",
+                  wizardState.validationErrors,
+                ),
+              }}
+            />
+          )}
+
+          {link.connectionType === "Static" && (
+            <StaticIPFields
+              config={link.connectionConfig?.static}
+              onUpdate$={$((config) =>
+                handleConnectionUpdate(link.id, {
+                  connectionConfig: {
+                    ...link.connectionConfig,
+                    static: config,
+                  },
+                }),
+              )}
+              errors={{
+                ipAddress: getFieldErrors(
+                  link.id,
+                  "static-ip",
+                  wizardState.validationErrors,
+                ),
+                subnet: getFieldErrors(
+                  link.id,
+                  "static-subnet",
+                  wizardState.validationErrors,
+                ),
+                gateway: getFieldErrors(
+                  link.id,
+                  "static-gateway",
+                  wizardState.validationErrors,
+                ),
+                DNS: getFieldErrors(
+                  link.id,
+                  "static-dns1",
+                  wizardState.validationErrors,
+                ),
+                secondaryDns: getFieldErrors(
+                  link.id,
+                  "static-dns2",
+                  wizardState.validationErrors,
+                ),
+              }}
+            />
+          )}
+        </div>
+      );
+    };
 
     // Get link statistics
     const stats = getLinkStatistics(
@@ -98,21 +234,6 @@ export const Step1_LinkInterface = component$<Step1Props>(
 
             {/* Empty State Message */}
             <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-gray-900/40">
-              <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                <svg
-                  class="h-12 w-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                  />
-                </svg>
-              </div>
               <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 {semanticMessages.wan_advanced_no_links({}, { locale })}
               </h3>
@@ -321,6 +442,10 @@ export const Step1_LinkInterface = component$<Step1Props>(
                         />
                       </div>
                     )}
+
+                  {singleLink.interfaceName && (
+                    <div class="mt-6">{renderConnectionFields(singleLink)}</div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -548,6 +673,8 @@ export const Step1_LinkInterface = component$<Step1Props>(
                               }}
                             />
                           )}
+
+                        {link.interfaceName && renderConnectionFields(link)}
                       </LinkCard>
                     );
                   })}

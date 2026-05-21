@@ -30,6 +30,10 @@ export const isLinkConfigurationComplete = (
 ): boolean => {
   if (!link.connectionType) return false;
 
+  if (link.connectionType === "LTE") {
+    return Boolean(link.lteSettings?.apn);
+  }
+
   if (link.connectionType === "PPPoE") {
     return !!(
       link.connectionConfig?.pppoe?.username &&
@@ -46,7 +50,7 @@ export const isLinkConfigurationComplete = (
     );
   }
 
-  // For DHCP and LTE, automatically consider complete
+  // DHCP does not require additional configuration.
   return true;
 };
 

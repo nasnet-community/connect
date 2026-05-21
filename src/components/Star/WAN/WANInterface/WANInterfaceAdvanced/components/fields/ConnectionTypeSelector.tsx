@@ -26,21 +26,6 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
             {},
             { locale },
           ),
-        icon: (
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        ),
       },
       {
         value: "PPPoE" as ConnectionType,
@@ -55,21 +40,6 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
             {},
             { locale },
           ),
-        icon: (
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v4H5v-4a1 1 0 01.293-.707L9 12.586V11a2 2 0 012-2h2.172a2 2 0 011.414.586l1.414 1.414A2 2 0 0116 12v1.586l4.293 4.293A1 1 0 0121 18v-4h-2a6 6 0 00-6-6z"
-            />
-          </svg>
-        ),
       },
       {
         value: "Static" as ConnectionType,
@@ -84,21 +54,6 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
             {},
             { locale },
           ),
-        icon: (
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-            />
-          </svg>
-        ),
       },
     ];
 
@@ -173,12 +128,6 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
                 : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
             }`;
 
-            const iconClass = `flex h-12 w-12 items-center justify-center rounded-lg transition-colors ${
-              isSelected
-                ? "bg-primary-500 text-white"
-                : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"
-            }`;
-
             return (
               <button
                 key={type.value}
@@ -187,20 +136,17 @@ export const ConnectionTypeSelector = component$<ConnectionTypeSelectorProps>(
                 class={buttonClass}
                 data-selected={isSelected ? "true" : "false"}
               >
-                <div class="relative z-10 flex flex-col items-center gap-3">
-                  <div class={iconClass}>{type.icon}</div>
-                  <div class="text-center">
-                    <span
-                      class={`block text-sm font-medium ${isSelected ? "text-primary-700 dark:text-primary-300" : "text-gray-700 dark:text-gray-300"}`}
-                    >
-                      {type.label}
-                    </span>
-                    <span
-                      class={`mt-1 block text-xs ${isSelected ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-500"}`}
-                    >
-                      {type.description}
-                    </span>
-                  </div>
+                <div class="relative z-10 text-center">
+                  <span
+                    class={`block text-sm font-medium ${isSelected ? "text-primary-700 dark:text-primary-300" : "text-gray-700 dark:text-gray-300"}`}
+                  >
+                    {type.label}
+                  </span>
+                  <span
+                    class={`mt-1 block text-xs ${isSelected ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-500"}`}
+                  >
+                    {type.description}
+                  </span>
                 </div>
                 {isSelected && (
                   <div class="absolute right-2 top-2">
