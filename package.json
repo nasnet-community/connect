@@ -82,7 +82,7 @@
     "vercel": "^32.0.1",
     "vite": "^5.1.4",
     "vite-tsconfig-paths": "^4.2.1",
-    "vitest": "^3.2.2"
+    "vitest": "^4.0.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.32.0"
