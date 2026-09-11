@@ -37,4 +37,15 @@ describe("Domestic IP list scheduling", () => {
         expect(scriptCommand).toContain("domesticIPUpdateRunning");
         expect(scriptCommand).toContain("Validation failed - staged");
     });
+
+    it("escapes variables in the boot check so RouterOS does not expand them at add time", () => {
+        const result = generateDomesticIPScript("03:00");
+        const bootCheck = result["/system scheduler"].find((command) =>
+            command.includes("name=DomesticIPUpdate-BootCheck"),
+        );
+
+        expect(bootCheck).toBeDefined();
+        expect(bootCheck!.match(/\\\$currentCount/g)).toHaveLength(3);
+        expect(bootCheck).not.toMatch(/(?<!\\)\$/);
+    });
 });
