@@ -243,7 +243,7 @@ export const DomesticIPsScript: string[] = [
     "        :set attempt ($attempt + 1)",
     '        :log info "$logPrefix: Fetching page $pageNum (attempt $attempt/$maxRetries)..."',
     "        ",
-        "        :do {",
+    "        :do {",
     "            # Fetch command with source address",
     "            # NOTE: check-certificate=no is pragmatic for the Iran TLS",
     "            # fingerprinting context; flip to =yes if running elsewhere.",
@@ -425,7 +425,7 @@ export const DomesticIPsScript: string[] = [
     "# TODO(nice-to-have): persist a 'last good import' marker so downstream",
     "# consumers (and ops) can answer 'when did this last actually succeed?'",
     "# without scraping logs. e.g.:",
-    "#   /system note set note=\"DOMAddList-last-good=$endTime:$finalCount\"",
+    '#   /system note set note="DOMAddList-last-good=$endTime:$finalCount"',
     "",
     "# ==============================================================================",
     "# FINAL SUMMARY",
@@ -535,9 +535,11 @@ export const generateDomesticIPScript = (
     // Triple-escaping inside a single template literal is a footgun and bypasses
     // the SchedulerGenerator abstraction. Also worth running it hourly (not just
     // once at startup) so mid-day list wipes recover automatically.
+    // Every `$` in on-event must stay escaped as `\\$`: RouterOS expands variables
+    // inside the quoted string at `add` time, which silently blanks them (#64).
     const bootRecoveryConfig: RouterConfig = {
         "/system scheduler": [
-            `add interval=00:00:00 name=DomesticIPUpdate-BootCheck on-event=":delay 5m; :local currentCount [:len [/ip firewall address-list find list=DOMAddList]]; :if ($currentCount < 100) do={ :log warning \\"SecureListUpdate: Boot guard detected only $currentCount entries, running DomesticIPUpdate\\"; /system script run DomesticIPUpdate } else={ :log info \\"SecureListUpdate: Boot guard healthy ($currentCount entries)\\" }" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup`,
+            `add interval=00:00:00 name=DomesticIPUpdate-BootCheck on-event=":delay 5m; :local currentCount [:len [/ip firewall address-list find list=DOMAddList]]; :if (\\$currentCount < 100) do={ :log warning \\"SecureListUpdate: Boot guard detected only \\$currentCount entries, running DomesticIPUpdate\\"; /system script run DomesticIPUpdate } else={ :log info \\"SecureListUpdate: Boot guard healthy (\\$currentCount entries)\\" }" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup`,
         ],
     };
 
