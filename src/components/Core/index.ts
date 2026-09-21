@@ -20,6 +20,9 @@ export { CoreUtils };
 import { VisuallyHidden } from "./common/VisuallyHidden";
 export { VisuallyHidden };
 
+import { AdvancedSummaryBanner } from "./common/AdvancedSummaryBanner";
+import { SummaryItemCard } from "./common/SummaryItemCard";
+
 //-------------------------------
 // Typography Components
 //-------------------------------
@@ -428,4 +431,14 @@ export {
    * />
    */
   Newsletter,
+
+  /**
+   * Compact summary banner for advanced review steps.
+   */
+  AdvancedSummaryBanner,
+
+  /**
+   * Shared compact summary item shell for review cards.
+   */
+  SummaryItemCard,
 };

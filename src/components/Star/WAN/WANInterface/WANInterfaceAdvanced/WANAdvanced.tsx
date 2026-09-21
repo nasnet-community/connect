@@ -11,7 +11,6 @@ import type { CStepMeta } from "../../../../Core/Stepper/CStepper/types";
 import { StarContext } from "../../../StarContext/StarContext";
 import type { StarContextType } from "../../../StarContext/StarContext";
 import { Step1_LinkInterface } from "./steps/Step1_LinkInterface";
-import { Step2_Connection } from "./steps/Step2_Connection";
 import { Step3_MultiLink } from "./steps/Step3_MultiLink";
 import { Step4_Summary } from "./steps/Step4_Summary";
 import { useWANAdvanced } from "./hooks/useWANAdvanced";
@@ -41,8 +40,8 @@ export const WANAdvanced = component$<WANAdvancedProps>(
     const stepsInitialized = useSignal(false);
 
     // Track step completion status
-    const step1Complete = useSignal(false); // Link & Interface
-    const step2Complete = useSignal(false); // Connection
+    const step1Complete = useSignal(false); // Interface + connection
+    const step2Complete = useSignal(false); // Connection readiness for downstream gating
 
     // Note: Removed automatic step completion tracking to avoid potential render loops
 
@@ -191,36 +190,6 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           ),
           isComplete: step1Complete.value,
         },
-        {
-          id: 2,
-          title:
-            mode === "Foreign"
-              ? semanticMessages.wan_advanced_step_connection_foreign(
-                  {},
-                  { locale },
-                )
-              : semanticMessages.wan_advanced_step_connection_domestic(
-                  {},
-                  { locale },
-                ),
-          description:
-            mode === "Foreign"
-              ? semanticMessages.wan_advanced_step_connection_foreign_desc(
-                  {},
-                  { locale },
-                )
-              : semanticMessages.wan_advanced_step_connection_domestic_desc(
-                  {},
-                  { locale },
-                ),
-          component: (
-            <Step2_Connection
-              wizardState={advancedHooks.state}
-              wizardActions={advancedHooks}
-            />
-          ),
-          isComplete: step2Complete.value,
-        },
       ];
 
       // Add multi-link strategy step only if user has multiple links
@@ -241,7 +210,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
           isComplete: true, // Allow navigation between steps
           skippable: true,
           isOptional: true,
-          isDisabled: !step1Complete.value || !step2Complete.value,
+          isDisabled: !step1Complete.value,
         });
       }
 
@@ -263,7 +232,7 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         isComplete: true, // Allow navigation between steps
         skippable: true,
         isOptional: true,
-        isDisabled: !step1Complete.value || !step2Complete.value,
+        isDisabled: !step1Complete.value,
       });
 
       return steps;
@@ -294,30 +263,30 @@ export const WANAdvanced = component$<WANAdvancedProps>(
       // Don't track weight/priority changes as they don't affect step structure
       // Weight and priority tracking removed to prevent infinite loops
 
-      // Check step 1 completion: All links have interfaces selected
+      // Step 1 is complete only when links are fully configured on the merged screen.
       const allLinksHaveInterfaces =
         advancedHooks.state.links.length > 0 &&
         advancedHooks.state.links.every((link) => link.interfaceName);
-
-      // Save to StarContext when step 1 is completed for the first time
-      const prevStep1Complete = step1Complete.value;
-      step1Complete.value = allLinksHaveInterfaces;
-      if (!prevStep1Complete && allLinksHaveInterfaces) {
-        await advancedHooks.syncWithStarContext$();
-      }
-
-      // Immediately update step 1's isComplete property for responsive UI
-      if (steps.value[0]) {
-        steps.value[0].isComplete = allLinksHaveInterfaces;
-        steps.value = [...steps.value]; // Trigger reactivity
-      }
-
-      // Check step 2 completion: All links have connection type selected and confirmed
       const allLinksHaveConnectionConfirmed =
         advancedHooks.state.links.length > 0 &&
         advancedHooks.state.links.every(
           (link) => link.connectionType && link.connectionConfirmed,
         );
+      const firstStepComplete =
+        allLinksHaveInterfaces && allLinksHaveConnectionConfirmed;
+
+      // Save to StarContext when step 1 is completed for the first time
+      const prevStep1Complete = step1Complete.value;
+      step1Complete.value = firstStepComplete;
+      if (!prevStep1Complete && firstStepComplete) {
+        await advancedHooks.syncWithStarContext$();
+      }
+
+      // Immediately update step 1's isComplete property for responsive UI
+      if (steps.value[0]) {
+        steps.value[0].isComplete = firstStepComplete;
+        steps.value = [...steps.value]; // Trigger reactivity
+      }
 
       // Save to StarContext when step 2 is completed for the first time
       const prevStep2Complete = step2Complete.value;
@@ -326,25 +295,15 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         await advancedHooks.syncWithStarContext$();
       }
 
-      // Immediately update step 2's isComplete property for responsive UI
-      if (steps.value[1]) {
-        steps.value[1].isComplete = allLinksHaveConnectionConfirmed;
-      }
-
-      // Update optional Step 3 (MultiLink) if it exists - always allow navigation
-      if (steps.value[2] && advancedHooks.state.links.length > 1) {
-        steps.value[2].isDisabled =
-          !allLinksHaveInterfaces || !allLinksHaveConnectionConfirmed;
+      // Update optional MultiLink step if it exists.
+      if (steps.value[1] && advancedHooks.state.links.length > 1) {
+        steps.value[1].isDisabled = !firstStepComplete;
       }
 
       // Update Review step (last step) if it exists
       const lastStepIndex = steps.value.length - 1;
-      if (
-        steps.value[lastStepIndex] &&
-        steps.value[lastStepIndex].title.includes("Review")
-      ) {
-        steps.value[lastStepIndex].isDisabled =
-          !allLinksHaveInterfaces || !allLinksHaveConnectionConfirmed;
+      if (steps.value[lastStepIndex] && lastStepIndex > 0) {
+        steps.value[lastStepIndex].isDisabled = !firstStepComplete;
       }
 
       // Trigger reactivity after all updates
@@ -357,21 +316,15 @@ export const WANAdvanced = component$<WANAdvancedProps>(
         if (stepsInitialized.value) {
           // Check if we need to add/remove the multi-link step
           const hasMultipleLinks = advancedHooks.state.links.length > 1;
-          const currentHasMultiLink = steps.value.some((s) =>
-            s.title.includes("LoadBalance"),
-          );
+          const expectedStepCount = hasMultipleLinks ? 3 : 2;
 
           // Only recreate steps if structure changes (multi-link step added/removed)
-          if (hasMultipleLinks !== currentHasMultiLink) {
+          if (steps.value.length !== expectedStepCount) {
             const newSteps = await createSteps();
             steps.value = newSteps;
 
-            // If we're currently on step 3 but it no longer exists (single link), go to step 2
-            if (
-              activeStep.value >= 2 &&
-              advancedHooks.state.links.length === 1
-            ) {
-              activeStep.value = 1; // Go to step 2 (0-indexed)
+            if (activeStep.value >= newSteps.length) {
+              activeStep.value = Math.max(0, newSteps.length - 1);
             }
           } else {
             // Only update completion status without recreating components
@@ -379,7 +332,12 @@ export const WANAdvanced = component$<WANAdvancedProps>(
             const newCompletions = {
               step1:
                 advancedHooks.state.links.length > 0 &&
-                advancedHooks.state.links.every((link) => link.interfaceName),
+                advancedHooks.state.links.every(
+                  (link) =>
+                    link.interfaceName &&
+                    link.connectionType &&
+                    link.connectionConfirmed,
+                ),
               step2:
                 advancedHooks.state.links.length > 0 &&
                 advancedHooks.state.links.every(
@@ -392,16 +350,10 @@ export const WANAdvanced = component$<WANAdvancedProps>(
               steps.value[0].isComplete = newCompletions.step1;
             }
 
-            // Update step 2 completion
-            if (steps.value[1]) {
-              steps.value[1].isComplete = newCompletions.step2;
-            }
-
             // Update optional steps' disabled state
-            for (let i = 2; i < steps.value.length; i++) {
+            for (let i = 1; i < steps.value.length; i++) {
               if (steps.value[i]) {
-                steps.value[i].isDisabled =
-                  !newCompletions.step1 || !newCompletions.step2;
+                steps.value[i].isDisabled = !newCompletions.step1;
               }
             }
 

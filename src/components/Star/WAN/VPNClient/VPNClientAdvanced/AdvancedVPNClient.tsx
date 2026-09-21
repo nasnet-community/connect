@@ -303,7 +303,6 @@ export const VPNClientAdvanced = component$<VPNClientAdvancedProps>(
         type: "L2TP" as const,
         enabled: true,
         priority: 1, // Give it highest priority
-        weight: 50,
         config: {
           Name: "NasNetConnect",
           Server: {

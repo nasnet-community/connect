@@ -1,8 +1,9 @@
-import { component$, useContext, type QRL } from "@builder.io/qwik";
+import { component$, useContext, type JSXOutput, type QRL } from "@builder.io/qwik";
 import { StarContext } from "../../../../../StarContext/StarContext";
 import type { WANLinkConfig } from "../../types";
 import { Select, FormField } from "~/components/Core";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { renderInterfaceTypeIcon } from "../../utils/interfaceTypeIcons";
 import {
   addOccupiedInterface,
   removeOccupiedInterface,
@@ -17,6 +18,20 @@ export interface InterfaceSelectorProps {
   onUpdate$: QRL<(updates: Partial<WANLinkConfig>) => void>;
   mode: "easy" | "advanced";
 }
+
+const interfaceDisplayNames: Record<string, string> = {
+  ether1: "Ethernet 1",
+  ether2: "Ethernet 2",
+  ether3: "Ethernet 3",
+  ether4: "Ethernet 4",
+  ether5: "Ethernet 5",
+  ether6: "Ethernet 6",
+  ether7: "Ethernet 7",
+  ether8: "Ethernet 8",
+  wlan1: "Wi-Fi 2.4GHz",
+  wlan2: "Wi-Fi 5GHz",
+  "sfp-sfpplus1": "SFP+ Port",
+};
 
 export const InterfaceSelector = component$<InterfaceSelectorProps>(
   ({ link, onUpdate$ }) => {
@@ -48,220 +63,85 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
       ? getOccupiedInterfacesForRouter(masterRouter)
       : [];
 
-    // Check which interface types are available
-    const isEthernetAvailable = interfaces.ethernet.length > 0;
-    const isWirelessAvailable = interfaces.wireless.length > 0;
-    const isSFPAvailable = interfaces.sfp.length > 0;
-    const isLTEAvailable = interfaces.lte.length > 0;
-
-    const interfaceTypes = [
-      { type: "Ethernet", isAvailable: isEthernetAvailable },
-      { type: "Wireless", isAvailable: isWirelessAvailable },
-      { type: "SFP", isAvailable: isSFPAvailable },
-      { type: "LTE", isAvailable: isLTEAvailable },
+    const currentInterfaces = [
+      ...interfaces.ethernet.map((iface: string) => ({
+        interfaceName: iface,
+        interfaceType: "Ethernet" as WANLinkConfig["interfaceType"],
+      })),
+      ...interfaces.wireless.map((iface: string) => ({
+        interfaceName: iface,
+        interfaceType: "Wireless" as WANLinkConfig["interfaceType"],
+      })),
+      ...interfaces.sfp.map((iface: string) => ({
+        interfaceName: iface,
+        interfaceType: "SFP" as WANLinkConfig["interfaceType"],
+      })),
+      ...interfaces.lte.map((iface: string) => ({
+        interfaceName: iface,
+        interfaceType: "LTE" as WANLinkConfig["interfaceType"],
+      })),
     ];
 
-    // Simple non-reactive options generation to prevent loops
-    const getSelectOptions = () => {
-      let options: Array<{ value: string; label: string; disabled?: boolean }> =
-        [];
+    const getDisplayName = (
+      iface: string,
+      state?: { disabled: boolean; reason?: string },
+    ) => {
+      const baseName =
+        interfaceDisplayNames[iface] ||
+        (iface.startsWith("lte")
+          ? `LTE ${iface.replace(/^lte/, "") || "Interface"}`
+          : iface);
 
-      // Get list of LTE interfaces currently in use (excluding current link)
+      if (state?.disabled && state.reason) {
+        return `${baseName} (${state.reason})`;
+      }
+
+      return baseName;
+    };
+
+    const getSelectOptions = () => {
+      let options: Array<{
+        value: string;
+        label: string;
+        disabled?: boolean;
+        icon?: JSXOutput;
+      }> = [];
+
       const usedLTEInterfaces = getUsedLTEInterfaces(
         starContext.state.WAN.WANLink,
-        link.name, // Exclude current link being edited
+        link.name,
       );
 
-      const buildOption = (iface: string) => {
+      const buildOption = (
+        iface: string,
+        interfaceType: WANLinkConfig["interfaceType"],
+      ) => {
         const usage = getInterfaceUsage(occupiedInterfaces, iface);
         const isTrunk = usage === "Trunk";
 
-        // Check if this is an LTE interface and if it's already in use
         const isLTEInUse =
-          link.interfaceType === "LTE" && usedLTEInterfaces.includes(iface);
+          interfaceType === "LTE" && usedLTEInterfaces.includes(iface);
 
         const disabled = isTrunk || isLTEInUse;
-
-        // Determine label based on why it's disabled
-        let label = iface;
-        if (isTrunk) {
-          label = `${iface} (Trunk)`;
-        } else if (isLTEInUse) {
-          label = `${iface} (In Use)`;
-        }
+        const reason = isTrunk ? "Trunk" : isLTEInUse ? "In Use" : undefined;
 
         return {
           value: iface,
-          label,
+          label: getDisplayName(iface, { disabled, reason }),
           disabled,
+          icon: renderInterfaceTypeIcon(interfaceType || "Ethernet"),
         };
       };
 
-      if (link.interfaceType === "Ethernet") {
-        options = interfaces.ethernet.map((iface: string) =>
-          buildOption(iface),
-        );
-      } else if (link.interfaceType === "Wireless") {
-        options = interfaces.wireless.map((iface: string) =>
-          buildOption(iface),
-        );
-      } else if (link.interfaceType === "SFP") {
-        options = interfaces.sfp.map((iface: string) => buildOption(iface));
-      } else if (link.interfaceType === "LTE") {
-        options = interfaces.lte.map((iface: string) => buildOption(iface));
-      }
+      options = currentInterfaces.map(({ interfaceName, interfaceType }) =>
+        buildOption(interfaceName, interfaceType),
+      );
 
       return options;
     };
 
     return (
       <div class="space-y-6">
-        {/* Interface Type Selection */}
-        <div class="space-y-2">
-          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-            <span class="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/30">
-              <svg
-                class="h-4 w-4 text-primary-600 dark:text-primary-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </span>
-            {semanticMessages.wan_advanced_interface_type({}, { locale })}
-          </label>
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {interfaceTypes.map(({ type, isAvailable }) => (
-              <button
-                key={type}
-                type="button"
-                onClick$={() =>
-                  isAvailable &&
-                  onUpdate$({
-                    interfaceType: type as WANLinkConfig["interfaceType"],
-                  })
-                }
-                disabled={!isAvailable}
-                class={`
-                  group relative overflow-hidden rounded-xl border-2 p-3 transition-all
-                  ${
-                    !isAvailable
-                      ? "cursor-not-allowed border-gray-200 bg-gray-100 opacity-50 dark:border-gray-700 dark:bg-gray-800"
-                      : `hover:scale-105 ${
-                          link.interfaceType === type
-                            ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20"
-                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
-                        }`
-                  }
-                `}
-              >
-                <div class="relative z-10 flex flex-col items-center gap-2">
-                  <div
-                    class={`
-                    flex h-10 w-10 items-center justify-center rounded-lg transition-colors
-                    ${
-                      !isAvailable
-                        ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
-                        : link.interfaceType === type
-                          ? "bg-primary-500 text-white"
-                          : "bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-hover:bg-gray-600"
-                    }
-                  `}
-                  >
-                    {type === "Ethernet" && (
-                      <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                    )}
-                    {type === "Wireless" && (
-                      <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
-                        />
-                      </svg>
-                    )}
-                    {type === "SFP" && (
-                      <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                        />
-                      </svg>
-                    )}
-                    {type === "LTE" && (
-                      <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <span
-                    class={`text-xs font-medium ${!isAvailable ? "text-gray-400 dark:text-gray-500" : link.interfaceType === type ? "text-primary-700 dark:text-primary-300" : "text-gray-700 dark:text-gray-300"}`}
-                  >
-                    {type}
-                  </span>
-                  {!isAvailable && (
-                    <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-50/80 dark:bg-gray-800/80">
-                      <span class="rounded bg-white px-2 py-1 text-[10px] font-semibold text-gray-500 shadow-sm dark:bg-gray-700 dark:text-gray-400">
-                        {semanticMessages.wan_advanced_not_available(
-                          {},
-                          { locale },
-                        )}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {link.interfaceType === type && isAvailable && (
-                  <div class="absolute right-1 top-1">
-                    <div class="h-2 w-2 animate-pulse rounded-full bg-primary-500"></div>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Interface Selection */}
         <FormField
           label={semanticMessages.wan_advanced_interface({}, { locale })}
         >
@@ -270,13 +150,15 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
             onChange$={(value: string | string[]) => {
               const selectedValue = Array.isArray(value) ? value[0] : value;
               const previousInterface = link.interfaceName;
+              const selectedInterface = currentInterfaces.find(
+                ({ interfaceName }) => interfaceName === selectedValue,
+              );
 
-              // Update the interface selection
               onUpdate$({
                 interfaceName: selectedValue,
+                interfaceType: selectedInterface?.interfaceType,
               });
 
-              // Update occupied interfaces in context
               const updatedModels = starContext.state.Choose.RouterModels.map(
                 (model) => {
                   if (!model.isMaster) return model;
@@ -315,7 +197,9 @@ export const InterfaceSelector = component$<InterfaceSelectorProps>(
               { locale },
             )}
             options={getSelectOptions()}
-            key={`${link.id}-${link.interfaceType}`}
+            data-testid={`wan-advanced-interface-select-${link.id}`}
+            clearable={false}
+            key={link.id}
           />
         </FormField>
       </div>

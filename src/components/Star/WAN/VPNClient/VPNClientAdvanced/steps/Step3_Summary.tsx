@@ -1,5 +1,10 @@
 import { component$, $, type QRL } from "@builder.io/qwik";
-import { Card, Alert } from "~/components/Core";
+import {
+  Card,
+  Alert,
+  AdvancedSummaryBanner,
+  SummaryItemCard,
+} from "~/components/Core";
 import type { VPNClientAdvancedState } from "../types/VPNClientAdvancedTypes";
 import type { UseVPNClientAdvancedReturn } from "../hooks/useVPNClientAdvanced";
 import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
@@ -14,6 +19,10 @@ export interface Step3SummaryProps {
 export const Step3_Summary = component$<Step3SummaryProps>(
   ({ wizardState, onEdit$, onValidate$: _onValidate$ }) => {
     const locale = useMessageLocale();
+    const showsWeightBadges =
+      wizardState.multiVPNStrategy?.strategy === "LoadBalance" ||
+      wizardState.multiVPNStrategy?.strategy === "Both";
+
     // Check validation status
     const hasValidationErrors =
       Object.keys(wizardState.validationErrors).length > 0;
@@ -69,32 +78,20 @@ export const Step3_Summary = component$<Step3SummaryProps>(
 
     return (
       <div class="space-y-6">
-        {/* Modern Header with Gradient */}
-        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 p-8 text-white">
-          <div class="relative z-10">
-            <h2 class="text-3xl font-bold">
-              {semanticMessages.vpn_client_advanced_summary_title(
-                {},
-                {
-                  locale,
-                },
-              )}
-            </h2>
-            <p class="mt-2 text-primary-100">
-              {semanticMessages.vpn_client_advanced_summary_description(
-                {},
-                {
-                  locale,
-                },
-              )}
-            </p>
-          </div>
-          {/* Background Pattern */}
-          <div class="absolute inset-0 opacity-10">
-            <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white"></div>
-            <div class="absolute -bottom-10 -left-10 h-60 w-60 rounded-full bg-white"></div>
-          </div>
-        </div>
+        <AdvancedSummaryBanner
+          title={semanticMessages.vpn_client_advanced_summary_title(
+            {},
+            {
+              locale,
+            },
+          )}
+          description={semanticMessages.vpn_client_advanced_summary_description(
+            {},
+            {
+              locale,
+            },
+          )}
+        />
 
         {/* Status Alert with Modern Style */}
         {hasValidationErrors && (
@@ -168,7 +165,7 @@ export const Step3_Summary = component$<Step3SummaryProps>(
             </div>
           </div>
 
-          <div class="space-y-4 p-6">
+          <div class="space-y-3 p-4">
             {[...wizardState.vpnConfigs]
               .sort((a, b) => (a.priority || 0) - (b.priority || 0))
               .map((vpn, index) => {
@@ -181,133 +178,88 @@ export const Step3_Summary = component$<Step3SummaryProps>(
                     : "border-yellow-300 dark:border-yellow-600";
 
                 return (
-                  <div
-                    key={vpn.id}
-                    class={`group relative overflow-hidden rounded-xl border-2 ${statusColor} bg-gradient-to-r from-white to-gray-50 p-5 transition-all hover:shadow-lg dark:from-gray-800 dark:to-gray-900`}
-                  >
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-4">
-                        {/* Priority Badge */}
-                        <div class="flex flex-col items-center">
-                          <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            {semanticMessages.wan_advanced_priority(
-                              {},
-                              { locale },
-                            )}
-                          </span>
-                          <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 font-bold text-white shadow-lg">
-                            {index + 1}
-                          </div>
-                        </div>
-
-                        {/* Protocol Icon with Gradient Background */}
-                        <div
-                          class={`rounded-xl p-3 text-white shadow-lg ${getProtocolColor(vpn.type)}`}
-                        >
-                          <svg
-                            class="h-6 w-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d={getVPNIcon(vpn.type)}
-                            />
-                          </svg>
-                        </div>
-
-                        {/* VPN Details */}
-                        <div>
-                          <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {vpn.name}
-                          </h4>
-                          <div class="mt-1 flex items-center gap-3 text-sm">
-                            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                              <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                />
-                              </svg>
-                              {vpn.type ||
-                                semanticMessages.vpn_client_advanced_no_protocol_selected(
-                                  {},
-                                  { locale },
-                                )}
-                            </span>
-                            {vpn.assignedLink && (
-                              <>
-                                <span class="text-gray-400">•</span>
-                                <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                                  <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                    />
-                                  </svg>
-                                  {vpn.assignedLink}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status Indicators */}
-                      <div class="flex items-center gap-3">
-                        {!vpn.enabled ? (
-                          <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                            <span class="mr-1.5 h-2 w-2 rounded-full bg-gray-400"></span>
-                            {semanticMessages.shared_disabled({}, { locale })}
-                          </span>
-                        ) : isConfigured ? (
-                          <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-                            {semanticMessages.shared_ready({}, { locale })}
-                          </span>
-                        ) : (
-                          <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                            <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
-                            {semanticMessages.vpn_client_advanced_not_configured_status(
-                              {},
-                              { locale },
-                            )}
-                          </span>
-                        )}
-
-                        {/* Weight Badge for Load Balancing */}
-                        {vpn.weight && (
-                          <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                            {vpn.weight}%{" "}
-                            {semanticMessages.vpn_client_advanced_weight(
-                              {},
-                              { locale },
-                            )}
-                          </span>
-                        )}
+                  <SummaryItemCard key={vpn.id} statusColorClass={statusColor}>
+                    <div q:slot="badge" class="flex flex-col items-center pt-0.5">
+                      <span class="text-[10px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+                        {semanticMessages.wan_advanced_priority({}, { locale })}
+                      </span>
+                      <div class="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white shadow-md">
+                        {index + 1}
                       </div>
                     </div>
 
-                    {/* Hover Effect Line */}
-                    <div class="absolute bottom-0 left-0 h-0.5 w-full scale-x-0 transform bg-gradient-to-r from-primary-500 to-primary-700 transition-transform group-hover:scale-x-100"></div>
-                  </div>
+                    <div
+                      q:slot="icon"
+                      class={`self-center rounded-lg p-2.5 text-white shadow-md ${getProtocolColor(vpn.type)}`}
+                    >
+                      <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d={getVPNIcon(vpn.type)}
+                        />
+                      </svg>
+                    </div>
+
+                    <h4 class="truncate text-base font-semibold text-gray-900 dark:text-white md:text-lg">
+                      {vpn.name}
+                    </h4>
+                    <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-5">
+                      <span class="text-gray-600 dark:text-gray-400">
+                        {vpn.type ||
+                          semanticMessages.vpn_client_advanced_no_protocol_selected(
+                            {},
+                            { locale },
+                          )}
+                      </span>
+                      {vpn.assignedLink && (
+                        <>
+                          <span class="text-gray-400">•</span>
+                          <span class="text-gray-600 dark:text-gray-400">
+                            {vpn.assignedLink}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <div q:slot="trailing" class="flex flex-col items-end gap-1.5">
+                      {!vpn.enabled ? (
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                          <span class="mr-1.5 h-2 w-2 rounded-full bg-gray-400"></span>
+                          {semanticMessages.shared_disabled({}, { locale })}
+                        </span>
+                      ) : isConfigured ? (
+                        <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <span class="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+                          {semanticMessages.shared_ready({}, { locale })}
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          <span class="mr-1.5 h-2 w-2 rounded-full bg-yellow-500"></span>
+                          {semanticMessages.vpn_client_advanced_not_configured_status(
+                            {},
+                            { locale },
+                          )}
+                        </span>
+                      )}
+
+                      {showsWeightBadges && vpn.weight !== undefined && (
+                        <span class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          {vpn.weight}%{" "}
+                          {semanticMessages.vpn_client_advanced_weight(
+                            {},
+                            { locale },
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </SummaryItemCard>
                 );
               })}
           </div>
