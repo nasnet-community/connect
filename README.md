@@ -73,6 +73,25 @@ pnpm build
 pnpm preview
 ```
 
+### Deploying
+
+The site runs on Cloudflare Workers. `npm run build` produces `dist/_worker.js` plus the static files in `dist/`, and `wrangler.jsonc` deploys them together. Wrangler needs Node 22.12 or newer.
+
+```bash
+# Build and run the Worker locally (http://localhost:8787)
+npm run preview.cf
+
+# Build and deploy to Cloudflare
+npx wrangler login
+npm run deploy
+```
+
+The newsletter endpoint needs a SendGrid key, stored as a Worker secret:
+
+```bash
+npx wrangler secret put SENDGRID_API_KEY
+```
+
 ## 🌍 Internationalization
 
 The project supports multiple languages through semantic message catalogs in `messages/*.json`. To work with translations:

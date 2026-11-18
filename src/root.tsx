@@ -1,4 +1,4 @@
-import { component$, useServerData, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useServerData } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -7,7 +7,6 @@ import {
 import { RouterHead } from "./components/router-head/router-head";
 import { SUNSET_GUARD_SCRIPT } from "./components/Layout/SunsetModal/SunsetModal";
 import { isDev } from "@builder.io/qwik";
-import { inject } from "@vercel/analytics";
 
 import "./global.css";
 
@@ -31,14 +30,6 @@ export default component$(() => {
   // });
 
   const nonce = useServerData<string | undefined>("nonce");
-
-  // eslint-disable-next-line qwik/no-use-visible-task -- analytics injection must run in the browser after render
-  useVisibleTask$(() => {
-    inject({
-      mode: isDev ? "development" : "production",
-      debug: true,
-    });
-  });
 
   return (
     <QwikCityProvider>

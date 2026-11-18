@@ -1,0 +1,11 @@
+/*
+  X-Robots-Tag: noindex, nofollow
+
+/service-worker.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*/service-worker.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/build/*
+  Cache-Control: public, max-age=31536000, immutable
