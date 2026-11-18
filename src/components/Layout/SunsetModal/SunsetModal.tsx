@@ -1,6 +1,6 @@
 import { component$, useServerData } from "@builder.io/qwik";
 import { LOCALE_METADATA } from "~/i18n/config";
-import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
+import { useMessageLocale } from "~/i18n/semantic";
 
 export const NASNET_PANEL_URL =
   "https://www.joinnasnet.com/fa/products/nasnet-panel/";
@@ -54,50 +54,98 @@ const SUNSET_OPEN_SCRIPT = `
 })();
 `;
 
+type NoticeLang = "en" | "fa";
+
+// Shown in both languages at once, so the copy lives here rather than in
+// messages/*.json.
+const NOTICE: Record<
+  NoticeLang,
+  { title: string; paragraphs: string[]; cta: string; close: string }
+> = {
+  en: {
+    title: "NasNet Connect Has Been Discontinued",
+    paragraphs: [
+      "NasNet Connect has been officially discontinued and is no longer maintained. It will no longer receive updates, bug fixes, security patches, or technical support.",
+      "If you are currently using NasNet Connect, we strongly recommend migrating to NasNet Panel as soon as possible to ensure continued access to improvements, security updates, and support.",
+      "Introducing NasNet Panel — the next generation of NasNet Connect, actively developed to deliver a more secure, reliable, and improved experience for managing your MikroTik routers.",
+      "Please migrate to NasNet Panel using the link below.",
+    ],
+    cta: "Go to NasNet Panel",
+    close: "Close",
+  },
+  fa: {
+    title: "پایان پشتیبانی از نس نت کانکت",
+    paragraphs: [
+      "پروژه نس نت کانکت به‌صورت رسمی متوقف شده و دیگه توسعه داده نمی‌شه. از این به بعد هیچ آپدیت، رفع مشکل، به‌روزرسانی امنیتی یا پشتیبانی فنی برای این برنامه ارائه نمی‌شه.",
+      "اگه هنوز از نس نت کانکت استفاده می‌کنید، پیشنهاد می‌کنیم هرچه زودتر به نس نت پنل مهاجرت کنید تا همچنان از آپدیت‌های امنیتی، امکانات جدید و پشتیبانی بهره‌مند بشید.",
+      "معرفی نس نت پنل — نسل جدید نس نت کانکت که به‌صورت فعال در حال توسعه‌ست و با امنیت بیشتر، پایداری بهتر و امکانات جدید، تجربه راحت‌تر و مطمئن‌تری برای مدیریت روترهاتون فراهم می‌کنه.",
+      "برای استفاده از نس نت پنل، از لینک زیر وارد بشید.",
+    ],
+    cta: "ورود به نس نت پنل",
+    close: "بستن",
+  },
+};
+
 export const SunsetModal = component$(() => {
   const locale = useMessageLocale();
   const nonce = useServerData<string | undefined>("nonce");
-  const dir = LOCALE_METADATA[locale].dir;
+  // The page's own language first, then the other one.
+  const order: NoticeLang[] = locale === "fa" ? ["fa", "en"] : ["en", "fa"];
+  const first = order[0];
 
   return (
     <>
       <dialog
         id="sunset-modal"
-        dir={dir}
-        aria-labelledby="sunset-modal-title"
-        class="w-[calc(100%-2rem)] max-w-xl rounded-2xl border border-gray-200 bg-white p-0 text-gray-900 shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+        aria-labelledby={`sunset-modal-title-${first}`}
+        class="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-0 text-gray-900 shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
       >
-        <div class="flex flex-col gap-5 p-6 sm:p-8">
-          <span class="inline-flex w-fit items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-300">
-            {semanticMessages.sunset_badge({}, { locale })}
-          </span>
-          <h2
-            id="sunset-modal-title"
-            class="text-2xl font-bold leading-tight sm:text-3xl"
-          >
-            {semanticMessages.sunset_title({}, { locale })}
-          </h2>
-          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
-            {semanticMessages.sunset_body({}, { locale })}
-          </p>
-          <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
-            {semanticMessages.sunset_next({}, { locale })}
-          </p>
+        <div class="flex flex-col gap-6 p-6 sm:p-8">
+          {order.map((lang, i) => (
+            <section
+              key={lang}
+              lang={lang}
+              dir={LOCALE_METADATA[lang].dir}
+              class={[
+                "flex flex-col gap-3",
+                i > 0 && "border-t border-gray-200 pt-6 dark:border-gray-700",
+              ]}
+            >
+              <h2
+                id={`sunset-modal-title-${lang}`}
+                class="text-xl font-bold leading-tight sm:text-2xl"
+              >
+                {NOTICE[lang].title}
+              </h2>
+              {NOTICE[lang].paragraphs.map((text) => (
+                <p
+                  key={text}
+                  class="text-sm leading-relaxed text-gray-700 dark:text-gray-300 sm:text-base"
+                >
+                  {text}
+                </p>
+              ))}
+            </section>
+          ))}
           <div class="flex flex-col gap-3 sm:flex-row">
             <a
               href={NASNET_PANEL_URL}
               target="_blank"
               rel="noopener"
-              class="inline-flex flex-1 items-center justify-center rounded-xl bg-primary-500 px-5 py-3 text-base font-semibold text-gray-900 transition-colors hover:bg-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+              class="inline-flex flex-1 flex-col items-center justify-center rounded-xl bg-primary-500 px-5 py-3 text-base font-semibold text-gray-900 transition-colors hover:bg-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
             >
-              {semanticMessages.sunset_cta({}, { locale })}
+              {order.map((lang) => (
+                <span key={lang} lang={lang} dir={LOCALE_METADATA[lang].dir}>
+                  {NOTICE[lang].cta}
+                </span>
+              ))}
             </a>
             <button
               type="button"
               data-sunset-close
-              class="inline-flex items-center justify-center rounded-xl border border-gray-300 px-5 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+              class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-5 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
             >
-              {semanticMessages.sunset_close({}, { locale })}
+              {order.map((lang) => NOTICE[lang].close).join(" / ")}
             </button>
           </div>
         </div>

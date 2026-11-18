@@ -2020,11 +2020,5 @@
   "wan_advanced_interface_type": "نوع رابط",
   "wan_advanced_not_available": "در دسترس نیست",
   "wan_advanced_interface": "رابط",
-  "wan_advanced_select_interface": "انتخاب رابط",
-  "sunset_badge": "دیگر پشتیبانی نمی‌شود",
-  "sunset_title": "پروژه NasNet Connect متوقف شده است",
-  "sunset_body": "این پروژه دیگر نگهداری نمی‌شود و هیچ به‌روزرسانی، رفع اشکال یا پشتیبانی برای آن ارائه نخواهد شد. مسئولیت استفاده از پیکربندی‌های ساخته‌شده با آن بر عهده کاربر است.",
-  "sunset_next": "برای مدیریت روتر MikroTik خود، از NasNet Panel که جایگزین فعال این پروژه است استفاده کنید.",
-  "sunset_cta": "ورود به NasNet Panel",
-  "sunset_close": "بستن"
+  "wan_advanced_select_interface": "انتخاب رابط"
 }
