@@ -4,18 +4,22 @@ const PANEL_URL = "https://www.joinnasnet.com/fa/products/nasnet-panel/";
 
 test.describe("Sunset notice", () => {
   const titles = {
-    en: "NasNet Connect has been discontinued",
-    fa: "پروژه NasNet Connect متوقف شده است",
+    en: "NasNet Connect Has Been Discontinued",
+    fa: "پایان پشتیبانی از نس نت کانکت",
   };
 
-  for (const [locale, title] of Object.entries(titles)) {
-    test(`opens on load at /${locale}/ and links to NasNet Panel`, async ({
+  for (const locale of ["en", "fa"] as const) {
+    test(`opens on load at /${locale}/ in both languages, page language first`, async ({
       page,
     }) => {
       await page.goto(`/${locale}/`);
       const dialog = page.locator("#sunset-modal");
       await expect(dialog).toBeVisible();
-      await expect(dialog.getByRole("heading")).toHaveText(title);
+      const other = locale === "en" ? "fa" : "en";
+      await expect(dialog.getByRole("heading")).toHaveText([
+        titles[locale],
+        titles[other],
+      ]);
       await expect(dialog.getByRole("link")).toHaveAttribute("href", PANEL_URL);
     });
   }

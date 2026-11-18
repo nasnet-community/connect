@@ -2020,11 +2020,5 @@
   "wan_advanced_interface_type": "Interface Type",
   "wan_advanced_not_available": "Not Available",
   "wan_advanced_interface": "Interface",
-  "wan_advanced_select_interface": "Select Interface",
-  "sunset_badge": "No longer maintained",
-  "sunset_title": "NasNet Connect has been discontinued",
-  "sunset_body": "This project is no longer maintained. It receives no updates, fixes or support, and any configuration it generates is used at your own risk.",
-  "sunset_next": "To manage your MikroTik router, use NasNet Panel, our actively developed replacement.",
-  "sunset_cta": "Go to NasNet Panel",
-  "sunset_close": "Close"
+  "wan_advanced_select_interface": "Select Interface"
 }
