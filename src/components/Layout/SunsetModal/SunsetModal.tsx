@@ -11,7 +11,13 @@ export const NASNET_PANEL_URL =
 // SPA navigation. Links marked data-sunset-allow (social profiles) still work.
 export const SUNSET_GUARD_SCRIPT = `
 (function () {
-  if (window.__sunsetInit) return;
+  // Without native <dialog> support the notice can't open, so leave links
+  // working rather than swallowing clicks.
+  if (
+    window.__sunsetInit ||
+    typeof HTMLDialogElement !== "function" ||
+    typeof HTMLDialogElement.prototype.showModal !== "function"
+  ) return;
   window.__sunsetInit = true;
   function modal() { return document.getElementById("sunset-modal"); }
   function block(e) {
