@@ -3,13 +3,19 @@ import { expect, test } from "@playwright/test";
 const PANEL_URL = "https://www.joinnasnet.com/fa/products/nasnet-panel/";
 
 test.describe("Sunset notice", () => {
-  for (const locale of ["en", "fa"]) {
+  const titles = {
+    en: "NasNet Connect has been discontinued",
+    fa: "پروژه NasNet Connect متوقف شده است",
+  };
+
+  for (const [locale, title] of Object.entries(titles)) {
     test(`opens on load at /${locale}/ and links to NasNet Panel`, async ({
       page,
     }) => {
       await page.goto(`/${locale}/`);
       const dialog = page.locator("#sunset-modal");
       await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole("heading")).toHaveText(title);
       await expect(dialog.getByRole("link")).toHaveAttribute("href", PANEL_URL);
     });
   }
@@ -28,11 +34,12 @@ test.describe("Sunset notice", () => {
     const dialog = page.locator("#sunset-modal");
     await dialog.getByRole("button").click();
     await expect(dialog).toBeHidden();
+    const urlBefore = page.url();
 
     await page.getByRole("link", { name: "Get Started Free" }).click();
 
     await expect(dialog).toBeVisible();
-    await expect(page).toHaveURL(/\/en\/?$/);
+    expect(page.url()).toBe(urlBefore);
   });
 
   test("social links stay clickable", async ({ page, context }) => {
@@ -40,6 +47,9 @@ test.describe("Sunset notice", () => {
     const dialog = page.locator("#sunset-modal");
     await dialog.getByRole("button").click();
 
+    await context.route("https://x.com/**", (route) =>
+      route.fulfill({ status: 200, contentType: "text/html", body: "ok" }),
+    );
     const popup = context.waitForEvent("page");
     await page.locator("footer a[data-sunset-allow][href^='https://x.com']").click();
 

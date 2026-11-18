@@ -5,6 +5,7 @@ import {
   ServiceWorkerRegister,
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
+import { SUNSET_GUARD_SCRIPT } from "./components/Layout/SunsetModal/SunsetModal";
 import { isDev } from "@builder.io/qwik";
 import { inject } from "@vercel/analytics";
 
@@ -60,6 +61,7 @@ export default component$(() => {
           />
         )}
         <RouterHead />
+        <script nonce={nonce} dangerouslySetInnerHTML={SUNSET_GUARD_SCRIPT} />
         {/* Google tag (gtag.js) */}
         <script
           async
