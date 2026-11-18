@@ -7,6 +7,7 @@ export const FooterSocial = component$(() => (
       <a
         key={icon}
         href={href}
+        data-sunset-allow
         target="_blank"
         aria-label={label}
         rel="noopener noreferrer"

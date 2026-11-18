@@ -116,6 +116,7 @@ async function enablePlaywrightMode(page: Page) {
 export async function gotoLanding(page: Page) {
   await enablePlaywrightMode(page);
   await page.goto(landingRoute);
+  await dismissSunsetModal(page);
   await expect(
     page.getByRole("link", { name: "Get Started Free" }),
   ).toBeVisible();
@@ -124,7 +125,15 @@ export async function gotoLanding(page: Page) {
 export async function gotoWizard(page: Page) {
   await enablePlaywrightMode(page);
   await page.goto(wizardRoute);
+  await dismissSunsetModal(page);
   await expectWizardReady(page);
+}
+
+export async function dismissSunsetModal(page: Page) {
+  const dialog = page.locator("#sunset-modal");
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button").click();
+  await expect(dialog).toBeHidden();
 }
 
 export async function expectWizardReady(page: Page) {
@@ -133,10 +142,9 @@ export async function expectWizardReady(page: Page) {
   await expect(setupModeCard(page, "advance")).toBeVisible({ timeout: 15_000 });
 }
 
+// Landing links are blocked by the sunset notice, so open the wizard directly.
 export async function launchWizardFromLanding(page: Page) {
-  await gotoLanding(page);
-  await page.getByRole("link", { name: "Get Started Free" }).click();
-  await expectWizardReady(page);
+  await gotoWizard(page);
 }
 
 export function setupModeCard(page: Page, mode: "easy" | "advance") {

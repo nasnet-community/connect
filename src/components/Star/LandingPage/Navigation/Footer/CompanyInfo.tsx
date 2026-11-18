@@ -60,6 +60,7 @@ export const CompanyInfo = component$<CompanyInfoProps>(({ socialLinks }) => {
             <a
               key={social.label}
               href={social.href}
+              data-sunset-allow
               target="_blank"
               rel="noopener noreferrer"
               class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm transition-colors duration-200 hover:bg-white/20"

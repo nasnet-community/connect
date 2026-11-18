@@ -1,6 +1,13 @@
 # NASNET Connect 🌟
 
-NasNet Connect is a free, open-source networking tool built for the Iranian Starlink community, designed specifically to run on MikroTik routers. It automates complex configurations to protect user privacy by masking Starlink IPs, intelligently routing and managing traffic, enabling remote access over Iran’s internet, and supporting features like multiple SSIDs, public IP sharing, and gaming traffic optimization. Developed as a community-driven project, it provides a secure, censorship-resistant, and customizable gateway for Starlink users while remaining accessible and constantly improved through open collaboration.
+> [!CAUTION]
+>
+> **This project is archived and no longer maintained.**
+> NasNet Connect gets no more updates, bug fixes or support, and issues and pull requests are not reviewed. Use it at your own risk.
+>
+> To manage MikroTik routers, use **[NasNet Panel](https://www.joinnasnet.com/fa/products/nasnet-panel/)** instead.
+
+NasNet Connect is a free, open-source networking tool built for the Iranian Starlink community, designed specifically to run on MikroTik routers. It automates complex configurations to protect user privacy by masking Starlink IPs, intelligently routing and managing traffic, enabling remote access over Iran’s internet, and supporting features like multiple SSIDs, public IP sharing, and gaming traffic optimization. Developed as a community-driven project, it provides a secure, censorship-resistant, and customizable gateway for Starlink users while remaining accessible and improved through open collaboration while it was maintained.
 
 https://connect.starlink4iran.com/
 

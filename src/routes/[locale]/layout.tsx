@@ -2,6 +2,7 @@ import { component$, Slot } from "@builder.io/qwik";
 import type { DocumentHead, RequestHandler } from "@builder.io/qwik-city";
 import { Footer } from "~/components/Layout/Footer/Footer";
 import { Header } from "~/components/Layout/Header/Header";
+import { SunsetModal } from "~/components/Layout/SunsetModal/SunsetModal";
 import { normalizeLocale } from "~/i18n/config";
 
 export const onRequest: RequestHandler = ({ locale, params }) => {
@@ -26,6 +27,7 @@ export default component$(() => {
         <Slot />
       </main>
       <Footer />
+      <SunsetModal />
     </div>
   );
 });
