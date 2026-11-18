@@ -5,40 +5,52 @@ import { semanticMessages, useMessageLocale } from "~/i18n/semantic";
 export const NASNET_PANEL_URL =
   "https://www.joinnasnet.com/fa/products/nasnet-panel/";
 
-// Plain inline script so the notice opens and links are blocked before Qwik
-// loads. Listening on window in the capture phase runs ahead of qwikloader's
-// document listeners, which is what stops <Link> SPA navigation too.
-// Links marked data-sunset-allow (social profiles) keep working.
-const SUNSET_SCRIPT = `
+// Runs in <head> (see root.tsx), before any link is parsed, so no link can be
+// followed while the page is still loading. Listening on window in the capture
+// phase runs ahead of qwikloader's document listeners, which also stops <Link>
+// SPA navigation. Links marked data-sunset-allow (social profiles) still work.
+export const SUNSET_GUARD_SCRIPT = `
+(function () {
+  if (window.__sunsetInit) return;
+  window.__sunsetInit = true;
+  function modal() { return document.getElementById("sunset-modal"); }
+  function block(e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+    var link = target.closest("a[href]");
+    if (!link || link.closest("[data-sunset-allow]")) return;
+    var dialog = modal();
+    if (dialog && dialog.contains(link)) return;
+    if (!dialog && document.readyState !== "loading") return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (dialog && !dialog.open) dialog.showModal();
+  }
+  window.addEventListener("click", block, true);
+  window.addEventListener("auxclick", block, true);
+  var pressedOnBackdrop = false;
+  document.addEventListener("pointerdown", function (e) {
+    pressedOnBackdrop = e.target === modal();
+  });
+  document.addEventListener("click", function (e) {
+    var dialog = modal();
+    if (!dialog) return;
+    var onBackdrop = e.target === dialog && pressedOnBackdrop;
+    pressedOnBackdrop = false;
+    if (onBackdrop || (e.target.closest && e.target.closest("[data-sunset-close]"))) {
+      dialog.close();
+    }
+  });
+})();
+`;
+
+// Runs right after the dialog markup to open it on page load.
+const SUNSET_OPEN_SCRIPT = `
 (function () {
   var dialog = document.getElementById("sunset-modal");
-  if (!dialog || typeof dialog.showModal !== "function") return;
-  function open() { if (!dialog.open) dialog.showModal(); }
-  if (!window.__sunsetInit) {
-    window.__sunsetInit = true;
-    var block = function (e) {
-      var target = e.target;
-      if (!target || !target.closest) return;
-      var link = target.closest("a[href]");
-      if (!link) return;
-      var modal = document.getElementById("sunset-modal");
-      if (modal && modal.contains(link)) return;
-      if (link.closest("[data-sunset-allow]")) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      if (modal && !modal.open) modal.showModal();
-    };
-    window.addEventListener("click", block, true);
-    window.addEventListener("auxclick", block, true);
-    document.addEventListener("click", function (e) {
-      var modal = document.getElementById("sunset-modal");
-      if (!modal) return;
-      if (e.target === modal || (e.target.closest && e.target.closest("[data-sunset-close]"))) {
-        modal.close();
-      }
-    });
+  if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
+    dialog.showModal();
   }
-  open();
 })();
 `;
 
@@ -90,7 +102,7 @@ export const SunsetModal = component$(() => {
           </div>
         </div>
       </dialog>
-      <script nonce={nonce} dangerouslySetInnerHTML={SUNSET_SCRIPT} />
+      <script nonce={nonce} dangerouslySetInnerHTML={SUNSET_OPEN_SCRIPT} />
     </>
   );
 });

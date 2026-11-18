@@ -331,43 +331,11 @@ WAN   WAN   WAN
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This project is archived and no longer accepts contributions. Pull requests and issues are not reviewed. You are free to fork the code under the MIT license and maintain your own copy.
 
 ## 🐛 Issues
 
-We welcome bug reports, feature requests, and questions! You can submit issues in two ways:
-
-### GitHub Issues
-
-1. Visit our [GitHub Issues page](https://github.com/nasnet-community/connect/issues)
-2. Click on "New Issue"
-3. Choose the appropriate issue template
-4. Fill in the required information
-5. Submit your issue
-
-### Telegram Support
-
-For immediate support or questions:
-
-1. Join our [Telegram channel](https://t.me/joinnasnet)
-2. Send your question or issue description
-3. Our team will respond as soon as possible
-
-When reporting issues, please include:
-
-- Description of the problem
-- Steps to reproduce
-- Expected behavior
-- Screenshots (if applicable)
-- Your environment details (OS, browser, etc.)
-- router configuration file (with sensitive data removed)
-- State History log from the Debug Tools panel (with sensitive data removed)
-
-> **Note**: Before submitting configuration files or logs, ensure you've removed all sensitive information such as passwords, IP addresses, and personal data.
+There is no support for NasNet Connect anymore, and nobody on the team will answer issues or questions about it. The [NasNet Telegram channel](https://t.me/joinnasnet) is a community resource, not project support. For a maintained way to manage MikroTik routers, use [NasNet Panel](https://www.joinnasnet.com/fa/products/nasnet-panel/).
 
 ## 📧 Contact
 
