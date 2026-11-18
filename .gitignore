@@ -43,6 +43,7 @@ lerna-debug.log*
 
 # Vercel
 .vercel
+.wrangler
 /.cursor
 /supabase
 
